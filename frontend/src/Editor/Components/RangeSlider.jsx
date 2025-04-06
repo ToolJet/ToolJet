@@ -6,8 +6,8 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 export const RangeSlider = ({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema } = properties;
-  // console.log(styles, 'search here');
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
+
   const {
     trackColor,
     handleColor,
@@ -24,7 +24,10 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
   } = styles;
 
   const sliderRef = useRef(null);
-  const [sliderValue, setSliderValue] = useState(0);
+
+  const [sliderValue, setSliderValue] = useState(
+    endValue !== undefined ? endValue : Array.isArray(value) ? value[0] : value || 0
+  );
   const [rangeValue, setRangeValue] = useState([0, 100]);
   const [labelWidth, setLabelWidth] = useState(auto ? 'auto' : width);
 
@@ -36,9 +39,19 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
   const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
   useEffect(() => {
+    if (endValue !== undefined) {
+      // Update sliderValue to match endValue whenever endValue changes
+      setSliderValue(endValue);
+      setExposedVariable('value', endValue);
+    }
+  }, [endValue]);
+
+  useEffect(() => {
     if (isInitialRender.current) return;
-    setSliderValue(singleHandleValue);
-    setExposedVariable('value', singleHandleValue);
+    if (endValue === undefined) {
+      setSliderValue(singleHandleValue);
+      setExposedVariable('value', singleHandleValue);
+    }
   }, [singleHandleValue]);
 
   useEffect(() => {
@@ -48,9 +61,14 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
   }, [JSON.stringify(twoHandlesArray)]);
 
   useEffect(() => {
-    setExposedVariable('value', enableTwoHandle ? twoHandlesArray : singleHandleValue);
+    setExposedVariable(
+      'value',
+      enableTwoHandle ? twoHandlesArray : endValue !== undefined ? endValue : singleHandleValue
+    );
     if (isInitialRender.current) {
-      enableTwoHandle ? setRangeValue(twoHandlesArray) : setSliderValue(singleHandleValue);
+      enableTwoHandle
+        ? setRangeValue(twoHandlesArray)
+        : setSliderValue(endValue !== undefined ? endValue : singleHandleValue);
     }
     isInitialRender.current = false;
   }, [enableTwoHandle]);
@@ -144,7 +162,6 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
             ref={sliderRef}
             trackStyle={rangeStyles.trackStyle}
             railStyle={rangeStyles.railStyle}
-            // handleStyle={rangeStyles.handleStyle}
             handleStyle={[
               { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
               { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
@@ -166,11 +183,12 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
           <Slider
             min={min}
             max={max}
-            defaultValue={sliderValue}
+            defaultValue={endValue !== undefined ? endValue : sliderValue}
             value={sliderValue}
             ref={sliderRef}
             onChange={onSliderChange}
             onAfterChange={() => fireEvent('onChange')}
+            startPoint={startValue}
             trackStyle={{ backgroundColor: trackColor }}
             railStyle={{ backgroundColor: lineColor }}
             handleStyle={[
