@@ -22,6 +22,7 @@ export const Container = ({
   setExposedVariable,
   adjustComponentPositions,
   currentLayout,
+  componentCount = 0,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -40,6 +41,7 @@ export const Container = ({
     adjustComponentPositions,
     currentLayout,
     isContainer: true,
+    componentCount,
   });
 
   const isWidgetInContainerDragging = useStore(

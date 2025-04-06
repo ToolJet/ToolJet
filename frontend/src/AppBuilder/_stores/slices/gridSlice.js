@@ -146,7 +146,7 @@ export const createGridSlice = (set, get) => ({
           }
           const sum = layout.top + layout.height;
           return Math.max(max, sum);
-        }, 100);
+        }, 300);
 
         maxHeight = currentMax + 20;
       }
@@ -235,7 +235,14 @@ export const createGridSlice = (set, get) => ({
           component.layouts[currentLayout].top <
           changedComponent.layouts[currentLayout].top + changedComponent.layouts[currentLayout].height;
 
-        if (hasHorizontalOverlap && currentDist < minimumDist && !isInitialTopAboveChangedBottom) {
+        const isCurrentHeightLessThanChangedHeight =
+          temporaryLayouts?.[componentId]?.height < changedComponent.layouts[currentLayout].height;
+
+        if (
+          hasHorizontalOverlap &&
+          currentDist < minimumDist &&
+          !(isInitialTopAboveChangedBottom && isCurrentHeightLessThanChangedHeight)
+        ) {
           const difference =
             changedCompBottom - (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top);
           realDiff = Math.ceil(difference / 10) * 10;

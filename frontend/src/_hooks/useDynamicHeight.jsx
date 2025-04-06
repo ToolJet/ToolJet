@@ -9,6 +9,7 @@ export const useDynamicHeight = ({
   currentLayout,
   width,
   isContainer = false,
+  componentCount = 0,
 }) => {
   const prevDynamicHeight = useRef(dynamicHeight);
   const initialRender = useRef(true);
@@ -34,7 +35,7 @@ export const useDynamicHeight = ({
     }
     prevDynamicHeight.current = dynamicHeight;
     initialRender.current = false;
-  }, [dynamicHeight, id, value, adjustComponentPositions, currentLayout, height, width, isContainer]);
+  }, [dynamicHeight, id, value, adjustComponentPositions, currentLayout, height, width, isContainer, componentCount]);
 
   return;
 };

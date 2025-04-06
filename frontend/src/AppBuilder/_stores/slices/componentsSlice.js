@@ -889,6 +889,7 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       selectedComponents,
       deleteComponentNameIdMapping,
+      getResolvedComponent,
       removeNode,
       deleteTemporaryLayouts,
       currentLayout,
@@ -925,7 +926,10 @@ export const createComponentsSlice = (set, get) => ({
     });
 
     toDeleteComponents.forEach((componentId) => {
-      adjustComponentPositions(componentId, currentLayout, true);
+      const isDynamicHeightEnabled = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamicHeightEnabled) {
+        adjustComponentPositions(componentId, currentLayout, true);
+      }
     });
 
     set(
@@ -1071,6 +1075,8 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
+      getResolvedComponent,
+      adjustComponentPositions,
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
@@ -1133,6 +1139,22 @@ export const createComponentsSlice = (set, get) => ({
       const newParentComponentType = getComponentTypeFromId(newParentId, moduleId);
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
       const { component } = getComponentDefinition(componentId, moduleId);
+
+      // Adjust component positions
+
+      //If new parent is dynamic, adjust the parent positions
+      const isParentDynamic = getResolvedComponent(newParentId)?.properties?.dynamicHeight;
+      if (isParentDynamic) {
+        adjustComponentPositions(newParentId, currentLayout, false, true);
+      }
+
+      // If the parent is changed, adjust the old parent positions
+      if (oldParentId !== newParentId) {
+        const isParentDynamic = getResolvedComponent(oldParentId)?.properties?.dynamicHeight;
+        if (isParentDynamic) {
+          adjustComponentPositions(oldParentId, currentLayout, false, true);
+        }
+      }
 
       if (
         newParentComponentType === 'Listview' ||

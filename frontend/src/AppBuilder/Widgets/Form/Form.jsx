@@ -39,6 +39,7 @@ export const Form = function Form(props) {
     dataCy,
     adjustComponentPositions,
     currentLayout,
+    componentCount,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
   const {
@@ -117,6 +118,7 @@ export const Form = function Form(props) {
     adjustComponentPositions,
     currentLayout,
     isContainer: true,
+    componentCount,
   });
 
   const parentRef = useRef(null);

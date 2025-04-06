@@ -21,6 +21,15 @@ export const containerConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -153,10 +162,11 @@ export const containerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      showHeader: {value: `{{true}}`},
+      showHeader: { value: `{{true}}` },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
     },
     events: [],
     styles: {
