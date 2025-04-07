@@ -143,6 +143,15 @@ export const imageConfig = {
       },
       accordian: 'Image',
     },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'Image',
+    },
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -179,11 +188,11 @@ export const imageConfig = {
     padding: {
       type: 'switch',
       displayName: 'Padding',
-      validation: { schema: { type: 'string' }, defaultValue: 'default' },
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'Custom', value: 'custom' },
       ],
+      validation: { schema: { type: 'string' }, defaultValue: 'default' },
       accordian: 'Container',
       isFxNotRequired: true,
     },
@@ -244,7 +253,6 @@ export const imageConfig = {
       loadingState: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
-      visible: { value: '{{true}}' },
     },
     events: [],
     styles: {
@@ -256,6 +264,7 @@ export const imageConfig = {
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       padding: { value: 'default' },
       customPadding: { value: '{{0}}' },
+      alignment: { value: 'center' },
     },
   },
 };

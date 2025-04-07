@@ -8,6 +8,8 @@ import { FolderAppsUtilService } from './util.service';
 import { IFolderAppsService } from './interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { AbilityService } from '@modules/ability/interfaces/IService';
+import { User } from '@entities/user.entity';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
@@ -47,7 +49,7 @@ export class FolderAppsService implements IFolderAppsService {
       return await manager.delete(FolderApp, { folderId, appId });
     });
   }
-  async getFolders(user, query) {
+  async getFolders(user: User, query) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const type = query.type;
       const searchKey = query.searchKey;
@@ -78,7 +80,12 @@ export class FolderAppsService implements IFolderAppsService {
           allFolderList[index].generateCount();
         }
       });
-      return decamelizeKeys({ folders: allFolderList });
+      return decamelizeKeys({
+        folders:
+          user.roleGroup === USER_ROLE.END_USER
+            ? allFolderList.filter((folder) => folder.folderApps.length > 0)
+            : allFolderList,
+      });
     });
   }
 }

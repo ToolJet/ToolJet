@@ -96,7 +96,7 @@ export const createAppSlice = (set, get) => ({
       console.error('Error updating page:', error);
     }
   },
-  switchPage: (pageId, handle, queryParams = []) => {
+  switchPage: (pageId, handle, queryParams = [], isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
     // reset stores
     if (get().pageSwitchInProgress) {
@@ -141,14 +141,19 @@ export const createAppSlice = (set, get) => ({
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().app.slug;
 
-    navigate(
-      `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
-      {
-        state: {
-          isSwitchingPage: true,
-        },
-      }
-    );
+    if (!isBackOrForward) {
+      navigate(
+        `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
+        {
+          state: {
+            isSwitchingPage: true,
+            id: pageId,
+            handle: handle,
+          },
+        }
+      );
+    }
+
     const newPage = pages.find((p) => p.id === pageId);
     setResolvedPageConstants({
       id: newPage?.id,
