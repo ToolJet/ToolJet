@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { default as ReactMarkdown } from 'react-markdown';
@@ -21,8 +21,8 @@ export const MarkdownColumn = ({
   horizontalAlignment,
   cellSize,
 }) => {
-  const ref = React.useRef(null);
-  const cellTextColor = useTextColor(id, textColor, 'json');
+  const ref = useRef(null);
+  const cellTextColor = useTextColor(id, textColor);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const [hovered, setHovered] = useState(false);
@@ -122,51 +122,49 @@ export const MarkdownColumn = ({
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
 
   return (
-    <>
-      <OverlayTrigger
-        placement="bottom"
-        overlay={_showOverlay ? getOverlay() : <div></div>}
-        trigger={_showOverlay && ['hover', 'focus']}
-        rootClose={true}
-        show={_showOverlay && hovered && !isEditing}
-      >
-        {!isEditable ? (
+    <OverlayTrigger
+      placement="bottom"
+      overlay={_showOverlay ? getOverlay() : <div></div>}
+      trigger={_showOverlay && ['hover', 'focus']}
+      rootClose={true}
+      show={_showOverlay && hovered && !isEditing}
+    >
+      {!isEditable ? (
+        <div
+          className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+            horizontalAlignment
+          )}`}
+          style={cellStyles}
+          onMouseMove={() => {
+            if (!hovered) setHovered(true);
+          }}
+          onMouseLeave={() => {
+            setHovered(false);
+          }}
+          ref={ref}
+        >
+          <span
+            style={{
+              maxHeight: getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellSize),
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>
+          </span>
+        </div>
+      ) : (
+        <div className="h-100 d-flex flex-column justify-content-center position-relative">
           <div
-            className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-              horizontalAlignment
-            )}`}
-            style={cellStyles}
             onMouseMove={() => {
               if (!hovered) setHovered(true);
             }}
-            onMouseLeave={() => {
-              setHovered(false);
-            }}
-            ref={ref}
+            onMouseLeave={() => setHovered(false)}
+            className={`${isEditing ? 'h-100 content-editing' : ''} h-100`}
           >
-            <span
-              style={{
-                maxHeight: getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellSize),
-                whiteSpace: 'pre-wrap',
-              }}
-            >
-              <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>
-            </span>
+            {renderEditable()}
           </div>
-        ) : (
-          <div className="h-100 d-flex flex-column justify-content-center position-relative">
-            <div
-              onMouseMove={() => {
-                if (!hovered) setHovered(true);
-              }}
-              onMouseLeave={() => setHovered(false)}
-              className={`${isEditing ? 'h-100 content-editing' : ''} h-100`}
-            >
-              {renderEditable()}
-            </div>
-          </div>
-        )}
-      </OverlayTrigger>
-    </>
+        </div>
+      )}
+    </OverlayTrigger>
   );
 };
