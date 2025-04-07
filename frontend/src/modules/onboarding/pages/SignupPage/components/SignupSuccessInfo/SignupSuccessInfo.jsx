@@ -22,7 +22,7 @@ const SignupSuccessInfo = ({ email, name, backToSignup, organizationId, redirect
           </span>
           <SepratorComponent />
           <ResendVerificationEmail email={email} organizationId={organizationId} redirectTo={redirectTo} />
-          <div className="back-to-signup-button" data-cy={'back-to-signup'}>
+          <div className="back-to-signup-button">
             <button onClick={() => backToSignup(email, name)} className="button-parent" data-cy={'back-to-signup'}>
               <span className="button-text">Back to sign up</span>
             </button>
