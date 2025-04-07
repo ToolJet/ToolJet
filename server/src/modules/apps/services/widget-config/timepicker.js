@@ -164,7 +164,7 @@ export const timePickerConfig = {
   ],
   styles: {
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -215,31 +215,31 @@ export const timePickerConfig = {
       isFxNotRequired: true,
     },
     fieldBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     fieldBorderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
       validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Error text',
       validation: { schema: { type: 'string' }, defaultValue: '#E54D2E' },
       accordian: 'field',
@@ -252,7 +252,7 @@ export const timePickerConfig = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: '',
       showLabel: false,
       validation: {

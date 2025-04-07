@@ -71,7 +71,7 @@ export const containerConfig = {
   events: {},
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -80,7 +80,7 @@ export const containerConfig = {
       accordian: 'container',
     },
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -89,7 +89,7 @@ export const containerConfig = {
       accordian: 'header',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },

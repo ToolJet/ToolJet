@@ -153,7 +153,7 @@ export const imageConfig = {
       accordian: 'Image',
     },
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -162,7 +162,7 @@ export const imageConfig = {
       accordian: 'Container',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
