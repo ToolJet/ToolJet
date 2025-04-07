@@ -6,6 +6,7 @@ import {
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndRunQuery } from "Support/utils/queries";
 
 
 describe('Checkbox Component Tests', () => {
@@ -84,7 +85,7 @@ describe('Checkbox Component Tests', () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-App`);
         cy.openApp();
         cy.dragAndDropWidget("Checkbox", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        //cy.get('[data-cy="query-manager-collapse-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -167,6 +168,67 @@ describe('Checkbox Component Tests', () => {
             });
 
         cy.get(commonWidgetSelector.draggableWidget("button8")).click();
+        cy.notVisible(".tj-widget-loader");
+
+    });
+
+    it("should verify the Checkbox CSA through Runjs", () => {
+
+        const events = [
+            { event: "On Change", message: "On Change Event" },
+        ];
+        addMultiEventsWithAlert(events, false);
+
+        const actions = [
+            { action: "setVisibility", value: "false" },
+            { action: "setVisibility", value: "true" },
+            { action: "setDisable", value: "true" },
+            { action: "setDisable", value: "false" },
+            { action: "setChecked", value: "true" },
+            { action: "toggle", value: "" },
+            { action: "setLoading", value: "true" },
+            { action: "setLoading", value: "false" },
+
+        ];
+
+        actions.forEach((actions, index) => {
+            const jsAction = `components.checkbox1.${actions.action}(${actions.value})`;
+            cy.apiAddQueryToApp(
+                index,
+                { code: jsAction, hasParamSupport: true, parameters: [] },
+                null,
+                "runjs"
+            );
+        });
+        cy.reload()
+
+        let component = "checkbox1";
+        openAndRunQuery("0");
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
+
+        openAndRunQuery("1");
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("be.visible");
+
+        openAndRunQuery("2");
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("have.attr", "data-disabled", 'true');
+
+        openAndRunQuery("3");
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("have.attr", "data-disabled", 'false');
+
+        openAndRunQuery("4");
+        cy.get(commonWidgetSelector.draggableWidget(component)).find('input').should('be.checked')
+
+        openAndRunQuery("5");
+        cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
+
+        openAndRunQuery("6");
+        cy.get(commonWidgetSelector.draggableWidget(component))
+            .parent()
+            .within(() => {
+                cy.get(".tj-widget-loader").should("be.visible");
+            });
+
+        openAndRunQuery("7");
         cy.notVisible(".tj-widget-loader");
 
     });
