@@ -1,71 +1,84 @@
+/* eslint-disable no-undef */
 import React, { useState, useEffect } from 'react';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
+import { getMaxHeight } from '../../_utils/helper';
+import useTableStore from '../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 
-const StringColumn = ({
+export const JsonColumn = ({
   isEditable,
+  jsonIndentation,
   darkMode,
   handleCellValueChange,
-  cellTextColor,
+  textColor,
   cellValue,
   column,
   containerWidth,
-  cell,
   horizontalAlignment,
-  isMaxRowHeightAuto,
-  cellSize,
-  maxRowHeightValue,
+  id,
 }) => {
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
-  const validationData = validateWidget({
-    validationObject: {
-      regex: {
-        value: column.regex,
-      },
-      minLength: {
-        value: column.minLength,
-      },
-      maxLength: {
-        value: column.maxLength,
-      },
-      customRule: {
-        value: column.customRule,
-      },
-    },
-    widgetValue: cellValue,
-    customResolveObjects: { cellValue },
-  });
-  const { isValid, validationError } = validationData;
+  const cellTextColor = useTextColor(id, textColor, 'json');
+  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
+  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
+  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+
+  const ref = React.useRef(null);
+
+  const [hovered, setHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
   const cellStyles = {
     color: cellTextColor ?? 'inherit',
   };
-  const ref = React.useRef(null);
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  useEffect(() => {
-    if (hovered) {
-      setShowOverlay(true);
-    } else {
-      setShowOverlay(false);
-    }
-  }, [hovered]);
 
   useEffect(() => {
     if (!isEditable && isEditing) {
       setIsEditing(false);
     }
-  }, [isEditable]);
+  }, [isEditable, isEditing]);
+
+  function format(obj) {
+    if (typeof obj !== 'object' || obj === null) {
+      return typeof obj === 'string' ? `"${obj}"` : obj;
+    }
+    if (Array.isArray(obj)) {
+      return `[  ${obj.map(format).join(',  ')}  ]`;
+    }
+    return `{  ${Object.entries(obj)
+      .map(([key, value]) => `"${key}":  ${format(value)}`)
+      .join(',  ')}  }`;
+  }
+
+  const formatCellValue = (value, overlay = false) => {
+    try {
+      if (typeof value === 'object') {
+        if (jsonIndentation === true && !overlay) {
+          return JSON.stringify(value, null, 4).replace(/":/g, '":  ');
+        }
+        const formattedJSON = format(value);
+        return formattedJSON;
+      } else {
+        if (jsonIndentation === true && !overlay) {
+          return JSON.stringify(JSON.parse(value), null, 4).replace(/":/g, '":  ');
+        }
+        const formattedJSON = format(JSON.parse(value));
+        return formattedJSON;
+      }
+    } catch (error) {
+      return value;
+    }
+  };
 
   const _renderString = () => (
     <div
       ref={ref}
       contentEditable={'true'}
-      className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
+      className={`h-100 text-container long-text-input d-flex align-items-center ${
         darkMode ? ' textarea-dark-theme' : ''
       } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+      tabIndex={-1}
       style={{
         color: cellTextColor ? cellTextColor : 'inherit',
         outline: 'none',
@@ -78,14 +91,16 @@ const StringColumn = ({
       onBlur={(e) => {
         setIsEditing(false);
         if (cellValue !== e.target.textContent) {
-          handleCellValueChange(cell.row.index, column.key || column.name, e.target.textContent, cell.row.original);
+          const value = JSON.stringify(JSON.parse(e.target.textContent.replace(/\n/g, '')));
+          handleCellValueChange(row.index, column.key || column.name, value, row.original);
         }
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           ref.current.blur();
           if (cellValue !== e.target.textContent) {
-            handleCellValueChange(cell.row.index, column.key || column.name, e.target.textContent, cell.row.original);
+            const value = JSON.stringify(JSON.parse(e.target.textContent.replace(/\n/g, '')));
+            handleCellValueChange(row.index, column.key || column.name, value, row.original);
           }
         }
       }}
@@ -94,7 +109,7 @@ const StringColumn = ({
         e.stopPropagation();
       }}
     >
-      {String(cellValue)}
+      {String(formatCellValue(cellValue))}
     </div>
   );
 
@@ -109,9 +124,10 @@ const StringColumn = ({
         <span
           style={{
             width: `${containerWidth}px`,
+            whiteSpace: 'pre-wrap',
           }}
         >
-          {String(cellValue)}
+          {String(formatCellValue(cellValue, true))}
         </span>
       </div>
     );
@@ -121,14 +137,15 @@ const StringColumn = ({
     ref?.current &&
     (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
+
   return (
     <>
       <OverlayTrigger
         placement="bottom"
-        overlay={_showOverlay ? getOverlay() : <div></div>}
+        overlay={_showOverlay ? getOverlay() : <div />}
         trigger={_showOverlay && ['hover', 'focus']}
         rootClose={true}
-        show={_showOverlay && showOverlay && !isEditing}
+        show={_showOverlay && hovered && !isEditing}
       >
         {!isEditable ? (
           <div
@@ -146,16 +163,11 @@ const StringColumn = ({
           >
             <span
               style={{
-                maxHeight: isMaxRowHeightAuto
-                  ? 'fit-content'
-                  : maxRowHeightValue
-                  ? `${maxRowHeightValue}px`
-                  : cellSize === 'condensed'
-                  ? '39px'
-                  : '45px',
+                maxHeight: getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellHeight),
+                whiteSpace: 'pre-wrap',
               }}
             >
-              {String(cellValue)}
+              {String(formatCellValue(cellValue))}
             </span>
           </div>
         ) : (
@@ -165,16 +177,13 @@ const StringColumn = ({
                 if (!hovered) setHovered(true);
               }}
               onMouseLeave={() => setHovered(false)}
-              className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
+              className={`${isEditing ? 'h-100 content-editing' : ''} h-100`}
             >
               {_renderString()}
             </div>
-            <div className={`${isValid ? '' : 'invalid-feedback text-truncate'} `}>{validationError}</div>
           </div>
         )}
       </OverlayTrigger>
     </>
   );
 };
-
-export default StringColumn;
