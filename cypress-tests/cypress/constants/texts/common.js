@@ -181,7 +181,7 @@ export const commonText = {
     "Value should be less than 10000 characters and cannot be empty",
 
   createApp: "Create app",
-  appName: "App Name",
+  appName: "App name",
   enterAppName: "Enter app name",
   appNameInfoLabel: "App name must be unique and max 50 characters",
   renameApp: "Rename app",

@@ -49,11 +49,11 @@ describe("dashboard", () => {
   });
 
   it("should verify the elements on empty dashboard", () => {
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
 
-    cy.intercept("GET", "/api/folders?searchKey=", {
+    cy.intercept("GET", "/api/folder-apps?searchKey=&type=front-end", {
       body: { folders: [] },
     }).as("folders");
 
@@ -87,7 +87,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.createNewFolderButton).should("be.visible");
     cy.get(commonSelectors.allApplicationLink).verifyVisibleElement(
       "have.text",
-      commonText.allApplicationLink
+      commonText.allApplicationsLink
     );
 
     cy.get(commonSelectors.notificationsIcon).should("be.visible").click();
@@ -312,6 +312,7 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
 
+    cy.wait(3000)
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
     cy.get(commonSelectors.exportAllButton).click();
@@ -519,7 +520,7 @@ describe("dashboard", () => {
 
   it("should verify the elements on empty dashboard for end user", () => {
     cy.defaultWorkspaceLogin();
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard")
     roleBasedOnboarding(data.firstName, data.email, "end-user");
