@@ -127,6 +127,13 @@ export const buttonGroupConfig = {
   exposedVariables: {
     selected: [1],
   },
+  actions: [
+    {
+      handle: 'setSelected',
+      displayName: 'Select option',
+      params: [{ handle: 'selected', displayName: 'Value' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

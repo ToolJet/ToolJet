@@ -1543,7 +1543,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 7.5rem);
+    height: calc(100vh - 10.4rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -7157,8 +7157,6 @@ tbody {
 }
 
 .link-widget {
-  display: flex;
-  align-items: center;
   overflow: auto;
 
   &.hover {
@@ -15857,6 +15855,7 @@ tbody {
 }
 
 .rest-api-options-codehinter {
+  height: 100%;
   .cm-content>.cm-line {
     // max-width: 357px !important;
   }
@@ -18610,6 +18609,12 @@ section.ai-message-prompt-input-wrapper {
     flex-grow: 1;
   }
 }
+
+
+.cm-tooltip {
+  z-index: 9999 !important;
+}
+
 .workspace-constant-value {
   position: relative;
 
@@ -18656,5 +18661,12 @@ section.ai-message-prompt-input-wrapper {
     &.dark {
       background: #FFFAEB !important;
     }
+  }
+}
+
+
+.single-line-codehinter-input {
+  .cm-editor {
+    max-height: 100px !important;
   }
 }
