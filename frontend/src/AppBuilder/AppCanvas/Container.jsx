@@ -20,6 +20,7 @@ import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
+import useSortedComponents from '../_hooks/useSortedComponents';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -146,6 +147,8 @@ export const Container = React.memo(
       [setLastCanvasClickPosition]
     );
 
+    const sortedComponents = useSortedComponents(components, currentLayout, id);
+
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -197,7 +200,7 @@ export const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {components.map((id) => (
+          {sortedComponents.map((id) => (
             <WidgetWrapper
               id={id}
               key={id}
