@@ -1543,7 +1543,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 7.5rem);
+    height: calc(100vh - 10.4rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -2362,6 +2362,7 @@ body {
   font-family: "Inconsolata", "Menlo", "Consolas", monospace;
   font-size: 16px;
   padding: 20px;
+  color: #0000009c;
 }
 
 .RichEditor-controls {
@@ -4746,7 +4747,21 @@ input[type="text"] {
  * Folder List
  */
 .folder-list {
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;  
+  &:hover {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #888;
+    }
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+  }
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
@@ -5354,7 +5369,7 @@ div#driver-page-overlay {
   padding: 10px 5px 0 0;
   float: left;
   font-size: 14px;
-  color: $light-gray;
+  color: var(--slate-12);
 }
 
 .dynamic-form-element {
@@ -7142,8 +7157,6 @@ tbody {
 }
 
 .link-widget {
-  display: flex;
-  align-items: center;
   overflow: auto;
 
   &.hover {
@@ -9844,6 +9857,25 @@ tbody {
 .workspace-settings-table-wrap {
   max-width: 880px;
   margin: 0 auto;
+  .tj-user-table-wrapper{
+    padding-right: 4px;
+   }
+   &:hover{
+     .tj-user-table-wrapper{
+       padding-right: 0px;
+     }
+     ::-webkit-scrollbar{
+       display: block;
+       width: 4px;
+     }
+     ::-webkit-scrollbar-track{
+       background: var(--base);
+     }
+     ::-webkit-scrollbar-thumb{
+       background: var(--slate7);
+       border-radius: 6px;
+     }
+   }
 }
 
 
@@ -15823,6 +15855,7 @@ tbody {
 }
 
 .rest-api-options-codehinter {
+  height: 100%;
   .cm-content>.cm-line {
     // max-width: 357px !important;
   }
@@ -18576,6 +18609,12 @@ section.ai-message-prompt-input-wrapper {
     flex-grow: 1;
   }
 }
+
+
+.cm-tooltip {
+  z-index: 9999 !important;
+}
+
 .workspace-constant-value {
   position: relative;
 
@@ -18622,5 +18661,12 @@ section.ai-message-prompt-input-wrapper {
     &.dark {
       background: #FFFAEB !important;
     }
+  }
+}
+
+
+.single-line-codehinter-input {
+  .cm-editor {
+    max-height: 100px !important;
   }
 }

@@ -20,7 +20,7 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList, navigate } from '../_utils/misc';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
+import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
@@ -326,6 +326,16 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
 
         // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
       }
+
+      // Add page id and handle to the state on initial load
+      const currentState = window.history.state || {};
+      const pageInfo = {
+        id: startingPage.id,
+        handle: startingPage.handle,
+      };
+      const newState = { ...currentState, ...pageInfo };
+      window.history.replaceState(newState, '', window.location.href);
+
       setCurrentPageHandle(startingPage.handle);
       updateFeatureAccess();
       setCurrentPageId(startingPage.id, moduleId);
@@ -412,7 +422,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       if (showWalkthrough) initEditorWalkThrough();
       checkAndSetTrueBuildSuggestionsFlag();
       return () => {
-        document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+        document.title = retrieveWhiteLabelText();
       };
     });
   }, [setApp, setEditorLoading, currentSession]);
