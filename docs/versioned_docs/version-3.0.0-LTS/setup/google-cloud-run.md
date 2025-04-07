@@ -69,7 +69,7 @@ SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 PG_USER=<username>
 PG_HOST=<postgresql-instance-ip>
 PG_PASS=<password>
-PG_DB=tooljet_production
+PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
 ```
 
 Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
@@ -87,11 +87,15 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
 ```env
-TOOLJET_DB=tooljet_db # Default database name
+TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
 TOOLJET_DB_HOST=<postgresql-database-host>
 TOOLJET_DB_USER=<username>
 TOOLJET_DB_PASS=<password>
 ```
+
+:::note 
+Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
+:::
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
