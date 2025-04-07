@@ -11,7 +11,7 @@ jobs:
 
     steps:
 
-      - name: Checkout code to main for Beta CE edition
+      - name: Checkout code to main for pre-release CE edition
         if: "!contains(github.event.release.tag_name, 'ce-lts')"
         uses: actions/checkout@v2
         with:
@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for Beta tag
+      - name: Build and Push Docker image for pre-release tag
         if: "!contains(github.event.release.tag_name, '-ce-lts')"
         uses: docker/build-push-action@v4
         with:
@@ -98,7 +98,7 @@ jobs:
     if: "${{ github.event.release }}"
 
     steps:
-      - name: Checkout code to main for Beta EE edition
+      - name: Checkout code to main for pre-release EE edition
         if: "!contains(github.event.release.tag_name, 'ee-lts')"
         uses: actions/checkout@v2
         with:
@@ -132,7 +132,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
 
-      - name: Build and Push Docker image for Beta tag
+      - name: Build and Push Docker image for pre-release tag
         if: "!contains(github.event.release.tag_name, '-ee-lts')"
         uses: docker/build-push-action@v4
         with:
