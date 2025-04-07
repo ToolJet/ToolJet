@@ -10,7 +10,6 @@ import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName, decodeEntities } from '@/_helpers/utils';
 const { defaultIcon } = configs;
@@ -34,6 +33,8 @@ export default function AppCard({
   const navigate = useNavigate();
   const cardRef = useRef();
   const [popoverVisible, setPopoverVisible] = useState(true);
+  const [isNameOverflowing, setIsNameOverflowing] = useState(false);
+  const tooltipRef = useRef(null);
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -54,6 +55,18 @@ export default function AppCard({
     const validate = validateName(slug, 'slug', true, false, false, false);
     return validate.status;
   };
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (tooltipRef.current) {
+        setIsNameOverflowing(tooltipRef.current.scrollWidth > tooltipRef.current.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, []);
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
@@ -162,6 +175,26 @@ export default function AppCard({
       </div>
     );
 
+  function AppNameDisplay({ tooltipRef }) {
+    const AppName = (
+      <h3
+        ref={tooltipRef}
+        className="app-card-name font-weight-500 tj-text-md"
+        data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
+      >
+        {decodeEntities(app.name)}
+      </h3>
+    );
+
+    return isNameOverflowing ? (
+      <ToolTip trigger={['hover']} message={app.name}>
+        {AppName}
+      </ToolTip>
+    ) : (
+      AppName
+    );
+  }
+
   return (
     <div className="card homepage-app-card" ref={cardRef}>
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
@@ -197,14 +230,7 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          <ToolTip trigger={['hover']} message={app.name}>
-            <h3
-              className="app-card-name font-weight-500 tj-text-md"
-              data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
-            >
-              {decodeEntities(app.name)}
-            </h3>
-          </ToolTip>
+          <AppNameDisplay tooltipRef={tooltipRef} />
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
