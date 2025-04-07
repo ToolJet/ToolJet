@@ -635,7 +635,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         true,
         null,
         manager,
-        true // skipInvitationEmail
+        false
       );
 
       // Create organization user entry
