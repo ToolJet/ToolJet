@@ -306,6 +306,7 @@ const sidebars = {
             },
           ],
         },
+        'tutorial/transformations',
         'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
       ],
@@ -318,7 +319,6 @@ const sidebars = {
       'collapsible': false,
       'items': [
         'data-sources/overview',
-        'data-sources/sample-data-sources',
         {
           'type': 'category',
           'label': 'Data Sources library',
@@ -383,8 +383,6 @@ const sidebars = {
             'data-sources/zendesk',
           ],
         },
-        'tutorial/transformations',
-        'data-sources/local-data-sources-migration',
         {
           'type': 'category',
           'label': 'Marketplace',
@@ -422,6 +420,8 @@ const sidebars = {
             },
           ],
         },
+        'data-sources/permissions',
+        'data-sources/sample-data-sources',
       ],
     },
     {

@@ -296,6 +296,7 @@
             }
           ]
         },
+        "tutorial/transformations",
         "app-builder/anti-patterns",
         "tutorial/keyboard-shortcuts"
       ]
@@ -308,7 +309,6 @@
       "collapsible": false,
       "items": [
         "data-sources/overview",
-        "data-sources/sample-data-sources",
         {
           "type": "category",
           "label": "Data Sources library",
@@ -372,8 +372,6 @@
             "data-sources/zendesk"
           ]
         },
-        "tutorial/transformations",
-        "data-sources/local-data-sources-migration",
         {
           "type": "category",
           "label": "Marketplace",
@@ -410,7 +408,9 @@
               ]
             }
           ]
-        }
+        },
+        "data-sources/permissions",
+        "data-sources/sample-data-sources"
       ]
     },
     {
