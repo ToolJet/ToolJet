@@ -15766,6 +15766,11 @@ tbody {
   /* Set the desired width */
 }
 
+textarea.tj-text-input-widget{
+  resize: none !important;
+  overflow-y: auto !important;
+}
+
 .tj-text-input-widget {
   border: 1px solid var(--borders-default);
   background-color: var(--surfaces-surface-01);
@@ -15777,7 +15782,7 @@ tbody {
     background-color: var(--surfaces-surface-03);
   }
 
-  &:hover:not(:focus) {
+  &:hover:not(:focus):not([data-ignore-hover="true"]) {
     border: 1px solid var(--tblr-input-border-color-darker) !important;
   }
 
@@ -18664,6 +18669,16 @@ section.ai-message-prompt-input-wrapper {
   }
 }
 
+.phone-input-widget {
+  .tj-text-input-widget.is-invalid {
+    border-left: none !important;
+  }
+
+  input[type="tel"] {
+    border-top-left-radius: '0px' !important;
+    border-bottom-left-radius: '0px' !important;
+  }
+}
 
 .single-line-codehinter-input {
   .cm-editor {
