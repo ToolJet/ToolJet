@@ -131,6 +131,7 @@ export class OnboardingService implements IOnboardingService {
           signingUpOrganization,
           userParams,
           redirectTo,
+          defaultWorkspace,
           manager
         );
       } else {
