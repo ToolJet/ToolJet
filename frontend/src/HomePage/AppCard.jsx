@@ -32,6 +32,8 @@ export default function AppCard({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const cardRef = useRef();
+  const [popoverVisible, setPopoverVisible] = useState(true);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
   const tooltipRef = useRef(null);
 
@@ -60,16 +62,29 @@ export default function AppCard({
   }, [isHovered, isMenuOpen]);
 
   useEffect(() => {
-    const checkOverflow = () => {
-      if (tooltipRef.current) {
-        setIsNameOverflowing(tooltipRef.current.scrollWidth > tooltipRef.current.clientWidth);
-      }
+    const callBackFunction = (entries) => {
+      const [entry] = entries;
+      setPopoverVisible(isMenuOpen && entry.isIntersecting);
     };
 
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, []);
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1.0,
+    };
+
+    const currentCardRef = cardRef.current;
+    const observer = new IntersectionObserver(callBackFunction, options);
+    if (currentCardRef) {
+      observer.observe(currentCardRef);
+    }
+
+    return () => {
+      if (currentCardRef) {
+        observer.unobserve(currentCardRef);
+      }
+    };
+  }, [isMenuOpen]);
 
   const updated_at = app?.editing_version?.updated_at || app?.updated_at;
   const updated = moment(updated_at).fromNow(true);
@@ -170,7 +185,7 @@ export default function AppCard({
   }
 
   return (
-    <div className="card homepage-app-card">
+    <div className="card homepage-app-card" ref={cardRef}>
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -191,6 +206,9 @@ export default function AppCard({
                   canUpdateApp={canUpdateApp(app)}
                   deleteApp={() => deleteApp(app)}
                   exportApp={() => exportApp(app)}
+                  isMenuOpen={setMenuOpen}
+                  popoverVisible={popoverVisible}
+                  setMenuOpen={setMenuOpen}
                   darkMode={darkMode}
                   currentFolder={currentFolder}
                   appType={appType}
