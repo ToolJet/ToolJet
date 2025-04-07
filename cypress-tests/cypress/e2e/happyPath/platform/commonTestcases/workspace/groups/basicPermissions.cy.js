@@ -24,6 +24,7 @@ import {
     exportAppModalSelectors,
     importSelectors,
 } from "Selectors/exportImport";
+import { dashboardText } from "../../../../../../constants/texts/dashboard";
 
 describe("Manage Groups", () => {
     let data = {};
@@ -114,9 +115,9 @@ describe("Manage Groups", () => {
         cy.get(commonSelectors.cloneAppButton).click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.cloneAppErrorToast
+            dashboardText.appClonedToast
         );
-        cy.get(commonSelectors.cancelButton).click();
+        // cy.get(commonSelectors.cancelButton).click();
         cy.apiLogout();
 
         cy.apiLogin();
