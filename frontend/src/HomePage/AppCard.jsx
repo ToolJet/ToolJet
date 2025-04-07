@@ -10,7 +10,6 @@ import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName, decodeEntities } from '@/_helpers/utils';
 const { defaultIcon } = configs;
@@ -56,6 +55,18 @@ export default function AppCard({
     const validate = validateName(slug, 'slug', true, false, false, false);
     return validate.status;
   };
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (tooltipRef.current) {
+        setIsNameOverflowing(tooltipRef.current.scrollWidth > tooltipRef.current.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, []);
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
