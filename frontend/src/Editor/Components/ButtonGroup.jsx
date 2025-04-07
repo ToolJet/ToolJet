@@ -25,6 +25,7 @@ export const ButtonGroup = function Button({
     selectedBackgroundColor,
     selectedTextColor,
     boxShadow,
+    alignment,
   } = styles;
 
   const computedStyles = {
@@ -115,38 +116,53 @@ export const ButtonGroup = function Button({
       fireEvent('onClick');
     }
   };
+
+  const mapAlignment = (alignment) => {
+    switch (alignment) {
+      case 'left':
+        return 'flex-start';
+      case 'right':
+        return 'flex-end';
+      case 'center':
+        return 'center';
+      default:
+        return 'flex-start'; // Default to left alignment if the value is unknown
+    }
+  };
   return (
-    <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
-      {label && (
-        <p
-          style={{ display: computedStyles.display }}
-          className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
-        >
-          {label}
-        </p>
-      )}
+    <div className="widget-buttongroup" style={{ height, alignItems: mapAlignment(alignment) }} data-cy={dataCy}>
       <div>
-        {data?.map((item, index) => (
-          <button
-            style={{
-              ...computedStyles,
-              backgroundColor: defaultActive?.includes(values[index]) ? selectedBackgroundColor : backgroundColor,
-              color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
-              transition: 'all .1s ease',
-              boxShadow,
-              ...(disabledState && disabledStyles),
-            }}
-            key={index}
-            disabled={disabledState}
-            className={'group-button overflow-hidden'}
-            onClick={(event) => {
-              event.stopPropagation();
-              buttonClick(index);
-            }}
+        {label && (
+          <p
+            style={{ display: computedStyles.display }}
+            className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
           >
-            {item}
-          </button>
-        ))}
+            {label}
+          </p>
+        )}
+        <div>
+          {data?.map((item, index) => (
+            <button
+              style={{
+                ...computedStyles,
+                backgroundColor: defaultActive?.includes(values[index]) ? selectedBackgroundColor : backgroundColor,
+                color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
+                transition: 'all .1s ease',
+                boxShadow,
+                ...(disabledState && disabledStyles),
+              }}
+              key={index}
+              disabled={disabledState}
+              className={'group-button overflow-hidden'}
+              onClick={(event) => {
+                event.stopPropagation();
+                buttonClick(index);
+              }}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

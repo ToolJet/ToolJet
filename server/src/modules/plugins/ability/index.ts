@@ -15,10 +15,20 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
-    const { superAdmin, isAdmin } = UserAllPermissions;
-    if (superAdmin || isAdmin) {
-      // Admin or super admin and do all operations
-      can([FEATURE_KEY.INSTALL, FEATURE_KEY.UPDATE, FEATURE_KEY.DELETE], Plugin);
+    const { superAdmin, isAdmin, isBuilder } = UserAllPermissions;
+    if (superAdmin || isAdmin || isBuilder) {
+      // Admin, super admin and Builder can do all operations
+      can(
+        [
+          FEATURE_KEY.INSTALL,
+          FEATURE_KEY.UPDATE,
+          FEATURE_KEY.DELETE,
+          FEATURE_KEY.INSTALL_DEPENDENT_PLUGINS,
+          FEATURE_KEY.UNINSTALL_PLUGINS,
+          FEATURE_KEY.DEPENDENT_PLUGINS,
+        ],
+        Plugin
+      );
     }
     // These two operations are available to all
     can([FEATURE_KEY.GET_ONE, FEATURE_KEY.RELOAD, FEATURE_KEY.GET], Plugin);
