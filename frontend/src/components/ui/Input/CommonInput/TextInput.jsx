@@ -17,7 +17,11 @@ const TextInput = ({
   const inputStyle = `tw-border-border-default placeholder:tw-text-text-placeholder tw-font-normal disabled:tw-bg-[#CCD1D5]/30 ${
     leadingIcon ? (size === 'small' ? 'tw-pl-[32px]' : 'tw-pl-[34px]') : 'tw-pl-[12px]'
   } ${trailingAction ? (size === 'small' ? 'tw-pr-[40px]' : 'tw-pr-[44px]') : 'tw-pr-[12px]'} ${
-    response === true ? '!tw-border-border-success-strong' : response === false ? '!tw-border-border-danger-strong' : ''
+    response === true
+      ? '!tw-border-border-success-strong focus-visible:!tw-ring-0 focus-visible:!tw-ring-offset-0 focus-visible:!tw-border-border-success-strong'
+      : response === false
+      ? '!tw-border-border-danger-strong focus-visible:!tw-ring-0 focus-visible:!tw-ring-offset-0 focus-visible:!tw-border-border-danger-strong'
+      : ''
   }`;
 
   return (
