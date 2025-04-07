@@ -1,24 +1,16 @@
 name: Deploy to Netlify
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - automation/netlifydocs
+    - develop
     paths:
-      - docs/**
-  workflow_dispatch:
-  pull_request:
-    types: [labeled]
-    branches:
-      - automation/netlifydocs
+    - docs/**
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Only runs if 'net-doc' label is added
-    if: |
-      github.event.action == 'labeled' &&
-      github.event.label.name == 'net-doc'
 
     steps:
       - name: Checkout code
