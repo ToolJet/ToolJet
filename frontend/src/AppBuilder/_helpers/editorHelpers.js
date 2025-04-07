@@ -4,9 +4,9 @@ import { Text } from '@/Editor/Components/Text';
 // import { Table } from '@/Editor/Components/Table/Table';
 import { Table } from '@/AppBuilder/Widgets/Table/Table';
 
-import { TextInput } from '@/Editor/Components/TextInput';
-import { NumberInput } from '@/Editor/Components/NumberInput';
-import { TextArea } from '@/Editor/Components/TextArea';
+import { TextInput } from '@/AppBuilder/Widgets/TextInput';
+import { TextArea } from '@/AppBuilder/Widgets/TextArea';
+import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
 import { DropDown } from '@/Editor/Components/DropDown';
 import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
@@ -29,7 +29,10 @@ import { RadioButtonV2 } from '@/Editor/Components/RadioButtonV2/RadioButtonV2';
 import { StarRating } from '@/Editor/Components/StarRating';
 import { Divider } from '@/Editor/Components/Divider';
 import { FilePicker } from '@/Editor/Components/FilePicker';
-import { PasswordInput } from '@/Editor/Components/PasswordInput';
+import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
+import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
+import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
+import { CurrencyInput } from '@/AppBuilder/Widgets/PhoneCurrency/CurrencyInput';
 // import { Calendar } from '@/Editor/Components/Calendar';
 // import { Listview } from '@/Editor/Components/Listview';
 import { IFrame } from '@/Editor/Components/IFrame';
@@ -118,6 +121,9 @@ export const AllComponents = {
   Divider,
   FilePicker,
   PasswordInput,
+  EmailInput,
+  PhoneInput,
+  CurrencyInput,
   Calendar,
   IFrame,
   CodeEditor,

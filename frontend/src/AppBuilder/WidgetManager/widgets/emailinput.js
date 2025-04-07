@@ -1,11 +1,11 @@
-export const textareaConfig = {
-  name: 'Textarea',
-  displayName: 'Text Area',
-  description: 'Multi-line text input',
-  component: 'TextArea',
+export const emailinputConfig = {
+  name: 'EmailInput',
+  displayName: 'Email Input',
+  description: 'Email input field',
+  component: 'EmailInput',
   defaultSize: {
     width: 10,
-    height: 100,
+    height: 40,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -22,7 +22,7 @@ export const textareaConfig = {
       displayName: 'Placeholder',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'Enter your input',
+        defaultValue: 'Enter email',
       },
     },
     value: {
@@ -164,14 +164,14 @@ export const textareaConfig = {
     icon: {
       type: 'icon',
       displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
+      validation: { schema: { type: 'string' }, defaultValue: 'IconMailFilled' },
       accordian: 'field',
-      visibility: false,
+      visibility: true,
     },
     iconColor: {
       type: 'color',
       displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
+      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
       visibility: false,
       showLabel: false,
@@ -232,16 +232,6 @@ export const textareaConfig = {
       displayName: 'Set blur',
     },
     {
-      handle: 'disable',
-      displayName: 'Disable(deprecated)',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility(deprecated)',
-      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
@@ -273,7 +263,7 @@ export const textareaConfig = {
     properties: {
       value: { value: '' },
       label: { value: 'Label' },
-      placeholder: { value: 'Enter your input' },
+      placeholder: { value: 'Enter email' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
@@ -287,7 +277,7 @@ export const textareaConfig = {
       errTextColor: { value: '#D72D39' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: '#fff' },
-      iconColor: { value: '#CFD3D859' },
+      iconColor: { value: '#CCD1D5' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
@@ -295,8 +285,8 @@ export const textareaConfig = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
-      icon: { value: 'IconHome2' },
-      iconVisibility: { value: false },
+      icon: { value: 'IconMailFilled' },
+      iconVisibility: { value: true },
     },
   },
 };
