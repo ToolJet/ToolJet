@@ -141,7 +141,7 @@ describe("App Import Functionality", () => {
     cy.skipEditorPopover();
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.get(commonWidgetSelector.widgetConfigHandle("button1")).should(
+    cy.get(commonWidgetSelector.draggableWidget("button1")).should(
       "be.visible"
     );
 
@@ -161,7 +161,7 @@ describe("App Import Functionality", () => {
     });
 
     cy.get(
-      commonWidgetSelector.widgetConfigHandle("textInput3")
+      commonWidgetSelector.draggableWidget("textInput3")
     ).verifyVisibleElement("have.value", "");
 
     // Setup database and data sources
@@ -204,7 +204,7 @@ describe("App Import Functionality", () => {
         "",
         Cypress.env("workspaceId"),
         appId,
-        commonWidgetSelector.widgetConfigHandle("text2")
+        commonWidgetSelector.draggableWidget("text2")
       );
     });
 
@@ -214,7 +214,7 @@ describe("App Import Functionality", () => {
       textInput2: "Leanne Graham",
     });
     cy.get(
-      commonWidgetSelector.widgetConfigHandle("textInput3")
+      commonWidgetSelector.draggableWidget("textInput3")
     ).verifyVisibleElement("have.value", "India");
 
     switchVersionAndVerify("v3", "v1");
@@ -406,14 +406,14 @@ describe("App Import Functionality", () => {
 });
 
 const verifyCommonData = (values) => {
-  cy.get(commonWidgetSelector.widgetConfigHandle("text2")).verifyVisibleElement(
+  cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
     "have.text",
     values.text2
   );
   cy.get(
-    commonWidgetSelector.widgetConfigHandle("textInput1")
+    commonWidgetSelector.draggableWidget("textInput1")
   ).verifyVisibleElement("have.value", values.textInput1);
   cy.get(
-    commonWidgetSelector.widgetConfigHandle("textInput2")
+    commonWidgetSelector.draggableWidget("textInput2")
   ).verifyVisibleElement("have.value", values.textInput2);
 };

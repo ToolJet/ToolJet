@@ -86,7 +86,7 @@ describe("Private and Public apps", {
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
     cy.wait(2000);
     cy.loginWithCredentials("dev@tooljet.io", "password");
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
     // Test public access
@@ -95,7 +95,7 @@ describe("Private and Public apps", {
       "appSlug",
       Cypress.env("workspaceId"),
       Cypress.env("appId"),
-      commonWidgetSelector.widgetConfigHandle("text1")
+      commonWidgetSelector.draggableWidget("text1")
     );
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).check();
@@ -106,7 +106,7 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
   });
@@ -125,14 +125,14 @@ describe("Private and Public apps", {
     cy.wait(2000);
     cy.loginWithCredentials(data.email, "password");
 
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible", { timeout: 20000 });
 
     // Test with private app valid session
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
     cy.get(commonSelectors.viewerPageLogo).click();
@@ -145,7 +145,7 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
 
@@ -154,7 +154,7 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
   });
@@ -180,7 +180,7 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
 
@@ -189,7 +189,7 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
   });
@@ -224,7 +224,7 @@ describe("Private and Public apps", {
     // Process invitation
     onboardUserFromAppLink(data.email, data.slug);
 
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
     cy.get('[data-cy="viewer-page-logo"]').click();
@@ -269,7 +269,7 @@ describe("Private and Public apps", {
     });
 
     onboardUserFromAppLink(data.email, data.slug, data.workspaceName, false);
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.get('.text-widget-section > div').should("be.visible");
 
   });

@@ -114,12 +114,12 @@ describe("App Version", () => {
     cy.wait(3000);
 
     // cy.reload();
-    // cy.get(commonWidgetSelector.widgetConfigHandle("text1")).should("be.visible", { timeout: 10000 });
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", { timeout: 10000 });
 
     // Preview and release verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     cy.url().should("include", "/home?version=v2");
-    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("appId"), commonWidgetSelector.widgetConfigHandle("text1"));
+    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("appId"), commonWidgetSelector.draggableWidget("text1"));
     releasedVersionAndVerify("v2");
   });
 
@@ -145,7 +145,7 @@ describe("App Version", () => {
     // Version v2 creation and verification
     navigateToCreateNewVersionModal("v1");
     createNewVersion(["v2"], "v1");
-    cy.get(commonWidgetSelector.widgetConfigHandle("text1"))
+    cy.get(commonWidgetSelector.draggableWidget("text1"))
       .verifyVisibleElement("have.text", "Leanne Graham");
     cy.get(`[data-cy="list-query-${data.query1}"]`).should("be.visible");
 
@@ -194,10 +194,10 @@ describe("App Version", () => {
       createNewVersion([check.create.version], check.create.from);
 
       if (check.verify.component.value) {
-        cy.get(commonWidgetSelector.widgetConfigHandle(check.verify.component.selector))
+        cy.get(commonWidgetSelector.draggableWidget(check.verify.component.selector))
           .verifyVisibleElement("have.value", check.verify.component.value);
       } else {
-        cy.get(commonWidgetSelector.widgetConfigHandle(check.verify.component.selector))
+        cy.get(commonWidgetSelector.draggableWidget(check.verify.component.selector))
           .verifyVisibleElement("have.text", check.verify.component.text);
       }
       cy.get(`[data-cy="list-query-${check.verify.query}"]`).should("be.visible");
@@ -213,20 +213,20 @@ describe("App Version", () => {
     cy.contains(`[id*="react-select-"]`, "v4").click();
     cy.get(appVersionSelectors.currentVersionField("v4"))
       .should("not.have.class", "color-light-green");
-    cy.get(commonWidgetSelector.widgetConfigHandle("text1"))
+    cy.get(commonWidgetSelector.draggableWidget("text1"))
       .verifyVisibleElement("have.text", "Leanne Graham");
     cy.get(`[data-cy="list-query-${data.query1}"]`).should("be.visible");
 
     // Preview and version switching verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     cy.url().should("include", "/home?version=v4");
-    cy.get(commonWidgetSelector.widgetConfigHandle("text1"))
+    cy.get(commonWidgetSelector.draggableWidget("text1"))
       .verifyVisibleElement("have.text", "Leanne Graham");
 
     cy.get('[data-cy="preview-settings"]').click();
     switchVersionAndVerify("v4", "v5");
 
-    cy.get(commonWidgetSelector.widgetConfigHandle("textInput"))
+    cy.get(commonWidgetSelector.draggableWidget("textInput"))
       .verifyVisibleElement("have.value", "Ervin Howell");
     //url validation should be added after bug fix
 
