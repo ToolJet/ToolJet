@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { decamelizeKeys } from 'humps';
 import { ConfigService } from '@nestjs/config';
 import { LoginConfigsUtilService } from './util.service';
 import { ILoginConfigsService } from './interfaces/IService';
@@ -8,7 +9,6 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { cleanObject } from '@helpers/utils.helper';
 import { OrganizationConfigsUpdateDto } from './dto';
-import { decamelizeKeys } from 'humps';
 
 @Injectable()
 export class LoginConfigsService implements ILoginConfigsService {
@@ -40,32 +40,9 @@ export class LoginConfigsService implements ILoginConfigsService {
     const result = await this.loginConfigsUtilService.fetchOrganizationDetails(organizationId);
     const instanceConfigs = await this.loginConfigsUtilService.constructSSOConfigs();
 
-    // Create deep copies to avoid modifying the originals
-    const resultCopy = JSON.parse(JSON.stringify(result));
-    const instanceConfigsCopy = JSON.parse(JSON.stringify(instanceConfigs));
+    const decamelizedOrganizationDetails = decamelizeKeys(result) as any;
 
-    // Store original groupMapping objects
-    const groupMappings = {};
-    if (result.ssoConfigs) {
-      Object.keys(result.ssoConfigs).forEach((key) => {
-        if (result.ssoConfigs[key]?.configs?.groupMapping) {
-          groupMappings[key] = result.ssoConfigs[key].configs.groupMapping;
-        }
-      });
-    }
-
-    // Decamelize the objects
-    const decamelizedOrganizationDetails = decamelizeKeys(resultCopy) as any;
-    const decamelizedInstanceConfigs = decamelizeKeys(instanceConfigsCopy);
-
-    // Restore groupMapping objects
-    if (decamelizedOrganizationDetails.sso_configs) {
-      Object.keys(decamelizedOrganizationDetails.sso_configs).forEach((key) => {
-        if (groupMappings[key] && decamelizedOrganizationDetails.sso_configs[key]?.configs) {
-          decamelizedOrganizationDetails.sso_configs[key].configs.group_mapping = groupMappings[key];
-        }
-      });
-    }
+    const decamelizedInstanceConfigs = decamelizeKeys(instanceConfigs);
 
     return {
       organization_details: decamelizedOrganizationDetails,
