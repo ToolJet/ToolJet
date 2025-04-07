@@ -74,9 +74,20 @@ This operation deletes a record in the table. You can delete a single record or 
 - **Limit**: Limit the number of records to be deleted by entering a number.
 
 
-### Bulk Upsert with Primary Key
+### Bulk Update with Primary Key
 
 This operation can be used to update multiple rows using the primary key. Primary key can be a singular primary key or a composite primary key.
+
+#### Required Parameters
+- **Primary key**: The primary key of the table is auto selected and cannot be edited.
+- **Rows to upsert**: Array of objects of rows to be updated. Each object in the array need to specify primary key column(s) with their values.
+
+<img className="screenshot-full" src="/img/tjdb/query/bulk-update.png" alt="ToolJet Database editor" />
+
+
+### Bulk Upsert with Primary Key
+
+This operation can be used to upsert multiple rows using the primary key. Primary key can be a singular primary key or a composite primary key. Using the upsert operation you can update an existing row or insert a new row if it doesn't exisit.
 
 #### Required Parameters
 - **Primary key**: The primary key of the table is auto selected and cannot be edited.
