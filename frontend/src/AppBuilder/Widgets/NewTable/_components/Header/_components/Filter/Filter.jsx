@@ -41,6 +41,15 @@ export const Filter = memo(({ table, darkMode, setFilters, setShowFilter }) => {
     [columns]
   );
 
+  const isFilterComplete = (filter) => {
+    if (!filter.id) return false;
+    if (!filter.value?.condition) return false;
+    // For isEmpty/isNotEmpty operations, we don't need a value
+    if (['isEmpty', 'isNotEmpty'].includes(filter.value.condition)) return true;
+    // For other operations, we need a value
+    return filter.value?.value !== undefined && filter.value?.value !== '';
+  };
+
   const filterOperationChanged = (index, value) => {
     const newFilters = [...localFilters];
     newFilters[index].value = {
@@ -52,13 +61,12 @@ export const Filter = memo(({ table, darkMode, setFilters, setShowFilter }) => {
       newFilters[index].value.value = '';
     }
     setLocalFilters(newFilters);
-    applyFilters(newFilters.filter((filter) => filter.id !== ''));
+    debouncedFilterChanged(newFilters);
   };
 
   const debouncedFilterChanged = useCallback(
     (newFilters) => {
-      const validFilters = newFilters.filter((filter) => filter.id !== '');
-
+      const validFilters = newFilters.filter(isFilterComplete);
       applyFilters(validFilters);
     },
     [applyFilters]
