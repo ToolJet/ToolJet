@@ -381,7 +381,6 @@ const sidebars = {
             'data-sources/typesense',
             'data-sources/woocommerce',
             'data-sources/zendesk',
-            'data-sources/azurerepos',
           ],
         },
         'tutorial/transformations',
@@ -418,7 +417,8 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-hugging_face',
                 'marketplace/plugins/marketplace-plugin-cohere',
                 'marketplace/plugins/marketplace-plugin-weaviate',
-                'marketplace/plugins/marketplace-plugin-qdrant'
+                'marketplace/plugins/marketplace-plugin-qdrant',
+                'marketplace/plugins/marketplace-plugin-azurerepos'
               ],
             },
           ],
