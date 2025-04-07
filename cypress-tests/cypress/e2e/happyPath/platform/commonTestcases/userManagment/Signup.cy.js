@@ -76,13 +76,17 @@ describe("User signup", () => {
       onboardingSelectors.loginPasswordInput,
       commonText.password
     );
+    cy.intercept("POST", "/api/onboarding/signup").as("signup");
     cy.get(commonSelectors.signUpButton).click();
 
+    cy.wait("@signup")
+    cy.get('[data-cy="check-your-mail-header"]').should("be.visible");
     cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `select invitation_token from users where email='${data.email}';`,
     }).then((resp) => {
       invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
+      cy.visit(invitationLink);
     });
   });
 });

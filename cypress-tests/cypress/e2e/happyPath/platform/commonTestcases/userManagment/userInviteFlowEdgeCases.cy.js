@@ -94,10 +94,13 @@ describe("inviteflow edge cases", () => {
         cy.get(commonSelectors.signUpButton).click();
         cy.wait(1000);
         signUpLink(data.email);
-        verifyOnboardingQuestions(data.workspaceName);
+        if (envVar === "Enterprise") {
+            verifyOnboardingQuestions(data.workspaceName);
+            cy.wait(1000);
+            cy.get(commonSelectors.skipbutton).click();
+            cy.backToApps();
+        }
         cy.wait(1000);
-        cy.get(commonSelectors.skipbutton).click();
-        cy.backToApps();
         visitWorkspaceInvitation(data.email, "My workspace");
         cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
         cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);

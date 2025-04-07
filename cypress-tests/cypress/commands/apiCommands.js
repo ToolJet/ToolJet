@@ -199,17 +199,20 @@ Cypress.Commands.add(
     const requestBody =
       envVar === "Enterprise"
         ? {
-          firstName: userName,
           email: userEmail,
+          firstName: userName,
           groups: [],
+          lastName: "",
           role: userRole,
           userMetadata: metaData,
         }
         : {
-          first_name: userName,
           email: userEmail,
+          firstName: userName,
           groups: [],
+          lastName: "",
           role: userRole,
+          userMetadata: metaData,
         };
 
     cy.getCookie("tj_auth_token").then((cookie) => {

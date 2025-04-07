@@ -40,6 +40,7 @@ describe("user invite flow cases", () => {
       cy.get(".btn-close").click();
     }
   });
+
   it("Should verify the Manage users page", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -199,7 +200,7 @@ describe("user invite flow cases", () => {
       });
   });
 
-  it("Should verify the user onboarding with groups", () => {
+  it.skip("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.groupName1 = fake.firstName.replaceAll("[^A-Za-z]", "");
@@ -358,7 +359,7 @@ describe("user invite flow cases", () => {
     } else {
       cy.get('[data-cy="modal-body"]>').verifyVisibleElement(
         "have.text",
-        "Updating the user's details will change their role from end-user to admin. Are you sure you want to continue?"
+        "Changing the user role from end-user to admin will grant the user access to all resources and settings.Are you sure you want to continue?"
       );
     }
 

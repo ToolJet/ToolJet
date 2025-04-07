@@ -5,7 +5,7 @@ import { navigateToManageGroups } from "Support/utils/common";
 import { cyParamName } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { onboardingSelectors } from "Selectors/onboarding";
-import { fetchAndVisitInviteLink } from "Support/utils/onboarding";
+import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { navigateToManageUsers, logout } from "Support/utils/common";
@@ -335,7 +335,7 @@ export const manageGroupsElements = () => {
   );
 
   cy.verifyElement(groupsSelector.confimButton, groupsText.updateButtonText);
-  cy.get(groupsSelector.confimButton).should("be.enabled");
+  cy.get(groupsSelector.confimButton).should("be.disabled");
   cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
   cy.get(groupsSelector.cancelButton).click();
 
@@ -542,7 +542,7 @@ export const manageGroupsElements = () => {
   );
 
   cy.verifyElement(groupsSelector.confimButton, groupsText.updateButtonText);
-  cy.get(groupsSelector.confimButton).should("be.enabled");
+  cy.get(groupsSelector.confimButton).should("be.disabled");
   cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
   cy.get(groupsSelector.cancelButton).click();
   //Add Modal
@@ -864,7 +864,7 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
 export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fillUserInviteForm(firstName, email);
 
-  cy.get(".css-1dyz3mf").type(`${role}{enter}`);
+  cy.get(".css-1mlj61j").type(`${role}{enter}`);
   cy.get(usersSelector.buttonInviteUsers).click();
   cy.wait(500);
 
