@@ -209,7 +209,7 @@ module.exports = {
             from: '/docs/tutorial/manage-users-groups',
           },
           {
-            to: '/docs/security/constants/variables/',
+            to: '/docs/security/constants/variables',
             from: '/docs/org-management/workspaces/workspace-variables-migration',
           },
           {
@@ -217,7 +217,7 @@ module.exports = {
             from: '/docs/org-management/smtp-configuration/',
           },
           {
-            to: '/docs/user-management/authentication/self-hosted/instance-login/',
+            to: '/docs/user-management/authentication/self-hosted/instance-login',
             from: '/docs/enterprise/superadmin',
           },
           {
