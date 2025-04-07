@@ -109,7 +109,8 @@ export const useInput = ({
     if (inputType !== 'phone') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
       const code = getCountryCallingCodeSafe(country);
-      setInputValue(`+${code}${value}`);
+      const formattedValue = typeof value === 'string' ? value.replace('+', '') : value;
+      setInputValue(`+${code}${formattedValue}`);
       setCountry(countryCode);
       fireEvent('onChange');
     });

@@ -134,7 +134,7 @@ export const PhoneInput = (props) => {
 
   const computedStyles = {
     height: '100%',
-    borderRadius: `${borderRadius}px`,
+    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -165,6 +165,7 @@ export const PhoneInput = (props) => {
     borderTopLeftRadius: '0px',
     borderLeft: 'none',
   };
+  const countryCode = getCountryCallingCodeSafe(country);
 
   return (
     <>
@@ -183,6 +184,7 @@ export const PhoneInput = (props) => {
           whiteSpace: 'nowrap',
           width: '100%',
           height: '100%',
+          minHeight: '17.3333px',
         }}
       >
         <Label
@@ -217,7 +219,8 @@ export const PhoneInput = (props) => {
           />
           <Input
             ref={inputRef}
-            country={country}
+            {...(countryCode && { country: country })}
+            // country={country}
             international={false}
             value={value}
             onChange={onInputValueChange}

@@ -39,8 +39,6 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   const customStyles = {
     container: (provided) => ({
       ...provided,
-      minWidth: !isCountryChangeEnabled || disabledState ? '77px' : isCurrencyInput ? '87px' : '93px',
-      width: !isCountryChangeEnabled || disabledState ? '77px' : isCurrencyInput ? '87px' : '93px',
       height: '100%',
     }),
     valueContainer: (provided) => ({
@@ -49,7 +47,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
     }),
     control: (provided) => ({
       ...provided,
-      minHeight: '0px',
+      minHeight: '17.3333px',
       height: '100%',
       borderTopLeftRadius: `${borderRadius}px`,
       borderBottomLeftRadius: `${borderRadius}px`,
@@ -58,7 +56,13 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
       borderColor: `${
         !isValid && showValidationError ? 'var(--status-error-strong)' : computedStyles?.borderColor
       } !important`,
-      backgroundColor: `${computedStyles?.backgroundColor} !important`,
+      backgroundColor: menuIsOpen
+        ? `var( --interactive-overlay-fill-pressed)`
+        : `${computedStyles?.backgroundColor} !important`,
+      overflow: 'hidden',
+      '&:hover': {
+        backgroundColor: 'var(--interactive-overlays-fill-hover) !important',
+      },
     }),
     menu: (provided) => ({
       ...provided,
@@ -115,20 +119,9 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         components={{
           MenuList: CustomMenuList,
           Option: (props) => <CustomOption {...props} />,
-          ValueContainer: (props) => <CustomValueContainer {...props} />, // Add this line
+          ValueContainer: (props) => <CustomValueContainer menuIsOpen={menuIsOpen} {...props} />, // Add this line
           IndicatorSeparator: () => null,
-          DropdownIndicator:
-            !isCountryChangeEnabled || disabledState
-              ? () => null
-              : () => (
-                  <div style={{ position: 'relative', display: 'flex', left: '-2px' }}>
-                    {menuIsOpen ? (
-                      <SolidIcon name="TriangleDownCenter" width="16" height="16" />
-                    ) : (
-                      <SolidIcon name="TriangleUpCenter" width="16" height="16" />
-                    )}
-                  </div>
-                ),
+          DropdownIndicator: !isCountryChangeEnabled || disabledState ? () => null : () => null,
         }}
         darkMode={darkMode}
         isDisabled={disabledState}

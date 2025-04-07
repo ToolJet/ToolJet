@@ -78,7 +78,7 @@ export const CurrencyInput = (props) => {
   const isInitialRender = useRef(true);
   const computedStyles = {
     height: '100%',
-    borderRadius: `${borderRadius}px`,
+    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -175,6 +175,7 @@ export const CurrencyInput = (props) => {
           whiteSpace: 'nowrap',
           width: '100%',
           height: '100%',
+          minHeight: '17.3333px',
         }}
       >
         <Label

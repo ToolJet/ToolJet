@@ -27,7 +27,11 @@ export const CustomOption = (props) => {
   return (
     <components.Option {...props}>
       <div style={optionStyle}>
-        <div>{FlagIcon ? <FlagIcon style={{ width: '22px', height: '16px' }} /> : null}</div>
+        <div>
+          {FlagIcon ? (
+            <FlagIcon style={{ height: '18px', border: '2px solid var(--cc-primary-white, #FFFFFF)' }} />
+          ) : null}
+        </div>
         {label}
         <div style={{ marginLeft: 'auto', display: isSelected ? 'block' : 'none' }}>
           <TickV3 width="13.33px" height="11.27px" />
