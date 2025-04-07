@@ -200,10 +200,10 @@ export default function AppCard({
                   <button
                     type="button"
                     className="tj-primary-btn tj-text-xsm edit-button"
-                    style={{ color: darkMode ? '#11181C' : '#FDFDFE' }}
+                    style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
                     data-cy="edit-button"
                   >
-                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
+                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
                 </Link>
