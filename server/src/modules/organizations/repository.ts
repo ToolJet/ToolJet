@@ -204,4 +204,27 @@ export class OrganizationRepository extends Repository<Organization> {
       });
     });
   }
+
+  async getDefaultWorkspaceOfInstance(): Promise<Organization>{
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      try {
+        return await manager.findOneOrFail(Organization, {
+          where: { isDefault: true },
+        });
+      } catch (error) {
+        console.error('No default workspace in this instance');
+        return null;
+      }      
+    });
+  }
+
+  async changeDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // First, unset any existing default workspace
+      await manager.update(Organization, { isDefault: true }, { isDefault: false });
+      
+      // Then set the new default workspace
+      await manager.update(Organization, { id: organizationId }, { isDefault: true });
+    }, manager || this.manager);
+  }
 }

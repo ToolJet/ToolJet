@@ -117,12 +117,8 @@ export class OnboardingService implements IOnboardingService {
       const { firstName, lastName } = names;
       const userParams = { email, password, firstName, lastName };
 
-            // Find the default workspace
-            const defaultWorkspace = await this.organizationRepository.findOne({
-              where: {
-                isDefault: true,
-              }
-            });
+      // Find the default workspace
+      const defaultWorkspace = await this.organizationRepository.  getDefaultWorkspaceOfInstance();
 
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
