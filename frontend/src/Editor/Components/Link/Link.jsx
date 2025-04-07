@@ -19,8 +19,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
   const computedStyles = {
     display: 'flex',
     alignItems: verticalAlignment === 'top' ? 'flex-start' : verticalAlignment === 'center' ? 'center' : 'flex-end',
-    justifyContent:
-      horizontalAlignment === 'left' ? 'flex-start' : horizontalAlignment === 'center' ? 'center' : 'flex-end',
+    textAlign: horizontalAlignment === 'left' ? 'left' : horizontalAlignment === 'center' ? 'center' : 'right',
     height: '100%',
     width: '100%',
     boxShadow,
@@ -113,10 +112,19 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
         onMouseOver={() => {
           fireEvent('onHover');
         }}
-        style={{ color: textColor, fontSize: textSize, cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+        style={{ width: '100%' }}
         ref={clickRef}
       >
-        <span className="d-flex justify-content-center">
+        <span
+          className="d-flex"
+          style={{
+            fontSize: textSize,
+            cursor: 'auto',
+            justifyContent:
+              horizontalAlignment === 'left' ? 'flex-start' : horizontalAlignment === 'center' ? 'center' : 'flex-end',
+            color: textColor,
+          }}
+        >
           {iconVisibility && (
             <IconElement
               style={{
@@ -130,7 +138,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
               stroke={1.5}
             />
           )}
-          {linkTextState}
+          <span className="link-text">{linkTextState}</span>
         </span>
       </a>
     </div>
