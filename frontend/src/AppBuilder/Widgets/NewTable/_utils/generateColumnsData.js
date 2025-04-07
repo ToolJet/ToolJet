@@ -19,6 +19,7 @@ import {
   CustomDropdownColumn,
   TextColumn,
   JsonColumn,
+  MarkdownColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 
@@ -338,6 +339,23 @@ export default function generateColumnsData({
                   id={id}
                 />
               );
+
+            case 'markdown': {
+              return (
+                <MarkdownColumn
+                  isEditable={isEditable}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  cellValue={cellValue}
+                  column={column}
+                  containerWidth={columnSize}
+                  cell={cell}
+                  id={id}
+                />
+              );
+            }
 
             default:
               return cellValue || '';
