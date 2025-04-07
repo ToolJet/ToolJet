@@ -1,8 +1,8 @@
-name: Tooljet release docker images build
+name: old docker-release action
 
 on:
-  release:
-    types: [published]
+  # release:
+  #   types: [published]
 
   workflow_dispatch:
     inputs:
