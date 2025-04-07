@@ -123,6 +123,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
             justifyContent:
               horizontalAlignment === 'left' ? 'flex-start' : horizontalAlignment === 'center' ? 'center' : 'flex-end',
             color: textColor,
+            paddingBottom: verticalAlignment === 'bottom' ? '1px' : '0px',
           }}
         >
           {iconVisibility && (
