@@ -444,7 +444,7 @@ export const createEventsSlice = (set, get) => ({
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
-          customLog: `${event.description}`,
+          customLog: `${event.key}`,
         };
 
         return headerMap[source] || '';
@@ -457,7 +457,7 @@ export const createEventsSlice = (set, get) => ({
           page: 'Event Errors with page',
           component: 'Component Event',
           query: 'Event Errors with query',
-          customLog: 'Custom Log',
+          customLog: 'Queries',
         };
 
         return errorTargetMap[source];
@@ -470,8 +470,9 @@ export const createEventsSlice = (set, get) => ({
         error: {
           message: error.message,
           description: JSON.stringify(error.message, null, 2),
-          ...(event.component && componentId && { componentId: componentId }),
+          ...(event.component === 'component' && componentId && { componentId: componentId }),
         },
+        description: event?.description,
         errorTarget: constructErrorTarget(),
         options: options,
         strace: 'app_level',
@@ -1128,30 +1129,51 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const logInfo = (log) => {
+      const logInfo = (log, isFromTransformation) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log-info', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log-info',
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
+          description: log,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {});
       };
 
-      const logError = (log) => {
+      const logError = (log, isFromTransformation = false) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log-error', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log-error',
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
+          description: log,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {});
       };
 
-      const log = (log) => {
+      const log = (log, isFromTransformation = false) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log',
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
+          description: log,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {});
       };
 
