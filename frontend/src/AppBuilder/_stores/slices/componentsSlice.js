@@ -518,7 +518,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
 
-    if (resolvedMandatory == true && !widgetValue) {
+    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,

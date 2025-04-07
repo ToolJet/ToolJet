@@ -1,21 +1,22 @@
-import React from 'react';
-import _ from 'lodash';
-import QueryEditor from './QueryEditor';
-import SourceEditor from './SourceEditor';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import React from "react";
+import _ from "lodash";
+import QueryEditor from "./QueryEditor";
+import SourceEditor from "./SourceEditor";
+import { deepClone } from "@/_helpers/utilities/utils.helpers";
 
 export default ({
   getter,
-  options = [['', '']],
+  options = [["", ""]],
   optionchanged,
   isRenderedAsQueryEditor,
   workspaceConstants,
   isDisabled,
   buttonText,
   width,
+  dataCy,
 }) => {
   function addNewKeyValuePair(options) {
-    const newPairs = [...options, ['', '']];
+    const newPairs = [...options, ["", ""]];
     optionchanged(getter, newPairs);
   }
 
@@ -29,7 +30,9 @@ export default ({
     if (!isRenderedAsQueryEditor) {
       const newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
-      options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
+      options.length - 1 === index
+        ? addNewKeyValuePair(newOptions)
+        : optionchanged(getter, newOptions);
     } else {
       let newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
@@ -44,11 +47,16 @@ export default ({
     keyValuePairValueChanged,
     isDisabled,
     buttonText,
+    dataCy,
   };
 
   return isRenderedAsQueryEditor ? (
     <QueryEditor {...commonProps} />
   ) : (
-    <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} width={width} />
+    <SourceEditor
+      {...commonProps}
+      workspaceConstants={workspaceConstants}
+      width={width}
+    />
   );
 };

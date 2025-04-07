@@ -116,8 +116,10 @@ Cypress.Commands.add(
       });
 
     const splitIntoFlatArray = (value) => {
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
+      const regex =
+        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._+\-*]+|\s+)/g;
       let prefix = "";
+
       return (
         value.match(regex)?.reduce((acc, part) => {
           if (part === "{{" || part === "((") {
@@ -132,6 +134,14 @@ Cypress.Commands.add(
             acc.push(prefix + " ");
           } else if (part === ":") {
             acc.push(prefix + ":");
+          } else if (part === '"') {
+            acc.push(prefix + '"');
+          } else if (
+            part.includes("-") ||
+            part.includes("+") ||
+            part.includes("*")
+          ) {
+            acc.push(prefix + part);
           } else {
             acc.push(prefix + part);
             prefix = "";
@@ -142,13 +152,11 @@ Cypress.Commands.add(
     };
 
     if (Array.isArray(value)) {
-      cy.wrap(subject)
-        .last()
-        .realType(value, {
-          parseSpecialCharSequences: false,
-          delay: 0,
-          force: true,
-        });
+      cy.wrap(subject).last().realType(value, {
+        parseSpecialCharSequences: false,
+        delay: 0,
+        force: true,
+      });
     } else {
       splitIntoFlatArray(value).forEach((i) => {
         cy.wrap(subject)
@@ -228,9 +236,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );
@@ -521,6 +529,82 @@ Cypress.Commands.overwrite(
     return originalFn(method, fullUrl, ...rest);
   }
 );
+
+Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
+  const MARKETPLACE_URL = `${Cypress.config("baseUrl")}/integrations/marketplace`;
+
+  cy.visit(MARKETPLACE_URL);
+  cy.wait(1000);
+
+  cy.get('[data-cy="-list-item"]').eq(0).click();
+  cy.wait(1000);
+
+  cy.get("body").then(($body) => {
+    if ($body.find(".plugins-card").length === 0) {
+      cy.log("No plugins found, proceeding to install...");
+      installPlugin(pluginName);
+    } else {
+      cy.get(".plugins-card").then(($cards) => {
+        const isInstalled = $cards.toArray().some((card) => {
+          return (
+            Cypress.$(card)
+              .find(".font-weight-medium.text-capitalize")
+              .text()
+              .trim() === pluginName
+          );
+        });
+
+        if (isInstalled) {
+          cy.log(`${pluginName} is already installed. Skipping installation.`);
+          cy.get(commonSelectors.globalDataSourceIcon).click();
+        } else {
+          installPlugin(pluginName);
+          cy.get(commonSelectors.globalDataSourceIcon).click();
+        }
+      });
+    }
+  });
+
+  function installPlugin(pluginName) {
+    cy.get('[data-cy="-list-item"]').eq(1).click();
+    cy.wait(1000);
+
+    cy.contains(".plugins-card", pluginName).within(() => {
+      cy.get(".marketplace-install").click();
+      cy.wait(1000);
+    });
+  }
+});
+
+Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
+  const MARKETPLACE_URL = `${Cypress.config("baseUrl")}/integrations/marketplace`;
+
+  cy.visit(MARKETPLACE_URL);
+  cy.wait(1000);
+
+  cy.get('[data-cy="-list-item"]').eq(0).click();
+  cy.wait(1000);
+
+  cy.get(".plugins-card").each(($card) => {
+    cy.wrap($card)
+      .find(".font-weight-medium.text-capitalize")
+      .invoke("text")
+      .then((text) => {
+        if (text.trim() === pluginName) {
+          cy.wrap($card).find(".link-primary").contains("Remove").click();
+          cy.wait(1000);
+
+          cy.get('[data-cy="delete-plugin-title"]').should("be.visible");
+          cy.get('[data-cy="yes-button"]').click();
+          cy.wait(2000);
+
+          cy.log(`${pluginName} has been successfully uninstalled.`);
+        } else {
+          cy.log(`${pluginName} is not installed. Skipping uninstallation.`);
+        }
+      });
+  });
+});
 
 Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
   const element =

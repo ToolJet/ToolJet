@@ -206,7 +206,7 @@ export class DataSourcesService implements IDataSourcesService {
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
     const { environment_id, dataSourceId } = testDataSourceDto;
-    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId, environment_id);
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId,user.defaultOrganizationId, environment_id);
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }

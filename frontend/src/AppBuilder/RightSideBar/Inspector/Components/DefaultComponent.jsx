@@ -28,6 +28,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RichTextEditor',
   'Image',
   'ModalV2',
+  'Link',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -41,6 +42,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Image: 'Data',
   Container: 'Data',
   ModalV2: 'Data',
+  Link: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -138,6 +140,7 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'Link',
     ],
     Layout: [],
   };

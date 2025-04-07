@@ -107,7 +107,7 @@ const WidgetIcon = (props) => {
       return <PhoneInput {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
-    case 'divider':
+    case 'horizontaldivider':
       return <Divider {...props} />;
     case 'divider-horizondal':
       return <DividerHorizondal {...props} />;

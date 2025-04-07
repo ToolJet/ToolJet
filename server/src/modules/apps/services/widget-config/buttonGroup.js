@@ -123,10 +123,26 @@ export const buttonGroupConfig = {
         defaultValue: '#007bff',
       },
     },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
   },
   exposedVariables: {
     selected: [1],
   },
+  actions: [
+    {
+      handle: 'setSelected',
+      displayName: 'Select option',
+      params: [{ handle: 'selected', displayName: 'Value' }],
+    },
+  ],
+
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -148,6 +164,7 @@ export const buttonGroupConfig = {
       disabledState: { value: '{{false}}' },
       selectedTextColor: { value: '#FFFFFF' },
       selectedBackgroundColor: { value: '#4368E3' },
+      alignment: { value: 'left' },
     },
   },
 };
