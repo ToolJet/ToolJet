@@ -630,6 +630,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                     active: currentTab === 'granularAccess' && !isBasicPlan,
                     'expired-gradient-border': currentTab === 'granularAccess' && isBasicPlan,
                   })}
+                  data-cy="granular-access-link"
                 >
                   {isBasicPlan && currentTab === 'granularAccess' ? (
                     <SolidIcon className="manage-group-tab-icons" name="granularaccessgrad" />

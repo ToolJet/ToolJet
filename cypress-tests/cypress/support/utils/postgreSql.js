@@ -65,10 +65,9 @@ export const selectAndAddDataSource = (
       ).click();
     });
 
-  cy.wait(1000)
   cy.get(postgreSqlSelector.buttonSave).should("be.disabled")
   cy.clearAndType(
-    '[data-cy="data-source-name-input-filed"]',
+    '[data-cy="data-source-name-input-field"]',
     cyParamName(`cypress-${dataSourceName}-${dataSource}`)
   );
   cy.get(postgreSqlSelector.buttonSave).click();

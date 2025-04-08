@@ -336,7 +336,7 @@ const EditorInput = ({
     <div
       ref={currentEditorHeightRef}
       className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
-      data-cy={`${cyLabel}-input-field`}
+      data-cy={`${cyLabel.replace(/_/g, '-')}-input-field`}
     >
       {/* sticky element to position the preview box correctly on top without flowing out of container */}
       <div
