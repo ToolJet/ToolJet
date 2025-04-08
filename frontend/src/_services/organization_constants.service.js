@@ -7,20 +7,22 @@ export const orgEnvironmentConstantService = {
   update,
   remove,
   getConstantsFromEnvironment,
+  getConstantsFromApp,
   getConstantsFromPublicApp,
+  getAllSecrets,
 };
 
-function getAll(decryptValue = false) {
+function getAll(type = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organization-constants?decryptValue=${decryptValue}`, requestOptions).then(
-    handleResponse
-  );
+  const queryParams = type ? `?type=${type}` : '';
+  return fetch(`${config.apiUrl}/organization-constants/decrypted${queryParams}`, requestOptions).then(handleResponse);
 }
 
-function create(name, value, environments) {
+function create(name, value, type, environments) {
   const body = {
     constant_name: name,
     value: value,
+    type: type,
     environments: environments,
   };
 
@@ -28,10 +30,10 @@ function create(name, value, environments) {
   return fetch(`${config.apiUrl}/organization-constants`, requestOptions).then(handleResponse);
 }
 
-function update(id, value, envronmentId) {
+function update(id, value, environmentId) {
   const body = {
     value,
-    environment_id: envronmentId,
+    environment_id: environmentId,
   };
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
@@ -45,17 +47,30 @@ function remove(id, environmentId) {
   );
 }
 
-function getConstantsFromEnvironment(environmentId, decryptValue = false) {
+function getConstantsFromEnvironment(environmentId, type = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const queryParams = type ? `?type=${type}` : '';
   return fetch(
-    `${config.apiUrl}/organization-constants/environment/${environmentId}?decryptValue=${decryptValue}`,
+    `${config.apiUrl}/organization-constants/environment/${environmentId}${queryParams}`,
     requestOptions
   ).then(handleResponse);
 }
 
-function getConstantsFromPublicApp(slug, decryptValue = false) {
-  const requestOptions = { method: 'GET' };
-  return fetch(`${config.apiUrl}/organization-constants/${slug}?decryptValue=${decryptValue}`, requestOptions).then(
+function getAllSecrets() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization-constants/secrets`, requestOptions).then(handleResponse);
+}
+
+function getConstantsFromApp(slug, environmentId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const queryParams = environmentId ? `?environmentId=${environmentId}` : '';
+  return fetch(`${config.apiUrl}/organization-constants/${slug}${queryParams}`, requestOptions).then(handleResponse);
+}
+
+function getConstantsFromPublicApp(slug, environmentId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const queryParams = environmentId ? `?environmentId=${environmentId}` : '';
+  return fetch(`${config.apiUrl}/organization-constants/public/${slug}${queryParams}`, requestOptions).then(
     handleResponse
   );
 }

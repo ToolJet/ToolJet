@@ -45,8 +45,10 @@
   }
 }
 
-::-webkit-scrollbar{
-  display: none;
+#tooljet-drawer-root{
+  ::-webkit-scrollbar{
+    display: none !important;
+  }
 }
 
 .drawer-container.in.open {

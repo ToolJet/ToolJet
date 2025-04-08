@@ -1,0 +1,17 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "PrestoDB data source",
+  "description": "A schema defining PrestoDB data source",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "sql_query": {
+      "key": "presto_sql_query",
+      "type": "codehinter",
+      "description": "Enter your SQL query",
+      "height": "150px",
+      "editorType": "extendedSingleLine"
+    }
+  }
+}

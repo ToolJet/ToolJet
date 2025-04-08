@@ -73,7 +73,26 @@ Following actions of the component can be controlled using the component specifi
 | setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.setVisibility(false)`) or trigger it using an event. |
 | setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.setLoading(true)`) or trigger it using an event. |
 | setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.dropdown1.setDisable(true)`) or trigger it using an event. |
-| selectOption()        | Selects an option.      | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.clear()`) or trigger it using an event. |
+| selectOption()        | Selects an option.      | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.selectOption(2)`) or trigger it using an event. |
+
+**Note:** The data type passed to CSAs like `selectOption()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.dropdown1.selectOption(['2'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
+
+For example, if the code is:
+```javascript
+{{
+    [
+        { label: 'option1', value: 1, disable: false, visible: true, default: true },
+        { label: 'option2', value: 2, disable: false, visible: true },
+        { label: 'option3', value: 3, disable: false, visible: true }
+    ]
+}}
+```
+
+You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+
+```javascript
+components.dropdown1.selectOption([2])
+```
 
 ## Exposed Variables
 
@@ -81,7 +100,7 @@ Following actions of the component can be controlled using the component specifi
 |:----------|:----------|:------------|
 | searchText          | This variable is initially empty and holds the value whenever the user searches on the dropdown.      | Accessible dynamically with JS (for e.g., `{{components.dropdown1.searchText}}`).                                     |
 | label               | Holds the label name of the dropdown.                                                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.label}}`).                                          |
-| value               | Holds the value entered by the user in the component.                                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.value}}`).                                          |
+| value               | Holds the value selected by the user in the component.                                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.value}}`).                                          |
 | selectedOption        | Holds the label and value of the selected option in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.selectedOption.label}}` or <br/>`{{components.dropdown1.selectedOption.value}}`). |
 | isValid             | Indicates if the input meets validation criteria.                                                     | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isValid}}`).                                        |
 | options        | Holds all the option values of the dropdown in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.options}}` or <br/>`{{components.dropdown1.options[0].label}}` for a specific option). |
@@ -107,15 +126,16 @@ Following actions of the component can be controlled using the component specifi
 | Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` ).                       |
 
+<div style={{paddingTop:'24px'}}>
+
 ## Devices
 
-**Show on desktop**
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------- |:----------- |:----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
-Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
-
-**Show on mobile**
-
-Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
+</div>
 
 ---
 

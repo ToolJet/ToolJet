@@ -12,12 +12,16 @@ import {
 } from 'typeorm';
 import { FolderApp } from './folder_app.entity';
 import { App } from './app.entity';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Entity({ name: 'folders' })
-@Unique('folder_name_organization_id_unique', ['name', 'organizationId'])
+@Unique(DataBaseConstraints.FOLDER_NAME_UNIQUE, ['name', 'organizationId', 'type'])
 export class Folder {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
+  type: string;
 
   @Column()
   name: string;
@@ -53,7 +57,7 @@ export class Folder {
   @AfterLoad()
   generateCount(): void {
     if (this.folderApps) {
-      this.count = this.folderApps.length;
+      this.count = this.folderApps?.length || 0;
     }
   }
 }

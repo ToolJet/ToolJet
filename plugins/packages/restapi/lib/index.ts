@@ -6,15 +6,19 @@ import {
   QueryResult,
   QueryService,
   cleanSensitiveData,
+  redactHeaders,
   User,
   App,
   OAuthUnauthorizedClientError,
   getRefreshedToken,
   checkIfContentTypeIsURLenc,
   checkIfContentTypeIsMultipartFormData,
+  checkIfContentTypeIsJson,
   isEmpty,
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
+  sanitizeCookies,
+  cookiesToString,
   sanitizeSearchParams,
   getAuthUrl,
 } from '@tooljet-plugins/common';
@@ -39,20 +43,26 @@ function isFileObject(value) {
 }
 
 interface RestAPIResult extends QueryResult {
-  request?: Array<object> | object;
-  response?: Array<object> | object;
-  responseHeaders?: Array<object> | object;
+  metadata?: Array<object> | object;
 }
 
 export default class RestapiQueryService implements QueryService {
   /* Body params of the source will be overridden by body params of the query */
-  body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
+  body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): any {
     const bodyToggle = queryOptions['body_toggle'];
     if (bodyToggle) {
-      const jsonBody = queryOptions['json_body'];
-      if (!jsonBody) return undefined;
-      if (typeof jsonBody === 'string') return JSON5.parse(jsonBody);
-      else return jsonBody;
+      // Use the generalized raw body if provided; otherwise, fall back to the legacy raw JSON body
+      const rawBody = queryOptions['raw_body'];
+      if (!rawBody) {
+        // For backward compatibility, check if JSON body was previously used
+        // FIXME: Remove the code inside this if condition and return undefined once data migration is complete
+        const jsonBody = queryOptions['json_body'];
+        if (!jsonBody) return undefined;
+        if (typeof jsonBody === 'string') return { key: 'json_body', value: JSON5.parse(jsonBody) };
+        else return { key: 'json_body', value: jsonBody };
+      } else {
+        return { key: 'raw_body', value: rawBody };
+      }
     } else {
       const _body = (queryOptions.body || []).filter((o) => {
         return o.some((e) => !isEmpty(e));
@@ -83,16 +93,27 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
-    const isUrlEncoded = checkIfContentTypeIsURLenc(queryOptions['headers']);
-    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(queryOptions['headers']);
+    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
+    const headerEntries = Object.entries(headers);
+    const isUrlEncoded = checkIfContentTypeIsURLenc(headerEntries);
+    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(headerEntries);
+    const isJson = checkIfContentTypeIsJson(headerEntries);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
-    const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
+    const retryOnNetworkError = queryOptions['retry_network_errors'] === true;
+    const _body = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
     const searchParams = new URLSearchParams();
+
+    for (const param of sourceOptions.url_parameters || []) {
+      const [key, value] = param;
+      if (key && value) {
+        searchParams.append(key, value);
+      }
+    }
 
     // Append parameters individually to preserve duplicates
     for (const [key, value] of Object.entries(paramsFromUrl)) {
@@ -109,22 +130,31 @@ export default class RestapiQueryService implements QueryService {
     const _requestOptions: OptionsOfTextResponseBody = {
       method,
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
-      headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
+      headers,
       searchParams,
+      ...(retryOnNetworkError ? {} : { retry: 0 }),
     };
 
+    const sanitizedCookies = sanitizeCookies(sourceOptions, queryOptions, hasDataSource);
+    const cookieString = cookiesToString(sanitizedCookies);
+    if (cookieString) {
+      _requestOptions.headers['Cookie'] = cookieString;
+    }
+
     const hasFiles = (json) => {
+      if (isEmpty(json)) return false;
+
       return Object.values(json || {}).some((item) => {
         return isFileObject(item);
       });
     };
 
     if (isUrlEncoded) {
-      _requestOptions.form = json;
-    } else if (isMultipartFormData && hasFiles(json)) {
+      _requestOptions.form = _body;
+    } else if (isMultipartFormData && hasFiles(_body)) {
       const form = new FormData();
-      for (const key in json) {
-        const value = json[key];
+      for (const key in _body) {
+        const value = _body[key];
         if (isFileObject(value)) {
           const fileBuffer = Buffer.from(value?.base64Data || '', 'base64');
           form.append(key, fileBuffer, {
@@ -137,11 +167,20 @@ export default class RestapiQueryService implements QueryService {
         }
       }
       _requestOptions.body = form;
-    } else {
-      _requestOptions.json = json;
+      _requestOptions.headers = { ..._requestOptions.headers, ...form.getHeaders() };
+    } else if (_body && _body.key === 'json_body') {
+      // For backward compatibility
+      // FIXME: Remove this if condition once data migration is complete
+      _requestOptions.json = _body.value;
+    } else if (_body) {
+      if (isJson) {
+        _requestOptions.json = JSON5.parse(_body.value);
+      } else {
+        _requestOptions.body = _body.value;
+      }
     }
 
-    const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
+    const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
       _requestOptions
@@ -154,36 +193,34 @@ export default class RestapiQueryService implements QueryService {
     let result = {};
     let requestObject = {};
     let responseObject = {};
-    let responseHeaders = {};
 
     try {
       const response = await got(url, requestOptions);
       result = this.getResponse(response);
+
       requestObject = {
-        requestUrl: response.request.requestUrl,
+        url: response.requestUrl,
         method: response.request.options.method,
-        headers: response.request.options.headers,
+        headers: redactHeaders(response.request.options.headers),
         params: urrl.parse(response.request.requestUrl, true).query,
       };
 
       responseObject = {
-        body: response.body,
         statusCode: response.statusCode,
+        headers: redactHeaders(response.headers),
       };
-
-      responseHeaders = response.headers;
     } catch (error) {
       console.error(
         `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error?.response?.body}`
       );
 
       if (error instanceof HTTPError) {
+        const requestUrl = error?.request?.options?.url?.origin + error?.request?.options?.url?.pathname;
+        const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, ['authorization']);
         result = {
           requestObject: {
-            requestUrl: sourceOptions.password // Remove password from error object
-              ? error.request.requestUrl?.replace(`${sourceOptions.password}@`, '<password>@')
-              : error.request.requestUrl,
-            requestHeaders: error.request.options.headers,
+            requestUrl,
+            requestHeaders,
             requestParams: urrl.parse(error.request.requestUrl, true).query,
           },
           responseObject: {
@@ -200,14 +237,13 @@ export default class RestapiQueryService implements QueryService {
       throw new QueryError('Query could not be completed', error.message, result);
     }
 
-    requestObject['headers'] = cleanSensitiveData(requestObject['headers'], ['authorization']);
-
     return {
       status: 'ok',
       data: result,
-      request: requestObject,
-      response: responseObject,
-      responseHeaders,
+      metadata: {
+        request: requestObject,
+        response: responseObject,
+      },
     };
   }
 
@@ -251,11 +287,12 @@ export default class RestapiQueryService implements QueryService {
   }
 
   private getResponse(response) {
+    const contentType: string = response.headers?.['content-type'] ?? '';
     try {
       if (this.isJson(response.body)) {
         return JSON.parse(response.body);
       }
-      if (response.rawBody && response.headers?.['content-type']?.startsWith('image/')) {
+      if (response.rawBody && this.isBinary(contentType)) {
         return Buffer.from(response.rawBody, 'binary').toString('base64');
       }
     } catch (error) {
@@ -264,10 +301,17 @@ export default class RestapiQueryService implements QueryService {
     return response.body;
   }
 
-  checkIfContentTypeIsURLenc(headers: [] = []) {
-    const objectHeaders = Object.fromEntries(headers);
-    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-    return contentType === 'application/x-www-form-urlencoded';
+  private isBinary(contentType: string) {
+    const binaryPrefixes = ['application/', 'image/'];
+    const binaryApplicationTypes = ['application/pdf', 'application/zip'];
+
+    for (const binaryPrefix of binaryPrefixes) {
+      if (contentType?.startsWith(binaryPrefix)) {
+        if (binaryPrefix === 'application/') return binaryApplicationTypes.includes(contentType);
+        return true;
+      }
+    }
+    return false;
   }
 
   authUrl(sourceOptions: SourceOptions): string {

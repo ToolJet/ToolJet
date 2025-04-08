@@ -13,7 +13,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppDataStore, useIsSaving } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
@@ -70,6 +70,8 @@ export const EventManager = ({
 
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler, updateState } =
     useAppDataActions();
+
+  const isSaving = useIsSaving();
 
   const currentEvents = allAppEvents?.filter((event) => {
     if (customEventRefs) {
@@ -450,6 +452,8 @@ export const EventManager = ({
                 styles={styles}
                 useMenuPortal={false}
                 useCustomStyles={true}
+                isDisabled={isSaving}
+                isLoading={isSaving}
               />
             </div>
           </div>
@@ -458,13 +462,14 @@ export const EventManager = ({
             <div className="col-3 p-2" data-cy="alert-type-label">
               {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
             </div>
-            <div className="col-9" data-cy="alert-message-type">
+            <div className="col-9">
               <CodeHinter
                 type="basic"
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
                 usePortalEditor={false}
                 component={component}
+                cyLabel={`run-only-if`}
               />
             </div>
           </div>
@@ -916,8 +921,8 @@ export const EventManager = ({
                             onChange={(value) => {
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
-                            paramType={param?.type}
                             paramLabel={' '}
+                            paramType={param?.type}
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
                             component={component}
@@ -938,6 +943,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'debounce', value)}
                   usePortalEditor={false}
                   component={component}
+                  cyLabel={'debounce'}
                 />
               </div>
             </div>
@@ -1063,7 +1069,7 @@ export const EventManager = ({
     return (
       <>
         {!hideEmptyEventsAlert && <NoListItem text={'No event handlers'} />}
-        {renderAddHandlerBtn()}
+        <div className="d-flex">{renderAddHandlerBtn()}</div>
       </>
     );
   }
@@ -1072,7 +1078,7 @@ export const EventManager = ({
 
   if (events.length === 0) {
     return (
-      <>
+      <div className="d-flex">
         {renderAddHandlerBtn()}
         {!hideEmptyEventsAlert ? (
           <div className="text-left">
@@ -1087,7 +1093,7 @@ export const EventManager = ({
             </small>
           </div>
         ) : null}
-      </>
+      </div>
     );
   }
 

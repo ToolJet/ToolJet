@@ -1,0 +1,52 @@
+.config-handle {
+    position: fixed;
+    max-height: 10px;
+    z-index: 100;
+    min-width: 108px;
+    display: block;
+    visibility: hidden;
+    transition: all .15s ease-in-out;
+}
+
+.config-handle-visible {
+  visibility: visible !important;
+}
+
+.multiple-components-config-handle {
+  position: absolute;
+  left: 54px;
+  top: -20px;
+  transform: translate(-50%, 0px);
+  width: 110px;
+}
+
+.config-handle,
+.multiple-components-config-handle {
+  .handle-content {
+    cursor: move;
+    color: #ffffff;
+    background: rgb(77, 114, 250);
+  }
+
+  .badge {
+    font-size: 9px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0
+  }
+}
+
+
+.canvas-area #modal-container .modal-component>.config-handle {
+  visibility: visible !important;
+}
+
+.modal-content {
+  .config-handle {
+    position: absolute;
+    top: 0px;
+    .badge {
+      font-size: 9px;
+      background: #c6cad0;
+    }
+  }
+}

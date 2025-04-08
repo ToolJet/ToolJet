@@ -6,7 +6,7 @@ import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/a
 import { toast } from 'react-hot-toast';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
-
+import { onboarding } from '@/modules/onboarding/services/onboarding.service';
 export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, navigate }) => {
   /* Needed to pass invite token to signup page if the user doesn't exist */
   const [isLoading, setLoading] = useState(true);
@@ -38,6 +38,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
         is_workspace_sign_up_invite,
         source,
         organization_user_source,
+        no_active_workspaces: noActiveWorkspaces,
       } = invitedUserSession;
       /* 
         We should only run the authorization against the session if the user has active workspace 
@@ -57,11 +58,16 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
       }
       /* User has active account. but still using the same invite. redirect to the org-invite URL */
       if (organization_invite_url) navigate(organization_invite_url);
-      if (!noWorkspaceAttachedInTheSession) {
+      const currentSession = authenticationService.currentSessionValue;
+      if (!noWorkspaceAttachedInTheSession && !noActiveWorkspaces && !currentSession.isInviteFlw) {
         authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
           setLoading(false);
         });
       } else {
+        /* Reset store */
+        updateCurrentSession({
+          isInviteFlw: false,
+        });
         setLoading(false);
       }
     } catch (errorObj) {
@@ -114,7 +120,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
               break;
             }
             case isInvalidInvitationUrl: {
-              /* Wrong invitation URL (invalid tokens) */
+              /* Wring invitation URL (invalid tokens) */
               setLinkStatus(isInvalidInvitationUrl);
               break;
             }
@@ -152,12 +158,11 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
 
   const acceptInvite = (token, organizationToken, navigate, source, redirectTo) => {
     if (token && organizationToken) {
-      authenticationService
-        .onboarding({
-          token,
-          organizationToken,
-          source,
-        })
+      onboarding({
+        token,
+        organizationToken,
+        source,
+      })
         .then((user) => {
           onLoginSuccess(user, navigate, redirectTo);
         })

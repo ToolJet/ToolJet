@@ -1,4 +1,4 @@
-import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
 import { MigrationInterface, QueryRunner, TableForeignKey } from 'typeorm';
 
 export class AlterOrganizationIdInAppEnvironments1677822012965 implements MigrationInterface {

@@ -3,21 +3,19 @@ import Select, { components } from 'react-select';
 import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
-import { authenticationService } from '@/_services';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import { staticDataSources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
-import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/common/components/DataSourceComponents';
+import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
-function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
+function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, staticDataSources }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const sampleDataSource = useSampleDataSource();
@@ -52,8 +50,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
+  const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
+
   useEffect(() => {
-    const sortedUserDefinedSources = userDefinedSources.sort((sourceA, sourceB) => {
+    const sortedUserDefinedSources = availableDataSources.sort((sourceA, sourceB) => {
       // Custom sorting function
       const typeA = sourceA?.type;
       const typeB = sourceB?.type;
@@ -77,7 +77,9 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
                 </div>
               )}
               <DataSourceIcon source={sources?.[0]} height={16} />
-              <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
+              <span className="ms-1 small" style={{ fontSize: '13px' }}>
+                {dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}
+              </span>
             </div>
           ),
           options: sources.map((source) => ({
@@ -85,6 +87,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
               <div
                 key={source.id}
                 className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
+                style={{ fontSize: '13px' }}
                 data-tooltip-id="tooltip-for-add-query-dd-option"
                 data-tooltip-content={decodeEntities(source.name)}
                 data-cy={`ds-${source.name.toLowerCase()}`}
@@ -116,7 +119,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
           label: (
             <div>
               <DataSourceIcon source={source} height={16} />{' '}
-              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small">
+              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small" style={{ fontSize: '13px' }}>
                 {source.name}
               </span>
             </div>
@@ -129,6 +132,32 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
     ...userDefinedSourcesOpts,
   ];
 
+  const dataSourcesAvailable = [
+    {
+      label: (
+        <div>
+          <span className="color-slate9" style={{ fontWeight: 500 }}>
+            Defaults
+          </span>
+        </div>
+      ),
+      isDisabled: true,
+      options: staticDataSources?.map((source) => ({
+        label: (
+          <div>
+            <DataSourceIcon source={source} height={16} />{' '}
+            <span className="ms-1 small">{source?.name ?? source.kind}</span>
+          </div>
+        ),
+        value: source.name,
+        source,
+      })),
+    },
+    ...userDefinedSourcesOpts,
+  ];
+
+  const dataSourceList = workflowDataSources && workflowDataSources ? dataSourcesAvailable : DataSourceOptions;
+
   const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
       closePopup();
@@ -138,7 +167,13 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   return (
     <div>
       <Select
-        onChange={({ source } = {}) => handleChangeDataSource(source)}
+        onChange={({ source } = {}) =>
+          source?.id !== 'if' && workflowDataSources
+            ? onNewNode(source.kind, source.id, source.plugin_id, source)
+            : source && (source?.id === 'if' || source?.id === 'response')
+            ? onNewNode(source?.id)
+            : handleChangeDataSource(source)
+        }
         classNames={{
           menu: () => 'tj-scrollbar',
         }}
@@ -222,7 +257,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
           }),
         }}
         placeholder="Search"
-        options={DataSourceOptions}
+        options={dataSourceList}
         isDisabled={isDisabled}
         menuIsOpen
         maxMenuHeight={400}
@@ -266,10 +301,9 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
   const navigate = useNavigate();
   const menuListStyles = getStyles('menuList', props);
 
-  const { admin } = authenticationService.currentSessionValue;
   const workspaceId = getWorkspaceId();
 
-  if (admin) {
+  if (canCreateDataSource()) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 400 - 48;
   }
@@ -283,7 +317,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
         {children}
       </div>
-      {admin && (
+      {canCreateDataSource() && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
             + Add new Data source

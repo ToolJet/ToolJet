@@ -15,6 +15,7 @@ import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
 import { Page } from './page.entity';
 import { EventHandler } from './event_handler.entity';
+import { WorkflowSchedule } from './workflow_schedule.entity';
 
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
@@ -31,6 +32,9 @@ export class AppVersion extends BaseEntity {
   @Column('simple-json', { name: 'global_settings' })
   globalSettings;
 
+  @Column('simple-json', { name: 'page_settings' })
+  pageSettings;
+
   @Column({ name: 'show_viewer_navigation' })
   showViewerNavigation: boolean;
 
@@ -42,6 +46,9 @@ export class AppVersion extends BaseEntity {
 
   @Column({ name: 'current_environment_id' })
   currentEnvironmentId: string;
+
+  @Column({ name: 'promoted_from' })
+  promotedFrom: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -66,4 +73,11 @@ export class AppVersion extends BaseEntity {
     onDelete: 'CASCADE',
   })
   eventHandlers: EventHandler[];
+
+  @OneToMany(() => WorkflowSchedule, (workflowSchedule) => workflowSchedule.workflow, {
+    onDelete: 'CASCADE',
+  })
+  schedules: WorkflowSchedule[];
+
+  isCurrentEditingVersion: boolean;
 }

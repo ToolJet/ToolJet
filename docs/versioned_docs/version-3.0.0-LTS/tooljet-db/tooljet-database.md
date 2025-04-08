@@ -13,10 +13,6 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 
 ## Enabling the ToolJet Database for your instance
 
-Requires:
-- PostgREST server
-- Additional configuration for ToolJet server
-
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### PostgREST Server
@@ -24,26 +20,30 @@ Requires:
 PostgREST is a standalone web server that turns your PostgreSQL database directly into queryable RESTful APIs which is utilized for Tooljet Database. This server only communicates with the ToolJet server and therefore does not need to be publicly exposed.
 
 :::tip
-If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
-If this parameter is not specified, then PostgREST refuses authentication requests.
+If this parameter is not specified, PostgREST will refuse authentication requests.
 :::
 
-| <div style={{ width:"100px"}}> Variable  </div>         | <div style={{ width:"100px"}}> Description  </div>                                   |
-| ---------------------------- | ----------------------------------------------- |
-| PGRST_JWT_SECRET             | JWT token client provided for authentication    |
-| PGRST_DB_URI                 | database connection string for tooljet database |
-| PGRST_LOG_LEVEL              | `info`                                          |
-| PGRST_DB_PRE_CONFIG          | postgrest.pre_config                            |
+```env
+PGRST_HOST=localhost:3001
+PGRST_LOG_LEVEL=info
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+PGRST_SERVER_PORT=3001
+PGRST_DB_URI=
+PGRST_JWT_SECRET=
+```
 
-:::info
-Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
-:::
+The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+
+#### Format:
+
+```env
+PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
 
 </div>
-
-#### Additional ToolJet server configuration
-
 
 | <div style={{ width:"100px"}}> Variable </div>           | <div style={{ width:"100px"}}> Description </div>                                  |
 | ------------------ | -------------------------------------------- |
@@ -89,7 +89,7 @@ ToolJet database allows you to:
 
 Once you log-in to your ToolJet account, from the left sidebar of the dashboard you can navigate to **ToolJet Database**.
 
-The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.com)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
+The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.ai)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tjdbside-v2.png" alt="ToolJet database" />

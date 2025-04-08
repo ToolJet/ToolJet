@@ -1,10 +1,12 @@
 import {
   appVersionSelectors,
   exportAppModalSelectors,
+  importSelectors,
 } from "Selectors/exportImport";
 import { exportAppModalText, appVersionText } from "Texts/exportImport";
 import { commonSelectors } from "Selectors/common";
-import { verifyModal } from "Support/utils/common";
+import { verifyModal, commonWidgetSelector } from "Support/utils/common";
+import { importText } from "Texts/exportImport";
 
 export const verifyElementsOfExportModal = (
   currentVersionName,
@@ -27,10 +29,18 @@ export const verifyElementsOfExportModal = (
         exportAppModalText.noOtherVersionText
       );
     } else {
+      cy.get('[data-cy="other-version-label"]').verifyVisibleElement(
+        "have.text",
+        "Other Versions"
+      );
       otherVersionName.forEach((elements) => {
         cy.get(exportAppModalSelectors.versionText(elements))
-          .scrollIntoView()
           .verifyVisibleElement("have.text", elements);
+        cy.get(
+          exportAppModalSelectors.versionRadioButton(elements)
+        ).verifyVisibleElement("not.be.checked");
+        cy.get(exportAppModalSelectors.versionCreatedTime(elements)).should("be.visible");
+
       });
     }
   });
@@ -41,6 +51,10 @@ export const verifyElementsOfExportModal = (
     commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
   ).verifyVisibleElement("have.text", exportAppModalText.exportSelectedVersion);
   cy.get(exportAppModalSelectors.modalCloseButton).should("be.visible");
+  cy.get('input[type="checkbox"]')
+    .parent()
+    .contains("Export ToolJet table schema")
+    .should("be.visible");
 };
 
 export const createNewVersion = (newVersion = [], version) => {
@@ -82,7 +96,8 @@ export const clickOnExportButtonAndVerify = (buttonText, appName) => {
 export const exportAllVersionsAndVerify = (
   appName,
   currentVersionName,
-  otherVersionName = []
+  otherVersionName = [],
+  isChecked = []
 ) => {
   cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
   cy.get(
@@ -96,11 +111,29 @@ export const exportAllVersionsAndVerify = (
       );
     } else {
       otherVersionName.forEach((elements) => {
-        cy.get(exportAppModalSelectors.versionRadioButton(elements))
-          .scrollIntoView()
-          .verifyVisibleElement("not.be.checked");
+        cy.get(exportAppModalSelectors.versionText(elements)).verifyVisibleElement("have.text", elements);
+        cy.get(
+          exportAppModalSelectors.versionRadioButton(elements)
+        ).should("be.visible").and(isChecked ? "be.checked" : "not.be.checked");
       });
     }
     clickOnExportButtonAndVerify(exportAppModalText.exportAll, appName);
   });
 };
+
+export const importAndVerifyApp = (filePath, expectedToast) => {
+  cy.get(importSelectors.importOptionInput)
+    .eq(0)
+    .selectFile(filePath, { force: true });
+  cy.wait(2000);
+
+  if (expectedToast) {
+    cy.verifyToastMessage(commonSelectors.toastMessage, expectedToast);
+  } else {
+    cy.get(importSelectors.importAppButton).click();
+    cy.get(".go3958317564")
+      .should("be.visible")
+      .and("have.text", importText.appImportedToastMessage);
+  }
+};
+

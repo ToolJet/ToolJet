@@ -1,10 +1,24 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { MarketplaceCard } from './MarketplaceCard';
-import { pluginsService } from '@/_services';
+import { pluginsService, marketplaceService } from '@/_services';
 
-export const MarketplacePlugins = ({ allPlugins = [] }) => {
+export const MarketplacePlugins = () => {
   const [installedPlugins, setInstalledPlugins] = React.useState({});
+  const [allPlugins, setAllPlugins] = React.useState([]);
+
+  React.useEffect(() => {
+    marketplaceService
+      .findAll()
+      .then(({ data = [] }) => setAllPlugins(data))
+      .catch((error) => {
+        toast.error(error?.message || 'something went wrong');
+      });
+
+    () => {
+      setAllPlugins([]);
+    };
+  }, []);
 
   React.useEffect(() => {
     pluginsService
@@ -26,7 +40,7 @@ export const MarketplacePlugins = ({ allPlugins = [] }) => {
   }, []);
 
   return (
-    <div className="col-9 pb-3">
+    <div className="col-9 pb-3" style={{ marginLeft: 'auto' }}>
       <div className="row row-cards">
         {allPlugins?.map(({ id, name, repo, version, description }) => {
           return (

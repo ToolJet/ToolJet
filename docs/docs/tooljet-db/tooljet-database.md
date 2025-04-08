@@ -17,7 +17,7 @@ Requires:
 - PostgREST server
 - Additional configuration for ToolJet server
 
-This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enable-tooljet-database--optional-) is set to `true`.
+This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enable-tooljet-database-required) is set to `true`.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -26,7 +26,8 @@ This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enabl
 PostgREST is a standalone web server that turns your PostgreSQL database directly into queryable RESTful APIs which is utilized for Tooljet Database. This server only communicates with the ToolJet server and therefore does not need to be publicly exposed.
 
 :::tip
-If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, then PostgREST refuses authentication requests.
 :::
@@ -91,7 +92,7 @@ ToolJet database allows you to:
 
 Once you log-in to your ToolJet account, from the left sidebar of the dashboard you can navigate to **ToolJet Database**.
 
-The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.com)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
+The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.ai)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tjdbside-v2.png" alt="ToolJet database" />

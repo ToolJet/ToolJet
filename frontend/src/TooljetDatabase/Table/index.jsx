@@ -27,7 +27,11 @@ import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-
+import {
+  convertDateToTimeZoneFormatted,
+  getLocalTimeZone,
+  getUTCOffset,
+} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -49,6 +53,9 @@ const Table = ({ collapseSidebar }) => {
     loadingState,
     setForeignKeys,
     foreignKeys,
+    configurations,
+    setConfigurations,
+    getConfigurationProperty,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -87,6 +94,7 @@ const Table = ({ collapseSidebar }) => {
   const [nullValue, setNullValue] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
+  const [isDirectRowExpand, setIsDirectRowExpand] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   const [cachedOptions, setCahedOptions] = useState({});
@@ -225,6 +233,7 @@ const Table = ({ collapseSidebar }) => {
     const newSelectedIdRef = {};
     if (rowIdSelected) newSelectedIdRef[`${rowIdSelected}`] = true;
     setSelectedRowIds(newSelectedIdRef);
+    setIsDirectRowExpand(true);
     return;
   };
 
@@ -362,7 +371,8 @@ const Table = ({ collapseSidebar }) => {
           return;
         }
 
-        const { foreign_keys = [] } = data?.result || {};
+        const { foreign_keys = [], configurations = {} } = data?.result || {};
+        setConfigurations(configurations);
         if (data?.result?.columns?.length > 0) {
           setColumns(
             data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
@@ -401,10 +411,15 @@ const Table = ({ collapseSidebar }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
-  const tableData = React.useMemo(
-    () => (loading ? Array(10).fill({}) : selectedTableData),
-    [loading, selectedTableData]
-  );
+  useEffect(() => {
+    if (!isEditRowDrawerOpen && isDirectRowExpand) {
+      setSelectedRowIds({});
+      setIsDirectRowExpand(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditRowDrawerOpen]);
+
+  const [tableColumnTypes, setTableColumnTypes] = React.useState({});
 
   const tableColumns = React.useMemo(() => {
     if (loading) {
@@ -415,16 +430,38 @@ const Table = ({ collapseSidebar }) => {
     } else {
       const primaryKeyArray = [];
       const nonPrimaryKeyArray = [];
+      const updatedColumnTypes = {};
+
       columns.forEach((column) => {
         if (column.constraints_type.is_primary_key) {
           primaryKeyArray.push({ ...column });
         } else {
           nonPrimaryKeyArray.push({ ...column });
         }
+        updatedColumnTypes[column.accessor] = column.dataType;
       });
+      setTableColumnTypes(updatedColumnTypes);
+
       return [...primaryKeyArray, ...nonPrimaryKeyArray];
     }
   }, [loading, columns]);
+
+  const tableData = React.useMemo(
+    () =>
+      loading
+        ? Array(10).fill({})
+        : selectedTableData.map((data) => {
+            return Object.entries(data).reduce((accumulator, [key, value]) => {
+              if (tableColumnTypes?.[key] === 'jsonb' && value !== null) {
+                accumulator[key] = JSON.stringify(value);
+              } else {
+                accumulator[key] = value;
+              }
+              return accumulator;
+            }, {});
+          }),
+    [loading, selectedTableData]
+  );
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
@@ -569,7 +606,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(isCellValueDefault);
         setEditPopover(true);
-        document.getElementById('edit-input-blur').focus();
+        document?.getElementById('edit-input-blur').focus();
       } else if (e.key === 'Backspace' && !editPopover && shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)) {
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         const cellDataType =
@@ -598,7 +635,8 @@ const Table = ({ collapseSidebar }) => {
   };
 
   useEffect(() => {
-    if (!editPopover) {
+    const selectedDatatype = headerGroups[0]?.headers?.[selectedCellRef.current.columnIndex]?.dataType;
+    if (!editPopover && selectedDatatype !== 'timestamp with time zone') {
       document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
@@ -720,6 +758,7 @@ const Table = ({ collapseSidebar }) => {
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
+    console.log(cellValue, 'cellValue Before');
 
     primaryKeyColumns.forEach((primaryKeyColumnName) => {
       if (rows[rIndex]?.values[primaryKeyColumnName]) {
@@ -730,9 +769,9 @@ const Table = ({ collapseSidebar }) => {
 
     setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
+    const dataType = headerGroups[0].headers[index].dataType;
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
-    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
-
+    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellValue };
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
 
     if (error) {
@@ -767,7 +806,7 @@ const Table = ({ collapseSidebar }) => {
     // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
     const selectedTableDataCopy = [...selectedTableData];
     if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
-      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellVal;
+      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
       setSelectedTableData([...selectedTableDataCopy]);
     }
 
@@ -782,6 +821,7 @@ const Table = ({ collapseSidebar }) => {
     }));
     cellValue === null ? setNullValue(true) : setNullValue(false);
     handleProgressAnimation('Column edited successfully', true);
+    if (dataType === 'timestamp with time zone') return;
     document.getElementById('edit-input-blur').blur();
   };
 
@@ -885,7 +925,7 @@ const Table = ({ collapseSidebar }) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
     setCellVal(previousValue);
-    document.getElementById('edit-input-blur').blur();
+    document.getElementById('edit-input-blur')?.blur();
   };
 
   function shouldOpenCellEditMenu(cellColumnIndex) {
@@ -1003,7 +1043,7 @@ const Table = ({ collapseSidebar }) => {
           <span className="tj-text-xsm tj-db-dataype text-lowercase">
             {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
           </span>
-          <span style={{ width: '100px' }}>{column.render('Header')}</span>
+          <span style={{ width: '100px' }}>{column.render('Header')} </span>
         </div>
 
         <ToolTip
@@ -1019,6 +1059,8 @@ const Table = ({ collapseSidebar }) => {
                   }`}</span>
                 </div>
               </div>
+            ) : dataType === 'timestamp with time zone' ? (
+              <span>Display time</span>
             ) : null
           }
           placement="top"
@@ -1026,7 +1068,7 @@ const Table = ({ collapseSidebar }) => {
           show={true}
         >
           <div>
-            {isMatchingForeignKeyColumn(column.Header) && (
+            {isMatchingForeignKeyColumn(column.Header) ? (
               <span
                 style={{
                   marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
@@ -1034,7 +1076,11 @@ const Table = ({ collapseSidebar }) => {
               >
                 <ForeignKeyIndicator />
               </span>
-            )}
+            ) : dataType === 'timestamp with time zone' ? (
+              <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                getConfigurationProperty(column.Header, 'timezone', getLocalTimeZone())
+              )}`}</span>
+            ) : null}
           </div>
         </ToolTip>
       </div>
@@ -1083,6 +1129,8 @@ const Table = ({ collapseSidebar }) => {
         setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
         setFilterEnable={setFilterEnable}
         filterEnable={filterEnable}
+        isDirectRowExpand={isDirectRowExpand}
+        setIsDirectRowExpand={setIsDirectRowExpand}
         referencedColumnDetails={referencedColumnDetails}
         setReferencedColumnDetails={setReferencedColumnDetails}
         // getForeignKeyDetails={getForeignKeyDetails}
@@ -1156,15 +1204,20 @@ const Table = ({ collapseSidebar }) => {
                     <div>
                       <IndeterminateCheckbox
                         indeterminate={
-                          Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length
+                          isDirectRowExpand
+                            ? false
+                            : Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length
                         }
-                        checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
+                        checked={
+                          isDirectRowExpand ? false : Object.keys(selectedRowIds).length === rows.length && rows.length
+                        }
                         onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
                         style={{
                           backgroundColor: `${
-                            (Object.keys(selectedRowIds).length > 0 &&
+                            (!isDirectRowExpand &&
+                              Object.keys(selectedRowIds).length > 0 &&
                               Object.keys(selectedRowIds).length < rows.length) ||
-                            (Object.keys(selectedRowIds).length === rows.length && rows.length)
+                            (!isDirectRowExpand && Object.keys(selectedRowIds).length === rows.length && rows.length)
                               ? '#3E63DD'
                               : 'var(--base)'
                           }`,
@@ -1263,7 +1316,7 @@ const Table = ({ collapseSidebar }) => {
                           }}
                         >
                           <IndeterminateCheckbox
-                            checked={selectedRowIds[row.id] ?? false}
+                            checked={!isDirectRowExpand ? selectedRowIds[row.id] ?? false : false}
                             onChange={() => toggleRowSelection(row.id)}
                           />
 
@@ -1325,7 +1378,19 @@ const Table = ({ collapseSidebar }) => {
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             <ToolTip
-                              message={getTooltipTextForCell(cell.value, index)}
+                              message={getTooltipTextForCell(
+                                cell.column.dataType == 'timestamp with time zone'
+                                  ? convertDateToTimeZoneFormatted(
+                                      cell.value,
+                                      getConfigurationProperty(cell.column.Header, 'timezone', getLocalTimeZone())
+                                    )
+                                  : cell.column.dataType === 'jsonb' &&
+                                    typeof cell?.value !== 'string' &&
+                                    cell?.value !== null
+                                  ? JSON.stringify(cell?.value)
+                                  : cell?.value,
+                                index
+                              )}
                               placement="bottom"
                               delay={{ show: 200, hide: 0 }}
                               show={
@@ -1361,10 +1426,16 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.cellIndex === index ? (
                                     <CellEditMenu
                                       show={shouldOpenCellEditMenu(index) ? editPopover : false}
-                                      close={() => closeEditPopover(cell.value, index)}
+                                      close={() => {
+                                        closeEditPopover(cell.value, index);
+                                      }}
                                       columnDetails={headerGroups[0].headers[index]}
                                       saveFunction={(newValue) => {
                                         handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
+                                        // if (cell.column?.dataType === 'jsonb') {
+                                        //   const event = new Event('click', { bubbles: true, cancelable: true });
+                                        //   document.body.dispatchEvent(event);
+                                        // }
                                       }}
                                       setCellValue={setCellVal}
                                       cellValue={cellVal}
@@ -1374,6 +1445,7 @@ const Table = ({ collapseSidebar }) => {
                                       setNullValue={setNullValue}
                                       nullValue={nullValue}
                                       isBoolean={cell.column?.dataType === 'boolean' ? true : false}
+                                      isTimestamp={cell.column?.dataType === 'timestamp with time zone' ? true : false}
                                       referencedColumnDetails={referencedColumnDetails}
                                       referenceColumnName={
                                         foreignKeys.length > 0 &&
@@ -1455,6 +1527,16 @@ const Table = ({ collapseSidebar }) => {
                                             </ToolTip> */}
                                           </div>
                                         ) : (
+                                          //  : cell.column?.dataType === 'jsonb' ? (
+                                          //   <CodehinterWrapper
+                                          //     cellVal={cellVal}
+                                          //     shouldOpenCellEditMenu={shouldOpenCellEditMenu}
+                                          //     setCellVal={setCellVal}
+                                          //     headerGroups={headerGroups}
+                                          //     index={index}
+                                          //     setDefaultValue={setDefaultValue}
+                                          //   />
+                                          // )
                                           <div className="d-flex align-items-center justify-content-between">
                                             <input
                                               autoComplete="off"
@@ -1496,6 +1578,8 @@ const Table = ({ collapseSidebar }) => {
                                     <>
                                       {cell.value === null ? (
                                         <span className="cell-text-null">Null</span>
+                                      ) : cell.column.dataType === 'jsonb' ? (
+                                        `{...}`
                                       ) : cell.column.dataType === 'boolean' ? (
                                         // <div className="d-flex align-items-center justify-content-between">
                                         <div className="row" style={{ width: '33px' }}>
@@ -1536,7 +1620,18 @@ const Table = ({ collapseSidebar }) => {
                                           })}
                                         >
                                           <div className="cell-text">
-                                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                            {isBoolean(cell?.value)
+                                              ? cell?.value?.toString()
+                                              : cell.column?.dataType === 'timestamp with time zone'
+                                              ? convertDateToTimeZoneFormatted(
+                                                  cell?.value,
+                                                  getConfigurationProperty(
+                                                    cell.column.Header,
+                                                    'timezone',
+                                                    getLocalTimeZone()
+                                                  )
+                                                )
+                                              : cell.render('Cell')}
                                           </div>
                                           {/* <ToolTip
                                             message={'Open referenced table'}
@@ -1576,21 +1671,22 @@ const Table = ({ collapseSidebar }) => {
                   </>
                 );
               })}
-              {rows.length > 0 && (
-                <div
-                  onClick={() => {
-                    resetCellAndRowSelection();
-                    setIsCreateRowDrawerOpen(true);
-                  }}
-                  className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
-                  style={{
-                    zIndex: 3,
-                  }}
-                >
-                  +
-                </div>
-              )}
+              <div />
             </tbody>
+            {rows.length > 0 && (
+              <div
+                onClick={() => {
+                  resetCellAndRowSelection();
+                  setIsCreateRowDrawerOpen(true);
+                }}
+                className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+                style={{
+                  zIndex: 3,
+                }}
+              >
+                +
+              </div>
+            )}
           </table>
         )}
         {rows.length === 0 && !loadingState && (

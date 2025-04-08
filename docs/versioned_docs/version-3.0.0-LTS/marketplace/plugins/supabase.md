@@ -76,6 +76,26 @@ You can create query for Supabase data source to perform several operations such
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/get_rows.png" alt="Get Rows" />
 </div>
 
+<details id="tj-dropdown">
+<summary>**Example Response**</summary>
+
+```yaml
+[
+  {
+    "id": 1,
+    "created_at": "2025-02-12T08:50:25.780412+00:00",
+    "likes": 99,
+    "content": "CFBR!"
+  },
+  {
+    "id": 4,
+    "created_at": "2025-02-12T11:34:26.624735+00:00",
+    "likes": 108,
+    "content": "Saved!"
+  }
+]
+```
+</details>
 
 ### Create Row(s)
 
@@ -88,6 +108,14 @@ You can create query for Supabase data source to perform several operations such
   <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/create_rows.png" alt="Create Rows" />
 </div>
+
+<details id="tj-dropdown">
+<summary>**Example Response**</summary>
+
+```yaml
+created: true
+```
+</details>
 
 ### Update Row(s)
 
@@ -103,6 +131,20 @@ You can create query for Supabase data source to perform several operations such
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/update_rows.png" alt="Update Rows" />
 </div>
 
+<details id="tj-dropdown">
+<summary>**Example Response**</summary>
+
+```yaml
+[
+  {
+    "id": 4,
+    "created_at": "2025-02-12T11:34:26.624735+00:00",
+    "likes": 50,
+    "content": "Saved!"
+  }
+]
+```
+</details>
 
 ### Delete Row(s)
 
@@ -114,6 +156,13 @@ You can create query for Supabase data source to perform several operations such
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/delete_rows.png" alt="Delete Rows" />
 </div>
 
+<details id="tj-dropdown">
+<summary>**Example Response**</summary>
+
+```yaml
+deleted: true
+```
+</details>
 
 ### Count Rows
 
@@ -128,7 +177,13 @@ You can create query for Supabase data source to perform several operations such
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/count_rows.png" alt="Count Rows" />
 </div>
+
+<details id="tj-dropdown">
+<summary>**Example Response**</summary>
+
+```yaml
+count: 2
+```
+</details>
+
 <br/>
-
-
-

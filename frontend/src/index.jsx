@@ -15,6 +15,8 @@ const AppWithProfiler = Sentry.withProfiler(App);
 appService
   .getConfig()
   .then((config) => {
+    console.log({ config });
+
     window.public_config = config;
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';

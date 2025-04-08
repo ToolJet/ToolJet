@@ -3,7 +3,7 @@
   <h1 align="center">ToolJet Documentation</h1>
 </p>
 
-The directory "ToolJet/docs/" holds the code and markdown source files for the ToolJet documentation website, which is accessible at [docs.tooljet.com](docs.tooljet.com)
+The directory "ToolJet/docs/" holds the code and markdown source files for the ToolJet documentation website, which is accessible at [docs.tooljet.ai](docs.tooljet.ai)
 
 ## Index
 - [Feedback](#feedback)
@@ -26,7 +26,7 @@ In case you encounter any issues with the ToolJet product, please select the rel
 To contribute to ToolJet documentation, you need to fork this repository and submit a pull request for the Markdown and/or image changes that you're proposing.
 
 ### Repository organization
-The content in this directory follows the organization of documentation at https://docs.tooljet.com
+The content in this directory follows the organization of documentation at https://docs.tooljet.ai
 
 This directory contains the following folders:
 
@@ -41,15 +41,15 @@ This directory contains the following folders:
 ├── versioned_docs
 │   ├── version-x.x.x    # Current/latest version (set it on docusauras.config.js)
 │   │   ├── Enterprise
-│   │   │   └── multi-environment.md   # https://docs.tooljet.com/docs/Enterprise/multi-environment
-│   │   └── tooljet-database.md.       # https://docs.tooljet.com/docs/tooljet-database
+│   │   │   └── multi-environment.md   # https://docs.tooljet.ai/docs/Enterprise/multi-environment
+│   │   └── tooljet-database.md.       # https://docs.tooljet.ai/docs/tooljet-database
 │   └── version-2.0.0
 │   │   ├── Enterprise
-│   │   │   └── multi-environment.md   # https://docs.tooljet.com/docs/2.0.0/Enterprise/multi-environment
+│   │   │   └── multi-environment.md   # https://docs.tooljet.ai/docs/2.0.0/Enterprise/multi-environment
 │   │   └── tooljet-database.md
 │   └── version-1.0.0
 │       ├── Enterprise
-│       │   └── multi-environment.md   # https://docs.tooljet.com/docs/1.0.0/Enterprise/multi-environment
+│       │   └── multi-environment.md   # https://docs.tooljet.ai/docs/1.0.0/Enterprise/multi-environment
 │       └── tooljet-database.md
 ├── versioned_sidebars                 # includes sidebar for the specific versions
 │   ├── version-x.x.x-sidebars.json    

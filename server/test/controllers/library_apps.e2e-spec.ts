@@ -14,11 +14,18 @@ describe('library apps controller', () => {
   });
 
   describe('POST /api/library_apps', () => {
-    it('should be able to create app if user has app create permission', async () => {
+    it('should be able to create app if user has app create permission or has instance user type', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
+
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
       const organization = adminUserData.organization;
       const nonAdminUserData = await createUser(app, {
         email: 'developer@tooljet.io',
@@ -31,6 +38,14 @@ describe('library apps controller', () => {
 
       loggedUser = await authenticateUser(app, 'developer@tooljet.io');
       nonAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       let response = await request(app.getHttpServer())
         .post('/api/library_apps')
@@ -83,17 +98,43 @@ describe('library apps controller', () => {
         groups: ['all_users', 'admin'],
       });
 
-      const loggedUser = await authenticateUser(app);
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
+      let loggedUser = await authenticateUser(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const response = await request(app.getHttpServer())
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      let response = await request(app.getHttpServer())
         .get('/api/library_apps')
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
 
-      const templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
+      let templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
+
+      expect(new Set(templateAppIds)).toContain('github-contributors');
+      expect(new Set(templateAppIds)).toContain('customer-dashboard');
+
+      response = await request(app.getHttpServer())
+        .get('/api/library_apps')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+
+      templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
       expect(new Set(templateAppIds)).toContain('github-contributors');
       expect(new Set(templateAppIds)).toContain('customer-dashboard');

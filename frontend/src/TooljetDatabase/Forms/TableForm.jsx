@@ -35,12 +35,34 @@ const TableForm = ({
   const selectedTableColumnDetails = Object.values(selectedTableColumns);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  //Following state and handleInputError is to disable footer if JSON value is invalid for JSON column type
+  const [disabledCreateButton, setDisabledCreateButton] = useState(false);
+  const handleInputError = (bool = false) => {
+    setDisabledCreateButton(bool);
+  };
+
   const [fetching, setFetching] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(deepClone(selectedTableColumns));
-  const { organizationId, foreignKeys, setForeignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, foreignKeys, setForeignKeys, configurations } = useContext(TooljetDatabaseContext);
+
+  const [columns, setColumns] = useState(
+    (() => {
+      const clonedColumns = _.cloneDeep(selectedTableColumns) || {};
+      const transformedColumns = Object.values(clonedColumns).map((column) => {
+        const columnUuid = configurations?.columns?.column_names?.[column.column_name];
+        const columnConfigurations = configurations?.columns?.configurations?.[columnUuid] || {};
+        return {
+          ...column,
+          configurations: {
+            ...columnConfigurations,
+          },
+        };
+      });
+      return transformedColumns;
+    })()
+  );
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const [foreignKeyDetails, setForeignKeyDetails] = useState([]);
@@ -149,6 +171,10 @@ const TableForm = ({
       toast.error('Column names cannot be empty');
       return;
     }
+    if (disabledCreateButton) {
+      toast.error('Invalid JSON syntax for JSONB type column');
+      return;
+    }
 
     const checkingValues = isEmpty(foreignKeyDetails) ? false : true;
 
@@ -173,6 +199,11 @@ const TableForm = ({
 
   const handleEdit = async () => {
     if (!validateTableName()) return;
+
+    if (disabledCreateButton) {
+      toast.error('Invalid JSON syntax for JSONB type column');
+      return;
+    }
 
     setFetching(true);
     const { error } = await tooljetDatabaseService.renameTable(
@@ -303,6 +334,7 @@ const TableForm = ({
           createForeignKeyInEdit={createForeignKeyInEdit}
           selectedTable={selectedTable}
           setForeignKeys={setForeignKeys}
+          handleInputError={handleInputError}
         />
       </div>
       <DrawerFooter

@@ -22,8 +22,9 @@ const ColumnsForm = ({
   createForeignKeyInEdit = false,
   selectedTable,
   setForeignKeys,
+  handleInputError,
 }) => {
-  const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
+  const [columnSelection, setColumnSelection] = useState({ index: 0, value: '', configurations: {} });
   const [hoveredColumn, setHoveredColumn] = useState(null);
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
 
@@ -106,6 +107,7 @@ const ColumnsForm = ({
           setColumnSelection={setColumnSelection}
           handleDelete={handleDelete}
           isEditMode={isEditMode}
+          setForeignKeyDetails={setForeignKeyDetails}
           isActiveForeignKey={
             !isEmpty(foreignKeyDetails?.column_names) &&
             !isEmpty(foreignKeyDetails?.referenced_column_names) &&
@@ -116,6 +118,7 @@ const ColumnsForm = ({
           indexHover={hoveredColumn}
           foreignKeyDetails={foreignKeyDetails}
           existingForeignKeyDetails={existingForeignKeyDetails} // foreignKeys from context state
+          handleInputError={handleInputError}
         />
 
         <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
@@ -124,8 +127,11 @@ const ColumnsForm = ({
             size="sm"
             style={{ fontSize: '14px' }}
             onClick={() => {
-              setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
-                setColumnSelection({ index: 0, value: '' });
+              setColumns((prevColumns) => ({
+                ...prevColumns,
+                [+Object.keys(prevColumns).pop() + 1 || 0]: { configurations: {} },
+              })),
+                setColumnSelection({ index: 0, value: '', configurations: {} });
             }}
             data-cy="add-more-columns-button"
           >

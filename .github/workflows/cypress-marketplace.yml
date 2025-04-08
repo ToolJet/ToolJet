@@ -14,7 +14,23 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-marketplace' || github.event.label.name == 'run-cypress') }}
+    if: |
+      github.event.action == 'labeled' &&
+      (
+        github.event.label.name == 'run-cypress' || 
+        github.event.label.name == 'run-ce-cypress-marketplace' || 
+        github.event.label.name == 'run-ee-cypress-marketplace'
+      )
+
+    strategy:
+      matrix:
+        edition: >-
+          ${{ 
+            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-marketplace') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-marketplace') && fromJson('["ee"]') ||
+            fromJson('[]')
+          }}
 
     steps:
       - name: Checkout
@@ -46,12 +62,25 @@ jobs:
       - name: Set SAFE_BRANCH_NAME
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
-      - name: Build and Push Docker image
+      - name: Build CE Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/production.Dockerfile
-          push: true
+          file: docker/ce-production.Dockerfile
+          push: false
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/ee/ee-production.Dockerfile
+          push: false
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
         env:
@@ -60,6 +89,7 @@ jobs:
 
       - name: Set up environment variables
         run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'EE' || 'CE' }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
@@ -69,6 +99,7 @@ jobs:
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=postgres" >> .env
@@ -82,15 +113,18 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
 
-
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-
       - name: Update docker-compose file
         run: |
-            # Update docker-compose.yaml with the new image
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          # Update docker-compose.yaml with the new image
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -127,12 +161,11 @@ jobs:
           config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
-
 
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
@@ -227,7 +260,7 @@ jobs:
           config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots

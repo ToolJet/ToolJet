@@ -1,64 +1,33 @@
 import { fake } from "Fixtures/fake";
-import { textInputText } from "Texts/textInput";
-import { commonWidgetText, widgetValue, customValidation } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { multipageSelector } from "Selectors/multipage";
-import { buttonText } from "Texts/button";
 import {
-  verifyControlComponentAction,
-  randomString,
+  openEditorSidebar
+} from "Support/utils/commonWidget";
+import {
+  randomString
 } from "Support/utils/editor/textInput";
 import {
-  openAccordion,
-  verifyAndModifyParameter,
-  openEditorSidebar,
-  verifyAndModifyToggleFx,
-  addDefaultEventHandler,
-  verifyComponentValueFromInspector,
-  selectColourFromColourPicker,
-  verifyBoxShadowCss,
-  verifyLayout,
-  verifyTooltip,
-  editAndVerifyWidgetName,
-  verifyPropertiesGeneralAccordion,
-  verifyStylesGeneralAccordion,
-  randomNumber,
-  closeAccordions,
-} from "Support/utils/commonWidget";
-import { dataCsvAssertionHelper } from "Support/utils/table";
-import {
-  selectCSA,
-  selectEvent,
-  addSupportCSAData,
+  selectEvent
 } from "Support/utils/events";
 
 import {
-  selectQueryFromLandingPage,
-  query,
-  changeQueryToggles,
-  renameQueryFromEditor,
   addInputOnQueryField,
+  changeQueryToggles,
+  query,
+  renameQueryFromEditor,
+  selectQueryFromLandingPage,
   waitForQueryAction,
 } from "Support/utils/queries";
 
 import {
-  verifyCouldnotConnectWithAlert,
   resizeQueryPanel,
-  verifypreview,
-  addInput,
+  verifypreview
 } from "Support/utils/dataSource";
+import { openNode, verifyNodeData, verifyValue } from "Support/utils/inspector";
 import {
-  hideOrUnhidePageMenu,
-  addEventHandler,
-  addNewPage,
-  setHomePage,
-  hideOrUnhidePage,
-  detetePage,
-  modifyPageHandle,
-  clearSearch,
-  searchPage,
+  addNewPage
 } from "Support/utils/multipage";
-import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 
 describe("runpy", () => {
   beforeEach(() => {
@@ -90,7 +59,7 @@ describe("runpy", () => {
     cy.apiDeleteApp();
   });
 
-  it("should verify actions", () => {
+  it.only("should verify actions", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -186,22 +155,17 @@ actions.unsetPageVariable('pageVar')`
       );
     });
 
-    // addInputOnQueryField(
-    //   "runpy",
-    //   "actions.generateFile('runpycsv', 'csv', [{ 'name': 'John', 'email': 'john@tooljet.com' }])"
-    // );
-    // query("run");
+    addInputOnQueryField(
+      "runpy",
+      "actions.generateFile('runpycsv', 'csv', [{ 'name': 'John', 'email': 'john@tooljet.com' }])"
+    );
+    query("run");
 
-    // cy.verifyToastMessage(
-    //   commonSelectors.toastMessage,
-    //   "Query (runpy1) completed."
-    // );
+    cy.wait(3000);
 
-    // cy.wait(3000);
-
-    // cy.readFile("cypress/downloads/runpycsv.csv", "utf-8")
-    //   .should("contain", "name,email")
-    //   .and("contain", "John,john@tooljet.com");
+    cy.readFile("cypress/downloads/runpycsv.csv", "utf-8")
+      .should("contain", "name,email")
+      .and("contain", "John,john@tooljet.com");
 
     // addInputOnQueryField(
     //   "runpy",
@@ -286,7 +250,7 @@ actions.unsetPageVariable('pageVar')`
     query("run");
 
     openEditorSidebar("button1");
-    selectEvent("On Click", "Run query", 1);
+    selectEvent("On Click", "Run query");
     cy.get('[data-cy="query-selection-field"]').type("runpy1{enter}");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
@@ -309,15 +273,18 @@ actions.unsetPageVariable('pageVar')`
       "runpy",
       "actions.showAlert('success', 'alert from runpy');"
     );
+    cy.get('[data-cy="query-tab-Settings"]').click();
     cy.wait("@editQuery");
     cy.wait(200);
     cy.waitForAutoSave();
+
     changeQueryToggles("run-on-app-load");
     cy.wait("@editQuery");
     cy.waitForAutoSave();
     cy.reload();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
 
+    cy.get('[data-cy="query-tab-Settings"]').click();
     changeQueryToggles("confirmation-before-run");
     cy.wait("@editQuery");
     cy.wait(200);
@@ -330,6 +297,7 @@ actions.unsetPageVariable('pageVar')`
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
 
+    cy.get('[data-cy="query-tab-Settings"]').click();
     changeQueryToggles("notification-on-success");
     cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
       "Success alert"

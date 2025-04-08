@@ -70,13 +70,6 @@ Use this environment variable to enable/disable the feature that allows you to a
 | COMMENT_FEATURE_ENABLE | `true` or `false` |
 
 ### Marketplace
-#### Marketplace feature enable ( optional )
-
-Use this environment variable to enable/disable the feature that allows users to use the marketplace.
-
-| variable                   | value             |
-| -------------------------- | ----------------- |
-| ENABLE_MARKETPLACE_FEATURE | `true` or `false` |
 
 #### Enable Marketplace plugin developement mode ( optional )
 
@@ -105,10 +98,8 @@ Use this environment variable to enable/disable the developement mode that allow
 | PGRST_HOST                   | postgrest database host                      |
 | PGRST_DB_PRE_CONFIG          | postgrest.pre_config                         |
 
-Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-db/tooljet-database/#enabling-the-tooljet-database-for-your-instance).
-
 :::tip
-When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
+The database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
 :::
 
@@ -151,7 +142,7 @@ Please note the subpath is to be set with trailing `/` and is applicable only wh
 
 ToolJet uses SMTP services to send emails (e.g., invitation emails when you add new users to your workspace).
 
-For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](/docs/org-management/smtp-configuration).
+For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](/docs/org-setup/smtp-config).
 
 :::info
 If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI.
@@ -295,7 +286,7 @@ This can be an absolute path, or relative to main HTML file.
 
 | variable   | description                                                    |
 | ---------- | -------------------------------------------------------------- |
-| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.com/) |
+| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.ai/) |
 
 ### Serve client as a server end-point ( optional )
 
@@ -313,9 +304,10 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
 :::tip
-If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
-If this parameter is not specified then PostgREST refuses authentication requests.
+If this parameter is not specified, PostgREST will refuse authentication requests.
 :::
 
 :::info

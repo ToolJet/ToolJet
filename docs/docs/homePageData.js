@@ -1,11 +1,18 @@
 import {
-    Grid3x3, Database, Workflow, Cog, Target, Scale,
+    BrainCircuit, Grid3x3, Database, Workflow, Cog, Target, Scale,
     Layers, FileSpreadsheet, Folder, Wand2, LayoutDashboard, Users, UserCheck,
     Lock, UserPlus, ScrollText, Megaphone, Gem, Mail, GitBranch,
     Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe
 } from 'lucide-react';
 
 export const featureCards = [
+    {
+        icon: BrainCircuit,
+        title: "Build with AI",
+        color: "text-blue-500",
+        content: "Build applications effortlessly using natural language to generate and customize apps.",
+        href: "/docs/beta/build-with-ai/overview"
+    },
     {
         icon: Grid3x3,
         title: "App Builder",
@@ -41,14 +48,14 @@ export const setupCards = [
         icon: Cog,
         title: "System Requirements",
         color: "text-blue-500",
-        content: "Ensure your system meets the requirements for running ToolJet. Check hardware and software specifications to get the best performance from the platform.",
+        content: "Ensure your system meets the requirements for running ToolJet. Check hardware and software specifications to get the best performance.",
         href: "/docs/beta/setup/system-requirements"
     },
     {
         icon: Target,
         title: "Choose Your ToolJet",
         color: "text-blue-500",
-        content: "Discover the ideal ToolJet version for your development needs. Choose between our Long-Term Support (LTS) versions for stability and reliability, or explore Pre-Release versions to access the latest features. Select the option that best aligns with your project requirements ",
+        content: "Discover the ideal ToolJet version for your development needs. Choose between our LTS versions or explore Pre-Release versions.",
         href: "/docs/beta/setup/choose-your-tooljet/"
     },
     {
@@ -82,7 +89,7 @@ export const dataCards = [
         icon: Layers,
         title: "Overview",
         color: "text-blue-500",
-        content: "Gain a broad understanding of ToolJet's features and capabilities. Learn how it simplifies app development with powerful tools and an intuitive interface.",
+        content: "Gain a broad understanding on connecting various data sources to ToolJet.",
         href: "/docs/beta/data-sources/overview"
     },
     {
@@ -94,9 +101,9 @@ export const dataCards = [
     },
     {
         icon: Folder,
-        title: "Datasource Library",
+        title: "Data Source Library",
         color: "text-blue-500",
-        content: "Browse ToolJet's datasource library to connect with databases, APIs, and external services seamlessly.",
+        content: "Browse ToolJet's data source library to connect with databases, APIs, and external services seamlessly.",
         href: "/docs/beta/tooljet-concepts/what-are-datasources/"
     },
     {
@@ -109,15 +116,14 @@ export const dataCards = [
 ];
 
 export const organizationCards = [
-    { icon: LayoutDashboard, title: "Dashboard", href: "/docs/beta/dashboard" },
-    { icon: Users, title: "Workspaces", href: "/docs/beta/org-management/workspaces/workspace_overview" },
-    { icon: UserCheck, title: "User authentication", href: "/docs/beta/user-authentication/workspace-login" },
-    { icon: Lock, title: "Permissions", href: "/docs/beta/org-management/permissions" },
-    { icon: UserPlus, title: "Users and groups", href: "/docs/beta/tutorial/manage-users-groups" },
-    { icon: ScrollText, title: "Audit logs", href: "/docs/beta/Enterprise/audit_logs" },
-    { icon: Megaphone, title: "White label", href: "/docs/beta/Enterprise/white-label" },
-    { icon: Gem, title: "Super admin", href: "/docs/beta/Enterprise/superadmin" },
-    { icon: Mail, title: "Licensing", href: "/docs/beta/org-management/licensing/self-hosted" }
+    { icon: Users, title: "Workspaces", href: "/docs/beta/tj-setup/workspaces" },
+    { icon: UserCheck, title: "User authentication", href: "/docs/beta/user-management/authentication/self-hosted/overview" },
+    { icon: Lock, title: "Permissions", href: "/docs/beta/user-management/role-based-access/access-control" },
+    { icon: UserPlus, title: "Users and groups", href: "/docs/beta/user-management/role-based-access/user-roles" },
+    { icon: ScrollText, title: "Audit logs", href: "/docs/beta/security/audit-logs" },
+    { icon: Megaphone, title: "White label", href: "/docs/beta/tj-setup/org-branding/white-labeling" },
+    { icon: Gem, title: "Super admin", href: "/docs/beta/user-management/role-based-access/super-admin" },
+    { icon: Mail, title: "Licensing", href: "/docs/beta/tj-setup/licensing/self-hosted" }
 ];
 
 export const releaseCards = [
@@ -126,21 +132,21 @@ export const releaseCards = [
         title: "Git Sync",
         color: "text-blue-500",
         content: "Sync your ToolJet projects with Git repositories, enabling version control and collaboration across teams.",
-        href: "/docs/beta/gitsync"
+        href: "/docs/beta/development-lifecycle/gitsync/overview"
     },
     {
         icon: Box,
         title: "Multi-Environment",
         color: "text-blue-500",
         content: "Easily manage and deploy applications across multiple environments, ensuring smooth transitions between development, staging, and production.",
-        href: "/docs/beta/release-management/multi-environment"
+        href: "/docs/beta/development-lifecycle/environment/self-hosted/multi-environment"
     },
     {
         icon: GitMerge,
         title: "Versioning and Release",
         color: "text-blue-500",
         content: "Implement version control and release management to track changes, roll back updates, and maintain stable app deployments.",
-        href: "/docs/beta/tutorial/versioning-and-release"
+        href: "/docs/beta/development-lifecycle/release/version-control"
     }
 ];
 
@@ -153,25 +159,18 @@ export const resourceCards = [
         href: "/docs/beta/marketplace/marketplace-overview"
     },
     {
-        icon: Wand,
-        title: "Copilot",
-        color: "text-blue-500",
-        content: "Boost productivity with ToolJet Copilot. Get AI-powered suggestions and assistance while building your applications.",
-        href: "/docs/beta/tooljet-copilot"
-    },
-    {
         icon: Flag,
         title: "Tracking",
         color: "text-blue-5000",
-        content: "ToolJet ensures user privacy by acting as a proxy, never storing data from sources. It offers anonymous usage tracking with options to disable features for enhanced control.",
+        content: "ToolJet ensures privacy by acting as a proxy, never storing data, and offers anonymous tracking with feature controls.",
         href: "/docs/beta/tracking"
     },
     {
         icon: ShieldCheck,
         title: "Security",
         color: "text-blue-500",
-        content: "ToolJet guarantees your data security with SOC 2 compliance, robust encryption, and secure credential handling. We never store your data, ensuring peace of mind with every connection",
-        href: "/docs/beta/security"
+        content: "ToolJet ensures data security with SOC 2 compliance, encryption, and secure credential handling, never storing your data.",
+        href: "/docs/beta/security/compliance"
     }
 ];
 
@@ -190,9 +189,9 @@ export const textLabels = {
         description: "Learn about the different methods you can use to deploy ToolJet"
     },
     deployOn: {
-        title: "Deploy on"
+        title: "Deployment"
     },
-    exploreMore: "Explore more details",
+    exploreMore: "Explore more",
     bringData: {
         title: "Bring your data to ToolJet",
         description: "Learn how to connect your data sources to ToolJet"

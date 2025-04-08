@@ -1,7 +1,7 @@
 @import "../../_styles/designtheme.scss";
 
 .tj-base-btn {
-    box-sizing: border-box;
+    // box-sizing: border-box;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -19,6 +19,16 @@
     .tj-btn-right-icon {
         display: flex;
         align-items: center;
+    }
+
+    &.table-pagination-btn{
+        &:disabled {
+            svg {
+                path {
+                    fill: var(--slate8) !important;
+                }
+            }
+        }
     }
 
     &:disabled {
@@ -95,6 +105,11 @@
         background: var(--indigo9);
     }
 
+    &:disabled {
+        background: var(--button-primary-disabled) !important;
+        color: var(--text-disabled-on-solid) !important;
+        border: none !important;
+    }
 }
 
 .tj-zBlack-btn {
