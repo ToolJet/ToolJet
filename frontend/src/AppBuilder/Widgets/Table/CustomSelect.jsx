@@ -95,7 +95,7 @@ export const CustomSelect = ({
     }),
   };
   const customComponents = {
-    MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} inputRef={inputRef} />,
+    MenuList: CustomMenuList,
     Option: CustomMultiSelectOption,
     DropdownIndicator: isEditable ? DropdownIndicator : null,
     ...(isMulti && {
@@ -114,7 +114,6 @@ export const CustomSelect = ({
       return isMulti ? [] : {};
     }
   }, [isMulti, defaultOptionsList, options, useDynamicOptions]);
-
   const _value = useMemo(() => {
     // Return null to show default value
     if (!value) {
@@ -184,6 +183,8 @@ export const CustomSelect = ({
           hideSelectedOptions={false}
           isClearable={false}
           clearIndicator={false}
+          inputRef={inputRef}
+          optionsLoadingState={optionsLoadingState}
           darkMode={darkMode}
           {...{
             menuIsOpen: isFocused || undefined,
@@ -195,8 +196,8 @@ export const CustomSelect = ({
   );
 };
 
-export const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
-  const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
+export const CustomMenuList = ({ children, selectProps, ...props }) => {
+  const { optionsLoadingState, inputRef, onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
     <div className="table-select-custom-menu-list" onClick={(e) => e.stopPropagation()}>
@@ -212,11 +213,11 @@ export const CustomMenuList = ({ optionsLoadingState, children, selectProps, inp
           spellCheck="false"
           type="text"
           value={inputValue}
-          onChange={(e) =>
+          onChange={(e) => {
             onInputChange(e.currentTarget.value, {
               action: 'input-change',
-            })
-          }
+            });
+          }}
           onMouseDown={(e) => {
             e.stopPropagation();
             e.target.focus();

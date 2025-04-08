@@ -276,6 +276,7 @@ export const JSONNode = ({ data, ...restProps }) => {
               }}
               style={{ height: '13px', width: '13px', marginBottom: '4px' }}
               className="mx-1 copy-to-clipboard"
+              onMouseDown={(e) => e.preventDefault()}
             >
               <DefaultCopyIcon />
             </span>
@@ -286,6 +287,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             onClick={() => {
               moreActions['actions'][0].dispatchAction(data, currentNode);
             }}
+            onMouseDown={(e) => e.preventDefault()}
             data-cy={`copy-value-to-clicpboard`}
           >
             <SolidIcon width="12" height="12" name="copy" />
