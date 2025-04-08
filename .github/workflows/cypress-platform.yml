@@ -211,7 +211,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/production.Dockerfile
+          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
@@ -347,7 +347,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/production.Dockerfile
+          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
@@ -495,7 +495,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/production.Dockerfile
+          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
