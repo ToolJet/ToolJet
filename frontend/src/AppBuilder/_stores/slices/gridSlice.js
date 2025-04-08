@@ -77,6 +77,22 @@ export const createGridSlice = (set, get) => ({
   setLastCanvasClickPosition: (position) => {
     set({ lastCanvasClickPosition: position });
   },
+  checkIfAnyWidgetVisibilityChanged: () => {
+    // This is required to reload the grid if visibility is turned off using CSA
+    const { getExposedValueOfComponent, getCurrentPageComponents } = get();
+    const currentPageComponents = getCurrentPageComponents();
+
+    const visibilityState = {};
+
+    Object.keys(currentPageComponents).forEach((componentId) => {
+      const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
+
+      // Determine if component is visible
+      visibilityState[componentId] = !(componentExposedVisibility === false);
+    });
+
+    return visibilityState;
+  },
   setReorderContainerChildren: (containerId) => {
     // Function to trigger reordering of specific container for tab navigation
     set((state) => ({
