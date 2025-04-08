@@ -239,7 +239,7 @@ export const Tabs = function Tabs({
           display: computeTabDisplay(id, tab.id),
           height: parsedHideTabs ? height : height - 41,
           position: 'absolute',
-          top: parsedHideTabs ? '0px' : '50px',
+          top: '0px',
           width: '100%',
         }}
       >
@@ -309,7 +309,7 @@ export const Tabs = function Tabs({
         currentTabsRef.removeEventListener('scroll', onScroll);
       }
     };
-  }, [tabsRef.current, tabWidth]);
+  }, [tabsRef.current, tabWidth, tabItems]);
 
   useEffect(() => {
     checkScroll();
@@ -549,7 +549,7 @@ export const Tabs = function Tabs({
             id={`${id}-${tab.id}`}
             key={tab.id}
           >
-            {shouldRenderTabContent(tab) && renderTabContent(id, tab)}
+            {renderTabContent(id, tab)}
 
             {/* {tab.id == currentTab && <SubContainer id={`${id}-${tab.id}`} canvasHeight={'200'} canvasWidth={width} />} */}
           </div>

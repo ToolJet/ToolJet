@@ -72,7 +72,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     const generateNewTabItem = () => {
       let found = false;
       let title = '';
-      let currentNumber = tabItems.length + 1;
+      let currentNumber = tabItems.length;
       let id = `t${currentNumber}`;
       while (!found) {
         title = `Tab ${currentNumber}`;
@@ -86,6 +86,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         title,
         visible: { value: '{{true}}' },
         disable: { value: '{{false}}' },
+        iconVisibility: { value: '{{false}}' },
+        icon: { value: 'IconHome2' },
       };
     };
 
