@@ -85,7 +85,6 @@ export const MarkdownColumn = ({
         className={`h-100 text-container long-text-input d-flex${
           darkMode ? ' textarea-dark-theme' : ''
         } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
-        tabIndex={-1}
         style={{
           color: cellTextColor ? cellTextColor : 'inherit',
           outline: 'none',
