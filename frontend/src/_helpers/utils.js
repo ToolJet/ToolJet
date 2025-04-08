@@ -12,7 +12,6 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
@@ -70,17 +69,6 @@ export function findProp(obj, prop, defval) {
     }
   }
   return obj;
-}
-
-export function checkWhiteLabelsDefaultState() {
-  const text = window.public_config?.WHITE_LABEL_TEXT;
-  const logo = window.public_config?.WHITE_LABEL_LOGO;
-  const favicon = window.public_config?.WHITE_LABEL_FAVICON;
-  return (
-    (!text || text === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
-    (!logo || logo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
-    (!favicon || favicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
-  );
 }
 
 export function stripTrailingSlash(str) {
@@ -242,18 +230,20 @@ export function resolveReferences(
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
-          for (const dynamicVariable of dynamicVariables) {
-            const value = resolveString(
-              dynamicVariable,
-              state,
-              customObjects,
-              reservedKeyword,
-              withError,
-              forPreviewBox
-            );
+          if (dynamicVariables) {
+            for (const dynamicVariable of dynamicVariables) {
+              const value = resolveString(
+                dynamicVariable,
+                state,
+                customObjects,
+                reservedKeyword,
+                withError,
+                forPreviewBox
+              );
 
-            if (typeof value !== 'function') {
-              object = object.replace(dynamicVariable, value);
+              if (typeof value !== 'function') {
+                object = object.replace(dynamicVariable, value);
+              }
             }
           }
         }

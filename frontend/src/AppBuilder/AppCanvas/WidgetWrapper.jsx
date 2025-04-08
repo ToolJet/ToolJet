@@ -93,6 +93,7 @@ const WidgetWrapper = memo(
               showHandle={isWidgetActive}
               componentType={componentType}
               visibility={visibility}
+              subContainerIndex={subContainerIndex}
             />
           )}
           <RenderWidget

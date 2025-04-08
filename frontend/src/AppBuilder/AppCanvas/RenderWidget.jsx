@@ -11,7 +11,11 @@ import { BOX_PADDING } from './appCanvasConstants';
 const shouldAddBoxShadowAndVisibility = [
   'Table',
   'TextInput',
+  'TextArea',
   'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
   'NumberInput',
   'Text',
   'Checkbox',
@@ -26,6 +30,7 @@ const shouldAddBoxShadowAndVisibility = [
   'DaterangePicker',
   'DatePickerV2',
   'TimePicker',
+  'Link',
 ];
 
 const RenderWidget = ({
@@ -87,6 +92,7 @@ const RenderWidget = ({
         ...{ widgetValue: value },
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables,
+        componentType,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]

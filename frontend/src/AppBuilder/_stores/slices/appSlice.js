@@ -6,14 +6,16 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { replaceEntityReferencesWithIds } from '../utils';
+import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _ from 'lodash';
 
 const initialState = {
   app: {},
   canvasHeight: null,
   isSaving: false,
-  globalSettings: {},
+  globalSettings: {
+    theme: baseTheme,
+  },
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
@@ -94,7 +96,7 @@ export const createAppSlice = (set, get) => ({
       console.error('Error updating page:', error);
     }
   },
-  switchPage: (pageId, handle, queryParams = []) => {
+  switchPage: (pageId, handle, queryParams = [], isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
     // reset stores
     if (get().pageSwitchInProgress) {
@@ -139,14 +141,19 @@ export const createAppSlice = (set, get) => ({
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().app.slug;
 
-    navigate(
-      `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
-      {
-        state: {
-          isSwitchingPage: true,
-        },
-      }
-    );
+    if (!isBackOrForward) {
+      navigate(
+        `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
+        {
+          state: {
+            isSwitchingPage: true,
+            id: pageId,
+            handle: handle,
+          },
+        }
+      );
+    }
+
     const newPage = pages.find((p) => p.id === pageId);
     setResolvedPageConstants({
       id: newPage?.id,

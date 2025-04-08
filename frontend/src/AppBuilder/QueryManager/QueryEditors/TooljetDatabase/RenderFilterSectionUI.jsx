@@ -117,10 +117,7 @@ const RenderFilterSectionUI = ({
             <ButtonSolid
               size="sm"
               variant="ghostBlack"
-              className="px-1 rounded-0 border rounded-end"
-              customStyles={{
-                height: '30px',
-              }}
+              className="px-1 rounded-0 border rounded-end qm-delete-btn"
               onClick={() => removeFilterConditionPair(id)}
             >
               <Trash fill="var(--slate9)" style={{ height: '16px' }} />

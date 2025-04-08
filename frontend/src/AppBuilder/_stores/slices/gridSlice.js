@@ -8,6 +8,10 @@ const initialState = {
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
   draggingComponentId: null,
+  reorderContainerChildren: {
+    containerId: null,
+    triggerUpdate: 0,
+  },
 };
 
 export const createGridSlice = (set, get) => ({
@@ -88,5 +92,11 @@ export const createGridSlice = (set, get) => ({
     });
 
     return visibilityState;
+  },
+  setReorderContainerChildren: (containerId) => {
+    // Function to trigger reordering of specific container for tab navigation
+    set((state) => ({
+      reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
+    }));
   },
 });

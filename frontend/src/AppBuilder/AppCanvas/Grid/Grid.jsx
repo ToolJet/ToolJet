@@ -67,6 +67,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const [isGroupDragging, setIsGroupDragging] = useState(false);
   const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
+  const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -538,6 +539,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           })
         );
       }
+      setReorderContainerChildren(draggedOverElemId ?? 'canvas');
     } catch (error) {
       console.error('Error dragging group', error);
     }
@@ -700,6 +702,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               resizeData.gw = _gridWidth;
             }
             handleResizeStop([resizeData]);
+            setReorderContainerChildren(currentWidget?.parent ?? 'canvas');
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
@@ -779,6 +782,11 @@ export default function Grid({ gridWidth, currentLayout }) {
                 ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
               });
             }
+
+            const groupParentId =
+              boxList.find(({ id }) => id === groupResizeDataRef.current[0].target.id)?.parent ?? 'canvas';
+            setReorderContainerChildren(groupParentId);
+
             groupResizeDataRef.current = [];
             reloadGrid();
           } catch (error) {
@@ -845,6 +853,8 @@ export default function Grid({ gridWidth, currentLayout }) {
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
+
+            const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent ?? 'canvas';
             prevDragParentId.current = null;
             newDragParentId.current = null;
             setDragParentId(null);
@@ -882,6 +892,12 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             // Apply transform for smooth transition
             e.target.style.transform = `translate(${left}px, ${top}px)`;
+
+            // Force reordering of conatiner if the parent has not changed
+            const newParentId = target.slotId === 'real-canvas' ? 'canvas' : target.slotId;
+            if (oldParentId === newParentId) {
+              setReorderContainerChildren(newParentId);
+            }
 
             // Select the dragged component after drop
             setTimeout(() => setSelectedComponents([dragged.id]));
