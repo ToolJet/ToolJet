@@ -381,6 +381,7 @@ const sidebars = {
             'data-sources/typesense',
             'data-sources/woocommerce',
             'data-sources/zendesk',
+            'data-sources/nocodb',
           ],
         },
         {
