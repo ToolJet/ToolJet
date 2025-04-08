@@ -138,7 +138,7 @@ jobs:
         with:
           context: .
           args: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          file: docker/ee-production.Dockerfile
+          file: docker/ee/ee-production.Dockerfile
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64
@@ -230,4 +230,3 @@ jobs:
   #         fi
 
   #         curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
