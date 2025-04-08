@@ -142,6 +142,7 @@ export const Table = React.memo(
     const preSelectRow = useRef(false);
     const initialPageCountRef = useRef(null);
     const allAppEvents = useEvents();
+    const wrapperRef = useRef(null);
     // const { events: allAppEvents } = useAppInfo();
     const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
     const onEvent = useStore((state) => state.eventsSlice.onEvent);
@@ -149,7 +150,7 @@ export const Table = React.memo(
     const tableColumnEvents = allAppEvents.filter((event) => event.target === 'table_column' && event.sourceId === id);
     const tableActionEvents = allAppEvents.filter((event) => event.target === 'table_action' && event.sourceId === id);
     const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-
+    const observedHeight = useHeightChange(wrapperRef);
     const { t } = useTranslation();
 
     const [tableDetails, dispatch] = useReducer(reducer, initialState());
@@ -913,7 +914,7 @@ export const Table = React.memo(
       dynamicHeight: properties.dynamicHeight,
       id: id,
       height,
-      value: tableData,
+      value: JSON.stringify(tableData),
       adjustComponentPositions,
       currentLayout,
       width,
@@ -1061,6 +1062,7 @@ export const Table = React.memo(
         data-cy={`draggable-widget-${String(component?.component?.name).toLowerCase()}`}
         data-disabled={parsedDisabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
+        ref={wrapperRef}
         style={{
           width: `100%`,
           height: properties.dynamicHeight ? 'auto' : `${height}px`,

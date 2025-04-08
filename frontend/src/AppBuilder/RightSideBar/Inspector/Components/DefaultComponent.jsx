@@ -28,6 +28,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Container',
   'Form',
   'ModalV2',
+  'Listview',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

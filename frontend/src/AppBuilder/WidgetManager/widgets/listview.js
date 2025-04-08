@@ -58,6 +58,15 @@ export const listviewConfig = {
         defaultValue: "[{text: 'Sample text 1'}]",
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     mode: {
       type: 'select',
       displayName: 'Mode',
@@ -186,6 +195,7 @@ export const listviewConfig = {
       rowHeight: {
         value: '100',
       },
+      dynamicHeight: { value: '{{false}}' },
       visible: { value: '{{true}}' },
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
