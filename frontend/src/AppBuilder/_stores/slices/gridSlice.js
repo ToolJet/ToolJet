@@ -9,6 +9,10 @@ const initialState = {
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
   draggingComponentId: null,
+  reorderContainerChildren: {
+    containerId: null,
+    triggerUpdate: 0,
+  },
 };
 
 export const createGridSlice = (set, get) => ({
@@ -414,5 +418,28 @@ export const createGridSlice = (set, get) => ({
       console.error('Error adjusting component positions:', error);
       return null;
     }
+  },
+
+  checkIfAnyWidgetVisibilityChanged: () => {
+    // This is required to reload the grid if visibility is turned off using CSA
+    const { getExposedValueOfComponent, getCurrentPageComponents } = get();
+    const currentPageComponents = getCurrentPageComponents();
+
+    const visibilityState = {};
+
+    Object.keys(currentPageComponents).forEach((componentId) => {
+      const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
+
+      // Determine if component is visible
+      visibilityState[componentId] = !(componentExposedVisibility === false);
+    });
+
+    return visibilityState;
+  },
+  setReorderContainerChildren: (containerId) => {
+    // Function to trigger reordering of specific container for tab navigation
+    set((state) => ({
+      reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
+    }));
   },
 });

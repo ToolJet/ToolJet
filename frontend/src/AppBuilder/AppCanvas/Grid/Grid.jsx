@@ -23,8 +23,6 @@ import {
   handleDeactivateTargets,
   handleActivateNonDraggingComponents,
 } from './gridUtils';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
@@ -69,6 +67,9 @@ export default function Grid({ gridWidth, currentLayout }) {
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
   const [isGroupDragging, setIsGroupDragging] = useState(false);
+  const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
+  const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
+  const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -327,7 +328,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   useEffect(() => {
     reloadGrid();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedComponents, openModalWidgetId, boxList, currentLayout]);
+  }, [selectedComponents, openModalWidgetId, boxList, currentLayout, checkIfAnyWidgetVisibilityChanged]);
 
   const updateNewPosition = (events, parent = null) => {
     const posWithParent = {
@@ -339,6 +340,8 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const isComponentVisible = (id) => {
     const component = getResolvedComponent(id);
+    const componentExposedVisibility = getExposedValueOfComponent(id)?.isVisible;
+    if (componentExposedVisibility === false) return false;
     let visibility;
     if (isArray(component)) {
       visibility = component?.[0]?.properties?.visibility ?? component?.[0]?.styles?.visibility ?? null;
@@ -545,6 +548,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           })
         );
       }
+      setReorderContainerChildren(draggedOverElemId ?? 'canvas');
     } catch (error) {
       console.error('Error dragging group', error);
     }
@@ -649,13 +653,13 @@ export default function Grid({ gridWidth, currentLayout }) {
             // When clicked on widget boundary/resizer, select the component
             setSelectedComponents([e.target.id]);
           }
-          showGridLines();
           if (!isComponentVisible(e.target.id)) {
             return false;
           }
           handleActivateNonDraggingComponents();
           useGridStore.getState().actions.setResizingComponentId(e.target.id);
           e.setMin([gridWidth, GRID_HEIGHT]);
+          showGridLines();
         }}
         onResizeEnd={(e) => {
           try {
@@ -664,10 +668,12 @@ export default function Grid({ gridWidth, currentLayout }) {
               return id === e.target.id;
             });
             hideGridLines();
+            if (!e.lastEvent) {
+              return;
+            }
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
             const height = Math.round(e?.lastEvent?.height / GRID_HEIGHT) * GRID_HEIGHT;
-
             const currentWidth = currentWidget.width * _gridWidth;
             const diffWidth = e.lastEvent?.width - currentWidth;
             const diffHeight = e.lastEvent?.height - currentWidget?.height;
@@ -714,6 +720,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               resizeData.gw = _gridWidth;
             }
             handleResizeStop([resizeData]);
+            setReorderContainerChildren(currentWidget?.parent ?? 'canvas');
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
@@ -793,6 +800,11 @@ export default function Grid({ gridWidth, currentLayout }) {
                 ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
               });
             }
+
+            const groupParentId =
+              boxList.find(({ id }) => id === groupResizeDataRef.current[0].target.id)?.parent ?? 'canvas';
+            setReorderContainerChildren(groupParentId);
+
             groupResizeDataRef.current = [];
             reloadGrid();
           } catch (error) {
@@ -859,6 +871,8 @@ export default function Grid({ gridWidth, currentLayout }) {
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
+
+            const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent ?? 'canvas';
             prevDragParentId.current = null;
             newDragParentId.current = null;
             setDragParentId(null);
@@ -890,13 +904,18 @@ export default function Grid({ gridWidth, currentLayout }) {
 
               left = dragged.left * sourcegridWidth;
               top = dragged.top;
-
               !isModalToCanvas ??
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
             }
 
             // Apply transform for smooth transition
             e.target.style.transform = `translate(${left}px, ${top}px)`;
+
+            // Force reordering of conatiner if the parent has not changed
+            const newParentId = target.slotId === 'real-canvas' ? 'canvas' : target.slotId;
+            if (oldParentId === newParentId) {
+              setReorderContainerChildren(newParentId);
+            }
 
             // Select the dragged component after drop
             setTimeout(() => setSelectedComponents([dragged.id]));

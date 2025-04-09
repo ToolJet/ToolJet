@@ -134,7 +134,7 @@ export const listviewConfig = {
   },
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -142,7 +142,7 @@ export const listviewConfig = {
       },
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },

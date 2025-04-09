@@ -55,22 +55,22 @@ export const statisticsConfig = {
   events: {},
   styles: {
     primaryLabelColour: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Primary label colour',
       validation: { schema: { type: 'string' }, defaultValue: '#8092AB' },
     },
     primaryTextColour: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Primary text  colour',
       validation: { schema: { type: 'string' }, defaultValue: '#000000' },
     },
     secondaryLabelColour: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Secondary label colour',
       validation: { schema: { type: 'string' }, defaultValue: '#8092AB' },
     },
     secondaryTextColour: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Secondary text colour',
       validation: { schema: { type: 'string' }, defaultValue: '#36AF8B' },
     },
