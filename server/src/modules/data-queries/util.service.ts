@@ -420,11 +420,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         }
 
         // c: Replace all occurrences of {{ }} variables
-        if (
-          typeof resolvedValue === 'string' &&
-          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
-          !(resolvedValue.startsWith('{{') && resolvedValue.endsWith('}}'))
-        ) {
+        if (typeof resolvedValue === 'string' && resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0) {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
           for (const variable of variables || []) {
