@@ -152,18 +152,17 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
+              ? null
+              : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${
-                  shouldAddBoxShadowAndVisibility.includes(component?.component)
-                    ? resolvedProperties?.tooltip
-                    : resolvedGeneralProperties?.tooltip
-                }`
+              ? `${shouldAddBoxShadowAndVisibility.includes(component?.component)
+                ? resolvedProperties?.tooltip
+                : resolvedGeneralProperties?.tooltip
+              }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -191,6 +190,7 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            dataCy={`draggable-widget-${componentName}`}
           />
         </div>
       </OverlayTrigger>
