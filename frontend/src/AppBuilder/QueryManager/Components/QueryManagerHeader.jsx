@@ -15,6 +15,7 @@ import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import { debounce } from 'lodash';
+import { Button as TJButton } from '@/components/ui/Button/Button';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const moduleId = useModuleId();
@@ -157,8 +158,8 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
   const inputRef = useRef();
 
@@ -288,8 +289,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();
@@ -315,19 +316,15 @@ const AbortButton = ({ queryName }) => {
   const abortQuery = useStore((state) => state.queryPanel.abortQuery);
   return (
     <AltTooltip message="Abort Query" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
-      <button
+      <TJButton
         onClick={() => {
           abortQuery(queryName);
         }}
-        className="abort-query"
-      >
-        <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M3.49996 1.16602H10.5C11.7886 1.16602 12.8333 2.21068 12.8333 3.49935V10.4993C12.8333 11.788 11.7886 12.8327 10.5 12.8327H3.49996C2.2113 12.8327 1.16663 11.788 1.16663 10.4993V3.49935C1.16663 2.21068 2.21129 1.16602 3.49996 1.16602Z"
-            fill="#D72D39"
-          />
-        </svg>
-      </button>
+        iconOnly
+        size="medium"
+        leadingIcon="rectangle"
+        variant="dangerSecondary"
+      />
     </AltTooltip>
   );
 };

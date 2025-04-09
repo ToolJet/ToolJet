@@ -230,6 +230,7 @@ import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
 import Code from './Code.jsx';
+import Rectangle from './Rectangle.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -695,6 +696,8 @@ const Icon = (props) => {
       return <StudentIcon {...props} />;
     case 'ai-crown':
       return <AICrown {...props} />;
+    case 'rectangle':
+      return <Rectangle {...props} />;
     default:
       return <Apps {...props} />;
   }
