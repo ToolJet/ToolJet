@@ -900,12 +900,49 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       selectedComponents,
       deleteComponentNameIdMapping,
+      getResolvedComponent,
       removeNode,
+      deleteTemporaryLayouts,
+      currentLayout,
+      adjustComponentPositions,
     } = get();
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
+    const componentIds = [];
+    const childParentMapping = {};
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
+
+    const toDeleteComponents = [];
+    const toDeleteEvents = [];
+    const allComponents = getCurrentPageComponents();
+
+    const findAllChildComponents = (componentId) => {
+      if (!toDeleteComponents.includes(componentId)) {
+        toDeleteComponents.push(componentId);
+
+        // Find the children of this component
+        const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
+        if (children.length > 0) {
+          // Recursively find children of children
+          children.forEach((child) => {
+            findAllChildComponents(child);
+          });
+        }
+      }
+    };
+
+    _selectedComponents.forEach((componentId) => {
+      findAllChildComponents(componentId);
+    });
+
+    toDeleteComponents.forEach((componentId) => {
+      const isDynamicHeightEnabled = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamicHeightEnabled) {
+        adjustComponentPositions(componentId, currentLayout, true);
+      }
+    });
+
     set(
       withUndoRedo((state) => {
         const toDeleteComponents = [];
@@ -934,12 +971,16 @@ export const createComponentsSlice = (set, get) => ({
         const page = state.modules?.canvas?.pages.find((page) => page.id === state.currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
-
         toDeleteComponents.forEach((id) => {
           // Remove from containerChildrenMapping
           Object.keys(state.containerChildrenMapping).forEach((containerId) => {
             state.containerChildrenMapping[containerId] = state.containerChildrenMapping[containerId].filter(
-              (componentId) => componentId !== id
+              (componentId) => {
+                if (componentId === id) {
+                  childParentMapping[id] = containerId;
+                }
+                return componentId !== id;
+              }
             );
           });
 
@@ -951,6 +992,7 @@ export const createComponentsSlice = (set, get) => ({
             state.containerChildrenMapping.canvas = state.containerChildrenMapping.canvas.filter((wid) => wid !== id);
           }
           componentNames.push(page.components[id]?.component?.name);
+          componentIds.push(id);
           const eventsToRemove = appEvents.filter((event) => event.sourceId === id).map((event) => event.id);
           toDeleteEvents.push(...eventsToRemove);
           delete page.components[id]; // Remove the component from the page
@@ -990,8 +1032,15 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponents'
     );
+
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName);
+    });
+    componentIds.forEach((componentId) => {
+      if (childParentMapping[componentId]) {
+        adjustComponentPositions(childParentMapping[componentId], currentLayout, false, true);
+      }
+      deleteTemporaryLayouts(componentId);
     });
   },
 
@@ -1037,9 +1086,12 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
+      getResolvedComponent,
+      adjustComponentPositions,
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
+      deleteTemporaryLayouts,
     } = get();
     let hasParentChanged = false;
     let oldParentId;
@@ -1085,6 +1137,7 @@ export const createComponentsSlice = (set, get) => ({
                 state.containerChildrenMapping.canvas.push(componentId);
               }
             }
+
             // ============ Parent update logic ends ============
           });
         }
@@ -1097,6 +1150,22 @@ export const createComponentsSlice = (set, get) => ({
       const newParentComponentType = getComponentTypeFromId(newParentId, moduleId);
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
       const { component } = getComponentDefinition(componentId, moduleId);
+
+      // Adjust component positions
+
+      //If new parent is dynamic, adjust the parent positions
+      const isParentDynamic = getResolvedComponent(newParentId)?.properties?.dynamicHeight;
+      if (isParentDynamic) {
+        adjustComponentPositions(newParentId, currentLayout, false, true);
+      }
+
+      // If the parent is changed, adjust the old parent positions
+      if (oldParentId !== newParentId) {
+        const isParentDynamic = getResolvedComponent(oldParentId)?.properties?.dynamicHeight;
+        if (isParentDynamic) {
+          adjustComponentPositions(oldParentId, currentLayout, false, true);
+        }
+      }
 
       if (
         newParentComponentType === 'Listview' ||
@@ -1147,6 +1216,10 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
+
+    Object.keys(componentLayouts).forEach((componentId) => {
+      deleteTemporaryLayouts(componentId);
+    });
 
     if (saveAfterAction) {
       saveComponentChanges(diff, 'components/layout', 'update');

@@ -49,6 +49,7 @@ import { EmptyState } from './Components/EmptyState';
 import { LoadingState } from './Components/LoadingState';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -84,6 +85,8 @@ export const Table = React.memo(
     properties,
     variablesExposedForPreview,
     exposeToCodeHinter,
+    adjustComponentPositions,
+    currentLayout,
     // events,
     // setProperty,
   }) => {
@@ -139,6 +142,7 @@ export const Table = React.memo(
     const preSelectRow = useRef(false);
     const initialPageCountRef = useRef(null);
     const allAppEvents = useEvents();
+    const wrapperRef = useRef(null);
     // const { events: allAppEvents } = useAppInfo();
     const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
     const onEvent = useStore((state) => state.eventsSlice.onEvent);
@@ -146,7 +150,6 @@ export const Table = React.memo(
     const tableColumnEvents = allAppEvents.filter((event) => event.target === 'table_column' && event.sourceId === id);
     const tableActionEvents = allAppEvents.filter((event) => event.target === 'table_action' && event.sourceId === id);
     const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-
     const { t } = useTranslation();
 
     const [tableDetails, dispatch] = useReducer(reducer, initialState());
@@ -906,6 +909,16 @@ export const Table = React.memo(
       }
     }, [state.columnResizing.isResizingColumn]);
 
+    useDynamicHeight({
+      dynamicHeight: properties.dynamicHeight,
+      id: id,
+      height,
+      value: JSON.stringify(tableData),
+      adjustComponentPositions,
+      currentLayout,
+      width,
+    });
+
     const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
     const [rowDetails, setRowDetails] = useState();
 
@@ -1048,9 +1061,10 @@ export const Table = React.memo(
         data-cy={`draggable-widget-${String(component?.component?.name).toLowerCase()}`}
         data-disabled={parsedDisabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
+        ref={wrapperRef}
         style={{
           width: `100%`,
-          height: `${height}px`,
+          height: properties.dynamicHeight ? 'auto' : `${height}px`,
           display: parsedWidgetVisibility ? '' : 'none',
           overflow: 'hidden',
           borderRadius: Number.parseFloat(borderRadius),

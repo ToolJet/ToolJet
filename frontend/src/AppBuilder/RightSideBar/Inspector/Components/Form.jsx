@@ -188,6 +188,26 @@ export const baseComponentProperties = (
   });
 
   items.push({
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    isOpen: true,
+    children: additionalActions?.map((property) => {
+      const paramType = property === 'Tooltip' ? 'general' : 'properties';
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        paramType,
+        currentState,
+        allComponents,
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
+      );
+    }),
+  });
+
+  items.push({
     title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
     children: (
