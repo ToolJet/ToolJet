@@ -207,13 +207,7 @@ const sidebars = {
                     'widgets/code-editor',
                     'widgets/color-picker',
                     'widgets/container',
-                    {
-                      'type': 'category',
-                      'label': 'Custom Component',
-                      'items': [
-                        'widgets/custom-component/properties'
-                      ]
-                    },
+                    'widgets/custom-component',
                     'widgets/date-range-picker',
                     'widgets/datepicker',
                     'widgets/divider',

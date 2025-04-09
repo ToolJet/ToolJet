@@ -1,14 +1,13 @@
 ---
-id: properties
-title: Properties
-slug: /widgets/custom-component/
+id: custom-component
+title: Custom Component
 ---
 
-**Custom Component** can be used to create your own react component to use within the ToolJet application. Using a **Custom Component** you can access or update data or run queries to interact with the application.
+ToolJet allows you to create your own React component using the **Custom Component**, providing greater flexibility and customization for your application.
 
-## Data Field
+## Data
 
-Data can be passed to a custom component using the **Data** field. The data should be structured as an object or an array of objects.
+Data can be passed to a custom component using the **Data** field. The data should be structured as an object or an array of objects. Query name can also be passed through this field to trigger queries using the custom component.
 
 <img className="screenshot-full" src="/img/widgets/custom-component/data.png" alt="Custom Component Data Property" />
 
@@ -17,7 +16,7 @@ Data can be passed to a custom component using the **Data** field. The data shou
 {{{ 
     title: 'Hi! There', 
     buttonText: 'Update Title',
-    queryName: 'runQueryExample'
+    queryName: 'fetchData'
 }}}
 ```
 **OR**
@@ -38,13 +37,13 @@ Data fetched from a query can also be passed to the **Custom Component** in the 
 <img className="screenshot-full" src="/img/widgets/custom-component/query-data.png" alt="Custom Component Data Property" />
 
 
-## Code Field
+## Code
 
-The ReactJS code for a **Custom Component** can be added in the **Code** field. ToolJet provides three key properties for interacting with the app.
+The React code for a **Custom Component** can be added in the **Code** field. You can interact with the application through the custom component using the following parameter and in-built functions.
 
-### Data
+### Data Parameter
 
-To access the data passed through the [data](#data) field, define the `data` parameter to the *MyCustomComponent* funtion. You can then access the properties of the data object using dot notation.
+To access the data passed through the [data](#data) field, define the `data` parameter to the *MyCustomComponent* funtion.
 
 #### Example
 
@@ -67,9 +66,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 
 <img className="screenshot-full" src="/img/widgets/custom-component/data-prop.png" alt="Custom Component Data Property" />
 
-### Update Data
+### Update Data Function
 
-To update the data in the data object, you can use the `updateData` property.
+To update the data in the data object, you can use the in-built `updateData` function.
 
 #### Example
 
@@ -98,19 +97,24 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 
 <img className="screenshot-full" src="/img/widgets/custom-component/update-data.png" alt="Custom Component Data Property" />
 
-### Run Query
+### Run Query Function
 
-**Custom Component** in ToolJet can be used to trigger queries. Specify the query name in the data field and use the `runQuery` function to execute the query dynamically when a specific action occurs, such as a button click.
+**Custom Component** in ToolJet can be used to trigger queries. You can specify the query name in the [data](#data) field. Use the in-built `runQuery` function to execute the query dynamically from within the **Custom Component**.
 
 #### Example
 
 ```js
-iimport React from "https://cdn.skypack.dev/react";
+import React from "https://cdn.skypack.dev/react";
 import ReactDOM from "https://cdn.skypack.dev/react-dom";
-import { Button, Container, Typography } from "https://cdn.skypack.dev/@material-ui/core";
+import { Button, Container } from "https://cdn.skypack.dev/@material-ui/core";
 
 const MyCustomComponent = ({ data, runQuery }) => (
-  <Container style={{ textAlign: "center", marginTop : "8px"}}>
+  <Container>
+    <h1>Employee Details</h1>
+    <p>Name: <b>{data.name}</b></p>
+    <p>Designation: <b>{data.designation}</b></p>
+    <p>Designation: <b>{data.department}</b></p>
+    <p>Designation: <b>{data.address}</b></p>
     <Button
       color="primary"
       variant="contained"
@@ -118,9 +122,13 @@ const MyCustomComponent = ({ data, runQuery }) => (
         runQuery(data.queryName);
       }}
     >
-      Run Query
+      Fetch Contact Info
     </Button>
   </Container>
+);
+
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);
 );
 
 const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
