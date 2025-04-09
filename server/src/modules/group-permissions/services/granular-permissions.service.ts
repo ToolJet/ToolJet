@@ -45,6 +45,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const apps = await manager.find(AppBase, {
         where: {
+          type: 'front-end',
           organizationId,
         },
       });
