@@ -146,13 +146,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       try {
         for (const addGroup of groups) {
-          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(
-            {
-              organizationId: organizationId,
-              name: addGroup,
-            },
-            manager
-          );
+          const groupQuery = uuid.validate(addGroup)
+            ? { organizationId: organizationId, id: addGroup }
+            : { organizationId: organizationId, name: addGroup };
+
+          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(groupQuery, manager);
           if (!orgGroupPermission) {
             throw new BadRequestException(`${addGroup} group does not exist for current organization`);
           }

@@ -30,7 +30,7 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
           source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
-          role: isDefaultOrganization ? 'all-users' : 'end-users',
+          role: 'all-users',
           createdAt: new Date(),
           updatedAt: new Date(),
         })
