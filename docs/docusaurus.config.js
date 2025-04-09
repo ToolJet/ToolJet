@@ -209,7 +209,7 @@ module.exports = {
             from: '/docs/tutorial/manage-users-groups',
           },
           {
-            to: '/docs/security/constants/variables/',
+            to: '/docs/security/constants/variables',
             from: '/docs/org-management/workspaces/workspace-variables-migration',
           },
           {
@@ -217,8 +217,244 @@ module.exports = {
             from: '/docs/org-management/smtp-configuration/',
           },
           {
-            to: '/docs/user-management/authentication/self-hosted/instance-login/',
+            to: '/docs/user-management/authentication/self-hosted/instance-login',
             from: '/docs/enterprise/superadmin',
+          },
+          {
+            to: '/docs/beta/user-management/sso/oidc/setup',
+            from: '/docs/beta/category/openid-connect/',
+          },
+          {
+            to: '/docs/beta/development-lifecycle/release/share-app/',
+            from: '/docs/beta/dashboard',
+          },
+          {
+            to: '/docs/beta/security/audit-logs',
+            from: '/docs/beta/enterprise/audit_logs',
+          },
+          {
+            to: '/docs/beta/user-management/role-based-access/super-admin',
+            from: '/docs/beta/enterprise/superadmin',
+          },
+          {
+            to: '/docs/beta/tj-setup/org-branding/white-labeling',
+            from: '/docs/beta/enterprise/white-label',
+          },
+          {
+            to: '/docs/beta/development-lifecycle/gitsync/overview',
+            from: '/docs/beta/gitsync',
+          },
+          {
+            to: '/docs/beta/tj-setup/licensing/self-hosted',
+            from: '/docs/beta/org-management/licensing/self-hosted/',
+          },
+          {
+            to: '/docs/beta/user-management/role-based-access/access-control',
+            from: '/docs/beta/org-management/permissions',
+          },
+          {
+            to: '/docs/beta/tj-setup/smtp-setup/configuration',
+            from: '/docs/beta/org-management/smtp-configuration',
+          },
+          {
+            to: '/docs/beta/security/constants/',
+            from: '/docs/beta/org-management/workspaces/workspace_constants/',
+          },
+          {
+            to: '/docs/beta/tj-setup/workspaces',
+            from: '/docs/beta/org-management/workspaces/workspace_overview/',
+          },
+          {
+            to: '/docs/beta/security/constants/variables',
+            from: '/docs/beta/org-management/workspaces/workspace-variables-migration',
+          },
+          {
+            to: '/docs/beta/development-lifecycle/gitsync/pull',
+            from: '/docs/beta/release-management/gitsync/git-pull',
+          },
+          {
+            to: '/docs/beta/development-lifecycle/gitsync/gitsync-config',
+            from: '/docs/beta/release-management/gitsync/tj-config/',
+          },
+          {
+            to: '/docs/beta/security/compliance',
+            from: '/docs/beta/security',
+          },
+          {
+            to: '/docs/beta/build-with-ai/overview',
+            from: '/docs/beta/tooljet-copilot',
+          },
+          {
+            to: '/docs/beta/user-management/role-based-access/custom-groups',
+            from: '/docs/beta/tutorial/manage-users-groups',
+          },
+          {
+            to: '/docs/beta/tooljet-api',
+            from: '/docs/beta/tutorial/tooljet-api',
+          },
+          {
+            to: '/docs/beta/user-management/authentication/self-hosted/overview',
+            from: '/docs/beta/user-authentication/general-settings/',
+          },
+          {
+            to: '/docs/beta/user-management/authentication/self-hosted/instance-login',
+            from: '/docs/beta/user-authentication/password-login',
+          },
+          {
+            to: '/docs/beta/user-management/authentication/self-hosted/instance-login',
+            from: '/docs/beta/user-authentication/sso/auto-sso-login',
+          },
+          {
+            to: '/docs/user-management/sso/github',
+            from: '/docs/beta/user-authentication/sso/github',
+          },
+          {
+            to: '/docs/user-management/sso/ldap',
+            from: '/docs/beta/user-authentication/sso/ldap',
+          },
+          {
+            to: '/docs/beta/user-management/sso/oidc/azuread',
+            from: '/docs/beta/user-authentication/sso/openid/azuread/',
+          },
+          {
+            to: '/docs/beta/user-management/sso/oidc/google',
+            from: '/docs/beta/user-authentication/sso/openid/google-openid',
+          },
+          {
+            to: '/docs/beta/user-management/sso/oidc/okta',
+            from: '/docs/beta/user-authentication/sso/openid/okta',
+          },
+          {
+            to: '/docs/beta/user-management/sso/saml/setup',
+            from: '/docs/beta/user-authentication/sso/saml',
+          },
+          {
+            to: '/docs/beta/user-management/onboard-users/overview',
+            from: '/docs/beta/user-authentication/user-lifecycle/',
+          },
+          {
+            to: '/docs/beta/user-management/authentication/self-hosted/workspace-login',
+            from: '/docs/beta/user-authentication/workspace-login',
+          },
+          {
+            to: '/docs/user-management/sso/oidc/setup',
+            from: '/docs/category/openid-connect',
+          },
+          {
+            to: '/docs/development-lifecycle/release/share-app',
+            from: '/docs/dashboard',
+          },
+          {
+            to: '/docs/security/audit-logs',
+            from: '/docs/enterprise/audit_logs/',
+          },
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling',
+            from: '/docs/enterprise/white-label',
+          },
+          {
+            to: '/docs/tj-setup/licensing/self-hosted',
+            from: '/docs/org-management/licensing/self-hosted',
+          },
+          {
+            to: '/docs/user-management/role-based-access/access-control',
+            from: '/docs/org-management/permissions/',
+          },
+          {
+            to: '/docs/tj-setup/workspaces',
+            from: '/docs/org-management/workspaces/workspace_overview',
+          },
+          {
+            to: '/docs/security/constants/variables',
+            from: '/docs/org-management/workspaces/workspace-variables',
+          },
+          {
+            to: '/docs/development-lifecycle/gitsync/delete-gitsync',
+            from: '/docs/release-management/gitsync/delete-gitsync',
+          },
+          {
+            to: '/docs/development-lifecycle/gitsync/ssh-config',
+            from: '/docs/release-management/gitsync/ssh-config',
+          },
+          {
+            to: '/docs/development-lifecycle/gitsync/gitsync-config',
+            from: '/docs/release-management/gitsync/tj-config',
+          },
+          {
+            to: '/docs/development-lifecycle/environment/self-hosted/multi-environment',
+            from: '/docs/release-management/multi-environment',
+          },
+          {
+            to: '/docs/security/compliance',
+            from: '/docs/security/',
+          },
+          {
+            to: '/docs/setup/try-tooljet/',
+            from: '/docs/setup/client/',
+          },
+          {
+            to: '/docs/build-with-ai/overview',
+            from: '/docs/tooljet-ai/overview',
+          },
+          {
+            to: '/docs/tooljet-api',
+            from: '/docs/tutorial/tooljet-api',
+          },
+          {
+            to: '/docs/user-management/authentication/self-hosted/overview',
+            from: '/docs/user-authentication/general-settings',
+          },
+          {
+            to: '/docs/user-management/authentication/self-hosted/instance-login',
+            from: '/docs/user-authentication/password-login',
+          },
+          {
+            to: '/docs/user-management/sso/github',
+            from: '/docs/user-authentication/sso/github',
+          },
+          {
+            to: '/docs/user-management/sso/google',
+            from: '/docs/user-authentication/sso/google',
+          },
+          {
+            to: '/docs/user-management/sso/oidc/setup',
+            from: '/docs/user-authentication/sso/oidc',
+          },
+          {
+            to: '/docs/user-management/sso/oidc/azuread',
+            from: '/docs/user-authentication/sso/openid/azuread/',
+          },
+          {
+            to: '/docs/user-management/sso/oidc/google',
+            from: '/docs/user-authentication/sso/openid/google-openid',
+          },
+          {
+            to: '/docs/user-management/sso/oidc/okta',
+            from: '/docs/user-authentication/sso/openid/okta',
+          },
+          {
+            to: '/docs/user-management/sso/oidc/setup',
+            from: '/docs/user-authentication/sso/openid/setup',
+          },
+          {
+            to: '/docs/user-management/sso/saml/setup',
+            from: '/docs/user-authentication/sso/saml',
+          },
+          {
+            to: '/docs/user-management/onboard-users/overview',
+            from: '/docs/user-authentication/user-lifecycle/',
+          },
+          {
+            to: '/docs/user-management/authentication/self-hosted/workspace-login',
+            from: '/docs/user-authentication/workspace-login',
+          },
+          {
+            to: '/docs/widgets/table/',
+            from: '/docs/widgets/table/table-properties',
+          },
+          {
+            to: '/docs/workflows/how-to/trigger-workflow-from-app',
+            from: '/docs/workflows/trigger-workflow-from-app',
           }
         ],
       },
