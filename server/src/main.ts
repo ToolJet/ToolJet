@@ -20,6 +20,7 @@ import { join } from 'path';
 import * as helmet from 'helmet';
 import * as express from 'express';
 import * as fs from 'fs';
+import * as path from 'path';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { AppModule } from '@modules/app/module';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
@@ -214,6 +215,11 @@ async function bootstrap() {
   setSecurityHeaders(app, configService);
 
   app.use(`${UrlPrefix}/assets`, express.static(join(__dirname, '/assets')));
+
+  // Serve robots.txt
+  app.use('/robots.txt', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/robots.txt'));
+  });
 
   const listen_addr = process.env.LISTEN_ADDR || '::';
   const port = parseInt(process.env.PORT) || 3000;
