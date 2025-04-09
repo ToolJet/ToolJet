@@ -1,50 +1,85 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
-export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
+export const RangeSlider = ({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) => {
   const isInitialRender = useRef(true);
-  const { value, min, max, enableTwoHandle } = properties;
-  const { trackColor, handleColor, lineColor, visibility, boxShadow } = styles;
+  const labelRef = useRef(null);
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
+
+  const {
+    trackColor,
+    handleColor,
+    lineColor,
+    visibility,
+    boxShadow,
+    alignment = 'side',
+    direction = 'left',
+    width = 0,
+    auto = false,
+    color = '#000',
+    markerLabel,
+    handleBorderColor,
+  } = styles;
+
   const sliderRef = useRef(null);
-  const [sliderValue, setSliderValue] = useState(0);
+
+  const [sliderValue, setSliderValue] = useState(
+    endValue !== undefined ? endValue : Array.isArray(value) ? value[0] : value || 0
+  );
   const [rangeValue, setRangeValue] = useState([0, 100]);
+  const [labelWidth, setLabelWidth] = useState(auto ? 'auto' : width);
+
+  const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const _width = auto ? 'auto' : `${(width / 100) * 70}%`;
 
   const toArray = (data) => (Array.isArray(data) ? data : [data, max]);
   const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
   const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
-  const computedStyles = {
-    height,
-    display: visibility ? 'flex' : 'none',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0px 2px',
-    boxShadow,
-  };
+  useEffect(() => {
+    if (endValue !== undefined) {
+      // Update sliderValue to match endValue whenever endValue changes
+      setSliderValue(endValue);
+      setExposedVariable('value', endValue);
+    }
+  }, [endValue]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setSliderValue(singleHandleValue);
-    setExposedVariable('value', singleHandleValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (endValue === undefined) {
+      setSliderValue(singleHandleValue);
+      setExposedVariable('value', singleHandleValue);
+    }
   }, [singleHandleValue]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
     setRangeValue(twoHandlesArray);
     setExposedVariable('value', twoHandlesArray);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(twoHandlesArray)]);
 
   useEffect(() => {
-    setExposedVariable('value', enableTwoHandle ? twoHandlesArray : singleHandleValue);
+    setExposedVariable(
+      'value',
+      enableTwoHandle ? twoHandlesArray : endValue !== undefined ? endValue : singleHandleValue
+    );
     if (isInitialRender.current) {
-      enableTwoHandle ? setRangeValue(twoHandlesArray) : setSliderValue(singleHandleValue);
+      enableTwoHandle
+        ? setRangeValue(twoHandlesArray)
+        : setSliderValue(endValue !== undefined ? endValue : singleHandleValue);
     }
     isInitialRender.current = false;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableTwoHandle]);
+
+  useEffect(() => {
+    if (auto) {
+      setLabelWidth('auto');
+    } else {
+      setLabelWidth(width > 0 ? `${width}%` : '33%');
+    }
+  }, [auto, width]);
 
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
@@ -57,51 +92,124 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   };
 
   const rangeStyles = {
-    handleStyle: toArray(sliderValue).map(() => {
-      return {
-        backgroundColor: handleColor,
-        borderColor: handleColor,
-      };
-    }),
-    trackStyle: toArray(sliderValue).map(() => {
-      return { backgroundColor: trackColor };
-    }),
+    handleStyle: toArray(sliderValue).map(() => ({
+      backgroundColor: handleColor,
+      borderColor: handleColor,
+    })),
+    trackStyle: toArray(sliderValue).map(() => ({
+      backgroundColor: trackColor,
+    })),
     railStyle: { backgroundColor: lineColor },
   };
 
+  const Label = ({ label, color, defaultAlignment, direction }) => {
+    if (!label) return null;
+
+    return (
+      <div
+        ref={labelRef}
+        style={{
+          color,
+          width: labelWidth,
+          marginRight: defaultAlignment === 'side' && direction === 'left' ? '4px' : '0px',
+          marginLeft: defaultAlignment === 'side' && direction === 'right' ? '4px' : '0px',
+          marginBottom: defaultAlignment === 'top' ? '4px' : '0px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          textAlign: direction === 'right' ? 'right' : 'left',
+          minWidth: defaultAlignment === 'side' ? '40px' : 'auto',
+          maxWidth: defaultAlignment === 'side' ? '50%' : '100%',
+          lineHeight: '1.2',
+          fontSize: '12px',
+        }}
+      >
+        {label}
+      </div>
+    );
+  };
+
+  const containerStyle = {
+    display: visibility ? 'flex' : 'none',
+    flexDirection: defaultAlignment === 'top' ? 'column' : 'row',
+    alignItems: defaultAlignment === 'top' ? (direction === 'right' ? 'flex-end' : 'flex-start') : 'center',
+    justifyContent: 'flex-start',
+    padding: '0px',
+    boxShadow,
+    width: '100%',
+    height: defaultAlignment === 'top' ? 'auto' : height,
+    gap: '0px',
+    ...(defaultAlignment === 'side' && direction === 'right' && { flexDirection: 'row-reverse' }),
+  };
+
+  const sliderContainerStyle = {
+    width: '100%',
+  };
+
   return (
-    <div style={computedStyles} className="range-slider" data-cy={dataCy}>
-      {enableTwoHandle ? (
-        <Slider
-          range
-          min={min}
-          max={max}
-          defaultValue={toArray(rangeValue)}
-          onChange={onRangeChange}
-          onAfterChange={() => fireEvent('onChange')}
-          value={toArray(rangeValue)}
-          ref={sliderRef}
-          trackStyle={rangeStyles.trackStyle}
-          railStyle={rangeStyles.railStyle}
-          handleStyle={rangeStyles.handleStyle}
-        />
-      ) : (
-        <Slider
-          min={min}
-          max={max}
-          defaultValue={sliderValue}
-          value={sliderValue}
-          ref={sliderRef}
-          onChange={onSliderChange}
-          onAfterChange={() => fireEvent('onChange')}
-          trackStyle={{ backgroundColor: trackColor }}
-          railStyle={{ backgroundColor: lineColor }}
-          handleStyle={{
-            backgroundColor: handleColor,
-            borderColor: handleColor,
-          }}
-        />
-      )}
+    <div style={containerStyle} className="range-slider" data-cy={dataCy}>
+      <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
+      <div style={sliderContainerStyle}>
+        {enableTwoHandle === 'slider' ? (
+          <Slider
+            range
+            min={min}
+            max={max}
+            defaultValue={toArray(rangeValue)}
+            onChange={onRangeChange}
+            onAfterChange={() => fireEvent('onChange')}
+            value={toArray(rangeValue)}
+            ref={sliderRef}
+            trackStyle={rangeStyles.trackStyle}
+            railStyle={rangeStyles.railStyle}
+            handleStyle={[
+              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+            ]}
+            marks={{
+              25: { style: { color: markerLabel }, label: '25' },
+              50: { style: { color: markerLabel }, label: '50' },
+              75: { style: { color: markerLabel }, label: '75' },
+            }}
+            handleRender={(node, handleProps) => {
+              return (
+                <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                  {node}
+                </OverlayTrigger>
+              );
+            }}
+          />
+        ) : (
+          <Slider
+            min={min}
+            max={max}
+            defaultValue={endValue !== undefined ? endValue : sliderValue}
+            value={sliderValue}
+            ref={sliderRef}
+            onChange={onSliderChange}
+            onAfterChange={() => fireEvent('onChange')}
+            startPoint={startValue}
+            trackStyle={{ backgroundColor: trackColor }}
+            railStyle={{ backgroundColor: lineColor }}
+            handleStyle={[
+              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+            ]}
+            marks={{
+              25: { style: { color: markerLabel }, label: '25' },
+              50: { style: { color: markerLabel }, label: '50' },
+              75: { style: { color: markerLabel }, label: '75' },
+            }}
+            handleRender={(node, handleProps) => {
+              return (
+                <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                  {node}
+                </OverlayTrigger>
+              );
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };
