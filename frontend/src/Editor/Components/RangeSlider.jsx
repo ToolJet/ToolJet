@@ -6,13 +6,12 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 export const RangeSlider = ({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, visibility } = properties;
 
   const {
     trackColor,
     handleColor,
     lineColor,
-    visibility,
     boxShadow,
     alignment = 'side',
     direction = 'left',

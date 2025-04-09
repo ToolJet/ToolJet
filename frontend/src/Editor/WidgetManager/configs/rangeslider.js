@@ -236,15 +236,6 @@ export const rangeSliderConfig = {
       },
       accordian: 'slider',
     },
-    visibility: {
-      type: 'code',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-      accordian: 'container',
-    },
     padding: {
       type: 'switch',
       displayName: 'Padding',
@@ -304,7 +295,6 @@ export const rangeSliderConfig = {
       handleBorderColor: { value: '#ACB2B9' },
       trackColor: { value: '#4368E3' },
       markerLabel: { value: '#1B1F24' },
-      visibility: { value: '{{true}}' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
