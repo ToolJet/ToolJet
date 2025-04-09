@@ -1,0 +1,343 @@
+---
+description: Home Page
+hide_table_of_contents: true
+sidebar_label: Home
+title: Home
+slug: /
+---
+
+import './homepage.css';
+import { ArrowRight } from 'lucide-react';
+import gettingStartedImage from '../../src/pages/getting-started.png';
+import {
+    textLabels,
+    featureCards,
+    setupCards,
+    deployOptions,
+    dataCards,
+    organizationCards,
+    releaseCards,
+    resourceCards,
+    sectionCards
+} from './homePageData';
+import Link from '@docusaurus/Link';
+
+{/* // Reusable components */}
+export const Card = ({ className = '', href, children }) => {
+    const cardContent = (
+        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] pb-2.25 ${className}`}>
+            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+                style={{
+                    background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
+                    border: '0px',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    pointerEvents: 'none'
+                }}>
+            </div>
+            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+                {children}
+            </div>
+        </div>
+    );
+
+    return href ? (
+        <Link to={href} className="no-underline hover:no-underline block h-full">
+            {cardContent}
+        </Link>
+    ) : cardContent;
+};
+
+export const CardHeader = ({ className = '', children }) => (
+    <div className={`flex flex-col space-y-1.5 ${className}`}>
+        {children}
+    </div>
+);
+
+export const CardContent = ({ className = '', children }) => (
+    <div className={`pt-2 ${className}`}>
+        {children}
+    </div>
+);
+
+export const CardTitle = ({ className = '', children }) => (
+    <h3 className={`text-xl font-semibold leading-none tracking-tight text-black dark:text-white ${className}`}>
+        {children}
+    </h3>
+);
+
+export const Button = ({
+    variant = "default",
+    className = '',
+    children,
+}) => {
+    const baseStyles = "cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+    const variantStyles = {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        outline: "border border-input hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary border-none",
+    };
+
+    return (
+        <div className="text-center">
+            <button
+                className={`${baseStyles} ${variantStyles[variant]} ${className} bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-gray-700 hover:text-blue-800 dark:hover:text-blue-300 px-4 py-2`}
+            >
+                {children}
+                <ArrowRight className="ml-2 w-4 h-4 inline" />
+            </button>
+        </div>
+    );
+};
+
+export const IconCard = ({ icon: Icon, title, content, color, href }) => (
+    <Card href={href} className="h-[280px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-8 h-full flex flex-col">
+            <CardHeader>
+                <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
+                    <Icon className={`w-6 h-6 ${color}`} />
+                </div>
+                <CardTitle>{title}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow">
+                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-5">{content}</p>
+            </CardContent>
+        </div>
+    </Card>
+);
+
+export const SmallCard = ({ icon: Icon, title, href }) => (
+    <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-3 h-full flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                    <Icon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                </div>
+                <span className="text-sm font-semibold text-black dark:text-white">{title}</span>
+            </div>
+        </div>
+    </Card>
+);
+
+export const SectionContainer = ({ title, description, children }) => (
+    <section className="space-y-6">
+        <h2 className="text-2xl font-bold text-black dark:text-white">{title}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-300">{description}</p>
+        {children}
+    </section>
+);
+
+{/* // Main component */}
+
+#
+    <main className="flex flex-col home-page">
+        <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="relative w-full p-10 pt-20 pb-14 from-blue-50 to-pink-50 overflow-hidden" >
+            <div
+className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
+style={{
+    backgroundImage: `
+    linear-gradient(to left, rgba(59, 130, 246, 0.1) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 2px, transparent 2px)
+    `,
+    backgroundSize: '110px 64px',
+    maskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)',
+    WebkitMaskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)'
+}}
+/>
+
+                {/* Background shapes */}
+                <div
+                style={{
+                filter: 'blur(140px)'
+                        }}
+                >
+                    {/* Child component 1 */}
+                    <div className='inset-0 w-[302.83px] h-[364.71px] left-1/2 top-0'
+                        style={{
+                            boxSizing: 'border-box',
+                            boxShadow: 'inset 0px 4px 50px rgba(0, 0, 0, 0.25)',
+                            position: 'absolute',
+                            width: '302.83px',
+                            height: '364.71px',
+                            left: '30%',
+                            top: '-320px',
+                            transform: 'matrix(-0.76, 0.65, -0.37, -0.93, 0, 0)',
+                            borderRadius: '50%',
+                            background: '#7FDEFF'
+                        }}
+                    />
+                    {/* Child component 2 */}
+                    <div 
+                        className="w-[292.97px] h-[376.88px] right-1/4 bottom-0"
+                        style={{
+                            background: '#7FDEFF',
+                            transform: 'matrix(-0.76, 0.65, -0.37, -0.93, 0, 0)',
+                            position: 'absolute',
+                            borderRadius: '50%',
+                            right: '-15%',
+                            bottom: '-720px',
+                        }}
+                    />
+                    {/* Child component 3 */}
+                    <div 
+                        className="w-[253.63px] h-[305.45px] right-1/4"
+                        style={{
+                            background: 'radial-gradient(111.63% 111.63% at 42.64% -5.82%, #FF0000 44.58%, #FF47D6 100%)',
+                            opacity: 0.6,
+                            filter: 'blur(50px)',
+                            transform: 'matrix(-0.86, 0.52, -0.27, -0.96, 0, 0)',
+                            borderRadius: '50%',
+                            position: 'absolute',
+                            right: '2%',
+                            bottom: '-720px',
+                        }}
+                    />
+                </div>
+{/* ToolJet Documentation Section */}
+                <div className="relative display-block">
+                    <div className='pb-14'>
+                        <h1 className="text-4xl font-bold flex flex-col md:flex-row">
+                            {textLabels.title.prefix}&nbsp;<span className="text-blue-600">{textLabels.title.highlight}</span>
+                        </h1>
+                        <p className="text-xl text-gray-600 dark:text-gray-400 ">
+                            {textLabels.subtitle}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {featureCards.map((card, index) => (
+                            <IconCard key={index} {...card} />
+                        ))}
+                    </div>
+
+                    {/* Getting Started Section */}
+<Link
+  to={sectionCards.gettingStarted.link}
+  className="no-underline hover:no-underline block"
+>
+  <div className="w-full h-[104px] rounded-lg shadow-sm flex items-center overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-solid dark:border-gray-700 mt-10 transition-all duration-300 ease-in-out hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer group relative">
+    {/* Hover Gradient Overlay */}
+    <div
+      className="absolute top-0 left-0 w-full h-10 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+      style={{
+        background: "linear-gradient(to bottom, rgba(59, 130, 246, 0.3), transparent)",
+        pointerEvents: "none"
+      }}
+    ></div>
+
+    {/* Image Container */}
+    <div className="w-[380px] h-full relative overflow-hidden dark:hidden">
+      <img
+        src={gettingStartedImage}
+        alt="Getting Started"
+        className="absolute bottom-0 left-[-20px] w-[calc(100%+40px)] h-auto object-cover object-top pointer-events-none transition-transform duration-300 ease-in-out group-hover:scale-105"
+        style={{ maxHeight: "70px", borderRadius: "5px", transformOrigin: "bottom left" }}
+      />
+    </div>
+
+    {/* Text Container */}
+    <div className="flex-1 ml-4 md:ml-20 dark:ml-8 transition-transform duration-300 ease-in-out group-hover:translate-x-1">
+      <h3 className="text-xl md:text-2xl font-medium text-black dark:text-white mb-1">
+        {sectionCards.gettingStarted.title}
+      </h3>
+      <p className="text-sm text-gray-700 dark:text-gray-300 opacity-80">
+        {sectionCards.gettingStarted.description}
+      </p>
+    </div>
+  </div>
+</Link>
+
+
+                    </div>
+            </div>
+
+            <div className="w-full p-10 space-y-12">
+                {/* Setup ToolJet Section */}
+                <SectionContainer 
+                    title={textLabels.setupToolJet.title}
+                    description={textLabels.setupToolJet.description}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {setupCards.map((card, index) => (
+                            <IconCard key={index} {...card} />
+                        ))}
+                    </div>
+                </SectionContainer>
+
+                {/* Deploy on Section */}
+                <SectionContainer title={textLabels.deployOn.title}>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {deployOptions.map((option, index) => (
+                            <SmallCard key={index} {...option} />
+                        ))}
+                    </div>
+                </SectionContainer>
+
+                {/* Explore more details link */}
+                <div className="text-center">
+                    <Link 
+                        className="no-underline" 
+                        to="/docs/setup/"
+    >
+                    <Button variant="link">
+                        {textLabels.exploreMore}
+                    </Button>
+                    </Link>
+                </div>
+
+                {/* Bring your data to ToolJet section */}
+                <SectionContainer 
+                    title={textLabels.bringData.title}
+                    description={textLabels.bringData.description}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {dataCards.map((card, index) => (
+                            <IconCard key={index} {...card} />
+                        ))}
+                    </div>
+                </SectionContainer>
+
+                {/* Manage your organization section */}
+
+                <SectionContainer 
+                    title={textLabels.manageOrganization.title}
+                    description={textLabels.manageOrganization.description}
+                >
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {organizationCards.map((card, index) => (
+                            <SmallCard key={index} {...card} />
+                        ))}
+                    </div>
+                </SectionContainer>
+
+                {/* Manage releases section */}
+
+                <SectionContainer 
+                    title={textLabels.manageReleases.title}
+                    description={textLabels.manageReleases.description}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {releaseCards.map((card, index) => (
+                            <IconCard key={index} {...card} />
+                        ))}
+                    </div>
+                </SectionContainer>
+
+                {/* Additional resources section */}
+
+                <SectionContainer 
+                    title={textLabels.additionalResources.title}
+                    description={textLabels.additionalResources.description}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {resourceCards.map((card, index) => (
+                            <IconCard key={index} {...card} />
+                        ))}
+                    </div>
+                </SectionContainer>
+            </div>
+        </div>
+    </main>

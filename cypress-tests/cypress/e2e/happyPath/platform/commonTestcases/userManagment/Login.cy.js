@@ -9,6 +9,7 @@ describe("Login functionality", () => {
   let user;
   const invalidEmail = fake.email;
   const invalidPassword = fake.password;
+  const envVar = Cypress.env("environment");
 
   beforeEach(() => {
     cy.fixture("credentials/login.json").then((login) => {
@@ -49,6 +50,9 @@ describe("Login functionality", () => {
 
   it("Should be able to login with valid credentials", () => {
     cy.appUILogin(user.email, user.password);
+    if (envVar === "Enterprise") {
+      cy.get(".btn-close").click();
+    }
     cy.get(commonSelectors.settingsIcon).click();
     cy.get(dashboardSelector.logoutLink);
   });

@@ -34,6 +34,7 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
 import { canUpdateDataSource } from '@/_helpers';
+import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
 
 class DataSourceManagerComponent extends React.Component {
@@ -81,6 +82,8 @@ class DataSourceManagerComponent extends React.Component {
       unsavedChangesModal: false,
       datasourceName,
       creatingApp: false,
+      validationError: [],
+      validationMessages: {},
     };
   }
 
@@ -208,8 +211,31 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   createDataSource = () => {
-    const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
-      this.state;
+    const {
+      appId,
+      options,
+      selectedDataSource,
+      selectedDataSourcePluginId,
+      dataSourceMeta,
+      dataSourceSchema,
+      validationMessages,
+    } = this.state;
+
+    if (!isEmpty(validationMessages)) {
+      const validationMessageArray = Object.values(validationMessages);
+      this.setState({ validationError: validationMessageArray });
+      toast.error(
+        this.props.t(
+          'editor.queryManager.dataSourceManager.toast.error.validationFailed',
+          'Validation failed. Please check your inputs.'
+        ),
+        { position: 'top-center' }
+      );
+      if (validationMessageArray.length > 0) {
+        return false;
+      }
+    }
+
     const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
@@ -231,6 +257,7 @@ class DataSourceManagerComponent extends React.Component {
       const value = localStorage.getItem('OAuthCode');
       parsedOptions.push({ key: 'code', value, encrypted: false });
     }
+
     if (name.trim() !== '') {
       let service = scope === 'global' ? globalDatasourceService : datasourceService;
       if (selectedDataSource.id) {
@@ -335,6 +362,25 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
+  setValidationMessages = (errors, schema) => {
+    const errorMap = errors.reduce((acc, error) => {
+      // Get property name from either required error or dataPath
+      const property =
+        error.keyword === 'required'
+          ? error.params.missingProperty
+          : error.dataPath?.replace(/^[./]/, '') || error.instancePath?.replace(/^[./]/, '');
+
+      if (property) {
+        const propertySchema = schema.properties?.[property];
+        const propertyTitle = propertySchema?.title;
+        acc[property] =
+          error.keyword === 'required' ? `${propertyTitle} is required` : `${propertyTitle} ${error.message}`;
+      }
+      return acc;
+    }, {});
+    this.setState({ validationMessages: errorMap });
+  };
+
   renderSourceComponent = (kind, isPlugin = false) => {
     const { options, isSaving } = this.state;
 
@@ -352,6 +398,9 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
         currentAppEnvironmentId={this.props.currentEnvironment?.id}
+        validationMessages={this.state.validationMessages}
+        setValidationMessages={this.setValidationMessages}
+        clearValidationMessages={() => this.setState({ validationMessages: {} })}
         setDefaultOptions={this.setDefaultOptions}
       />
     );
@@ -851,6 +900,7 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceConfirmModalProps,
       addingDataSource,
       datasourceName,
+      validationError,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
     const createSelectedDataSource = (dataSource) => {
@@ -911,7 +961,7 @@ class DataSourceManagerComponent extends React.Component {
                             className="form-control-plaintext form-control-plaintext-sm color-slate12"
                             value={decodeEntities(selectedDataSource.name)}
                             style={{ width: '160px' }}
-                            data-cy="data-source-name-input-filed"
+                            data-cy="data-source-name-input-field"
                             autoFocus
                             autoComplete="off"
                             disabled={!canUpdateDataSource(selectedDataSource.id)}
@@ -1056,6 +1106,18 @@ class DataSourceManagerComponent extends React.Component {
                       </div>
                     )}
 
+                    {validationError && validationError.length > 0 && (
+                      <div className="row w-100">
+                        <div className="alert alert-danger" role="alert">
+                          {validationError.map((error, index) => (
+                            <div key={index} className="text-muted" data-cy="connection-alert-text">
+                              {error}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="col">
                       <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                       <a
@@ -1107,6 +1169,7 @@ class DataSourceManagerComponent extends React.Component {
                       <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                       <a
                         className="color-primary tj-docs-link tj-text-sm"
+                        data-cy="link-read-documentation"
                         href={
                           selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
                             ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`

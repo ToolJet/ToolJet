@@ -84,7 +84,7 @@ export const passinputConfig = {
   },
   styles: {
     color: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -136,31 +136,31 @@ export const passinputConfig = {
     },
 
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--primary-brand)' },
       accordian: 'field',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Error text',
       validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
@@ -173,7 +173,7 @@ export const passinputConfig = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Icon color',
       validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
       accordian: 'field',
@@ -278,7 +278,7 @@ export const passinputConfig = {
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: '#fff' },
       borderColor: { value: '#CCD1D5' },
-      accentColor: { value: '#4368E3' },
+      accentColor: { value: 'var(--primary-brand)' },
       errTextColor: { value: '#D72D39' },
       textColor: { value: '#1B1F24' },
       iconColor: { value: '#CFD3D859' },
