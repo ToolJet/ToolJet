@@ -44,7 +44,7 @@ export const containerConfig = {
       displayName: 'Show header',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: true,
+        defaultValue: false,
       },
     },
   },
@@ -58,6 +58,7 @@ export const containerConfig = {
       },
       displayName: 'ContainerText',
       properties: ['text'],
+      slotName: 'header',
       accessorKey: 'text',
       styles: ['fontWeight', 'textSize', 'textColor'],
       defaultValue: {
@@ -71,7 +72,7 @@ export const containerConfig = {
   events: {},
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -80,7 +81,7 @@ export const containerConfig = {
       accordian: 'container',
     },
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -89,7 +90,7 @@ export const containerConfig = {
       accordian: 'header',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
@@ -153,7 +154,7 @@ export const containerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      showHeader: { value: `{{true}}` },
+      showHeader: { value: `{{false}}` },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -163,6 +164,7 @@ export const containerConfig = {
       backgroundColor: { value: '#fff' },
       headerBackgroundColor: { value: '#fff' },
       borderRadius: { value: '4' },
+      headerHeight: { value: '{{80}}' },
       borderColor: { value: '#fff' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

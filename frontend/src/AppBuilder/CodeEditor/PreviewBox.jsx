@@ -294,13 +294,9 @@ const PreviewContainer = ({
   ...restProps
 }) => {
   const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement, validationFn } = restProps;
-
   const [errorMessage, setErrorMessage] = useState('');
-
   const typeofError = getCurrentNodeType(errorMessage);
-
   const errorMsg = typeofError === 'Array' ? errorMessage[0] : errorMessage;
-
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const popover = (
     <Popover
@@ -423,10 +419,12 @@ const PreviewContainer = ({
     <>
       {!isPortalOpen && (
         <Overlay
-          placement="left"
+          placement={previewPlacement || 'left'}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
           show={showPreview}
           rootClose
+          shouldUpdatePosition={true}
+          container={document.body}
           popperConfig={{
             modifiers: [
               {
@@ -441,6 +439,7 @@ const PreviewContainer = ({
               {
                 name: 'preventOverflow',
                 options: {
+                  enabled: true,
                   boundary: 'viewport',
                   altAxis: true,
                   tether: false,
@@ -449,10 +448,17 @@ const PreviewContainer = ({
               {
                 name: 'offset',
                 options: {
-                  offset: [33, 15],
+                  offset: [0, 3],
                 },
               },
             ],
+            onFirstUpdate: (state) => {
+              // Force position update on first render
+              // This is done to avoid scroll issue
+              if (state.elements.popper) {
+                state.elements.popper.style.position = 'fixed';
+              }
+            },
           }}
         >
           {(props) => React.cloneElement(popover, props)}
