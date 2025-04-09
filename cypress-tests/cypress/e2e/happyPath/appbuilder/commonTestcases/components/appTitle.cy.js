@@ -33,7 +33,7 @@ import {
 describe("Editor title", () => {
   const data = {};
   beforeEach(() => {
-    data.appName = fake.companyName + '--7';
+    data.appName = fake.companyName;
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.visit("/");
