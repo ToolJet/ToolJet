@@ -4,7 +4,6 @@ import { Text } from '@/Editor/Components/Text';
 import { Table } from '@/Editor/Components/Table/Table';
 import { TextInput } from '@/Editor/Components/TextInput';
 import { NumberInput } from '@/Editor/Components/NumberInput';
-import { TextArea } from '@/Editor/Components/TextArea';
 import { Container } from '@/Editor/Components/Container';
 import { Tabs } from '@/Editor/Components/Tabs';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
@@ -50,7 +49,7 @@ import { Kanban } from '@/Editor/Components/Kanban/Kanban';
 import { Steps } from '@/Editor/Components/Steps';
 import { TreeSelect } from '@/Editor/Components/TreeSelect';
 import { Icon } from '@/Editor/Components/Icon';
-import { Link } from '@/Editor/Components/Link';
+import { Link } from '@/Editor/Components/Link/Link';
 import { Form } from '@/Editor/Components/Form/Form';
 import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';
@@ -81,7 +80,6 @@ export const AllComponents = {
   TextInput,
   NumberInput,
   Table,
-  TextArea,
   Container,
   Tabs,
   RichTextEditor,

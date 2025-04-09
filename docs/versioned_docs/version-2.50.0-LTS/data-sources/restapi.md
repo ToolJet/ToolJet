@@ -41,7 +41,7 @@ Once you have connected to the REST API data source, follow these steps to write
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-Query results can be transformed using the **[Transformations](/docs/how-to/transformations)** feature.
+Query results can be transformed using the **[Transformations](/docs/tutorial/transformations)** feature.
 :::
 
 ToolJet supports the following REST HTTP methods 
@@ -90,7 +90,7 @@ Content-Type: multipart/form-data;
 REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response.
 When the response **content-type** is **image**, the response will be a **base64** string.
 
-<details>
+<details id="tj-dropdown">
   <summary>**Example JSON Response**</summary>
     
   ```json
@@ -154,7 +154,7 @@ You can also use JS methods like **map** to load data on components like **dropd
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/map.png" alt="ToolJet - Data source - REST API" style={{marginBottom:'15px'}}/>
 
-<details>
+<details id="tj-dropdown">
   <summary>**Example base64 Response**</summary>
     
   ```base64

@@ -11,7 +11,11 @@ import { BOX_PADDING } from './appCanvasConstants';
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
   'TextInput',
+  'TextArea',
   'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
   'NumberInput',
   'Text',
   'Checkbox',
@@ -28,6 +32,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'TimePicker',
   'Divider',
   'VerticalDivider',
+  'Link',
 ];
 
 const RenderWidget = ({
@@ -89,6 +94,7 @@ const RenderWidget = ({
         ...{ widgetValue: value },
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables,
+        componentType,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]
@@ -148,18 +154,17 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
+              ? null
+              : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${
-                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                    ? resolvedProperties?.tooltip
-                    : resolvedGeneralProperties?.tooltip
-                }`
+              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                ? resolvedProperties?.tooltip
+                : resolvedGeneralProperties?.tooltip
+              }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
