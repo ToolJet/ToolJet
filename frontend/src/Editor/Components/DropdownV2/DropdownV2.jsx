@@ -459,7 +459,9 @@ export const DropdownV2 = ({
                 fireEvent('onSelect');
               }
               if (actionProps.action === 'select-option') {
-                setInputValue(selectedOption.value);
+                if (currentValue === selectedOption.value) {
+                  setInputValue(null);
+                } else setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
               setUserInteracted(true);
