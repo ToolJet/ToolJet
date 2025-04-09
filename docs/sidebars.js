@@ -635,7 +635,7 @@ const sidebars = {
               'label': 'Configure GitSync',
               'collapsed': true,
               'items': [
-                'development-lifecycle/gitsync/configure-gitsync/github',
+                'development-lifecycle/gitsync/configure-gitsync/gitsync-config',
                 'development-lifecycle/gitsync/configure-gitsync/gitlab',
                 'development-lifecycle/gitsync/configure-gitsync/gitea',
 

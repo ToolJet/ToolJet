@@ -4,7 +4,8 @@ title: GitLab
 ---
 
 In this guide, we will explore how to configure GitSync using GitLab as the repository manager. By default GitSync is configured for the **main** branch, but this can be configured to a different branch as well, refer to **[Configuring GitSync on a Different Branch](#configuring-gitsync-on-a-different-branch)** section for more information.
-To configure GitSync for other standard Git repository managers refer to **[GitHub](/docs/development-lifecycle/gitsync/configure-gitsync/github)** or **[Gitea](/docs/development-lifecycle/gitsync/configure-gitsync/gitea)**.
+
+To configure GitSync for other standard Git repository managers refer to **[GitHub](/docs/development-lifecycle/gitsync/configure-gitsync/gitsync-config)** or **[Gitea](/docs/development-lifecycle/gitsync/configure-gitsync/gitea)**.
 
 ## Setting up GitSync in ToolJet
 

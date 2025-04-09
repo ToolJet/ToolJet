@@ -4,7 +4,8 @@ title: Gitea
 ---
 
 In this guide, we will explore how to configure GitSync using Gitea as the repository manager. By default GitSync is configured for the **master** branch, but this can be configured to a different branch as well, refer to **[Configuring GitSync on a Different Branch](#configuring-gitsync-on-a-different-branch)** section for more information.
-To configure GitSync for other standard Git repository managers refer to **[GitHub](/docs/development-lifecycle/gitsync/configure-gitsync/github)** or **[GitLab](/docs/development-lifecycle/gitsync/configure-gitsync/gitlab)**.
+
+To configure GitSync for other standard Git repository managers refer to **[GitHub](/docs/development-lifecycle/gitsync/configure-gitsync/gitsync-config)** or **[GitLab](/docs/development-lifecycle/gitsync/configure-gitsync/gitlab)**.
 
 ## Setting up GitSync in ToolJet
 
