@@ -3,7 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { dynamoDbText } from "Texts/dynamodb";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 
 import {
   fillDataSourceTextField,
@@ -20,6 +20,7 @@ const data = {};
 describe("Data source DynamoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -50,10 +51,28 @@ describe("Data source DynamoDB", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      dynamoDbText.dynamoDb,
-      data.dataSourceName
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-dynamodb`,
+      "dynamodb",
+      [
+        { key: "region", value: "" },
+        { key: "access_key", value: "" },
+        { key: "secret_key", value: "", encrypted: true },
+        {
+          key: "instance_metadata_credentials",
+          value: "iam_access_keys",
+          encrypted: false,
+        },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-dynamodb-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-dynamodb`
     );
 
     cy.get('[data-cy="label-region"]').verifyVisibleElement(
