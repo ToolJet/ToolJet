@@ -31,6 +31,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'TextArea',
   'Container',
   'Form',
+  'Divider',
+  'VerticalDivider',
   'ModalV2',
   'Listview',
   'Link',
@@ -46,6 +48,8 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Button: 'Data',
   Image: 'Data',
   Container: 'Data',
+  Divider: 'Data',
+  VerticalDivider: 'Data',
   ModalV2: 'Data',
   Link: 'Data',
 };
@@ -145,6 +149,8 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'Divider',
+      'VerticalDivider',
       'Link',
     ],
     Layout: [],
@@ -285,7 +291,6 @@ export const baseComponentProperties = (
       </>
     ),
   });
-
   return items.filter(
     (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))
   );

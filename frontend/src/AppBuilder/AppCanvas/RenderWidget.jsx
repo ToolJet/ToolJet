@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 
-const shouldAddBoxShadowAndVisibility = [
+const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
   'TextInput',
   'TextArea',
@@ -30,6 +30,8 @@ const shouldAddBoxShadowAndVisibility = [
   'DaterangePicker',
   'DatePickerV2',
   'TimePicker',
+  'Divider',
+  'VerticalDivider',
   'Link',
 ];
 
@@ -149,23 +151,22 @@ const RenderWidget = ({
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
         trigger={
-          inCanvas && shouldAddBoxShadowAndVisibility.includes(component?.component)
+          inCanvas && SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
             ? !resolvedProperties?.tooltip?.toString().trim()
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
+              ? null
+              : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${
-                  shouldAddBoxShadowAndVisibility.includes(component?.component)
-                    ? resolvedProperties?.tooltip
-                    : resolvedGeneralProperties?.tooltip
-                }`
+              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                ? resolvedProperties?.tooltip
+                : resolvedGeneralProperties?.tooltip
+              }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
