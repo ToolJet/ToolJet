@@ -40,6 +40,7 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { SessionUtilService } from '@modules/session/util.service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
+import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
@@ -57,7 +58,8 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly onboardingUtilService: OnboardingUtilService,
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly rolesRepository: RolesRepository,
-    protected profileUtilService: ProfileUtilService
+    protected profileUtilService: ProfileUtilService,
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
 
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
@@ -147,10 +149,11 @@ export class AuthUtilService implements IAuthUtilService {
 
     if (!user && allowPersonalWorkspace) {
       const { name, slug } = generateNextNameAndSlug('My workspace');
-      defaultOrganization = await this.organizationRepository.createOne(name, slug, manager);
+      defaultOrganization = await this.setupOrganizationsUtilService.create(name, slug, null, manager);
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
+    const isDefaultOrganization = defaultOrganization?.id != organization.id;
     /* Default password for sso-signed workspace user */
 
     const password = uuid.v4();
@@ -159,10 +162,10 @@ export class AuthUtilService implements IAuthUtilService {
         firstName,
         lastName,
         email,
-        source,
-        status,
+        source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
+        status: isDefaultOrganization ? USER_STATUS.ACTIVE : status,
         password,
-        role: USER_ROLE.END_USER,
+        role: isDefaultOrganization ? USER_ROLE.ADMIN : USER_ROLE.END_USER,
         defaultOrganizationId: defaultOrganization?.id || organization.id,
       },
       manager
@@ -186,11 +189,24 @@ export class AuthUtilService implements IAuthUtilService {
       manager,
       WORKSPACE_USER_SOURCE.SIGNUP
     );
-    if (defaultOrganization) {
-      // Setting up default organization
-      await this.organizationUsersRepository.createOne(user, defaultOrganization, true, manager);
-    }
     await this.organizationUsersUtilService.attachUserGroup([USER_ROLE.END_USER], organization.id, user.id, manager); //localhost:8082/login/tooljets-workspace?redirectTo=/
+    if (isDefaultOrganization) {
+      // Setting up default organization
+      await this.organizationUsersRepository.createOne(
+        user,
+        defaultOrganization,
+        false,
+        manager,
+        WORKSPACE_USER_SOURCE.SIGNUP,
+        true
+      );
+      await this.organizationUsersUtilService.attachUserGroup(
+        [USER_ROLE.ADMIN],
+        defaultOrganization.id,
+        user.id,
+        manager
+      );
+    }
     return user;
   }
 

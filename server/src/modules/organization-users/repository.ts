@@ -19,7 +19,8 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
     organization: DeepPartial<Organization>,
     isInvite?: boolean,
     manager?: EntityManager,
-    source: WORKSPACE_USER_SOURCE = WORKSPACE_USER_SOURCE.INVITE
+    source: WORKSPACE_USER_SOURCE = WORKSPACE_USER_SOURCE.INVITE,
+    isDefaultOrganization: boolean = false
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
@@ -28,8 +29,8 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
-          source,
-          role: 'all-users',
+          source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
+          role: isDefaultOrganization ? 'all-users' : 'end-users',
           createdAt: new Date(),
           updatedAt: new Date(),
         })
