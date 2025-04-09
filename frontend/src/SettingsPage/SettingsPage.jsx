@@ -87,17 +87,23 @@ function SettingsPage(props) {
   };
 
   const handlePasswordInput = (input) => {
-    setNewPassword(input);
-    if (input.length > 100) {
+    const sanitizedInput = input.replace(/\s/g, '');
+    setNewPassword(sanitizedInput);
+    if (sanitizedInput.length > 100) {
       setHelperText('Password should be Max 100 characters');
       setValidPassword(false);
-    } else if (input.length < 5 && input.length > 0) {
+    } else if (sanitizedInput.length < 5 && sanitizedInput.length > 0) {
       setHelperText('Password should be at least 5 characters');
       setValidPassword(false);
     } else {
       setHelperText('');
       setValidPassword(true);
     }
+  };
+
+  const handleConfirmPasswordInput = (input) => {
+    const sanitizedInput = input.replace(/\s/g, '');
+    setConfirmPassword(sanitizedInput);
   };
 
   const changePassword = async () => {
@@ -293,7 +299,7 @@ function SettingsPage(props) {
                         placeholder={t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                         value={confirmPassword}
                         ref={focusRef}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
+                        onChange={(event) => handleConfirmPasswordInput(event.target.value)}
                         onKeyPress={confirmPasswordKeyPressHandler}
                         data-cy="confirm-password-input"
                       />
