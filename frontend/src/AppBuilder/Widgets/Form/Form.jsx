@@ -307,9 +307,7 @@ export const Form = function Form(props) {
 
   return (
     <form
-      className={`jet-container ${advanced && 'jet-container-json-form'} ${
-        properties.dynamicHeight && `dynamic-${id}`
-      }`}
+      className={`jet-container ${advanced && 'jet-container-json-form'}`}
       id={id}
       data-cy={dataCy}
       ref={parentRef}
@@ -344,7 +342,7 @@ export const Form = function Form(props) {
           )}
         </div>
       )}
-      <div className="jet-form-body" style={formContent}>
+      <div className={`jet-form-body  ${properties.dynamicHeight && `dynamic-${id}`}`} style={formContent}>
         {isLoading ? (
           <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
             <div className="spinner-border" role="status"></div>

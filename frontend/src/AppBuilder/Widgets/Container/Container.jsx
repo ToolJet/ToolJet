@@ -92,9 +92,7 @@ export const Container = ({
 
   return (
     <div
-      className={`${properties.dynamicHeight && `dynamic-${id}`} jet-container ${
-        isLoading ? 'jet-container-loading' : ''
-      }`}
+      className={`jet-container ${isLoading ? 'jet-container-loading' : ''}`}
       id={id}
       data-disabled={isDisabled}
       style={computedStyles}
@@ -116,7 +114,7 @@ export const Container = ({
               />
             </div>
           )}
-          <div style={containerContentStyles}>
+          <div style={containerContentStyles} className={`${properties.dynamicHeight && `dynamic-${id}`}`}>
             <ContainerComponent
               id={id}
               styles={{
@@ -127,7 +125,6 @@ export const Container = ({
               canvasHeight={dynamicHeight ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
-              dynamicHeight={dynamicHeight}
               componentType="Container"
             />
           </div>

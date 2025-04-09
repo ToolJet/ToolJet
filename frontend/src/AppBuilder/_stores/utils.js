@@ -680,6 +680,15 @@ export function convertAllKeysToSnakeCase(o) {
 //   return { suggestionList, hintsMap, resolvedRefs };
 // }
 
+export const isProperNumber = (str) => {
+  try {
+    const num = Number(str);
+    return !isNaN(num) && isFinite(num);
+  } catch (e) {
+    return false;
+  }
+};
+
 export const hasArrayNotation = (property) => {
   // Regular expression to match array notation pattern
   const arrayPattern = /\[\d+\]/;

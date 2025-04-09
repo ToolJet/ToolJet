@@ -150,7 +150,6 @@ export const Table = React.memo(
     const tableColumnEvents = allAppEvents.filter((event) => event.target === 'table_column' && event.sourceId === id);
     const tableActionEvents = allAppEvents.filter((event) => event.target === 'table_action' && event.sourceId === id);
     const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-    const observedHeight = useHeightChange(wrapperRef);
     const { t } = useTranslation();
 
     const [tableDetails, dispatch] = useReducer(reducer, initialState());

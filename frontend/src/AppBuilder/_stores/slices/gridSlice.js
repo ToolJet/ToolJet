@@ -1,5 +1,6 @@
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
+import { isProperNumber } from '../utils';
 
 const initialState = {
   hoveredComponentForGrid: '',
@@ -91,7 +92,7 @@ export const createGridSlice = (set, get) => ({
     const { deleteTemporaryLayouts, getCurrentPageComponents, currentLayout = 'desktop' } = get();
     deleteTemporaryLayouts(containerId);
     const currentPageComponents = getCurrentPageComponents();
-    const height = currentPageComponents[containerId].layouts[currentLayout].height;
+    const height = currentPageComponents?.[containerId].layouts[currentLayout].height;
     const element = document.querySelector(`.ele-${containerId}`);
     if (element) {
       element.style.height = `${height}px`;
@@ -107,6 +108,8 @@ export const createGridSlice = (set, get) => ({
       temporaryLayouts,
       deleteContainerTemporaryLayouts,
       adjustComponentPositions,
+      getResolvedComponent,
+      getComponentTypeFromId,
     } = get();
 
     try {
@@ -152,7 +155,28 @@ export const createGridSlice = (set, get) => ({
           return Math.max(max, sum);
         }, 300);
 
-        maxHeight = currentMax + 20;
+        let extraHeight = 0;
+        const componentType = getComponentTypeFromId(componentId);
+        if (componentType === 'Container') {
+          const { properties = {}, styles = {} } = getResolvedComponent(componentId) || {};
+          const { showHeader } = properties;
+          const { headerHeight } = styles;
+          if (showHeader && isProperNumber(headerHeight)) {
+            extraHeight += headerHeight;
+          }
+        } else if (componentType === 'Form') {
+          const { properties = {}, styles = {} } = getResolvedComponent(componentId) || {};
+          const { showHeader, showFooter } = properties;
+          const { headerHeight, footerHeight } = styles;
+          if (showHeader && isProperNumber(headerHeight)) {
+            extraHeight += headerHeight;
+          }
+          if (showFooter && isProperNumber(footerHeight)) {
+            extraHeight += footerHeight;
+          }
+        }
+
+        maxHeight = currentMax + 50 + extraHeight;
       }
 
       const boxList = Object.keys(currentPageComponents)
@@ -186,7 +210,7 @@ export const createGridSlice = (set, get) => ({
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
       const dynamicHeightDifference = newHeight - oldHeight;
 
-      if (dynamicHeightDifference === 0) return;
+      if (dynamicHeightDifference === 0 && !isContainer) return;
 
       // Update the changed component's height in layouts
       const updatedLayouts = {
@@ -236,17 +260,9 @@ export const createGridSlice = (set, get) => ({
           (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) - changedCompTop;
 
         const isInitialTopAboveChangedBottom =
-          component.layouts[currentLayout].top <
-          changedComponent.layouts[currentLayout].top + changedComponent.layouts[currentLayout].height;
+          (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) < changedCompTop + oldHeight;
 
-        const isCurrentHeightLessThanChangedHeight =
-          temporaryLayouts?.[componentId]?.height < changedComponent.layouts[currentLayout].height;
-
-        if (
-          hasHorizontalOverlap &&
-          currentDist < minimumDist &&
-          !(isInitialTopAboveChangedBottom && isCurrentHeightLessThanChangedHeight)
-        ) {
+        if (hasHorizontalOverlap && currentDist < minimumDist && !isInitialTopAboveChangedBottom) {
           const difference =
             changedCompBottom - (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top);
           realDiff = Math.ceil(difference / 10) * 10;
