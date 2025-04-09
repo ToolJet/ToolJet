@@ -192,6 +192,7 @@ export class AuthService implements IAuthService {
       return;
     }
     const forgotPasswordToken = uuid.v4();
+    await this.userRepository.updateOne(user.id, { forgotPasswordToken });
     this.eventEmitter.emit('emailEvent', {
       type: EMAIL_EVENTS.SEND_PASSWORD_RESET_EMAIL,
       payload: {
