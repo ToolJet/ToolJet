@@ -189,7 +189,7 @@ export class AuthUtilService implements IAuthUtilService {
       manager,
       WORKSPACE_USER_SOURCE.SIGNUP
     );
-    await this.organizationUsersUtilService.attachUserGroup([USER_ROLE.END_USER], organization.id, user.id, manager); //localhost:8082/login/tooljets-workspace?redirectTo=/
+    await this.organizationUsersUtilService.attachUserGroup([USER_ROLE.END_USER], organization.id, user.id, manager);
     if (isDefaultOrganization) {
       // Setting up default organization
       await this.organizationUsersRepository.createOne(
