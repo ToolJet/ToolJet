@@ -12,14 +12,11 @@ import {
 } from "Support/utils/postgreSql";
 
 import {
-  verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
 
-import { openQueryEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
@@ -40,16 +37,22 @@ describe("Data source minio", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources()
+    );
     cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
       "have.text",
       postgreSqlText.commonlyUsed
     );
-
+    cy.get(postgreSqlSelector.databaseLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDatabase()
+    );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
       postgreSqlText.allApis
     );
-
     cy.get(postgreSqlSelector.cloudStorageLabelAndCount).should(
       "have.text",
       postgreSqlText.allCloudStorage
@@ -274,5 +277,9 @@ describe("Data source minio", () => {
         `Query (${data.dsName}) completed.`
       );
     });
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-minio`
+    );
   });
 });

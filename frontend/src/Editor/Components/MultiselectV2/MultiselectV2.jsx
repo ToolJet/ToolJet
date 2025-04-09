@@ -12,6 +12,7 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const MultiselectV2 = ({
   id,
@@ -63,6 +64,7 @@ export const MultiselectV2 = ({
   const isMandatory = validation?.mandatory ?? false;
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
+  const selectRef = React.useRef(null);
   const [validationStatus, setValidationStatus] = useState(
     validate(selected?.length ? selected?.map((option) => option.value) : null)
   );
@@ -75,6 +77,8 @@ export const MultiselectV2 = ({
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
+  const currentMode = useStore((state) => state.currentMode);
+  const isEditor = currentMode === 'edit';
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
   useEffect(() => {
@@ -89,13 +93,13 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible ?? true)
-          .map((data) => ({
-            ...data,
-            label: data?.label,
-            value: data?.value,
-            isDisabled: data?.disable ?? false,
-          }))
+        .filter((data) => data?.visible ?? true)
+        .map((data) => ({
+          ...data,
+          label: data?.label,
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
+        }))
       : [];
     return sortArray(_selectOptions, sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -282,6 +286,12 @@ export const MultiselectV2 = ({
     }
   };
 
+  const handleClickInEditor = (e) => {
+    if (e.target.className.includes('clear-indicator') || isMultiselectOpen) return;
+    e.stopPropagation();
+    selectRef.current?.onControlMouseDown(e);
+  };
+
   const setInputValue = (values) => {
     setSelected(values);
     setExposedVariables({
@@ -355,8 +365,8 @@ export const MultiselectV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isMultiSelectLoading || isMultiSelectDisabled
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
     }),
 
     input: (provided, _state) => ({
@@ -387,14 +397,15 @@ export const MultiselectV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
       color: _state.isDisabled
         ? 'var(_--text-disbled)'
         : selectedTextColor !== '#1B1F24'
-        ? selectedTextColor
-        : isMultiSelectDisabled || isMultiSelectLoading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+          ? selectedTextColor
+          : isMultiSelectDisabled || isMultiSelectLoading
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
+      borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -425,7 +436,7 @@ export const MultiselectV2 = ({
         data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('multiselect-widget', 'd-flex', {
           [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -457,16 +468,9 @@ export const MultiselectV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div
-          className="w-100 px-0 h-100"
-          onClick={() => {
-            if (!isMultiSelectDisabled) {
-              fireEvent('onFocus');
-              setIsMultiselectOpen(!isMultiselectOpen);
-            }
-          }}
-        >
+        <div className="w-100 px-0 h-100" onMouseDownCapture={isEditor && handleClickInEditor}>
           <Select
+            ref={selectRef}
             menuId={id}
             isDisabled={isMultiSelectDisabled}
             value={selected}
@@ -491,9 +495,26 @@ export const MultiselectV2 = ({
             isMulti
             hideSelectedOptions={false}
             closeMenuOnSelect={false}
+            tabSelectsValue={false}
+            controlShouldRenderValue={false}
+            isSearchable={false}
             onMenuOpen={() => {
-              fireEvent('onFocus');
               setIsMultiselectOpen(true);
+              fireEvent('onFocus');
+            }}
+            onMenuClose={() => {
+              setIsMultiselectOpen(false);
+              fireEvent('onBlur');
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !isMultiselectOpen) {
+                setIsMultiselectOpen(true);
+                e.preventDefault();
+              }
+              if (e.key === 'Escape' && isMultiselectOpen) {
+                setIsMultiselectOpen(false);
+                e.preventDefault();
+              }
             }}
             // select props
             icon={icon}

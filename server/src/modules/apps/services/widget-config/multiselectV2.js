@@ -177,7 +177,7 @@ export const multiselectV2Config = {
 
   styles: {
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -230,32 +230,32 @@ export const multiselectV2Config = {
     },
 
     fieldBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
 
     fieldBorderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
       validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Error Text',
       validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
@@ -268,7 +268,7 @@ export const multiselectV2Config = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Icon color',
       validation: {
         schema: { type: 'string' },
@@ -378,7 +378,7 @@ export const multiselectV2Config = {
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       iconColor: { value: '#6A727C' },
-      accentColor: { value: '#4368E3' },
+      accentColor: { value: 'var(--primary-brand)' },
     },
   },
 };

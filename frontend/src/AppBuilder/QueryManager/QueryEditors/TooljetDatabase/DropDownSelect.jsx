@@ -9,6 +9,7 @@ import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { ToolTip } from '@/_components/ToolTip';
+import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 
 const DropDownSelect = ({
   darkMode,
@@ -129,6 +130,15 @@ const DropDownSelect = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
+
+  usePopoverObserver(
+    document.getElementsByClassName('query-details')[0],
+    document.getElementById(popoverBtnId.current),
+    document.getElementById(popoverId.current),
+    showMenu,
+    () => setShowMenu(true),
+    () => setShowMenu(false)
+  );
 
   function checkElementPosition() {
     if (isForeignKeyInEditCell) {
