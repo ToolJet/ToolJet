@@ -37,6 +37,8 @@ export const MultiselectV2 = ({
     loadingState: multiSelectLoadingState,
     optionsLoadingState,
     sort,
+    showClearBtn,
+    showSearchInput,
   } = properties;
   const {
     selectedTextColor,
@@ -90,13 +92,13 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-        .filter((data) => data?.visible ?? true)
-        .map((data) => ({
-          ...data,
-          label: data?.label,
-          value: data?.value,
-          isDisabled: data?.disable ?? false,
-        }))
+          .filter((data) => data?.visible ?? true)
+          .map((data) => ({
+            ...data,
+            label: data?.label,
+            value: data?.value,
+            isDisabled: data?.disable ?? false,
+          }))
       : [];
     return sortArray(_selectOptions, sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -289,6 +291,9 @@ export const MultiselectV2 = ({
     } else {
       setIsMultiselectOpen(true);
       fireEvent('onFocus');
+      if (!showSearchInput) {
+        selectRef.current.focus();
+      }
     }
   };
 
@@ -365,8 +370,8 @@ export const MultiselectV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isMultiSelectLoading || isMultiSelectDisabled
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
     }),
 
     input: (provided, _state) => ({
@@ -401,10 +406,10 @@ export const MultiselectV2 = ({
       color: _state.isDisabled
         ? 'var(_--text-disbled)'
         : selectedTextColor !== '#1B1F24'
-          ? selectedTextColor
-          : isMultiSelectDisabled || isMultiSelectLoading
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+        ? selectedTextColor
+        : isMultiSelectDisabled || isMultiSelectLoading
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
       '&:hover': {
@@ -436,7 +441,7 @@ export const MultiselectV2 = ({
         data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('multiselect-widget', 'd-flex', {
           [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+          ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -479,6 +484,7 @@ export const MultiselectV2 = ({
             styles={customStyles}
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
+            showSearchInput={showSearchInput}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             menuIsOpen={isMultiselectOpen}
@@ -488,7 +494,7 @@ export const MultiselectV2 = ({
               ValueContainer: CustomValueContainer,
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
-              ClearIndicator: CustomClearIndicator,
+              ClearIndicator: showClearBtn ? CustomClearIndicator : () => null,
               DropdownIndicator: isMultiSelectLoading ? () => null : CustomDropdownIndicator,
             }}
             isClearable
