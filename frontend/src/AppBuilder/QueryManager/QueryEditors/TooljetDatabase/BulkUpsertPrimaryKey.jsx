@@ -25,24 +25,7 @@ export const BulkUpsertPrimaryKey = () => {
   }, [columns]);
 
   const handleRowsChange = (value) => {
-    const [_, __, resolvedValue] = resolveReferences(value);
-
-    // Ensure rows is an array
-    let rowsArray = resolvedValue;
-    if (typeof resolvedValue === 'string') {
-      try {
-        rowsArray = JSON.parse(resolvedValue);
-      } catch (e) {
-        console.error('Error parsing rows:', e);
-        rowsArray = [];
-      }
-    }
-
-    if (!Array.isArray(rowsArray)) {
-      rowsArray = [];
-    }
-
-    handleBulkUpsertRowsOptionChanged(rowsArray);
+    handleBulkUpsertRowsOptionChanged(value);
   };
 
   return (
@@ -75,7 +58,11 @@ export const BulkUpsertPrimaryKey = () => {
         <div className="field flex-grow-1 minw-400-w-400">
           <CodeHinter
             type="basic"
-            initialValue={`{{${JSON.stringify(bulkUpsertPrimaryKey?.rows ?? [])}}}`}
+            initialValue={
+              typeof bulkUpsertPrimaryKey?.rows === 'string'
+                ? bulkUpsertPrimaryKey?.rows
+                : JSON.stringify(bulkUpsertPrimaryKey?.rows ?? [])
+            }
             className="codehinter-plugins"
             placeholder="{{ [ { 'column1': 'value', ... } ] }}"
             onChange={handleRowsChange}

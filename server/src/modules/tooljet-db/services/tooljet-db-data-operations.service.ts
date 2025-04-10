@@ -105,7 +105,7 @@ export class TooljetDbDataOperationsService implements QueryService {
         return {
           status: result?.status,
           errorMessage: result?.error,
-          data: {},
+          data: [],
         };
       } else if (result.status === 'ok') {
         return {
@@ -117,7 +117,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       return {
         status: 'failed',
         errorMessage: error,
-        data: {},
+        data: [],
       };
     }
   }
@@ -629,7 +629,7 @@ export class TooljetDbDataOperationsService implements QueryService {
         return {
           status: 'failed',
           errorMessage: `Invalid primary key columns: ${invalidPrimaryKeys.join(', ')}`,
-          data: {},
+          data: [],
         };
       }
 
@@ -645,7 +645,7 @@ export class TooljetDbDataOperationsService implements QueryService {
         return {
           status: 'failed',
           errorMessage: result.error,
-          data: {},
+          data: [],
         };
       }
 
@@ -654,14 +654,14 @@ export class TooljetDbDataOperationsService implements QueryService {
         data: {
           inserted: result.inserted,
           updated: result.updated,
-          rows: result.rows,
+          data: result.rows,
         },
       };
     } catch (error) {
       return {
         status: 'failed',
         errorMessage: error.message,
-        data: {},
+        data: [],
       };
     }
   }

@@ -397,7 +397,7 @@ export class TooljetDbBulkUploadService {
     primaryKeyColumns: string[],
     organizationId: string
   ): Promise<{ status: string; inserted: number; updated: number; rows: any[]; error?: string }> {
-    let rowsToUpsert = [...rows];
+    const rowsToUpsert = [...rows];
     if (isEmpty(rowsToUpsert)) {
       return {
         status: 'failed',
@@ -409,7 +409,13 @@ export class TooljetDbBulkUploadService {
     }
 
     if (rowsToUpsert.length > this.MAX_ROW_COUNT) {
-      rowsToUpsert = rowsToUpsert.slice(0, this.MAX_ROW_COUNT);
+      return {
+        status: 'failed',
+        error: `Row count cannot be greater than ${this.MAX_ROW_COUNT}`,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
     }
 
     const internalTable = await this.manager.findOne(InternalTable, {
