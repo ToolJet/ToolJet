@@ -253,7 +253,45 @@ export const rangeSliderConfig = {
   },
   exposedVariables: {
     value: null,
+    label: 'Label',
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
   },
+  actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [{ handle: 'num1', displayName: 'Value', defaultValue: 'New value' }],
+    },
+    {
+      handle: 'setRangeValue',
+      displayName: 'Set range value',
+      params: [
+        { handle: 'num1', displayName: 'Min value' },
+        { handle: 'num2', displayName: 'Max value' },
+      ],
+    },
+    {
+      handle: 'reset',
+      displayName: 'Reset',
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: true },

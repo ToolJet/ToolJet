@@ -3,10 +3,18 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
-export const RangeSlider = ({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) => {
+export const RangeSlider = ({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  setExposedVariables,
+  fireEvent,
+  dataCy,
+}) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, visibility } = properties;
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
 
   const {
     trackColor,
@@ -24,11 +32,12 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
 
   const sliderRef = useRef(null);
 
-  const [sliderValue, setSliderValue] = useState(
-    endValue !== undefined ? endValue : Array.isArray(value) ? value[0] : value || 0
-  );
-  const [rangeValue, setRangeValue] = useState([0, 100]);
+  const [defaultSliderValue, setDefaultSliderValue] = useState(value);
+  const [defaultRangeValue, setDefaultRangeValue] = useState([startValue, endValue]);
   const [labelWidth, setLabelWidth] = useState(auto ? 'auto' : width);
+  const [visibility, setVisibility] = useState(properties?.visibility);
+  const [disabled, setDisabled] = useState(properties?.disabledState);
+  const [loading, setLoading] = useState(properties?.loadingState);
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const _width = auto ? 'auto' : `${(width / 100) * 70}%`;
@@ -37,40 +46,40 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
   const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
   const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
-  useEffect(() => {
-    if (endValue !== undefined) {
-      // Update sliderValue to match endValue whenever endValue changes
-      setSliderValue(endValue);
-      setExposedVariable('value', endValue);
-    }
-  }, [endValue]);
+  // useEffect(() => {
+  //   if (endValue !== undefined) {
+  //     // Update sliderValue to match endValue whenever endValue changes
+  //     setSliderValue(endValue);
+  //     setExposedVariable('value', endValue);
+  //   }
+  // }, [endValue]);
 
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    if (endValue === undefined) {
-      setSliderValue(singleHandleValue);
-      setExposedVariable('value', singleHandleValue);
-    }
-  }, [singleHandleValue]);
+  // useEffect(() => {
+  //   if (isInitialRender.current) return;
+  //   if (endValue === undefined) {
+  //     setSliderValue(singleHandleValue);
+  //     setExposedVariable('value', singleHandleValue);
+  //   }
+  // }, [singleHandleValue]);
 
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setRangeValue(twoHandlesArray);
-    setExposedVariable('value', twoHandlesArray);
-  }, [JSON.stringify(twoHandlesArray)]);
+  // useEffect(() => {
+  //   if (isInitialRender.current) return;
+  //   setDefaultRangeValue(twoHandlesArray);
+  //   setExposedVariable('value', twoHandlesArray);
+  // }, [JSON.stringify(twoHandlesArray)]);
 
-  useEffect(() => {
-    setExposedVariable(
-      'value',
-      enableTwoHandle ? twoHandlesArray : endValue !== undefined ? endValue : singleHandleValue
-    );
-    if (isInitialRender.current) {
-      enableTwoHandle
-        ? setRangeValue(twoHandlesArray)
-        : setSliderValue(endValue !== undefined ? endValue : singleHandleValue);
-    }
-    isInitialRender.current = false;
-  }, [enableTwoHandle]);
+  // useEffect(() => {
+  //   setExposedVariable(
+  //     'value',
+  //     enableTwoHandle ? twoHandlesArray : endValue !== undefined ? endValue : singleHandleValue
+  //   );
+  //   if (isInitialRender.current) {
+  //     enableTwoHandle
+  //       ? setDefaultRangeValue(twoHandlesArray)
+  //       : setSliderValue(endValue !== undefined ? endValue : singleHandleValue);
+  //   }
+  //   isInitialRender.current = false;
+  // }, [enableTwoHandle]);
 
   useEffect(() => {
     if (auto) {
@@ -80,25 +89,99 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
     }
   }, [auto, width]);
 
+  useEffect(() => {
+    const exposedVariables = {
+      setValue: async function (value) {
+        setDefaultSliderValue(value);
+        setExposedVariable('value', value);
+        fireEvent('onChange');
+      },
+      setRangeValue: async function (num1, num2) {
+        setDefaultRangeValue([num1, num2]);
+        setExposedVariable('value', [num1, num2]);
+        fireEvent('onChange');
+      },
+      setVisibility: async function (value) {
+        setVisibility(value);
+        setExposedVariable('isVisible', value);
+      },
+      setDisable: async function (value) {
+        setDisabled(value);
+        setExposedVariable('isDisabled', value);
+      },
+      setLoading: async function (value) {
+        setLoading(value);
+        setExposedVariable('isLoading', value);
+      },
+    };
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('reset', () => {
+      if (enableTwoHandle === 'slider') {
+        setDefaultSliderValue(value ?? min);
+        setExposedVariable('value', value ?? min);
+      } else {
+        const start = startValue ?? min;
+        const end = endValue ?? max;
+        setExposedVariable('value', [start, end]);
+        setDefaultRangeValue([start, end]);
+      }
+    });
+  }, [min, max, startValue, endValue]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    if (enableTwoHandle === 'slider') {
+      setDefaultSliderValue(value);
+    } else {
+      const start = startValue ?? min;
+      const end = endValue ?? max;
+
+      setDefaultRangeValue([start, end]);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, enableTwoHandle, startValue, endValue]);
+
   const onSliderChange = (value) => {
+    console.log({ value });
     setExposedVariable('value', value);
-    setSliderValue(value);
+    setDefaultSliderValue(value);
   };
 
   const onRangeChange = (value) => {
+    console.log({ value });
     setExposedVariable('value', value);
-    setRangeValue(value);
+    setDefaultRangeValue(value);
   };
 
   const rangeStyles = {
-    handleStyle: toArray(sliderValue).map(() => ({
-      backgroundColor: handleColor,
+    handleStyle: toArray(defaultRangeValue).map(() => ({
+      backgroundColor: `${handleColor}`,
       borderColor: handleColor,
+      border: `1px solid ${handleBorderColor}`,
+      height: 16,
+      width: 16,
+      opacity: 1,
     })),
-    trackStyle: toArray(sliderValue).map(() => ({
+    trackStyle: toArray(defaultRangeValue).map(() => ({
       backgroundColor: trackColor,
+      height: 8,
     })),
-    railStyle: { backgroundColor: lineColor },
+    railStyle: { backgroundColor: lineColor, height: 8 },
+    dotStyle: {
+      width: 4,
+      height: 4,
+      backgroundColor: '#ffffff',
+      borderColor: '#ffffff',
+    },
+    activeDotStyle: {
+      backgroundColor: '#ffffff',
+      borderColor: '#ffffff',
+    },
   };
 
   const Label = ({ label, color, defaultAlignment, direction }) => {
@@ -121,6 +204,7 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
           maxWidth: defaultAlignment === 'side' ? '50%' : '100%',
           lineHeight: '1.2',
           fontSize: '12px',
+          fontWeight: '500',
         }}
       >
         {label}
@@ -143,33 +227,35 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
 
   const sliderContainerStyle = {
     width: '100%',
+    paddingRight: '12px',
   };
 
   return (
     <div style={containerStyle} className="range-slider" data-cy={dataCy}>
       <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
       <div style={sliderContainerStyle}>
-        {enableTwoHandle === 'slider' ? (
+        {enableTwoHandle !== 'slider' ? (
           <Slider
             range
             min={min}
             max={max}
-            defaultValue={toArray(rangeValue)}
+            defaultValue={defaultRangeValue}
             onChange={onRangeChange}
             onAfterChange={() => fireEvent('onChange')}
-            value={toArray(rangeValue)}
+            value={defaultRangeValue}
             ref={sliderRef}
             trackStyle={rangeStyles.trackStyle}
             railStyle={rangeStyles.railStyle}
-            handleStyle={[
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-            ]}
-            marks={{
-              25: { style: { color: markerLabel }, label: '25' },
-              50: { style: { color: markerLabel }, label: '50' },
-              75: { style: { color: markerLabel }, label: '75' },
-            }}
+            handleStyle={rangeStyles.handleStyle}
+            dotStyle={rangeStyles.dotStyle}
+            activeDotStyle={rangeStyles.activeDotStyle}
+            marks={schema.reduce((acc, item) => {
+              acc[item.value] = {
+                style: { color: markerLabel },
+                label: item.label.replace('%', ''),
+              };
+              return acc;
+            }, {})}
             handleRender={(node, handleProps) => {
               return (
                 <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
@@ -182,23 +268,23 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
           <Slider
             min={min}
             max={max}
-            defaultValue={endValue !== undefined ? endValue : sliderValue}
-            value={sliderValue}
+            defaultValue={defaultSliderValue}
+            value={defaultSliderValue}
             ref={sliderRef}
             onChange={onSliderChange}
             onAfterChange={() => fireEvent('onChange')}
-            startPoint={startValue}
-            trackStyle={{ backgroundColor: trackColor }}
-            railStyle={{ backgroundColor: lineColor }}
-            handleStyle={[
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-            ]}
-            marks={{
-              25: { style: { color: markerLabel }, label: '25' },
-              50: { style: { color: markerLabel }, label: '50' },
-              75: { style: { color: markerLabel }, label: '75' },
-            }}
+            trackStyle={rangeStyles.trackStyle}
+            railStyle={rangeStyles.railStyle}
+            handleStyle={rangeStyles.handleStyle}
+            dotStyle={rangeStyles.dotStyle}
+            activeDotStyle={rangeStyles.activeDotStyle}
+            marks={schema.reduce((acc, item) => {
+              acc[item.value] = {
+                style: { color: markerLabel },
+                label: item.label.replace('%', ''),
+              };
+              return acc;
+            }, {})}
             handleRender={(node, handleProps) => {
               return (
                 <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
