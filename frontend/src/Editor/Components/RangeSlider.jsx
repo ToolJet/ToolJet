@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-
+import Spinner from '@/_ui/Spinner';
 export const RangeSlider = ({
   height,
   properties,
@@ -14,7 +14,20 @@ export const RangeSlider = ({
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
+  const {
+    value,
+    min,
+    max,
+    enableTwoHandle,
+    label,
+    schema,
+    endValue,
+    startValue,
+    disabledState,
+    loadingState,
+    visibility,
+  } = properties;
+  console.log(properties);
 
   const {
     trackColor,
@@ -35,7 +48,8 @@ export const RangeSlider = ({
   const [defaultSliderValue, setDefaultSliderValue] = useState(value);
   const [defaultRangeValue, setDefaultRangeValue] = useState([startValue, endValue]);
   const [labelWidth, setLabelWidth] = useState(auto ? 'auto' : width);
-  const [visibility, setVisibility] = useState(properties?.visibility);
+  // <- HAVE COMMENTED THIS VARIABLE FOR YOUR REFERENCE ->
+  // const [visibility, setVisibility] = useState(properties.visibility);
   const [disabled, setDisabled] = useState(properties?.disabledState);
   const [loading, setLoading] = useState(properties?.loadingState);
 
@@ -45,41 +59,6 @@ export const RangeSlider = ({
   const toArray = (data) => (Array.isArray(data) ? data : [data, max]);
   const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
   const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
-
-  // useEffect(() => {
-  //   if (endValue !== undefined) {
-  //     // Update sliderValue to match endValue whenever endValue changes
-  //     setSliderValue(endValue);
-  //     setExposedVariable('value', endValue);
-  //   }
-  // }, [endValue]);
-
-  // useEffect(() => {
-  //   if (isInitialRender.current) return;
-  //   if (endValue === undefined) {
-  //     setSliderValue(singleHandleValue);
-  //     setExposedVariable('value', singleHandleValue);
-  //   }
-  // }, [singleHandleValue]);
-
-  // useEffect(() => {
-  //   if (isInitialRender.current) return;
-  //   setDefaultRangeValue(twoHandlesArray);
-  //   setExposedVariable('value', twoHandlesArray);
-  // }, [JSON.stringify(twoHandlesArray)]);
-
-  // useEffect(() => {
-  //   setExposedVariable(
-  //     'value',
-  //     enableTwoHandle ? twoHandlesArray : endValue !== undefined ? endValue : singleHandleValue
-  //   );
-  //   if (isInitialRender.current) {
-  //     enableTwoHandle
-  //       ? setDefaultRangeValue(twoHandlesArray)
-  //       : setSliderValue(endValue !== undefined ? endValue : singleHandleValue);
-  //   }
-  //   isInitialRender.current = false;
-  // }, [enableTwoHandle]);
 
   useEffect(() => {
     if (auto) {
@@ -101,10 +80,11 @@ export const RangeSlider = ({
         setExposedVariable('value', [num1, num2]);
         fireEvent('onChange');
       },
-      setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
-      },
+      // <- HAVE COMMENTED THIS FUNCTION FOR YOUR REFERENCE ->
+      // setVisibility: async function (value) {
+      //   setVisibility(value);
+      //   setExposedVariable('isVisible', value);
+      // },
       setDisable: async function (value) {
         setDisabled(value);
         setExposedVariable('isDisabled', value);
@@ -192,7 +172,7 @@ export const RangeSlider = ({
         ref={labelRef}
         style={{
           color,
-          width: labelWidth,
+          width: _width,
           marginRight: defaultAlignment === 'side' && direction === 'left' ? '4px' : '0px',
           marginLeft: defaultAlignment === 'side' && direction === 'right' ? '4px' : '0px',
           marginBottom: defaultAlignment === 'top' ? '4px' : '0px',
@@ -223,78 +203,101 @@ export const RangeSlider = ({
     height: defaultAlignment === 'top' ? 'auto' : height,
     gap: '0px',
     ...(defaultAlignment === 'side' && direction === 'right' && { flexDirection: 'row-reverse' }),
+    ...(disabledState && {
+      pointerEvents: 'none',
+      cursor: 'not-allowed',
+      opacity: 0.5,
+    }),
+    visibility: visibility ? 'visible' : 'hidden',
   };
 
   const sliderContainerStyle = {
     width: '100%',
     paddingRight: '12px',
+    visibility: visibility ? 'visible' : 'hidden',
   };
-
   return (
     <div style={containerStyle} className="range-slider" data-cy={dataCy}>
-      <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
-      <div style={sliderContainerStyle}>
-        {enableTwoHandle !== 'slider' ? (
-          <Slider
-            range
-            min={min}
-            max={max}
-            defaultValue={defaultRangeValue}
-            onChange={onRangeChange}
-            onAfterChange={() => fireEvent('onChange')}
-            value={defaultRangeValue}
-            ref={sliderRef}
-            trackStyle={rangeStyles.trackStyle}
-            railStyle={rangeStyles.railStyle}
-            handleStyle={rangeStyles.handleStyle}
-            dotStyle={rangeStyles.dotStyle}
-            activeDotStyle={rangeStyles.activeDotStyle}
-            marks={schema.reduce((acc, item) => {
-              acc[item.value] = {
-                style: { color: markerLabel },
-                label: item.label.replace('%', ''),
-              };
-              return acc;
-            }, {})}
-            handleRender={(node, handleProps) => {
-              return (
-                <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
-                  {node}
-                </OverlayTrigger>
-              );
-            }}
-          />
-        ) : (
-          <Slider
-            min={min}
-            max={max}
-            defaultValue={defaultSliderValue}
-            value={defaultSliderValue}
-            ref={sliderRef}
-            onChange={onSliderChange}
-            onAfterChange={() => fireEvent('onChange')}
-            trackStyle={rangeStyles.trackStyle}
-            railStyle={rangeStyles.railStyle}
-            handleStyle={rangeStyles.handleStyle}
-            dotStyle={rangeStyles.dotStyle}
-            activeDotStyle={rangeStyles.activeDotStyle}
-            marks={schema.reduce((acc, item) => {
-              acc[item.value] = {
-                style: { color: markerLabel },
-                label: item.label.replace('%', ''),
-              };
-              return acc;
-            }, {})}
-            handleRender={(node, handleProps) => {
-              return (
-                <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
-                  {node}
-                </OverlayTrigger>
-              );
-            }}
-          />
-        )}
-      </div>
+      {loadingState ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            width: '100%',
+          }}
+        >
+          <Spinner />
+        </div>
+      ) : (
+        <>
+          <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
+
+          <div style={sliderContainerStyle}>
+            {enableTwoHandle !== 'slider' ? (
+              <Slider
+                range
+                min={min}
+                max={max}
+                defaultValue={defaultRangeValue}
+                onChange={onRangeChange}
+                onAfterChange={() => fireEvent('onChange')}
+                value={defaultRangeValue}
+                ref={sliderRef}
+                trackStyle={rangeStyles.trackStyle}
+                railStyle={rangeStyles.railStyle}
+                handleStyle={rangeStyles.handleStyle}
+                dotStyle={rangeStyles.dotStyle}
+                activeDotStyle={rangeStyles.activeDotStyle}
+                marks={schema.reduce((acc, item) => {
+                  acc[item.value] = {
+                    style: { color: markerLabel },
+                    label: item.label.replace('%', ''),
+                  };
+                  return acc;
+                }, {})}
+                handleRender={(node, handleProps) => {
+                  return (
+                    <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                      {node}
+                    </OverlayTrigger>
+                  );
+                }}
+              />
+            ) : (
+              <Slider
+                min={min}
+                max={max}
+                defaultValue={defaultSliderValue}
+                value={defaultSliderValue}
+                ref={sliderRef}
+                onChange={onSliderChange}
+                onAfterChange={() => fireEvent('onChange')}
+                trackStyle={rangeStyles.trackStyle}
+                railStyle={rangeStyles.railStyle}
+                handleStyle={rangeStyles.handleStyle}
+                dotStyle={rangeStyles.dotStyle}
+                activeDotStyle={rangeStyles.activeDotStyle}
+                marks={schema.reduce((acc, item) => {
+                  acc[item.value] = {
+                    style: { color: markerLabel },
+                    label: item.label.replace('%', ''),
+                  };
+                  return acc;
+                }, {})}
+                handleRender={(node, handleProps) => {
+                  return (
+                    <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                      {node}
+                    </OverlayTrigger>
+                  );
+                }}
+              />
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
