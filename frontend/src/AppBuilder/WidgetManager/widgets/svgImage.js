@@ -32,6 +32,14 @@ export const svgImageConfig = {
         defaultValue: true,
       },
     },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
   },
   exposedVariables: {
     value: {},
@@ -50,6 +58,7 @@ export const svgImageConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      alignment: { value: 'left' },
     },
   },
 };

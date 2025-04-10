@@ -141,7 +141,7 @@ export const rangeSliderConfig = {
   },
   styles: {
     color: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -192,7 +192,7 @@ export const rangeSliderConfig = {
       isFxNotRequired: true,
     },
     lineColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Track',
       validation: {
         schema: { type: 'string' },
@@ -201,7 +201,7 @@ export const rangeSliderConfig = {
       accordian: 'slider',
     },
     trackColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
       validation: {
         schema: { type: 'string' },
@@ -210,7 +210,7 @@ export const rangeSliderConfig = {
       accordian: 'slider',
     },
     handleColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Handle',
       validation: {
         schema: { type: 'string' },
@@ -219,7 +219,7 @@ export const rangeSliderConfig = {
       accordian: 'slider',
     },
     handleBorderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Handle border',
       validation: {
         schema: { type: 'string' },
@@ -228,7 +228,7 @@ export const rangeSliderConfig = {
       accordian: 'slider',
     },
     markerLabel: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Marker label',
       validation: {
         schema: { type: 'string' },
@@ -331,7 +331,7 @@ export const rangeSliderConfig = {
       lineColor: { value: '#E4E7EB' },
       handleColor: { value: '#FFFFFF' },
       handleBorderColor: { value: '#ACB2B9' },
-      trackColor: { value: '#4368E3' },
+      trackColor: { value: 'var(--primary-brand)' },
       markerLabel: { value: '#1B1F24' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },

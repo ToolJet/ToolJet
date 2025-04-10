@@ -29,6 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(req: Request, payload: JWTPayload) {
     const isUserMandatory = !req['isUserNotMandatory'];
     const isGetUserSession = !!req['isGetUserSession'];
+    const isGettingOrganizations = !!req['isGettingOrganizations'];
     const bypassOrganizationValidation = !req['isFetchingOrganization'] && !req['isSwitchingOrganization'];
     /* User is going through invite flow */
     const isInviteSession = !!req['isInviteSession'];
@@ -67,7 +68,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     let user: User;
     if (payload?.sub && organizationId && !isInviteSession) {
       /* Usual JWT case: user with valid organization id */
-      user = await this.userRepository.findByEmail(payload.sub, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
+      user = await this.userRepository.findByEmail(payload.sub, isGettingOrganizations ? null : organizationId, WORKSPACE_USER_STATUS.ACTIVE);
       if (bypassOrganizationValidation) {
         await this.sessionUtilService.findOrganization(organizationId);
       }

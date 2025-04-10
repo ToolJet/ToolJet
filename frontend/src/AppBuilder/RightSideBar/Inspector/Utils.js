@@ -43,6 +43,9 @@ export function renderCustomStyles(
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
     componentConfig.component == 'PasswordInput' ||
+    componentConfig.component == 'EmailInput' ||
+    componentConfig.component == 'PhoneInput' ||
+    componentConfig.component == 'CurrencyInput' ||
     componentConfig.component == 'ToggleSwitchV2' ||
     componentConfig.component == 'Checkbox' ||
     componentConfig.component == 'Table' ||
