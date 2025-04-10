@@ -15,10 +15,10 @@ In ToolJet, GitSync can be enabled, disabled, or deleted based on your requireme
 
 To enable or disable the GitSync feature, go to the **Configure git** tab on the **Workspace settings** page, and toggle on/off the **Connect** switch. This is only available if the GitSync feature is configured.
 
-<img className="screenshot-full" src="/img/development-lifecycle/gitsync/delete/connection.png" alt="GitSync" />
+<img className="screenshot-full" src="/img/development-lifecycle/gitsync/delete/connection-v2.png" alt="GitSync" />
 
 ## Delete GitSync Configuration
 
 To delete the GitSync configuration, go to the **Configure git** tab on the **Workspace settings** page, and click on the **Delete configuration** button. This will delete the SSH key from the ToolJet configuration and the GitSync feature will be disabled.
 
-<img className="screenshot-full" src="/img/development-lifecycle/gitsync/delete/delete.png" alt="GitSync" />
+<img className="screenshot-full" src="/img/development-lifecycle/gitsync/delete/delete-v2.png" alt="GitSync" />
