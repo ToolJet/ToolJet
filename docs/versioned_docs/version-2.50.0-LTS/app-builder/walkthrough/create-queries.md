@@ -87,7 +87,7 @@ You can insert values from the components in queries. For instance, the above co
 
 ```sql
 INSERT INTO feature_requests (id, title, description, votes, priority)
-VALUES (10, `{{components.textinput1.value}}`, `{{components.textinput2.value}}`, 0, 2);
+VALUES (10, '{{components.textinput1.value}}', '{{components.textinput2.value}}', 0, 2);
 ```
 
 You can apply the same principles to upcoming examples.
@@ -105,7 +105,7 @@ SET
     description = 'Updated Feature Description',
     votes = 15,
     priority = 2
-WHERE id = `{{components.table1.selectedRow.id}}`;
+WHERE id = '{{components.table1.selectedRow.id}}';
 ```
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>

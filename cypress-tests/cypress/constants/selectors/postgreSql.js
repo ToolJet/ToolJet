@@ -12,7 +12,7 @@ export const postgreSqlSelector = {
   dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
-  dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
+  dataSourceNameInputField: '[data-cy="data-source-name-input-field"]',
   labelHost: '[data-cy="label-host"]',
   labelPort: '[data-cy="label-port"]',
   labelSsl: '[data-cy="label-ssl"]',
@@ -87,4 +87,12 @@ export const postgreSqlSelector = {
   recordsInputField: '[data-cy="records-input-field"]',
 
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
+};
+
+export const airTableSelector = {
+  operationSelectDropdown: '[data-cy="operation-select-dropdown"]',
+  baseIdInputField: '[data-cy="base-id-input-field"]',
+  tableNameInputField: '[data-cy="table-name-input-field"]',
+  recordIdInputField: '[data-cy="record-id-input-field"]',
+  bodyInputField: '[data-cy="body-input-field"]',
 };

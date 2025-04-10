@@ -11,7 +11,7 @@ jobs:
 
     steps:
 
-      - name: Checkout code to main for Beta CE edition
+      - name: Checkout code to main for pre-release CE edition
         if: "!contains(github.event.release.tag_name, 'ce-lts')"
         uses: actions/checkout@v2
         with:
@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for Beta tag
+      - name: Build and Push Docker image for pre-release tag
         if: "!contains(github.event.release.tag_name, '-ce-lts')"
         uses: docker/build-push-action@v4
         with:
@@ -98,7 +98,7 @@ jobs:
     if: "${{ github.event.release }}"
 
     steps:
-      - name: Checkout code to main for Beta EE edition
+      - name: Checkout code to main for pre-release EE edition
         if: "!contains(github.event.release.tag_name, 'ee-lts')"
         uses: actions/checkout@v2
         with:
@@ -132,13 +132,13 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
 
-      - name: Build and Push Docker image for Beta tag
+      - name: Build and Push Docker image for pre-release tag
         if: "!contains(github.event.release.tag_name, '-ee-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
           args: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          file: docker/ee-production.Dockerfile
+          file: docker/ee/ee-production.Dockerfile
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64
@@ -172,61 +172,61 @@ jobs:
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
 
-  build-tooljet-image-for-cloud-edtion:
+# commented out for now, since cloud modularisation is not yet ready
 
-    runs-on: ubuntu-latest
-    if: "${{ github.event.release }}"
+  # build-tooljet-image-for-cloud-edtion:
 
-    steps:
-      - name: Checkout code to LTS for Cloud LTS edition
-        if: "contains(github.event.release.tag_name, '-cloud-lts')"
-        uses: actions/checkout@v2
-        with:
-          ref: refs/heads/lts-4.0
+  #   runs-on: ubuntu-latest
+  #   if: "${{ github.event.release }}"
 
-      # Create Docker Buildx builder with platform configuration
-      - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
-          docker buildx use mybuilder
+  #   steps:
+  #     - name: Checkout code to LTS for Cloud LTS edition
+  #       if: "contains(github.event.release.tag_name, '-cloud-lts')"
+  #       uses: actions/checkout@v2
+  #       with:
+  #         ref: refs/heads/lts-4.0
 
-      - name: Set DOCKER_CLI_EXPERIMENTAL
-        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+  #     # Create Docker Buildx builder with platform configuration
+  #     - name: Set up Docker Buildx
+  #       run: |
+  #         mkdir -p ~/.docker/cli-plugins
+  #         curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+  #         chmod a+x ~/.docker/cli-plugins/docker-buildx
+  #         docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+  #         docker buildx use mybuilder
 
-      - name: use mybuilder buildx
-        run: docker buildx use mybuilder
+  #     - name: Set DOCKER_CLI_EXPERIMENTAL
+  #       run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
 
-      - name: Docker Login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+  #     - name: use mybuilder buildx
+  #       run: docker buildx use mybuilder
 
-      - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, '-cloud-lts')"
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          args: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          file: docker/cloud/cloud-server.Dockerfile
-          push: true
-          tags: tooljet/saas:${{ github.event.release.tag_name }}
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  #     - name: Docker Login
+  #       uses: docker/login-action@v2
+  #       with:
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Send Slack Notification
-        run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet cloud image published:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
-          else
-            message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
-          fi
+  #     - name: Build and Push Docker image for LTS tag
+  #       if: "contains(github.event.release.tag_name, '-cloud-lts')"
+  #       uses: docker/build-push-action@v4
+  #       with:
+  #         context: .
+  #         args: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+  #         file: docker/cloud/cloud-server.Dockerfile
+  #         push: true
+  #         tags: tooljet/saas:${{ github.event.release.tag_name }}
+  #         platforms: linux/amd64
+  #       env:
+  #         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  #         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+  #     - name: Send Slack Notification
+  #       run: |
+  #         if [[ "${{ job.status }}" == "success" ]]; then
+  #           message="ToolJet cloud image published:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
+  #         else
+  #           message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
+  #         fi
 
-
+  #         curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

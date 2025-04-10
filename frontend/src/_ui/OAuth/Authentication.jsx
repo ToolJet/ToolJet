@@ -70,8 +70,9 @@ const Authentication = ({
     return (
       <div>
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Username</label>
+          <label className="form-label text-muted mt-3" data-cy="label-username">Username</label>
           <Input
+            data-cy="username-input-field"
             type="text"
             className="form-control"
             onChange={(e) => optionchanged('username', e.target.value)}
@@ -90,6 +91,7 @@ const Authentication = ({
             label="Password"
           >
             <Input
+              data-cy="password-input-field"
               type="password"
               className="form-control"
               onChange={(e) => optionchanged('password', e.target.value)}
@@ -113,6 +115,7 @@ const Authentication = ({
             label="Token"
           >
             <Input
+              data-cy="token-input-field"
               type="password"
               className="form-control"
               onChange={(e) => optionchanged('bearer_token', e.target.value)}

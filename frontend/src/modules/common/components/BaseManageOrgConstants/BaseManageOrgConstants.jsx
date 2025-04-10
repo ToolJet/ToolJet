@@ -484,7 +484,7 @@ const BaseManageOrgConstants = ({
               <div className="workspace-setting-buttons-wrap">
                 {canCreateVariable() && (
                   <ButtonSolid
-                    data-cy="add-new-constant-button"
+                    data-cy="form-add-new-constant-button"
                     variant="primary"
                     onClick={() => {
                       setMode(() => MODES.CREATE);

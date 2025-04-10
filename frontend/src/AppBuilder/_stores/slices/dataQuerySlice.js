@@ -13,6 +13,7 @@ const initialState = {
   creatingQueryInProcessId: null,
   queryConfirmationList: [],
   queuedActions: {},
+  queryUpdates: {},
   queries: {
     modules: {
       canvas: [],
@@ -381,8 +382,11 @@ export const createDataQuerySlice = (set, get) => ({
         return;
       }
       const versionId = get().currentVersionId;
-      dataqueryService
-        .update(newValues?.id, versionId, newValues?.name, newValues?.options)
+      const updatePromise = dataqueryService.update(newValues?.id, versionId, newValues?.name, newValues?.options);
+      set((state) => {
+        state.dataQuery.queryUpdates[newValues?.id] = updatePromise;
+      });
+      updatePromise
         .then((data) => {
           localStorage.removeItem('transformation');
           set((state) => {
@@ -401,7 +405,12 @@ export const createDataQuerySlice = (set, get) => ({
             state.dataQuery.isUpdatingQueryInProcess = false;
           });
         })
-        .finally(() => setIsAppSaving(false));
+        .finally(() => {
+          setIsAppSaving(false);
+          set((state) => {
+            delete state.dataQuery.queryUpdates[newValues?.id];
+          });
+        });
     }, 500),
     runOnLoadQueries: async () => {
       const queries = get().dataQuery.queries.modules.canvas;
