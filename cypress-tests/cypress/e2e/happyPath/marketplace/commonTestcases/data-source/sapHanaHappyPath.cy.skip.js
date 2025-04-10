@@ -108,7 +108,7 @@ describe("Data sources", () => {
     selectAndAddDataSource(postgreSqlText.postgreSQL);
 
     cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
+      '[data-cy="data-source-name-input-field"]',
       postgreSqlText.psqlName
     );
 

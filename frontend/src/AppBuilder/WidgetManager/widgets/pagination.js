@@ -50,6 +50,14 @@ export const paginationConfig = {
         defaultValue: false,
       },
     },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
   },
   exposedVariables: {
     totalPages: null,
@@ -73,6 +81,7 @@ export const paginationConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      alignment: { value: 'left' },
     },
   },
 };

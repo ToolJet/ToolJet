@@ -13,20 +13,11 @@ import { Confirm } from '@/Editor/Viewer/Confirm';
 import { shallow } from 'zustand/shallow';
 
 const CanvasSettings = ({ darkMode }) => {
-  const {
-    globalSettings,
-    globalSettingsChanged,
-    isMaintenanceOn,
-    toggleAppMaintenance,
-    resolveOthers,
-    getCanvasBackgroundColor,
-  } = useStore(
+  const { globalSettings, globalSettingsChanged, resolveOthers, getCanvasBackgroundColor } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
       updateGlobalSettings: state.updateGlobalSettings,
-      isMaintenanceOn: state.app.isMaintenanceOn,
       globalSettingsChanged: state.globalSettingsChanged,
-      toggleAppMaintenance: state.toggleAppMaintenance,
       resolveOthers: state.resolveOthers,
       getCanvasBackgroundColor: state.getCanvasBackgroundColor,
     }),
@@ -73,43 +64,10 @@ const CanvasSettings = ({ darkMode }) => {
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
 
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, backgroundFxQuery } = globalSettings ?? {};
+  const { canvasMaxWidth, canvasMaxWidthType, backgroundFxQuery } = globalSettings ?? {};
 
   return (
     <>
-      <Confirm
-        show={showConfirmation}
-        message={
-          isMaintenanceOn
-            ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
-            : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
-        }
-        onConfirm={() => toggleAppMaintenance()}
-        onCancel={() => setConfirmationShow(false)}
-        darkMode={darkMode}
-      />
-      <div className="tw-flex tw-mb-3">
-        <SwitchComponent
-          align="right"
-          label="Hide header for launched apps"
-          size="default"
-          checked={hideHeader}
-          onCheckedChange={(e) => globalSettingsChanged({ hideHeader: e })}
-          data-cy={`toggle-hide-header-for-launched-apps`}
-          className="tw-w-full"
-        />
-      </div>
-      <div className="tw-flex tw-mb-3">
-        <SwitchComponent
-          align="right"
-          label="Maintenance mode"
-          size="default"
-          checked={isMaintenanceOn}
-          onCheckedChange={() => setConfirmationShow(true)}
-          data-cy={`toggle-maintenance-mode`}
-          className="tw-w-full"
-        />
-      </div>
       <div className="d-flex mb-3">
         <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
           {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
