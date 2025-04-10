@@ -136,6 +136,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     groups: string[],
     organizationId: string,
     userId: string,
+    areGroupIds: boolean = false,
     manager?: EntityManager
   ): Promise<void> {
     if (!groups) return;
@@ -146,7 +147,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       try {
         for (const addGroup of groups) {
-          const groupQuery = uuid.validate(addGroup)
+          const groupQuery = areGroupIds
             ? { organizationId: organizationId, id: addGroup }
             : { organizationId: organizationId, name: addGroup };
 
@@ -483,7 +484,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         );
       }
 
-      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, manager);
+      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, true, manager);
 
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);

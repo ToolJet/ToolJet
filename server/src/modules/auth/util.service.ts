@@ -153,7 +153,6 @@ export class AuthUtilService implements IAuthUtilService {
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
-    const isDefaultOrganization = defaultOrganization?.id != organization.id;
     /* Default password for sso-signed workspace user */
 
     const password = uuid.v4();
@@ -162,10 +161,10 @@ export class AuthUtilService implements IAuthUtilService {
         firstName,
         lastName,
         email,
-        source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
-        status: isDefaultOrganization ? USER_STATUS.ACTIVE : status,
+        source: defaultOrganization?.id ? WORKSPACE_USER_SOURCE.SIGNUP : source,
+        status: defaultOrganization?.id ? USER_STATUS.ACTIVE : status,
         password,
-        role: isDefaultOrganization ? USER_ROLE.ADMIN : USER_ROLE.END_USER,
+        role: defaultOrganization?.id ? USER_ROLE.ADMIN : USER_ROLE.END_USER,
         defaultOrganizationId: defaultOrganization?.id || organization.id,
       },
       manager
@@ -189,8 +188,14 @@ export class AuthUtilService implements IAuthUtilService {
       manager,
       WORKSPACE_USER_SOURCE.SIGNUP
     );
-    await this.organizationUsersUtilService.attachUserGroup([USER_ROLE.END_USER], organization.id, user.id, manager);
-    if (isDefaultOrganization) {
+    await this.organizationUsersUtilService.attachUserGroup(
+      [USER_ROLE.END_USER],
+      organization.id,
+      user.id,
+      false,
+      manager
+    );
+    if (defaultOrganization?.id) {
       // Setting up default organization
       await this.organizationUsersRepository.createOne(
         user,
@@ -204,6 +209,7 @@ export class AuthUtilService implements IAuthUtilService {
         [USER_ROLE.ADMIN],
         defaultOrganization.id,
         user.id,
+        false,
         manager
       );
     }
@@ -351,7 +357,7 @@ export class AuthUtilService implements IAuthUtilService {
       }
 
       if (ssoGroups?.length) {
-        await this.organizationUsersUtilService.attachUserGroup(groupsIds, organizationId, userId, manager);
+        await this.organizationUsersUtilService.attachUserGroup(groupsIds, organizationId, userId, true, manager);
         await this.licenseUserService.validateUser(manager);
       }
 
