@@ -339,6 +339,7 @@ export const rangeSliderConfig = {
       color: { value: '#1B1F24' },
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
+      visibility: { value: '{{true}}' },
     },
   },
 };
