@@ -136,6 +136,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     groups: string[],
     organizationId: string,
     userId: string,
+    areGroupIds: boolean = false,
     manager?: EntityManager
   ): Promise<void> {
     if (!groups) return;
@@ -146,13 +147,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       try {
         for (const addGroup of groups) {
-          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(
-            {
-              organizationId: organizationId,
-              name: addGroup,
-            },
-            manager
-          );
+          const groupQuery = areGroupIds
+            ? { organizationId: organizationId, id: addGroup }
+            : { organizationId: organizationId, name: addGroup };
+
+          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(groupQuery, manager);
           if (!orgGroupPermission) {
             throw new BadRequestException(`${addGroup} group does not exist for current organization`);
           }
@@ -485,7 +484,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         );
       }
 
-      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, manager);
+      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, true, manager);
 
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);
