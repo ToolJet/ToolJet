@@ -241,7 +241,7 @@ export const stepsConfig = {
       padding: { value: 'default' },
       incompletedAccent: { value: '#E4E7EB' },
       incompletedLabel: { value: '#1B1F24' },
-      completedAccent: { value: '#4368E3' },
+      completedAccent: { value: 'var(--primary-brand)' },
       completedLabel: { value: '#1B1F24' },
       currentStepLabel: { value: '#1B1F24' },
     },
