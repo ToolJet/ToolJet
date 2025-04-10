@@ -37,6 +37,8 @@ const WidgetWrapper = memo(
     });
     const visibility = useStore((state) => {
       const component = state.getResolvedComponent(id, subContainerIndex);
+      const componentExposedVisibility = state.getExposedValueOfComponent(id)?.isVisible;
+      if (componentExposedVisibility === false) return false;
       if (component?.properties?.visibility === false || component?.styles?.visibility === false) return false;
       return true;
     });
@@ -52,7 +54,7 @@ const WidgetWrapper = memo(
       height: visibility === false ? '10px' : `${height}px`,
       transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
-      border: visibility === false ? `1px solid var(--border-default)` : 'none',
+      border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
     };
 
     if (!componentType) return null;
