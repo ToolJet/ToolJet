@@ -12,7 +12,6 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
-import useStore from '@/AppBuilder/_stores/store';
 
 export const MultiselectV2 = ({
   id,
@@ -77,8 +76,6 @@ export const MultiselectV2 = ({
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
-  const currentMode = useStore((state) => state.currentMode);
-  const isEditor = currentMode === 'edit';
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
   useEffect(() => {
@@ -270,26 +267,29 @@ export const MultiselectV2 = ({
       fireEvent('onSearchTextChanged');
     }
   };
-  const handleClickOutside = (event) => {
+  const handleClickOutsideSelect = (event) => {
     let menu = document.getElementById(`dropdown-multiselect-widget-custom-menu-list-${id}`);
     if (
+      isMultiselectOpen &&
       multiselectRef.current &&
       !multiselectRef.current.contains(event.target) &&
       menu &&
       !menu.contains(event.target)
     ) {
-      if (isMultiselectOpen) {
-        fireEvent('onBlur');
-        setIsMultiselectOpen(false);
-        setSearchInputValue('');
-      }
+      setIsMultiselectOpen(false);
+      fireEvent('onBlur');
     }
   };
 
-  const handleClickInEditor = (e) => {
-    if (e.target.className.includes('clear-indicator') || isMultiselectOpen) return;
-    e.stopPropagation();
-    selectRef.current?.onControlMouseDown(e);
+  const handleClickInsideSelect = () => {
+    if (isMultiSelectDisabled || isMultiSelectLoading) return;
+    if (isMultiselectOpen) {
+      setIsMultiselectOpen(false);
+      fireEvent('onBlur');
+    } else {
+      setIsMultiselectOpen(true);
+      fireEvent('onFocus');
+    }
   };
 
   const setInputValue = (values) => {
@@ -304,11 +304,11 @@ export const MultiselectV2 = ({
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside, { capture: true });
+    document.addEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside, { capture: true });
+      document.removeEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     };
-  }, [isMultiselectOpen]);
+  }, [isMultiselectOpen, componentName]);
 
   // Handle Select all logic
   useEffect(() => {
@@ -468,7 +468,7 @@ export const MultiselectV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100" onMouseDownCapture={isEditor && handleClickInEditor}>
+        <div className="w-100 px-0 h-100" onClick={handleClickInsideSelect}>
           <Select
             ref={selectRef}
             menuId={id}
@@ -498,21 +498,15 @@ export const MultiselectV2 = ({
             tabSelectsValue={false}
             controlShouldRenderValue={false}
             isSearchable={false}
-            onMenuOpen={() => {
-              setIsMultiselectOpen(true);
-              fireEvent('onFocus');
-            }}
-            onMenuClose={() => {
-              setIsMultiselectOpen(false);
-              fireEvent('onBlur');
-            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !isMultiselectOpen) {
+              if (e.key === 'Enter' && !isMultiselectOpen && !isMultiSelectLoading) {
                 setIsMultiselectOpen(true);
+                fireEvent('onFocus');
                 e.preventDefault();
               }
               if (e.key === 'Escape' && isMultiselectOpen) {
                 setIsMultiselectOpen(false);
+                fireEvent('onBlur');
                 e.preventDefault();
               }
             }}
