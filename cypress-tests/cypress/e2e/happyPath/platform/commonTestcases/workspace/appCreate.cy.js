@@ -262,8 +262,8 @@ describe("App creation", () => {
 
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(commonSelectors.chooseFromTemplateButton).click();
-        cy.clearAndType('[data-cy="search-input-field"]', "Admin portal");
-        cy.get('[data-cy="admin-portal-list-item"]').click();
+        cy.clearAndType('[data-cy="search-input-field"]', "Admin panel");
+        cy.get('[data-cy="admin-panel-tooljet-db-list-item"]').click();
         cy.get('[data-cy="create-application-from-template-button"]').click()
 
         cy.wait(1000);
@@ -277,7 +277,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "Admin portal"
+            "Admin Panel (ToolJet Database)"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",

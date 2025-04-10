@@ -67,3 +67,12 @@ export const highlightText = (text = '', highlight) => {
     </span>
   );
 };
+
+export const sortArray = (arr, sort) => {
+  if (sort === 'asc') {
+    return arr.sort((a, b) => a.label?.localeCompare(b.label));
+  } else if (sort === 'desc') {
+    return arr.sort((a, b) => b.label?.localeCompare(a.label));
+  }
+  return arr;
+};

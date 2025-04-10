@@ -14,7 +14,7 @@ export const dataSourceSelector = {
   dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
-  dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
+  dataSourceNameInputField: '[data-cy="added-ds-search-bar"]',
   labelHost: '[data-cy="label-host"]',
   labelPort: '[data-cy="label-port"]',
   labelSsl: '[data-cy="label-ssl"]',
@@ -97,7 +97,7 @@ export const dataSourceSelector = {
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   addedDsSearchIcon: '[data-cy="added-ds-search-icon"]',
   AddedDsSearchBar: '[data-cy="added-ds-search-bar"]',
-  dsNameInputField: '[data-cy="data-source-name-input-filed"]',
+  dsNameInputField: '[data-cy="data-source-name-input-field"]',
   unSavedModalTitle: '[data-cy="unsaved-changes-title"]',
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   connectionAlertText: '[data-cy="connection-alert-text"]',

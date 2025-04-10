@@ -36,11 +36,11 @@ You can create a Google Sheets data source with one of either of the two permiss
 
 Using Google sheets data source you can perform several operations from your applications like:
 
-  1. **[Read data from a sheet](/docs/data-sources/google.sheets#read-data-from-a-sheet)**
-  2. **[Append data to a sheet](/docs/data-sources/google.sheets#append-data-to-a-sheet)**
-  3. **[Update single row of a sheet](/docs/data-sources/google.sheets#update-single-row-of-a-sheet)**
-  4. **[Delete row from a sheet](/docs/data-sources/google.sheets#delete-row-from-a-sheet)**
-  5. **[Get spreadsheet info](/docs/data-sources/google.sheets#get-spreadsheet-info)**
+  1. **[Read data from a sheet](#read-data-from-a-sheet)**
+  2. **[Append data to a sheet](#append-data-to-a-sheet)**
+  3. **[Update single row of a sheet](#update-single-row-of-a-sheet)**
+  4. **[Delete row from a sheet](#delete-row-from-a-sheet)**
+  5. **[Get spreadsheet info](#get-spreadsheet-info)**
 
 ### Read data from a sheet
 

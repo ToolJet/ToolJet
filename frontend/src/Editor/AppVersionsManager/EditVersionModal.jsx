@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 import AlertDialog from '@/_ui/AlertDialog';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { shallow } from 'zustand/shallow';
-import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 
 export const EditVersion = ({ appId, setShowEditAppVersion, showEditAppVersion }) => {
   const [isEditingVersion, setIsEditingVersion] = useState(false);
@@ -88,6 +88,7 @@ export const EditVersion = ({ appId, setShowEditAppVersion, showEditAppVersion }
               {t('globals.cancel', 'Cancel')}
             </button>
             <button
+              disabled={!versionName || versionName === editingVersion?.name}
               className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`}
               data-cy="save-button"
               type="submit"
