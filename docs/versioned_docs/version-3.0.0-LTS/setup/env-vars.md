@@ -111,9 +111,6 @@ By default, an account is locked after 5 failed login attempts. You can control 
 #### Restrict Signups  
 Set `DISABLE_SIGNUPS=true` to allow only invited users to sign up. The signup page will still be visible but unusable.
 
-#### Serving the Client  
-- `SERVE_CLIENT=false`: Stops the backend from serving the frontend.
-
 #### SMTP Configuration
 ToolJet sends emails via SMTP. 
 

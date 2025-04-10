@@ -5,10 +5,14 @@ title: Openshift
 
 # Deploying ToolJet on Openshift
 
-:::info
-You should setup a PostgreSQL database manually to be used by ToolJet. 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setups, it's recommended to use an external Redis instance.
+:::info
+You should setup a **PostgreSQL database** manually to be used by ToolJet. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
+
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
 :::
 
 Follow the steps below to deploy ToolJet on Openshift.
@@ -21,15 +25,11 @@ LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
 SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
 PG_USER=<username>
-PG_HOST=<postgresql-instance-ip>
+PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
-PG_DB=tooljet_production
+PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
 ```
 Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
 
 3. Once you have logged into the Openshift developer dashboard click on `+Add` tab. Select import YAML from the local machine.
 
@@ -83,11 +83,15 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
 ```env
-TOOLJET_DB=
-TOOLJET_DB_HOST=
-TOOLJET_DB_USER=
-TOOLJET_DB_PASS=
+TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
 ```
+
+:::note 
+Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
+:::
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 

@@ -70,6 +70,25 @@ Role Required: **Super Admin**
 3. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.
     <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
 
+## Migrating to New Pricing Plan
+
+Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the following limitations and users on a previous version, will be impacted in the following ways:
+
+| Resource | Allowed Limit | Impact on Existing Users |
+|----------|:-------------:|--------------------------|
+| Super Admin | 1 | No Impact |
+| Builder | 2 | All builders will be automatically archived, except for two random builders (including 1 Super Admin). |
+| End User | 50 | All users beyond 50 will be archived automatically. |
+| Applications | 2 | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
+| Workflows | 2 | Users can create upto two workflows. |
+| Workspaces | 1 | All the previously created workspaces will be accessible, but the users will not be able to create any new workspace. |
+
+### Retrieving Desired Users Affected Due to New Pricing Plan
+
+If an user is archived automatically due to the new pricing plan then to retrieve the desired Builder or End User, the Super Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) the current active builder/end-user and [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired users.
+
+If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
+
 ## FAQs
 
 <details id="tj-dropdown">
