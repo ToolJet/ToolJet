@@ -21,6 +21,7 @@ export const NumberInput = function NumberInput({
   dataCy,
   validation,
   componentName,
+  width: widgetWidth,
 }) {
   const isInitialRender = useRef(true);
   const { loadingState, disabledState, label, placeholder } = properties;
@@ -310,7 +311,7 @@ export const NumberInput = function NumberInput({
          ${visibility || 'invisible'}`}
           style={{
             position: 'relative',
-            width: '100%',
+            width: `${widgetWidth}px`,
             display: !visibility ? 'none' : 'flex',
             whiteSpace: 'nowrap',
           }}
@@ -358,34 +359,36 @@ export const NumberInput = function NumberInput({
               stroke={1.5}
             />
           )}
-          <input
-            ref={inputRef}
-            disabled={disable || loading}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            type="number"
-            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number  tj-text-input-widget`}
-            placeholder={placeholder}
-            style={computedStyles}
-            value={value}
-            data-cy={dataCy}
-            min={minValue}
-            max={maxValue}
-            autoComplete="off"
-            onKeyUp={(e) => {
-              if (e.key === 'Enter') {
-                setInputValue(e.target.value);
-                fireEvent('onEnterPressed');
-              }
-            }}
-            onFocus={(e) => {
-              setIsFocused(true);
-              e.stopPropagation();
-              setTimeout(() => {
-                fireEvent('onFocus');
-              }, 0);
-            }}
-          />
+          <div className="w-100">
+            <input
+              ref={inputRef}
+              disabled={disable || loading}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              type="number"
+              className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number  tj-text-input-widget`}
+              placeholder={placeholder}
+              style={computedStyles}
+              value={value}
+              data-cy={dataCy}
+              min={minValue}
+              max={maxValue}
+              autoComplete="off"
+              onKeyUp={(e) => {
+                if (e.key === 'Enter') {
+                  setInputValue(e.target.value);
+                  fireEvent('onEnterPressed');
+                }
+              }}
+              onFocus={(e) => {
+                setIsFocused(true);
+                e.stopPropagation();
+                setTimeout(() => {
+                  fireEvent('onFocus');
+                }, 0);
+              }}
+            />
+          </div>
           {!isResizing && (
             <>
               <div onClick={(e) => handleIncrement(e)}>

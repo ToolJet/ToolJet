@@ -14,8 +14,6 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -58,6 +56,7 @@ export const DropdownV2 = ({
   componentName,
   validation,
   dataCy,
+  width: widgetWidth,
 }) => {
   const {
     label,
@@ -318,17 +317,17 @@ export const DropdownV2 = ({
           isDisabled: isDropdownDisabled,
           userInteracted,
         }),
+        '&:hover': {
+          borderColor: state.isFocused
+            ? getInputFocusedColor({ accentColor })
+            : tinycolor(fieldBorderColor).darken(24).toString(),
+        },
         backgroundColor: getInputBackgroundColor({
           fieldBackgroundColor,
           darkMode,
           isLoading: isDropdownLoading,
           isDisabled: isDropdownDisabled,
         }),
-        '&:hover': {
-          borderColor: state.isFocused
-            ? getInputFocusedColor({ accentColor })
-            : tinycolor(fieldBorderColor).darken(24).toString(),
-        },
       };
     },
     valueContainer: (provided, _state) => ({
@@ -436,7 +435,7 @@ export const DropdownV2 = ({
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
-          width: '100%',
+          width: `${widgetWidth}px`,
         }}
         onMouseDown={(event) => {
           onComponentClick(id);
