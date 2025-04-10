@@ -212,6 +212,7 @@ const sidebars = {
                     'widgets/datepicker',
                     'widgets/divider',
                     'widgets/dropdown',
+                    'widgets/email-input',
                     'widgets/file-picker',
                     'widgets/form',
                     'widgets/html',
