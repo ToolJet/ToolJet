@@ -84,6 +84,7 @@ class DataSourceManagerComponent extends React.Component {
       creatingApp: false,
       validationError: [],
       validationMessages: {},
+      showValidationErrors: false,
     };
   }
 
@@ -219,11 +220,13 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceMeta,
       dataSourceSchema,
       validationMessages,
+      validationError,
     } = this.state;
 
     if (!isEmpty(validationMessages)) {
       const validationMessageArray = Object.values(validationMessages);
-      this.setState({ validationError: validationMessageArray });
+      this.setState({ validationError: validationMessageArray, showValidationErrors: true });
+
       toast.error(
         this.props.t(
           'editor.queryManager.dataSourceManager.toast.error.validationFailed',
@@ -379,10 +382,12 @@ class DataSourceManagerComponent extends React.Component {
       return acc;
     }, {});
     this.setState({ validationMessages: errorMap });
+    const validationMessageArray = Object.values(this.state.validationMessages);
+    this.setState({ validationError: validationMessageArray });
   };
 
   renderSourceComponent = (kind, isPlugin = false) => {
-    const { options, isSaving } = this.state;
+    const { options, isSaving, showValidationErrors } = this.state;
 
     const sourceComponentName = kind?.charAt(0).toUpperCase() + kind?.slice(1);
     const ComponentToRender = isPlugin ? SourceComponent : SourceComponents[sourceComponentName] || SourceComponent;
@@ -402,6 +407,8 @@ class DataSourceManagerComponent extends React.Component {
         setValidationMessages={this.setValidationMessages}
         clearValidationMessages={() => this.setState({ validationMessages: {} })}
         setDefaultOptions={this.setDefaultOptions}
+        showValidationErrors={showValidationErrors}
+        clearValidationErrorBanner={() => this.setState({ validationError: [] })}
       />
     );
   };
