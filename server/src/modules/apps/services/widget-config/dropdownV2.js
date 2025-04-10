@@ -63,6 +63,18 @@ export const dropdownV2Config = {
       },
       accordian: 'Options',
     },
+    sort: {
+      type: 'switch',
+      displayName: 'Sort options',
+      validation: { schema: { type: 'string' }, defaultValue: 'asc' },
+      options: [
+        { displayName: 'None', value: 'none' },
+        { displayName: 'a-z', value: 'asc' },
+        { displayName: 'z-a', value: 'desc' },
+      ],
+      accordian: 'Options',
+      isFxNotRequired: true,
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -101,7 +113,7 @@ export const dropdownV2Config = {
   },
   styles: {
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -153,31 +165,31 @@ export const dropdownV2Config = {
     },
 
     fieldBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     fieldBorderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
       validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Error text',
       validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
@@ -190,7 +202,7 @@ export const dropdownV2Config = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: '',
       showLabel: false,
       validation: {
@@ -300,6 +312,7 @@ export const dropdownV2Config = {
       },
       label: { value: 'Select' },
       optionsLoadingState: { value: '{{false}}' },
+      sort: { value: 'asc' },
       placeholder: { value: 'Select an option' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

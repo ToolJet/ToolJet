@@ -147,16 +147,16 @@ export const stepsConfig = {
   },
   styles: {
     incompletedAccent: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Incompleted accent',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#E4E7EB',
+        defaultValue: '#CCD1D5',
       },
       accordian: 'steps',
     },
     incompletedLabel: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Incompleted label',
       validation: {
         schema: { type: 'string' },
@@ -165,25 +165,25 @@ export const stepsConfig = {
       accordian: 'steps',
     },
     completedAccent: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Completed accent',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#4368E3',
+        defaultValue: 'var(--primary-brand)',
       },
       accordian: 'steps',
     },
     completedLabel: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Completed label',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#FBFCFD',
+        defaultValue: '#1B1F24',
       },
       accordian: 'steps',
     },
     currentStepLabel: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Current step label',
       validation: {
         schema: { type: 'string' },
@@ -236,8 +236,8 @@ export const stepsConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
-      color: { value: '' },
-      textColor: { value: '' },
+      // color: { value: '' },
+      // textColor: { value: '' },
       padding: { value: 'default' },
       incompletedAccent: { value: '#E4E7EB' },
       incompletedLabel: { value: '#1B1F24' },

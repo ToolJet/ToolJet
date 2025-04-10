@@ -13,7 +13,7 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -68,6 +68,7 @@ export const DropdownV2 = ({
     loadingState: dropdownLoadingState,
     disabledState,
     optionsLoadingState,
+    sort,
   } = properties;
   const {
     selectedTextColor,
@@ -116,6 +117,7 @@ export const DropdownV2 = ({
     const foundItem = _schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
+
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
@@ -128,11 +130,11 @@ export const DropdownV2 = ({
           isDisabled: data?.disable ?? false,
         }));
 
-      return _selectOptions;
+      return sortArray(_selectOptions, sort);
     } else {
       return [];
     }
-  }, [advanced, schema, options]);
+  }, [advanced, schema, options, sort]);
 
   function selectOption(value) {
     const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
