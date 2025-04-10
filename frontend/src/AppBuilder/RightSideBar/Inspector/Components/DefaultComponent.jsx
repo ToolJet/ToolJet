@@ -30,6 +30,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'Tabs',
   'Link',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
@@ -46,6 +47,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Divider: 'Data',
   VerticalDivider: 'Data',
   ModalV2: 'Data',
+  Tabs: 'Data',
   Link: 'Data',
 };
 
