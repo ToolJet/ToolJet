@@ -11,16 +11,16 @@ To configure GitSync for other standard Git repository managers refer to **[GitH
 
 1. **Create a New Repository** <br/>
     Create a new repository on your GitLab. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty and the default branch name should be **main**.
-    <img className="screenshot-full" src="/img/gitsync/gitlab/repo-v2.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitlab/repo-v3.png" alt="GitSync" />
 
 2. **Obtain the SSH URL** <br/>
     On GitLab, you can obtain the URL by clicking on the **Code** button and selecting the **Clone with SSH** option.
-    <img className="screenshot-full" src="/img/gitsync/gitlab/gitlabssh-v2.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitlab/gitlabssh-v3.png" alt="GitSync" />
 
 3. Go to the **Workspace settings**, and click on the **Configure Git** tab. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/configure-git`)
 
-    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitsync-v3.png" alt="GitLab Repo" />
+    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitsync-v4.png" alt="GitLab Repo" />
 
 4. Enter the **SSH URL** of the repository in the **Git repo URL** field.
 
@@ -53,7 +53,7 @@ To configure GitSync for other standard Git repository managers refer to **[GitH
         5. Optionally, set an **Expiration date**.
             
         6. Click **Add key** to save.
-         <img className="screenshot-full" src="/img/gitsync/gitlab/addingssh.png" alt="GitLab SSH Key" />
+         <img className="screenshot-full" src="/img/gitsync/gitlab/addingssh-v2.png" alt="GitLab SSH Key" />
 
     #### Option 2: Add as a Deploy Key 
 
@@ -72,10 +72,10 @@ To configure GitSync for other standard Git repository managers refer to **[GitH
         6. Optionally, set an **Expiration date**.
 
         7. Click **Add key** to save.
-        <img className="screenshot-full" src="/img/gitsync/gitlab/deploy-keys.png" alt="GitLab Deploy Key" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/deploy-keys-v2.png" alt="GitLab Deploy Key" />
 
 7. After deploying the SSH Key, go to the **Configure Git** tab on ToolJet, and click on the **Finalize setup** button. If the SSH key is configured correctly, you will see a success message.
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/save-config.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/save-config-v2.png" alt="GitSync" />
 
 ## Configuring GitSync on a Different Branch
 
