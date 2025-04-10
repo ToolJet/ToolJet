@@ -137,7 +137,8 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          args: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           file: docker/ee/ee-production.Dockerfile
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
@@ -152,8 +153,9 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          args: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          file: docker/ee-production.Dockerfile
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          file: docker/ee/ee-production.Dockerfile
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64

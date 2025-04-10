@@ -333,7 +333,7 @@ export const formConfig = {
       },
     },
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -351,7 +351,7 @@ export const formConfig = {
       },
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
