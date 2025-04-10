@@ -503,6 +503,7 @@ export const Tabs = function Tabs({
                   width: `${100 / tabItems.length}%`,
                   flexShrink: 0,
                   height: '100%',
+                  // width
                 }}
               >
                 <TabContent
