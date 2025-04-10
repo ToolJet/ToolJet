@@ -214,6 +214,21 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     });
   }
 
+  async decrypt(options: Record<string, any>) {
+    const decryptedOptions = { ...options };
+
+    for (const [key, value] of Object.entries(options)) {
+      if (value?.credential_id) {
+        decryptedOptions[key] = {
+          ...value,
+          value: await this.credentialService.getValue(value.credential_id),
+        };
+      }
+    }
+
+    return decryptedOptions;
+  }
+
   async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager) {
     if (!options) return {};
 

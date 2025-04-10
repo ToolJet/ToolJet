@@ -161,6 +161,10 @@ export class DataSourcesService implements IDataSourcesService {
     return;
   }
 
+  async decryptOptions(options: Record<string, any>) {
+    return await this.dataSourcesUtilService.decrypt(options);
+  }
+
   async delete(dataSourceId: string, user: User) {
     const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
     if (!dataSource) {
@@ -206,7 +210,11 @@ export class DataSourcesService implements IDataSourcesService {
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
     const { environment_id, dataSourceId } = testDataSourceDto;
-    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId,user.defaultOrganizationId, environment_id);
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      user.defaultOrganizationId,
+      environment_id
+    );
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
