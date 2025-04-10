@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty, noop } from 'lodash';
+import { camelCase, isEmpty, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion, completionKeymap, completionStatus, acceptCompletion } from '@codemirror/autocomplete';
@@ -12,7 +12,7 @@ import { keymap } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
-import { resolveReferences } from './utils';
+import { isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
@@ -161,6 +161,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               componentName={componentName}
               setShowPreview={setShowPreview}
               showPreview={showPreview}
+              wrapperRef={wrapperRef}
               showSuggestions={showSuggestions}
               {...restProps}
             />
@@ -194,11 +195,25 @@ const EditorInput = ({
   previewRef,
   setShowPreview,
   onInputChange,
+  wrapperRef,
   showSuggestions,
 }) => {
+  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const isInsideQueryManager = useMemo(
+    () => isInsideParent(wrapperRef?.current, 'query-manager'),
+    [wrapperRef.current]
+  );
   function autoCompleteExtensionConfig(context) {
     const hints = getSuggestions();
+    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
+
+    const allHints = {
+      ...hints,
+      appHints: [...hints.appHints, ...serverHints],
+    };
+
     let word = context.matchBefore(/\w*/);
 
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
@@ -229,7 +244,7 @@ const EditorInput = ({
       queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
+    let completions = getAutocompletion(queryInput, validationType, allHints, totalReferences, originalQueryInput);
 
     return {
       from: word.from,
@@ -239,7 +254,7 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [isInsideQueryManager]);
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
@@ -409,11 +424,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                      javascript({ jsx: lang === 'jsx' }),
-                      autoCompleteConfig,
-                      keymap.of([...customKeyMaps]),
-                      customTabKeymap,
-                    ]
+                    javascript({ jsx: lang === 'jsx' }),
+                    autoCompleteConfig,
+                    keymap.of([...customKeyMaps]),
+                    customTabKeymap,
+                  ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -485,9 +500,8 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
-                darkMode && 'color-whitish-darkmode'
-              }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
+                }`}
             />
           </div>
         )}
@@ -495,9 +509,8 @@ const DynamicEditorBridge = (props) => {
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div
-                className={`col-auto pt-0 fx-common fx-button-container ${
-                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
-                }`}
+                className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
+                  }`}
               >
                 <FxButton
                   active={codeShow}
