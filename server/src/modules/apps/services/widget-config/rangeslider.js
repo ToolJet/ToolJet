@@ -53,7 +53,7 @@ export const rangeSliderConfig = {
   },
   styles: {
     lineColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Line color',
       validation: {
         schema: { type: 'string' },
@@ -61,7 +61,7 @@ export const rangeSliderConfig = {
       },
     },
     handleColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Handle color',
       validation: {
         schema: { type: 'string' },
@@ -69,7 +69,7 @@ export const rangeSliderConfig = {
       },
     },
     trackColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Track color',
       validation: {
         schema: { type: 'string' },
@@ -122,7 +122,7 @@ export const rangeSliderConfig = {
     styles: {
       lineColor: { value: '' },
       handleColor: { value: '' },
-      trackColor: { value: '' },
+      trackColor: { value: 'var(--primary-brand)' },
       visibility: { value: '{{true}}' },
       padding: { value: 'default' },
     },

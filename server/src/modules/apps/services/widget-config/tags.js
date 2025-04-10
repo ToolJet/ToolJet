@@ -51,6 +51,14 @@ export const tagsConfig = {
         { displayName: 'None', value: 'none' },
       ],
     },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
   },
   exposedVariables: {},
   definition: {
@@ -68,6 +76,7 @@ export const tagsConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       padding: { value: 'default' },
+      alignment: { value: 'left' },
     },
   },
 };

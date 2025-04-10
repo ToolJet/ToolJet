@@ -106,6 +106,8 @@ function setSecurityHeaders(app, configService) {
             'https://esm.sh',
             'www.googletagmanager.com',
           ],
+          'object-src': ["'self'", 'data:'],
+          'media-src': ["'self'", 'data:'],
           'default-src': [
             'maps.googleapis.com',
             'storage.googleapis.com',
@@ -116,7 +118,7 @@ function setSecurityHeaders(app, configService) {
             'blob:',
             'www.googletagmanager.com',
           ],
-          'connect-src': ['ws://' + domain, "'self'", '*'],
+          'connect-src': ['ws://' + domain, "'self'", '*', 'data:'],
           'frame-ancestors': ['*'],
           'frame-src': ['*'],
         },

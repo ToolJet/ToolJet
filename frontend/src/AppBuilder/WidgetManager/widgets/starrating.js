@@ -58,7 +58,7 @@ export const starratingConfig = {
   },
   styles: {
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Star color',
       validation: {
         schema: { type: 'string' },
@@ -66,7 +66,7 @@ export const starratingConfig = {
       },
     },
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Label color',
       validation: {
         schema: { type: 'string' },

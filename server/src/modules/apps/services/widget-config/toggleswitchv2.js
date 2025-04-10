@@ -71,7 +71,7 @@ export const toggleSwitchV2Config = {
   },
   styles: {
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text Color',
       validation: {
         schema: { type: 'string' },
@@ -79,7 +79,7 @@ export const toggleSwitchV2Config = {
       accordian: 'label',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
@@ -87,7 +87,7 @@ export const toggleSwitchV2Config = {
       accordian: 'switch',
     },
     toggleSwitchColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Checked color',
       validation: {
         schema: { type: 'string' },
@@ -95,7 +95,7 @@ export const toggleSwitchV2Config = {
       accordian: 'switch',
     },
     uncheckedColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Unchecked color',
       validation: {
         schema: { type: 'string' },
@@ -103,7 +103,7 @@ export const toggleSwitchV2Config = {
       accordian: 'switch',
     },
     handleColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Handle color',
       validation: {
         schema: { type: 'string' },
@@ -195,7 +195,7 @@ export const toggleSwitchV2Config = {
     events: [],
     styles: {
       textColor: { value: '#1B1F24' },
-      toggleSwitchColor: { value: '#4368E3' }, //keeping same key for backward comopatibility
+      toggleSwitchColor: { value: 'var(--primary-brand)' }, //keeping same key for backward comopatibility
       uncheckedColor: { value: '#E4E7EB' },
       borderColor: { value: '#E4E7EB' },
       handleColor: { value: '#FFFFFF' },
