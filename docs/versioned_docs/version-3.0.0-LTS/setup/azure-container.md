@@ -41,30 +41,53 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
   - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
-  **Note**: ToolJet requires: 
+ 
+4. Under environmental variables, please add the below ToolJet application variables:
+
+  You can use these variables for: tooljet-app:
 
   ```env
-    TOOLJET_DB
-    TOOLJET_DB_HOST
-    TOOLJET_DB_USER
-    TOOLJET_DB_PASS
-    PG_HOST
-    PG_DB
-    PG_USER
-    PG_PASS
-    SECRET_KEY_BASE 
-    LOCKBOX_KEY
+   TOOLJET_HOST=<Endpoint url>
+   LOCKBOX_MASTER_KEY=<generate using 'openssl rand -hex 32'>
+   SECRET_KEY_BASE=<generate using 'openssl rand -hex 64'>
+
+   PG_USER=<username>
+   PG_HOST=<postgresql-instance-ip>
+   PG_PASS=<password>
+   PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
   ```
 
-   If using Azure Database for Postgresql-Flexible server, add:
-   
-   ```env
-    PGSSLMODE = require
-   ```
+Update the `TOOLJET_HOST` environment variable to reflect the default host assigned by Azure Container Apps, if you're not using a custom domain.
 
-   :::note 
-    Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
-   :::
+If using Azure Database for Postgresql-Flexible server, also add:
+   
+  ```env
+   PGSSLMODE = require
+  ```
+
+
+## ToolJet Database
+
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+
+#### Setting Up ToolJet Database
+
+To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
+
+```env
+TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
+```
+
+:::note 
+Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
+:::
 
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
@@ -105,14 +128,14 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
 
    </div>
 
-4. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
+5. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
  <div style={{textAlign: 'center'}}>
  
  <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 
  </div>
 
-5. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
+6. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
@@ -120,7 +143,7 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
  </div>
 
 
-6. Once the container is deployed, you can verify its status under revision management.
+7. Once the container is deployed, you can verify its status under revision management.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
