@@ -3,7 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { mongoDbText } from "Texts/mongoDb";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 import {
   fillDataSourceTextField,
@@ -28,6 +28,7 @@ const data = {};
 describe("Data source MongoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -56,10 +57,28 @@ describe("Data source MongoDB", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
-    selectAndAddDataSource(
-      "databases",
-      mongoDbText.mongoDb,
-      data.dataSourceName
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-mongodb`,
+      "mongodb",
+      [
+        { key: "database", value: "", encrypted: false },
+        { key: "host", value: "localhost" },
+        { key: "port", value: 27017 },
+        { key: "username", value: "" },
+        { key: "password", value: "", encrypted: true },
+        { key: "connection_type", value: "manual" },
+        { key: "connection_string", value: "", encrypted: true },
+        { key: "tls_certificate", value: "none", encrypted: false },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-mongodb-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-mongodb`
     );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
@@ -72,7 +91,7 @@ describe("Data source MongoDB", () => {
     );
     cy.get(postgreSqlSelector.labelDbName).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelDbName
+      "Database Name"
     );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
@@ -168,7 +187,7 @@ describe("Data source MongoDB", () => {
       data.dataSourceName
     );
 
-    cy.get('[data-cy="query-select-dropdown"]').type(
+    cy.get('[data-cy="connection-type-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
     );
 
