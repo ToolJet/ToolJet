@@ -6,16 +6,17 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY } from './constant';
+import { WhiteLabellingService } from './service';
 
 @Controller('white-labelling')
 @InitModule(MODULES.WHITE_LABELLING)
 export class WhiteLabellingController implements IWhiteLabellingController {
-  constructor() {}
+  constructor(protected readonly whiteLabellingService: WhiteLabellingService) {}
 
   @Get()
   @InitFeature(FEATURE_KEY.GET)
   async get() {
-    throw new NotFoundException();
+    return this.whiteLabellingService.getProcessedSettings(null);
   }
 
   @Put()

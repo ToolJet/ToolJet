@@ -13,8 +13,6 @@ import Customcomponent from './customcomponent.jsx';
 import Datepicker from './datepicker.jsx';
 import DateTimePickerV2 from './datetimepickerV2.jsx';
 import Daterangepicker from './daterangepicker.jsx';
-import Divider from './divider.jsx';
-import DividerHorizondal from './dividerhorizontal.jsx';
 import Downstatistics from './downstatistics.jsx';
 import Dropdown from './dropdown.jsx';
 import Filepicker from './filepicker.jsx';
@@ -59,6 +57,9 @@ import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';
 import DatepickerV2 from './datepickerv2.jsx';
+import HorizontalDivider from './horizontalDivider.jsx';
+import PhoneInput from './phoneinput.jsx';
+import EmailInput from './emailinput.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -99,12 +100,14 @@ const WidgetIcon = (props) => {
       return <Datepicker {...props} />;
     case 'datetimepickerv2':
       return <DateTimePickerV2 {...props} />;
+    case 'emailinput':
+      return <EmailInput {...props} />;
+    case 'phoneinput':
+      return <PhoneInput {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
-    case 'divider':
-      return <Divider {...props} />;
-    case 'divider-horizondal':
-      return <DividerHorizondal {...props} />;
+    case 'horizontaldivider':
+      return <HorizontalDivider {...props} />;
     case 'downstatistics':
       return <Downstatistics {...props} />;
     case 'dropdown':
@@ -180,6 +183,7 @@ const WidgetIcon = (props) => {
     case 'text':
       return <Text {...props} />;
     case 'textarea':
+    case 'textarealegacy':
       return <TextArea {...props} />;
     case 'textinput':
       return <Textinput {...props} />;

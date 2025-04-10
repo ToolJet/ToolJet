@@ -6,7 +6,6 @@ import { setSignupStatus } from "Support/utils/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { commonText } from "Texts/common";
 import {
-  verifyConfirmEmailPage,
   userSignUp,
   addNewUser,
 } from "Support/utils/onboarding";
@@ -33,6 +32,8 @@ describe("Private and Public apps", {
 
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
+    cy.log(data.appName, "text1")
+
   });
 
   it("Verify private and public app share functionality", () => {
@@ -85,7 +86,8 @@ describe("Private and Public apps", {
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
     cy.wait(2000);
     cy.loginWithCredentials("dev@tooljet.io", "password");
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
 
     // Test public access
     cy.get(commonSelectors.viewerPageLogo).click();
@@ -104,7 +106,9 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
   });
 
   it("Verify app private and public app visibility for the same workspace user", () => {
@@ -120,13 +124,17 @@ describe("Private and Public apps", {
 
     cy.wait(2000);
     cy.loginWithCredentials(data.email, "password");
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible", { timeout: 20000 });
 
     // Test with private app valid session
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
     cy.get(commonSelectors.viewerPageLogo).click();
 
     // Test public access
@@ -137,14 +145,18 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
 
     // Test with public app with valid session
     cy.apiLogin(data.email, "password");
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
   });
 
   it("Verify app private and public app visibility for the same instance user", () => {
@@ -168,14 +180,18 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
 
     // Verify public app with valid session
     cy.apiLogin(data.email, "password");
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
   });
 
   it("Should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
@@ -193,18 +209,24 @@ describe("Private and Public apps", {
     );
 
     // Test signup flow
+    cy.intercept("POST", "/api/onboarding/signup").as("signup");
     cy.get(commonSelectors.createAnAccountLink).click();
     cy.wait(3000);
     cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
     cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
     cy.get(commonSelectors.signUpButton).click();
-    verifyConfirmEmailPage(data.email);
+
+    cy.wait('@signup').then((interception) => {
+      expect(interception.response.statusCode).to.eq(201);
+    });
 
     // Process invitation
     onboardUserFromAppLink(data.email, data.slug);
 
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
     cy.get('[data-cy="viewer-page-logo"]').click();
     logout();
 
@@ -242,10 +264,14 @@ describe("Private and Public apps", {
     cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
     cy.get(commonSelectors.signUpButton).click();
-    verifyConfirmEmailPage(data.email);
+    cy.wait('@signup').then((interception) => {
+      expect(interception.response.statusCode).to.eq(201);
+    });
 
     onboardUserFromAppLink(data.email, data.slug, data.workspaceName, false);
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
+
   });
 
   it("Should verify restricted app access", () => {

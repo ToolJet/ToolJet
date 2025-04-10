@@ -3,7 +3,15 @@ id: tooljet-cloud
 title: ToolJet Cloud
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 ## Choosing Your ToolJet Cloud Subscription
 
@@ -131,4 +139,4 @@ If you have an active subscription, you can find its validity period in the Sett
 
 ### 3) What happens if my subscription expires?
 
-If your business or enterprise subscription expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.com/pricing)**.
+If your business or enterprise subscription expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.ai/pricing)**.

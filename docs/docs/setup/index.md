@@ -1,6 +1,6 @@
-# Setup ToolJet
+# Deploy ToolJet
 
-Check out the different methods you can use to deploy ToolJet on your machine
+Check out the different methods you can use to deploy ToolJet on your machine.
 
 ```mdx-code-block
 import {DocsCardList} from '../../src/components/DocsCard';

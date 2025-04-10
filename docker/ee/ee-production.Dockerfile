@@ -62,7 +62,39 @@ FROM debian:11
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
+    && apt -y install redis \
     && apt-get clean -y
+
+# Install required dependencies for downloading and extracting files
+RUN apt-get update && apt-get install -y \
+    curl tar xz-utils postgresql postgresql-contrib postgresql-client && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PostgREST from official Docker image
+COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+RUN apt-get update && apt-get install -y supervisor
+
+# Create supervisord configuration file
+RUN echo "[supervisord]\n" \
+    "nodaemon=true\n" \
+    "\n" \
+    "[program:postgrest]\n" \
+    "command=/bin/postgrest \n" \
+    "autostart=true\n" \
+    "autorestart=true\n" \
+    "stdout_logfile=/dev/stdout\n" \
+    "stderr_logfile=/dev/stderr\n" \
+    "stdout_logfile_maxbytes=0\n" \
+    "stderr_logfile_maxbytes=0\n" \
+    "\n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
+
+# Create a wrapper for PostgREST to prefix its logs
+RUN mv /bin/postgrest /bin/postgrest-original && \
+    echo '#!/bin/bash\n\
+exec /bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"\n\
+' > /bin/postgrest && \
+    chmod +x /bin/postgrest
 
 
 RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
@@ -151,6 +183,25 @@ RUN mkdir -p /tmp/.npm/npm-cache/_logs \
     && chown -R appuser:0 /tmp/.npm/npm-cache/_logs \
     && chmod g+s /tmp/.npm/npm-cache/_logs \
     && chmod -R g=u /tmp/.npm/npm-cache/_logs
+
+# Create Redis data, log, and configuration directories
+RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
+    && chown -R appuser:0 /var/lib/redis /var/log/redis /etc/redis \
+    && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
+    && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
+
+# Set permissions for PostgREST binary
+RUN chown appuser:0 /bin/postgrest && chmod u+x /bin/postgrest && chmod g=u /bin/postgrest
+
+RUN touch /tmp/postgrest.conf \
+    && chown appuser:0 /tmp/postgrest.conf \
+    && chmod 640 /tmp/postgrest.conf
+
+# Create PostgREST data, log, and configuration directories
+RUN mkdir -p /var/lib/postgrest /var/log/postgrest /etc/postgrest \
+    && chown -R appuser:0 /var/lib/postgrest /var/log/postgrest /etc/postgrest \
+    && chmod g+s /var/lib/postgrest /var/log/postgrest /etc/postgrest \
+    && chmod -R g=u /var/lib/postgrest /var/log/postgrest /etc/postgrest
 
 ENV HOME=/home/appuser
 

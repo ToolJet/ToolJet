@@ -68,7 +68,7 @@ export const buttonGroupConfig = {
   },
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -76,7 +76,7 @@ export const buttonGroupConfig = {
       },
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -108,7 +108,7 @@ export const buttonGroupConfig = {
       },
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Selected text colour',
       validation: {
         schema: { type: 'string' },
@@ -116,17 +116,33 @@ export const buttonGroupConfig = {
       },
     },
     selectedBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Selected background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#007bff',
+        defaultValue: 'var(--primary-brand)',
+      },
+    },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
       },
     },
   },
   exposedVariables: {
     selected: [1],
   },
+  actions: [
+    {
+      handle: 'setSelected',
+      displayName: 'Select option',
+      params: [{ handle: 'selected', displayName: 'Value' }],
+    },
+  ],
+
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -147,7 +163,8 @@ export const buttonGroupConfig = {
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },
       selectedTextColor: { value: '#FFFFFF' },
-      selectedBackgroundColor: { value: '#4368E3' },
+      selectedBackgroundColor: { value: 'var(--primary-brand)' },
+      alignment: { value: 'left' },
     },
   },
 };
