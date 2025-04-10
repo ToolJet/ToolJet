@@ -411,24 +411,29 @@ Cypress.Commands.add(
   "visitSlug",
   ({
     actualUrl,
-    currentUrl = `${Cypress.config("baseUrl")}/error/unknown`,
+    errorUrls = [
+      `${Cypress.config("baseUrl")}/error/unknown`,
+      `${Cypress.config("baseUrl")}/error/restricted`,
+    ],
   }) => {
-    // Ensure actualUrl is provided
     if (!actualUrl) {
       throw new Error("actualUrl is required for visitSlug command.");
     }
 
     cy.visit(actualUrl);
+    cy.get(commonSelectors.pageLogo, { timeout: 10000 }).should("be.visible");
 
-    // Dynamically wait for the correct URL or handle navigation errors
     cy.url().then((url) => {
-      if (url === currentUrl) {
-        cy.log(`Navigation resulted in unexpected URL: ${url}. Retrying...`);
+      if (errorUrls.includes(url)) {
+        cy.log(`Navigation resulted in error URL: ${url}. Retrying...`);
         cy.visit(actualUrl);
+        cy.wait(1000);
+        cy.get(commonSelectors.pageLogo, { timeout: 10000 }).should("be.visible");
       }
     });
   }
 );
+
 
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {

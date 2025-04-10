@@ -646,7 +646,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
     cy.request({
       method: "POST",
-      url: `${Cypress.env("server_host")}/api/v2/group_permissions`,
+      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
       headers: headers,
       body: {
         name: groupName,
@@ -658,14 +658,14 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/v2/group_permissions/granular-permissions`,
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
         headers: headers,
         body: {
           name: "Apps",
           type: "app",
           groupId: groupId,
           isAll: false,
-          createAppsPermissionsObject: {
+          createResourcePermissionObject: {
             canEdit: true,
             canView: false,
             hideFromDashboard: false,
@@ -676,6 +676,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
             ],
           },
         },
+
       }).then((response) => {
         expect(response.status).to.equal(201);
       });
@@ -688,7 +689,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
         cy.request({
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/v2/group_permissions/group-user`,
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
           headers: headers,
           body: {
             userIds: [userId],
