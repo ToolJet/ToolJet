@@ -42,19 +42,62 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
   **Note**: ToolJet requires: 
-   - **TOOLJET_DB** 
-   - **TOOLJET_DB_HOST**
-   - **TOOLJET_DB_USER**
-   - **TOOLJET_DB_PASS**
-   - **PG_HOST**
-   - **PG_DB**
-   - **PG_USER**
-   - **PG_PASS**
-   - **SECRET_KEY_BASE** 
-   - **LOCKBOX_KEY**
+
+  ```env
+    TOOLJET_DB
+    TOOLJET_DB_HOST
+    TOOLJET_DB_USER
+    TOOLJET_DB_PASS
+    PG_HOST
+    PG_DB
+    PG_USER
+    PG_PASS
+    SECRET_KEY_BASE 
+    LOCKBOX_KEY
+  ```
 
    If using Azure Database for Postgresql-Flexible server, add:
-   - **PGSSLMODE = require**
+   
+   ```env
+    PGSSLMODE = require
+   ```
+
+   :::note 
+    Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
+   :::
+
+
+Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
+
+   :::tip
+    If you have openssl installed, you can run the 
+    command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified, PostgREST will refuse authentication requests.
+:::
+
+```env
+ PGRST_HOST=localhost:3001
+ PGRST_LOG_LEVEL=info
+ PGRST_DB_PRE_CONFIG=postgrest.pre_config
+ PGRST_SERVER_PORT=3001
+ PGRST_DB_URI=
+ PGRST_JWT_SECRET=
+```
+
+The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+
+#### Format:
+
+```env
+ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
+
+**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
+
+
+**Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
+
 
    <div style={{textAlign: 'center'}}>
  
