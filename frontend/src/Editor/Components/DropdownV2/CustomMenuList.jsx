@@ -22,6 +22,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     fireEvent,
     inputValue,
     menuId,
+    showSearchInput,
   } = selectProps;
 
   const handleSelectAll = (e) => {
@@ -47,34 +48,36 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="dropdown-multiselect-widget-search-box-wrapper">
-        <span>
-          <SolidIcon name="search01" width="14" />
-        </span>
-        <input
-          autoCorrect="off"
-          autoComplete="off"
-          spellCheck="false"
-          type="text"
-          value={inputValue}
-          onChange={(e) =>
-            onInputChange(e.currentTarget.value, {
-              action: 'input-change',
-            })
-          }
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            e.target.focus();
-          }}
-          onTouchEnd={(e) => {
-            e.stopPropagation();
-            e.target.focus();
-          }}
-          onFocus={onMenuInputFocus}
-          placeholder="Search"
-          className="dropdown-multiselect-widget-search-box"
-        />
-      </div>
+      {showSearchInput && (
+        <div className="dropdown-multiselect-widget-search-box-wrapper">
+          <span>
+            <SolidIcon name="search01" width="14" />
+          </span>
+          <input
+            autoCorrect="off"
+            autoComplete="off"
+            spellCheck="false"
+            type="text"
+            value={inputValue}
+            onChange={(e) =>
+              onInputChange(e.currentTarget.value, {
+                action: 'input-change',
+              })
+            }
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              e.target.focus();
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              e.target.focus();
+            }}
+            onFocus={onMenuInputFocus}
+            placeholder="Search"
+            className="dropdown-multiselect-widget-search-box"
+          />
+        </div>
+      )}
       {showAllOption && !optionsLoadingState && (
         <label htmlFor="select-all-checkbox" className="multiselect-custom-menulist-select-all">
           <FormCheck id="select-all-checkbox" checked={isSelectAllSelected} onChange={handleSelectAll} />

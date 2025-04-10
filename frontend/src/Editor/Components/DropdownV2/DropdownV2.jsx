@@ -68,6 +68,8 @@ export const DropdownV2 = ({
     disabledState,
     optionsLoadingState,
     sort,
+    showClearBtn,
+    showSearchInput,
   } = properties;
   const {
     selectedTextColor,
@@ -178,6 +180,9 @@ export const DropdownV2 = ({
     } else {
       setIsMenuOpen(true);
       fireEvent('onFocus');
+      if (!showSearchInput) {
+        selectRef.current.focus();
+      }
     }
   };
 
@@ -489,6 +494,7 @@ export const DropdownV2 = ({
             options={selectOptions}
             styles={customStyles}
             isLoading={isDropdownLoading}
+            showSearchInput={showSearchInput}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             placeholder={placeholder}
@@ -499,7 +505,7 @@ export const DropdownV2 = ({
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
               DropdownIndicator: isDropdownLoading ? () => null : CustomDropdownIndicator,
-              ClearIndicator: CustomClearIndicator,
+              ClearIndicator: showClearBtn ? CustomClearIndicator : () => null,
             }}
             isClearable
             tabSelectsValue={false}
