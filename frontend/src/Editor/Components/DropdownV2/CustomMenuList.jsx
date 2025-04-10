@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { components } from 'react-select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -33,6 +33,14 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     }
     setIsSelectAllSelected(e.target.checked);
   };
+
+  useEffect(() => {
+    const searchInput = document.querySelector('.dropdown-multiselect-widget-search-box');
+    if (searchInput) {
+      searchInput.focus();
+    }
+  }, []);
+
   return (
     <div
       id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}

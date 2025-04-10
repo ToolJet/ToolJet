@@ -15,7 +15,6 @@ import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
-import useStore from '@/AppBuilder/_stores/store';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -104,8 +103,6 @@ export const DropdownV2 = ({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
-  const currentMode = useStore((state) => state.currentMode);
-  const isEditor = currentMode === 'edit';
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
@@ -173,11 +170,37 @@ export const DropdownV2 = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
-  const handleClickInEditor = (e) => {
-    if (e.target.className.includes('clear-indicator') || isMenuOpen) return;
-    e.stopPropagation();
-    selectRef.current?.onControlMouseDown(e);
+  const handleClickInsideSelect = () => {
+    if (isDropdownDisabled || isDropdownLoading) return;
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+      fireEvent('onBlur');
+    } else {
+      setIsMenuOpen(true);
+      fireEvent('onFocus');
+    }
   };
+
+  const handleClickOutsideSelect = (event) => {
+    const menu = document.querySelector(`._tooljet-${componentName}`);
+    if (
+      isMenuOpen &&
+      menu &&
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target) &&
+      !menu.contains(event.target)
+    ) {
+      setIsMenuOpen(false);
+      fireEvent('onBlur');
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutsideSelect);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideSelect);
+    };
+  }, [isMenuOpen, componentName]);
 
   useEffect(() => {
     setInputValue(findDefaultItem(advanced ? schema : options));
@@ -443,11 +466,7 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div
-          className="w-100 px-0 h-100 dropdownV2-widget"
-          ref={ref}
-          onMouseDownCapture={isEditor && handleClickInEditor}
-        >
+        <div className="w-100 px-0 h-100 dropdownV2-widget" ref={ref} onClick={handleClickInsideSelect}>
           <Select
             ref={selectRef}
             menuIsOpen={isMenuOpen}
@@ -464,6 +483,7 @@ export const DropdownV2 = ({
                 } else setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
+              setIsMenuOpen(false);
               setUserInteracted(true);
             }}
             options={selectOptions}
@@ -490,21 +510,15 @@ export const DropdownV2 = ({
             darkMode={darkMode}
             optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
-            onMenuOpen={() => {
-              setIsMenuOpen(true);
-              fireEvent('onFocus');
-            }}
-            onMenuClose={() => {
-              setIsMenuOpen(false);
-              fireEvent('onBlur');
-            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !isMenuOpen) {
+              if (e.key === 'Enter' && !isMenuOpen && !isDropdownLoading) {
                 setIsMenuOpen(true);
+                fireEvent('onFocus');
                 e.preventDefault();
               }
               if (e.key === 'Escape' && isMenuOpen) {
                 setIsMenuOpen(false);
+                fireEvent('onBlur');
                 e.preventDefault();
               }
             }}
