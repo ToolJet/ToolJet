@@ -479,47 +479,45 @@ export const Tabs = function Tabs({
           <Spinner />
         </div>
       ) : (
-        tabItems?.map((tab, index) => (
+        // wrapped in a div to fix
+        <div
+          style={{
+            overflow: 'hidden',
+            width: '100%',
+            height: parsedHideTabs ? height : height - 41,
+            position: 'relative',
+          }}
+        >
           <div
-            className={`tab-content ${
-              transition == 'slide' && currentTab === tab.id ? 'tab-slide-in' : 'tab-slide-out'
-            }`}
-            ref={(newCurrent) => {
-              if (currentTab == tab.id) {
-                parentRef.current = newCurrent;
-              }
-            }}
             style={{
-              ...(transition == 'slide'
-                ? {
-                    transition: 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out',
-                    transform:
-                      currentTab === tab.id
-                        ? 'translateX(0%)'
-                        : findTabIndex(currentTab) > index
-                        ? 'translateX(-100%)'
-                        : 'translateX(100%)',
-                  }
-                : {}),
+              display: 'flex',
+              width: `${tabItems.length * 100}%`,
+              transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
+              transition: 'transform 0.6s ease-in-out',
             }}
-            id={`${id}-${tab.id}`}
-            key={tab.id}
           >
-            {/* {renderTabContent(id, tab)} */}
-
-            <TabContent
-              id={id}
-              tab={tab}
-              height={height}
-              width={width}
-              parsedHideTabs={parsedHideTabs}
-              bgColor={bgColor}
-              darkMode={darkMode}
-            />
-
-            {/* {tab.id == currentTab && <SubContainer id={`${id}-${tab.id}`} canvasHeight={'200'} canvasWidth={width} />} */}
+            {tabItems.map((tab) => (
+              <div
+                key={tab.id}
+                style={{
+                  width: `${100 / tabItems.length}%`,
+                  flexShrink: 0,
+                  height: '100%',
+                }}
+              >
+                <TabContent
+                  id={id}
+                  tab={tab}
+                  height={height}
+                  width={width}
+                  parsedHideTabs={parsedHideTabs}
+                  bgColor={bgColor}
+                  darkMode={darkMode}
+                />
+              </div>
+            ))}
           </div>
-        ))
+        </div>
       )}
     </div>
   );
