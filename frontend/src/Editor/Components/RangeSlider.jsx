@@ -7,6 +7,7 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
   const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, visibility } = properties;
+  console.log(schema);
 
   const {
     trackColor,
@@ -149,64 +150,109 @@ export const RangeSlider = ({ height, properties, styles, setExposedVariable, fi
     <div style={containerStyle} className="range-slider" data-cy={dataCy}>
       <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
       <div style={sliderContainerStyle}>
-        {enableTwoHandle === 'slider' ? (
-          <Slider
-            range
-            min={min}
-            max={max}
-            defaultValue={toArray(rangeValue)}
-            onChange={onRangeChange}
-            onAfterChange={() => fireEvent('onChange')}
-            value={toArray(rangeValue)}
-            ref={sliderRef}
-            trackStyle={rangeStyles.trackStyle}
-            railStyle={rangeStyles.railStyle}
-            handleStyle={[
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-            ]}
-            marks={{
-              25: { style: { color: markerLabel }, label: '25' },
-              50: { style: { color: markerLabel }, label: '50' },
-              75: { style: { color: markerLabel }, label: '75' },
-            }}
-            handleRender={(node, handleProps) => {
-              return (
-                <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
-                  {node}
-                </OverlayTrigger>
-              );
-            }}
-          />
+        {enableTwoHandle !== 'slider' ? (
+          <>
+            <style>
+              {`
+    .rc-slider-handle {
+      opacity: 1 !important;
+      
+    }
+      .rc-slider-dot-active {
+  border-color: transparent !important;
+}
+  .rc-slider-dot {
+      border: none;
+      height:4px;
+      width:4px;
+      bottom:0px;
+    }
+  `}
+            </style>
+            <Slider
+              range
+              min={min}
+              max={max}
+              defaultValue={toArray(rangeValue)}
+              onChange={onRangeChange}
+              onAfterChange={() => fireEvent('onChange')}
+              value={toArray(rangeValue)}
+              ref={sliderRef}
+              trackStyle={rangeStyles.trackStyle}
+              railStyle={rangeStyles.railStyle}
+              handleStyle={[
+                { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+                { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+              ]}
+              marks={schema.reduce((acc, item) => {
+                acc[item.value] = {
+                  style: { color: markerLabel },
+                  label: item.label.replace('%', ''),
+                };
+                return acc;
+              }, {})}
+              handleRender={(node, handleProps) => {
+                return (
+                  <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                    {node}
+                  </OverlayTrigger>
+                );
+              }}
+            />
+          </>
         ) : (
-          <Slider
-            min={min}
-            max={max}
-            defaultValue={endValue !== undefined ? endValue : sliderValue}
-            value={sliderValue}
-            ref={sliderRef}
-            onChange={onSliderChange}
-            onAfterChange={() => fireEvent('onChange')}
-            startPoint={startValue}
-            trackStyle={{ backgroundColor: trackColor }}
-            railStyle={{ backgroundColor: lineColor }}
-            handleStyle={[
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-              { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
-            ]}
-            marks={{
-              25: { style: { color: markerLabel }, label: '25' },
-              50: { style: { color: markerLabel }, label: '50' },
-              75: { style: { color: markerLabel }, label: '75' },
-            }}
-            handleRender={(node, handleProps) => {
-              return (
-                <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
-                  {node}
-                </OverlayTrigger>
-              );
-            }}
-          />
+          <>
+            <style>
+              {`
+    .rc-slider-handle {
+      opacity: 1 !important;
+      
+    }
+      .rc-slider-dot-active {
+  border-color: transparent !important;
+}
+ .rc-slider-dot {
+      border: none;
+      height:4px;
+      width:4px;
+      bottom:0px;
+    }
+
+  `}
+            </style>
+            <Slider
+              min={min}
+              max={max}
+              defaultValue={endValue !== undefined ? endValue : sliderValue}
+              value={sliderValue}
+              ref={sliderRef}
+              onChange={onSliderChange}
+              onAfterChange={() => fireEvent('onChange')}
+              startPoint={startValue}
+              // trackStyle={{ backgroundColor: trackColor }}
+              // railStyle={{ backgroundColor: lineColor }}
+              trackStyle={rangeStyles.trackStyle}
+              railStyle={rangeStyles.railStyle}
+              handleStyle={[
+                { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+                { backgroundColor: handleColor, border: `1px solid ${handleBorderColor}` },
+              ]}
+              marks={schema.reduce((acc, item) => {
+                acc[item.value] = {
+                  style: { color: markerLabel },
+                  label: item.label.replace('%', ''),
+                };
+                return acc;
+              }, {})}
+              handleRender={(node, handleProps) => {
+                return (
+                  <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                    {node}
+                  </OverlayTrigger>
+                );
+              }}
+            />
+          </>
         )}
       </div>
     </div>
