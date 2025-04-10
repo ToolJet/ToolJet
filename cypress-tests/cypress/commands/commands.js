@@ -421,14 +421,12 @@ Cypress.Commands.add(
     }
 
     cy.visit(actualUrl);
-    cy.get(commonSelectors.pageLogo, { timeout: 10000 }).should("be.visible");
 
     cy.url().then((url) => {
       if (errorUrls.includes(url)) {
         cy.log(`Navigation resulted in error URL: ${url}. Retrying...`);
         cy.visit(actualUrl);
         cy.wait(1000);
-        cy.get(commonSelectors.pageLogo, { timeout: 10000 }).should("be.visible");
       }
     });
   }

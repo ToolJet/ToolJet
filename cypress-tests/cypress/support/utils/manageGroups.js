@@ -681,11 +681,13 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
         expect(response.status).to.equal(201);
       });
 
+      cy.wait(2000);
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {
         const userId = resp.rows[0].id;
+        cy.log(userId);
 
         cy.request({
           method: "POST",
@@ -721,7 +723,7 @@ export const OpenGroupCardOption = (groupName) => {
 export const duplicateMultipleGroups = (groupNames) => {
   groupNames.forEach((groupName) => {
     OpenGroupCardOption(groupName);
-    cy.wait(3000);
+    cy.wait(2000);
     cy.get(commonSelectors.duplicateOption).click(); // Click on the duplicate option
     cy.get(commonSelectors.confirmDuplicateButton).click(); // Confirm duplication if needed
   });
