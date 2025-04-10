@@ -10,6 +10,8 @@ import { set } from 'lodash';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
     <div
@@ -241,6 +243,7 @@ export const Tabs = function Tabs({
           position: 'absolute',
           top: '0px',
           width: '100%',
+          padding: TAB_CANVAS_PADDING,
         }}
       >
         {loading ? (
@@ -525,9 +528,8 @@ export const Tabs = function Tabs({
       ) : (
         tabItems?.map((tab, index) => (
           <div
-            className={`tab-content ${
-              transition == 'slide' && currentTab === tab.id ? 'tab-slide-in' : 'tab-slide-out'
-            }`}
+            className={`tab-content ${transition == 'slide' && currentTab === tab.id ? 'tab-slide-in' : 'tab-slide-out'
+              }`}
             ref={(newCurrent) => {
               if (currentTab == tab.id) {
                 parentRef.current = newCurrent;
@@ -536,14 +538,14 @@ export const Tabs = function Tabs({
             style={{
               ...(transition == 'slide'
                 ? {
-                    transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
-                    transform:
-                      currentTab === tab.id
-                        ? 'translateX(0%)'
-                        : findTabIndex(currentTab) > index
+                  transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
+                  transform:
+                    currentTab === tab.id
+                      ? 'translateX(0%)'
+                      : findTabIndex(currentTab) > index
                         ? 'translateX(-100%)'
                         : 'translateX(100%)',
-                  }
+                }
                 : {}),
             }}
             id={`${id}-${tab.id}`}

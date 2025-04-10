@@ -126,14 +126,18 @@ const LoginForm = ({
                 <p className="signup-info" data-cy="signup-info">
                   {organizationId && (
                     <>
-                      Sign in to the workspace - <span className="workspace-name">{configs?.name}</span>.
+                      Sign in to the workspace -{' '}
+                      <span className="workspace-name" data-cy="workspace-name">
+                        {configs?.name}
+                      </span>
+                      .
                     </>
                   )}{' '}
                   {isSignUpCTAEnabled && (
                     <>
                       {' '}
                       {signupText}{' '}
-                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="signin-link">
+                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
                         {t('createToolJetAccount', signUpCTA)}
                       </Link>
                     </>

@@ -31,6 +31,8 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import { get } from 'lodash';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 
 export const EventManager = ({
   sourceId,
@@ -372,8 +374,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-          })
+          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+        })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -504,7 +506,7 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'open-webpage' && (
-              <div className="p-1">
+              <div>
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
                 <CodeHinter
                   type="basic"
@@ -513,6 +515,17 @@ export const EventManager = ({
                   usePortalEditor={false}
                   component={component}
                 />
+                <div className="d-flex align-items-center justify-content-between mt-3">
+                  <label className="form-label mt-1">Open in</label>
+                  <ToggleGroup
+                    onValueChange={(_value) => handlerChanged(index, 'windowTarget', _value)}
+                    defaultValue={event?.windowTarget || 'newTab'}
+                    style={{ width: '74%' }}
+                  >
+                    <ToggleGroupItem value="newTab">New tab</ToggleGroupItem>
+                    <ToggleGroupItem value="currentTab">Current tab</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
               </div>
             )}
 
@@ -875,9 +888,9 @@ export const EventManager = ({
                   (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => {
                     let optionsList = param.isDynamicOpiton
                       ? get({ ...components[event?.componentId] }, param.optionsGetter, []).map((tab) => ({
-                          name: tab.title,
-                          value: tab.id,
-                        }))
+                        name: tab.title,
+                        value: tab.id,
+                      }))
                       : param.options;
 
                     return (
@@ -904,9 +917,8 @@ export const EventManager = ({
                           </div>
                         ) : (
                           <div
-                            className={`${
-                              param?.type ? '' : 'fx-container-eventmanager-code'
-                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            className={`${param?.type ? '' : 'fx-container-eventmanager-code'
+                              } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                             data-cy="action-options-text-input-field"
                           >
                             <CodeHinter
