@@ -1,6 +1,6 @@
 ---
 id: delete-gitsync
-title: Delete GitSync Configuration
+title: Delete Git Sync Configuration
 ---
 
 In ToolJet, GitSync can be enabled, disabled, or deleted based on your requirements.

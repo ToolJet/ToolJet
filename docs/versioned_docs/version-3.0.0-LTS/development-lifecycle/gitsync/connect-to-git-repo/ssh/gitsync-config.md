@@ -2,6 +2,15 @@
 id: gitsync-config
 title: Configure GitSync
 ---
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 In this guide, we will explore how to configure GitSync using GitHub as the repository manager. By default GitSync is configured for the **master** branch, but this can be configured to a different branch as well, refer to **[Configuring GitSync on a Different Branch](#configuring-gitsync-on-a-different-branch)** section for more information.
 
@@ -17,34 +26,34 @@ Role Required: **Admin**
 
 2. **Obtain the SSH URL** <br/>
     When a repository is created, GitHub shows a screen with the SSH URL.
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/ssh.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/ssh.png" alt="GitSync" />
 
     OR
     
     If you are using an existing repository, then you can obtain the URL by clicking on the **Code** button.
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/ssh-code.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/ssh-code.png" alt="GitSync" />
 
     To generate the SSH URL for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/ssh-config#generating-ssh-url)** guide.
 
-3. Go to the **Workspace settings**, and click on the **Configure git** tab. <br/>
+3. Go to the **Workspace settings**, and click on the **Configure git** tab. Select Git SSH Protocol as your Repository Connection. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/configure-git`)
 
-    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitsync-v3.png" alt="GitLab Repo" />
+    <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/gitsync/ssh/gitsync-home.png" alt="Git Sync" />
 
 4. Enter the **SSH URL** of the repository in the **Git repo URL** field.
 
 5. Click on the **Generate SSH key** button, and copy the SSH key that is generated. The SSH key is used to authenticate ToolJet with the repository.
 
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/generate-ssh.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/gitsync/ssh/ssh-url.png" alt="GitSync" />
 
     There are two types of generated SSH keys:
     - **ED25519**: This is a secure and efficient algorithm that is used for generating SSH keys. It is recommended to use this key type. VCS providers like GitHub and GitLab recommend using this key type
     - **RSA**: This is an older algorithm that is used for generating SSH keys. It is not recommended to use this key type. Providers like Bitbucket recommend using this key type. <br/> <br/>
 
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/ssh-key.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/gitsync/ssh/ssh-key.png" alt="GitSync" />
 
 6. Go to the **Settings** tab of the GitHub repository, and click on the **Deploy keys** tab. Click on the **Add deploy key** button. 
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/deploy-ssh.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/deploy-ssh.png" alt="GitSync" />
 
 7. Enter a title for the SSH key in the **Title** field. 
         
@@ -53,12 +62,12 @@ Role Required: **Admin**
 9. Make sure that the **Allow write access** checkbox is checked, especially when configuring the GitSync feature to [push changes to Git](/docs/development-lifecycle/gitsync/push). However, it is not mandatory to check this option when setting up the GitSync feature for [pulling changes from Git](/docs/development-lifecycle/gitsync/pull).
         
 10. Finally, click on the **Add key** button.
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/add-key.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/add-key.png" alt="GitSync" />
 
     To deploy the SSH key for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/ssh-config#deploy-the-ssh-key)** guide.
 
 11. After deploying the SSH Key, go to the **Configure git** tab on ToolJet, and click on the **Finalize setup** button. If the SSH key is configured correctly, you will see a success message.
-    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/save-config.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/gitsync/ssh/config-success.png" alt="GitSync" />
 
 ## Configuring GitSync on a Different Branch
 
