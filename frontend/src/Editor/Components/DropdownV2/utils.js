@@ -52,7 +52,14 @@ export const getInputBackgroundColor = ({ fieldBackgroundColor, darkMode, isLoad
 };
 
 export const highlightText = (text = '', highlight) => {
-  const parts = text?.split(new RegExp(`(${highlight})`, 'gi'));
+  // Escape special regex characters in the highlight string
+  const escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  const safeHighlight = highlight ? escapeRegExp(highlight) : '';
+  const parts = text?.split(new RegExp(`(${safeHighlight})`, 'gi'));
+
   return (
     <span>
       {parts.map((part, index) =>
