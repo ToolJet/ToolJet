@@ -8,12 +8,14 @@ import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
+import { ToolTip as AltTooltip } from '@/_components';
 import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import { debounce } from 'lodash';
+import { Button as TJButton } from '@/components/ui/Button/Button';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const moduleId = useModuleId();
@@ -27,6 +29,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const previewLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   useEffect(() => {
     if (selectedQuery?.name) {
       setShowCreateQuery(false);
@@ -129,6 +135,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       <div className="query-header-buttons">
         {!(selectedQuery === null || showCreateQuery) && (
           <>
+            {(isLoading || previewLoading) && <AbortButton queryName={queryName} />}
             <RunButton buttonLoadingState={buttonLoadingState} />
             <PreviewButton
               disabled={shouldFreeze}
@@ -151,8 +158,8 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
   const inputRef = useRef();
 
@@ -282,8 +289,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();
@@ -302,5 +309,22 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       </span>
       <span>{t('editor.queryManager.preview', 'Preview')}</span>
     </button>
+  );
+};
+
+const AbortButton = ({ queryName }) => {
+  const abortQuery = useStore((state) => state.queryPanel.abortQuery);
+  return (
+    <AltTooltip message="Abort Query" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+      <TJButton
+        onClick={() => {
+          abortQuery(queryName);
+        }}
+        iconOnly
+        size="medium"
+        leadingIcon="rectangle"
+        variant="dangerSecondary"
+      />
+    </AltTooltip>
   );
 };

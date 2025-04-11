@@ -1509,6 +1509,22 @@ $border-radius: 4px;
     }
   }
 
+  .abort-query {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid var(--border-danger-weak, #F4979E);
+    background: var(--button-secondary, #FFF);
+    box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0px 1px 1px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
+    height: 28px;
+    width: 28px;
+
+    &:hover {
+      border: 1px solid var(--border-danger-strong, #D72D39);
+      background: linear-gradient(0deg, var(--button-danger-secondary-hover, #FCEEEF) 0%, var(--button-danger-secondary-hover, #FCEEEF) 100%), var(--button-secondary, #FFF);
+    }
+  }
 }
 
 .rest-api-tabpanes-body {
