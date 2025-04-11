@@ -945,7 +945,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           const isParentModal = isParentNewModal || isParentLegacyModal || isParentModalSlot;
 
           if (isParentModal) {
-            const modalContainer = e.target.closest('.tj-modal-widget-content');
+            const modalContainer = e.target.closest('.tj-modal--container');
             const mainCanvas = document.getElementById('real-canvas');
 
             const mainRect = mainCanvas.getBoundingClientRect();
