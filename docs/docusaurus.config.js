@@ -373,11 +373,11 @@ module.exports = {
             from: '/docs/release-management/gitsync/delete-gitsync',
           },
           {
-            to: '/docs/development-lifecycle/gitsync/ssh-config',
+            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
             from: '/docs/release-management/gitsync/ssh-config',
           },
           {
-            to: '/docs/development-lifecycle/gitsync/gitsync-config',
+            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
             from: '/docs/release-management/gitsync/tj-config',
           },
           {
