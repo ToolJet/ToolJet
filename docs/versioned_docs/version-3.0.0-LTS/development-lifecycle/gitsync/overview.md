@@ -1,6 +1,6 @@
 ---
 id: overview
-title: GitSync Overview
+title: Overview
 ---
 
 <div className="badge badge--primary heading-badge">   
@@ -13,7 +13,11 @@ title: GitSync Overview
  <span>Paid feature</span>
 </div>
 
-The GitSync feature in ToolJet allows seamless synchronization of workspace applications with a Git repository which can be used for environment migration, and backup management. It supports both cloud-based and self-hosted Git providers offering flexibility in managing application development and deployment. GitSync can also be configured for a custom branch. Refer to **[Configure GitSync](/docs/development-lifecycle/gitsync/gitsync-config)** guide for more information.
+The GitSync feature in ToolJet allows seamless synchronization of workspace applications with a Git repository which can be used for environment migration, and backup management. It supports both cloud-based and self-hosted Git providers offering flexibility in managing application development and deployment. GitSync can also be configured for a custom branch. Refer to **[Configure GitSync](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config.md)** guide for more information.
+
+:::note
+ToolJet allows you to set up multiple Git repository configurations. However, only one configuration can be active at any given time for a workspace. When switching between configurations, the previously active configuration will be automatically deactivated. 
+:::
 
 ## Key Use-Cases
 

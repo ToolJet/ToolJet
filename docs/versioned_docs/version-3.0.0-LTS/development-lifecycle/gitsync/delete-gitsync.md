@@ -1,6 +1,6 @@
 ---
 id: delete-gitsync
-title: Delete Git Sync Configuration
+title: Delete Configuration
 ---
 
 In ToolJet, GitSync can be enabled, disabled, or deleted based on your requirements.
@@ -13,12 +13,15 @@ In ToolJet, GitSync can be enabled, disabled, or deleted based on your requireme
 
 ## Enable/Disable GitSync
 
-To enable or disable the GitSync feature, go to the **Configure git** tab on the **Workspace settings** page, and toggle on/off the **Connect** switch. This is only available if the GitSync feature is configured.
-
-<img className="screenshot-full" src="/img/development-lifecycle/gitsync/delete/connection.png" alt="GitSync" />
+To enable or disable the GitSync feature, go to the **Configure git sync** tab on the **Workspace settings** page, and toggle on/off the **Repository connections** you want to use for the workspace based on your requirements.
+<img className="screenshot-full img-s" src="/img/gitsync/delete/enable-gitsync.png" alt="GitSync" />
 
 ## Delete GitSync Configuration
 
-To delete the GitSync configuration, go to the **Configure git** tab on the **Workspace settings** page, and click on the **Delete configuration** button. This will delete the SSH key from the ToolJet configuration and the GitSync feature will be disabled.
+To delete the GitSync configuration, go to the **Configure git sync** tab on the **Workspace settings** page, and click on the **Delete configuration** button. This will delete the SSH key from the ToolJet configuration and the GitSync feature will be disabled.
 
-<img className="screenshot-full" src="/img/development-lifecycle/gitsync/delete/delete.png" alt="GitSync" />
+<div style={{ display:"flex", justifyContent:"left", gap:"1rem", marginTop:'15px', marginBottom:'15px' }}>
+<img className="screenshot-full img-s" src="/img/gitsync/delete/delete-ssh.png" alt="GitSync" />
+
+<img className="screenshot-full img-s" src="/img/gitsync/delete/delete-github.png" alt="GitSync" />
+</div>

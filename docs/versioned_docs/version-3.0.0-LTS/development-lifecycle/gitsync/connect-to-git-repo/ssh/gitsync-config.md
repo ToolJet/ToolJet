@@ -16,6 +16,10 @@ In this guide, we will explore how to configure GitSync using GitHub as the repo
 
 For more information on using other repository managers, such as GitLab or Gitea, refer to the **[SSH Configuration for Git Repo Manager](/docs/development-lifecycle/gitsync/ssh-config)** guide.
 
+:::info
+If you encounter SSH port connectivity issues, you can alternatively use HTTPS instead of SSH. For more information, refer to the [GitHub configuration](/docs/development-lifecycle/gitsync/connect-to-git-repo/github/gitsync-config)
+:::
+
 ## Setting up GitSync in ToolJet
 
 Role Required: **Admin**
@@ -35,10 +39,14 @@ Role Required: **Admin**
 
     To generate the SSH URL for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/ssh-config#generating-ssh-url)** guide.
 
-3. Go to the **Workspace settings**, and click on the **Configure git** tab. Select Git SSH Protocol as your Repository Connection. <br/>
+3. Go to the **Workspace settings**, and click on the **Configure git sync** tab. Select Git SSH Protocol as your Repository Connection. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/configure-git`)
 
     <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/gitsync/ssh/gitsync-home.png" alt="Git Sync" />
+
+:::info
+When you enable **Auto-commit on promoting environment**, this feature automatically commits and pushes your application changes to the Git repository whenever you promote from development to staging environment or staging to production environment. This ensures your repository stays in sync with your application's current state without manual intervention.
+:::
 
 4. Enter the **SSH URL** of the repository in the **Git repo URL** field.
 

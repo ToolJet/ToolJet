@@ -13,7 +13,7 @@ sidebar_label: GitHub Configuration
  <span>Paid feature</span>
 </div>
 
-In this guide, we will walk you through the process of configuring GitSync using GitHub as your repository manager. You can create a GitHub repository and set up a GitHub App for your ToolJet deployment instance, enabling it to commit, push, and pull changes.
+This feature allows you to configure GitSync using GitHub as your repository manager. You can create a GitHub repository and set up a GitHub App for your ToolJet deployment instance, enabling it to commit, push, and pull changes.
 
 
 Role Required: **Admin**
@@ -60,14 +60,23 @@ Navigate to the **Workspace settings** page and click on the **Configure git** t
 <img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form2.png" alt="GitSync" />
 </div>
 
-The table below describes each configuration value.
+The table below describes each configuration values:
 
+#### Repository
 | **Setting**                    | **Description**                                                                                                                                   |
 |-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Repo URL**              | The URL of the repository you created to use with ToolJet. (e.g `https://github.com/your-org/repo-name.git`)                                          |
 | **Branch name**         | Branch name of your repo. By default, it uses the main branch.                                                                                      |
-| **GitHub enterprise URL**             |    The domain used to access your self-hosted GitHub instance. If you use GitHub Cloud, you can leave this blank. (optional)                                                                                          |
-| **GitHub enterprise API URL**     |  The API endpoint for your self-hosted GitHub instance.  If you use GitHub Cloud, you can leave this blank. (e.g. `https://[hostname]/api/v3/`)(optional)                            |
+
+#### Self-hosted GitHub (Optional)
+| **Setting**                    | **Description**                                                                                                                                   |
+|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| **GitHub enterprise URL**             |    The domain used to access your self-hosted GitHub instance. If you use GitHub Cloud, you can leave this blank.                                                                                        |
+| **GitHub enterprise API URL**     |  The API endpoint for your self-hosted GitHub instance.  If you use GitHub Cloud, you can leave this blank. (e.g. `https://[hostname]/api/v3/`)                       |
+
+#### App Access
+| **Setting**                    | **Description**                                                                                                                                   |
+|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | **GitHub app ID**                    | The [GitHub App ID](https://docs.github.com/en/developers/apps/identifying-and-authorizing-users-for-github-apps#authenticating-with-a-github-app). |
 | **GitHub app installation ID**           | The [GitHub installation ID](https://docs.github.com/en/developers/apps/managing-github-apps/installing-github-apps#installing-a-github-app).    |
 | **GitHub app private key**           | Private key you downloaded after App creation.                                                                                                                    |
