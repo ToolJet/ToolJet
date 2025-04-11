@@ -18,10 +18,14 @@ import { roleBasedOnboarding } from "Support/utils/onboarding";
 const data = {};
 data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 data.appName = `${fake.companyName}-App`;
+const workspaceName = fake.firstName;
+const workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
 
 describe("Groups duplication", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
+    cy.apiCreateWorkspace(workspaceName, workspaceSlug);
+    cy.visit(`${workspaceSlug}`);
     groupPermission(
       [
         "appsCreateCheck",
@@ -37,10 +41,11 @@ describe("Groups duplication", () => {
   it("Should verify the group duplication feature", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    cy.visit(`${workspaceSlug}`);
     roleBasedOnboarding(data.firstName, data.email, "builder");
     cy.apiLogout();
 
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
     navigateToManageGroups();
     verifyGroupCardOptions("Admin");
     cy.wait(3000);
@@ -105,7 +110,7 @@ describe("Groups duplication", () => {
     cy.apiLogout();
 
     cy.apiLogin(data.email, "password");
-    cy.visit("/my-workspace");
+    cy.visit(`${workspaceSlug}`);
     cy.get(commonSelectors.appCreateButton).should("be.visible");
     cy.get(commonSelectors.createNewFolderButton).should("be.visible");
     viewAppCardOptions(data.appName);
@@ -113,7 +118,7 @@ describe("Groups duplication", () => {
     cy.get(commonSelectors.workspaceConstantsIcon).should("be.visible");
     cy.apiLogout();
 
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
     navigateToManageGroups();
     OpenGroupCardOption(`${data.groupName}_copy`);
     cy.get(groupsSelector.deleteGroupOption).click();
@@ -121,7 +126,7 @@ describe("Groups duplication", () => {
     cy.apiLogout();
 
     cy.apiLogin(data.email, "password");
-    cy.visit("/my-workspace");
+    cy.visit(`${workspaceSlug}`);
     cy.get(commonSelectors.appCreateButton).should("not.exist");
     cy.get(commonSelectors.createNewFolderButton).should("not.exist");
     cy.get(commonSelectors.workspaceConstantsIcon).should("not.exist");

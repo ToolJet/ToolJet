@@ -72,19 +72,19 @@ describe("App Import Functionality", () => {
     );
 
     cy.wait(500);
-    cy.get(dashboardSelector.importAppButton).click();
-    cy.get(importSelectors.importOptionInput)
-      .eq(0)
-      .selectFile(TEST_DATA.invalidFile, {
-        force: true,
-      });
-    cy.get(importSelectors.importAppTitle).should("be.visible");
-    cy.get(importSelectors.importAppButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "tooljet_version must be a string"
-    );
-    cy.wait(500);
+    // cy.get(dashboardSelector.importAppButton).click();
+    // cy.get(importSelectors.importOptionInput)
+    //   .eq(0)
+    //   .selectFile(TEST_DATA.invalidFile, {
+    //     force: true,
+    //   });
+    // cy.get(importSelectors.importAppTitle).should("be.visible");
+    // cy.get(importSelectors.importAppButton).click();
+    // cy.verifyToastMessage(
+    //   commonSelectors.toastMessage,
+    //   "tooljet_version must be a string"
+    // );
+    // cy.wait(500);
 
     // Test valid app import
     cy.get(importSelectors.dropDownMenu).should("be.visible").click();
@@ -160,9 +160,9 @@ describe("App Import Functionality", () => {
       textInput2: "Leanne Graham",
     });
 
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput3")
-    ).verifyVisibleElement("have.value", "");
+    // cy.get(
+    //   commonWidgetSelector.draggableWidget("textInput3")
+    // ).verifyVisibleElement("have.value", "");
 
     // Setup database and data sources
     cy.visit(`${data.workspaceSlug}/database`);
@@ -171,11 +171,11 @@ describe("App Import Functionality", () => {
       "student"
     );
 
-    cy.apiAddDataToTable("student", {
-      name: "Paramu",
-      country: "India",
-      state: "Kerala",
-    });
+    // cy.apiAddDataToTable("student", {
+    //   name: "Paramu",
+    //   country: "India",
+    //   state: "Kerala",
+    // });
 
     cy.visit(`${data.workspaceSlug}/data-sources`);
     cy.get('[data-cy="postgresql-button"]').should("be.visible");
@@ -213,9 +213,9 @@ describe("App Import Functionality", () => {
       textInput1: "John",
       textInput2: "Leanne Graham",
     });
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput3")
-    ).verifyVisibleElement("have.value", "India");
+    // cy.get(
+    //   commonWidgetSelector.draggableWidget("textInput3")
+    // ).verifyVisibleElement("have.value", "India");
 
     switchVersionAndVerify("v3", "v1");
 

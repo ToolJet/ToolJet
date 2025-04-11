@@ -627,10 +627,11 @@ Cypress.Commands.add("apiAddDataToTable", (tableName, data) => {
 });
 
 Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName) => {
+  const workspaceId = Cypress.env("workspaceId");
   cy.getAuthHeaders().then((headers) => {
     cy.request({
       method: "GET",
-      url: `${Cypress.env("server_host")}/api/data-sources`,
+      url: `${Cypress.env("server_host")}/api/data-sources/${workspaceId}`,
       headers: headers,
     }).then((response) => {
       expect(response.status).to.equal(200);
@@ -665,7 +666,7 @@ Cypress.Commands.add(
             name: dataSourceName,
             options: [
               { key: "connection_type", value: "manual", encrypted: false },
-              { key: "host", value: "35.202.183.199" },
+              { key: "host", value: "35.238.9.114" },
               { key: "port", value: 5432 },
               { key: "database", value: "student" },
               { key: "username", value: "postgres" },
