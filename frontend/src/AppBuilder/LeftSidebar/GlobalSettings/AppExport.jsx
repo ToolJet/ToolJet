@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button/Button';
 import ExportAppModal from '@/HomePage/ExportAppModal';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import cx from 'classnames';
 
 const AppExport = ({ darkMode }) => {
   const { app } = useStore(
@@ -28,22 +29,20 @@ const AppExport = ({ darkMode }) => {
           darkMode={darkMode}
         />
       )}
-      <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
-        <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
-        <div>
-          <Button
-            fill="var(--indigo9)"
-            leadingIcon="fileupload"
-            className="tw-w-[158px] !tw-text-[var(--indigo9)] !tw-bg-[var(--indigo3)] hover:!tw-text-[var(--indigo10)] hover:!tw-bg-[var(--indigo4)] active:!tw-text-[var(--indigo9)] active:!tw-bg-[var(--indigo5) focus-visible:!tw-text-[var(--indigo10)] focus-visible:!tw-bg-[var(--indigo3)]"
-            onClick={() => {
-              setIsExportingApp(true);
-              document.getElementById('maintenance-app-modal').click();
-            }}
-            data-cy="button-user-status-change"
-          >
-            Export this app
-          </Button>
-        </div>
+      <div className={cx({ 'dark-theme': darkMode })}>
+        <Button
+          fill="rgb(172, 178, 185)"
+          leadingIcon="fileupload"
+          variant="tertiary"
+          className={cx('app-export-btn')}
+          onClick={() => {
+            setIsExportingApp(true);
+            document.getElementById('maintenance-app-modal').click();
+          }}
+          data-cy="button-user-status-change"
+        >
+          Export app
+        </Button>
       </div>
       {/* {isExportingApp && <ExportAppModal app={app} setIsExportingApp={toggleExportingApp} darkMode={darkMode} />} */}
     </>

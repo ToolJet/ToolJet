@@ -230,7 +230,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     searchInput?: string,
     manager?: EntityManager
   ): Promise<User[]> {
-    const existingUsers = await this.getUsersInGroup(groupId, organizationId, GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP);
+    const existingUsers = await this.getUsersInGroup(groupId, organizationId, null, manager);
 
     const baseWhere = {
       status: Not(USER_STATUS.ARCHIVED),

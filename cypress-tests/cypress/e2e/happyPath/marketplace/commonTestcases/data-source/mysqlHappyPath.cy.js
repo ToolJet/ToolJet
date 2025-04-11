@@ -19,6 +19,7 @@ import {
   deleteDatasource,
   verifyCouldnotConnectWithAlert,
 } from "Support/utils/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { realHover } from "cypress-real-events/commands/realHover";
 
 const data = {};
@@ -26,6 +27,7 @@ const data = {};
 describe("Data sources MySql", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -56,7 +58,30 @@ describe("Data sources MySql", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-mysql`,
+      "mysql",
+      [
+        { key: "connection_type", value: "hostname" },
+        { key: "host", value: "localhost" },
+        { key: "port", value: 3306 },
+        { key: "database", value: "" },
+        { key: "socket", value: "", encrypted: false },
+        { key: "username", value: "" },
+        { key: "password", value: "", encrypted: true },
+        { key: "ssl_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-mysql-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-mysql`
+    );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -110,7 +135,7 @@ describe("Data sources MySql", () => {
     deleteDatasource(`cypress-${data.dataSourceName}-mysql`);
   });
 
-  it.only("Should verify the functionality of MySQL connection form.", () => {
+  it("Should verify the functionality of MySQL connection form.", () => {
     selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
 
     fillDataSourceTextField(
@@ -170,9 +195,9 @@ describe("Data sources MySql", () => {
     verifyCouldnotConnectWithAlert(
       "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)"
     );
-    cy.get('[data-cy="-toggle-input"]').then(($el) => {
+    cy.get('[data-cy="ssl-enabled-toggle-input"]').then(($el) => {
       if ($el.is(":checked")) {
-        cy.get('[data-cy="-toggle-input"]').uncheck();
+        cy.get('[data-cy="ssl-enabled-toggle-input"]').uncheck();
       }
     });
 

@@ -70,13 +70,6 @@ Use this environment variable to enable/disable the feature that allows you to a
 | COMMENT_FEATURE_ENABLE | `true` or `false` |
 
 ### Marketplace
-#### Marketplace feature enable ( optional )
-
-Use this environment variable to enable/disable the feature that allows users to use the marketplace.
-
-| variable                   | value             |
-| -------------------------- | ----------------- |
-| ENABLE_MARKETPLACE_FEATURE | `true` or `false` |
 
 #### Enable Marketplace plugin developement mode ( optional )
 
@@ -92,11 +85,10 @@ Use this environment variable to enable/disable the developement mode that allow
 | ---------------- | ----------------------------------------------- |
 | USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after **10** days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
 
-### Enable ToolJet Database ( optional )
+### Enable ToolJet Database (required)
 
 | variable                     | description                                  |
 | -----------------------------| -------------------------------------------- |
-| ENABLE_TOOLJET_DB            | `true` or `false`                            |
 | TOOLJET_DB                   | Default value is `tooljet_db`                |
 | TOOLJET_DB_HOST              | database host                                |
 | TOOLJET_DB_USER              | database username                            |
@@ -104,13 +96,10 @@ Use this environment variable to enable/disable the developement mode that allow
 | TOOLJET_DB_PORT              | database port                                |
 | PGRST_JWT_SECRET             | JWT token client provided for authentication |
 | PGRST_HOST                   | postgrest database host                      |
-| TOOLJET_DB_RECONFIG          | `true` or `false`                            |
-| TOOLJET_DB_STATEMENT_TIMEOUT | statement timeout in milliseconds            |
-
-Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-db/tooljet-database/#enabling-the-tooljet-database-for-your-instance).
+| PGRST_DB_PRE_CONFIG          | postgrest.pre_config                         |
 
 :::tip
-When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
+The database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
 :::
 
@@ -153,7 +142,7 @@ Please note the subpath is to be set with trailing `/` and is applicable only wh
 
 ToolJet uses SMTP services to send emails (e.g., invitation emails when you add new users to your workspace).
 
-For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](../org-management/smtp-configuration.md).
+For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](/docs/org-setup/smtp-config).
 
 :::info
 If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI.
@@ -224,7 +213,7 @@ This is used to set up for CSP headers and put trace info to be used with APM ve
 
 | variable           | description                                                  |
 | ------------------ | ------------------------------------------------------------ |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
 
 ### RELEASE VERSION ( optional)
 
@@ -264,6 +253,14 @@ Configurations for instance level SSO.
 | SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication |
 | SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist      |
 
+### Enable Cookie Forwarding to REST API (Optional)
+
+By default, the ToolJet server does not forward cookies along with the REST API requests. You can enable this functionality by setting the `FORWARD_RESTAPI_COOKIES` environment variable to `true`. This option is available only in the self-hosted version of ToolJet.
+
+| variable                | description                                                  |
+| ----------------------- | ------------------------------------------------------------ |
+| FORWARD_RESTAPI_COOKIES | `true` or `false`     
+
 ## ToolJet client
 
 ### Server URL ( optionally required )
@@ -272,7 +269,7 @@ This is required when client is built separately.
 
 | variable           | description                                                  |
 | ------------------ | ------------------------------------------------------------ |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
 
 ### Server Port ( optional)
 
@@ -289,27 +286,28 @@ This can be an absolute path, or relative to main HTML file.
 
 | variable   | description                                                    |
 | ---------- | -------------------------------------------------------------- |
-| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.com/) |
+| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.ai/) |
 
 ### Serve client as a server end-point ( optional )
 
 By default the client build will be done to be served with ToolJet server.
 If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 
-## PostgREST server (Optional)
+## PostgREST server (required)
 
-| variable         | description                                     |
-| ---------------- | ----------------------------------------------- |
-| PGRST_JWT_SECRET | JWT token client provided for authentication    |
-| PGRST_DB_URI     | database connection string for tooljet database |
-| PGRST_LOG_LEVEL  | `info`                                          |
+| variable           | description                                     |
+| ------------------ | ----------------------------------------------- |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
+| PGRST_DB_URI       | database connection string for tooljet database |
+| PGRST_LOG_LEVEL    | `info`                                          |
 
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
 :::tip
-If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
-If this parameter is not specified then PostgREST refuses authentication requests.
+If this parameter is not specified, PostgREST will refuse authentication requests.
 :::
 
 :::info

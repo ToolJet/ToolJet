@@ -258,7 +258,7 @@ export const formConfig = {
       },
     },
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -276,7 +276,7 @@ export const formConfig = {
       },
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
@@ -328,8 +328,9 @@ export const formConfig = {
         value:
           "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
       },
-      showHeader: { value: '{{true}}' },
-      showFooter: { value: '{{true}}' },
+      buttonToSubmit: { value: '{{"none"}}' },
+      showHeader: { value: '{{false}}' },
+      showFooter: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       headerHeight: { value: 60 },
