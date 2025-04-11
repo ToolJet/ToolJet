@@ -50,7 +50,7 @@ import { SvgImage } from '@/Editor/Components/SvgImage';
 import { Html } from '@/Editor/Components/Html';
 import { ButtonGroup } from '@/Editor/Components/ButtonGroup';
 import { CustomComponent } from '@/Editor/Components/CustomComponent/CustomComponent';
-import { VerticalDivider } from '@/Editor/Components/verticalDivider';
+import { VerticalDivider } from '@/Editor/Components/VerticalDivider';
 import { ColorPicker } from '@/Editor/Components/ColorPicker';
 import { KanbanBoard } from '@/Editor/Components/KanbanBoard/KanbanBoard';
 // import { Kanban } from '@/Editor/Components/Kanban/Kanban';
