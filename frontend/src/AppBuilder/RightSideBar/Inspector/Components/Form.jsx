@@ -40,6 +40,7 @@ export const Form = ({
 
   const { id } = component;
   const newOptions = [{ name: 'None', value: 'none' }];
+
   Object.entries(allComponents).forEach(([componentId, _component]) => {
     const validParent =
       _component.component.parent === id ||
@@ -51,6 +52,19 @@ export const Form = ({
   });
 
   tempComponentMeta.properties.buttonToSubmit.options = newOptions;
+
+  // Hide header footer if custom schema is turned on
+
+  if (component.component.definition.properties.advanced.value === '{{true}}') {
+    component.component.properties.showHeader = {
+      ...component.component.properties.headerHeight,
+      isHidden: true,
+    };
+    component.component.properties.showFooter = {
+      ...component.component.properties.headerHeight,
+      isHidden: true,
+    };
+  }
 
   const accordionItems = baseComponentProperties(
     properties,

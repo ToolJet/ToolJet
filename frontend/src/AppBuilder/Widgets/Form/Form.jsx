@@ -299,7 +299,7 @@ export const Form = function Form(props) {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
-      {showHeader && (
+      {!advanced && showHeader && (
         <div style={formHeader} className="wj-form-header">
           <SubContainer
             id={`${id}-header`}
@@ -381,7 +381,7 @@ export const Form = function Form(props) {
           </fieldset>
         )}
       </div>
-      {showFooter && (
+      {!advanced && showFooter && (
         <div className="jet-form-footer wj-form-footer" style={formFooter}>
           <SubContainer
             id={`${id}-footer`}
