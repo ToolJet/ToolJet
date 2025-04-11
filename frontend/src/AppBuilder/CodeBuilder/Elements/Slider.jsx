@@ -5,14 +5,15 @@ import * as Slider from '@radix-ui/react-slider';
 import './Slider.scss';
 import { debounce } from 'lodash';
 
-function Slider1({ value, onChange, component, styleDefinition }) {
+function Slider1({ value, onChange, styleDefinition }) {
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
   const isDisabled =
     styleDefinition?.auto?.value === '{{false}}' ? false : styleDefinition?.auto?.value === '{{true}}' ? true : false;
+
   useEffect(() => {
     setSliderValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [component?.id]);
+  }, [styleDefinition]);
 
   const debouncedOnChange = debounce((value) => {
     onChange(value);

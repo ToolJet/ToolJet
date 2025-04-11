@@ -359,42 +359,44 @@ export const PasswordInput = function PasswordInput({
             />
           </div>
         )}
-        <input
-          data-cy={dataCy}
-          className={`tj-text-input-widget ${
-            !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon `}
-          ref={textInputRef}
-          autoComplete="new-password"
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
+        <div className="w-100">
+          <input
+            data-cy={dataCy}
+            className={`tj-text-input-widget ${
+              !isValid && showValidationError ? 'is-invalid' : ''
+            } validation-without-icon `}
+            ref={textInputRef}
+            autoComplete="new-password"
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') {
+                setInputValue(e.target.value);
+                fireEvent('onEnterPressed');
+              }
+            }}
+            onChange={(e) => {
               setInputValue(e.target.value);
-              fireEvent('onEnterPressed');
-            }
-          }}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-            fireEvent('onChange');
-          }}
-          onBlur={(e) => {
-            setIsFocused(false);
-            setShowValidationError(true);
-            e.stopPropagation();
-            fireEvent('onBlur');
-          }}
-          onFocus={(e) => {
-            setIsFocused(true);
-            e.stopPropagation();
-            setTimeout(() => {
-              fireEvent('onFocus');
-            }, 0);
-          }}
-          type={!iconVisibility ? 'password' : 'text'}
-          placeholder={placeholder}
-          style={computedStyles}
-          value={passwordValue}
-          disabled={disable || loading}
-        />
+              fireEvent('onChange');
+            }}
+            onBlur={(e) => {
+              setIsFocused(false);
+              setShowValidationError(true);
+              e.stopPropagation();
+              fireEvent('onBlur');
+            }}
+            onFocus={(e) => {
+              setIsFocused(true);
+              e.stopPropagation();
+              setTimeout(() => {
+                fireEvent('onFocus');
+              }, 0);
+            }}
+            type={!iconVisibility ? 'password' : 'text'}
+            placeholder={placeholder}
+            style={computedStyles}
+            value={passwordValue}
+            disabled={disable || loading}
+          />
+        </div>
         {loading && <Loader style={{ ...loaderStyle }} width="16" />}
       </div>
       {showValidationError && visibility && (
