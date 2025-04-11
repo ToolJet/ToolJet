@@ -91,7 +91,13 @@ export const TableRow = React.memo(
           }
           const selectedRow = row.original;
           const selectedRowId = row.id;
-          setExposedVariables({ selectedRow, selectedRowId });
+          // On deselection of row, we need to set the selectedRow and selectedRowId to empty object and null respectively
+          if (allowSelection && !showBulkSelector && !row.isSelected) {
+            setExposedVariables({ selectedRow: {}, selectedRowId: null });
+          } else {
+            setExposedVariables({ selectedRow, selectedRowId });
+          }
+
           fireEvent('onRowClicked');
           mergeToTableDetails({ selectedRow, selectedRowId });
         }}
@@ -206,7 +212,6 @@ export const TableRow = React.memo(
               {...cellProps}
               style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
               onClick={(e) => {
-                console.log('isEditable', isEditable);
                 if (
                   (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
                   allowSelection &&

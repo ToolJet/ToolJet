@@ -813,7 +813,6 @@ export const Table = React.memo(
     ]);
 
     useEffect(() => {
-      console.log('showBulkSelector', showBulkSelector);
       if (!showBulkSelector) {
         setExposedVariables({ selectedRows: [] });
       }
