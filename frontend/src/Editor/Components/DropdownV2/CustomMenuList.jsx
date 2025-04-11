@@ -3,7 +3,6 @@ import { components } from 'react-select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './dropdownV2.scss';
-import { FormCheck } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
 import cx from 'classnames';
@@ -12,20 +11,8 @@ const { MenuList } = components;
 
 // This Menulist also used in MultiselectV2
 const CustomMenuList = ({ selectProps, ...props }) => {
-  const {
-    onInputChange,
-    onMenuInputFocus,
-    showAllOption,
-    isSelectAllSelected,
-    optionsLoadingState,
-    darkMode,
-    setSelected,
-    setIsSelectAllSelected,
-    fireEvent,
-    inputValue,
-    menuId,
-    showSearchInput,
-  } = selectProps;
+  const { onInputChange, onMenuInputFocus, optionsLoadingState, darkMode, inputValue, menuId, showSearchInput } =
+    selectProps;
 
   const parentRef = useRef(null);
   const virtualizer = useVirtualizer({
@@ -34,16 +21,6 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     estimateSize: () => 40,
     overscan: 15,
   });
-
-  const handleSelectAll = (e) => {
-    e.target.checked && fireEvent();
-    if (e.target.checked) {
-      setSelected(props.options);
-    } else {
-      setSelected([]);
-    }
-    setIsSelectAllSelected(e.target.checked);
-  };
 
   useEffect(() => {
     const searchInput = document.querySelector('.dropdown-multiselect-widget-search-box');
@@ -89,17 +66,6 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           />
         </div>
       )}
-      {showAllOption && !optionsLoadingState && (
-        <label htmlFor="select-all-checkbox" className="multiselect-custom-menulist-select-all">
-          <FormCheck
-            id="select-all-checkbox"
-            checked={isSelectAllSelected}
-            onChange={handleSelectAll}
-            onTouchEnd={handleSelectAll}
-          />
-          <span style={{ marginLeft: '4px' }}>Select all</span>
-        </label>
-      )}
       {!optionsLoadingState && (
         <div
           ref={parentRef}
@@ -112,19 +78,22 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             style={{
               height: `${virtualizer.getTotalSize() || 38}px`,
               position: 'relative',
+              marginTop: '5px',
             }}
           >
             {!virtualizer.getTotalSize() && props.children}
             {virtualizer.getVirtualItems().map((virtualItem) => {
               const option = props.options[virtualItem.index];
               const child = props.children[virtualItem.index];
+              const isSelectAll = option?.value === 'multiselect-custom-menulist-select-all';
               return (
                 <div
                   key={option.value}
                   style={{
-                    position: 'absolute',
+                    position: isSelectAll ? 'sticky' : 'absolute',
                     width: '100%',
                     top: 0,
+                    zIndex: isSelectAll && 10,
                     transform: `translateY(${virtualItem.start}px)`,
                   }}
                   data-index={virtualItem.index}

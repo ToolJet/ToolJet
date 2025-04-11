@@ -21,7 +21,9 @@ const CustomOption = (props) => {
       <div className="d-flex multiselct-widget-option">
         <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
         <span style={{ marginLeft: '5px' }}>
-          {highlightText(props.label?.toString(), props.selectProps.inputValue)}
+          {props.label?.includes('Select all')
+            ? 'Select all'
+            : highlightText(props.label?.toString(), props.selectProps.inputValue)}
         </span>
       </div>
     </Option>

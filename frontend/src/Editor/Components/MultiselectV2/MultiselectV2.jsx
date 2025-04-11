@@ -74,7 +74,6 @@ export const MultiselectV2 = ({
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
-  const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
@@ -104,6 +103,17 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
 
+  const modifiedSelectOptions = useMemo(() => {
+    // Adding select all option dynamically to the options
+    if (showAllOption && !optionsLoadingState) {
+      return [
+        // Appended search input value so that it is always visible
+        { label: `Select all ${searchInputValue}`, value: 'multiselect-custom-menulist-select-all' },
+        ...selectOptions,
+      ];
+    } else return selectOptions;
+  }, [showAllOption, JSON.stringify(selectOptions), optionsLoadingState, searchInputValue]);
+
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
       const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
@@ -128,8 +138,28 @@ export const MultiselectV2 = ({
     }
     return false;
   }
+
   const onChangeHandler = (items, action) => {
-    setInputValue(items);
+    const SELECT_ALL = 'multiselect-custom-menulist-select-all';
+
+    if (action.option?.value === SELECT_ALL) {
+      // Case 1 - If select all is selected
+      if (action.action === 'select-option') {
+        setInputValue(modifiedSelectOptions);
+      } else {
+        setInputValue([]);
+      }
+    } else if (items?.some((item) => item.value === SELECT_ALL)) {
+      // Case 2 - If select all is not selected but selected options include select all
+      setInputValue(items.filter((item) => item.value !== SELECT_ALL));
+    } else if (selectOptions?.length === items?.length) {
+      // Case 3 - If all options are selected except select all
+      setInputValue(modifiedSelectOptions);
+    } else {
+      // Case 4 - Normal selection
+      setInputValue(items);
+    }
+
     fireEvent('onSelect');
     setUserInteracted(true);
   };
@@ -315,15 +345,6 @@ export const MultiselectV2 = ({
     };
   }, [isMultiselectOpen, componentName]);
 
-  // Handle Select all logic
-  useEffect(() => {
-    if (selectOptions?.length === selected?.length) {
-      setIsSelectAllSelected(true);
-    } else {
-      setIsSelectAllSelected(false);
-    }
-  }, [selectOptions, selected]);
-
   const customStyles = {
     container: (base) => ({
       ...base,
@@ -481,7 +502,7 @@ export const MultiselectV2 = ({
             isDisabled={isMultiSelectDisabled}
             value={selected}
             onChange={onChangeHandler}
-            options={selectOptions}
+            options={modifiedSelectOptions}
             styles={customStyles}
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
@@ -521,19 +542,9 @@ export const MultiselectV2 = ({
             icon={icon}
             doShowIcon={iconVisibility}
             containerRef={valueContainerRef}
-            showAllOption={showAllOption}
-            isSelectAllSelected={isSelectAllSelected}
-            setIsSelectAllSelected={(value) => {
-              setIsSelectAllSelected(value);
-              if (!value) {
-                fireEvent('onSelect');
-              }
-            }}
-            setSelected={setInputValue}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
-            fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
             menuPortalTarget={document.body}
           />
