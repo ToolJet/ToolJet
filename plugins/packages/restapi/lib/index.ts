@@ -228,7 +228,7 @@ export default class RestapiQueryService implements QueryService {
         responseObject = {
           statusCode: error.response.statusCode,
           responseBody: error.response.body,
-          headers: error.response.headers,
+          headers: redactHeaders(error.response.headers),
         }
 
         metadata = {
