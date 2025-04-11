@@ -645,10 +645,9 @@ const JoinOn = ({
         </div>
         {index > 0 && (
           <ButtonSolid
-            customStyles={{ height: '30px' }}
             size="sm"
             variant="ghostBlack"
-            className="px-1 rounded-0 border border-start-0 rounded-end"
+            className="px-1 rounded-0 border border-start-0 rounded-en qm-delete-btn"
             onClick={onRemove}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />

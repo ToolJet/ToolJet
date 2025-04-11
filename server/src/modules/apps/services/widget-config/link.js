@@ -74,7 +74,7 @@ export const linkConfig = {
   },
   styles: {
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -158,6 +158,14 @@ export const linkConfig = {
         { displayName: 'None', value: 'none' },
       ],
       accordian: 'container',
+    },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
     },
   },
   exposedVariables: {},

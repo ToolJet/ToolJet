@@ -6,6 +6,7 @@ import { commonText } from "Texts/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
 import { navigateToAppEditor } from "Support/utils/common";
+import { verifyAppDelete } from "Support/utils/dashboard";
 
 export const verifyCouldnotConnectWithAlert = (dangerText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
@@ -60,6 +61,15 @@ export const deleteDatasource = (datasourceName) => {
   //   " Databases"
   // );
 };
+export const deleteAppandDatasourceAfterExecution = (
+  appName,
+  datasourceName
+) => {
+  cy.backToApps();
+  cy.deleteApp(appName);
+  verifyAppDelete(appName);
+  deleteDatasource(datasourceName);
+};
 
 export const closeDSModal = () => {
   cy.get("body").then(($body) => {
@@ -79,7 +89,7 @@ export const addQueryN = (queryName, query, dbName) => {
       cy.clearAndType('[data-cy="gds-querymanager-search-bar"]', `${dbName}`);
     }
   });
-  cy.intercept("POST", "/api/data_queries").as("createQuery");
+  cy.intercept("POST", "/api/data-queries/**").as("createQuery");
 
   cy.get(`[data-cy="${dbName}-add-query-card"] > .text-truncate`).click();
   cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
@@ -96,9 +106,7 @@ export const addQueryN = (queryName, query, dbName) => {
 export const addQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
   cy.get(".css-4e90k9").type(`${dbName}`);
-  cy.intercept("POST", "/api/data_queries").as(
-    "createQuery"
-  );
+  cy.intercept("POST", "/api/data-queries/**").as("createQuery");
   cy.contains(`[id*="react-select-"]`, dbName).click();
 
   cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
@@ -132,7 +140,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
   cy.get(".css-4e90k9").type(`${dbName}`);
   cy.get(".css-4e90k9").type(`${dbName}`);
-  cy.intercept("POST", "/api/data_queries").as("createQuery");
+  cy.intercept("POST", "/api/data-queries").as("createQuery");
   cy.contains(`[id*="react-select-"]`, dbName).click();
 
   cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
@@ -177,13 +185,13 @@ export const selectDatasource = (datasourceName) => {
 
 export const createDataQuery = (appName, url, key, value) => {
   let appId, versionId;
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select id from apps where name='${appName}';`,
   }).then((resp) => {
     appId = resp.rows[0].id;
 
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `select id from app_versions where app_id='${appId}';`,
     }).then((resp) => {
@@ -197,7 +205,7 @@ export const createDataQuery = (appName, url, key, value) => {
 
         cy.request({
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/data_queries`,
+          url: `${Cypress.env("server_host")}/api/data-queries`,
           headers: headers,
           body: {
             app_id: appId,
@@ -225,7 +233,14 @@ export const createDataQuery = (appName, url, key, value) => {
   });
 };
 
-export const createRestAPIQuery = (queryName, dsName, key = '', value = '', url = "", run = true) => {
+export const createRestAPIQuery = (
+  queryName,
+  dsName,
+  key = "",
+  value = "",
+  url = "",
+  run = true
+) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
       "Tj-Workspace-Id": Cypress.env("workspaceId"),
@@ -235,7 +250,7 @@ export const createRestAPIQuery = (queryName, dsName, key = '', value = '', url 
     cy.log(Cypress.env("appId"));
     cy.request({
       method: "GET",
-      url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env("appId")}`,
+      url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
       headers: headers,
     }).then((response) => {
       const editingVersionId = response.body.editing_version.id;
@@ -265,7 +280,7 @@ export const createRestAPIQuery = (queryName, dsName, key = '', value = '', url 
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/data_queries`,
+        url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
         headers: headers,
         body: requestBody,
       }).then((response) => {
