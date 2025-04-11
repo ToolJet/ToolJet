@@ -348,7 +348,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       // IF current role is empty -> user not exist
       // IF new role not equals current one
-      if (!currentRole || (newRole !== currentRole && customGroups.length > 0)) {
+      if (!currentRole || (newRole !== currentRole && groups.length > 0)) {
         await this.roleUtilService.editDefaultGroupUserRole(
           organizationId,
           { newRole, userId, currentRole: currentRoleObj },
