@@ -6,7 +6,7 @@ import { FilterFooter } from './FilterFooter';
 import { FilterHeader } from './FilterHeader';
 import { debounce, isEqual } from 'lodash';
 
-export const Filter = memo(({ table, darkMode, setFilters, setShowFilter }) => {
+export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) => {
   const { t } = useTranslation();
   const [localFilters, setLocalFilters] = useState(table.getState().columnFilters);
 
@@ -142,6 +142,7 @@ export const Filter = memo(({ table, darkMode, setFilters, setShowFilter }) => {
       <div className="card-body">
         {localFilters.map((filter, index) => (
           <FilterRow
+            id={id}
             key={index}
             filter={filter}
             index={index}
