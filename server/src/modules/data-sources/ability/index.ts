@@ -41,7 +41,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (isBuilder) {
       // Only builder can do scope change, Get call is there on app builder
       can(FEATURE_KEY.SCOPE_CHANGE, DataSource);
-      can(FEATURE_KEY.GET, DataSource);
       can(FEATURE_KEY.GET_FOR_APP, DataSource);
     }
 
@@ -100,7 +99,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     }
 
     if (isAllViewable) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+      can([FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
       return;
     }
     if (
