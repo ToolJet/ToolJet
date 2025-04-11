@@ -39,6 +39,10 @@ To create a Foreign Key relationship, follow these steps:
 
 <img className="screenshot-full" src="/img/v2-beta/database/ux2/create-fk.gif" alt="ToolJet database"/>
 
+When defining the foreign key column, the default value can be set to Null. This ensures that if no explicit value is provided for the foreign key during record creation or update, the database will automatically assign null to the column.
+
+<img className="screenshot-full" src="/img/v2-beta/database/ux2/default-value.png" alt="Default value Null"/>
+
 </div>
 
 <div style={{paddingTop:'24px'}}>
