@@ -14,20 +14,7 @@ export const RangeSlider = ({
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const {
-    value,
-    min,
-    max,
-    enableTwoHandle,
-    label,
-    schema,
-    endValue,
-    startValue,
-    disabledState,
-    loadingState,
-    visibility,
-  } = properties;
-  console.log(properties);
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
 
   const {
     trackColor,
@@ -49,7 +36,7 @@ export const RangeSlider = ({
   const [defaultRangeValue, setDefaultRangeValue] = useState([startValue, endValue]);
   const [labelWidth, setLabelWidth] = useState(auto ? 'auto' : width);
   // <- HAVE COMMENTED THIS VARIABLE FOR YOUR REFERENCE ->
-  // const [visibility, setVisibility] = useState(properties.visibility);
+  const [visibility, setVisibility] = useState(properties.visibility);
   const [disabled, setDisabled] = useState(properties?.disabledState);
   const [loading, setLoading] = useState(properties?.loadingState);
 
@@ -80,11 +67,10 @@ export const RangeSlider = ({
         setExposedVariable('value', [num1, num2]);
         fireEvent('onChange');
       },
-      // <- HAVE COMMENTED THIS FUNCTION FOR YOUR REFERENCE ->
-      // setVisibility: async function (value) {
-      //   setVisibility(value);
-      //   setExposedVariable('isVisible', value);
-      // },
+      setVisibility: async function (value) {
+        setVisibility(value);
+        setExposedVariable('isVisible', value);
+      },
       setDisable: async function (value) {
         setDisabled(value);
         setExposedVariable('isDisabled', value);
@@ -113,6 +99,21 @@ export const RangeSlider = ({
   }, [min, max, startValue, endValue]);
 
   useEffect(() => {
+    disabled !== properties.disabledState && setDisabled(properties.disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.disabledState]);
+
+  useEffect(() => {
+    visibility !== properties.visibility && setVisibility(properties.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    loading !== properties.loadingState && setLoading(properties.loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.loadingState]);
+
+  useEffect(() => {
     if (isInitialRender.current) return;
     if (enableTwoHandle === 'slider') {
       setDefaultSliderValue(value);
@@ -127,13 +128,11 @@ export const RangeSlider = ({
   }, [value, enableTwoHandle, startValue, endValue]);
 
   const onSliderChange = (value) => {
-    console.log({ value });
     setExposedVariable('value', value);
     setDefaultSliderValue(value);
   };
 
   const onRangeChange = (value) => {
-    console.log({ value });
     setExposedVariable('value', value);
     setDefaultRangeValue(value);
   };
@@ -203,7 +202,7 @@ export const RangeSlider = ({
     height: defaultAlignment === 'top' ? 'auto' : height,
     gap: '0px',
     ...(defaultAlignment === 'side' && direction === 'right' && { flexDirection: 'row-reverse' }),
-    ...(disabledState && {
+    ...(disabled && {
       pointerEvents: 'none',
       cursor: 'not-allowed',
       opacity: 0.5,
@@ -218,7 +217,7 @@ export const RangeSlider = ({
   };
   return (
     <div style={containerStyle} className="range-slider" data-cy={dataCy}>
-      {loadingState ? (
+      {loading ? (
         <div
           style={{
             display: 'flex',
