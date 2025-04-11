@@ -26,6 +26,7 @@ export const MultiselectV2 = ({
   validate,
   validation,
   componentName,
+  width: widgetWidth,
 }) => {
   let {
     label,
@@ -442,7 +443,7 @@ export const MultiselectV2 = ({
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
-          width: '100%',
+          width: `${widgetWidth}px`,
         }}
         onMouseDown={(event) => {
           onComponentClick(id);
