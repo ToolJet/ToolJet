@@ -533,3 +533,23 @@ const validBooleanChecker = (input) => {
   if (/^(true|false)$/i.test(input) == true) return JSON.parse(input);
   return true;
 };
+
+export const getBodyHeight = (height, showHeader, showFooter, headerHeight = 60, footerHeight = 60) => {
+  let modalHeight = height ? parseInt(height, 10) : 0;
+  let parsedHeaderHeight = showHeader ? parseInt(headerHeight, 10) : 0;
+  let parsedFooterHeight = showFooter ? parseInt(footerHeight, 10) : 0;
+
+  if (showHeader) {
+    // 10 is header padding
+    modalHeight = modalHeight - parsedHeaderHeight - 10;
+  }
+  if (showFooter) {
+    // 14 is footer padding
+    modalHeight = modalHeight - parsedFooterHeight - 14;
+  }
+
+  const rounded = Math.ceil(modalHeight / 10) * 10;
+
+  console.log('rounded', rounded)
+  return `${Math.max(rounded - 20, 40)}px`;
+};
