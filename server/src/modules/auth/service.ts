@@ -19,6 +19,7 @@ import { UserRepository } from '../users/repository';
 import { AuthUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { IAuthService } from './interfaces/IService';
+import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -28,6 +29,7 @@ export class AuthService implements IAuthService {
     protected sessionUtilService: SessionUtilService,
     protected organizationRepository: OrganizationRepository,
     protected instanceSettingsUtilService: InstanceSettingsUtilService,
+    protected setupOrganizationsUtilService: SetupOrganizationsUtilService,
     protected eventEmitter: EventEmitter2
   ) {}
 
@@ -81,7 +83,7 @@ export class AuthService implements IAuthService {
         } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
-          organization = await this.organizationRepository.createOne(name, slug, manager);
+          organization = await this.setupOrganizationsUtilService.create(name, slug, user, manager);
         } else {
           if (!isInviteRedirect) throw new UnauthorizedException('User is not assigned to any workspaces');
         }
