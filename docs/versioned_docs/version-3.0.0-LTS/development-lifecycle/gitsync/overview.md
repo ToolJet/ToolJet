@@ -23,7 +23,7 @@ ToolJet allows you to set up multiple Git repository configurations. However, on
 
 ### Application Migration
 
-GitSync can be used to facilitate the movement of application across different ToolJet instances such as from development to staging to production. Users can effortlessly transfer their applications across instances by pushing changes to a Git repository. This means that once an application is developed in one instance, it can be easily moved to another by simply syncing with the repository, ensuring a smooth transition without the need for manual configurations. Refer to the **[multi-instance](/docs/development-lifecycle/gitsync/gitsync-config)** guide for detailed steps.
+GitSync can be used to facilitate the movement of application across different ToolJet instances such as from development to staging to production. Users can effortlessly transfer their applications across instances by pushing changes to a Git repository. This means that once an application is developed in one instance, it can be easily moved to another by simply syncing with the repository, ensuring a smooth transition without the need for manual configurations. Refer to the **[multi-instance](/docs/development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment)** guide for detailed steps.
 
 ### Backup of Apps
 
