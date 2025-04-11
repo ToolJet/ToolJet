@@ -311,7 +311,7 @@ export const NumberInput = function NumberInput({
          ${visibility || 'invisible'}`}
           style={{
             position: 'relative',
-            width: `${widgetWidth}px`,
+            width: '100%',
             display: !visibility ? 'none' : 'flex',
             whiteSpace: 'nowrap',
           }}

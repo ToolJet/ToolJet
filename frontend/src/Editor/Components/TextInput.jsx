@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -20,7 +18,6 @@ export const TextInput = function TextInput({
   darkMode,
   dataCy,
   validate,
-  width: widgetWidth,
 }) {
   const isInitialRender = useRef(true);
   const textInputRef = useRef();
@@ -274,7 +271,7 @@ export const TextInput = function TextInput({
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
-          width: `${widgetWidth}px`,
+          width: '100%',
         }}
       >
         <Label

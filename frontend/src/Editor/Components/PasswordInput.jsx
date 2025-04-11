@@ -20,7 +20,6 @@ export const PasswordInput = function PasswordInput({
   validation,
   componentName,
   id,
-  width: widgetWidth,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -277,7 +276,7 @@ export const PasswordInput = function PasswordInput({
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
-          width: `${widgetWidth}px`,
+          width: '100%',
         }}
       >
         <Label
