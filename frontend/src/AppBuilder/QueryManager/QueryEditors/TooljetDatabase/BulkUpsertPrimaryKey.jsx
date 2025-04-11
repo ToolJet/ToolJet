@@ -47,7 +47,7 @@ export const BulkUpsertPrimaryKey = () => {
               background: 'transparent',
             }}
             disabled
-            placeholder="Column1"
+            placeholder={''}
           />
         </div>
       </div>

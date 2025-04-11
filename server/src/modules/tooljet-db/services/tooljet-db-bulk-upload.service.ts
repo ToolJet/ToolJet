@@ -436,11 +436,26 @@ export class TooljetDbBulkUploadService {
     });
     const tableColumns = result?.columns || [];
 
-    const invalidPrimaryKeys = primaryKeyColumns.filter((pk) => !tableColumns.some((col) => col.column_name === pk));
-    if (invalidPrimaryKeys.length > 0) {
+    // Check if pk columns exist in the table
+    const nonExistentColumns = primaryKeyColumns.filter((pk) => !tableColumns.some((col) => col.column_name === pk));
+    if (nonExistentColumns.length > 0) {
       return {
         status: 'failed',
-        error: `Invalid primary key columns: ${invalidPrimaryKeys.join(', ')}`,
+        error: `Primary key columns not found in table: ${nonExistentColumns.join(', ')}`,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    // Check if columns are actually primary keys
+    const nonPrimaryKeyColumns = primaryKeyColumns.filter(
+      (pk) => !tableColumns.some((col) => col.column_name === pk && col.constraints_type.is_primary_key)
+    );
+    if (nonPrimaryKeyColumns.length > 0) {
+      return {
+        status: 'failed',
+        error: `Columns are not primary keys: ${nonPrimaryKeyColumns.join(', ')}`,
         inserted: 0,
         updated: 0,
         rows: [],
@@ -451,9 +466,11 @@ export class TooljetDbBulkUploadService {
       .filter((col) => col.data_type === 'integer' && /^nextval\(/.test(col.column_default))
       .map((col) => col.column_name);
 
-    // Identify serial vs. non-serial primary keys
-    const serialPrimaryKeys = primaryKeyColumns.filter((pk) => serialTypeColumns.includes(pk));
-    const nonSerialPrimaryKeys = primaryKeyColumns.filter((pk) => !serialTypeColumns.includes(pk));
+    const serialPrimaryKeys = [];
+    const nonSerialPrimaryKeys = [];
+    primaryKeyColumns.forEach((pk) =>
+      serialTypeColumns.includes(pk) ? serialPrimaryKeys.push(pk) : nonSerialPrimaryKeys.push(pk)
+    );
 
     // Group rows by the exact set of provided keys
     const rowGroups = new Map<string, Record<string, any>[]>();
