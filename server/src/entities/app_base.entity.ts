@@ -24,6 +24,9 @@ export class AppBase extends BaseEntity {
   @Column({ name: 'name' })
   name: string;
 
+  @Column({ name: 'type' })
+  type: string = 'front-end';
+
   @Column({ name: 'slug', unique: true })
   slug: string;
 

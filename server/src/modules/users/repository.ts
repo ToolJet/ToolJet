@@ -39,14 +39,19 @@ export class UserRepository extends Repository<User> {
     if (options?.status) {
       findOptions.status = options?.status;
     }
-    const whereConditions = [];
+
+    // For the search query, create an array of conditions
+    let whereOptions: FindOptionsWhere<User> | FindOptionsWhere<User>[] = findOptions;
+
     if (options?.searchText) {
       const searchLower = options.searchText.toLowerCase();
-      whereConditions.concat([
-        { email: ILike(`%${searchLower}%`) },
-        { firstName: ILike(`%${searchLower}%`) },
-        { lastName: ILike(`%${searchLower}%`) },
-      ]);
+
+      // Create an array of OR conditions
+      whereOptions = [
+        { ...findOptions, email: ILike(`%${searchLower}%`) },
+        { ...findOptions, firstName: ILike(`%${searchLower}%`) },
+        { ...findOptions, lastName: ILike(`%${searchLower}%`) },
+      ];
     }
 
     const [items, total] = await this.manager.findAndCount(User, {
@@ -74,7 +79,7 @@ export class UserRepository extends Repository<User> {
           organization: true,
         },
       },
-      where: whereConditions ? whereConditions.map((condition) => ({ ...findOptions, ...condition })) : findOptions,
+      where: whereOptions,
       order: { createdAt: 'ASC' },
       take: 10,
       skip: 10 * (options?.page ? options?.page - 1 : 0),

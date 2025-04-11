@@ -191,6 +191,7 @@ export class OauthService implements IOAuthService {
             [USER_ROLE.ADMIN],
             defaultOrganization.id,
             userDetails.id,
+            false,
             manager
           );
 
