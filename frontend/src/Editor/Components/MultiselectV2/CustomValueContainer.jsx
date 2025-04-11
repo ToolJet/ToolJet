@@ -42,7 +42,7 @@ const CustomValueContainer = ({ children, ...props }) => {
           {/* Rendering children except Placeholder component to preserve the default behavior of react-select like focus
           handling */}
           {React.Children.map(children, (child) => {
-            if (child.type !== Placeholder) {
+            if (child?.type !== Placeholder) {
               return child;
             }
           })}
