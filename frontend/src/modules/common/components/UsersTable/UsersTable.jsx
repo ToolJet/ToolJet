@@ -38,7 +38,6 @@ const UsersTable = ({
   const [showNoActiveWorkspaceModal, setShowNoActiveWorkspaceModal] = useState(false);
   const hideAccountSetupLink = window.public_config?.HIDE_ACCOUNT_SETUP_LINK == 'true';
 
-  console.log('users', users);
   // Check if user has metadata
   const shouldShowMetadataColumn = wsSettings && Array.isArray(users) && users.some((user) => user.user_metadata);
 
