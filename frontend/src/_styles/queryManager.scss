@@ -1518,6 +1518,11 @@ $border-radius: 4px;
 }
 
 .runps-editor {
+
+  .cm-editor {
+    min-height: 150px !important;
+  }
+
   .query-hinter {
     border-radius: 6px !important;
   }
