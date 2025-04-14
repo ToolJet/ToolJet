@@ -114,16 +114,16 @@ export const tabsConfig = {
   events: { onTabSwitch: { displayName: 'On tab switch' } },
   styles: {
     headerBackground: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: 'var(--primary-brand)',
       },
       accordian: 'Tabs',
     },
     divider: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
@@ -132,7 +132,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     unselectedText: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Unselected text',
       validation: {
         schema: { type: 'string' },
@@ -141,7 +141,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     selectedText: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Selected text',
       validation: {
         schema: { type: 'string' },
@@ -150,7 +150,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     hoverBackground: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Hover Background',
       validation: {
         schema: { type: 'string' },

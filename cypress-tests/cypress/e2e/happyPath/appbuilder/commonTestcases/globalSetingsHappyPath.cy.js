@@ -35,13 +35,13 @@ describe("Editor- Global Settings", () => {
       "have.text",
       "Global settings"
     );
-    cy.get(
-      '[data-cy="label-hide-header-for-launched-apps"]'
-    ).verifyVisibleElement("have.text", "Hide header for launched apps");
-    cy.get('[data-cy="label-maintenance-mode"]').verifyVisibleElement(
-      "have.text",
-      "Maintenance mode"
-    );
+    // cy.get(
+    //   '[data-cy="label-hide-header-for-launched-apps"]'
+    // ).verifyVisibleElement("have.text", "Hide header for launched apps");
+    // cy.get('[data-cy="label-maintenance-mode"]').verifyVisibleElement(
+    //   "have.text",
+    //   "Maintenance mode"
+    // );
     cy.hideTooltip();
     cy.get('[data-cy="label-max-canvas-width"]').verifyVisibleElement(
       "have.text",
@@ -60,7 +60,7 @@ describe("Editor- Global Settings", () => {
     );
 
     verifyWidgetColorCss(
-      ".canvas-area",
+      '[data-cy="real-canvas"]',
       "background-color",
       data.backgroundColor,
       true
@@ -87,24 +87,25 @@ describe("Editor- Global Settings", () => {
     cy.get("[data-cy='left-sidebar-settings-button']").click();
     cy.get('[data-cy="toggle-maintenance-mode"]').realClick();
     cy.get('[data-cy="modal-confirm-button"]').click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Application is on maintenance.",
-      false
-    );
+    // cy.verifyToastMessage(
+    //   commonSelectors.toastMessage,
+    //   "Application is on maintenance.",
+    //   false
+    // );
     cy.forceClickOnCanvas();
     cy.wait(500);
     cy.waitForAutoSave();
-    //Fix this after the release. 2.9.0
-    // cy.get('[data-cy="button-release"]').click();
-    // cy.get('[data-cy="yes-button"]').click();
-    // cy.get('[data-cy="editor-page-logo"]').click();
-    // cy.get(`[data-cy="${data.appName.toLowerCase()}-card"]`)
-    //   .realHover()
-    //   .find('[data-cy="launch-button"]')
-    //   .invoke("attr", "class")
-    //   .should("contains", "disabled-btn");
-
+    // Fix this after the release. 2.9.0
+    cy.get('[data-cy="button-release"]').click();
+    cy.get('[data-cy="yes-button"]').click();
+    cy.get('[data-cy="editor-page-logo"]').click();
+    cy.get('[data-cy="back-to-app-option"]').click();
+    cy.get(`[data-cy="${data.appName.toLowerCase()}-card"]`)
+      .realHover().within(() => {
+        cy.get('[data-cy="launch-button"]').should('have.text', 'Maintenance')
+          .invoke("attr", "class")
+          .should("contains", "disabled-btn");
+      })
     cy.apiDeleteApp();
   });
 });

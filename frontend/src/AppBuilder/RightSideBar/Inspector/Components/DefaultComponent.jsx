@@ -14,8 +14,12 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
   'Container',
   'TextInput',
+  'TextArea',
   'NumberInput',
   'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
   'ToggleSwitchV2',
   'Checkbox',
   'DropdownV2',
@@ -23,8 +27,11 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Button',
   'RichTextEditor',
   'Image',
+  'Divider',
+  'VerticalDivider',
   'ModalV2',
   'Tabs',
+  'Link',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -33,11 +40,15 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   NumberInput: 'Data',
   ToggleSwitchV2: 'Data',
   Checkbox: 'Data',
+  TextArea: 'Data',
   Button: 'Data',
   Image: 'Data',
   Container: 'Data',
+  Divider: 'Data',
+  VerticalDivider: 'Data',
   ModalV2: 'Data',
   Tabs: 'Data',
+  Link: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -122,6 +133,10 @@ export const baseComponentProperties = (
       'Modal',
       'TextInput',
       'PasswordInput',
+      'TextArea',
+      'EmailInput',
+      'PhoneInput',
+      'CurrencyInput',
       'NumberInput',
       'Text',
       'Table',
@@ -131,6 +146,9 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'Divider',
+      'VerticalDivider',
+      'Link',
     ],
     Layout: [],
   };
@@ -270,7 +288,6 @@ export const baseComponentProperties = (
       </>
     ),
   });
-
   return items.filter(
     (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))
   );

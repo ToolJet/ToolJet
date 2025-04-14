@@ -4,6 +4,7 @@ import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
 
 import {
   addQuery,
@@ -20,6 +21,7 @@ const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -49,8 +51,28 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
-    selectAndAddDataSource("databases", "Snowflake", data.dataSourceName);
-
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-snowflake`,
+      "snowflake",
+      [
+        { key: "username", value: "" },
+        { key: "account", value: "" },
+        { key: "password", value: "", encrypted: true },
+        { key: "database", value: "" },
+        { key: "schema", value: "" },
+        { key: "warehouse", value: "" },
+        { key: "role", value: "" },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-snowflake-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-snowflake`
+    );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelUserName
@@ -113,7 +135,7 @@ describe("Data sources", () => {
     deleteDatasource(`cypress-${data.dataSourceName}-snowflake`);
   });
 
-  it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
+  it.skip("Should verify the functionality of snowflake connection form.", () => {
     selectAndAddDataSource("databases", "Snowflake", data.dataSourceName);
 
     fillDataSourceTextField(

@@ -27,6 +27,7 @@ import { createCodeHinterSlice } from './slices/codeHinterSlice';
 import { createDebuggerSlice } from './slices/debuggerSlice';
 import { createGitSyncSlice } from './slices/gitSyncSlice';
 import { createAiSlice } from './slices/aiSlice';
+import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
 
 export default create(
   zustandDevTools(
@@ -58,6 +59,7 @@ export default create(
       ...createDebuggerSlice(...state),
       ...createGitSyncSlice(...state),
       ...createAiSlice(...state),
+      ...createWhiteLabellingSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

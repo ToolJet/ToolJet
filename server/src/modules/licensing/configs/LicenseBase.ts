@@ -15,6 +15,7 @@ export default class LicenseBase {
   private _isCustomStyling: boolean;
   private _isWhiteLabelling: boolean;
   private _isCustomThemes: boolean;
+  private _isServerSideGlobal: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
   private _isComments: boolean;
@@ -49,6 +50,7 @@ export default class LicenseBase {
       this._isCustomStyling = true;
       this._isWhiteLabelling = true;
       this._isCustomThemes = true;
+      this._isServerSideGlobal = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
@@ -88,6 +90,7 @@ export default class LicenseBase {
     this._isCustomStyling = this.getFeatureValue('customStyling');
     this._isWhiteLabelling = this.getFeatureValue('whiteLabelling');
     this._isCustomThemes = this.getFeatureValue('customThemes');
+    this._isServerSideGlobal = this.getFeatureValue('serverSideGlobal');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
@@ -256,6 +259,13 @@ export default class LicenseBase {
     return this._isCustomThemes;
   }
 
+  public get serverSideGlobal(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.serverSideGlobal;
+    }
+    return this._isServerSideGlobal;
+  }
+
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
       return !!BASIC_PLAN_TERMS.features?.multiPlayerEdit;
@@ -298,6 +308,7 @@ export default class LicenseBase {
       customStyling: this.customStyling,
       whiteLabelling: this.whiteLabelling,
       customThemes: this.customThemes,
+      serverSideGlobal: this.serverSideGlobal,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       gitSync: this.gitSync,
@@ -326,6 +337,7 @@ export default class LicenseBase {
       samlEnabled: this.saml,
       customStylingEnabled: this.customStyling,
       customThemesEnabled: this.customThemes,
+      serverSideGlobalEnabled: this.serverSideGlobal,
       multiEnvironmentEnabled: this.multiEnvironment,
       multiPlayerEditEnabled: this.multiPlayerEdit,
       commentsEnabled: this.comments,

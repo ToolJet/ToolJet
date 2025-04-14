@@ -10,6 +10,8 @@ import { set } from 'lodash';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
     <div

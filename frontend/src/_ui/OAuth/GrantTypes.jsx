@@ -14,8 +14,9 @@ const CommonOAuthFields = ({ clientConfig, tokenConfig, authConfig, workspaceCon
   return (
     <>
       <div className="col-md-12">
-        <label className="form-label mt-3">Access token URL</label>
+        <label className="form-label mt-3" data-cy="label-access-token-url">Access token URL</label>
         <Input
+          data-cy="access-token-url-input-field"
           type="text"
           placeholder="https://api.example.com/oauth/token"
           className="form-control"
@@ -26,7 +27,7 @@ const CommonOAuthFields = ({ clientConfig, tokenConfig, authConfig, workspaceCon
       </div>
       <div className="row mt-3">
         <div className="col">
-          <label className="form-label pt-2">Access token URL custom headers</label>
+          <label className="form-label pt-2" data-cy="label-access-token-url-custom-headers">Access token URL custom headers</label>
         </div>
       </div>
       <Headers
@@ -34,10 +35,12 @@ const CommonOAuthFields = ({ clientConfig, tokenConfig, authConfig, workspaceCon
         options={access_token_custom_headers}
         optionchanged={optionchanged}
         workspaceConstants={workspaceConstants}
+        dataCy={'access-token-url-custom-headers'}
       />
       <div className="col-md-12">
-        <label className="form-label mt-3">Client ID</label>
+        <label className="form-label mt-3" data-cy="label-client-id">Client ID</label>
         <Input
+          data-cy="client-id-input-field"
           type="text"
           className="form-control"
           onChange={(e) => optionchanged('client_id', e.target.value)}
@@ -56,6 +59,7 @@ const CommonOAuthFields = ({ clientConfig, tokenConfig, authConfig, workspaceCon
           label="Client secret"
         >
           <Input
+            data-cy="client-secret-input-field"
             type="password"
             className="form-control"
             onChange={(e) => optionchanged('client_secret', e.target.value)}
@@ -65,8 +69,9 @@ const CommonOAuthFields = ({ clientConfig, tokenConfig, authConfig, workspaceCon
         </EncryptedFieldWrapper>
       </div>
       <div className="col-md-12">
-        <label className="form-label mt-3">Scope(s)</label>
+        <label className="form-label mt-3" data-cy="label-scope">Scope(s)</label>
         <Input
+          data-cy="scope-input-field"
           type="text"
           className="form-control"
           onChange={(e) => optionchanged('scopes', e.target.value)}
@@ -85,8 +90,9 @@ const ClientCredentialsFields = ({ authConfig, workspaceConfig, handlers }) => {
 
   return (
     <div className="col-md-12">
-      <label className="form-label mt-3">Audience</label>
+      <label className="form-label mt-3" data-cy="label-audience">Audience</label>
       <Input
+        data-cy="audience-input-field"
         type="text"
         className="form-control"
         onChange={(e) => optionchanged('audience', e.target.value)}
@@ -107,7 +113,7 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
   return (
     <>
       <div className="col-md-12">
-        <label className="form-label mt-3">Add access token to</label>
+        <label className="form-label mt-3" data-cy="label-add-access-token-to">Add access token to</label>
         <Select
           options={[{ name: 'Request header', value: 'header' }]}
           value={add_token_to}
@@ -118,8 +124,9 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
       </div>
       {add_token_to === 'header' && (
         <div className="col-md-12">
-          <label className="form-label mt-3">Header prefix</label>
+          <label className="form-label mt-3" data-cy="label-header-prefix">Header prefix</label>
           <Input
+            data-cy="header-prefix-input-field"
             type="text"
             className="form-control"
             onChange={(e) => optionchanged('header_prefix', e.target.value)}
@@ -129,8 +136,9 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
         </div>
       )}
       <div className="col-md-12">
-        <label className="form-label mt-3">Authorization URL</label>
+        <label className="form-label mt-3" data-cy="label-authorization-url">Authorization URL</label>
         <Input
+          data-cy="authorization-url-input-field"
           type="text"
           placeholder="https://api.example.com/oauth/authorize"
           className="form-control"
@@ -141,7 +149,7 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
       </div>
       <div className="row mt-3">
         <div className="col">
-          <label className="form-label pt-2">Custom authentication parameters</label>
+          <label className="form-label pt-2" data-cy="label-custom-authentication-parameters">Custom authentication parameters</label>
         </div>
       </div>
       <Headers
@@ -149,9 +157,10 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
         options={custom_auth_params}
         optionchanged={optionchanged}
         workspaceConstants={workspaceConstants}
+        dataCy={'custom-authentication-parameters'}
       />
       <div className="col-md-12">
-        <label className="form-label mt-3">Client authentication</label>
+        <label className="form-label mt-3" data-cy="label-client-authentication">Client authentication</label>
         <Select
           options={[
             { name: 'Send as basic auth header', value: 'header' },
@@ -166,17 +175,18 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
       <div>
         <label className="form-check form-switch my-4">
           <input
+            data-cy="authentication-required-for-all-users-toggle-switch"
             className="form-check-input"
             type="checkbox"
             checked={multiple_auth_enabled}
             onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
           />
-          <span className="form-check-label">Authentication required for all users</span>
+          <span className="form-check-label" data-cy="label-authentication-required-for-all-users">Authentication required for all users</span>
         </label>
       </div>
       <div className="row mt-3">
         <div className="col">
-          <label className="form-label pt-2">Custom query parameters</label>
+          <label className="form-label pt-2" data-cy="label-custom-query-parameters">Custom query parameters</label>
         </div>
       </div>
       <Headers
@@ -184,6 +194,7 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
         options={custom_query_params}
         optionchanged={optionchanged}
         workspaceConstants={workspaceConstants}
+        dataCy={'custom-query-parameters'}
       />
     </>
   );
@@ -195,7 +206,7 @@ const OAuthConfiguration = ({ authConfig, clientConfig, tokenConfig, workspaceCo
   return (
     <div>
       <div className="row mt-3">
-        <label className="form-label">Grant type</label>
+        <label className="form-label" data-cy="label-grant-type">Grant type</label>
         <Select
           options={[
             { name: 'Authorization code', value: 'authorization_code' },
