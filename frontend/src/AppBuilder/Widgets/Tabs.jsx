@@ -244,6 +244,7 @@ export const Tabs = function Tabs({
           top: '0px',
           width: '100%',
           padding: TAB_CANVAS_PADDING,
+          backgroundColor: fieldBackgroundColor || bgColor,
         }}
       >
         {loading ? (
