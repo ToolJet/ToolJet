@@ -26,6 +26,9 @@ describe("Groups duplication", () => {
     cy.defaultWorkspaceLogin();
     cy.apiCreateWorkspace(workspaceName, workspaceSlug);
     cy.visit(`${workspaceSlug}`);
+    cy.apiLogout();
+    cy.apiLogin();
+    cy.visit(`${workspaceSlug}`);
     groupPermission(
       [
         "appsCreateCheck",
@@ -36,6 +39,7 @@ describe("Groups duplication", () => {
       "Admin"
     );
     cy.apiCreateApp(data.appName);
+
   });
 
   it("Should verify the group duplication feature", () => {
@@ -46,6 +50,7 @@ describe("Groups duplication", () => {
     cy.apiLogout();
 
     cy.apiLogin();
+    cy.visit(`${workspaceSlug}`);
     navigateToManageGroups();
     verifyGroupCardOptions("Admin");
     cy.wait(3000);
@@ -111,14 +116,18 @@ describe("Groups duplication", () => {
 
     cy.apiLogin(data.email, "password");
     cy.visit(`${workspaceSlug}`);
+    cy.wait(2000);
     cy.get(commonSelectors.appCreateButton).should("be.visible");
     cy.get(commonSelectors.createNewFolderButton).should("be.visible");
+    cy.wait(2000);
+    cy.reload();
     viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.workspaceConstantsIcon).should("be.visible");
     cy.apiLogout();
 
     cy.apiLogin();
+    cy.visit(`${workspaceSlug}`);
     navigateToManageGroups();
     OpenGroupCardOption(`${data.groupName}_copy`);
     cy.get(groupsSelector.deleteGroupOption).click();
