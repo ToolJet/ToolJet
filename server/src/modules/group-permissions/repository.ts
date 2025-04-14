@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import {
   DataSource,
   EntityManager,
+  Equal,
   FindManyOptions,
   FindOptionsWhere,
   ILike,
@@ -69,7 +70,8 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   async getAllGranularPermissions(
     searchParam: GranularPermissionQuerySearchParam,
     organizationId: string,
-    manager: EntityManager
+    manager: EntityManager,
+    filterDataSource?: boolean
   ): Promise<GranularPermissions[]> {
     const { name, type, groupId } = searchParam;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -94,8 +96,19 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         },
       };
 
+      // Only apply the data source filter if filterDataSource is true
+      if (filterDataSource) {
+        findOptions.where = {
+          ...findOptions.where,
+          type: Not(Equal(ResourceType.DATA_SOURCE)),
+        };
+      }
+
       if (groupId) {
-        findOptions.where = { groupId };
+        findOptions.where = {
+          ...findOptions.where,
+          groupId,
+        };
       }
 
       if (name) {
@@ -112,7 +125,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         };
       }
 
-      return manager.find(GranularPermissions, findOptions);
+      return await manager.find(GranularPermissions, findOptions);
     }, manager || this.manager);
   }
 

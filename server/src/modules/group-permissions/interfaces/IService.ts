@@ -17,6 +17,7 @@ export interface IGranularPermissionsService {
   getAll(
     groupId: string,
     organizationId: string,
+    filterDataSource?: boolean,
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]>;
   update(

@@ -7,7 +7,6 @@ import { GroupPermissionsRepository } from '../repository';
 import { GranularPermissionsUtilService } from '../util-services/granular-permissions.util.service';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { USER_ROLE } from '../constants';
 import { GranularPermissionQuerySearchParam } from '../types';
 import { IGranularPermissionsService } from '../interfaces/IService';
 import { GroupPermissionLicenseUtilService } from '../util-services/license.util.service';
@@ -65,25 +64,18 @@ export class GranularPermissionsService implements IGranularPermissionsService {
   async getAll(
     groupId: string,
     organizationId: string,
+    filterDataSource?: boolean,
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isLicenseValid = await this.licenseUtilService.isValidLicense();
-      const groupPermission = await this.groupPermissionRepository.getGroup({
-        id: groupId,
-        organizationId,
-      });
-
-      if (!isLicenseValid) {
-        return this.granularPermissionUtilService.getBasicPlanGranularPermissions(groupPermission.name as USER_ROLE);
-      }
       return await this.groupPermissionRepository.getAllGranularPermissions(
         {
           groupId,
           ...searchParam,
         },
         organizationId,
-        manager
+        manager,
+        filterDataSource ? true : false //Filter out data source granular permissions CE
       );
     });
   }
