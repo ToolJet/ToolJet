@@ -4,9 +4,30 @@ export const stepsConfig = {
   description: 'Step-by-step navigation aid',
   component: 'Steps',
   properties: {
+    variant: {
+      type: 'switch',
+      displayName: 'Variant',
+      validation: { schema: { type: 'string' }, defaultValue: 'titles' },
+      options: [
+        { displayName: 'Label', value: 'titles' },
+        { displayName: 'Numbers', value: 'numbers' },
+        { displayName: 'Plain', value: 'plain' },
+      ],
+      accordian: 'label',
+    },
+    schema: {
+      type: 'code',
+      displayName: 'Schema',
+      conditionallyRender: {
+        key: 'advanced',
+        value: true,
+      },
+      accordian: 'Options',
+    },
     steps: {
       type: 'code',
-      displayName: 'Steps',
+      displayName: '',
+      showLabel: false,
       validation: {
         schema: {
           type: 'array',
@@ -14,6 +35,27 @@ export const stepsConfig = {
         },
         defaultValue: `[{ name: 'step 1'}, {name: 'step 2'}]`,
       },
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    // disabledState: {
+    //   type: 'toggle',
+    //   displayName: 'Disable',
+    //   validation: { schema: { type: 'boolean' }, defaultValue: true },
+    //   section: 'additionalActions',
+    // },
+    advanced: {
+      type: 'toggle',
+      displayName: 'Dynamic options',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      accordian: 'Options',
     },
     currentStep: {
       type: 'code',
@@ -30,6 +72,7 @@ export const stepsConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
   },
   defaultSize: {
@@ -40,46 +83,132 @@ export const stepsConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
+  actions: [
+    {
+      handle: 'setStep',
+      displayName: 'Set step',
+      params: [
+        {
+          handle: 'option',
+          displayName: 'Option',
+        },
+      ],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [
+        {
+          handle: 'option',
+          displayName: 'Option',
+        },
+      ],
+    },
+    {
+      handle: 'setDisabled',
+      displayName: 'Set disabled',
+      params: [
+        {
+          handle: 'option',
+          displayName: 'Option',
+        },
+      ],
+    },
+    {
+      handle: 'resetSteps',
+      displayName: 'Reset steps',
+      params: [],
+    },
+    {
+      handle: 'setStepVisible',
+      displayName: 'Set step visible',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Step id',
+        },
+        {
+          handle: 'visibility',
+          displayName: 'visibility',
+        },
+      ],
+    },
+    {
+      handle: 'setStepDisable',
+      displayName: 'Set step disable',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Step id',
+        },
+        {
+          handle: 'disabled',
+          displayName: 'disabled',
+        },
+      ],
+    },
+  ],
   events: {
     onSelect: { displayName: 'On select' },
   },
   styles: {
-    color: {
+    incompletedAccent: {
       type: 'color',
-      displayName: 'Color',
+      displayName: 'Incompleted accent',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: '#E4E7EB',
       },
+      accordian: 'steps',
     },
-    textColor: {
+    incompletedLabel: {
       type: 'color',
-      displayName: 'Text color',
+      displayName: 'Incompleted label',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: '#1B1F24',
       },
+      accordian: 'steps',
     },
-    theme: {
-      type: 'select',
-      displayName: 'Theme',
+    completedAccent: {
+      type: 'color',
+      displayName: 'Completed accent',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#4368E3',
+      },
+      accordian: 'steps',
+    },
+    completedLabel: {
+      type: 'color',
+      displayName: 'Completed label',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#FBFCFD',
+      },
+      accordian: 'steps',
+    },
+    currentStepLabel: {
+      type: 'color',
+      displayName: 'Current step label',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#1B1F24',
+      },
+      accordian: 'steps',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
       options: [
-        { name: 'titles', value: 'titles' },
-        { name: 'numbers', value: 'numbers' },
-        { name: 'plain', value: 'plain' },
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
       ],
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'titles',
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -92,17 +221,35 @@ export const stepsConfig = {
     },
     properties: {
       steps: {
-        value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1},{ name: 'step 2', tooltip: 'some tooltip', id: 2},{ name: 'step 3', tooltip: 'some tooltip', id: 3},{ name: 'step 4', tooltip: 'some tooltip', id: 4},{ name: 'step 5', tooltip: 'some tooltip', id: 5}]}}`,
+        value: [
+          { name: 'step 1', tooltip: 'some tooltip', id: 1, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 2', tooltip: 'some tooltip', id: 2, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 3', tooltip: 'some tooltip', id: 3, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 4', tooltip: 'some tooltip', id: 4, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 5', tooltip: 'some tooltip', id: 5, visible: { value: true }, disabled: { value: false } },
+        ],
       },
+      schema: {
+        value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1,visible: true, disabled: false},{ name: 'step 2', tooltip: 'some tooltip', id: 2,visible: true, disabled: false},{ name: 'step 3', tooltip: 'some tooltip', id: 3,visible: true, disabled: false},{ name: 'step 4', tooltip: 'some tooltip', id: 4,visible: true, disabled: false},{ name: 'step 5', tooltip: 'some tooltip', id: 5,visible: true, disabled: false}]}}`,
+      },
+      variant: { value: 'titles' },
       currentStep: { value: '{{3}}' },
       stepsSelectable: { value: true },
+      advanced: { value: `{{false}}` },
+      // disabledState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
     },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
-      theme: { value: 'titles' },
       color: { value: '' },
       textColor: { value: '' },
+      padding: { value: 'default' },
+      incompletedAccent: { value: '#E4E7EB' },
+      incompletedLabel: { value: '#1B1F24' },
+      completedAccent: { value: '#4368E3' },
+      completedLabel: { value: '#1B1F24' },
+      currentStepLabel: { value: '#1B1F24' },
     },
   },
 };
