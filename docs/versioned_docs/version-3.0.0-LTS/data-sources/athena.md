@@ -23,11 +23,7 @@ ToolJet requires the following to connect to your Athena.
 You can also configure for **[additional optional parameters](https://github.com/ghdna/athena-express)**.
 :::
 
-<div style={{textAlign: 'center'}}>
-
 <img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/athena/athena-connection-v2.png" alt="Athena connection" />
-
-</div>
 
 </div>
 
@@ -43,12 +39,6 @@ You can also configure for **[additional optional parameters](https://github.com
 :::tip
 **Refer amazon athena docs here for more info:** [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
 :::
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/athena/querying-amazon-athena.png" alt="Athena connection" />
-
-</div>
 
 </div>
 
@@ -67,7 +57,17 @@ CREATE EXTERNAL TABLE student (
 )  LOCATION 's3://athena-express-akiatfa53s-2022/';
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/createTable.png" alt="Athena connection" />
+<img className="screenshot-full" src="/img/datasource-reference/athena/createTable-v2.png" alt="Athena connection" />
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "Items": []
+}
+```
+</details>
 
 ### Inserting to Table
 
@@ -78,7 +78,17 @@ INSERT INTO student
 VALUES ('Lansing',1)
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/insertTable.png" alt="Athena connection" />
+<img className="screenshot-full" src="/img/datasource-reference/athena/insertTable-v2.png" alt="Athena connection" />
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "Items": []
+}
+```
+</details>
 
 ### Select Operation
 
@@ -88,7 +98,34 @@ This query retrieves all records from the *student* table where the age of the s
 SELECT * from student WHERE AGE=1
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/selectOperation.png" alt="Athena connection" />
+<img className="screenshot-full" src="/img/datasource-reference/athena/selectOperation-v2.png" alt="Athena connection" />
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "Items": [
+    {
+      "name": "Lansing",
+      "age": 1
+    },
+    {
+      "name": "DON",
+      "age": 1
+    },
+    {
+      "name": "dravid",
+      "age": 1
+    },
+    {
+      "name": "kiran",
+      "age": 1
+    }
+  ]
+}
+```
+</details>
 
 ### List Tables
 
@@ -98,6 +135,35 @@ This query is used to display a list of all tables in the current database.
 SHOW TABLES
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/listTables.png" alt="Athena connection" />
+<img className="screenshot-full" src="/img/datasource-reference/athena/listTables-v2.png" alt="Athena connection" />
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "Items": [
+    {
+      "row": "cloudfront_logs"
+    },
+    {
+      "row": "person"
+    },
+    {
+      "row": "qa"
+    },
+    {
+      "row": "student"
+    },
+    {
+      "row": "students2025"
+    },
+    {
+      "row": "users"
+    }
+  ]
+}
+```
+</details>
 
 </div>
