@@ -154,7 +154,7 @@ export const tabsConfig = {
       displayName: 'Hover Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: '#1B1F24',
       },
       accordian: 'Tabs',
     },
@@ -398,7 +398,7 @@ export const tabsConfig = {
       unselectedText: { value: '#6A727C' },
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
-      hoverBackground: { value: '#E4E6E8' },
+      hoverBackground: { value: '#1B1F24' },
       unselectedIcon: { value: '#CCD1D5' },
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },

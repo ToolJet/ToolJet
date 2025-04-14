@@ -114,16 +114,16 @@ export const tabsConfig = {
   events: { onTabSwitch: { displayName: 'On tab switch' } },
   styles: {
     headerBackground: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Header background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: '#375FCF',
       },
       accordian: 'Tabs',
     },
     divider: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
@@ -132,7 +132,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     unselectedText: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Unselected text',
       validation: {
         schema: { type: 'string' },
@@ -141,7 +141,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     selectedText: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Selected text',
       validation: {
         schema: { type: 'string' },
@@ -150,16 +150,16 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     hoverBackground: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Hover Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: '#1B1F24',
       },
       accordian: 'Tabs',
     },
     unselectedIcon: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Unselected Icon',
       validation: {
         schema: { type: 'string' },
@@ -168,7 +168,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     selectedIcon: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Selected Icon',
       validation: {
         schema: { type: 'string' },
@@ -177,7 +177,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     accent: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Accent',
       validation: {
         schema: { type: 'string' },
@@ -213,7 +213,7 @@ export const tabsConfig = {
       accordian: 'Tabs',
     },
     border: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
@@ -398,7 +398,7 @@ export const tabsConfig = {
       unselectedText: { value: '#6A727C' },
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
-      hoverBackground: { value: '#E4E6E8' },
+      hoverBackground: { value: '#1B1F24' },
       unselectedIcon: { value: '#CCD1D5' },
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },

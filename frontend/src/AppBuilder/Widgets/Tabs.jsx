@@ -11,6 +11,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+const tinycolor = require('tinycolor2');
 
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
@@ -78,20 +79,13 @@ export const Tabs = function Tabs({
   } else {
     parsedTabs = resolveWidgetFieldValue(parsedTabs);
   }
-  // const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
 
-  //* renderOnlyActiveTab - TRUE (renders only the content of the active tab)
-  //* renderOnlyActiveTab - FALSE (renders all the content irrespective of the active tab to persist value from other tabs)
-  // const renderOnlyActiveTab = component.definition.properties?.renderOnlyActiveTab?.value ?? false;
-
-  // set index as id if id is not provided
   parsedTabs = parsedTabs
     ?.filter((tab) => tab.visible !== false)
     ?.map((parsedTab, index) => ({
       ...parsedTab,
       id: parsedTab.id ? parsedTab.id : index,
     }));
-  // Highlight color - for active tab text and border
   const highlightColor = styles?.highlightColor ?? '#f44336';
   let parsedHighlightColor = highlightColor;
   parsedHighlightColor = resolveWidgetFieldValue(highlightColor);
@@ -105,15 +99,10 @@ export const Tabs = function Tabs({
   const accent = styles?.accent ?? '#3c92dc';
   const divider = styles?.divider ?? '#CCD1D5';
   const borderRadius = styles?.borderRadius ?? '0px';
-  // /here
-  // const border = styles?.border ?? '#CCD1D5';
+
   const border = styles?.border === '#CCD1D5' ? false : styles?.border;
   const padding = styles?.padding ?? 'none';
   const transition = styles?.transition ?? 'none';
-  // options: [
-  //   { name: 'Slide', value: 'slide' },
-  //   { name: 'None', value: 'none' },
-  // ],
 
   // Default tab
   let parsedDefaultTab = defaultTab;
@@ -160,23 +149,6 @@ export const Tabs = function Tabs({
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, darkMode]);
-
-  // function computeTabDisplay(componentId, id) {
-  //   // let tabVisibility = 'none';
-  //   // if (id != currentTab) {
-  //   //   return tabVisibility;
-  //   // }
-
-  //   // const tabElement = document.getElementById(`${componentId}-${id}`);
-  //   // if (tabElement) {
-  //   //   if (window.getComputedStyle(tabElement).visibility === 'none') {
-  //   //     return 'none';
-  //   //   }
-  //   // }
-
-  //   // return id == currentTab ? 'block' : 'block';
-  //   return 'block';
-  // }
 
   useEffect(() => {
     const exposedVariables = {
@@ -290,7 +262,7 @@ export const Tabs = function Tabs({
     if (parsedRenderOnlyActiveTab) {
       return tab.id == currentTab;
     }
-    return true; // Render by default if no specific conditions are met
+    return true;
   }
 
   const findTabIndex = (tabId) => {
@@ -339,7 +311,6 @@ export const Tabs = function Tabs({
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
         ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
-        // border: 'none',
       }}
       data-cy={dataCy}
       ref={containerRef}
@@ -427,7 +398,10 @@ export const Tabs = function Tabs({
                     style={{
                       textAlign: 'center',
                       fontWeight: '500',
-                      background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
+                      background:
+                        isHovered && hoveredTabId == tab.id
+                          ? tinycolor(hoverBackground).setAlpha(0.08).toString()
+                          : 'transparent',
                       borderRadius: '6px',
                       paddingLeft: '1rem',
                       paddingRight: '1rem',
@@ -437,7 +411,9 @@ export const Tabs = function Tabs({
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '4px',
-                      height: '100%',
+                      height: '28px',
+                      paddingTop: '4px',
+                      paddingBottom: '4px',
                     }}
                   >
                     {tabWidth === 'split' ? (
@@ -481,7 +457,6 @@ export const Tabs = function Tabs({
           <Spinner />
         </div>
       ) : (
-        // wrapped in a div to fix
         <div
           style={{
             overflow: 'hidden',
@@ -495,7 +470,7 @@ export const Tabs = function Tabs({
               display: 'flex',
               width: `${tabItems.length * 100}%`,
               transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
-              transition: 'transform 0.6s ease-in-out',
+              transition: 'transform 0.3s ease-in-out',
             }}
           >
             {tabItems.map((tab) => (
@@ -505,7 +480,6 @@ export const Tabs = function Tabs({
                   width: `${100 / tabItems.length}%`,
                   flexShrink: 0,
                   height: '100%',
-                  // width
                 }}
               >
                 <TabContent
@@ -540,7 +514,7 @@ const areEqual = (prevProps, nextProps) => {
     }
   }
 
-  return !hasChanges; // re-render only if props are different
+  return !hasChanges;
 };
 
 const TabContent = memo(function TabContent({ id, tab, height, width, parsedHideTabs, bgColor, darkMode }) {
