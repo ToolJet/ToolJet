@@ -4,16 +4,12 @@ import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
 
-import { useAppInfo } from '@/_stores/appDataStore';
-import useStore from '@/AppBuilder/_stores/store';
-
 export const FilePicker = ({
   id,
   width,
   height,
   component,
   fireEvent,
-  onComponentOptionChanged,
   darkMode,
   styles,
   properties,
@@ -36,11 +32,6 @@ export const FilePicker = ({
   //* resolved styles
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
-
-  const { events: allAppEvents } = useAppInfo();
-
-  const filePickerEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
-  console.log(filePickerEvents);
 
   const bgThemeColor = darkMode ? '#232E3C' : '#fff';
 
@@ -221,14 +212,12 @@ export const FilePicker = ({
     if (isInitialRender.current) return;
     if (acceptedFiles.length === 0 && selectedFiles.length === 0) {
       setExposedVariable('file', []);
-      // onComponentOptionChanged(component, 'file', [], id);
     }
 
     if (acceptedFiles.length !== 0 && fireEvent) {
       const fileData = enableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
         setExposedVariable('isParsing', true);
-        // onComponentOptionChanged(component, 'isParsing', true, id);
       }
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
@@ -238,7 +227,6 @@ export const FilePicker = ({
           }
         });
       });
-
       fireEvent('onFileSelected', id, 'canvas', { component })
         .then(() => {
           setAccepted(true);
@@ -248,16 +236,16 @@ export const FilePicker = ({
               setShowSelectedFiles(true);
               setAccepted(false);
               setExposedVariable('isParsing', false);
-              // onComponentOptionChanged(component, 'isParsing', false, id);
               resolve();
             }, 600);
           });
         })
-        .then(() => fireEvent('onFileLoaded', id, 'canvas', { component }))
         .then(() => {
           setSelectedFiles(fileData);
           setExposedVariable('file', fileData);
-          // onComponentOptionChanged(component, 'file', fileData, id);
+        })
+        .then(() => {
+          fireEvent('onFileLoaded', id, 'canvas', { component });
         });
     }
 
@@ -290,7 +278,6 @@ export const FilePicker = ({
       setShowSelectedFiles(false);
     }
     setExposedVariable('file', selectedFiles);
-    // onComponentOptionChanged(component, 'file', selectedFiles, id);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
