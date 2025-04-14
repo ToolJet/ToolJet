@@ -101,8 +101,6 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     additionalActions
   );
 
-  console.log({ accordionItems });
-
   return <Accordion items={accordionItems} />;
 };
 

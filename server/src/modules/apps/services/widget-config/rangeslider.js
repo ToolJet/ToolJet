@@ -205,7 +205,6 @@ export const rangeSliderConfig = {
       displayName: 'Accent',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#4368E3',
       },
       accordian: 'slider',
     },
