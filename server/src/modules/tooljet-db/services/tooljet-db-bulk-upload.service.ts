@@ -371,26 +371,6 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  async getTableInfo(tableId: string, organizationId: string) {
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, id: tableId },
-    });
-
-    if (!internalTable) {
-      return null;
-    }
-
-    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      id: tableId,
-    });
-
-    return {
-      table_name: internalTable.tableName,
-      columns: result?.columns?.map((col: Record<string, any>) => col.column_name) || [],
-      foreign_keys: result?.foreign_keys || [],
-    };
-  }
-
   async bulkUpsertRowsWithPrimaryKey(
     rows: Record<string, any>[],
     tableId: string,

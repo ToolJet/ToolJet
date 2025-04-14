@@ -611,28 +611,6 @@ export class TooljetDbDataOperationsService implements QueryService {
         };
       }
 
-      // Get table information
-      const tableInfo = await this.tooljetDbBulkUploadService.getTableInfo(tableId, organizationId);
-      if (!tableInfo) {
-        return {
-          status: 'failed',
-          errorMessage: 'Table not found',
-          data: {},
-        };
-      }
-
-      // Validate primary keys exist in table
-      const tableColumns = tableInfo?.columns || [];
-      const invalidPrimaryKeys = primaryKeyColumns.filter((pk) => !tableColumns.includes(pk));
-
-      if (invalidPrimaryKeys.length > 0) {
-        return {
-          status: 'failed',
-          errorMessage: `Invalid primary key columns: ${invalidPrimaryKeys.join(', ')}`,
-          data: {},
-        };
-      }
-
       // Perform bulk upsert
       const result = await this.tooljetDbBulkUploadService.bulkUpsertRowsWithPrimaryKey(
         rowsToUpsert,
