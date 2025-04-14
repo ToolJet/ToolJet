@@ -35,7 +35,7 @@ Role Required: **Admin**
 
         <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app1.png" alt="GitSync" />
 
-3. **Install the GitHub App** <br/>
+### 3. **Install the GitHub App**
     
     To install your GitHub App, follow these steps:
 
@@ -49,7 +49,7 @@ Role Required: **Admin**
     https://github.com/settings/installations/:installation_id
     ```
 
-### 3. Configure GitHub in GitSync 
+### 4. Configure GitHub in GitSync 
 
 Navigate to the **Workspace settings** page and click on the **Configure git** tab. Then, enter the required configuration values after selecting GitHub as your repository provider.
 
