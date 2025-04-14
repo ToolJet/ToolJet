@@ -5,7 +5,7 @@ export const modalV2Config = {
   component: 'ModalV2',
   defaultSize: {
     width: 10,
-    height: 34,
+    height: 40,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -137,7 +137,7 @@ export const modalV2Config = {
       layout: {
         top: 24,
         left: 22,
-        height: 36,
+        height: 40,
       },
       displayName: 'ModalFooterCancel',
       properties: ['text'],
@@ -154,7 +154,7 @@ export const modalV2Config = {
       layout: {
         top: 24,
         left: 32,
-        height: 36,
+        height: 40,
       },
       displayName: 'ModalFooterConfirm',
       properties: ['text'],
