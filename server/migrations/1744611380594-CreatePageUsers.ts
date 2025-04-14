@@ -1,7 +1,13 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreatePageUsers1744611380594 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (getTooljetEdition() === TOOLJET_EDITIONS.CE) {
+      return;
+    }
+
     await queryRunner.createTable(
       new Table({
         name: 'page_users',
