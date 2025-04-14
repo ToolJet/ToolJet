@@ -34,6 +34,8 @@ export default class PostgresqlQueryService implements QueryService {
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
+    let pgPool;
+    let pgConnection;
     try {
       const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
@@ -42,11 +44,11 @@ export default class PostgresqlQueryService implements QueryService {
           if (this.isSqlParametersUsed(queryOptions)) {
             return await this.handleRawQuery(knexInstance, queryOptions);
           } else {
-            const pgPool = knexInstance.client.pool;
-            const pool = await pgPool.acquire().promise;
+            pgPool = knexInstance.client.pool;
+            pgConnection = await pgPool.acquire().promise;
             const query = queryOptions.query;
             let result = { rows: [] };
-            result = await pool.query(query);
+            result = await pgConnection.query(query);
             return {
               status: 'ok',
               data: result.rows,
@@ -71,6 +73,8 @@ export default class PostgresqlQueryService implements QueryService {
         errorDetails.routine = routine || null;
       }
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+    } finally {
+      if (pgPool && pgConnection) pgPool.release(pgConnection);
     }
   }
 
