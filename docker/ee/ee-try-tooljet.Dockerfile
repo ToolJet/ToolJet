@@ -14,9 +14,13 @@ RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
-# Install Redis
-USER root
+
 RUN apt update && apt -y install redis
+
+# Create appuser home & ensure permission for supervisord and services
+RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql /var/lib/redis && \
+    chown -R appuser:appuser /etc/supervisor /var/log/supervisor /var/lib/redis && \
+    chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
 
 # Install Temporal Server Binaries
 RUN curl -OL https://github.com/temporalio/temporal/releases/download/v1.24.2/temporal_1.24.2_linux_amd64.tar.gz && \
@@ -40,17 +44,10 @@ COPY ./docker/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
 RUN apt update && apt install -y curl \
     && curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.8.0/grpcurl_1.8.0_linux_x86_64.tar.gz | tar -xzv -C /usr/local/bin grpcurl
 
-    RUN echo "[supervisord] \n" \
+# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
-    "\n" \
-    "[program:temporal-ui-server] \n" \
-    "command=/usr/bin/temporal-ui-server -r / -c /etc/temporal/ -e temporal-ui-server start \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/dev/stdout \n" \
-    "stderr_logfile_maxbytes=0 \n" \
-    "stdout_logfile=/dev/stdout \n" \
-    "stdout_logfile_maxbytes=0 \n" \
+    "user=root \n" \
     "\n" \
     "[program:postgrest] \n" \
     "command=/bin/postgrest \n" \
@@ -58,7 +55,18 @@ RUN apt update && apt install -y curl \
     "autorestart=true \n" \
     "\n" \
     "[program:tooljet] \n" \
+    "user=appuser \n" \
     "command=/bin/bash -c '/app/server/scripts/init-db-boot.sh' \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" \
+    "\n" \
+    "[program:redis] \n" \
+    "user=appuser \n" \
+    "command=/usr/bin/redis-server \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
     "stderr_logfile=/dev/stdout \n" \
