@@ -214,4 +214,4 @@ RUN npm install dotenv@10.0.0 joi@17.4.1
 
 RUN npm cache clean --force
 
-ENTRYPOINT ["./server/entrypoint.sh"]
+ENTRYPOINT ["./docker/ee/ee-entrypoint.sh"]

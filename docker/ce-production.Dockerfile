@@ -112,4 +112,4 @@ WORKDIR /app
 RUN npm install dotenv@10.0.0 joi@17.4.1
 
 
-ENTRYPOINT ["./server/entrypoint.sh"]
+ENTRYPOINT ["./docker/ce-entrypoint.sh"]
