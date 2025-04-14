@@ -18,7 +18,7 @@ const useCEOnboardingStore = create(
     // Workspace name
     workspaceName: '',
 
-    currentStep: 0,
+    currentStep: 1,
     totalSteps: 1,
     accountCreated: false,
 
