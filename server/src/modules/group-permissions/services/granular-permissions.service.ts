@@ -10,6 +10,7 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { GranularPermissionQuerySearchParam } from '../types';
 import { IGranularPermissionsService } from '../interfaces/IService';
 import { GroupPermissionLicenseUtilService } from '../util-services/license.util.service';
+import { USER_ROLE } from '../constants';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
@@ -68,6 +69,15 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const isLicenseValid = await this.licenseUtilService.isValidLicense();
+      const groupPermission = await this.groupPermissionRepository.getGroup({
+        id: groupId,
+        organizationId,
+      });
+
+      if (!isLicenseValid) {
+        return this.granularPermissionUtilService.getBasicPlanGranularPermissions(groupPermission.name as USER_ROLE);
+      }
       return await this.groupPermissionRepository.getAllGranularPermissions(
         {
           groupId,
