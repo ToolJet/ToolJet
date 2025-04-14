@@ -38,6 +38,11 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
     '--currentStepLabel': currentStepLabel === '#1B1F24' ? 'var(--text-primary)' : currentStepLabel,
   };
   const theme = properties.variant;
+  console.log(theme);
+  console.log(properties);
+  console.log(styles);
+  console.log(completedLabel, 'completed');
+
   const activeStepHandler = (id) => {
     const step = filteredSteps.find((item) => item.id == id);
     if (step) {
@@ -142,7 +147,8 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
               <a
                 className={`step-item ${item.id == activeStepId && 'active'} ${
                   !(!isDisabled && !isStepDisabled) && 'step-item-disabled'
-                }  ${color && `step-${color}`} ${
+                }  ${color && `step-${color}`} 
+                ${
                   index < currentStepIndex
                     ? 'completed-label'
                     : index == currentStepIndex

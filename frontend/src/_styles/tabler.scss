@@ -17513,7 +17513,12 @@ a.step-item:hover {
         width: calc(100% - 32px) !important;
     }
 }
-
+.steps-counter .step-item:before {
+    color:var(--completedLabel) !important;
+  }
+  .steps .step-item.active:before{
+          color : var(--currentStepLabel) !important;
+        }
 .step-item {
     font-weight: 500;
 }
