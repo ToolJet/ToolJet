@@ -20,6 +20,10 @@ The PDF component is compatible with the following browser versions: <br/>
 
 If the PDF component is integrated into your application, it will only render in supported browsers.
 
+:::note
+If the PDF fails to load, it may be due to CORS (Cross-Origin Resource Sharing) restrictions. Please check the browser's developer console for CORS-related errors. Ensure that CORS is enabled for the ToolJet domain in your GCS (Google Cloud Storage) bucket settings.
+:::
+
 </div>
 
 <div style={{paddingTop:'24px'}}>
