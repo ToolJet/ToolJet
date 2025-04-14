@@ -199,7 +199,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.name);
     csv
       .parseString(fileStream.toString(), {
-        headers: ['first_name', 'last_name', 'email', 'user_role', 'groups', 'metadata'],
+        headers: ['first_name', 'last_name', 'email', 'user_role', 'groups'],
         renameHeaders: true,
         ignoreEmpty: true,
       })
@@ -211,7 +211,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           ...row,
           groups: groups,
           user_role: this.organizationUsersUtilService.convertUserRolesCasing(row?.user_role),
-          userMetadata: row?.metadata ? JSON.parse(row.metadata) : null,
           email: row?.email?.toLowerCase(),
         });
       })
@@ -233,7 +232,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
               email: data?.email,
               role: data?.user_role,
               groups: data?.groups,
-              userMetadata: data?.metadata,
             };
             users.push(user);
           }

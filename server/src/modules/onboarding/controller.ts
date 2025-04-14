@@ -22,6 +22,7 @@ import { EditorUserCountGuard } from '@modules/licensing/guards/editorUser.guard
 import { OrganizationInviteAuthGuard } from './guards/organization-invite-auth.guard';
 import { FeatureAbilityGuard } from './ability/guard';
 import { IOnboardingController } from './interfaces/IController';
+import { ResendInviteDto } from './dto/resend-invite.dto';
 
 @Controller('onboarding')
 @InitModule(MODULES.ONBOARDING)
@@ -73,7 +74,7 @@ export class OnboardingController implements IOnboardingController {
   @InitFeature(FEATURE_KEY.RESEND_INVITE)
   @UseGuards(SignupDisableGuard, FirstUserSignupDisableGuard, FeatureAbilityGuard)
   @Post('resend-invite')
-  async resendInvite(@Body() body: AppSignupDto) {
+  async resendInvite(@Body() body: ResendInviteDto) {
     return this.onboardingService.resendEmail(body);
   }
 

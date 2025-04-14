@@ -37,20 +37,26 @@ const UsersTable = ({
   const [selectedUser, setSelectedUser] = useState(null);
   const [showNoActiveWorkspaceModal, setShowNoActiveWorkspaceModal] = useState(false);
   const hideAccountSetupLink = window.public_config?.HIDE_ACCOUNT_SETUP_LINK == 'true';
+
+  // Check if user has metadata
+  const shouldShowMetadataColumn = wsSettings && Array.isArray(users) && users.some((user) => user.user_metadata);
+
   function showMetadataIcon(metadata) {
+    if (!metadata) return false;
     for (const [key, value] of Object.entries(metadata)) {
       // Check if both key and value are not empty
       if (key.trim() !== '' && value.trim() !== '') {
         return true;
       }
     }
-    return false; // Return false if no completely filled key-value pair is found
+    return false;
   }
 
   const handleResetPasswordClick = (user) => {
     setSelectedUser(user);
     setIsResetPasswordModalVisible(true);
   };
+
   return (
     <div className="workspace-settings-table-wrap mb-4">
       <NoActiveWorkspaceModal
@@ -68,7 +74,7 @@ const UsersTable = ({
                 <th data-cy="users-table-name-column-header" data-name="name-header">
                   {translator('header.organization.menus.manageUsers.name', 'Name')}
                 </th>
-                {wsSettings && (
+                {shouldShowMetadataColumn && (
                   <th data-cy="users-table-metadata-column-header" data-name="meta-header">
                     Metadata
                   </th>
@@ -145,7 +151,7 @@ const UsersTable = ({
                           </span>
                         </div>
                       </td>
-                      {wsSettings && (
+                      {shouldShowMetadataColumn && (
                         <td data-name="meta-header">
                           <span className="text-muted user-type">
                             <div className={`metadata ${showMetadataIcon(user?.user_metadata) ? '' : 'empty'}`}>
