@@ -121,13 +121,13 @@ The **JSON** file in the app folder will be replaced with the new version of the
 
 ## Auto Commit on Promoting Environment
 
-When you promote an environment, from **Development to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository.
+When you promote an environment, from **Development to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository. This setting is common for all git sync configurations.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/promoted.png" alt="GitSync" />
 
 This option can be enabled or disabled from the **Configure git** tab on the **Workspace settings** page. By default, this option is disabled.
 
-<img className="screenshot-full" src="/img/gitsync/autocommit-v2.png" alt="GitSync" />
+<img className="screenshot-full" src="/img/gitsync/autocommit_.png" alt="GitSync" />
 
 ## App Deletion
 
