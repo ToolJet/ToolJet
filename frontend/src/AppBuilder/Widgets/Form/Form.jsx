@@ -263,7 +263,7 @@ export const Form = function Form(props) {
     setChildrenData(childDataRef.current);
   };
 
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const updateHeaderSizeInStore = ({ newHeight }) => {
     const _height = parseInt(newHeight, 10);
