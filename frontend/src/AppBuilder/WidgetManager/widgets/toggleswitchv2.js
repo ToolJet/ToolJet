@@ -126,6 +126,20 @@ export const toggleSwitchV2Config = {
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       accordian: 'switch',
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'switch',
+    },
   },
   exposedVariables: {
     value: false,
@@ -187,6 +201,7 @@ export const toggleSwitchV2Config = {
       handleColor: { value: '#FFFFFF' },
       alignment: { value: 'right' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      padding: { value: 'default' },
     },
   },
 };
