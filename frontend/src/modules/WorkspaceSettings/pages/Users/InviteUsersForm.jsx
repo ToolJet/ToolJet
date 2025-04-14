@@ -13,6 +13,7 @@ import { EDIT_ROLE_MESSAGE } from '@/modules/common/constants';
 import ModalBase from '@/_ui/Modal';
 import { UserMetadata } from './components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 function InviteUsersForm({
   onClose,
@@ -68,6 +69,7 @@ function InviteUsersForm({
 
   const { super_admin } = authenticationService.currentSessionValue;
   const [featureAccess, setFeatureAccess] = useState({});
+  const edition = fetchEdition();
 
   useEffect(() => {
     fetchFeatureAccess();
@@ -424,7 +426,7 @@ function InviteUsersForm({
                     <ButtonSolid
                       href={`${window.public_config?.TOOLJET_HOST}${
                         window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                      }assets/csv/sample_upload.csv`}
+                      }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
