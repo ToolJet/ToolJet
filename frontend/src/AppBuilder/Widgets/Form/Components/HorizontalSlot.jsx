@@ -70,7 +70,7 @@ export const HorizontalSlot = React.memo(
             }}
             componentType="Form"
           />
-          <div className="resize-handle" {...getHandleProps()} style={resizeStyle} />
+          {isEditing && <div className="resize-handle" {...getHandleProps()} style={resizeStyle} />}
         </div>
 
         {isDisabled && (

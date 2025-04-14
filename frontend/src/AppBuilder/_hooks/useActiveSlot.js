@@ -10,7 +10,6 @@ const useIsWidgetSelected = (id) => {
   return selectedComponents.length === 1 && selectedComponents[0] === id;
 };
 
-
 export const useActiveSlot = (widgetId) => {
   const [activeSlot, setActiveSlot] = useState(''); // Default to widget ID
   const isSelected = useIsWidgetSelected(widgetId); // Check if widget is selected
@@ -24,6 +23,11 @@ export const useActiveSlot = (widgetId) => {
   useEffect(() => {
     const handleDoubleClick = (event) => {
       let target = event.target;
+
+      if (!widgetId) {
+        setActiveSlot(null);
+        return;
+      }
 
       // Traverse up to find a slot with an id
       while (target && target !== document.body) {
@@ -40,6 +44,11 @@ export const useActiveSlot = (widgetId) => {
     };
     const handleSingleClick = (event) => {
       let target = event.target;
+
+      if (!widgetId) {
+        setActiveSlot(null);
+        return;
+      }
 
       // Traverse up to find a valid main slot (not header/footer)
       while (target && target !== document.body) {
@@ -61,14 +70,12 @@ export const useActiveSlot = (widgetId) => {
     };
 
     // Attach single click if the widget is selected, otherwise listen for double-click
-    // const eventType = isSelected ? 'click' : 'dblclick';
-    const eventType = 'dblclick';
 
-    document.addEventListener(eventType, handleDoubleClick);
+    document.addEventListener('dblclick', handleDoubleClick);
     document.addEventListener('click', handleSingleClick);
 
     return () => {
-      document.removeEventListener(eventType, handleDoubleClick);
+      document.removeEventListener('dblclick', handleDoubleClick);
       document.removeEventListener('click', handleSingleClick);
     };
   }, [widgetId]); // Re-run when widgetId or selection state changes
