@@ -117,48 +117,37 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   return (
     isVisible && (
-      <>
-        <style>
-          {`
-      .steps-counter .step-item:before {
-        color:${completedLabel} !important;
-      }
-        .steps .step-item.active:before{
-          color : ${currentStepLabel} !important;
-        }
-        `}
-        </style>
-        <div
-          className={`steps ${theme == 'numbers' && 'steps-counter '}`}
-          style={{
-            color: textColor,
-            height,
-            boxShadow,
-            opacity: isDisabled ? 0.5 : 1,
-            ...(theme === 'numbers'
-              ? {
-                  paddingTop: 4,
-                }
-              : theme === 'plain'
-              ? {
-                  paddingTop: 10,
-                }
-              : {}),
-          }}
-          data-cy={dataCy}
-        >
-          {filteredSteps?.map((item, index) => {
-            const isStepDisabled = item.disabled;
-            return (
-              <ToolTip
-                key={item.id + index + item.name}
-                show={!item.disabled && !isDisabled}
-                message={item.tooltip || ''}
-              >
-                <a
-                  className={`step-item ${item.id == activeStepId && 'active'} ${
-                    !(!isDisabled && !isStepDisabled) && 'step-item-disabled'
-                  }  ${color && `step-${color}`} 
+      <div
+        className={`steps ${theme == 'numbers' && 'steps-counter '}`}
+        style={{
+          color: textColor,
+          height,
+          boxShadow,
+          opacity: isDisabled ? 0.5 : 1,
+          ...(theme === 'numbers'
+            ? {
+                paddingTop: 4,
+              }
+            : theme === 'plain'
+            ? {
+                paddingTop: 10,
+              }
+            : {}),
+        }}
+        data-cy={dataCy}
+      >
+        {filteredSteps?.map((item, index) => {
+          const isStepDisabled = item.disabled;
+          return (
+            <ToolTip
+              key={item.id + index + item.name}
+              show={!item.disabled && !isDisabled}
+              message={item.tooltip || ''}
+            >
+              <a
+                className={`step-item ${item.id == activeStepId && 'active'} ${
+                  !(!isDisabled && !isStepDisabled) && 'step-item-disabled'
+                }  ${color && `step-${color}`} 
                 ${
                   index < currentStepIndex
                     ? 'completed-label'
@@ -166,34 +155,33 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
                     ? 'active-label'
                     : 'incompleted-label'
                 }`}
-                  data-bs-toggle="tooltip"
-                  title={item?.tooltip}
-                  onClick={() => stepsSelectable && !isDisabled && !isStepDisabled && activeStepHandler(item.id)}
+                data-bs-toggle="tooltip"
+                title={item?.tooltip}
+                onClick={() => stepsSelectable && !isDisabled && !isStepDisabled && activeStepHandler(item.id)}
+                style={{
+                  ...dynamicStyle,
+                  overflow: 'visible',
+                  minWidth: 0,
+                  flex: 1,
+                }}
+              >
+                <div
                   style={{
-                    ...dynamicStyle,
-                    overflow: 'visible',
-                    minWidth: 0,
-                    flex: 1,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%',
+                    paddingLeft: index >= 0 ? 5 : 0,
+                    paddingRight: index < filteredSteps.length - 1 ? 5 : 0,
                   }}
                 >
-                  <div
-                    style={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: '100%',
-                      paddingLeft: index >= 0 ? 5 : 0,
-                      paddingRight: index < filteredSteps.length - 1 ? 5 : 0,
-                    }}
-                  >
-                    {theme == 'titles' && item.name}
-                  </div>
-                </a>
-              </ToolTip>
-            );
-          })}
-        </div>
-      </>
+                  {theme == 'titles' && item.name}
+                </div>
+              </a>
+            </ToolTip>
+          );
+        })}
+      </div>
     )
   );
 };
