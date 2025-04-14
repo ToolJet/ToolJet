@@ -629,6 +629,7 @@
               "type": "category",
               "label": "Connect to Git Repo",
               "items": [
+                "development-lifecycle/gitsync/connect-to-git-repo/connection-method",
                 {
                   "type": "category",
                   "label": "Git SSH Protocol",

@@ -13,8 +13,7 @@ sidebar_label: GitHub Configuration
  <span>Paid feature</span>
 </div>
 
-This feature allows you to configure GitSync using GitHub as your repository manager. You can create a GitHub repository and set up a GitHub App for your ToolJet deployment instance, enabling it to commit, push, and pull changes.
-
+The GitHub Configuration for GitSync introduces a more flexible way to connect your ToolJet instance to a Git repository. Compared to traditional SSH-based setups, it works over HTTPS, helping you avoid SSH port blocks, and lets you choose branches directly from the UI.
 
 Role Required: **Admin**
 
@@ -54,11 +53,10 @@ Role Required: **Admin**
 
 Navigate to the **Workspace settings** page and click on the **Configure git** tab. Then, enter the required configuration values after selecting GitHub as your repository provider.
 
-<div style={{ display:"flex", justifyContent:"left", gap:"1rem", marginTop:'15px', marginBottom:'15px' }}>
-<img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form1.png" alt="GitSync" />
 
-<img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form2.png" alt="GitSync" />
-</div>
+
+<img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form-full.png" alt="GitSync" />
+
 
 The table below describes each configuration values:
 
