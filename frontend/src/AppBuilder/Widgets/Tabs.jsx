@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, memo } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
@@ -161,21 +161,22 @@ export const Tabs = function Tabs({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, darkMode]);
 
-  function computeTabDisplay(componentId, id) {
-    let tabVisibility = 'none';
-    if (id != currentTab) {
-      return tabVisibility;
-    }
+  // function computeTabDisplay(componentId, id) {
+  //   // let tabVisibility = 'none';
+  //   // if (id != currentTab) {
+  //   //   return tabVisibility;
+  //   // }
 
-    const tabElement = document.getElementById(`${componentId}-${id}`);
-    if (tabElement) {
-      if (window.getComputedStyle(tabElement).visibility === 'none') {
-        return 'none';
-      }
-    }
+  //   // const tabElement = document.getElementById(`${componentId}-${id}`);
+  //   // if (tabElement) {
+  //   //   if (window.getComputedStyle(tabElement).visibility === 'none') {
+  //   //     return 'none';
+  //   //   }
+  //   // }
 
-    return id == currentTab ? 'block' : 'none';
-  }
+  //   // return id == currentTab ? 'block' : 'block';
+  //   return 'block';
+  // }
 
   useEffect(() => {
     const exposedVariables = {
@@ -224,53 +225,6 @@ export const Tabs = function Tabs({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setCurrentTab, currentTab]);
-
-  const renderTabContent = (id, tab) => {
-    const loading = tab?.loading;
-    const disable = tab?.disable;
-    const visible = tab?.visible;
-
-    const fieldBackgroundColor = tab?.fieldBackgroundColor;
-    if (visible === false) return null;
-
-    return (
-      <div
-        data-disabled={disable}
-        className={`tab-pane active`}
-        style={{
-          display: computeTabDisplay(id, tab.id),
-          height: parsedHideTabs ? height : height - 41,
-          position: 'absolute',
-          top: '0px',
-          width: '100%',
-          padding: TAB_CANVAS_PADDING,
-          backgroundColor: fieldBackgroundColor || bgColor,
-        }}
-      >
-        {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-            }}
-          >
-            <Spinner />
-          </div>
-        ) : (
-          <SubContainer
-            id={`${id}-${tab.id}`}
-            canvasHeight={'200'}
-            canvasWidth={width}
-            allowContainerSelect={true}
-            styles={{ backgroundColor: fieldBackgroundColor || bgColor }}
-            darkMode={darkMode}
-          />
-        )}
-      </div>
-    );
-  };
 
   const containerRef = useRef(null);
   const tabsRef = React.useRef(null);
@@ -527,37 +481,109 @@ export const Tabs = function Tabs({
           <Spinner />
         </div>
       ) : (
-        tabItems?.map((tab, index) => (
+        // wrapped in a div to fix
+        <div
+          style={{
+            overflow: 'hidden',
+            width: '100%',
+            height: parsedHideTabs ? height : height - 41,
+            position: 'relative',
+          }}
+        >
           <div
-            className={`tab-content ${transition == 'slide' && currentTab === tab.id ? 'tab-slide-in' : 'tab-slide-out'
-              }`}
-            ref={(newCurrent) => {
-              if (currentTab == tab.id) {
-                parentRef.current = newCurrent;
-              }
-            }}
             style={{
-              ...(transition == 'slide'
-                ? {
-                  transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
-                  transform:
-                    currentTab === tab.id
-                      ? 'translateX(0%)'
-                      : findTabIndex(currentTab) > index
-                        ? 'translateX(-100%)'
-                        : 'translateX(100%)',
-                }
-                : {}),
+              display: 'flex',
+              width: `${tabItems.length * 100}%`,
+              transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
+              transition: 'transform 0.6s ease-in-out',
             }}
-            id={`${id}-${tab.id}`}
-            key={tab.id}
           >
-            {renderTabContent(id, tab)}
-
-            {/* {tab.id == currentTab && <SubContainer id={`${id}-${tab.id}`} canvasHeight={'200'} canvasWidth={width} />} */}
+            {tabItems.map((tab) => (
+              <div
+                key={tab.id}
+                style={{
+                  width: `${100 / tabItems.length}%`,
+                  flexShrink: 0,
+                  height: '100%',
+                  // width
+                }}
+              >
+                <TabContent
+                  id={id}
+                  tab={tab}
+                  height={height}
+                  width={width}
+                  parsedHideTabs={parsedHideTabs}
+                  bgColor={bgColor}
+                  darkMode={darkMode}
+                />
+              </div>
+            ))}
           </div>
-        ))
+        </div>
       )}
     </div>
   );
 };
+
+const areEqual = (prevProps, nextProps) => {
+  const allKeys = new Set([...Object.keys(prevProps), ...Object.keys(nextProps)]);
+  let hasChanges = false;
+
+  for (let key of allKeys) {
+    if (prevProps[key] !== nextProps[key]) {
+      console.log(`[TabContent] Prop changed: ${key}`, {
+        from: prevProps[key],
+        to: nextProps[key],
+      });
+      hasChanges = true;
+    }
+  }
+
+  return !hasChanges; // re-render only if props are different
+};
+
+const TabContent = memo(function TabContent({ id, tab, height, width, parsedHideTabs, bgColor, darkMode }) {
+  const loading = tab?.loading;
+  const disable = tab?.disable;
+  const visible = tab?.visible;
+
+  const fieldBackgroundColor = tab?.fieldBackgroundColor;
+  if (visible === false) return null;
+
+  return (
+    <div
+      data-disabled={disable}
+      className="tab-pane active"
+      style={{
+        display: disable ? 'none' : 'block',
+        height: parsedHideTabs ? height : height - 41,
+        position: 'absolute',
+        top: '0px',
+        width: '100%',
+      }}
+    >
+      {loading ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+          }}
+        >
+          <Spinner />
+        </div>
+      ) : (
+        <SubContainer
+          id={`${id}-${tab.id}`}
+          canvasHeight={'200'}
+          canvasWidth={width}
+          allowContainerSelect={true}
+          styles={{ backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor }}
+          darkMode={darkMode}
+        />
+      )}
+    </div>
+  );
+}, areEqual);
