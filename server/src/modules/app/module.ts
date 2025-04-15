@@ -41,6 +41,7 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { WorkflowsModule } from '@modules/workflows/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
 
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -94,6 +95,7 @@ export class AppModule implements OnModuleInit {
       await WorkflowsModule.register(configs),
       await AiModule.register(configs),
       await CustomStylesModule.register(configs),
+      await AppPermissionsModule.register(configs),
     ];
 
     return {

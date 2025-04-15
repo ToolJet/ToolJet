@@ -36,4 +36,5 @@ export enum MODULES {
   IMPORT_EXPORT_RESOURCES = 'ImportExportResources',
   TEMPLATES = 'Templates',
   AI = 'ai',
+  APP_PERMISSIONS = 'AppPermissions',
 }
