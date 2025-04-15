@@ -16585,7 +16585,7 @@ fieldset:disabled {
   }
 
   .selected-time {
-    background-color: #4368E3 !important;
+    background-color: var(--primary-brand) !important;
     border-radius: 6px;
     color:#fff;
   }
@@ -17075,7 +17075,7 @@ section.ai-message-prompt-input-wrapper {
 
   .react-datepicker__day--selecting-range-start, .react-datepicker__day--selected, .react-datepicker__day--range-end {
     border-radius:8px !important;
-    background-color: #4368E3 !important;
+    background-color: var(--primary-brand) !important;
     color: #fff !important;
   }
 
