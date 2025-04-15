@@ -177,6 +177,7 @@ export const DropdownV2 = ({
     if (isMenuOpen) {
       setIsMenuOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     } else {
       setIsMenuOpen(true);
       fireEvent('onFocus');
@@ -197,6 +198,7 @@ export const DropdownV2 = ({
     ) {
       setIsMenuOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     }
   };
 

@@ -319,6 +319,7 @@ export const MultiselectV2 = ({
     if (isMultiselectOpen) {
       setIsMultiselectOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     } else {
       setIsMultiselectOpen(true);
       fireEvent('onFocus');
