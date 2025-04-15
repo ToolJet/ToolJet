@@ -120,7 +120,8 @@ const sidebars = {
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
-        "build-with-ai/ai-docs-assistant"
+        "build-with-ai/ai-docs-assistant",
+        "build-with-ai/tooljet-mcp",
       ]
     },
     {
