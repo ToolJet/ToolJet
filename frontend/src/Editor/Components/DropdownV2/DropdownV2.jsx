@@ -177,6 +177,7 @@ export const DropdownV2 = ({
     if (isMenuOpen) {
       setIsMenuOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     } else {
       setIsMenuOpen(true);
       fireEvent('onFocus');
@@ -197,6 +198,7 @@ export const DropdownV2 = ({
     ) {
       setIsMenuOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     }
   };
 
@@ -485,14 +487,14 @@ export const DropdownV2 = ({
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
-                fireEvent('onSelect');
               }
               if (actionProps.action === 'select-option') {
                 if (currentValue === selectedOption.value) {
                   setInputValue(null);
                 } else setInputValue(selectedOption.value);
-                fireEvent('onSelect');
               }
+              fireEvent('onSelect');
+              setSearchInputValue('');
               setIsMenuOpen(false);
               setUserInteracted(true);
             }}

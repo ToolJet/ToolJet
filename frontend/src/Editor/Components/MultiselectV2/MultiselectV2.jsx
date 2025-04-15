@@ -310,6 +310,7 @@ export const MultiselectV2 = ({
     ) {
       setIsMultiselectOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     }
   };
 
@@ -318,6 +319,7 @@ export const MultiselectV2 = ({
     if (isMultiselectOpen) {
       setIsMultiselectOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     } else {
       setIsMultiselectOpen(true);
       fireEvent('onFocus');
