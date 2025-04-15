@@ -9,7 +9,7 @@ ToolJet allows you to create your own React component using the **Custom Compone
 
 Data can be passed to a custom component using the **Data** field. The data should be structured as an object or an array of objects. Query name can also be passed through this field to trigger queries using the custom component.
 
-<img className="screenshot-full" src="/img/widgets/custom-component/data-v2.png" alt="Custom Component Data Property" />
+<img className="screenshot-full" src="/img/widgets/custom-component/data.png" alt="Custom Component Data Property" />
 
 #### Example:
 ```json
@@ -64,7 +64,7 @@ const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
-<img className="screenshot-full" src="/img/widgets/custom-component/data-prop-v2.png" alt="Custom Component Data Property" />
+<img className="screenshot-full" src="/img/widgets/custom-component/data-prop.png" alt="Custom Component Data Property" />
 
 ### Update Data Function
 
@@ -95,7 +95,7 @@ const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
-<img className="screenshot-full" src="/img/widgets/custom-component/update-data-v2.png" alt="Custom Component Data Property" />
+<img className="screenshot-full" src="/img/widgets/custom-component/update-data.png" alt="Custom Component Data Property" />
 
 ### Run Query Function
 
@@ -135,4 +135,4 @@ const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
-<img className="screenshot-full" src="/img/widgets/custom-component/run-query-v2.png" alt="Custom Component Run Query code" />
+<img className="screenshot-full" src="/img/widgets/custom-component/run-query.png" alt="Custom Component Run Query code" />
