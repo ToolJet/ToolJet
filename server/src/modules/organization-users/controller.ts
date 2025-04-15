@@ -78,8 +78,8 @@ export class OrganizationUsersController implements IOrganizationUsersController
 
   @InitFeature(FEATURE_KEY.USER_ARCHIVE)
   @Post(':id/archive')
-  async archive(@User() user: UserEntity, @Param('id') id: string) {
-    const organizationId = user.organizationId;
+  async archive(@User() user: UserEntity, @Param('id') id: string, @Body() body) {
+    const organizationId = body.organizationId ? body.organizationId : user.organizationId;
     await this.organizationUsersService.archive(id, organizationId, user);
     return;
   }
