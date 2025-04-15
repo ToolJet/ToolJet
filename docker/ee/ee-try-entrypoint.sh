@@ -22,7 +22,7 @@ echo "Starting Temporal Server..."
 export PORT=${PORT:-80}
 
 # Start Supervisor
-/usr/bin/supervisord -n &
+exec supervisord -c /etc/supervisor/conf.d/supervisord.conf &
 
 # Wait for Temporal Server to be ready
 echo "Waiting for Temporal Server to be ready..."
