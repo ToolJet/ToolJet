@@ -32,6 +32,8 @@ describe("App Slug", () => {
       const workspaceId = Cypress.env("workspaceId");
       const appId = Cypress.env("appId");
 
+      cy.visit("/my-workspace");
+      cy.wait(1000);
       cy.openApp("my-workspace");
       cy.get(commonSelectors.leftSideBarSettingsButton).click();
 

@@ -193,7 +193,8 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.apiLogin();
+
+    cy.defaultWorkspaceLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
