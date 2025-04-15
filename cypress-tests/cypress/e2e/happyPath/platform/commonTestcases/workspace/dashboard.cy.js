@@ -32,17 +32,19 @@ import {
 import { roleBasedOnboarding } from "Support/utils/onboarding";
 
 describe("dashboard", () => {
-  const data = {};
-  data.appName = `${fake.companyName}-App`;
-  data.folderName = `${fake.companyName.toLowerCase()}-folder`;
-  data.cloneAppName = `cloned-${data.appName}`;
-  data.updatedFolderName = `new-${data.folderName}`;
-  data.firstName = fake.firstName;
-  data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-  data.workspaceName = fake.firstName;
-  data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+  let data = {};
 
   beforeEach(() => {
+    data = {
+      appName: `${fake.companyName}-App`,
+      folderName: `${fake.companyName.toLowerCase()}-folder`,
+      cloneAppName: `cloned-${fake.companyName}-App`,
+      updatedFolderName: `new-${fake.companyName.toLowerCase()}-folder`,
+      firstName: fake.firstName,
+      email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
+      workspaceName: fake.firstName,
+      workspaceSlug: fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "")
+    };
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
     cy.skipWalkthrough();
@@ -195,7 +197,7 @@ describe("dashboard", () => {
     };
 
     cy.defaultWorkspaceLogin();
-    cy.wait(1000);
+    cy.wait(2000);
     cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);

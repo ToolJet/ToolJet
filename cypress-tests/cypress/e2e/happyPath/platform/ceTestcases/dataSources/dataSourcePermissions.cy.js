@@ -214,7 +214,7 @@ describe("Datasource Manager", () => {
 
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "7 items ");
+    verifyValueOnInspector("table_preview", "10 items ");
     cy.get('[data-cy="show-ds-popover-button"]').click();
 
     cy.get(".p-2 > .tj-base-btn")
@@ -275,7 +275,7 @@ describe("Datasource Manager", () => {
     pinInspector();
 
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "7 items ");
+    verifyValueOnInspector("table_preview", "10 items ");
 
     //scope changing is pending
   });
