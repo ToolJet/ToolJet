@@ -65,7 +65,7 @@ export const dividerConfig = {
   events: {},
   styles: {
     dividerColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Divider color',
       validation: {
         schema: { type: 'string' },
@@ -100,7 +100,7 @@ export const dividerConfig = {
       isFxNotRequired: true,
     },
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Label Color',
       validation: {
         schema: { type: 'string' },
