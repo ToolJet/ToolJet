@@ -34,11 +34,11 @@ RUN curl -OL https://github.com/temporalio/ui-server/releases/download/v2.28.0/u
     tar -xzf ui-server_2.28.0_linux_amd64.tar.gz && \
     mv ui-server /usr/bin/temporal-ui-server && \
     chmod +x /usr/bin/temporal-ui-server && \
-    rm ui-server_2.28.0_linux_amd64.tar.gz    
+    rm ui-server_2.28.0_linux_amd64.tar.gz
 
 # Copy Temporal configuration files
-COPY ./docker/temporal-server.yaml /etc/temporal/temporal-server.yaml
-COPY ./docker/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
+COPY ./docker/ee/temporal-server.yaml /etc/temporal/temporal-server.yaml
+COPY ./docker/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
 
 # Install grpcurl
 RUN apt update && apt install -y curl \
