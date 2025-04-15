@@ -15,7 +15,6 @@ describe("App Slug", () => {
   beforeEach(() => {
     data.slug = `${fake.companyName.toLowerCase()}-app`;
     data.appName = `${fake.companyName} App`;
-    cy.log(Cypress.env("workspaceId"));
     cy.defaultWorkspaceLogin();
   });
 
@@ -34,7 +33,13 @@ describe("App Slug", () => {
 
     cy.visit("/my-workspace");
     cy.wait(1000);
-    cy.openApp("my-workspace");
+
+    cy.window({ log: false }).then((win) => {
+      win.localStorage.setItem("walkthroughCompleted", "true");
+    });
+    cy.visit(`/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`);
+    cy.wait(1000);
+
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
 
     // Verify initial state

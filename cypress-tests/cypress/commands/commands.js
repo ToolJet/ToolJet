@@ -15,13 +15,11 @@ const API_ENDPOINT =
 Cypress.Commands.add(
   "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
-    cy.visit("/");
-    cy.wait(1000);
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
-    cy.wait(1500);
-    cy.get(commonSelectors.pageLogo, { timeout: 10000 }).should("be.visible");
+    cy.wait(2000);
+    cy.get('[data-cy="main-wrapper"]', { timeout: 10000 }).should("be.visible");
   }
 );
 
