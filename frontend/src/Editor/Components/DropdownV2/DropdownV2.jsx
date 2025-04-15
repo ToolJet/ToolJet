@@ -486,12 +486,14 @@ export const DropdownV2 = ({
               if (actionProps.action === 'clear') {
                 setInputValue(null);
                 fireEvent('onSelect');
+                setSearchInputValue('');
               }
               if (actionProps.action === 'select-option') {
                 if (currentValue === selectedOption.value) {
                   setInputValue(null);
                 } else setInputValue(selectedOption.value);
                 fireEvent('onSelect');
+                setSearchInputValue('');
               }
               setIsMenuOpen(false);
               setUserInteracted(true);
