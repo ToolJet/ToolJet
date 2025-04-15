@@ -195,6 +195,7 @@ describe("dashboard", () => {
     };
 
     cy.defaultWorkspaceLogin();
+    cy.wait(1000);
     cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
