@@ -18,14 +18,29 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
   const [activeStepId, setActiveStepId] = useState(currentStepId);
   const theme = properties.variant;
   const [progressBarWidth, setProgressBarWidth] = useState(0);
-  const [labelPadding, setLabelPadding] = useState(0);
+  const [containerPadding, setContainerPadding] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [filteredSteps, setFilteredSteps] = useState([]);
   const firstLabelRef = useRef(null);
   const lastLabelRef = useRef(null);
   const containerRef = useRef(null);
 
+  const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
+
+  useEffect(() => {
+    const sanitizedSteps = JSON.parse(JSON.stringify(steps || [])).map((step) => ({
+      ...step,
+      visible: 'visible' in step ? step.visible : true,
+      disabled: 'disabled' in step ? step.disabled : false,
+    }));
+    const newFilteredSteps = (sanitizedSteps || []).filter((step) => step.visible);
+    setFilteredSteps(newFilteredSteps);
+    setStepsArr(sanitizedSteps);
+  }, [JSON.stringify(steps)]);
+
   // Common function to calculate progress bar width and label padding
   const calculateProgressBarWidth = () => {
+    debugger;
     if (!containerRef.current || theme !== 'titles') return;
 
     const containerWidth = containerRef.current.offsetWidth;
@@ -37,7 +52,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
 
     if (filteredSteps.length === 1) {
       setProgressBarWidth(containerWidth);
-      setLabelPadding(0); // No padding needed for single step
+      setContainerPadding(0); // No padding needed for single step
       return;
     }
 
@@ -45,24 +60,22 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
     const progressBarWidth = (containerWidth - totalStepsWidth) / totalProgressBars;
     setProgressBarWidth(Math.min(progressBarWidth, (containerWidth - totalStepsWidth) / filteredSteps.length));
 
-    // Calculate label padding
+    // Calculate container padding
     if (firstLabelRef.current && lastLabelRef.current) {
-      // Step 1: Calculate individual label width
       const labelWidth = (containerWidth - (filteredSteps.length - 1) - 4) / filteredSteps.length;
 
-      // Step 2: Find max label length
       const firstLabelWidth = firstLabelRef.current.offsetWidth;
       const lastLabelWidth = lastLabelRef.current.offsetWidth;
       const maxLabelWidth = Math.max(firstLabelWidth, lastLabelWidth);
 
-      // Step 3: Calculate label padding
       const calculatedPadding = (maxLabelWidth / 2) - 1;
-      setLabelPadding(Math.max(2, calculatedPadding)); // Ensure minimum padding of 2px
+      setContainerPadding(Math.max(2, calculatedPadding)); // Ensure minimum padding of 2px
     }
   };
 
   // Add resize observer to track container width and calculate progress bar width
   useEffect(() => {
+    calculateProgressBarWidth();
     if (theme !== 'titles') return;
 
     const resizeObserver = new ResizeObserver((entries) => {
@@ -76,27 +89,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
     }
 
     return () => resizeObserver.disconnect();
-  }, [theme, JSON.stringify(steps)]);
-
-  // Recalculate measurements when steps change
-  useEffect(() => {
-    calculateProgressBarWidth();
-  }, [theme, JSON.stringify(steps)]);
-
-  // Filter visible steps and find current step index
-  const filteredSteps = (stepsArr || []).filter((step) => step.visible);
-  const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
-
-  // Sanitize steps data
-  useEffect(() => {
-    const sanitizedSteps = JSON.parse(JSON.stringify(steps || [])).map((step) => ({
-      ...step,
-      visible: 'visible' in step ? step.visible : true,
-      disabled: 'disabled' in step ? step.disabled : false,
-    }));
-    setStepsArr(sanitizedSteps);
-  }, [JSON.stringify(steps)]);
-
+  }, [theme, JSON.stringify(steps), filteredSteps]);
   // Dynamic styles for theming
   const dynamicStyle = {
     '--bgColor': styles.color,
@@ -169,7 +162,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
       style={{
         height,
         boxShadow,
-        padding: theme === 'titles' ? `0 ${labelPadding}px` : 0,
+        padding: theme === 'titles' ? `0 ${containerPadding}px` : 2,
         ...dynamicStyle
       }}
       data-cy={dataCy}
@@ -184,7 +177,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
           const isLastStep = index === filteredSteps.length - 1;
 
           return (
-            <React.Fragment key={step.id}>
+            <React.Fragment key={index}> {/* using index as key to avoid issues due to duplicate step ids */}
               <ToolTip
                 show={!step.disabled && !isDisabled}
                 message={step.tooltip || ''}
