@@ -81,6 +81,6 @@ ENV TOOLJET_HOST=http://localhost \
     TERM=xterm
 
 # Set the entrypoint
-COPY ./docker/ee/ee-try-entrypoint-lts.sh /try-entrypoint.sh
-RUN chmod +x /try-entrypoint.sh
-ENTRYPOINT ["/try-entrypoint.sh"]
+COPY ./docker/ee/ee-try-entrypoint-lts.sh /ee-try-entrypoint-lts.sh
+RUN chmod +x /ee-try-entrypoint-lts
+ENTRYPOINT ["/ee-try-entrypoint-lts.sh"]

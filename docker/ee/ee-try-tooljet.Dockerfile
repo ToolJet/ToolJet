@@ -1,7 +1,7 @@
 FROM tooljet/tooljet:ee-latest
 
 # Copy postgrest executable
-COPY --from=postgrest/postgrest:v12.0.2 /bin/postgrest /bin
+COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 # Install Postgres
 USER root
@@ -112,6 +112,6 @@ ENV TOOLJET_HOST=http://localhost \
     TEMPORAL_CORS_ORIGINS=http://localhost:8080
 
 # Set the entrypoint
-COPY ./docker/ee/ee-try-entrypoint.sh /try-entrypoint.sh
-RUN chmod +x /try-entrypoint.sh
-ENTRYPOINT ["/try-entrypoint.sh"]
+COPY ./docker/ee/ee-try-entrypoint.sh /ee-try-entrypoint.sh
+RUN chmod +x /ee-try-entrypoint.sh
+ENTRYPOINT ["/ee-try-entrypoint.sh"]
