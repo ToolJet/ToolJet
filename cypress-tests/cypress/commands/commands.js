@@ -20,10 +20,8 @@ Cypress.Commands.add(
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
-
-    cy.intercept("GET", API_ENDPOINT).as("library_apps");
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    cy.wait("@library_apps");
+    cy.wait(1500);
+    cy.get(commonSelectors.pageLogo, { timeout: 10000 }).should("be.visible");
   }
 );
 
@@ -523,16 +521,6 @@ Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
   element.should("be.visible").and("have.text", text);
 });
 
-Cypress.Commands.add("loginWithCredentials", (email, password) => {
-  cy.get(onboardingSelectors.loginEmailInput, { timeout: 20000 }).should(
-    "be.visible"
-  );
-  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
-  cy.get(onboardingSelectors.signInButton).click();
-  cy.wait(3000);
-  cy.get(commonSelectors.pageLogo).should("be.visible");
-});
 
 Cypress.Commands.add("getAppId", (appName) => {
   cy.task("dbConnection", {

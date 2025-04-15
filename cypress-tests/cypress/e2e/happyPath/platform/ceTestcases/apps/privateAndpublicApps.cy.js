@@ -85,7 +85,7 @@ describe("Private and Public apps", {
     });
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
     cy.wait(2000);
-    cy.loginWithCredentials("dev@tooljet.io", "password");
+    cy.appUILogin();
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
 
 
@@ -123,7 +123,7 @@ describe("Private and Public apps", {
     });
 
     cy.wait(2000);
-    cy.loginWithCredentials(data.email, "password");
+    cy.appUILogin(data.email, "password");
 
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
 
