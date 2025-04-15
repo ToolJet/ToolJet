@@ -162,7 +162,6 @@ export const MultiselectV2 = ({
 
     fireEvent('onSelect');
     setUserInteracted(true);
-    setSearchInputValue('');
   };
 
   useEffect(() => {
@@ -311,6 +310,7 @@ export const MultiselectV2 = ({
     ) {
       setIsMultiselectOpen(false);
       fireEvent('onBlur');
+      setSearchInputValue('');
     }
   };
 
