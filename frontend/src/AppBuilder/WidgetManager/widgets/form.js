@@ -410,6 +410,8 @@ export const formConfig = {
     },
     events: [],
     styles: {
+      headerBackgroundColor: { value: '#ffffffff' },
+      footerBackgroundColor: { value: '#ffffffff' },
       backgroundColor: { value: '#fff' },
       borderRadius: { value: '0' },
       borderColor: { value: '#fff' },
