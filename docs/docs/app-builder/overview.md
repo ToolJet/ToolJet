@@ -49,9 +49,8 @@ The App-Builder interface consists of several key areas:
 - **Canvas**: The central workspace where you build your application
 - **Component Library**: Access all available UI components from the right sidebar
 - **Query Panel**: Create and manage data source connections at the bottom
-- **Inspector Panel**: Configure component properties and styling on the right
+- **Inspector Panel**: Configure component properties, queries and other proeoperties on the right
 - **Pages Panel**: Manage multiple pages and navigation on the left
-- **Toolbar**: Access app-wide settings and actions at the top
 
 Ready to build your first application? Explore our detailed guides on [creating UIs](/docs/app-builder/walkthrough/create-ui), [connecting data sources](/docs/app-builder/walkthrough/create-queries), and [adding custom code](/docs/app-builder/walkthrough/using-code).
 
