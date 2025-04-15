@@ -1,0 +1,133 @@
+.steps-container {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	opacity: 1;
+
+	&.disabled {
+		opacity: 0.5;
+	}
+
+	&.single-step {
+		align-items: center;
+	}
+
+	.progress-line-container {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+
+		&.single-step {
+			width: auto;
+		}
+	}
+
+	.milestone {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		overflow: visible;
+		transition: all 0.3s ease;
+		cursor: pointer;
+
+		&.numbers {
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			font-size: 14px;
+			font-weight: 500;
+			box-sizing: content-box;
+
+			&.completed {
+				background-color: var(--completedAccent);
+				color: #fff;
+				border: 2px solid var(--completedAccent);
+			}
+
+			&.active {
+				background-color: white;
+				color: var(--completedAccent);
+				border: 2px solid var(--completedAccent);
+			}
+
+			&.incomplete {
+				background-color: var(--incompletedAccent);
+				color: #fff;
+				border: 2px solid var(--incompletedAccent);
+			}
+		}
+
+		&.disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+
+	.dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		transition: all 0.3s ease;
+		box-sizing: content-box;
+
+		&.completed {
+			background-color: var(--completedAccent);
+			border: 2px solid var(--completedAccent);
+		}
+
+		&.active {
+			background-color: white;
+			border: 2px solid var(--primary-brand);
+		}
+
+		&.incomplete {
+			background-color: var(--incompletedAccent);
+			border: 2px solid var(--incompletedAccent);
+		}
+	}
+
+	.label {
+		font-size: 12px;
+		font-style: normal;
+		font-weight: 500;
+		line-height: 18px;
+		text-align: center;
+		margin-top: 2px;
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		width: max-content;
+
+		&.completed {
+			color: var(--completedLabel);
+		}
+
+		&.active {
+			color: var(--currentStepLabel);
+		}
+
+		&.incomplete {
+			color: var(--incompletedLabel);
+		}
+	}
+
+	.step-connector {
+		flex-grow: 1;
+		height: 2px;
+		align-self: center;
+		transition: all 0.3s ease;
+
+		&.completed {
+			background-color: var(--completedAccent);
+		}
+
+		&.incomplete {
+			background-color: var(--incompletedAccent);
+		}
+	}
+}
