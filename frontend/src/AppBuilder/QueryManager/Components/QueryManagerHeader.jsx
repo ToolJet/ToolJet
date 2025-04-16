@@ -242,11 +242,8 @@ const RunButton = ({ buttonLoadingState }) => {
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
-  const [isMac, setIsMac] = useState(false);
-  useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    setIsMac(userAgent.indexOf('mac') !== -1);
-  }, []);
+  const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
+
   const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+↩';
   return (
     <span>
@@ -280,11 +277,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();
-  const [isMac, setIsMac] = useState(false);
-  useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    setIsMac(userAgent.indexOf('mac') !== -1);
-  }, []);
+  const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
+
   const shortcutDisplay = `Preview query ${isMac ? '⌘↩' : 'Ctrl+⇧+↩'}`;
   return (
     <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
