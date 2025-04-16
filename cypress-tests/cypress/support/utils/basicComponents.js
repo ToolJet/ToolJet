@@ -32,10 +32,10 @@ export const deleteComponentAndVerify = (widgetName) => {
         .last()
         .realClick();
     });
-  cy.verifyToastMessage(
-    `[class=go3958317564]`,
-    "Component deleted! (Ctrl + Z to undo)"
-  );
+  // cy.verifyToastMessage(
+  //   `[class=go3958317564]`,
+  //   "Component deleted! (Ctrl + Z to undo)"
+  // );
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
 

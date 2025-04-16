@@ -124,7 +124,8 @@ describe("Workspace constants", () => {
 
     //verify global constant is resolved in static query url
     cy.get('[data-cy="list-query-restapistaticg"]').click();
-    cy.get('.rest-api-methods-select-element-container .codehinter-container').click();
+    cy.get('.rest-api-methods-select-element-container .codehinter-container').eq(0).click();
+    cy.wait(500)
     cy.get('.text-secondary').should('have.text', Cypress.env("constants_host"));
 
     //Verify global constant is resolved in static query preview

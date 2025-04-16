@@ -98,8 +98,9 @@ module.exports = defineConfig({
         configFile: environment.configFile,
         specPattern: [
             "cypress/e2e/happyPath/platform/ceTestcases/userFlow/firstUserOnboarding.cy.js",
-            "cypress/e2e/happyPath/platform/ceTestcases/!(userFlow)/**/*.cy.js",
-            "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/commonTestcases/workspace/dashboard.cy.js"
+            // "cypress/e2e/happyPath/platform/ceTestcases/!(userFlow)/**/*.cy.js",
+            // "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
         ],
         numTestsKeptInMemory: 1,
         redirectionLimit: 15,

@@ -646,7 +646,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
     cy.request({
       method: "POST",
-      url: `${Cypress.env("server_host")}/api/v2/group_permissions`,
+      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
       headers: headers,
       body: {
         name: groupName,
@@ -658,14 +658,14 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/v2/group_permissions/granular-permissions`,
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
         headers: headers,
         body: {
           name: "Apps",
           type: "app",
           groupId: groupId,
           isAll: false,
-          createAppsPermissionsObject: {
+          createResourcePermissionObject: {
             canEdit: true,
             canView: false,
             hideFromDashboard: false,
@@ -676,19 +676,22 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
             ],
           },
         },
+
       }).then((response) => {
         expect(response.status).to.equal(201);
       });
 
+      cy.wait(2000);
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {
         const userId = resp.rows[0].id;
+        cy.log(userId);
 
         cy.request({
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/v2/group_permissions/group-user`,
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
           headers: headers,
           body: {
             userIds: [userId],
@@ -720,7 +723,7 @@ export const OpenGroupCardOption = (groupName) => {
 export const duplicateMultipleGroups = (groupNames) => {
   groupNames.forEach((groupName) => {
     OpenGroupCardOption(groupName);
-    cy.wait(3000);
+    cy.wait(2000);
     cy.get(commonSelectors.duplicateOption).click(); // Click on the duplicate option
     cy.get(commonSelectors.confirmDuplicateButton).click(); // Confirm duplication if needed
   });
