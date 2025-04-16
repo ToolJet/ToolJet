@@ -31,7 +31,7 @@
       "description": "Supabase project url"
     },
     "service_role_secret": {
-      "label": "Service Role Secret",
+      "label": "Service role secret",
       "key": "service_role_secret",
       "type": "textarea",
       "encrypted": true,

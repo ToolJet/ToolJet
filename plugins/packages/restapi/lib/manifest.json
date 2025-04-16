@@ -221,7 +221,7 @@
         "title": "SECURE SOCKETS LAYER",
         "inputs": {
           "ssl_certificate": {
-            "label": "SSL Certificate",
+            "label": "SSL certificate",
             "key": "ssl_certificate",
             "type": "dropdown-component-flip",
             "description": "Single select dropdown for choosing certificates",

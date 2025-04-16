@@ -52,7 +52,7 @@
       "description": "8123"
     },
     "database": {
-      "label": "Database Name",
+      "label": "Database name",
       "key": "database",
       "type": "text",
       "description": "database name"  
@@ -74,19 +74,19 @@
       "description": "Enter protocol"
     },
     "usePost": {
-      "label": "Use Post",
+      "label": "Use post",
       "key": "usePost",
       "type": "text",
       "description": "Enter true/false"
     },
     "trimQuery": {
-      "label": "Trim Query",
+      "label": "Trim query",
       "key": "trimQuery",
       "type": "text",
       "description": "Enter true/false"
     },
     "isUseGzip": {
-      "label": "Use Gzip",
+      "label": "Use gzip",
       "key": "isUseGzip",
       "type": "text",
       "description": "Enter true/false"
