@@ -5,8 +5,10 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import './workflows-query.scss';
 import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
+import { useTranslation } from 'react-i18next';
 
 export function Workflows({ options, optionsChanged, currentState }) {
+  const { t } = useTranslation();
   const [workflowOptions, setWorkflowOptions] = useState([]);
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
@@ -35,6 +37,18 @@ export function Workflows({ options, optionsChanged, currentState }) {
 
   return (
     <>
+      <div>
+        {`To know more about querying workflows data,`}
+        &nbsp;
+        <a
+          href={'https://docs.tooljet.ai/docs/workflows/how-to/trigger-workflow-from-app'}
+          target="_blank"
+          style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+          rel="noreferrer"
+        >
+          {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+        </a>
+      </div>
       <label className="mb-1">Workflow</label>
       <Select
         options={workflowOptions}

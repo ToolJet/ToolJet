@@ -162,6 +162,22 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     updateDataQuery(options);
   };
 
+  let docLinkStatic = '';
+  switch (selectedDataSource?.kind) {
+      case 'restapi':
+        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api`;
+        break;
+      case 'tooljetdb':
+        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/tooljet-db/querying-tooljet-db`;
+        break;
+      case 'runjs':
+        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-js`;
+        break;
+      case 'runpy':
+        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-py`;
+        break;
+    }
+
   const renderQueryElement = () => {
     return (
       <div
@@ -175,14 +191,28 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
               selectedDataSource?.kind === 'runpy' ||
               selectedDataSource?.kind === 'tooljetdb' ||
               (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
-              <ParameterList
-                parameters={options.parameters}
-                handleAddParameter={handleAddParameter}
-                handleParameterChange={handleParameterChange}
-                handleParameterRemove={handleParameterRemove}
-                darkMode={darkMode}
-                containerRef={paramListContainerRef}
-              />
+              <>
+                <div>
+                  {`To know more about querying ${selectedDataSource?.kind} data,`}
+                  &nbsp;
+                  <a
+                    href={docLinkStatic}
+                    target="_blank"
+                    style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+                    rel="noreferrer"
+                  >
+                    {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+                  </a>
+                </div>
+                <ParameterList
+                  parameters={options.parameters}
+                  handleAddParameter={handleAddParameter}
+                  handleParameterChange={handleParameterChange}
+                  handleParameterRemove={handleParameterRemove}
+                  darkMode={darkMode}
+                  containerRef={paramListContainerRef}
+                />
+              </>
             )}
         </div>
         <ElementToRender
@@ -284,6 +314,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
       ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
       : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+
     return (
       <>
         <div className="" ref={paramListContainerRef}>
