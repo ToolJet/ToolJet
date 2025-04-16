@@ -24,4 +24,14 @@ export class AppPermissionsController implements IAppPermissionsController {
   ): Promise<any> {
     throw new NotFoundException();
   }
+
+  @InitFeature(FEATURE_KEY.FETCH_USER_GROUPS)
+  @Get(':appId/pages/user-groups')
+  async fetchUserGroups(
+    @User() user,
+    @Param('appId') appId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
 }

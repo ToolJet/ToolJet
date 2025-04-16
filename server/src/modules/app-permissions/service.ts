@@ -8,4 +8,8 @@ export class AppPermissionsService implements IAppPermissionsService {
   async fetchUsers(appId, user) {
     throw new Error('Method not implemented.');
   }
+
+  async fetchUserGroups(appId, user) {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -2,6 +2,7 @@ import { getImportPath } from '@modules/app/constants';
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { GroupPermissions } from '@entities/group_permissions.entity';
 import { User } from '@entities/user.entity';
 import { RolesRepository } from '@modules/roles/repository';
 
@@ -14,7 +15,7 @@ export class AppPermissionsModule {
 
     return {
       module: AppPermissionsModule,
-      imports: [TypeOrmModule.forFeature([User])],
+      imports: [TypeOrmModule.forFeature([GroupPermissions, User])],
       controllers: [AppPermissionsController],
       providers: [AppPermissionsService, AppPermissionsUtilService, RolesRepository, FeatureAbilityFactory],
       exports: [AppPermissionsUtilService],

@@ -4,6 +4,7 @@ import { MODULES } from '@modules/app/constants/modules';
 
 interface Features {
   [FEATURE_KEY.FETCH_USERS]: FeatureConfig;
+  [FEATURE_KEY.FETCH_USER_GROUPS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

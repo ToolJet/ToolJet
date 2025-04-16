@@ -30,6 +30,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (isAdmin || superAdmin) {
       // Admin or super admin and do all operations
       can([FEATURE_KEY.FETCH_USERS], App);
+      can([FEATURE_KEY.FETCH_USER_GROUPS], App);
       return;
     }
 
@@ -38,6 +39,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId))
     ) {
       can([FEATURE_KEY.FETCH_USERS], App);
+      can([FEATURE_KEY.FETCH_USER_GROUPS], App);
     }
   }
 }
