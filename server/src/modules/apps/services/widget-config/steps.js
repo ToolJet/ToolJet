@@ -36,6 +36,15 @@ export const stepsConfig = {
         defaultValue: `[{ name: 'step 1'}, {name: 'step 2'}]`,
       },
     },
+    stepsSelectable: {
+      type: 'toggle',
+      displayName: 'Steps selectable',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -64,15 +73,6 @@ export const stepsConfig = {
         schema: { type: 'number' },
         defaultValue: 1,
       },
-    },
-    stepsSelectable: {
-      type: 'toggle',
-      displayName: 'Steps selectable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-      section: 'additionalActions',
     },
   },
   defaultSize: {
@@ -216,15 +216,15 @@ export const stepsConfig = {
     properties: {
       steps: {
         value: [
-          { name: 'step 1', tooltip: 'some tooltip', id: 1, visible: { value: true }, disabled: { value: false } },
-          { name: 'step 2', tooltip: 'some tooltip', id: 2, visible: { value: true }, disabled: { value: false } },
-          { name: 'step 3', tooltip: 'some tooltip', id: 3, visible: { value: true }, disabled: { value: false } },
-          { name: 'step 4', tooltip: 'some tooltip', id: 4, visible: { value: true }, disabled: { value: false } },
-          { name: 'step 5', tooltip: 'some tooltip', id: 5, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 1', tooltip: '', id: 1, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 2', tooltip: '', id: 2, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 3', tooltip: '', id: 3, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 4', tooltip: '', id: 4, visible: { value: true }, disabled: { value: false } },
+          { name: 'step 5', tooltip: '', id: 5, visible: { value: true }, disabled: { value: false } },
         ],
       },
       schema: {
-        value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1,visible: true, disabled: false},{ name: 'step 2', tooltip: 'some tooltip', id: 2,visible: true, disabled: false},{ name: 'step 3', tooltip: 'some tooltip', id: 3,visible: true, disabled: false},{ name: 'step 4', tooltip: 'some tooltip', id: 4,visible: true, disabled: false},{ name: 'step 5', tooltip: 'some tooltip', id: 5,visible: true, disabled: false}]}}`,
+        value: `{{ [{ name: 'step 1', tooltip: '', id: 1,visible: true, disabled: false},{ name: 'step 2', tooltip: '', id: 2,visible: true, disabled: false},{ name: 'step 3', tooltip: '', id: 3,visible: true, disabled: false},{ name: 'step 4', tooltip: '', id: 4,visible: true, disabled: false},{ name: 'step 5', tooltip: '', id: 5,visible: true, disabled: false}]}}`,
       },
       disabledState: { value: '{{false}}' },
       variant: { value: 'titles' },

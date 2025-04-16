@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
+import './Steps.scss';
 
-export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
+export const Steps = function Steps({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
   const { stepsSelectable, disabledState } = properties;
   const visibility = isExpectedDataType(properties.visibility, 'boolean');
   const currentStepId = isExpectedDataType(properties.currentStep, 'number');
@@ -15,19 +16,80 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   const [isVisible, setIsVisible] = useState(visibility);
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const [activeStepId, setActiveStepId] = useState(currentStepId);
-  const filteredSteps = (stepsArr || []).filter((step) => step.visible);
+  const theme = properties.variant;
+  const [progressBarWidth, setProgressBarWidth] = useState(0);
+  const [containerPadding, setContainerPadding] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [filteredSteps, setFilteredSteps] = useState([]);
+  const firstLabelRef = useRef(null);
+  const lastLabelRef = useRef(null);
+  const containerRef = useRef(null);
+
   const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
 
   useEffect(() => {
-    // this is required for legacy support where visible  and disabled properties are not present
-    const sanitizedSteps = JSON.parse(JSON.stringify(steps || [])).map((step) => {
-      if (!('visible' in step)) step.visible = true;
-      if (!('disabled' in step)) step.disabled = false;
-      return step;
-    });
+    const sanitizedSteps = JSON.parse(JSON.stringify(steps || [])).map((step) => ({
+      ...step,
+      visible: 'visible' in step ? step.visible : true,
+      disabled: 'disabled' in step ? step.disabled : false,
+    }));
+    const newFilteredSteps = (sanitizedSteps || []).filter((step) => step.visible);
+    setFilteredSteps(newFilteredSteps);
     setStepsArr(sanitizedSteps);
   }, [JSON.stringify(steps)]);
 
+  // Common function to calculate progress bar width and label padding
+  const calculateProgressBarWidth = () => {
+    if (!containerRef.current || theme !== 'titles') return;
+
+    const containerWidth = containerRef.current.offsetWidth;
+    setContainerWidth(containerWidth);
+
+    const stepWidth = 20; // width of dot + padding
+    const totalStepsWidth = filteredSteps.length * stepWidth;
+    const totalProgressBars = filteredSteps.length - 1;
+
+    if (filteredSteps.length === 1) {
+      setProgressBarWidth(containerWidth);
+      setContainerPadding(0); // No padding needed for single step
+      return;
+    }
+
+    // Calculate progress bar width
+    const progressBarWidth = (containerWidth - totalStepsWidth) / totalProgressBars;
+    setProgressBarWidth(Math.min(progressBarWidth, (containerWidth - totalStepsWidth) / filteredSteps.length));
+
+    // Calculate container padding
+    if (firstLabelRef.current && lastLabelRef.current) {
+      const labelWidth = (containerWidth - (filteredSteps.length - 1) - 4) / filteredSteps.length;
+
+      const firstLabelWidth = firstLabelRef.current.offsetWidth;
+      const lastLabelWidth = lastLabelRef.current.offsetWidth;
+      const maxLabelWidth = Math.max(firstLabelWidth, lastLabelWidth);
+
+      const calculatedPadding = (maxLabelWidth / 2) - 1;
+      setContainerPadding(Math.max(2, calculatedPadding)); // Ensure minimum padding of 2px
+    }
+  };
+
+  // Add resize observer to track container width and calculate progress bar width
+  useEffect(() => {
+    calculateProgressBarWidth();
+    if (theme !== 'titles') return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        calculateProgressBarWidth();
+      }
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [theme, JSON.stringify(steps), filteredSteps]);
+  // Dynamic styles for theming
   const dynamicStyle = {
     '--bgColor': styles.color,
     '--textColor': textColor,
@@ -37,151 +99,128 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
     '--completedLabel': completedLabel === '#1B1F24' ? 'var(--text-primary)' : completedLabel,
     '--currentStepLabel': currentStepLabel === '#1B1F24' ? 'var(--text-primary)' : currentStepLabel,
   };
-  const theme = properties.variant;
-  console.log(theme);
-  console.log(properties);
-  console.log(styles);
-  console.log(completedLabel, 'completed');
 
-  const activeStepHandler = (id) => {
+  // Step click handler
+  const handleStepClick = (id) => {
     const step = filteredSteps.find((item) => item.id == id);
-    if (step) {
+    if (step && !step.disabled && !isDisabled) {
       setActiveStepId(step.id);
       fireEvent('onSelect');
     }
   };
 
+  // Expose variables and methods
   useEffect(() => {
     setExposedVariable('isVisible', isVisible);
-  }, [isVisible]);
-
-  useEffect(() => {
-    setIsVisible(visibility);
-  }, [visibility]);
-
-  useEffect(() => {
     setExposedVariable('isDisabled', isDisabled);
-  }, [isDisabled]);
-
-  useEffect(() => {
     setExposedVariable('currentStepId', activeStepId);
-  }, [activeStepId]);
+    setExposedVariable('steps', stepsArr);
 
-  useEffect(() => {
-    setIsDisabled(disabledState);
-  }, [disabledState]);
-
-  useEffect(() => {
-    setActiveStepId(currentStepId);
-  }, [currentStepId]);
-
-  useEffect(() => {
-    setExposedVariable('steps', steps);
     setExposedVariable('setStepVisible', (stepId, visibility) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) => {
-          if (item.id == stepId) {
-            return { ...item, visible: visibility };
-          }
-          return item;
-        });
+        const updatedSteps = prev.map((item) =>
+          item.id == stepId ? { ...item, visible: visibility } : item
+        );
         setExposedVariable('steps', updatedSteps);
         return updatedSteps;
       });
     });
+
     setExposedVariable('setStepDisable', (stepId, disabled) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) => {
-          if (item.id == stepId) {
-            return { ...item, disabled: disabled };
-          }
-          return item;
-        });
+        const updatedSteps = prev.map((item) =>
+          item.id == stepId ? { ...item, disabled: disabled } : item
+        );
         setExposedVariable('steps', updatedSteps);
         return updatedSteps;
       });
     });
+
     setExposedVariable('resetSteps', () => {
       setActiveStepId(stepsArr.filter((step) => step.visible)?.[0]?.id);
     });
-  }, [JSON.stringify(steps), JSON.stringify(stepsArr)]);
 
-  useEffect(() => {
     setExposedVariable('setStep', (stepId) => {
-      if (disabledState) return;
-      setActiveStepId(stepId);
+      if (!disabledState) setActiveStepId(stepId);
     });
     setExposedVariable('setVisibility', (visibility) => setIsVisible(visibility));
     setExposedVariable('setDisable', (disabled) => setIsDisabled(disabled));
-  }, []);
+  }, [isVisible, isDisabled, activeStepId, stepsArr, disabledState]);
+
+  // Update state from props
+  useEffect(() => setIsVisible(visibility), [visibility]);
+  useEffect(() => setIsDisabled(disabledState), [disabledState]);
+  useEffect(() => setActiveStepId(currentStepId), [currentStepId]);
+
+  if (!isVisible) return null;
 
   return (
-    isVisible && (
-      <div
-        className={`steps ${theme == 'numbers' && 'steps-counter '}`}
-        style={{
-          color: textColor,
-          height,
-          boxShadow,
-          opacity: isDisabled ? 0.5 : 1,
-          ...(theme === 'numbers'
-            ? {
-                paddingTop: 4,
-              }
-            : theme === 'plain'
-            ? {
-                paddingTop: 10,
-              }
-            : {}),
-        }}
-        data-cy={dataCy}
-      >
-        {filteredSteps?.map((item, index) => {
-          const isStepDisabled = item.disabled;
+    <div
+      ref={containerRef}
+      className={`steps-container ${isDisabled ? 'disabled' : ''} ${filteredSteps.length === 1 ? 'single-step' : ''}`}
+      style={{
+        height,
+        boxShadow,
+        padding: theme === 'titles' ? `0 ${containerPadding}px` : 2,
+        paddingTop: theme === 'plain' ? `3px` : theme === 'numbers' ? `2px` : 0,
+        ...dynamicStyle
+      }}
+      data-cy={dataCy}
+    >
+      <div className={`progress-line-container ${filteredSteps.length === 1 ? 'single-step' : ''}`}>
+        {filteredSteps.map((step, index) => {
+          const isStepDisabled = step.disabled;
+          const isCompleted = index < currentStepIndex;
+          const isActive = index === currentStepIndex;
+          const isUpcoming = index > currentStepIndex;
+          const isFirstStep = index === 0;
+          const isLastStep = index === filteredSteps.length - 1;
+
           return (
-            <ToolTip
-              key={item.id + index + item.name}
-              show={!item.disabled && !isDisabled}
-              message={item.tooltip || ''}
-            >
-              <a
-                className={`step-item ${item.id == activeStepId && 'active'} ${
-                  !(!isDisabled && !isStepDisabled) && 'step-item-disabled'
-                }  ${color && `step-${color}`} 
-                ${
-                  index < currentStepIndex
-                    ? 'completed-label'
-                    : index == currentStepIndex
-                    ? 'active-label'
-                    : 'incompleted-label'
-                }`}
-                data-bs-toggle="tooltip"
-                title={item?.tooltip}
-                onClick={() => stepsSelectable && !isDisabled && !isStepDisabled && activeStepHandler(item.id)}
-                style={{
-                  ...dynamicStyle,
-                  overflow: 'visible',
-                  minWidth: 0,
-                  flex: 1,
-                }}
+            <React.Fragment key={index}> {/* using index as key to avoid issues due to duplicate step ids */}
+              <ToolTip
+                show={!step.disabled && !isDisabled && step.tooltip}
+                message={step.tooltip || ''}
               >
                 <div
-                  style={{
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '100%',
-                    paddingLeft: index >= 0 ? 5 : 0,
-                    paddingRight: index < filteredSteps.length - 1 ? 5 : 0,
-                  }}
+                  onClick={() => stepsSelectable && handleStepClick(step.id)}
+                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${isDisabled || isStepDisabled ? 'disabled' : ''
+                    } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                 >
-                  {theme == 'titles' && item.name}
+                  {theme === 'numbers' ? (
+                    index + 1
+                  ) : (
+                    <>
+                      <div
+                        className={`dot ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
+                        style={{
+                          border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent}`,
+                          backgroundColor: isActive ? 'transparent' : (isCompleted ? completedAccent : incompletedAccent)
+                        }}
+                      />
+                      {theme === 'titles' && (
+                        <div
+                          ref={isFirstStep ? firstLabelRef : isLastStep ? lastLabelRef : null}
+                          className={`label ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
+                          style={{ maxWidth: `${progressBarWidth}px` }}
+                        >
+                          {step.name}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-              </a>
-            </ToolTip>
+              </ToolTip>
+
+              {index < filteredSteps.length - 1 && (
+                <div
+                  className={`step-connector ${isCompleted ? 'completed' : 'incomplete'}`}
+                />
+              )}
+            </React.Fragment>
           );
         })}
       </div>
-    )
+    </div>
   );
 };
