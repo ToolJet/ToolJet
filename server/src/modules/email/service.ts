@@ -181,7 +181,7 @@ export class EmailService implements IEmailService {
   }
 
   async init(organizationId?: string | null) {
-    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(organizationId);
+    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(null);
     this.SMTP = await this.emailUtilService.retrieveSmtpSettings();
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;

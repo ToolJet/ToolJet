@@ -193,10 +193,20 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     let invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const invalidRoles = [];
+    const allowedColumns = ['first name', 'last name', 'email', 'user role', 'group'];
     const groupPermissions = (
       await this.groupPermissionsUtilService.getAllGroupByOrganization(currentUser.organizationId)
     ).groupPermissions?.filter((gp) => !gp.disabled);
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.name);
+
+    const csvData = fileStream.toString();
+    const firstLine = csvData.split('\n')[0];
+    const actualColumns = firstLine.split(',').map(col => col.trim().toLowerCase());
+    const extraColumns = actualColumns.filter(col => !allowedColumns.includes(col));
+    
+    if (extraColumns.length > 0) {
+      throw new BadRequestException(`${extraColumns.join(', ')} ${extraColumns.length > 1 ? 'are' : 'is'} not allowed`);
+    }
     csv
       .parseString(fileStream.toString(), {
         headers: ['first_name', 'last_name', 'email', 'user_role', 'groups'],
