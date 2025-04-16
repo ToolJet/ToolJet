@@ -238,7 +238,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           // if page is disabled, and not editing redirect to home page
           if (mode !== 'edit' && page?.disabled) {
             const currentUrl = window.location.href;
-            const replacedUrl = currentUrl.replace(initialLoadPath, startingPage.handle);
+            const replacedUrl = currentUrl.replace(initialLoadPath, startingPage?.handle);
             window.history.replaceState(null, null, replacedUrl);
           } else {
             startingPage = page;
@@ -247,9 +247,9 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
 
         // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
       }
-      setCurrentPageHandle(startingPage.handle);
+      setCurrentPageHandle(startingPage?.handle);
       // updateFeatureAccess();
-      setCurrentPageId(startingPage.id, moduleId);
+      setCurrentPageId(startingPage?.id, moduleId);
       setResolvedPageConstants({
         id: startingPage?.id,
         handle: startingPage?.handle,
@@ -331,7 +331,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       runOnLoadQueries().then(() => {
         let startingPage = pages.find((page) => page.id === currentPageId);
         const currentPageEvents = events.filter(
-          (event) => event.target === 'page' && event.sourceId === startingPage.id
+          (event) => event.target === 'page' && event.sourceId === startingPage?.id
         );
         handleEvent('onPageLoad', currentPageEvents, {});
       });
@@ -389,7 +389,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
-        setCurrentPageId(startingPage.id, moduleId);
+        setCurrentPageId(startingPage?.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events);
         // const queryData = await dataqueryService.getAll(currentVersionId);
