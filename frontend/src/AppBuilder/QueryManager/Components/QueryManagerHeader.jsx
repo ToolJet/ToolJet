@@ -25,6 +25,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+
   useEffect(() => {
     if (selectedQuery?.name) {
       setShowCreateQuery(false);
@@ -241,10 +242,15 @@ const RunButton = ({ buttonLoadingState }) => {
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
-
+  const [isMac, setIsMac] = useState(false);
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    setIsMac(userAgent.indexOf('mac') !== -1);
+  }, []);
+  const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+↩';
   return (
     <span>
-      <ToolTip message="Run query ⌘↩" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+      <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
         <ButtonComponent
           size="medium"
           variant="secondary"
@@ -252,10 +258,11 @@ const RunButton = ({ buttonLoadingState }) => {
           leadingIcon="play01"
           disabled={isInDraft}
           isLoading={isLoading}
-          className="!tw-w-[88px]"
+          className={`${isMac ? '!tw-w-[88px]' : '!tw-w-[100px]'}`}
           data-cy="query-run-button"
         >
-          Run <span className="query-manager-btn-shortcut">⌘↩</span>
+          Run
+          <span className="query-manager-btn-shortcut">{isMac ? '⌘↩' : 'Ctrl+↩'}</span>
         </ButtonComponent>
       </ToolTip>
     </span>
@@ -273,9 +280,14 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();
-
+  const [isMac, setIsMac] = useState(false);
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    setIsMac(userAgent.indexOf('mac') !== -1);
+  }, []);
+  const shortcutDisplay = `Preview query ${isMac ? '⌘↩' : 'Ctrl+⇧+↩'}`;
   return (
-    <ToolTip message="Preview query ⌘↑↩" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+    <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
       <ButtonComponent
         size="medium"
         variant="outline"
