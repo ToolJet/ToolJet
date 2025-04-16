@@ -297,6 +297,8 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
 
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(commonSelectors.dashboardIcon).click();
     cy.wait(3000);
     cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
