@@ -138,6 +138,7 @@ describe("Private and Public apps", {
 
     // Test public access
     cy.defaultWorkspaceLogin();
+    cy.wait(1000);
     cy.apiMakeAppPublic();
     logout();
 
