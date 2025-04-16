@@ -7,10 +7,10 @@ import { GroupPermissionsRepository } from '../repository';
 import { GranularPermissionsUtilService } from '../util-services/granular-permissions.util.service';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { USER_ROLE } from '../constants';
 import { GranularPermissionQuerySearchParam } from '../types';
 import { IGranularPermissionsService } from '../interfaces/IService';
 import { GroupPermissionLicenseUtilService } from '../util-services/license.util.service';
+import { USER_ROLE } from '../constants';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
