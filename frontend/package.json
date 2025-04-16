@@ -84,6 +84,7 @@
     "query-string": "^8.1.0",
     "rc-slider": "^10.1.1",
     "react": "^18.2.0",
+    "react-accessible-treeview": "^2.11.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-big-calendar": "^1.6.5",
     "react-bootstrap": "^2.7.2",
