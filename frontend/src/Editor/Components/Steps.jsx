@@ -40,7 +40,6 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
 
   // Common function to calculate progress bar width and label padding
   const calculateProgressBarWidth = () => {
-    debugger;
     if (!containerRef.current || theme !== 'titles') return;
 
     const containerWidth = containerRef.current.offsetWidth;
