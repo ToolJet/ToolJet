@@ -80,7 +80,7 @@
       "helpText": ""
     },
     "database": {
-      "label": "Database Name",
+      "label": "Database name",
       "key": "database",
       "type": "text",
       "description": "database name",

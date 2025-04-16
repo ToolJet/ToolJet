@@ -48,7 +48,7 @@
   },
   "properties": {
     "ssl_certificate": {
-      "label": "SSL Certificate",
+      "label": "SSL certificate",
       "key": "ssl_certificate",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for choosing certificates",
@@ -86,7 +86,7 @@
           "description": "Enter password"
         },
         "connectionLimit": {
-          "label": "Connection Limit",
+          "label": "Connection limit",
           "key": "connectionLimit",
           "type": "text",
           "description": "Enter connection limit"

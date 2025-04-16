@@ -46,7 +46,7 @@
         "placeholder": "https://your-weaviate-instance.com"
       },
       "apiKey": {
-        "label": "API Key",
+        "label": "API key",
         "key": "apiKey",
         "type": "password",
         "description": "Enter your Weaviate API Key",
