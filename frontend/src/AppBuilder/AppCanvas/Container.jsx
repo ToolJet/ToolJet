@@ -107,7 +107,7 @@ export const Container = React.memo(
         currentLayout !== 'mobile' &&
         currentMode !== 'edit'
       ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
+        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '200px'})`;
       }
       return '100%';
     }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);

@@ -83,7 +83,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
             isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && currentMode !== 'edit'
               ? pageSidebarStyle === 'icon'
                 ? '65px'
-                : '210px'
+                : '200px'
               : 'auto',
         }}
       >
