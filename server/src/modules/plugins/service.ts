@@ -1,4 +1,4 @@
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreatePluginDto, UpdatePluginDto } from './dto';
 import { PluginsUtilService } from './util.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -21,6 +21,12 @@ export class PluginsService implements IPluginsService {
 
   async install(body: CreatePluginDto) {
     const { id, repo } = body;
+    
+    const existingPlugin = await dbTransactionWrap((manager: EntityManager) => {
+      return manager.findOne(Plugin, { where: { pluginId: id } });
+    });
+    if (existingPlugin) throw new BadRequestException(`Plugin '${id}' is already installed.`);
+
     const [index, operations, icon, manifest, version] = await this.pluginsUtilService.fetchPluginFiles(id, repo);
     let shouldCreate = false;
 
