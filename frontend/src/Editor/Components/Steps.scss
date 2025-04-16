@@ -41,19 +41,19 @@
 
 			&.completed {
 				background-color: var(--completedAccent);
-				color: #fff;
+				color: var(--completedLabel);
 				border: 2px solid var(--completedAccent);
 			}
 
 			&.active {
-				background-color: white;
-				color: var(--completedAccent);
+				background-color: var(--surfaces-surface-01);
+				color: var(--currentStepLabel);
 				border: 2px solid var(--completedAccent);
 			}
 
 			&.incomplete {
 				background-color: var(--incompletedAccent);
-				color: #fff;
+				color: var(--incompletedLabel);
 				border: 2px solid var(--incompletedAccent);
 			}
 		}
@@ -108,7 +108,7 @@
 		}
 
 		&.active {
-			color: var(--currentStepLabel);
+			color: var(--completedLabel);
 		}
 
 		&.incomplete {

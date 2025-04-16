@@ -162,6 +162,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
         height,
         boxShadow,
         padding: theme === 'titles' ? `0 ${containerPadding}px` : 2,
+        paddingTop: theme === 'plain' ? `3px` : theme === 'numbers' ? `2px` : 0,
         ...dynamicStyle
       }}
       data-cy={dataCy}
@@ -178,7 +179,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
           return (
             <React.Fragment key={index}> {/* using index as key to avoid issues due to duplicate step ids */}
               <ToolTip
-                show={!step.disabled && !isDisabled}
+                show={!step.disabled && !isDisabled && step.tooltip}
                 message={step.tooltip || ''}
               >
                 <div
@@ -194,7 +195,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                         className={`dot ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                         style={{
                           border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent}`,
-                          backgroundColor: isActive ? 'white' : (isCompleted ? completedAccent : incompletedAccent)
+                          backgroundColor: isActive ? 'transparent' : (isCompleted ? completedAccent : incompletedAccent)
                         }}
                       />
                       {theme === 'titles' && (
