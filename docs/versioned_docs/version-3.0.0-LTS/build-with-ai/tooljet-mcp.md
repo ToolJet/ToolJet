@@ -45,9 +45,7 @@ Get an access token from your ToolJet instance. You'll need this token to authen
 
 Follow the instructions below to configure your preferred AI tool to connect with ToolJet MCP.
 
-## AI Tool Configuration
-
-### Cursor
+#### Cursor
 
 1. Open [Cursor](https://www.cursor.com/) and create a `.cursor` directory in your project root if it doesn't exist.
 2. Create a `.cursor/mcp.json` file if it doesn't exist and open it.
@@ -76,7 +74,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
 4. Save the configuration file.
 5. Open Cursor and navigate to **Settings/MCP**. You should see a green active status after the server is successfully connected.
 
-### Windsurf
+#### Windsurf
 
 1. Open [Windsurf](https://docs.codeium.com/windsurf) and navigate to the Cascade assistant.
 2. Tap on the hammer (MCP) icon, then **Configure** to open the configuration file.
@@ -105,7 +103,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
 4. Save the configuration file and reload by tapping **Refresh** in the Cascade assistant.
 5. You should see a green active status after the server is successfully connected.
 
-### Visual Studio Code (Copilot)
+#### Visual Studio Code (Copilot)
 
 1. Open [VS Code](https://code.visualstudio.com/) and create a `.vscode` directory in your project root if it doesn't exist.
 2. Create a `.vscode/mcp.json` file if it doesn't exist and open it.
@@ -145,7 +143,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
 
 For more info on using MCP in VS Code, see the [Copilot documentation](https://code.visualstudio.com/docs/copilot/chat/mcp-servers).
 
-### Cline
+#### Cline
 
 1. Open the [Cline](https://github.com/cline/cline) extension in VS Code and tap the **MCP Servers** icon.
 2. Tap **Configure MCP Servers** to open the configuration file.
@@ -174,7 +172,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
 4. Save the configuration file. Cline should automatically reload the configuration.
 5. You should see a green active status after the server is successfully connected.
 
-### Claude desktop
+#### Claude desktop
 
 1. Open [Claude desktop](https://claude.ai/download) and navigate to **Settings**.
 2. Under the **Developer** tab, tap **Edit Config** to open the configuration file.
@@ -203,7 +201,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
 4. Save the configuration file and restart Claude desktop.
 5. From the new chat screen, you should see a hammer (MCP) icon appear with the new MCP server available.
 
-### Claude code
+#### Claude code
 
 1. Create a `.mcp.json` file in your project root if it doesn't exist.
 2. Add the following configuration:
@@ -292,9 +290,6 @@ Once connected, your AI assistant can perform tasks like:
 - "List all the apps in the Development workspace"
 - "Update the role of user@example.com to Admin in the Sales workspace"
 
-## Conclusion
-
-Your AI tool is now connected to ToolJet using MCP. Try asking your AI assistant to manage users, list workspaces, or fetch application information.
 
 For a full list of tools available, see the [GitHub README](https://github.com/ToolJet/tooljet-mcp). If you experience any issues, [submit a bug report](https://github.com/ToolJet/tooljet-mcp/issues/new).
 
