@@ -151,7 +151,7 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  Cypress-App-builder-Subpath:
+  Cypress-App-builder-Subpath: 
     runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-app-builder-subpath' }}
