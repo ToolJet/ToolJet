@@ -102,6 +102,10 @@ export const navigateToAppEditor = (appName) => {
 export const viewAppCardOptions = (appName) => {
   cy.wait(1000);
   cy.reloadAppForTheElement(appName);
+  cy.get(commonSelectors.globalDataSourceIcon).click();
+  cy.wait(500);
+  cy.get(commonSelectors.dashboardIcon).click();
+  cy.wait(500);
   cy.contains("div", appName)
     .parent()
     .within(() => {

@@ -20,20 +20,20 @@ import {
 describe("Private and Public apps", {
   retries: { runMode: 2 },
 }, () => {
-  const data = {};
+  let data;
 
   beforeEach(() => {
-    data.appName = `${fake.companyName} P P App`;
-    data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
-    data.workspaceName = fake.firstName;
-    data.workspaceSlug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
+    data = {
+      appName: `${fake.companyName} P P App`,
+      slug: `${fake.companyName} P P App`.toLowerCase().replace(/\s+/g, "-"),
+      firstName: fake.firstName,
+      email: fake.email.toLowerCase(),
+      workspaceName: fake.firstName,
+      workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
+    }
 
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
-    cy.log(data.appName, "text1")
-
   });
 
   it("Verify private and public app share functionality", () => {
