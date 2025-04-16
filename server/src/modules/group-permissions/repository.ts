@@ -124,7 +124,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         };
       }
 
-      return await manager.find(GranularPermissions, findOptions);
+      return manager.find(GranularPermissions, findOptions);
     }, manager || this.manager);
   }
 
