@@ -135,6 +135,13 @@ export const NumberInput = function NumberInput({
       setBlur: async function () {
         inputRef.current.blur();
       },
+      setText: async function (text) {
+        if (text) {
+          const newValue = Number(parseFloat(text));
+          setInputValue(newValue);
+          fireEvent('onChange');
+        }
+      },
       clear: async function () {
         setInputValue('');
         fireEvent('onChange');
@@ -167,17 +174,6 @@ export const NumberInput = function NumberInput({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    const setText = async function (text) {
-      const newValue = Number(parseFloat(text).toFixed(properties.decimalPlaces));
-      setInputValue(newValue);
-      fireEvent('onChange');
-    };
-    setExposedVariable('setText', setText);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.decimalPlaces]);
 
   useEffect(() => {
     if (labelRef?.current) {
@@ -376,7 +372,6 @@ export const NumberInput = function NumberInput({
             min={minValue}
             max={maxValue}
             autoComplete="off"
-            onInvalid={(e) => e.preventDefault()}
             onKeyUp={(e) => {
               if (e.key === 'Enter') {
                 setInputValue(e.target.value);
