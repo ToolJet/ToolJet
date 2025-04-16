@@ -279,7 +279,7 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const { t } = useTranslation();
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
-  const shortcutDisplay = `Preview query ${isMac ? '⌘↩' : 'Ctrl+⇧+↩'}`;
+  const shortcutDisplay = `Preview query ${isMac ? '⌘⇧↩' : 'Ctrl+⇧+↩'}`;
   return (
     <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
       <ButtonComponent
