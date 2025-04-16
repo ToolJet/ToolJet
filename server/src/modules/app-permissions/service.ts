@@ -5,7 +5,7 @@ import { IAppPermissionsService } from './interfaces/IService';
 export class AppPermissionsService implements IAppPermissionsService {
   constructor() {}
 
-  async fetchUsers(appId) {
+  async fetchUsers(appId, user) {
     throw new Error('Method not implemented.');
   }
 }
