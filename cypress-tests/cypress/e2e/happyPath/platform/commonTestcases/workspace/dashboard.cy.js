@@ -259,6 +259,7 @@ describe("dashboard", () => {
 
     cancelModal(commonText.cancelButton);
 
+    cy.wait(3000);
     viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.removeFromFolderOption)
@@ -279,6 +280,7 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.allApplicationsLink).click();
 
+    cy.wait(3000);
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.get('[data-cy="clone-app"]').click();
@@ -296,6 +298,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
 
     cy.wait(3000);
+    cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
     cy.get(commonSelectors.exportAllButton).click();
@@ -305,6 +308,7 @@ describe("dashboard", () => {
       expect(downloadedAppExportFileName).to.contain.string("app");
     });
 
+    cy.wait(3000);
     cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
@@ -320,6 +324,7 @@ describe("dashboard", () => {
     ).verifyVisibleElement("have.text", commonText.modalYesButton);
     cancelModal(commonText.cancelButton);
 
+    cy.wait(3000);
     cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
