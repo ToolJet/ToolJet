@@ -65,7 +65,6 @@ export class GranularPermissionsService implements IGranularPermissionsService {
   async getAll(
     groupId: string,
     organizationId: string,
-    filterDataSource?: boolean,
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -84,8 +83,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
           ...searchParam,
         },
         organizationId,
-        manager,
-        filterDataSource ? true : false //Filter out data source granular permissions CE
+        manager
       );
     });
   }

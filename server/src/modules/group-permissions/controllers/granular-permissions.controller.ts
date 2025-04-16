@@ -54,7 +54,7 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     @User() user: UserEntity,
     @Param('id') groupId: string
   ): Promise<GranularPermissions[]> {
-    return await this.granularPermissionsService.getAll(groupId, user.organizationId, true);
+    return await this.granularPermissionsService.getAll(groupId, user.organizationId, { filterDataSource: true });
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_GRANULAR_PERMISSIONS)

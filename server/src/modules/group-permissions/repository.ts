@@ -70,8 +70,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   async getAllGranularPermissions(
     searchParam: GranularPermissionQuerySearchParam,
     organizationId: string,
-    manager: EntityManager,
-    filterDataSource?: boolean
+    manager: EntityManager
   ): Promise<GranularPermissions[]> {
     const { name, type, groupId } = searchParam;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -97,7 +96,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
       };
 
       // Only apply the data source filter if filterDataSource is true
-      if (filterDataSource) {
+      if (searchParam?.filterDataSource) {
         findOptions.where = {
           ...findOptions.where,
           type: Not(Equal(ResourceType.DATA_SOURCE)),
