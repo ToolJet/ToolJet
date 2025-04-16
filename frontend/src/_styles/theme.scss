@@ -12336,6 +12336,17 @@ tbody {
     }
   }
 
+  .design-component-inputs textarea {
+    
+    &.valid-textarea {
+      border: 1.5px solid #519b62 !important;
+    }
+    
+    &.invalid-textarea {
+      border: 1.5px solid #e26367 !important;
+    }
+  }
+
 }
 
 .tj-app-input-wrapper {
@@ -13129,6 +13140,10 @@ tbody {
   }
 
   input:disabled {
+    background-color: var(--slate3) !important;
+  }
+
+  textarea:disabled {
     background-color: var(--slate3) !important;
   }
 
