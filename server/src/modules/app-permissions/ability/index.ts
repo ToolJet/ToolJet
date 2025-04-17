@@ -26,11 +26,21 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const userAppPermissions = userPermission?.[MODULES.APP];
     const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
+    const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
 
     if (isAdmin || superAdmin) {
       // Admin or super admin and do all operations
-      can([FEATURE_KEY.FETCH_USERS], App);
-      can([FEATURE_KEY.FETCH_USER_GROUPS], App);
+      can(
+        [
+          FEATURE_KEY.FETCH_USERS,
+          FEATURE_KEY.FETCH_USER_GROUPS,
+          FEATURE_KEY.FETCH_PAGE_PERMISSIONS,
+          FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
+          FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
+          FEATURE_KEY.DELETE_PAGE_PERMISSIONS,
+        ],
+        App
+      );
       return;
     }
 
@@ -38,8 +48,25 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       isAllAppsEditable ||
       (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId))
     ) {
-      can([FEATURE_KEY.FETCH_USERS], App);
-      can([FEATURE_KEY.FETCH_USER_GROUPS], App);
+      can(
+        [
+          FEATURE_KEY.FETCH_USERS,
+          FEATURE_KEY.FETCH_USER_GROUPS,
+          FEATURE_KEY.FETCH_PAGE_PERMISSIONS,
+          FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
+          FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
+          FEATURE_KEY.DELETE_PAGE_PERMISSIONS,
+        ],
+        App
+      );
+      return;
+    }
+
+    if (
+      isAllAppsViewable ||
+      (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
+    ) {
+      can([FEATURE_KEY.FETCH_USERS, FEATURE_KEY.FETCH_USER_GROUPS, FEATURE_KEY.FETCH_PAGE_PERMISSIONS], App);
     }
   }
 }
