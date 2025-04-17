@@ -2,6 +2,7 @@ import { getImportPath } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { DynamicModule, Module } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
+import { InstanceSettingsService } from '@modules/instance-settings/service';
 
 @Module({})
 export class SMTPModule {
@@ -9,11 +10,12 @@ export class SMTPModule {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { SMTPService } = await import(`${importPath}/smtp/service`);
     const { SmtpController } = await import(`${importPath}/smtp/controller`);
+    const { SMTPUtilService } = await import(`${importPath}/smtp/util.service`)
     return {
       module: SMTPModule,
       imports: [await InstanceSettingsModule.register(configs)],
       controllers: [SmtpController],
-      providers: [SMTPService, FeatureAbilityFactory],
+      providers: [SMTPService, FeatureAbilityFactory, SMTPUtilService, InstanceSettingsService],
     };
   }
 }
