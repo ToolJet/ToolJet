@@ -3,54 +3,51 @@ id: overview
 title: Overview
 ---
 
-# App-Builder: Overview
+ToolJet's app-builder lets you build apps in minutes using few key building blocks – UI Components, Data Sources and Queries, Events, and Custom Code​.
 
-ToolJet's App-Builder is a powerful visual development platform that empowers you to create complex business applications without extensive coding. Build everything from simple forms to complex dashboards in minutes, not months.
+***Screenshot with App-Builder's Overview***
+
+These building blocks work together to let developers, product managers, and enterprise teams build powerful apps with ease. 
+
+## Building the Interface
+
+ToolJet offers a rich library of pre-built components – from basic inputs and buttons to tables, charts, and forms – that you can simply drag and drop onto the canvas. Laying out an interface is intuitive: you place components visually, resize and reposition them, and configure their properties through an easy-to-use Properties Panel, all without writing any code​.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
-    <img className="screenshot-full img-full" src="/img/app-builder/overview/appbuilder-overview-02.png" alt="App Builder Preview" />
+    <img className="screenshot-full img-full" src="/img/app-builder/overview/components.png" alt="Components Preview" />
 </div>
 
-## Key Features
+By default, components come with sensible styling and can be customized (text, colors, visibility, etc.) through the properties panel. Components are highly dynamic and can respond to your app’s data or state. 
 
-### Intuitive Visual Interface
-- **Drag-and-Drop Canvas**: Easily arrange and customize components to build your application's interface
-- **Pre-built Components**: Access 60+ ready-to-use UI components including tables, charts, forms, and more
-- **Responsive Design**: Create applications that work across desktop and mobile devices
+## Connecting Your Data
 
-### Powerful Data Connectivity
-- **Multiple Data Sources**: Connect to databases, APIs, Cloud Storage, and AI tools
-- **Visual Query Builder**: Create and manage database queries with minimal SQL knowledge
-- **Real-time Updates**: Build applications that respond instantly to data changes
+You can interact with your data sources through Queries. A query in ToolJet is a defined action that fetches, filters, or modifies data from a data source (for example, an SQL query, a REST API call, or even a Google Sheets operation). Queries act as the bridge between your UI and your back-end data​. 
 
-### Business Logic & Customization
-- **JavaScript & Python Support**: Extend functionality with custom code when needed
-- **Event-Driven Actions**: Create interactive applications with event handlers and workflows
-- **Transformations**: Process and manipulate data before displaying it to users
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full img-full" src="/img/app-builder/overview/queries.png" alt="Queries Preview" />
+</div>
 
-### Enterprise-Ready Features
-- **Version Control**: Track changes with built-in versioning and Git integration
-- **Collaboration Tools**: Work together with your team on application development
-- **Role-Based Access**: Control who can view, edit, and manage your applications
+They can retrieve data to display in components or send user input back to your database, making the app truly functional and data-driven​. Creating queries is developer-friendly: ToolJet provides a Query Panel where you can construct queries either via a form-based interface or by writing the code/SQL yourself​.
 
-## Getting Started
+## Making Apps Interactive
 
-1. **Design Your Interface**: Drag components onto the canvas and arrange them to create your UI
-2. **Connect Your Data**: Set up queries to interact with your data sources
-3. **Add Business Logic**: Implement workflows and actions to make your application interactive
-4. **Test & Deploy**: Preview your application and deploy it to your users
+Events in ToolJet define the interactive logic of your application – how the app responds when users do something or when certain conditions are met. ToolJet provides a declarative way to handle events through its Event Handlers configuration, so you can create complex behaviors without writing boilerplate code.
 
-As your needs grow, extend your applications with custom code and use GitSync to streamline application management.
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full img-full" src="/img/app-builder/overview/events.png" alt="Events Preview" />
+</div>
 
-## App-Builder Layout
+There are many trigger points for events: a user clicking a button or submitting a form, a page loading, a query finishing its execution, etc. When an event is triggered, ToolJet can carry out actions in response (ToolJet actions include things like running a query, opening a modal, showing a notification, navigating to another page, etc.). You can chain events and actions to orchestrate multi-step flows.
 
-The App-Builder interface consists of several key areas:
+## Handling Complex Logic
 
-- **Canvas**: The central workspace where you build your application
-- **Component Library**: Access all available UI components from the right sidebar
-- **Query Panel**: Create and manage data source connections at the bottom
-- **Inspector Panel**: Configure component properties, queries and other proeoperties on the right
-- **Pages Panel**: Manage multiple pages and navigation on the left
+While ToolJet makes it easy to build applications without writing code, it also gives developers full power to extend app functionality with custom logic. Using Run JavaScript queries, you can write code directly within the platform to perform calculations, transform data, trigger other queries, or manipulate UI components. These snippets have full access to the app’s state and context, allowing advanced use cases like conditional behaviour, data processing, or dynamic UI updates. 
 
-Ready to build your first application? Explore our detailed guides on [creating UIs](/docs/app-builder/walkthrough/create-ui), [connecting data sources](/docs/app-builder/walkthrough/create-queries), and [adding custom code](/docs/app-builder/walkthrough/using-code).
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full img-full" src="/img/app-builder/overview/custom-code.png" alt="Custom Code Preview" />
+</div>
 
+For even more flexibility, ToolJet supports Python scripting. This is especially powerful for teams already using Python for business logic or data processing. 
+
+
+ToolJet users can build fully-featured internal dashboards, admin panels, forms, and other business applications fast – without sacrificing the flexibility to handle complex scenarios. This makes ToolJet an ideal choice for teams looking to accelerate development and deliver high-quality internal tools that meet their exact needs. 
