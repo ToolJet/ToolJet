@@ -13,6 +13,7 @@ import { Organization } from './organization.entity';
 import { GroupUsers } from './group_users.entity';
 import { GranularPermissions } from './granular_permissions.entity';
 import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { PageUser } from './page_users.entity';
 
 @Entity({ name: 'permission_groups' })
 export class GroupPermissions extends BaseEntity {
@@ -61,6 +62,9 @@ export class GroupPermissions extends BaseEntity {
 
   @OneToMany(() => GranularPermissions, (granularPermissions) => granularPermissions.group, { onDelete: 'CASCADE' })
   groupGranularPermissions: GranularPermissions[];
+
+  @OneToMany(() => PageUser, (pageUser) => pageUser.permissionGroup)
+  pageUsers: PageUser[];
 
   disabled?: boolean;
 }
