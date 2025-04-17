@@ -34,10 +34,6 @@ export enum FEATURE_KEY {
   // Invitee Details
   GET_INVITEE_DETAILS = 'getInviteeDetails', // GET 'invitee-details'
 
-  // Health Check
-  HEALTH_CHECK = 'healthCheck', // GET ['/health', '/api/health']
-  ROOT_PAGE = 'rootPage', // GET '/'
-
   // Oauth
   OAUTH_SIGN_IN = '/oauth/sign-in/:configId',
   OAUTH_OPENID_CONFIGS = '/oauth/configs/:configId',
