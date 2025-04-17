@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { Component } from './component.entity';
+import { PagePermission } from './page_permissions.entity';
 
 @Entity({ name: 'pages' })
 export class Page {
@@ -61,4 +62,7 @@ export class Page {
 
   @OneToMany(() => Component, (component) => component.page)
   components: Component[];
+
+  @OneToMany(() => PagePermission, (permission) => permission.page)
+  permissions: PagePermission[];
 }
