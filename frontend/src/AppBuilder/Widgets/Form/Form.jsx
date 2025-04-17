@@ -263,6 +263,9 @@ export const Form = function Form(props) {
     setChildrenData(childDataRef.current);
   };
 
+  const mode = useStore((state) => state.currentMode, shallow);
+  const isEditing = mode === 'edit';
+
   const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const updateHeaderSizeInStore = ({ newHeight }) => {
@@ -275,8 +278,6 @@ export const Form = function Form(props) {
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
 
-  const mode = useStore((state) => state.currentMode, shallow);
-  const isEditing = mode === 'edit';
   const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
   const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
   const formFooter = {
