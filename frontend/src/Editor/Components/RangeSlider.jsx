@@ -14,8 +14,7 @@ export const RangeSlider = ({
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
-
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, stepSize } = properties;
   const {
     trackColor,
     handleColor,
@@ -145,6 +144,10 @@ export const RangeSlider = ({
       height: 16,
       width: 16,
       opacity: 1,
+      boxShadow: '0px 1px 1px 0px rgba(48, 50, 51, 0.1)',
+      ':hover': {
+        border: '1px solid blue',
+      },
     })),
     trackStyle: toArray(defaultRangeValue).map(() => ({
       backgroundColor: trackColor,
@@ -156,6 +159,7 @@ export const RangeSlider = ({
       height: 4,
       backgroundColor: '#ffffff',
       borderColor: '#ffffff',
+      boxShadow: '0px 1px 0px 0px rgba(0, 0, 0, 0.1)',
     },
     activeDotStyle: {
       backgroundColor: '#ffffff',
@@ -174,7 +178,7 @@ export const RangeSlider = ({
           width: _width,
           marginRight: defaultAlignment === 'side' && direction === 'left' ? '4px' : '0px',
           marginLeft: defaultAlignment === 'side' && direction === 'right' ? '4px' : '0px',
-          marginBottom: defaultAlignment === 'top' ? '4px' : '0px',
+          marginBottom: defaultAlignment === 'top' ? '4px' : '-4px',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -212,9 +216,10 @@ export const RangeSlider = ({
 
   const sliderContainerStyle = {
     width: '100%',
-    paddingRight: '12px',
+    // padding: '10 px',
     visibility: visibility ? 'visible' : 'hidden',
   };
+
   return (
     <div style={containerStyle} className="range-slider" data-cy={dataCy}>
       {loading ? (
@@ -248,14 +253,21 @@ export const RangeSlider = ({
                 railStyle={rangeStyles.railStyle}
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
+                step={stepSize}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
-                  acc[item.value] = {
-                    style: { color: markerLabel },
-                    label: item.label.replace('%', ''),
-                  };
-                  return acc;
-                }, {})}
+                marks={
+                  schema?.length
+                    ? schema
+                        .filter((item) => item.value >= min && item.value <= max)
+                        .reduce((acc, item) => {
+                          acc[item.value] = {
+                            style: { color: markerLabel, fontSize: '14px', fontWeight: '400' },
+                            label: item.label.replace('%', ''),
+                          };
+                          return acc;
+                        }, {})
+                    : {}
+                }
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
@@ -277,14 +289,21 @@ export const RangeSlider = ({
                 railStyle={rangeStyles.railStyle}
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
+                step={stepSize}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
-                  acc[item.value] = {
-                    style: { color: markerLabel },
-                    label: item.label.replace('%', ''),
-                  };
-                  return acc;
-                }, {})}
+                marks={
+                  schema?.length
+                    ? schema
+                        .filter((item) => item.value >= min && item.value <= max)
+                        .reduce((acc, item) => {
+                          acc[item.value] = {
+                            style: { color: markerLabel, fontSize: '14px', fontWeight: '400' },
+                            label: item.label.replace('%', ''),
+                          };
+                          return acc;
+                        }, {})
+                    : {}
+                }
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
