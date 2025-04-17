@@ -133,6 +133,14 @@ const sidebars = {
         'app-builder/overview',
         {
           'type': 'category',
+          'label': 'Building the UI',
+          'items': [
+            'app-builder/canvas',
+            'app-builder/component-library'
+          ],
+        },
+        {
+          'type': 'category',
           'label': 'Build Apps',
           'items': [
             'app-builder/walkthrough/create-ui',
@@ -159,12 +167,10 @@ const sidebars = {
               'type': 'category',
               'label': 'Layout Guide',
               'items': [
-                'app-builder/components-library',
                 'app-builder/query-panel',
                 'tutorial/pages',
                 'app-builder/topbar',
                 'app-builder/left-sidebar',
-                'app-builder/canvas',
                 'app-builder/preview',
                 'app-builder/share',
                 'app-builder/customstyles',
