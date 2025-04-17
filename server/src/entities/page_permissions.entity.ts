@@ -1,11 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { Page } from './page.entity';
 import { PageUser } from './page_users.entity';
-
-export enum PermissionType {
-  SINGLE = 'SINGLE',
-  GROUP = 'GROUP',
-}
+import { PAGE_PERMISSION_TYPE } from '@modules/app-permissions/constants';
 
 @Entity('page_permissions')
 export class PagePermission {
@@ -17,9 +13,9 @@ export class PagePermission {
 
   @Column({
     type: 'enum',
-    enum: PermissionType,
+    enum: PAGE_PERMISSION_TYPE,
   })
-  type: PermissionType;
+  type: PAGE_PERMISSION_TYPE;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
