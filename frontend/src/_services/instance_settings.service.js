@@ -19,9 +19,9 @@ function fetchSettings(type = 'user') {
   return fetch(`${config.apiUrl}/instance-settings`, requestOptions).then(handleResponse);
 }
 
-function fetchSMTPSettings(base = false) {
+function fetchSMTPSettings() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/smtp?base=${base}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/smtp`, requestOptions).then(handleResponse);
 }
 
 function updateSMTPSettings(settings) {
