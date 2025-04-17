@@ -393,13 +393,21 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Case 3: String
       if (typeof obj === 'string') {
+        const originalString = obj;
         let resolvedValue = obj.replace(/\n/g, ' ');
 
         // a: Handle strings with both {{ }} and %% (%% - deprecated removed) TODO: CHECK IF ITS NEEDED
         if (typeof resolvedValue === 'string' && resolvedValue.includes('{{') && resolvedValue.includes('}}')) {
           const resolvedVar = options[resolvedValue];
           if (parent && key !== null) {
-            parent[key] = resolvedVar;
+            // If this is a query and has newlines, we need to preserve them
+            if (key === 'query' && originalString.includes('\n') && resolvedVar !== undefined) {
+              // Create a copy of the original with newlines intact to use as template
+              const formattedResult = originalString;
+              parent[key] = formattedResult;
+            } else {
+              parent[key] = resolvedVar;
+            }
           }
         }
 
@@ -427,27 +435,56 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         ) {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
-          for (const variable of variables || []) {
-            let replacement = options[variable];
-            // Check if the replacement is an object
-            if (typeof replacement === 'object' && replacement !== null) {
-              // Ensure parent is a non-empty array before attempting to access its first element
-              if (Array.isArray(parent) && parent.length > 0) {
-                // Assign replacement value based on the first item in the parent array
-                replacement = replacement[parent[0]] || replacement;
+          // For SQL queries, work with the original string to preserve newlines
+          if (key === 'query' && originalString.includes('\n')) {
+            let result = originalString;
+
+            for (const variable of variables || []) {
+              let replacement = options[variable];
+              // Check if the replacement is an object
+              if (typeof replacement === 'object' && replacement !== null) {
+                // Ensure parent is a non-empty array before attempting to access its first element
+                if (Array.isArray(parent) && parent.length > 0) {
+                  // Assign replacement value based on the first item in the parent array
+                  replacement = replacement[parent[0]] || replacement;
+                }
+              }
+
+              // Replace the variable in the original string (with newlines)
+              if (typeof replacement === 'string' || typeof replacement === 'number') {
+                result = result.replace(variable, String(replacement));
+              } else {
+                result = result.replace(variable, JSON.stringify(replacement));
               }
             }
-            // Check type of replacement and assign accordingly
-            if (typeof replacement === 'string' || typeof replacement === 'number') {
-              // If replacement is a string, perform the replace
-              resolvedValue = resolvedValue.replace(variable, String(replacement));
-            } else {
-              // If replacement is an object or an array, assign the whole value to resolvedValue
-              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+
+            if (parent && key !== null) {
+              parent[key] = result;
             }
-          }
-          if (parent && key !== null) {
-            parent[key] = resolvedValue;
+          } else {
+            // Standard processing for non-SQL strings
+            for (const variable of variables || []) {
+              let replacement = options[variable];
+              // Check if the replacement is an object
+              if (typeof replacement === 'object' && replacement !== null) {
+                // Ensure parent is a non-empty array before attempting to access its first element
+                if (Array.isArray(parent) && parent.length > 0) {
+                  // Assign replacement value based on the first item in the parent array
+                  replacement = replacement[parent[0]] || replacement;
+                }
+              }
+              // Check type of replacement and assign accordingly
+              if (typeof replacement === 'string' || typeof replacement === 'number') {
+                // If replacement is a string, perform the replace
+                resolvedValue = resolvedValue.replace(variable, String(replacement));
+              } else {
+                // If replacement is an object or an array, assign the whole value to resolvedValue
+                resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+              }
+            }
+            if (parent && key !== null) {
+              parent[key] = resolvedValue;
+            }
           }
         }
 
