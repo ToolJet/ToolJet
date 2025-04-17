@@ -85,7 +85,10 @@ export const sanitizeHeaders = (
   const cleanHeaders = (headers) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
   const filterValidHeaderEntries = (headers) => {
     return headers.filter(([_, value]) => {
-      return value !== undefined && value !== null;
+      if (value == null) return false;
+      if (typeof value === 'string') return true;
+      if (Array.isArray(value) && value.every((v) => typeof v === 'string')) return true;
+      return false;
     });
   };
 
