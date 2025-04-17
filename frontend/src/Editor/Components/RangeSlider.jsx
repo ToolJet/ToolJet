@@ -145,6 +145,9 @@ export const RangeSlider = ({
       width: 16,
       opacity: 1,
       boxShadow: '0px 1px 1px 0px rgba(48, 50, 51, 0.1)',
+      ':hover': {
+        border: '1px solid blue',
+      },
     })),
     trackStyle: toArray(defaultRangeValue).map(() => ({
       backgroundColor: trackColor,
