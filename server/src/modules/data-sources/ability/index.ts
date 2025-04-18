@@ -108,6 +108,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)
     ) {
       can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+      return;
     }
   }
 }
