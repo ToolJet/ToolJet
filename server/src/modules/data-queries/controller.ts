@@ -25,16 +25,21 @@ import { IDataQueriesController } from './interfaces/IController';
 export class DataQueriesController implements IDataQueriesController {
   constructor(protected dataQueriesService: DataQueriesService) {}
 
-  // Add ability check - App editable
   @InitFeature(FEATURE_KEY.GET)
-  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, AppFeatureAbilityGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateAppVersionGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    ValidateQuerySourceGuard,
+    DataSourceFeatureAbilityGuard
+  )
   @Get(':versionId')
   index(@Param('versionId') versionId: string) {
     return this.dataQueriesService.getAll(versionId);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
-  // Add ability check - App editable and data source configurable
   @UseGuards(
     JwtAuthGuard,
     ValidateAppVersionGuard,
@@ -55,7 +60,6 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_ONE)
-  // Add ability check - App editable and data source editable
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
@@ -98,7 +102,6 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_EDITOR)
-  // TODO: Validate against app edit access
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
@@ -129,7 +132,6 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  // TODO: Validate against app view access
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
