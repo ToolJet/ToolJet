@@ -1,0 +1,35 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "ClickUp datasource",
+  "description": "A schema defining ClickUp datasource",
+  "type": "api",
+  "source": {
+    "name": "ClickUp",
+    "kind": "clickup",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your OpenAI API Key",
+      "helpText": "For generating API Key, visit: <a href='https://beta.openai.com/account/api-keys' target='_blank' rel='noreferrer'>OpenAI Console</a>"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}
