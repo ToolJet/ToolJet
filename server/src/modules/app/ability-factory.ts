@@ -26,15 +26,17 @@ export abstract class AbilityFactory<TActions extends string, TSubject> {
     });
 
     const userPermission: UserPermissions =
-      request?.tj_user_permissions ||
-      (await this.abilityService.resourceActionsPermission(user, {
-        organizationId: user.organizationId || user.defaultOrganizationId,
-        ...(resource?.length
-          ? {
-              resources: resourceArray,
-            }
-          : {}),
-      }));
+      request?.tj_user_permissions?.resourceArray &&
+      resourceArray?.every((res) => request.tj_user_permissions.resourceArray.some((r) => r.resource === res.resource))
+        ? request?.tj_user_permissions
+        : await this.abilityService.resourceActionsPermission(user, {
+            organizationId: user.organizationId || user.defaultOrganizationId,
+            ...(resource?.length
+              ? {
+                  resources: resourceArray,
+                }
+              : {}),
+          });
     if (request) {
       request.tj_user_permissions = userPermission;
     }

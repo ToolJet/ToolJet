@@ -15,7 +15,6 @@ import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/gua
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
-import { QueryAuthGuard } from './guards/query-auth.guard';
 import { AbilityDecorator as Ability } from '@modules/app/decorators/ability.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { AppDecorator } from '@modules/app/decorators/app.decorator';
@@ -39,6 +38,7 @@ export class DataQueriesController implements IDataQueriesController {
   @UseGuards(
     JwtAuthGuard,
     ValidateAppVersionGuard,
+    ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard
@@ -64,8 +64,9 @@ export class DataQueriesController implements IDataQueriesController {
     DataSourceFeatureAbilityGuard
   )
   @Patch(':id/versions/:versionId')
-  async updateDataSource(
+  async updateDataQuery(
     @User() user: UserEntity,
+    @AppDecorator() app: App,
     @Param('id') dataQueryId,
     @Param('versionId') versionId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
@@ -76,7 +77,7 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
-  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, AppFeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Patch('versions/:versionId')
   async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
     return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
@@ -108,6 +109,7 @@ export class DataQueriesController implements IDataQueriesController {
   @Post(':id/versions/:versionId/run/:environmentId')
   runQueryOnBuilder(
     @User() user: UserEntity,
+    @AppDecorator() app: App,
     @Param('id') dataQueryId,
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto,
@@ -128,10 +130,17 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
   // TODO: Validate against app view access
-  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    ValidateQuerySourceGuard,
+    DataSourceFeatureAbilityGuard
+  )
   @Post(':id/run')
   async runQuery(
     @User() user: UserEntity,
+    @AppDecorator() app: App,
     @Param('id') dataQueryId,
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Res({ passthrough: true }) response: Response

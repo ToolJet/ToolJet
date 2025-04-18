@@ -19,7 +19,6 @@ export class FeatureAbilityGuard extends AbilityGuard {
       {
         resourceType: MODULES.APP,
       },
-      { resourceType: MODULES.GLOBAL_DATA_SOURCE },
     ];
   }
 
