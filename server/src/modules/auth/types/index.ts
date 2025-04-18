@@ -26,8 +26,6 @@ export interface Features {
   [FEATURE_KEY.FORGOT_PASSWORD]: FeatureConfig;
   [FEATURE_KEY.RESET_PASSWORD]: FeatureConfig;
   [FEATURE_KEY.GET_INVITEE_DETAILS]: FeatureConfig;
-  [FEATURE_KEY.HEALTH_CHECK]: FeatureConfig;
-  [FEATURE_KEY.ROOT_PAGE]: FeatureConfig;
   [FEATURE_KEY.OAUTH_COMMON_SIGN_IN]: FeatureConfig;
   [FEATURE_KEY.OAUTH_OPENID_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.OAUTH_SAML_CONFIGS]: FeatureConfig;

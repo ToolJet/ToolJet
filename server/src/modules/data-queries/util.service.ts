@@ -16,6 +16,7 @@ import { PluginsServiceSelector } from '@modules/data-sources/services/plugin-se
 import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -278,15 +279,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       throw queryError;
     } finally {
       if (user) {
-        // this.eventEmitter.emit('auditLogEntry', {
-        //   userId: user.id,
-        //   organizationId: user.organizationId,
-        //   resourceId: dataQuery?.id,
-        //   resourceName: dataQuery?.name,
-        //   resourceType: ResourceTypes.DATA_QUERY,
-        //   actionType: ActionTypes.DATA_QUERY_RUN,
-        //   metadata: queryStatus.getMetaData(),
-        // });
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: dataQuery?.id,
+          resourceName: dataQuery?.name,
+          metadata: queryStatus.getMetaData(),
+        });
       }
     }
   }
