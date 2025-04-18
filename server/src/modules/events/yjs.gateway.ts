@@ -2,8 +2,8 @@ import http from 'http';
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server } from 'ws';
 import { setupWSConnection, setPersistence } from 'y-websocket/bin/utils';
-import { RedisPubSub } from '../helpers/redis';
-import { maybeSetSubPath } from '../helpers/utils.helper';
+import { RedisPubSub } from '../../helpers/redis';
+import { maybeSetSubPath } from '../../helpers/utils.helper';
 import { isEmpty } from 'lodash';
 import { SessionUtilService } from '@modules/session/util.service';
 

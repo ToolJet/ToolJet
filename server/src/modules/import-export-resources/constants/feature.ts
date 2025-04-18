@@ -5,7 +5,9 @@ import { FeaturesConfig } from '../types';
 export const FEATURES: FeaturesConfig = {
   [MODULES.IMPORT_EXPORT_RESOURCES]: {
     [FEATURE_KEY.APP_RESOURCE_EXPORT]: {},
-    [FEATURE_KEY.APP_RESOURCE_IMPORT]: {},
+    [FEATURE_KEY.APP_RESOURCE_IMPORT]: {
+      auditLogsKey: 'APP_CREATE',
+    },
     [FEATURE_KEY.APP_RESOURCE_CLONE]: {},
   },
 };

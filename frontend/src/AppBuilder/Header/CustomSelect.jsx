@@ -150,11 +150,7 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
       {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
         show={deleteVersion.showModal}
-        message={`${
-          defaultAppEnvironments.length > 1
-            ? 'Deleting a version will permanently remove it from all environments.'
-            : ''
-        }Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
+        message={`Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />

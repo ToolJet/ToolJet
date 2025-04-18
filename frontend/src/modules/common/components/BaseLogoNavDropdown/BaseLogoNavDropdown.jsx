@@ -44,22 +44,16 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' })
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>
         <div className="divider"></div>
-        {isWorkflows || !showWorkflows ? (
-          <Link target="_blank" to={getPrivateRoute('dashboard')} className="dropdown-item tj-text tj-text-xsm">
-            <SolidIcon name={'apps'} width="20" fill="#C1C8CD" />
-            <span>{'Apps'}</span>
-          </Link>
-        ) : (
-          workflowsEnabled &&
-          showWorkflows &&
-          admin && (
-            <Link target="_blank" to={getPrivateRoute('workflows')} className="dropdown-item tj-text tj-text-xsm">
-              <SolidIcon name={'workflows'} width="20" fill="#C1C8CD" />
-              <span>{'Workflows'}</span>
-            </Link>
-          )
-        )}
-
+        {isWorkflows || !showWorkflows
+          ? null
+          : workflowsEnabled &&
+            showWorkflows &&
+            admin && (
+              <Link target="_blank" to={getPrivateRoute('workflows')} className="dropdown-item tj-text tj-text-xsm">
+                <SolidIcon name={'workflows'} width="20" fill="#C1C8CD" />
+                <span>{'Workflows'}</span>
+              </Link>
+            )}
         {(admin || isBuilder) && (
           <Link
             target="_blank"

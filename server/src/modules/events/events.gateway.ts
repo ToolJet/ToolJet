@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server } from 'ws';
 import { isEmpty } from 'lodash';
-import { maybeSetSubPath } from '../helpers/utils.helper';
+import { maybeSetSubPath } from '../../helpers/utils.helper';
 import { SessionUtilService } from '@modules/session/util.service';
 
 @WebSocketGateway({ path: maybeSetSubPath('/ws') })

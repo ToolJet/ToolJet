@@ -31,6 +31,7 @@ import { FEATURES as TOOLJET_DATABASE_FEATURES } from '@modules/tooljet-db/const
 import { FEATURES as IMPORT_EXPORT_RESOURCES_FEATURES } from '@modules/import-export-resources/constants/feature';
 import { FEATURES as TEMPLATES_FEATURES } from '@modules/templates/constants/features';
 import { FEATURES as AI_FEATURES } from '@modules/ai/constants/feature';
+import { FEATURES as AUDIT_LOGS_FEATURES } from '@modules/audit-logs/constants/features';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '.';
 import { FEATURES as WHITE_LABELLING_FEATURES } from '@modules/white-labelling/constant/feature';
@@ -73,4 +74,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...ORGANIZATION_CONSTANT,
   ...AI_FEATURES,
   ...WHITE_LABELLING_FEATURES,
+  ...AUDIT_LOGS_FEATURES,
 };

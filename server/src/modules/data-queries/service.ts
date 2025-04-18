@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';

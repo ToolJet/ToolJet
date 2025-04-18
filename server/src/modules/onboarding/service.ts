@@ -59,6 +59,8 @@ import { OnboardingStatus } from './constants';
 import { LicenseUtilService } from '@modules/licensing/util.service';
 import { IOnboardingService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 @Injectable()
 export class OnboardingService implements IOnboardingService {
   constructor(
@@ -334,18 +336,12 @@ export class OnboardingService implements IOnboardingService {
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
 
-      // this.eventEmitter.emit(
-      //   'auditLogEntry',
-      //   {
-      //     userId: user.id,
-      //     organizationId: organization?.id,
-      //     resourceId: user.id,
-      //     resourceName: user.email,
-      //     resourceType: ResourceTypes.USER,
-      //     actionType: ActionTypes.USER_INVITE_REDEEM,
-      //   },
-      //   manager
-      // );
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: organization?.id,
+        resourceId: user.id,
+        resourceName: user.email,
+      });
 
       await this.licenseUserService.validateUser(manager);
       return this.sessionUtilService.generateLoginResultPayload(
@@ -550,14 +546,12 @@ export class OnboardingService implements IOnboardingService {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
-    // this.eventEmitter.emit('auditLogEntry', {
-    //   userId: user.id,
-    //   organizationId: organizationUser.organizationId,
-    //   resourceId: user.id,
-    //   resourceName: user.email,
-    //   resourceType: ResourceTypes.USER,
-    //   actionType: ActionTypes.USER_INVITE_REDEEM,
-    // });
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: organizationUser.organizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+    });
 
     return {
       email: user.email,

@@ -271,7 +271,7 @@ export default class LicenseBase {
   }
 
   public get ai(): object {
-    return this._ai;
+    return this._ai || {};
   }
 
   public get aiFeature(): boolean {

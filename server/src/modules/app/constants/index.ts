@@ -49,3 +49,5 @@ export enum FEATURE_KEY {
   HEALTH = 'health',
   ROOT = 'root',
 }
+
+export const AUDIT_LOGS_REQUEST_CONTEXT_KEY = 'tj_audit_logs_meta_data';

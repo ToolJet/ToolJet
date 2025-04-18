@@ -136,6 +136,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     groups: string[],
     organizationId: string,
     userId: string,
+    areGroupIds: boolean = false,
     manager?: EntityManager
   ): Promise<void> {
     if (!groups) return;
@@ -146,13 +147,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       try {
         for (const addGroup of groups) {
-          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(
-            {
-              organizationId: organizationId,
-              name: addGroup,
-            },
-            manager
-          );
+          const groupQuery = areGroupIds
+            ? { organizationId: organizationId, id: addGroup }
+            : { organizationId: organizationId, name: addGroup };
+
+          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(groupQuery, manager);
           if (!orgGroupPermission) {
             throw new BadRequestException(`${addGroup} group does not exist for current organization`);
           }
@@ -254,14 +253,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   protected async mapOrganizationUserToResponse(
     orgUser: OrganizationUser,
-    isBasicPlan: boolean
+    isBasicPlan: boolean,
+    metadataFlag: boolean = false
   ): Promise<FetchUserResponse> {
     const userDetails = orgUser.user.userDetails.find((ud) => ud.organizationId === orgUser.organizationId);
-    const userMetadata = await this.sessionUtilsService.decryptUserMetadata(userDetails?.userMetadata);
-
-    const role = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT);
-    const groups = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP);
-    return {
+    let response: FetchUserResponse = {
       email: orgUser.user.email,
       firstName: orgUser.user.firstName ?? '',
       lastName: orgUser.user.lastName ?? '',
@@ -271,14 +267,27 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       role: orgUser.role,
       status: orgUser.status,
       avatarId: orgUser.user.avatarId,
-      groups: groups.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
-      roleGroup: role.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      groups: orgUser.user.userPermissions
+        .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
+        .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      roleGroup: orgUser.user.userPermissions
+        .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
+        .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
       ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
         ? { accountSetupToken: orgUser.user.invitationToken }
         : {}),
-      userMetadata,
     };
+
+    if (metadataFlag) {
+      const userMetadata = await this.sessionUtilsService.decryptUserMetadata(userDetails?.userMetadata);
+      response = {
+        ...response,
+        userMetadata,
+      };
+    }
+
+    return response;
   }
 
   async sendWelcomeEmail(
@@ -406,7 +415,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     );
 
     const result = await Promise.all(
-      organizationUsers.map(async (orgUser) => this.mapOrganizationUserToResponse(orgUser, isBasicPlan))
+      organizationUsers.map(async (orgUser) => this.mapOrganizationUserToResponse(orgUser, isBasicPlan, false))
     );
 
     return { organizationUsers: result, total: count };
@@ -485,7 +494,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         );
       }
 
-      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, manager);
+      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, true, manager);
 
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);

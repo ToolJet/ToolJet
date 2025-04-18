@@ -6,7 +6,9 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.APP]: {
     [FEATURE_KEY.CREATE]: {},
     [FEATURE_KEY.UPDATE]: {},
-    [FEATURE_KEY.UPDATE_ICON]: {},
+    [FEATURE_KEY.UPDATE_ICON]: {
+      auditLogsKey: FEATURE_KEY.UPDATE,
+    },
     [FEATURE_KEY.DELETE]: {},
     [FEATURE_KEY.GET]: {},
     [FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS]: { shouldNotSkipPublicApp: true },
