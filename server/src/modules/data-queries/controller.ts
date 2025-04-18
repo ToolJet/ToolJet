@@ -26,14 +26,7 @@ export class DataQueriesController implements IDataQueriesController {
   constructor(protected dataQueriesService: DataQueriesService) {}
 
   @InitFeature(FEATURE_KEY.GET)
-  @UseGuards(
-    JwtAuthGuard,
-    ValidateAppVersionGuard,
-    ValidateQueryAppGuard,
-    AppFeatureAbilityGuard,
-    ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
-  )
+  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId')
   index(@Param('versionId') versionId: string) {
     return this.dataQueriesService.getAll(versionId);

@@ -20,8 +20,7 @@ export class ValidateQueryAppGuard implements CanActivate {
     const appId = request.body?.app_id;
     const user: User = request.user;
 
-    // Check if either id is provided, otherwise throw BadRequestException
-    if (!id && !appId) {
+    if (!versionId) {
       throw new BadRequestException();
     }
 
@@ -35,6 +34,9 @@ export class ValidateQueryAppGuard implements CanActivate {
     }
     if (appId) {
       app = await this.appsRepository.findById(appId, user.organizationId, versionId);
+    }
+    if (versionId) {
+      app = await this.versionRepository.findAppFromVersion(versionId, user.organizationId);
     }
 
     // If app is not found, throw NotFoundException
