@@ -2,8 +2,16 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "ClickUp datasource",
-  "description": "A schema defining ClickUp datasource",
+  "description": "Clickup plugin for task, list, and doc management",
   "type": "api",
+  "components": [
+    {
+      "type": "APIEndpoint",
+      "id": "clickup-endpoints",
+      "name": "ClickUp Endpoints",
+      "file": "./openapi.yaml"
+    }
+  ],
   "source": {
     "name": "ClickUp",
     "kind": "clickup",
@@ -25,8 +33,8 @@
       "label": "API Key",
       "key": "apiKey",
       "type": "password",
-      "description": "Enter your OpenAI API Key",
-      "helpText": "For generating API Key, visit: <a href='https://beta.openai.com/account/api-keys' target='_blank' rel='noreferrer'>OpenAI Console</a>"
+      "description": "Enter your Personal API Token",
+      "helpText": "For generating API Key, visit: <a href='https://https://developer.clickup.com/docs/authentication' target='_blank' rel='noreferrer'>ClickUp authentication docs</a>"
     }
   },
   "required": [
