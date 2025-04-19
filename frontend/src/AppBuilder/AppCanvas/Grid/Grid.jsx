@@ -37,7 +37,7 @@ const RESIZABLE_CONFIG = {
 };
 export const GRID_HEIGHT = 10;
 
-export default function Grid({ gridWidth, currentLayout }) {
+export default function Grid({ gridWidth, currentLayout, appType }) {
   const lastDraggedEventsRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
@@ -329,6 +329,11 @@ export default function Grid({ gridWidth, currentLayout }) {
   };
 
   const isComponentVisible = (id) => {
+    // Return TRUE if it is a module container
+    if (appType === 'module') {
+      return true;
+    }
+
     const component = getResolvedComponent(id);
     let visibility;
     if (isArray(component)) {
@@ -641,6 +646,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onResizeEnd={(e) => {
           try {
+            console.log('end--- e.target.id', e.target.id);
             useGridStore.getState().actions.setResizingComponentId(null);
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;

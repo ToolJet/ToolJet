@@ -18,6 +18,7 @@ export const ConfigHandle = ({
   showHandle,
   componentType,
   visibility,
+  hideDelete,
 }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
@@ -123,20 +124,22 @@ export const ConfigHandle = ({
               data-cy={`${componentName.toLowerCase()}-inspect-button`}
               className="config-handle-inspect"
             />
-            <span
-              style={{ cursor: 'pointer', marginLeft: '5px' }}
-              onClick={() => {
-                deleteComponents([id]);
-              }}
-              data-cy={`${componentName.toLowerCase()}-delete-button`}
-            >
-              <SolidIcon
-                name="trash"
-                width="12"
-                height="12"
-                fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
-              />
-            </span>
+            {!hideDelete && (
+              <span
+                style={{ cursor: 'pointer', marginLeft: '5px' }}
+                onClick={() => {
+                  deleteComponents([id]);
+                }}
+                data-cy={`${componentName.toLowerCase()}-delete-button`}
+              >
+                <SolidIcon
+                  name="trash"
+                  width="12"
+                  height="12"
+                  fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
+                />
+              </span>
+            )}
           </div>
         )}
       </span>

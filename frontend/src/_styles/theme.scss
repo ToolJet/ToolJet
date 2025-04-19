@@ -807,6 +807,15 @@ button {
     }
   }
 
+  .editor .viewer .main {
+    height: auto !important;
+
+    .canvas-container {
+      top: 0;
+      right: 0;
+    }
+  }
+
   @media screen and (max-height: 450px) {
     .sidebar {
       padding-top: 15px;
@@ -1553,6 +1562,13 @@ button {
     border-top: 1px solid var(--slate5) !important;
   }
 
+  &.module-editor-inspector {
+    .tab-content {
+      border-top: none !important;
+    }
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
   /* Hide scrollbar for Chrome, Safari and Opera */
   .tab-content::-webkit-scrollbar {
     display: none;
@@ -9119,7 +9135,8 @@ tbody {
 }
 
 .global-settings-app-wrapper {
-  max-width: 190px;
+  max-width: 350px;
+  margin-right: 10px;
 }
 
 .version-manager-container {

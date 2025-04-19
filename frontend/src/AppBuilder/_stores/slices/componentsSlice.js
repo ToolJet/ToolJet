@@ -50,6 +50,16 @@ const initialState = {
 export const createComponentsSlice = (set, get) => ({
   ...initialState,
 
+  initializeComponentsSlice: (moduleId) => {
+    set(
+      (state) => {
+        state.modules[moduleId] = { ...state.modules[moduleId], ...initialState.modules.canvas };
+      },
+      false,
+      'initializeComponentsSlice'
+    );
+  },
+
   setPages: (pages = [], moduleId = 'canvas') => {
     set(
       (state) => {
@@ -643,7 +653,6 @@ export const createComponentsSlice = (set, get) => ({
             moduleId
           );
           updatedPropertyValue[index] = updatedValue;
-          console.log('updatedPropertyValue', updatedPropertyValue);
           if (allRefs.length) {
             generateDependencyGraphForRefs(allRefs, componentId, paramType, propertyWithArrayValue, unResolvedValue);
           }

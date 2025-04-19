@@ -91,6 +91,8 @@ const WidgetWrapper = memo(
               showHandle={isWidgetActive}
               componentType={componentType}
               visibility={visibility}
+              customClassName={componentType === 'ModuleContainer' ? 'module-container' : ''}
+              hideDelete={componentType === 'ModuleContainer'}
             />
           )}
           <RenderWidget

@@ -24,6 +24,8 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
   const exposedConstants = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
   const exposedPageVariables = useStore((state) => state.getAllExposedValues().page || {}, shallow);
   const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
+  const exposedModuleInputs = useStore((state) => state.getAllExposedValues().input || {}, shallow);
+
   const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
   const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
   const pathToBeInspected = useStore((state) => state.pathToBeInspected);
@@ -74,6 +76,8 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
 
   const sortedGlobalVariables = useMemo(() => sortAndReduce(exposedGlobalVariables), [exposedGlobalVariables]);
 
+  const sortedModuleInputs = useMemo(() => sortAndReduce(exposedModuleInputs), [exposedModuleInputs]);
+
   const memoizedJSONData = React.useMemo(() => {
     const jsontreeData = {};
 
@@ -83,10 +87,19 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
     jsontreeData['variables'] = sortedVariables;
     jsontreeData['page'] = sortedPageVariables;
     jsontreeData['constants'] = sortedConstants;
+    if (sortedModuleInputs) jsontreeData['input'] = sortedModuleInputs;
 
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables]);
+  }, [
+    sortedComponents,
+    sortedQueries,
+    sortedVariables,
+    sortedConstants,
+    sortedPageVariables,
+    sortedGlobalVariables,
+    sortedModuleInputs,
+  ]);
 
   const handleNodeExpansion = (path, data, currentNode) => {
     if (pathToBeInspected && path?.length > 0) {

@@ -7,18 +7,21 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
+import ComponentModuleTab from './ComponentModuleTab';
+import { ModuleManager } from '@/modules/Modules/components';
 
 // TODO: Hardcode all the component-section mapping in a constant file and just loop over it
 // TODO: styling
 // TODO: scrolling
 // TODO: searching
 
-export const ComponentsManagerTab = ({ darkMode }) => {
+export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const componentList = useMemo(() => {
     return componentTypes.map((component) => component.component);
   }, [componentTypes]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
+  const [activeTab, setActiveTab] = useState(1);
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
@@ -157,9 +160,24 @@ export const ComponentsManagerTab = ({ darkMode }) => {
     }
   }
 
+  const handleChangeTab = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const renderSection = () => {
+    if (activeTab === 1) {
+      return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
+    }
+    return <ModuleManager />;
+  };
+
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
-      <p className="widgets-manager-header">Components</p>
+      {isModuleEditor ? (
+        <p className="widgets-manager-header">Components</p>
+      ) : (
+        <ComponentModuleTab onChangeTab={handleChangeTab} />
+      )}
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}
@@ -174,7 +192,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
           width={266}
         />
       </div>
-      <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+      {renderSection()}
     </div>
   );
 };

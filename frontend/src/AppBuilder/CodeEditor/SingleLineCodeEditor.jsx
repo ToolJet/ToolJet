@@ -442,6 +442,33 @@ const DynamicEditorBridge = (props) => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
+  const renderFx = () => {
+    if (paramType === 'query' || (paramLabel !== 'Type' && isFxNotRequired === undefined)) {
+      return null;
+    }
+    return (
+      <div
+        className={`col-auto pt-0 fx-common fx-button-container ${
+          (isEventManagerParam || codeShow) && 'show-fx-button-container'
+        }`}
+      >
+        <FxButton
+          active={codeShow}
+          onPress={() => {
+            if (codeShow) {
+              setForceCodeBox(false);
+              onFxPress(false);
+            } else {
+              setForceCodeBox(true);
+              onFxPress(true);
+            }
+          }}
+          dataCy={cyLabel}
+        />
+      </div>
+    );
+  };
+
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
@@ -459,27 +486,7 @@ const DynamicEditorBridge = (props) => {
         )}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
-            {paramLabel !== 'Type' && isFxNotRequired === undefined && (
-              <div
-                className={`col-auto pt-0 fx-common fx-button-container ${
-                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
-                }`}
-              >
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              </div>
-            )}
+            {renderFx()}
           </div>
         </div>
         {!codeShow && (

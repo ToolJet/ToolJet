@@ -17,7 +17,14 @@ export function snapToGrid(canvasWidth, x, y) {
 }
 
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
-export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, currentLayout, realCanvasRef, parentId) => {
+export const addNewWidgetToTheEditor = (
+  componentType,
+  eventMonitorObject,
+  currentLayout,
+  realCanvasRef,
+  parentId,
+  moduleInfo = undefined
+) => {
   const canvasBoundingRect = realCanvasRef?.current?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
   const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
@@ -42,6 +49,25 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
   const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
 
+  let customLayouts = undefined;
+
+  if (moduleInfo) {
+    componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
+    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
+    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+    customLayouts = moduleInfo.moduleContainer.layouts;
+
+    const inputItems = Object.values(
+      moduleInfo.moduleContainer.component.definition.properties?.input_items?.value ?? {}
+    );
+
+    console.log('inputItems--- ', inputItems);
+
+    for (const { name, default_value } of inputItems) {
+      componentData.definition.properties[name] = { value: default_value };
+    }
+  }
+
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;
@@ -59,14 +85,14 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
       [currentLayout]: {
         top: top,
         left: left,
-        width,
-        height: defaultHeight,
+        width: customLayouts ? customLayouts[currentLayout].width : width,
+        height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
       },
       [nonActiveLayout]: {
         top: top,
         left: left,
-        width,
-        height: defaultHeight,
+        width: customLayouts ? customLayouts[nonActiveLayout].width : width,
+        height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
       },
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),

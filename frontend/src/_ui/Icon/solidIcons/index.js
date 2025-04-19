@@ -229,6 +229,7 @@ import CalendarSmall from './CalendarSmall.jsx';
 import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
+import EmptyStateModules from './EmptyStateModules.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -692,6 +693,8 @@ const Icon = (props) => {
       return <StudentIcon {...props} />;
     case 'ai-crown':
       return <AICrown {...props} />;
+    case 'empty-state-modules':
+      return <EmptyStateModules {...props} />;
     default:
       return <Apps {...props} />;
   }

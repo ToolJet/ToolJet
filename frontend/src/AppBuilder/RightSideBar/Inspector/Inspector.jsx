@@ -39,6 +39,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
+import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -104,6 +105,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     ...allComponents?.[selectedComponentId]?.component,
     definition: allComponents?.[selectedComponentId]?.component.definition,
   };
+
+  const isModuleContainer = componentMeta.component === 'ModuleContainer';
 
   const component = {
     id: selectedComponentId,
@@ -443,8 +446,39 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  const renderAppNameInput = () => {
+    if (isModuleContainer) {
+      return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
+    }
+
+    return (
+      <div className="input-icon" style={{ marginLeft: '8px' }}>
+        <input
+          onChange={(e) => setNewComponentName(e.target.value)}
+          type="text"
+          onBlur={() => handleComponentNameChange(newComponentName)}
+          className="w-100 inspector-edit-widget-name"
+          value={newComponentName}
+          ref={inputRef}
+          data-cy="edit-widget-name"
+        />
+      </div>
+    );
+  };
+
+  const renderTabs = () => (
+    <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
+      <Tab eventKey="properties" title="Properties">
+        {propertiesTab}
+      </Tab>
+      <Tab eventKey="styles" title="Styles">
+        {stylesTab}
+      </Tab>
+    </Tabs>
+  );
+
   return (
-    <div className="inspector">
+    <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div className={`row inspector-component-title-input-holder ${shouldFreeze && 'disabled'}`}>
           <div className="col-1" onClick={() => clearSelectedComponents()}>
@@ -456,68 +490,50 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-9 p-0 ${shouldFreeze && 'disabled'}`}>
-            <div className="input-icon" style={{ marginLeft: '8px' }}>
-              <input
-                onChange={(e) => setNewComponentName(e.target.value)}
-                type="text"
-                onBlur={() => handleComponentNameChange(newComponentName)}
-                className="w-100 inspector-edit-widget-name"
-                value={newComponentName}
-                ref={inputRef}
-                data-cy="edit-widget-name"
-              />
-            </div>
-          </div>
-          <div className="col-2" data-cy={'component-inspector-options'}>
-            <OverlayTrigger
-              trigger={'click'}
-              placement={'bottom-end'}
-              rootClose={false}
-              show={showHeaderActionsMenu}
-              overlay={
-                <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                  <Popover.Body bsPrefix="list-item-popover-body">
-                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
-                      <div
-                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                        className="list-item-popover-option"
-                        key={option?.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInspectorHeaderActions(option.value);
-                        }}
-                      >
-                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+          <div className={`col-9 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          {!isModuleContainer && (
+            <div className="col-2" data-cy={'component-inspector-options'}>
+              <OverlayTrigger
+                trigger={'click'}
+                placement={'bottom-end'}
+                rootClose={false}
+                show={showHeaderActionsMenu}
+                overlay={
+                  <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                    <Popover.Body bsPrefix="list-item-popover-body">
+                      {INSPECTOR_HEADER_OPTIONS.map((option) => (
                         <div
-                          className={classNames('list-item-option-menu-label', {
-                            'color-tomato9': option.value === 'delete',
-                          })}
+                          data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                          className="list-item-popover-option"
+                          key={option?.value}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleInspectorHeaderActions(option.value);
+                          }}
                         >
-                          {option?.label}
+                          <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                          <div
+                            className={classNames('list-item-option-menu-label', {
+                              'color-tomato9': option.value === 'delete',
+                            })}
+                          >
+                            {option?.label}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </Popover.Body>
-                </Popover>
-              }
-            >
-              <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-              </span>
-            </OverlayTrigger>
-          </div>
+                      ))}
+                    </Popover.Body>
+                  </Popover>
+                }
+              >
+                <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+                  <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
+                </span>
+              </OverlayTrigger>
+            </div>
+          )}
         </div>
-        <div className={`${shouldFreeze && 'disabled'}`}>
-          <Tabs defaultActiveKey={'properties'} id="inspector">
-            <Tab eventKey="properties" title="Properties">
-              {propertiesTab}
-            </Tab>
-            <Tab eventKey="styles" title="Styles">
-              {stylesTab}
-            </Tab>
-          </Tabs>
-        </div>
+
+        <div className={`${shouldFreeze && 'disabled'}`}>{renderTabs()}</div>
       </div>
       <span className="widget-documentation-link">
         <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
@@ -730,6 +746,12 @@ const GetAccordion = React.memo(
       case 'DatePickerV2':
       case 'TimePicker':
         return <DatetimePickerV2 {...restProps} componentName={componentName} />;
+
+      case 'ModuleContainer':
+        return <ModuleContainerInspector {...restProps} />;
+
+      case 'ModuleViewer':
+        return <ModuleViewerInspector {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

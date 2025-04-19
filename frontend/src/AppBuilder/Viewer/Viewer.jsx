@@ -16,11 +16,20 @@ import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, environmentId, versionId } = {}) => {
+export const Viewer = ({
+  id: appId,
+  darkMode,
+  moduleId = 'canvas',
+  switchDarkMode,
+  environmentId,
+  versionId,
+  moduleMode = false,
+  appType = 'front-end',
+} = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
-  useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId });
+  useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode);
 
   const {
     isEditorLoading,
@@ -69,18 +78,20 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
 
+  const hideSidebar = moduleMode || isPagesSidebarHidden;
+
   const computeCanvasMaxWidth = useCallback(() => {
     if (globalSettings?.maxCanvasWidth) {
       return globalSettings.maxCanvasWidth;
     }
     if (globalSettings?.canvasMaxWidthType === 'px') {
-      return (+globalSettings?.canvasMaxWidth || DEFAULT_CANVAS_WIDTH) - (!isPagesSidebarHidden ? 200 : 0);
+      return (+globalSettings?.canvasMaxWidth || DEFAULT_CANVAS_WIDTH) - (!hideSidebar ? 200 : 0);
     }
     if (globalSettings?.canvasMaxWidthType === '%') {
       return +globalSettings?.canvasMaxWidth + '%';
     }
     return DEFAULT_CANVAS_WIDTH;
-  }, [globalSettings, isPagesSidebarHidden]);
+  }, [globalSettings, hideSidebar]);
 
   const toggleSidebarPinned = useCallback(() => {
     const newValue = !isSidebarPinned;
@@ -119,6 +130,45 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     };
   }, []);
 
+  const renderHeader = () => {
+    if (moduleMode) {
+      return null;
+    }
+
+    if (currentLayout !== 'mobile') {
+      return (
+        <DesktopHeader
+          showHeader={showHeader}
+          isAppLoaded={isAppLoaded}
+          appName={appName}
+          darkMode={darkMode}
+          pages={pages}
+          currentPageId={currentPageId ?? homePageId}
+          showViewerNavigation={!hideSidebar}
+          handleAppEnvironmentChanged={handleAppEnvironmentChanged}
+          changeToDarkMode={changeToDarkMode}
+        />
+      );
+    }
+
+    return (
+      <>
+        {currentLayout === 'mobile' && !isMobilePreviewMode && (
+          <MobileHeader
+            showHeader={showHeader}
+            appName={appName}
+            darkMode={darkMode}
+            pages={pages}
+            currentPageId={currentPageId ?? homePageId}
+            showViewerNavigation={!hideSidebar}
+            handleAppEnvironmentChanged={handleAppEnvironmentChanged}
+            changeToDarkMode={changeToDarkMode}
+          />
+        )}
+      </>
+    );
+  };
+
   if (isEditorLoading) {
     return (
       <div className={cx('apploader', { 'dark-theme theme-dark': darkMode })}>
@@ -144,32 +194,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
               className={cx('viewer wrapper', { 'mobile-layout': currentLayout, 'theme-dark dark-theme': darkMode })}
             >
               <DndProvider backend={HTML5Backend}>
-                <ModuleProvider moduleId={moduleId}>
-                  {currentLayout !== 'mobile' && (
-                    <DesktopHeader
-                      showHeader={showHeader}
-                      isAppLoaded={isAppLoaded}
-                      appName={appName}
-                      darkMode={darkMode}
-                      pages={pages}
-                      currentPageId={currentPageId ?? homePageId}
-                      showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
-                      changeToDarkMode={changeToDarkMode}
-                    />
-                  )}
-                  {currentLayout === 'mobile' && !isMobilePreviewMode && (
-                    <MobileHeader
-                      showHeader={showHeader}
-                      appName={appName}
-                      darkMode={darkMode}
-                      pages={pages}
-                      currentPageId={currentPageId ?? homePageId}
-                      showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
-                      changeToDarkMode={changeToDarkMode}
-                    />
-                  )}
+                <ModuleProvider moduleId={moduleId} isModuleMode={moduleMode} appType={appType}>
+                  {renderHeader()}
                   <div className="sub-section">
                     <div className="main">
                       <div
@@ -179,7 +205,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                         }}
                       >
                         <div className={`areas d-flex flex-rows app-${appId}`}>
-                          {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
+                          {currentLayout !== 'mobile' && !hideSidebar && !moduleMode && (
                             <ViewerSidebarNavigation
                               showHeader={showHeader}
                               isMobileDevice={currentLayout === 'mobile'}
@@ -195,10 +221,11 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
                               close: !isSidebarPinned,
+                              'w-100': moduleMode,
                             })}
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
-                              marginLeft: isPagesSidebarHidden || currentLayout === 'mobile' ? 'auto' : '210px',
+                              marginLeft: hideSidebar || currentLayout === 'mobile' ? 'auto' : '210px',
                             }}
                           >
                             <div
@@ -212,20 +239,20 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                 position: 'relative',
                               }}
                             >
-                              {currentLayout === 'mobile' && isMobilePreviewMode && (
+                              {currentLayout === 'mobile' && isMobilePreviewMode && !moduleMode && (
                                 <MobileHeader
                                   showHeader={showHeader && isAppLoaded}
                                   appName={appName}
                                   darkMode={darkMode}
                                   pages={pages}
                                   currentPageId={currentPageId ?? homePageId}
-                                  showViewerNavigation={!isPagesSidebarHidden}
+                                  showViewerNavigation={!hideSidebar}
                                   handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                 />
                               )}
-                              <AppCanvas moduleId={moduleId} isViewerSidebarPinned={isSidebarPinned} />
+                              <AppCanvas isViewerSidebarPinned={isSidebarPinned} />
                             </div>
                             {/* {!licenseValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />} */}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}

@@ -22,10 +22,11 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 // const QueryPanel = lazy(() => import('@/AppBuilder/QueryPanel'));
 
 // TODO: split Loader into separate component and remove editor loading state from Editor
-export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode }) => {
+export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType }) => {
   useAppData(appId, moduleId, darkMode);
   const isEditorLoading = useStore((state) => state.isEditorLoading);
   const currentMode = useStore((state) => state.currentMode);
+  const isModuleEditor = appType === 'module';
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode);
 
@@ -46,15 +47,15 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
       <ErrorBoundary>
         <Suspense fallback={<div>Loading...</div>}>
-          <EditorHeader darkMode={darkMode} />
-          <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
+          <EditorHeader darkMode={darkMode} isModuleEditor={isModuleEditor} />
+          <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} isModuleEditor={isModuleEditor} />
         </Suspense>
         {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
         <DndProvider backend={HTML5Backend}>
-          <ModuleProvider moduleId={moduleId}>
-            <AppCanvas moduleId={moduleId} appId={appId} />
+          <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false}>
+            <AppCanvas appId={appId} appType={appType} />
             <QueryPanel darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} />
+            <RightSideBar darkMode={darkMode} isModuleEditor={isModuleEditor} />
           </ModuleProvider>
         </DndProvider>
         <Popups darkMode={darkMode} />

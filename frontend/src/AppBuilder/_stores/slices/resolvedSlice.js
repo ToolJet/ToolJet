@@ -3,15 +3,6 @@ import { resolveDynamicValues } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import _ from 'lodash';
-import {
-  reservedKeyword,
-  resolveString,
-  removeNestedDoubleCurlyBraces,
-  getDynamicVariables,
-  resolveCode,
-} from '@/_helpers/utils';
-
-import { validateMultilineCode } from '@/_helpers/utility';
 
 const initialState = {
   resolvedStore: {
@@ -25,7 +16,7 @@ const initialState = {
         secrets: {},
         customResolvables: {},
         exposedValues: {
-          queries: {},
+          queries: {} /* IMPORTANT: Query is subscribed by the moduleContainer component */,
           components: {},
           variables: {},
           constants: {},
@@ -50,6 +41,18 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
 
 export const createResolvedSlice = (set, get) => ({
   ...initialState,
+  initializeResolvedSlice: (moduleId) => {
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId] = {
+          ...state.resolvedStore.modules[moduleId],
+          ...initialState.resolvedStore.modules.canvas,
+        };
+      },
+      false,
+      'initializeResolvedSlice'
+    );
+  },
   setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -469,6 +472,9 @@ export const createResolvedSlice = (set, get) => ({
       state.resolvedStore.modules[moduleId].exposedValues.components = {};
       state.resolvedStore.modules[moduleId].exposedValues.variables = {};
       state.resolvedStore.modules[moduleId].exposedValues.globals = {};
+      if (state.resolvedStore.modules[moduleId].exposedValues.input) {
+        state.resolvedStore.modules[moduleId].exposedValues.input = {};
+      }
       if (state.resolvedStore.modules[moduleId].exposedValues.page?.variables) {
         state.resolvedStore.modules[moduleId].exposedValues.page.variables = {};
       }
@@ -580,5 +586,24 @@ export const createResolvedSlice = (set, get) => ({
         return object;
       }
     }
+  },
+
+  setModuleInputs: (key, value, moduleId = 'canvas') => {
+    set(
+      (state) => {
+        if (!state.resolvedStore.modules[moduleId].exposedValues.input) {
+          state.resolvedStore.modules[moduleId].exposedValues.input = {};
+        }
+        state.resolvedStore.modules[moduleId].exposedValues.input[key] = value;
+      },
+      false,
+      'setModuleInputs'
+    );
+    get().updateDependencyValues(`input.${key}`);
+  },
+  clearModuleInputs: (moduleId = 'canvas') => {
+    set((state) => {
+      state.resolvedStore.modules[moduleId].exposedValues.input = {};
+    });
   },
 });

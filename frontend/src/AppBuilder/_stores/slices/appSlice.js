@@ -1,4 +1,3 @@
-import { updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { appsService, appVersionService } from '@/_services';
 import { decimalToHex } from '@/Editor/editorConstants';
 import toast from 'react-hot-toast';

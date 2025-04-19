@@ -9,12 +9,12 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 
-const RightTopHeaderButtons = () => {
+const RightTopHeaderButtons = ({ isModuleEditor }) => {
   return (
     <div className="d-flex justify-content-end navbar-right-section" style={{ width: '300px', paddingRight: '12px' }}>
       <div className=" release-buttons navbar-nav flex-row">
         <PreviewAndShareIcons />
-        <PromoteReleaseButton />
+        {!isModuleEditor && <PromoteReleaseButton />}
       </div>
     </div>
   );

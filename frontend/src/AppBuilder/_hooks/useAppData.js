@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   appEnvironmentService,
   appService,
+  appsService,
   appVersionService,
   dataqueryService,
   datasourceService,
@@ -53,7 +54,14 @@ const normalizeQueryTransformationOptions = (query) => {
   return query;
 };
 
-const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, versionId } = {}) => {
+const useAppData = (
+  appId,
+  moduleId,
+  darkMode,
+  mode = 'edit',
+  { environmentId, versionId } = {},
+  moduleMode = false
+) => {
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
   const setEditorLoading = useStore((state) => state.setEditorLoading);
@@ -76,8 +84,8 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const previousVersion = usePrevious(currentVersionId);
-  const events = useStore((state) => state.eventsSlice.module[moduleId].events);
-  const pages = useStore((state) => state.modules[moduleId].pages);
+  const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
+  const pages = useStore((state) => state.modules[moduleId]?.pages || []);
   const currentPageId = useStore((state) => state.currentPageId);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
@@ -107,6 +115,10 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+
+  const setModulesIsLoading = useStore((state) => state.setModulesIsLoading, shallow);
+  const setModulesList = useStore((state) => state.setModulesList, shallow);
+  const initModules = useStore((state) => state.initModules, shallow);
 
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
@@ -148,16 +160,22 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   };
 
   useEffect(() => {
-    if (pageSwitchInProgress) {
+    if (!moduleMode) return;
+    initModules(moduleId);
+  }, [initModules, moduleId, moduleMode]);
+
+  useEffect(() => {
+    if (pageSwitchInProgress && !moduleMode) {
       const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
       }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId]);
+  }, [pageSwitchInProgress, currentPageId, moduleMode]);
 
   useEffect(() => {
+    if (moduleMode) return;
     const subscription = authenticationService.currentSession
       .pipe(
         distinctUntilChanged((prev, curr) => {
@@ -185,16 +203,16 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
     return () => {
       subscription && subscription.unsubscribe();
     };
-  }, []);
+  }, [moduleMode]);
 
   useEffect(() => {
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
-    setResolvedGlobals('theme', { name: exposedTheme });
-  }, [appMode, darkMode]);
+    setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
+  }, [appMode, darkMode, moduleId]);
 
   useEffect(() => {
-    if (!currentSession) {
+    if (!currentSession || moduleMode) {
       return;
     }
     const queryParams = getPreviewQueryParams();
@@ -415,9 +433,10 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         document.title = retrieveWhiteLabelText();
       };
     });
-  }, [setApp, setEditorLoading, currentSession]);
+  }, [setApp, setEditorLoading, currentSession, moduleMode]);
 
   useEffect(() => {
+    if (moduleMode) return;
     if (isComponentLayoutReady) {
       runOnLoadQueries().then(() => {
         let startingPage = pages.find((page) => page.id === currentPageId);
@@ -427,13 +446,15 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
-  }, [isComponentLayoutReady]);
+  }, [isComponentLayoutReady, moduleMode]);
 
   useEffect(() => {
+    if (moduleMode) return;
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: app.appName });
-  }, [app.appName]);
+  }, [app.appName, moduleMode]);
 
   useEffect(() => {
+    if (moduleMode) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
     const isEnvChanged =
@@ -540,7 +561,22 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         setEditorLoading(false);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode]);
+
+  useEffect(() => {
+    if (moduleMode) return;
+    if (mode === 'edit') {
+      requestIdleCallback(
+        () => {
+          appsService.getAll(0, '', '', 'module').then((data) => {
+            setModulesIsLoading(false);
+            setModulesList(data.apps);
+          });
+        },
+        { timeout: 2000 }
+      ); // Adding a timeout of 2 seconds as fallback
+    }
+  }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
 };
 
 export default useAppData;

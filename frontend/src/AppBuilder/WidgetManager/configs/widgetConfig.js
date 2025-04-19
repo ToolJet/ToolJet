@@ -58,6 +58,8 @@ import {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  moduleContainerConfig,
+  moduleViewerConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -120,4 +122,6 @@ export const widgets = [
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  moduleContainerConfig,
+  moduleViewerConfig,
 ];

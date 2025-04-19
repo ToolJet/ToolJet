@@ -8,8 +8,25 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import AppModeToggle from './AppModeToggle';
 
-const GlobalSettings = ({ darkMode }) => {
+const GlobalSettings = ({ darkMode, isModuleEditor }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+
+  if (isModuleEditor) {
+    return (
+      <div>
+        <div bsPrefix="global-settings-popover" className="global-settings-panel">
+          <HeaderSection>
+            <HeaderSection.PanelHeader title="Global settings" />
+          </HeaderSection>
+          <div style={{ padding: '12px 16px' }} className={cx({ disabled: shouldFreeze })}>
+            <div className="tj-text-xsm color-slate12 ">
+              <AppExport darkMode={darkMode} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

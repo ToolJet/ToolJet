@@ -12,8 +12,8 @@ import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons
 import BuildSuggestions from './BuildSuggestions';
 import GitSyncManager from './GitSyncManager';
 import UpdatePresenceMultiPlayer from './UpdatePresenceMultiPlayer';
-
-export const EditorHeader = ({ darkMode }) => {
+import { ModuleEditorBanner } from '@/modules/Modules/components';
+export const EditorHeader = ({ darkMode, isModuleEditor }) => {
   const { isSaving, saveError, isVersionReleased } = useStore(
     (state) => ({
       isSaving: state.app.isSaving,
@@ -72,7 +72,10 @@ export const EditorHeader = ({ darkMode }) => {
                   }}
                 >
                   <div className="global-settings-app-wrapper p-0 m-0 ">
-                    <EditAppName />
+                    <div className="d-flex flex-row">
+                      {isModuleEditor && <ModuleEditorBanner />}
+                      <EditAppName />
+                    </div>
                   </div>
                   <HeaderActions darkMode={darkMode} />
                   <div className="d-flex align-items-center">
@@ -96,20 +99,21 @@ export const EditorHeader = ({ darkMode }) => {
                     {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
                   </div>
                 </div>
-                <div className="navbar-seperator"></div>
-                {/* <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}></div> */}
+                {!isModuleEditor && <div className="navbar-seperator"></div>}
               </div>
               <div className="d-flex align-items-center p-0">
                 <div className="d-flex version-manager-container p-0 mx-2  align-items-center ">
-                  {/* {editingVersion && ( */}
-                  <AppEnvironments darkMode={darkMode} />
-                  {/* )} */}
-                  <AppVersionsManager darkMode={darkMode} />
+                  {!isModuleEditor && (
+                    <>
+                      <AppEnvironments darkMode={darkMode} />
+                      <AppVersionsManager darkMode={darkMode} />
+                    </>
+                  )}
                   <GitSyncManager />
                 </div>
               </div>
             </div>
-            <RightTopHeaderButtons />
+            <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
             <BuildSuggestions />
           </div>
         </div>

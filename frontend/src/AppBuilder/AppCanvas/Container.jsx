@@ -20,7 +20,7 @@ import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
-
+import { ModuleContainerBlank } from '@/modules/Modules/components';
 //TODO: Revisit the logic of height (dropRef)
 
 /*
@@ -44,6 +44,7 @@ export const Container = React.memo(
     isViewerSidebarPinned,
     pageSidebarStyle,
     componentType,
+    appType,
   }) => {
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
@@ -63,13 +64,13 @@ export const Container = React.memo(
     }, [componentType, index, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
-      accept: 'box',
+      accept: appType === 'module' && componentType !== 'ModuleContainer' ? [] : 'box',
       hover: (item) => {
         item.canvasRef = realCanvasRef?.current;
         item.canvasId = id;
         item.canvasWidth = getContainerCanvasWidth();
       },
-      drop: async ({ componentType }, monitor) => {
+      drop: async ({ componentType, component }, monitor) => {
         const didDrop = monitor.didDrop();
         if (didDrop) return;
         if (componentType === 'PDF' && !isPDFSupported()) {
@@ -78,15 +79,40 @@ export const Container = React.memo(
           );
           return;
         }
+
+        const moduleInfo = component?.moduleId
+          ? {
+              moduleId: component.moduleId,
+              versionId: component.versionId,
+              environmentId: component.environmentId,
+              moduleName: component.displayName,
+              moduleContainer: component.moduleContainer,
+            }
+          : undefined;
+
         if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
-          const parentComponent = addNewWidgetToTheEditor(componentType, monitor, currentLayout, realCanvasRef, id);
+          const parentComponent = addNewWidgetToTheEditor(
+            componentType,
+            monitor,
+            currentLayout,
+            realCanvasRef,
+            id,
+            moduleInfo
+          );
           const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
           const newComponents = [parentComponent, ...childComponents];
           await addComponentToCurrentPage(newComponents);
           // setSelectedComponents([parentComponent?.id]);
           setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
         } else {
-          const newComponent = addNewWidgetToTheEditor(componentType, monitor, currentLayout, realCanvasRef, id);
+          const newComponent = addNewWidgetToTheEditor(
+            componentType,
+            monitor,
+            currentLayout,
+            realCanvasRef,
+            id,
+            moduleInfo
+          );
           await addComponentToCurrentPage([newComponent]);
           // setSelectedComponents([newComponent?.id]);
           setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
@@ -97,7 +123,11 @@ export const Container = React.memo(
       }),
     });
 
-    const showEmptyContainer = currentMode === 'edit' && id === 'canvas' && components.length === 0 && !isOverCurrent;
+    const showEmptyContainer =
+      currentMode === 'edit' &&
+      (id === 'canvas' || componentType === 'ModuleContainer') &&
+      components.length === 0 &&
+      !isOverCurrent;
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
@@ -146,6 +176,24 @@ export const Container = React.memo(
       [setLastCanvasClickPosition]
     );
 
+    /* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
+        Hence display is set to none on dragover and removed only when the component is added */
+
+    const renderEmptyContainer = () => {
+      if (components && components?.length !== 0) return;
+
+      const styles = {
+        display: showEmptyContainer ? 'block' : 'none',
+        ...(componentType === 'ModuleContainer' ? { height: '100%', width: '100%' } : {}),
+      };
+
+      return (
+        <div style={styles}>
+          {componentType === 'ModuleContainer' ? <ModuleContainerBlank /> : <NoComponentCanvasContainer />}
+        </div>
+      );
+    };
+
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -161,6 +209,8 @@ export const Container = React.memo(
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
               ? canvasBgColor
+              : componentType === 'ModuleContainer'
+              ? 'inherit'
               : '#f0f0f0',
           width: getCanvasWidth(),
           maxWidth: (() => {
@@ -213,14 +263,7 @@ export const Container = React.memo(
             />
           ))}
         </div>
-
-        {/* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
-        Hence display is set to none on dragover and removed only when the component is added */}
-        {(!components || components?.length === 0) && (
-          <div style={{ display: showEmptyContainer ? 'block' : 'none' }}>
-            <NoComponentCanvasContainer />
-          </div>
-        )}
+        {renderEmptyContainer()}
       </div>
     );
   }
