@@ -2,7 +2,6 @@ import { getImportPath } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { DynamicModule, Module } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
-import { InstanceSettingsService } from '@modules/instance-settings/service';
 
 @Module({})
 export class SMTPModule {
@@ -15,7 +14,7 @@ export class SMTPModule {
       module: SMTPModule,
       imports: [await InstanceSettingsModule.register(configs)],
       controllers: [SmtpController],
-      providers: [SMTPService, FeatureAbilityFactory, SMTPUtilService, InstanceSettingsService],
+      providers: [SMTPService, FeatureAbilityFactory, SMTPUtilService],
     };
   }
 }
