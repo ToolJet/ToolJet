@@ -93,9 +93,11 @@ export class LicenseCountsService implements ILicenseCountsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
       const organizationStatusList = [WORKSPACE_STATUS.ACTIVE];
-      !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
-      !isOnlyActive && organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
 
+      if (!isOnlyActive) {
+        statusList.push(USER_STATUS.ARCHIVED);
+        organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
+      }
       const userIdsWithoutNonActiveSuperadmins = (
         await this.userRepository.getUsers(
           {
@@ -135,10 +137,6 @@ export class LicenseCountsService implements ILicenseCountsService {
     return userIdsOfSuperAdmins;
   }
 
-  fetchTotalAppCount(manager: EntityManager): Promise<number> {
-    return manager.count(App, { where: { type: 'front-end' } });
-  }
-
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number> {
     return manager.count(App, {
       where: {
@@ -148,18 +146,51 @@ export class LicenseCountsService implements ILicenseCountsService {
     });
   }
 
-  async organizationsCount(manager?: EntityManager): Promise<number> {
-    // organizations with active users and active status
-    return dbTransactionWrap(async (manager) => {
-      return await manager.count(Organization, {
-        where: {
-          status: WORKSPACE_STATUS.ACTIVE,
-          organizationUsers: {
-            status: In([WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED]),
-          },
-        },
-        relations: ['organizationUsers'],
-      });
-    }, manager);
+  async organizationsCount(manager?: EntityManager) {
+    return dbTransactionWrap(
+      (manager) =>
+        manager
+          .createQueryBuilder(Organization, 'organizations')
+          .where('organizations.status = :status', { status: WORKSPACE_STATUS.ACTIVE })
+          .getCount(), //Fetch only the organizations which are active not based on Org User status
+      manager
+    );
+  }
+
+  async getUserIdWithEndUserRole(manager: EntityManager): Promise<string[]> {
+    const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
+
+    return manager
+      .createQueryBuilder(User, 'users')
+      .innerJoin('users.organizationUsers', 'ou', 'ou.status IN (:...statusList)', { statusList })
+      .innerJoin('users.userPermissions', 'up', 'ou.organizationId = up.organizationId')
+      .innerJoin('up.organization', 'org', 'org.status = :activeStatus', {
+        activeStatus: WORKSPACE_STATUS.ACTIVE,
+      })
+      .where('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+      .andWhere('up.name = :endUser', { endUser: USER_ROLE.END_USER })
+      .select('users.id', 'id')
+      .distinct(true)
+      .getRawMany()
+      .then((records) => records.map((record) => record.id));
+  }
+
+  async fetchTotalAppCount(manager: EntityManager): Promise<number> {
+    const result = await manager.query(`
+      SELECT COUNT(*) AS count
+      FROM apps a
+      INNER JOIN organizations o ON a.organization_id = o.id
+      WHERE a.type = 'front-end' AND o.status = 'active'
+    `);
+    return Number(result[0].count);
+  }
+
+  async appsCount(manager: EntityManager): Promise<number> {
+    return manager
+      .createQueryBuilder('apps', 'a')
+      .innerJoin('organizations', 'o', 'a.organization_id = o.id')
+      .where('a.type = :type', { type: 'front-end' })
+      .andWhere('o.status = :status', { status: 'active' })
+      .getCount();
   }
 }
