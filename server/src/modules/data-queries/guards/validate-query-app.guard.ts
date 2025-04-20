@@ -17,10 +17,10 @@ export class ValidateQueryAppGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const { id, versionId } = request.params;
+    const appId = request.body?.app_id;
     const user: User = request.user;
 
-    // Check if either id is provided, otherwise throw BadRequestException
-    if (!id) {
+    if (!versionId) {
       throw new BadRequestException();
     }
 
@@ -28,8 +28,16 @@ export class ValidateQueryAppGuard implements CanActivate {
     if (!user) {
       throw new ForbiddenException();
     }
-
-    const app = await this.appsRepository.findByDataQuery(id, user.organizationId, versionId);
+    let app;
+    if (id) {
+      app = await this.appsRepository.findByDataQuery(id, user.organizationId, versionId);
+    }
+    if (appId) {
+      app = await this.appsRepository.findById(appId, user.organizationId, versionId);
+    }
+    if (versionId) {
+      app = await this.versionRepository.findAppFromVersion(versionId, user.organizationId);
+    }
 
     // If app is not found, throw NotFoundException
     if (!app) {
