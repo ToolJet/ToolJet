@@ -59,6 +59,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.CUSTOM_THEMES:
       return licenseInstance.customThemes;
 
+    case LICENSE_FIELD.EXTERNAL_API:
+      return licenseInstance.externalApis;
+
     case LICENSE_FIELD.AUDIT_LOGS:
       return licenseInstance.auditLogs;
 
