@@ -1,6 +1,5 @@
 import { FEATURE_KEY } from '.';
 import { MODULES } from '@modules/app/constants/modules';
-import { LICENSE_FIELD } from '../../licensing/constants';
 import { FeaturesConfig } from '../types';
 
 export const FEATURES: FeaturesConfig = {
@@ -8,12 +7,15 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.AUTH]: {
     [FEATURE_KEY.LOGIN]: {
       isPublic: true,
+      auditLogsKey: 'USER_LOGIN',
     },
     [FEATURE_KEY.SUPER_ADMIN_LOGIN]: {
       isPublic: true,
+      auditLogsKey: 'USER_LOGIN',
     },
     [FEATURE_KEY.ORGANIZATION_LOGIN]: {
       isPublic: true,
+      auditLogsKey: 'USER_LOGIN',
     },
     [FEATURE_KEY.ACTIVATE_ACCOUNT]: {
       isPublic: true,
@@ -32,9 +34,11 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.SIGNUP]: {
       isPublic: true,
+      auditLogsKey: 'USER_SIGNUP',
     },
     [FEATURE_KEY.ACCEPT_INVITE]: {
       isPublic: true,
+      auditLogsKey: 'USER_INVITE_REDEEM',
     },
     [FEATURE_KEY.RESEND_INVITE]: {
       isPublic: true,
@@ -46,6 +50,7 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.SETUP_ACCOUNT_FROM_TOKEN]: {
+      auditLogsKey: 'USER_INVITE_REDEEM',
       isPublic: true,
     },
     [FEATURE_KEY.REQUEST_TRIAL]: {
@@ -73,12 +78,7 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.GET_INVITEE_DETAILS]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.HEALTH_CHECK]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.ROOT_PAGE]: {
+      auditLogsKey: 'USER_INVITE_REDEEM',
       isPublic: true,
     },
     [FEATURE_KEY.OAUTH_SIGN_IN]: {
