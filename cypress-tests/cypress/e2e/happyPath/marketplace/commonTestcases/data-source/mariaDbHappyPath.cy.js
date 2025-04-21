@@ -1,6 +1,6 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText, commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addQuery,
@@ -20,6 +20,7 @@ const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -50,7 +51,20 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "MariaDB", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-mariadb`,
+      "mariadb",
+      [{ key: "connectionLimit", value: 5 }]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-mariadb-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-mariadb`
+    );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -83,7 +97,7 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.labelSSLCertificate).verifyVisibleElement(
       "have.text",
-      postgreSqlText.sslCertificate
+      "SSL Certificate"
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",

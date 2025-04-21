@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
@@ -14,6 +14,7 @@ const data = {};
 describe("Data source SMTP", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -43,7 +44,25 @@ describe("Data source SMTP", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("apis", "SMTP", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-smtp`,
+      "smtp",
+      [
+        { key: "host", value: "localhost", encrypted: false },
+        { key: "port", value: 465, encrypted: false },
+        { key: "user", value: "", encrypted: false },
+        { key: "password", value: "", encrypted: true },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-smtp-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-smtp`
+    );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",

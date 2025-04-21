@@ -61,7 +61,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -74,7 +74,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -83,7 +83,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
@@ -92,7 +92,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     loaderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Loader color',
       validation: {
         schema: { type: 'string' },
@@ -110,7 +110,7 @@ export const buttonConfig = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Icon color',
       validation: { schema: { type: 'string' } },
       accordian: 'button',
@@ -219,10 +219,10 @@ export const buttonConfig = {
     events: [],
     styles: {
       textColor: { value: '#FFFFFF' },
-      borderColor: { value: '#4368E3' },
+      borderColor: { value: 'var(--primary-brand)' },
       loaderColor: { value: '#FFFFFF' },
       borderRadius: { value: '{{6}}' },
-      backgroundColor: { value: '#4368E3' },
+      backgroundColor: { value: 'var(--primary-brand)' },
       iconColor: { value: '#FFFFFF' },
       direction: { value: 'left' },
       padding: { value: 'default' },
