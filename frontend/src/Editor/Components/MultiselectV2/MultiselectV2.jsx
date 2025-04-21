@@ -516,6 +516,9 @@ export const MultiselectV2 = ({
             fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
             menuPortalTarget={document.body}
+            onMenuClose={() => {
+              setSearchInputValue('');
+            }}
           />
         </div>
       </div>
