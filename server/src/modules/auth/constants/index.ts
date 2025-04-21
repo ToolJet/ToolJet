@@ -5,13 +5,11 @@ export enum FEATURE_KEY {
   ORGANIZATION_LOGIN = 'organizationLogin', // POST 'authenticate/:organizationId'
 
   // Account Activation and Authorization
-  ACTIVATE_ACCOUNT = 'activateAccount', // POST 'activate-account-with-token'
   AUTHORIZE = 'authorize', // GET 'authorize'
   SWITCH_WORKSPACE = 'switchWorkspace', // GET 'switch/:organizationId'
 
   // Setup and Signup
   SETUP_ADMIN = 'setupAdmin', // POST 'setup-admin'
-  SETUP_SUPER_ADMIN = 'setupSuperAdmin', // POST 'setup-super-admin'
   SIGNUP = 'signup', // POST 'signup'
   ACCEPT_INVITE = 'acceptInvite', // POST 'accept-invite'
   RESEND_INVITE = 'resendInvite', // POST 'resend-invite'
