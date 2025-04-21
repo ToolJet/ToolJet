@@ -40,6 +40,8 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { RequestContext } from '@modules/request-context/service';
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
   constructor(
@@ -509,18 +511,12 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         !user || !!user.invitationToken
       );
 
-      this.eventEmitter.emit(
-        'auditLogEntry',
-        {
-          userId: currentUser.id,
-          organizationId: currentOrganization.id,
-          resourceId: currentOrganization.id,
-          resourceName: updatedUser.email,
-          resourceType: MODULES.USER,
-          actionType: MODULE_INFO.USER_INVITE,
-        },
-        manager
-      );
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: currentUser.id,
+        organizationId: currentOrganization.id,
+        resourceId: currentOrganization.id,
+        resourceName: updatedUser.email,
+      });
 
       return organizationUser;
     }, manager);
