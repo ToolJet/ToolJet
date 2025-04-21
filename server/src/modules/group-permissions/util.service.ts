@@ -30,7 +30,6 @@ import { UserRepository } from '@modules/users/repository';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { IGroupPermissionsUtilService } from './interfaces/IUtilService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
-import { ValidateEditUserGroupAdditionObject } from './interfaces';
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
   constructor(
@@ -307,37 +306,5 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       }
       return response;
     });
-  }
-
-  async validateEditUserGroupPermissionsAddition(
-    functionParam: ValidateEditUserGroupAdditionObject,
-    manager?: EntityManager
-  ) {
-    const { organizationId, userId, groupsToAddIds } = functionParam;
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const userRole = await this.rolesRepository.getUserRole(userId, organizationId, manager);
-      if (userRole.name === USER_ROLE.END_USER) {
-        return await Promise.all(
-          groupsToAddIds.map(async (id) => {
-            const group = await manager.findOne(GroupPermissions, {
-              where: {
-                id,
-              },
-            });
-            if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
-            const isEditableGroup = await this.roleUtilService.isEditableGroup(group, organizationId, manager);
-            if (isEditableGroup) {
-              throw new BadRequestException({
-                message: {
-                  error:
-                    'End-users can only be granted permission to view apps. Kindly change the user role or custom group to continue.',
-                  title: 'Conflicting permissions',
-                },
-              });
-            }
-          })
-        );
-      }
-    }, manager);
   }
 }

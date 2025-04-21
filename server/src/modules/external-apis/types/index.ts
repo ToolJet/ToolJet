@@ -16,3 +16,9 @@ interface Features {
 export interface FeaturesConfig {
   [MODULES.EXTERNAL_APIS]: Features;
 }
+
+export interface ValidateEditUserGroupAdditionObject {
+  userId: string;
+  groupsToAddIds: string[];
+  organizationId: string;
+}
