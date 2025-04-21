@@ -1,6 +1,11 @@
 import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
-import { BASIC_PLAN_TERMS, BUSINESS_PLAN_TERMS, ENTERPRISE_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
+import {
+  BASIC_PLAN_TERMS,
+  BUSINESS_PLAN_TERMS,
+  ENTERPRISE_PLAN_TERMS,
+  WORKFLOW_TEAM_PLAN_TERMS,
+} from '@modules/licensing/constants/PlanTerms';
 
 export default class LicenseBase {
   private _appsCount: number | string;
@@ -36,6 +41,7 @@ export default class LicenseBase {
   private _isAi: boolean;
   private _ai: object;
   private _isExternalApis: boolean;
+  private _isAppWhiteLabelling: boolean;
 
   constructor(licenseData?: Partial<Terms>, updatedDate?: Date, startDate?: Date, expiryDate?: Date) {
     if (process.env.NODE_ENV === 'test') {
@@ -54,6 +60,7 @@ export default class LicenseBase {
       this._isMultiEnvironment = true;
       this._isAi = true;
       this._isExternalApis = true;
+      this._isAppWhiteLabelling = true;
       return;
     }
     if (!licenseData) {
@@ -89,6 +96,7 @@ export default class LicenseBase {
     this._isSAML = this.getFeatureValue('saml');
     this._isCustomStyling = this.getFeatureValue('customStyling');
     this._isWhiteLabelling = this.getFeatureValue('whiteLabelling');
+    this._isAppWhiteLabelling = this.getFeatureValue('appWhiteLabelling');
     this._isCustomThemes = this.getFeatureValue('customThemes');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
@@ -252,6 +260,13 @@ export default class LicenseBase {
     return this._isWhiteLabelling;
   }
 
+  public get appWhiteLabelling(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.appWhiteLabelling;
+    }
+    return this._isAppWhiteLabelling;
+  }
+
   public get customThemes(): boolean {
     if (this.IsBasicPlan) {
       return !!BASIC_PLAN_TERMS.features?.customThemes;
@@ -313,6 +328,7 @@ export default class LicenseBase {
       gitSync: this.gitSync,
       comments: this.comments,
       ai: this.aiFeature,
+      appWhiteLabelling: this.appWhiteLabelling,
     };
   }
 
@@ -359,9 +375,9 @@ export default class LicenseBase {
   }
 
   public get workflows(): object {
-    if (this.IsBasicPlan) {
+    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL) {
       return BASIC_PLAN_TERMS.workflows;
     }
-    return this._workflows ?? BASIC_PLAN_TERMS.workflows;
+    return this._workflows ?? WORKFLOW_TEAM_PLAN_TERMS.workflows;
   }
 }

@@ -473,8 +473,10 @@ const BaseManageOrgConstants = ({
               featureAceess={featureAccess}
               licenseType={featureAccess?.licenseStatus?.licenseType}
             />
+            <div style={{ marginTop: '850px' }}>
+              <OrganizationList />
+            </div>
           </div>
-          <OrganizationList />
         </div>
         <div className="page-wrapper mt-4">
           <div className="container-xl" style={{ width: '880px' }}>

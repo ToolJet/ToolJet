@@ -93,9 +93,11 @@ export class LicenseCountsService implements ILicenseCountsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
       const organizationStatusList = [WORKSPACE_STATUS.ACTIVE];
-      !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
-      !isOnlyActive && organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
 
+      if (!isOnlyActive) {
+        statusList.push(USER_STATUS.ARCHIVED);
+        organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
+      }
       const userIdsWithoutNonActiveSuperadmins = (
         await this.userRepository.getUsers(
           {
@@ -135,10 +137,6 @@ export class LicenseCountsService implements ILicenseCountsService {
     return userIdsOfSuperAdmins;
   }
 
-  fetchTotalAppCount(manager: EntityManager): Promise<number> {
-    return manager.count(App, { where: { type: 'front-end' } });
-  }
-
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number> {
     return manager.count(App, {
       where: {
@@ -148,18 +146,53 @@ export class LicenseCountsService implements ILicenseCountsService {
     });
   }
 
-  async organizationsCount(manager?: EntityManager): Promise<number> {
-    // organizations with active users and active status
-    return dbTransactionWrap(async (manager) => {
-      return await manager.count(Organization, {
-        where: {
-          status: WORKSPACE_STATUS.ACTIVE,
-          organizationUsers: {
-            status: In([WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED]),
+  async organizationsCount(manager?: EntityManager) {
+    return dbTransactionWrap(
+      (manager) =>
+        manager.count(Organization, {
+          where: {
+            status: WORKSPACE_STATUS.ACTIVE,
+          },
+        }), //Fetch only the organizations which are active not based on Org User status
+      manager
+    );
+  }
+
+  async getUserIdWithEndUserRole(manager: EntityManager): Promise<string[]> {
+    const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
+
+    const users = await manager.find(User, {
+      select: ['id'],
+      where: {
+        status: Not(USER_STATUS.ARCHIVED),
+        organizationUsers: {
+          status: In(statusList),
+        },
+        userPermissions: {
+          name: USER_ROLE.END_USER,
+          organization: {
+            status: WORKSPACE_STATUS.ACTIVE,
           },
         },
-        relations: ['organizationUsers'],
-      });
-    }, manager);
+      },
+      relations: ['organizationUsers', 'userPermissions', 'userPermissions.organization'],
+    });
+
+    // Extract unique user IDs
+    return [...new Set(users.map((user) => user.id))];
+  }
+
+  async fetchTotalAppCount(manager: EntityManager): Promise<number> {
+    const apps = await manager.find(App, {
+      where: {
+        type: 'front-end',
+        organization: {
+          status: 'active',
+        },
+      },
+      relations: ['organization'],
+    });
+
+    return apps.length;
   }
 }
