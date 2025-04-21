@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { HeaderSection } from '@/_ui/LeftSidebar';
@@ -7,7 +7,7 @@ import JSONTreeViewerV2 from './JSONTreeViewerV2';
 import _ from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useIconList from './useIconList';
-import useCallbackActions from './useCallbackActions';
+
 import { formatInspectorComponentData, formatInspectorDataMisc, formatInspectorQueryData } from './utils';
 
 const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
@@ -19,31 +19,39 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
   const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
   const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
   const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
-  const pathToBeInspected = useStore((state) => state.pathToBeInspected);
+  const searchablePaths = useRef(new Set(['queries', 'components', 'globals', 'variables', 'page', 'constants']));
+
   const iconsList = useIconList({
     exposedComponentsVariables,
     componentIdNameMapping,
     exposedQueries,
   });
-  const callbackActions = useCallbackActions();
-  console.log('callbackActions', callbackActions);
 
   const sortedComponents = useMemo(() => {
-    return formatInspectorComponentData(componentIdNameMapping, exposedComponentsVariables);
+    return formatInspectorComponentData(componentIdNameMapping, exposedComponentsVariables, searchablePaths.current);
   }, [exposedComponentsVariables, componentIdNameMapping]);
 
   const sortedQueries = useMemo(() => {
-    return formatInspectorQueryData(queryNameIdMapping, exposedQueries);
+    return formatInspectorQueryData(queryNameIdMapping, exposedQueries, searchablePaths.current);
   }, [exposedQueries, queryNameIdMapping]);
 
-  const sortedVariables = useMemo(() => formatInspectorDataMisc(exposedVariables), [exposedVariables]);
+  const sortedVariables = useMemo(
+    () => formatInspectorDataMisc(exposedVariables, 'variables', searchablePaths.current),
+    [exposedVariables]
+  );
 
-  const sortedConstants = useMemo(() => formatInspectorDataMisc(exposedConstants), [exposedConstants]);
+  const sortedConstants = useMemo(
+    () => formatInspectorDataMisc(exposedConstants, 'constants', searchablePaths.current),
+    [exposedConstants]
+  );
 
-  const sortedPageVariables = useMemo(() => formatInspectorDataMisc(exposedPageVariables), [exposedPageVariables]);
+  const sortedPageVariables = useMemo(
+    () => formatInspectorDataMisc(exposedPageVariables, 'page', searchablePaths.current),
+    [exposedPageVariables]
+  );
 
   const sortedGlobalVariables = useMemo(
-    () => formatInspectorDataMisc(exposedGlobalVariables),
+    () => formatInspectorDataMisc(exposedGlobalVariables, 'globals', searchablePaths.current),
     [exposedGlobalVariables]
   );
 
@@ -52,28 +60,40 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
       name: '',
       children: [
         {
+          id: 'queries',
           name: 'Queries',
           children: sortedQueries,
+          metadata: { path: 'queries' },
         },
         {
+          id: 'components',
           name: 'Components',
           children: sortedComponents,
+          metadata: { path: 'components' },
         },
         {
+          id: 'globals',
           name: 'Globals',
           children: sortedGlobalVariables,
+          metadata: { path: 'globals' },
         },
         {
+          id: 'variables',
           name: 'Variables',
           children: sortedVariables,
+          metadata: { path: 'variables' },
         },
         {
+          id: 'page',
           name: 'Page',
           children: sortedPageVariables,
+          metadata: { path: 'page' },
         },
         {
+          id: 'constants',
           name: 'Constants',
           children: sortedConstants,
+          metadata: { path: 'constants' },
         },
       ],
     };
@@ -81,29 +101,13 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
     return jsontreeData;
   }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables]);
 
-  const handleNodeExpansion = (path, data, currentNode) => {
-    if (pathToBeInspected && path?.length > 0) {
-      const shouldExpand = pathToBeInspected.includes(path[path.length - 1]);
-
-      // Scroll to the component in the inspector
-      if (path?.length === 2 && path?.[0] === 'components' && shouldExpand) {
-        const target = document.getElementById(`inspector-node-${String(currentNode).toLowerCase()}`);
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-
-      return shouldExpand;
-    } else return false;
-  };
-
   return (
     <div
       className={`left-sidebar-inspector ${darkMode && 'dark-theme'}`}
       style={{ resize: 'horizontal', minWidth: 288 }}
     >
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Inspector">
+        <HeaderSection.PanelHeader title="State inspector">
           <div className="d-flex justify-content-end">
             <ButtonSolid
               title={`${pinned ? 'Unpin' : 'Pin'}`}
@@ -111,7 +115,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
               darkMode={darkMode}
               styles={{ width: '28px', padding: 0 }}
               data-cy={`left-sidebar-inspector`}
-              variant="tertiary"
+              variant="ghostBlack"
               className="left-sidebar-header-btn"
               leftIcon={pinned ? 'unpin' : 'pin'}
               iconWidth="14"
@@ -120,28 +124,14 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
+
       <div className="card-body p-1 pb-5">
         <JSONTreeViewerV2
           data={memoizedJSONData}
           iconsList={iconsList}
           darkMode={darkMode}
-          callbackActions={callbackActions}
+          searchablePaths={searchablePaths.current}
         />
-        {/* <JSONTreeViewer
-          data={memoizedJSONData}
-          useIcons={true}
-          iconsList={iconsList}
-          useIndentedBlock={true}
-          enableCopyToClipboard={true}
-          useActions={true}
-          actionsList={callbackActions}
-          actionIdentifier="id"
-          expandWithLabels={true}
-          shouldExpandNode={handleNodeExpansion}
-          // selectedComponent={selectedComponent}
-          treeType="inspector"
-          darkMode={darkMode}
-        /> */}
       </div>
     </div>
   );

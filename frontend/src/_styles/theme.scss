@@ -18881,8 +18881,10 @@ section.ai-message-prompt-input-wrapper {
 .basic.tree {
   list-style: none;
   margin: 0;
-  padding: 23.4px;
+  padding: 20px;
+  padding-top: 0px;
 }
+
 .basic .tree-node,
 .basic .tree-node-group {
   list-style: none;
@@ -18930,4 +18932,195 @@ section.ai-message-prompt-input-wrapper {
   display: flex;
   align-items: center;
   font-size:12px;
+}
+
+
+.tj-inspector-search-input {
+  width: 300px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: var(--base) !important;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.node-content {
+  display: flex;
+  align-items: center;
+  padding: 0px 8px;
+  height: 100%;
+  width: 100%;
+  border-radius: 6px;
+}
+
+.node-content-active {
+  .copy-menu-options-icon {
+    background-color: var(--interactive-overlays-fill-hover);
+  }
+}
+
+.node-content-hoverable:hover, .node-content-active {
+  background-color: var(--interactive-overlays-fill-hover);
+  .node-actions {
+    display: flex;
+  }
+  
+}
+
+.json-viewer {
+  font-size: 11px;
+
+  ul {
+    background-color: transparent !important;
+    padding-left: 6px !important;
+    padding-right: 10px !important;   
+    // li{
+    //   text-indent: 0px !important;
+    //   padding-top: 0px !important;
+    //   height:18.46px;
+    // }
+    // ul > li:hover {
+    //   background-color: var(--interactive-overlays-fill-hover); // or any color you prefer
+    // }
+  }
+
+
+  
+}
+
+.json-viewer-node-value {
+  font-weight: 500;
+}
+
+.json-viewer-header {
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: row;
+  margin-left:20px;
+  margin-bottom:18px;
+  margin-right: 18px;
+}
+
+.json-viewer-back-btn {
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    cursor: pointer;
+    background-color:var(--interactive-overlays-fill-hover);
+    border-radius: 4px;
+  }
+
+}
+
+.json-viewer-options-btn {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+
+  &:hover {
+    cursor: pointer;
+    background-color:var(--interactive-overlays-fill-hover);
+    border-radius: 4px;
+  }
+}
+
+
+.node-highlight {
+  background-color: #FFD43B;
+  padding:0px;
+}
+
+.node-actions {
+
+  justify-content: center;
+  align-items: center;
+  margin-left:auto;
+  margin-right: 24px;
+  display: none;
+  gap: 4px;
+}
+
+.node-action-icon {
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
+  width: 20px;
+  border-radius: 4px;
+  margin-right:4px;
+
+  &:hover {
+    background-color: var(--button-outline-hover);
+  }
+
+}
+
+.copy-menu-options-icon {
+    border: 1px solid var(--border-weak, #E4E7EB);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    box-shadow: var(--elevation-100-box-shadow);
+    background-color: var(--base);
+
+    &:hover {
+      background-color: var(--button-outline-hover);
+    }
+}
+
+.copy-menu-options{
+    width: 144px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    &.dark-theme {
+        .popover-body {
+            box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.9), 0px 8px 16px 0px #000000;
+        }
+    }
+    .popover-body {
+        width: 100%;
+        padding: 8px;
+        border-radius: 10px;
+        background: var(--background-surface-layer-01);
+        box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05), 0px 8px 16px 0px rgba(48, 50, 51, 0.1);
+       
+        .menu-options {
+            .option {
+                display: flex;
+                padding: 6px 8px;
+                align-items: center;
+                gap: 6px;
+                height: 30px;
+                align-self: stretch;
+                border-radius: 6px;
+                cursor: pointer;
+                &:hover{
+                    background: rgba(136, 144, 153, 0.08);
+                }
+            }
+        }
+    }
+}
+
+
+.invisible-overlay {
+  position: fixed;
+  width:287px;
+  height:20px;
+  left:28px;
+  z-index: 9999;
+  transform: translateY(-3px);
+
+  &:hover {
+    background-color: var(--interactive-overlays-fill-hover);
+    border-radius: 4px;
+  }
 }

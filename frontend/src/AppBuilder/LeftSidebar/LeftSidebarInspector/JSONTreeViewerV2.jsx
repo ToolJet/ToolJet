@@ -1,79 +1,145 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import TreeView, { flattenTree } from 'react-accessible-treeview';
-import WidgetIcon from '@/../assets/images/icons/widgets';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components/ToolTip';
-import { extractComponentName } from './utils';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import Fuse from 'fuse.js';
+import JSONViewer from './JSONViewer';
+import { SearchBox } from '@/_components';
+import { Node } from './Node';
+import { v4 as uuidv4 } from 'uuid';
+import { isEmpty } from 'lodash';
 
-const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, callbackActions = [] }) => {
+const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths = new Set() }) => {
+  const searchValue = useStore((state) => state.inspectorSearchValue, shallow);
+  // const getSelectedNodes = useStore((state) => state.getSelectedNodes, shallow);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const setSearchValue = useStore((state) => state.setInspectorSearchValue, shallow);
+  const [selectedNodePath, setSelectedNodePath] = React.useState(null);
+  const selectedNodes = useStore((state) => state.selectedNodes, shallow);
+
+  function fuzzySearch(query, searchablePaths) {
+    const list = Array.from(searchablePaths);
+    const fuse = new Fuse(list, { threshold: 0.3 });
+    return fuse.search(query).map((result) => result.item);
+  }
+
+  const [searchedSet, pathSet] = useMemo(() => {
+    const result = fuzzySearch(searchValue, searchablePaths);
+    const expandedIdSet = new Set();
+    result.forEach((id) => {
+      const pathArray = id.split('.');
+      for (let i = pathArray.length - 1; i > 0; i--) {
+        const parentPath = pathArray.slice(0, i).join('.');
+        if (!expandedIdSet.has(parentPath)) {
+          expandedIdSet.add(parentPath);
+        }
+      }
+    });
+    return [new Set(result), expandedIdSet];
+  }, [searchValue, JSON.stringify(searchablePaths)]);
+
+  // const recursiveFn = (obj) => {
+  //   if (!obj || typeof obj !== 'object') return [];
+  //   let isCompletelyExposed = false;
+  //   obj?.children?.forEach((child) => {
+  //     const { id } = child;
+  //     if (searchedSet.has(id)) {
+  //       isCompletelyExposed = true;
+  //     }
+  //   });
+  //   const newChildren =
+  //     obj?.children
+  //       ?.filter((child) => {
+  //         return isCompletelyExposed || pathSet.has(child.id);
+  //       })
+  //       ?.map((child) => {
+  //         return recursiveFn(child);
+  //       }) || [];
+
+  //   return {
+  //     ...obj,
+  //     children: newChildren,
+  //   };
+  // };
+
+  // const formattedData = useMemo(() => {
+  //   return searchValue ? recursiveFn(data) : data;
+  // }, [data, searchValue]);
+
+  const key = useMemo(() => {
+    return uuidv4();
+  }, [JSON.stringify(data), selectedNodePath]);
+
   const flattendedData = flattenTree(data);
 
-  const renderNodeIcons = (node) => {
-    const icon = iconsList.filter((icon) => icon?.iconName === node && !icon?.isInfoIcon)[0];
-    if (icon && icon?.iconPath) {
-      return (
-        <WidgetIcon
-          name={extractComponentName(icon?.iconPath)}
-          fill={darkMode ? '#3A3F42' : '#D7DBDF'}
-          width="16"
-          height="16"
-        />
-      );
-    }
-    if (icon && icon.jsx) {
-      if (icon?.tooltipMessage) {
-        return (
-          <ToolTip message={icon?.tooltipMessage}>
-            <div>{icon.jsx()}</div>
-          </ToolTip>
-        );
-      }
-      return icon.jsx();
-    }
+  const backFn = () => {
+    setSelectedNodePath(null);
   };
 
+  const selectedData = selectedNodePath ? getResolvedValue(`{{${selectedNodePath}}}`) : {};
+  const expandedIds = [...Array.from(pathSet), ...selectedNodes];
+
+  const filteredIds = useMemo(() => {
+    const expandedIdsSet = new Set(expandedIds);
+    const filtered = flattendedData.filter((item) => {
+      const { metadata } = item || {};
+      const { path } = metadata || {};
+      return expandedIdsSet.has(path);
+    });
+    return filtered.map((item) => item.id);
+  }, [flattendedData, expandedIds]);
+
+  console.log('selectedData', selectedData);
   return (
-    <TreeView
-      data={flattendedData}
-      className="basic"
-      aria-label="basic example tree"
-      nodeRenderer={(props) => {
-        const { element, getNodeProps, level, handleSelect, handleExpand, isExpanded, isDisabled, isBranch } = props;
-        const nodeIcon = renderNodeIcons(element.name);
-        const metadata = element.metadata || {};
-        const { type } = metadata;
-
-        const actions = callbackActions.filter((action) => [type, 'all'].includes(action.for));
-
-        return (
-          <div
-            {...getNodeProps({ onClick: handleExpand })}
-            style={{
-              marginLeft: 22 * (level - 1),
-              opacity: isDisabled ? 0.5 : 1,
-              height: level === 1 ? '28px' : '32px',
-              display: 'flex',
-              alignItems: 'center',
-              color: level === 1 ? 'var(--text-placeholder, #6A727C)' : 'var(--text-default, #1B1F24)',
-            }}
-          >
-            {(isBranch || level === 1) && (
-              <div className="node-expansion-icon">
-                {isExpanded ? (
-                  <SolidIcon name="TriangleDownCenter" width="16" height="16" />
-                ) : (
-                  <SolidIcon name="TriangleUpCenter" width="16" height="16" />
-                )}
-              </div>
-            )}
-            {nodeIcon && <div className="node-icon">{nodeIcon}</div>}
-            <div className="node-label">
-              <span className="name">{element.name}</span>
-            </div>
+    <>
+      {!selectedNodePath || isEmpty(selectedData) ? (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+            <SearchBox
+              dataCy={`inspector-search`}
+              initialValue={searchValue}
+              callBack={(e) => setSearchValue(e.target.value)}
+              onClearCallback={() => setSearchValue('')}
+              placeholder={`Search`}
+              customClass={`tj-inspector-search-input  tj-text-xsm`}
+              showClearButton={false}
+              width={300}
+            />
           </div>
-        );
-      }}
-    />
+
+          <TreeView
+            data={flattendedData}
+            className="basic"
+            aria-label="basic example tree"
+            defaultExpandedIds={selectedNodes}
+            expandedIds={filteredIds}
+            key={key}
+            nodeRenderer={(props) => {
+              const { element } = props;
+              const { metadata } = element || {};
+              const { path } = metadata || {};
+              const data = {
+                nodeName: element.name,
+                selectedNodePath: path,
+              };
+
+              return (
+                <Node
+                  {...props}
+                  darkMode={darkMode}
+                  setSelectedNodePath={setSelectedNodePath}
+                  searchValue={searchValue}
+                  iconsList={iconsList}
+                  data={data}
+                />
+              );
+            }}
+          />
+        </div>
+      ) : (
+        <JSONViewer data={selectedData} darkMode={darkMode} path={selectedNodePath} backFn={backFn} />
+      )}
+    </>
   );
 };
 

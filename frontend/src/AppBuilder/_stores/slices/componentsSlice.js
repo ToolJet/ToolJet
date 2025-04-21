@@ -6,6 +6,7 @@ import {
   checkSubstringRegex,
   hasArrayNotation,
   parsePropertyPath,
+  resolveCode,
 } from '@/AppBuilder/_stores/utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -1573,6 +1574,10 @@ export const createComponentsSlice = (set, get) => ({
   getQueryIdNameMapping: (moduleId = 'canvas') => {
     const { modules } = get();
     return modules[moduleId].queryIdNameMapping;
+  },
+  getQueryIdFromName: (queryName, moduleId = 'canvas') => {
+    const { modules } = get();
+    return modules[moduleId].queryNameIdMapping[queryName];
   },
   getContainerChildrenMapping: (id) => {
     const { containerChildrenMapping } = get();
