@@ -110,7 +110,8 @@
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
-        "build-with-ai/ai-docs-assistant"
+        "build-with-ai/ai-docs-assistant",
+        "build-with-ai/tooljet-mcp"
       ]
     },
     {
@@ -340,6 +341,7 @@
             "data-sources/mssql",
             "data-sources/mysql",
             "data-sources/n8n",
+            "data-sources/nocodb",
             "data-sources/notion",
             "data-sources/openapi",
             "data-sources/oracledb",
@@ -404,7 +406,8 @@
                 "marketplace/plugins/marketplace-plugin-hugging_face",
                 "marketplace/plugins/marketplace-plugin-cohere",
                 "marketplace/plugins/marketplace-plugin-weaviate",
-                "marketplace/plugins/marketplace-plugin-qdrant"
+                "marketplace/plugins/marketplace-plugin-qdrant",
+                "marketplace/plugins/marketplace-plugin-azurerepos"
               ]
             }
           ]
@@ -622,11 +625,25 @@
         },
         {
           "type": "category",
-          "label": "GitSync",
+          "label": "Git Sync",
           "items": [
             "development-lifecycle/gitsync/overview",
-            "development-lifecycle/gitsync/gitsync-config",
-            "development-lifecycle/gitsync/ssh-config",
+            {
+              "type": "category",
+              "label": "Connect to Git Repo",
+              "items": [
+                "development-lifecycle/gitsync/connect-to-git-repo/connection-method",
+                {
+                  "type": "category",
+                  "label": "Git SSH Protocol",
+                  "items": [
+                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config",
+                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config"
+                  ]
+                },
+                "development-lifecycle/gitsync/connect-to-git-repo/github-config"
+              ]
+            },
             "development-lifecycle/gitsync/delete-gitsync",
             "development-lifecycle/gitsync/push",
             "development-lifecycle/gitsync/pull"
