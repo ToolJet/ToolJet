@@ -87,19 +87,19 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (
-      resourcePermissions?.configurableDataSourceId?.length &&
-      dataSourceId &&
-      resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)
-    ) {
-      can(
-        [FEATURE_KEY.GET, FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION],
-        DataSource
-      );
+    if (resourcePermissions?.configurableDataSourceId?.length) {
+      can([FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+
+      if (dataSourceId && resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)) {
+        can(
+          [FEATURE_KEY.GET, FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION],
+          DataSource
+        );
+      }
     }
 
     if (isAllViewable) {
-      can([FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+      can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION], DataSource);
       return;
     }
     if (
@@ -107,7 +107,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       dataSourceId &&
       resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)
     ) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
       return;
     }
   }

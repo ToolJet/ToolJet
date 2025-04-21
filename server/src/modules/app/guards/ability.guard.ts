@@ -94,11 +94,7 @@ export abstract class AbilityGuard implements CanActivate {
 
       // Validate all features against resource if any
       if (!features.every((feature) => ability.can(feature, this.getSubjectType(), resourceId || undefined))) {
-        throw new ForbiddenException(
-          JSON.stringify({
-            organizationId: app?.organizationId,
-          })
-        );
+        throw new ForbiddenException(`You do not have permissions to perform this action.`);
       }
       return true;
     }

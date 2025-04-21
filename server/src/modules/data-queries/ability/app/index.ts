@@ -31,6 +31,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const appId = request?.tj_resource_id;
 
+    // Always grant RUN_EDITOR and RUN_VIEWER permissions
+    can([FEATURE_KEY.RUN_EDITOR, FEATURE_KEY.RUN_VIEWER], App);
+
     // Admin or super admin and do all operations
     if (isAdmin || superAdmin) {
       can(
@@ -86,11 +89,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     }
 
     if (isAllViewable) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.PREVIEW, FEATURE_KEY.RUN_VIEWER], App);
+      can([FEATURE_KEY.GET, FEATURE_KEY.PREVIEW, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
       return;
     }
     if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.PREVIEW, FEATURE_KEY.RUN_VIEWER], App);
+      can([FEATURE_KEY.GET, FEATURE_KEY.PREVIEW, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
       return;
     }
   }
