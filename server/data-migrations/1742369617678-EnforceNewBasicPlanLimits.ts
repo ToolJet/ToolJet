@@ -1,174 +1,177 @@
-import { Brackets, EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppModule } from '@modules/app/module';
 import { NestFactory } from '@nestjs/core';
 import { LicenseCountsService } from '@ee/licensing/services/count.service';
-import { dbTransactionWrap } from '@helpers/database.helper';
-import { OrganizationUser } from '@entities/organization_user.entity';
 import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
-import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
+
 export class EnforceNewBasicPlanLimits1742369617678 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const manager = queryRunner.manager;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const licenseInitService = nestApp.get(LicenseInitService);
 
-    try {
-      const { isValid } = await licenseInitService.initForMigration(manager);
-      console.log('isValid', isValid);
-      if (!isValid) {
-        await dbTransactionWrap(async (manager: EntityManager) => {
-          const licenseCountsService = nestApp.get(LicenseCountsService);
+    const { isValid } = await licenseInitService.initForMigration(manager);
+    if (!isValid) {
+      const licenseCountsService = nestApp.get(LicenseCountsService);
 
-          const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
+      const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
+      const statusListStr = statusList.map((status) => `'${status}'`).join(',');
 
-          const usersWithEditPermission = (
-            await manager
-              .createQueryBuilder(User, 'users')
-              .innerJoin(
-                'users.organizationUsers',
-                'organization_users',
-                'organization_users.status IN (:...statusList)',
-                {
-                  statusList,
-                }
-              )
-              .innerJoin(
-                'users.userPermissions',
-                'userPermissions',
-                'organization_users.organizationId = userPermissions.organizationId'
-              )
-              .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-              .andWhere(
-                new Brackets((qb) => {
-                  qb.where('userPermissions.name = :admin OR userPermissions.name = :builder', {
-                    admin: USER_ROLE.ADMIN,
-                    builder: USER_ROLE.BUILDER,
-                  });
-                })
-              )
-              .select('users.id')
-              .distinct()
-              .getMany()
-          ).map((record) => record.id);
+      // Get users with edit permission using native query - FIXED table name from group_permissions to permission_groups
+      const usersWithEditPermissionQuery = `
+        SELECT DISTINCT users.id 
+        FROM users
+        INNER JOIN organization_users ON users.id = organization_users.user_id AND organization_users.status IN (${statusListStr})
+        INNER JOIN group_users ON users.id = group_users.user_id
+        INNER JOIN permission_groups ON group_users.group_id = permission_groups.id AND organization_users.organization_id = permission_groups.organization_id
+        WHERE users.status != '${USER_STATUS.ARCHIVED}'
+        AND (permission_groups.name = '${USER_ROLE.ADMIN}' OR permission_groups.name = '${USER_ROLE.BUILDER}')
+      `;
 
-          console.log('usersWithEditPermission', usersWithEditPermission);
+      const usersWithEditPermissionResult = await manager.query(usersWithEditPermissionQuery);
+      const usersWithEditPermission = usersWithEditPermissionResult.map((record) => record.id);
 
-          //More than 2 Editors
+      // More than 2 Editors
+      if (usersWithEditPermission?.length > 2) {
+        // Get admin users directly with native query (excluding instance users) - FIXED table name
+        const adminsQuery = `
+          SELECT DISTINCT users.id
+          FROM users
+          INNER JOIN group_users ON users.id = group_users.user_id
+          INNER JOIN permission_groups ON group_users.group_id = permission_groups.id
+          WHERE users.id IN (${usersWithEditPermission.map((id) => `'${id}'`).join(',')})
+          AND users.user_type != '${USER_TYPE.INSTANCE}'
+          AND permission_groups.name = '${USER_ROLE.ADMIN}'
+        `;
 
-          if (usersWithEditPermission?.length > 2) {
-            const users = await manager
-              .createQueryBuilder(User, 'users')
-              .where('users.id IN (:...userIds)', { userIds: usersWithEditPermission })
-              .select(['users.id', 'users.userType', 'userPermissions.name'])
-              .innerJoin('users.userPermissions', 'userPermissions')
-              .getMany();
+        const adminsResult = await manager.query(adminsQuery);
+        const admins = adminsResult.map((record) => record.id);
 
-            // Exclude users who are super admins (user_type = 'instance')
-            const filteredUsers = users.filter((user) => user.userType !== USER_TYPE.INSTANCE);
+        // Get builder users directly with native query (excluding instance users) - FIXED table name
+        const buildersQuery = `
+          SELECT DISTINCT users.id
+          FROM users
+          INNER JOIN group_users ON users.id = group_users.user_id
+          INNER JOIN permission_groups ON group_users.group_id = permission_groups.id
+          WHERE users.id IN (${usersWithEditPermission.map((id) => `'${id}'`).join(',')})
+          AND users.user_type != '${USER_TYPE.INSTANCE}'
+          AND permission_groups.name = '${USER_ROLE.BUILDER}'
+        `;
 
-            const admins = filteredUsers
-              .filter((user) => user.userPermissions.some((permission) => permission.name === USER_ROLE.ADMIN))
-              .map((user) => user.id);
-            const builders = filteredUsers
-              .filter((user) => user.userPermissions.some((permission) => permission.name === USER_ROLE.BUILDER))
-              .map((user) => user.id);
+        const buildersResult = await manager.query(buildersQuery);
+        const builders = buildersResult.map((record) => record.id);
 
-            //If more than 2 admins, archive rest of the admins and all other builders
-            if (admins?.length > 1) {
-              const adminIdsToArchive = admins.slice(1);
-              await manager
-                .createQueryBuilder()
-                .update(OrganizationUser)
-                .set({ status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }) //Workspace level archive
-                .where('userId IN (:...ids)', { ids: adminIdsToArchive })
-                .execute();
+        console.log('Admins:', admins);
+        console.log('Builders:', builders);
 
-              await manager
-                .createQueryBuilder()
-                .update(User)
-                .set({ status: USER_STATUS.ARCHIVED })
-                .where('id IN (:...ids)', { ids: adminIdsToArchive }) //Instance level archive
-                .execute();
+        // If more than 2 admins, archive rest of the admins and all other builders
+        if (admins?.length > 1) {
+          const adminIdsToArchive = admins.slice(1);
 
-              if (builders?.length) {
-                await manager
-                  .createQueryBuilder()
-                  .update(OrganizationUser)
-                  .set({ status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null })
-                  .where('userId IN (:...ids)', { ids: builders })
-                  .execute();
-                await manager
-                  .createQueryBuilder()
-                  .update(User)
-                  .set({ status: USER_STATUS.ARCHIVED })
-                  .where('id IN (:...ids)', { ids: builders })
-                  .execute();
-              }
-              //If 1 admin and more than 1 builder, archive all builders except the first one
-            } else if (admins?.length === 0 && builders?.length > 1) {
-              const buildersToArchive = builders.slice(1);
-              await manager
-                .createQueryBuilder()
-                .update(OrganizationUser)
-                .set({ status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null })
-                .where('userId IN (:...ids)', { ids: buildersToArchive })
-                .execute();
+          // Archive admins at workspace level
+          if (adminIdsToArchive.length > 0) {
+            const archiveAdminsWorkspaceQuery = `
+              UPDATE organization_users 
+              SET status = '${WORKSPACE_USER_STATUS.ARCHIVED}', invitation_token = NULL
+              WHERE user_id IN (${adminIdsToArchive.map((id) => `'${id}'`).join(',')})
+            `;
+            await manager.query(archiveAdminsWorkspaceQuery);
 
-              await manager
-                .createQueryBuilder()
-                .update(User)
-                .set({ status: USER_STATUS.ARCHIVED })
-                .where('id IN (:...ids)', { ids: buildersToArchive })
-                .execute();
-            } else {
-              //Only 1 admin and 1 super admin archive all builders
-              if (builders?.length) {
-                await manager
-                  .createQueryBuilder()
-                  .update(OrganizationUser)
-                  .set({ status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null })
-                  .where('userId IN (:...ids)', { ids: builders })
-                  .execute();
-                await manager
-                  .createQueryBuilder()
-                  .update(User)
-                  .set({ status: USER_STATUS.ARCHIVED })
-                  .where('id IN (:...ids)', { ids: builders })
-                  .execute();
-              }
-            }
+            // Archive admins at instance level
+            const archiveAdminsInstanceQuery = `
+              UPDATE users
+              SET status = '${USER_STATUS.ARCHIVED}'
+              WHERE id IN (${adminIdsToArchive.map((id) => `'${id}'`).join(',')})
+            `;
+            await manager.query(archiveAdminsInstanceQuery);
           }
 
-          const viewerIds = await licenseCountsService.getUserIdWithEndUserRole(manager);
-          console.log('viewerIds', viewerIds);
-          //If more than 50 end users, achive the rest after the first 50
-          if (viewerIds?.length > 50) {
-            const viewersToArchive = viewerIds.slice(50);
-            await manager
-              .createQueryBuilder()
-              .update(OrganizationUser)
-              .set({ status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null })
-              .where('userId IN (:...ids)', { ids: viewersToArchive })
-              .execute();
+          // Archive all builders
+          if (builders?.length > 0) {
+            const archiveBuildersWorkspaceQuery = `
+              UPDATE organization_users 
+              SET status = '${WORKSPACE_USER_STATUS.ARCHIVED}', invitation_token = NULL
+              WHERE user_id IN (${builders.map((id) => `'${id}'`).join(',')})
+            `;
+            await manager.query(archiveBuildersWorkspaceQuery);
 
-            await manager
-              .createQueryBuilder()
-              .update(User)
-              .set({ status: USER_STATUS.ARCHIVED })
-              .where('id IN (:...ids)', { ids: viewersToArchive })
-              .execute();
+            const archiveBuildersInstanceQuery = `
+              UPDATE users
+              SET status = '${USER_STATUS.ARCHIVED}'
+              WHERE id IN (${builders.map((id) => `'${id}'`).join(',')})
+            `;
+            await manager.query(archiveBuildersInstanceQuery);
           }
-        }, manager);
+        }
+        // If 0 admin and more than 1 builder, archive all builders except the first one
+        else if (admins?.length === 0 && builders?.length > 1) {
+          const buildersToArchive = builders.slice(1);
+
+          if (buildersToArchive.length > 0) {
+            const archiveBuildersWorkspaceQuery = `
+              UPDATE organization_users 
+              SET status = '${WORKSPACE_USER_STATUS.ARCHIVED}', invitation_token = NULL
+              WHERE user_id IN (${buildersToArchive.map((id) => `'${id}'`).join(',')})
+            `;
+            await manager.query(archiveBuildersWorkspaceQuery);
+
+            const archiveBuildersInstanceQuery = `
+              UPDATE users
+              SET status = '${USER_STATUS.ARCHIVED}'
+              WHERE id IN (${buildersToArchive.map((id) => `'${id}'`).join(',')})
+            `;
+            await manager.query(archiveBuildersInstanceQuery);
+          }
+        }
+        // Only 1 admin and 1 super admin, archive all builders
+        else if (builders?.length > 0) {
+          const archiveBuildersWorkspaceQuery = `
+            UPDATE organization_users 
+            SET status = '${WORKSPACE_USER_STATUS.ARCHIVED}', invitation_token = NULL
+            WHERE user_id IN (${builders.map((id) => `'${id}'`).join(',')})
+          `;
+          await manager.query(archiveBuildersWorkspaceQuery);
+
+          const archiveBuildersInstanceQuery = `
+            UPDATE users
+            SET status = '${USER_STATUS.ARCHIVED}'
+            WHERE id IN (${builders.map((id) => `'${id}'`).join(',')})
+          `;
+          await manager.query(archiveBuildersInstanceQuery);
+        }
       }
-    } catch (error) {
-      console.error('Error occurred during migration:', error);
-      throw error;
-    } finally {
-      await nestApp.close();
+
+      // Handle viewers/end users limit
+      const viewerIds = await licenseCountsService.getUserIdWithEndUserRole(manager);
+      console.log('Viewer IDs:', viewerIds);
+
+      // If more than 50 end users, archive the rest after the first 50
+      if (viewerIds?.length > 50) {
+        const viewersToArchive = viewerIds.slice(50);
+
+        if (viewersToArchive.length > 0) {
+          const archiveViewersWorkspaceQuery = `
+            UPDATE organization_users 
+            SET status = '${WORKSPACE_USER_STATUS.ARCHIVED}', invitation_token = NULL
+            WHERE user_id IN (${viewersToArchive.map((id) => `'${id}'`).join(',')})
+          `;
+          await manager.query(archiveViewersWorkspaceQuery);
+
+          const archiveViewersInstanceQuery = `
+            UPDATE users
+            SET status = '${USER_STATUS.ARCHIVED}'
+            WHERE id IN (${viewersToArchive.map((id) => `'${id}'`).join(',')})
+          `;
+          await manager.query(archiveViewersInstanceQuery);
+        }
+      }
     }
+    await nestApp.close();
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // No down migration implementation
+  }
 }

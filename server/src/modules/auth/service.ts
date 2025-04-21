@@ -20,6 +20,8 @@ import { AuthUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { IAuthService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -117,14 +119,12 @@ export class AuthService implements IAuthService {
       await this.userRepository.updateOne(user.id, updateData, manager);
 
       if (!isInviteRedirect) {
-        // this.eventEmitter.emit('auditLogEntry', {
-        //   userId: user.id,
-        //   organizationId: organization.id,
-        //   resourceId: user.id,
-        //   resourceType: ResourceTypes.USER,
-        //   resourceName: user.email,
-        //   actionType: ActionTypes.USER_LOGIN,
-        // });
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+        });
       }
 
       return await this.sessionUtilService.generateLoginResultPayload(

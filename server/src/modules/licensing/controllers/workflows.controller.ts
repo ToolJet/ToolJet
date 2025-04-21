@@ -10,6 +10,7 @@ import { FEATURE_KEY } from '../constants';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 
+@InitModule(MODULES.LICENSING)
 @Controller('license/workflows')
 @InitModule(MODULES.LICENSING)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
