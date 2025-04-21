@@ -63,9 +63,6 @@ export class EnforceNewBasicPlanLimits1742369617678 implements MigrationInterfac
         const buildersResult = await manager.query(buildersQuery);
         const builders = buildersResult.map((record) => record.id);
 
-        console.log('Admins:', admins);
-        console.log('Builders:', builders);
-
         // If more than 2 admins, archive rest of the admins and all other builders
         if (admins?.length > 1) {
           const adminIdsToArchive = admins.slice(1);
@@ -145,7 +142,6 @@ export class EnforceNewBasicPlanLimits1742369617678 implements MigrationInterfac
 
       // Handle viewers/end users limit
       const viewerIds = await licenseCountsService.getUserIdWithEndUserRole(manager);
-      console.log('Viewer IDs:', viewerIds);
 
       // If more than 50 end users, archive the rest after the first 50
       if (viewerIds?.length > 50) {
