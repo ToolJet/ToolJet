@@ -34,6 +34,7 @@ function AppResourcePermissions({
       onClick={() => {
         !isRoleGroup && !isBasicPlan && !notClickable && openEditPermissionModal(permissions);
       }}
+      data-cy="granular-access-permission"
     >
       <div className="resource-name">
         <SolidIcon name="app" width="20px" className="resource-icon" />

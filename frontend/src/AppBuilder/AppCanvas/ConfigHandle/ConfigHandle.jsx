@@ -48,7 +48,6 @@ export const ConfigHandle = ({
   }, shallow);
 
   let height = visibility === false ? 10 : widgetHeight;
-
   return (
     <div
       className={`config-handle ${customClassName}`}
@@ -60,7 +59,7 @@ export const ConfigHandle = ({
             : position === 'top'
             ? '-20px'
             : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
-        visibility: _showHandle ? 'visible' : 'hidden',
+        visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
       }}
       onClick={(e) => {

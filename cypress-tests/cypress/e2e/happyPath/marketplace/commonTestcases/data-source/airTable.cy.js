@@ -9,18 +9,13 @@ import {
   fillDataSourceTextField,
   selectAndAddDataSource,
 } from "Support/utils/postgreSql";
-import { redisText } from "Texts/redis";
 
 import {
-  verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
-  selectDatasource,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
 
-import { openQueryEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
@@ -283,6 +278,10 @@ describe("Data source Airtable", () => {
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         `Query (${data.dsName1}) completed.`
+      );
+      deleteAppandDatasourceAfterExecution(
+        data.dsName,
+        `cypress-${data.dsName}-airtable`
       );
     });
   });

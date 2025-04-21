@@ -172,6 +172,7 @@ import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
 import AlignRightinspector from './AlignRightinspector.jsx';
 import AlignLeftinspector from './AlignLeftinspector.jsx';
+import AlignHorizontalCenter from './AlignHorizontalCenter.jsx';
 import AlignVerticallyTop from './AlignVerticallyTop.jsx';
 import AlignVerticallyBottom from './AlignVerticallyBottom.jsx';
 import AlignVerticallyCenter from './AlignVerticallyCenter.jsx';
@@ -230,6 +231,7 @@ import CalendarSmall from './CalendarSmall.jsx';
 import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
+import Code from './Code.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -242,9 +244,11 @@ const Icon = (props) => {
     case 'addrectangle':
       return <AddRectangle {...props} />;
     case 'alignleftinspector':
-      return <AlignRightinspector {...props} />;
-    case 'alignrightinspector':
       return <AlignLeftinspector {...props} />;
+    case 'alignrightinspector':
+      return <AlignRightinspector {...props} />;
+    case 'alignhorizontalcenter':
+      return <AlignHorizontalCenter {...props} />;
     case 'alignverticallytop':
       return <AlignVerticallyTop {...props} />;
     case 'alignverticallybottom':
@@ -309,6 +313,8 @@ const Icon = (props) => {
       return <CircularToggleEnabled {...props} />;
     case 'clearrectangle':
       return <ClearRectangle {...props} />;
+    case 'code':
+      return <Code {...props} />;
     case 'clock':
       return <Clock {...props} />;
     case 'column':

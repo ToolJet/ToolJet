@@ -7,13 +7,14 @@ import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
 
+const API_ENDPOINT =
+  Cypress.env("environment") === "Community"
+    ? "/api/library_apps"
+    : "/api/library_apps/";
+
 Cypress.Commands.add(
   "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
-    const API_ENDPOINT =
-      Cypress.env("environment") === "Community"
-        ? "/api/library_apps/"
-        : "/api/library_apps";
     cy.visit("/");
     cy.wait(1000);
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
@@ -116,10 +117,8 @@ Cypress.Commands.add(
       });
 
     const splitIntoFlatArray = (value) => {
-      const regex =
-        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._-]+|\s+)/g;
+      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
       let prefix = "";
-
       return (
         value.match(regex)?.reduce((acc, part) => {
           if (part === "{{" || part === "((") {
@@ -134,10 +133,6 @@ Cypress.Commands.add(
             acc.push(prefix + " ");
           } else if (part === ":") {
             acc.push(prefix + ":");
-          } else if (part === '"') {
-            acc.push(prefix + '"');
-          } else if (part.includes("-")) {
-            acc.push(prefix + part); // Ensure hyphen is included
           } else {
             acc.push(prefix + part);
             prefix = "";
@@ -232,9 +227,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -309,19 +304,19 @@ Cypress.Commands.add("skipEditorPopover", () => {
 });
 
 Cypress.Commands.add("waitForAppLoad", () => {
-  const API_ENDPOINT =
-    Cypress.env("environment") === "Community"
-      ? "/api/v2/data_sources"
-      : "/api/app-environments**";
+  // const API_ENDPOINT =
+  //   Cypress.env("environment") === "Community"
+  //     ? "/api/v2/data_sources"
+  //     : "/api/app-environments**";
 
-  const TIMEOUT = 15000;
+  // const TIMEOUT = 15000;
 
-  cy.intercept("GET", API_ENDPOINT).as("appDs");
-  cy.wait("@appDs", { timeout: TIMEOUT });
+  cy.intercept("GET", "/api/data-queries/**").as("appDs");
+  cy.wait("@appDs", { timeout: 15000 });
 });
 
 Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select id from organizations where name='${workspaceName}';`,
   }).then((resp) => {
@@ -403,20 +398,13 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `
-      SELECT id FROM organizations WHERE name = 'My workspace';
-    `,
-  }).then((resp) => {
-    const workspaceId = resp.rows[0].id;
-    cy.apiLogin("dev@tooljet.io", "password", workspaceId, "/my-workspace");
+  cy.apiLogin();
 
-    cy.visit("/");
-    cy.intercept("GET", "/api/library_apps").as("library_apps");
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    cy.wait("@library_apps");
-  });
+  cy.visit("/my-workspace");
+  cy.intercept("GET", API_ENDPOINT).as("library_apps");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.wait("@library_apps");
+  // });
 });
 
 Cypress.Commands.add(
@@ -462,13 +450,13 @@ Cypress.Commands.add("releaseApp", () => {
 Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
-  cy.intercept("GET", "/api/library_apps/").as("library_apps");
+  cy.intercept("GET", API_ENDPOINT).as("library_apps");
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
 });
 
 Cypress.Commands.add("removeAssignedApps", () => {
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `DELETE FROM app_group_permissions;`,
   });
@@ -507,7 +495,7 @@ Cypress.Commands.add("skipWalkthrough", () => {
 
 Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
   const isPublicValue = isPublic ? "true" : "false";
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE name = '${appName}';`,
   });
@@ -539,10 +527,12 @@ Cypress.Commands.add("loginWithCredentials", (email, password) => {
   cy.clearAndType(onboardingSelectors.loginEmailInput, email);
   cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
   cy.get(onboardingSelectors.signInButton).click();
+  cy.wait(3000);
+  cy.get(commonSelectors.pageLogo).should("be.visible");
 });
 
 Cypress.Commands.add("getAppId", (appName) => {
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select id from apps where name='${appName}';`,
   }).then((resp) => {

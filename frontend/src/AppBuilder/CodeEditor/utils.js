@@ -30,6 +30,17 @@ function traverseAST(node, callback) {
   }
 }
 
+export const isInsideParent = (element, className) => {
+  while (element) {
+    if (element.classList?.contains(className)) {
+      console.log('element.classList', element.classList);
+      return true;
+    }
+    element = element.parentElement;
+  }
+  return false;
+};
+
 function getMethods(type) {
   const arrayMethods = Object.getOwnPropertyNames(Array.prototype).filter(
     (p) => typeof Array.prototype[p] === 'function'
@@ -337,6 +348,7 @@ export const FxParamTypeMapping = Object.freeze({
   color: 'Color',
   json: 'Json',
   code: 'Code',
+  colorSwatches: 'ColorSwatches',
   toggle: 'Toggle',
   select: 'Select',
   alignButtons: 'AlignButtons',

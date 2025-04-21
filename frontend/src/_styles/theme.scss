@@ -346,9 +346,9 @@ button {
 }
 
 .accordion-item-trigger {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%2311181C"/></svg>') !important;
-  height: 16px !important;
-  width: 16px !important;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%23ACB2B9"/></svg>') !important;
+  height: 12px !important;
+  width: 12px !important;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -1654,7 +1654,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: $primary-light;
+      background-color: var(--primary-brand);
     }
   }
 }
@@ -2362,6 +2362,7 @@ body {
   font-family: "Inconsolata", "Menlo", "Consolas", monospace;
   font-size: 16px;
   padding: 20px;
+  color: #0000009c;
 }
 
 .RichEditor-controls {
@@ -2474,32 +2475,32 @@ body {
 .CalendarDay__selected,
 .CalendarDay__selected:active,
 .CalendarDay__selected:hover {
-  background: $primary;
-  border: 1px double $primary;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
 }
 
 .CalendarDay__selected_span {
-  background: $primary;
-  border: $primary;
+  background: var(--primary-brand);
+  border: var(--primary-brand);
 }
 
 .CalendarDay__selected_span:active,
 .CalendarDay__selected_span:hover {
-  background: $primary;
-  border: 1px double $primary;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
   color: #ffffff;
 }
 
 .CalendarDay__hovered_span:active,
 .CalendarDay__hovered_span:hover {
-  background: $primary;
-  border: 1px double $primary;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
   color: #ffffff;
 }
 
 .CalendarDay__hovered_span {
-  background: #83b8e7;
-  border: 1px double #83b8e7;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
   color: #ffffff;
 }
 
@@ -3865,7 +3866,7 @@ input[type="text"] {
   }
 
   .react-datepicker__day--selected {
-    background-color: $primary-light;
+    background-color: var(--primary-brand);
   }
 }
 
@@ -4118,6 +4119,8 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
+    background-color: var(--primary-brand) !important;
+    border: transparent
   }
 
   .rbc-off-range-bg {
@@ -4407,6 +4410,15 @@ input[type="text"] {
   .dynamic-variable-preview {
     padding: 4px !important;
   }
+}
+
+.color-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background-color: #0091FF;
+  border: 1px solid var(--Border-default, #CCD1D5);
+  box-shadow: 0px 1px 0px 0px #e5e5e5;
 }
 
 .portal-header {
@@ -4746,7 +4758,21 @@ input[type="text"] {
  * Folder List
  */
 .folder-list {
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;  
+  &:hover {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #888;
+    }
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+  }
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
@@ -5354,7 +5380,7 @@ div#driver-page-overlay {
   padding: 10px 5px 0 0;
   float: left;
   font-size: 14px;
-  color: $light-gray;
+  color: var(--slate-12);
 }
 
 .dynamic-form-element {
@@ -7142,8 +7168,6 @@ tbody {
 }
 
 .link-widget {
-  display: flex;
-  align-items: center;
   overflow: auto;
 
   &.hover {
@@ -9848,6 +9872,25 @@ tbody {
 .workspace-settings-table-wrap {
   max-width: 880px;
   margin: 0 auto;
+  .tj-user-table-wrapper{
+    padding-right: 4px;
+   }
+   &:hover{
+     .tj-user-table-wrapper{
+       padding-right: 0px;
+     }
+     ::-webkit-scrollbar{
+       display: block;
+       width: 4px;
+     }
+     ::-webkit-scrollbar-track{
+       background: var(--base);
+     }
+     ::-webkit-scrollbar-thumb{
+       background: var(--slate7);
+       border-radius: 6px;
+     }
+   }
 }
 
 
@@ -15738,6 +15781,11 @@ tbody {
   /* Set the desired width */
 }
 
+textarea.tj-text-input-widget{
+  resize: none !important;
+  overflow-y: auto !important;
+}
+
 .tj-text-input-widget {
   border: 1px solid var(--borders-default);
   background-color: var(--surfaces-surface-01);
@@ -15749,7 +15797,7 @@ tbody {
     background-color: var(--surfaces-surface-03);
   }
 
-  &:hover:not(:focus) {
+  &:hover:not(:focus):not([data-ignore-hover="true"]) {
     border: 1px solid var(--tblr-input-border-color-darker) !important;
   }
 
@@ -18583,6 +18631,186 @@ section.ai-message-prompt-input-wrapper {
 }
 
 
+.codebuilder-color-swatches-wrapper {
+  min-width: 231.333px;
+  width: 100%;
+  height: 48px;
+  padding: 8px;
+
+
+  .codebuilder-color-swatches {
+    display: flex;
+    padding: 2px;
+    flex-wrap: wrap;
+
+    .ToggleGroup {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+}
+
+.codebuilder-color-swatches-options {
+  width:100%;
+  height:30px;
+  padding: 6px 8px;
+  border-radius: 6px;
+
+  &:hover {
+    background-color: #f0f1f2 !important;
+  }
+
+  .color-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1.5px solid #CCD1D5;
+    background-color: #0091FF;
+  }
+}
+
+
+.theme-dropdown-wrapper {
+  gap: 75px;
+  height: 32px;
+  margin-bottom: 20px !important;
+  justify-content: space-between;
+}
+
+.theme-custom-menu-list-header {
+  margin: 16px 14px 0px 16px !important;
+  font-size: 12px;
+}
+
+.theme-create-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  height:32px;
+  color:#000;
+  border: 1px solid var(--Border-brand-weak, #97AEFC);
+}
+
+
+.theme-default-pill {
+  font-size: 11px;
+  background-color: #CCD1D54D;
+  color: #6A727C;
+  width: 49px;
+  height: 18px;
+  border-radius: 20px
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+
+.textarea-widget:focus {
+  border-color: var(--primary-brand);
+}
+
+.multiselct-widget-option{
+  input:checked {
+    background-color: var(--primary-brand);
+  }
+}
+
+.multiselect-box {
+  .options{
+    input:checked {
+      background-color: var(--primary-brand);
+    }
+  }
+}
+
+.timer-btn {
+  background-color: var(--primary-brand);
+  &:hover {
+    background-color: var(--primary-brand);
+  }
+}
+
+.timer-btn-hover:hover {
+  background-color: var(--primary-brand);
+}
+
+.canvas-styles-header {
+  display: flex;
+  width: 100%;
+  padding: 6px 16px;
+  font-family: IBM Plex Sans;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  background: var(--Background-surface-layer-02, #F6F8FA);
+  color: #6A727C;
+
+
+}
+
+.app-export-btn {
+  background-color: #FFFFFF;
+  border: 1px solid var(--Border-default, #CCD1D5);
+  box-shadow: 0px 1px 0px 0px var(--Dropshadow000);
+}
+
+.dark-theme {
+  .app-export-btn {
+    background-color: #313b46;
+    color: #ffffff;
+    border: 1px solid transparent;
+  }
+  .canvas-styles-header {
+    background-color: #212325;
+    color: #ffffff;
+  }
+}
+
+.dark-theme {
+  .codebuilder-color-swatches-options:hover {
+    background-color: #313b46 !important;
+  }
+}
+
+.codebuilder-color-picker {
+  .sketch-picker {
+    border: none !important;
+  }
+}
+
+.accordion-button.inspector {
+  width: 300;
+  height: 32px;
+  justify-content: space-between;
+  padding-top: 6px;
+  padding-right: 16px;
+  padding-bottom: 6px;
+  padding-left: 16px;
+  border-bottom-width: 1px;
+  font-family: IBM Plex Sans;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0%;
+  background: var(--Background-surface-layer-02, #F6F8FA);
+  color: var(--Text-placeholder, #6A727C) !important;
+
+}
+
+.dark-theme {
+  .accordion-button.inspector {
+    background: var(--slate3);
+    color: var(--slate12);
+  }
+}
+
+#inspector-tabpane-properties .accordion-header {
+  height:32px;
+}
 .cm-tooltip {
   z-index: 9999 !important;
 }
@@ -18636,6 +18864,16 @@ section.ai-message-prompt-input-wrapper {
   }
 }
 
+.phone-input-widget {
+  .tj-text-input-widget.is-invalid {
+    border-left: none !important;
+  }
+
+  input[type="tel"] {
+    border-top-left-radius: '0px' !important;
+    border-bottom-left-radius: '0px' !important;
+  }
+}
 
 .single-line-codehinter-input {
   .cm-editor {
