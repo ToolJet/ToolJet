@@ -35,6 +35,7 @@ export default class LicenseBase {
   private _workspaceId: string;
   private _isAi: boolean;
   private _ai: object;
+  private _isExternalApis: boolean;
 
   constructor(licenseData?: Partial<Terms>, updatedDate?: Date, startDate?: Date, expiryDate?: Date) {
     if (process.env.NODE_ENV === 'test') {
@@ -52,6 +53,7 @@ export default class LicenseBase {
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
+      this._isExternalApis = true;
       return;
     }
     if (!licenseData) {
@@ -93,6 +95,7 @@ export default class LicenseBase {
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
+    this._isExternalApis = this.getFeatureValue('externalApis');
   }
 
   private getFeatureValue(key: string) {
@@ -254,6 +257,13 @@ export default class LicenseBase {
       return !!BASIC_PLAN_TERMS.features?.customThemes;
     }
     return this._isCustomThemes;
+  }
+
+  public get externalApis(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.externalApi;
+    }
+    return this._isExternalApis;
   }
 
   public get multiPlayerEdit(): boolean {

@@ -120,6 +120,7 @@ export enum LICENSE_FIELD {
   GIT_SYNC = 'gitSyncEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
+  EXTERNAL_API = 'externalApiEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

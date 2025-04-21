@@ -28,6 +28,7 @@ export interface Terms {
     comments?: boolean;
     customThemes?: boolean;
     ai?: boolean;
+    externalApi?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
