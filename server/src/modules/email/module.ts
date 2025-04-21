@@ -10,6 +10,7 @@ export class EmailModule {
     const { EmailService } = await import(`${importPath}/email/service`);
     const { EmailUtilService } = await import(`${importPath}/email/util.service`);
     const { EmailListener } = await import(`${importPath}/email/listener`);
+    const { SMTPUtilService } = await import(`${importPath}/smtp/util.service`);
     return {
       module: EmailModule,
       imports: [
@@ -17,7 +18,7 @@ export class EmailModule {
         await InstanceSettingsModule.register(configs),
         await DataSourcesModule.register(configs),
       ],
-      providers: [EmailService, EmailListener, EmailUtilService],
+      providers: [EmailService, EmailListener, EmailUtilService, SMTPUtilService],
     };
   }
 }
