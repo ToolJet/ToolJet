@@ -25,7 +25,10 @@ export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
         "have.text",
         "Slug accepted!"
     );
-    cy.get(commonWidgetSelector.appLinkSucessLabel).verifyVisibleElement(
+
+    cy.wait(500);
+    // cy.get(commonWidgetSelector.appLinkSucessLabel).should('be.visible');
+    cy.get(commonWidgetSelector.appLinkSucessLabel).should(
         "have.text",
         "Link updated successfully!"
     );

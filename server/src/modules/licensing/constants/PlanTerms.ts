@@ -2,12 +2,12 @@ import { LICENSE_LIMIT, LICENSE_FIELD } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 
 export const BASIC_PLAN_TERMS: Partial<Terms> = {
-  apps: LICENSE_LIMIT.UNLIMITED,
-  workspaces: LICENSE_LIMIT.UNLIMITED,
+  apps: 2,
+  workspaces: 1,
   users: {
-    total: LICENSE_LIMIT.UNLIMITED,
-    editor: LICENSE_LIMIT.UNLIMITED,
-    viewer: LICENSE_LIMIT.UNLIMITED,
+    total: 52,
+    editor: 2,
+    viewer: 50,
     superadmin: 1,
   },
   database: {
@@ -32,12 +32,12 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   workflows: {
     execution_timeout: 60,
     workspace: {
-      total: 200,
+      total: 2,
       daily_executions: 500,
       monthly_executions: 10000,
     },
     instance: {
-      total: 1000,
+      total: 2,
       daily_executions: 25000,
       monthly_executions: 50000,
     },
@@ -80,5 +80,17 @@ export const BUSINESS_PLAN_TERMS = {
 export const ENTERPRISE_PLAN_TERMS = {
   auditLogs: {
     maximumDays: 30,
+  },
+};
+
+export const WORKFLOW_TEAM_PLAN_TERMS: Partial<Terms> = {
+  workflows: {
+    execution_timeout: 60,
+    instance: {
+      total: LICENSE_LIMIT.UNLIMITED,
+      daily_executions: LICENSE_LIMIT.UNLIMITED,
+      monthly_executions: LICENSE_LIMIT.UNLIMITED,
+    },
+    //Only sending instance not workspace
   },
 };

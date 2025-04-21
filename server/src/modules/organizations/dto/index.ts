@@ -89,5 +89,5 @@ export class OrganizationUpdateDto {
 export class OrganizationStatusUpdateDto {
   @IsString()
   @IsEnum(organizationStatusType)
-  status?: string;
+  status?: string; //check ws and user archibing unarchiving xD
 }

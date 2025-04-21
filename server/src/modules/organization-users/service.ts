@@ -201,9 +201,8 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
     const csvData = fileStream.toString();
     const firstLine = csvData.split('\n')[0];
-    const actualColumns = firstLine.split(',').map(col => col.trim().toLowerCase());
-    const extraColumns = actualColumns.filter(col => !allowedColumns.includes(col));
-    
+    const actualColumns = firstLine.split(',').map((col) => col.trim().toLowerCase());
+    const extraColumns = actualColumns.filter((col) => !allowedColumns.includes(col));
     if (extraColumns.length > 0) {
       throw new BadRequestException(`${extraColumns.join(', ')} ${extraColumns.length > 1 ? 'are' : 'is'} not allowed`);
     }

@@ -13,17 +13,13 @@ export class WorkflowCountGuard implements CanActivate {
     if (!request?.headers['tj-workspace-id']) {
       return false;
     }
-
-    if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.VALID))) {
-      throw new HttpException('Workflows are available only in paid plans', 451);
-    }
-
     const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS);
-    if (!workflowsLimit?.workspace || !workflowsLimit?.instance)
+    if (!workflowsLimit?.workspace && !workflowsLimit?.instance)
       throw new HttpException('Workflow is not enabled in the license, contact admin', 404);
 
     // Workspace Level - Total Workflows
     if (
+      workflowsLimit?.workspace &&
       workflowsLimit.workspace.total !== LICENSE_LIMIT.UNLIMITED &&
       (await this.appsRepository.count({
         where: {
@@ -37,6 +33,7 @@ export class WorkflowCountGuard implements CanActivate {
 
     // Instance Level - Total Workflows
     if (
+      workflowsLimit?.instance &&
       workflowsLimit.instance.total !== LICENSE_LIMIT.UNLIMITED &&
       (await this.appsRepository.count({
         where: {
