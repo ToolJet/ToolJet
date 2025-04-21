@@ -17,9 +17,6 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
       auditLogsKey: 'USER_LOGIN',
     },
-    [FEATURE_KEY.ACTIVATE_ACCOUNT]: {
-      isPublic: true,
-    },
     [FEATURE_KEY.AUTHORIZE]: {
       isPublic: true,
     },
@@ -29,56 +26,10 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.SETUP_ADMIN]: {
       isPublic: true,
     },
-    [FEATURE_KEY.SETUP_SUPER_ADMIN]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.SIGNUP]: {
-      isPublic: true,
-      auditLogsKey: 'USER_SIGNUP',
-    },
-    [FEATURE_KEY.ACCEPT_INVITE]: {
-      isPublic: true,
-      auditLogsKey: 'USER_INVITE_REDEEM',
-    },
-    [FEATURE_KEY.RESEND_INVITE]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.VERIFY_INVITE_TOKEN]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.VERIFY_ORGANIZATION_TOKEN]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.SETUP_ACCOUNT_FROM_TOKEN]: {
-      auditLogsKey: 'USER_INVITE_REDEEM',
-      isPublic: true,
-    },
-    [FEATURE_KEY.REQUEST_TRIAL]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.ACTIVATE_TRIAL]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.GET_ONBOARDING_SESSION]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.GET_SIGNUP_ONBOARDING_SESSION]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.FINISH_ONBOARDING]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.TRIAL_DECLINED]: {
-      isPublic: true,
-    },
     [FEATURE_KEY.FORGOT_PASSWORD]: {
       isPublic: true,
     },
     [FEATURE_KEY.RESET_PASSWORD]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.GET_INVITEE_DETAILS]: {
-      auditLogsKey: 'USER_INVITE_REDEEM',
       isPublic: true,
     },
     [FEATURE_KEY.OAUTH_SIGN_IN]: {
