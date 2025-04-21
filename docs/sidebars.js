@@ -141,6 +141,34 @@ const sidebars = {
         },
         {
           'type': 'category',
+          'label': 'Connecting with Data Sources',
+          'items': [
+            'app-builder/import-libraries/runjs',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Events and Logic',
+          'items': [
+            'app-builder/import-libraries/runjs',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Writing Custom Code',
+          'items': [
+            'app-builder/import-libraries/runjs',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Debugging',
+          'items': [
+            'app-builder/import-libraries/runjs',
+          ],
+        },
+        {
+          'type': 'category',
           'label': 'Build Apps',
           'items': [
             'app-builder/walkthrough/create-ui',

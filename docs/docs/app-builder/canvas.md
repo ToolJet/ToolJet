@@ -1,6 +1,6 @@
 ---
 id: canvas
-title: Canvas
+title: Canvas and Layout Systems
 ---
 
 **Canvas** is the center area in the ToolJet app builder used for designing the UI of an application. It also serves as the space for displaying data and results. After the application is published, this is the area that the End Users will see and interact with.

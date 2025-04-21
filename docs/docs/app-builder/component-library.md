@@ -1,6 +1,6 @@
 ---
 id: component-library
-title: Components
+title: UI Component Library
 ---
 
 **Components** in ToolJet are the basic building blocks used to create applications. These are pre-designed elements that can be placed onto the [canvas](#). The **Components Library**, located on the right side, contains all [available components](/docs/widgets/overview). Components can be added to the canvas by dragging them from the library. The components are organized into different categories and can be found either by scrolling or by using the search bar.
