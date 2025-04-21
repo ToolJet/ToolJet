@@ -3,42 +3,69 @@ id: canvas
 title: Canvas and Layout Systems
 ---
 
-**Canvas** is the center area in the ToolJet app builder used for designing the UI of an application. It also serves as the space for displaying data and results. After the application is published, this is the area that the End Users will see and interact with.
+**Canvas** is the main playground in the ToolJet App Builder where the application is built and the user interface is designed. It also serves as the area for displaying data and results.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/canvas.png" alt="App Builder: Canvas"/>
 
-### Arrange Components
+## Customizing Canvas
 
-Components can be arranged on the canvas by dragging them from the component library on the right. To move a component without affecting others, click and hold the **Component Handle** to change component's position. Or you can set the position of selected components using keyboard arrow keys after clicking the component handle.
+Through Global Settings, you can costomize the following properties of the **Canvas**:
 
-<img className="screenshot-full img-l" src="/img/app-builder/canvas/component-handle.png" alt="App Builder: Canvas"/>
+- **Max width of canvas**: Defines the maximum width of the canvas, which can be set in pixels or as a percentage of the screen size.
+- **Canvas background**: Sets the background color of the canvas. This can also be controlled dynamically by clicking on **fx** and entering a logical expression.
+- **App mode**:  Select between three theme modes:
+    - **Auto**: Adapts to the browser's theme settings or allows the user to switch between light and dark modes.
+    - **Light**: Keeps the app in light mode, user cannot switch to dark mode.
+    - **Dark**: Keeps the app in dark mode, user cannot switch to light mode.
 
-### Resize Components
+<img className="screenshot-full img-s" src="/img/app-builder/canvas/global-settings.png" alt="App Builder: Canvas"/>
 
-The size of any component on the canvas can be adjusted by resizing it from its edges as required.
+## Building the User Interface
 
-<img className="screenshot-full img-l" src="/img/app-builder/canvas/resize-component.gif" alt="App Builder: Canvas"/>
+To build the user interface, components can be dragged from the [Component Library](#) on the right. The Component Handle can be used to reposition a component without affecting others. A component can be resized from any of its edges or corners.
 
-### Group Components
+<img className="screenshot-full img-full" src="/img/app-builder/canvas/drag.gif" alt="App Builder: Canvas"/>
 
-In ToolJet, components related to the same feature can be grouped using a **[Container](#)** or a **[Form](#)**. Required components can be dragged and dropped inside the container or form on the canvas. This creates a group of nested components.
+### Grid, Snapping and Markers
 
-<img className="screenshot-full img-m" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
+ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. These features help streamline the layout process and ensure clean, well-aligned designs with minimal effort.
 
-### Hide Components
+<img className="screenshot-full img-full" src="/img/app-builder/canvas/snap.png" alt="App Builder: Canvas"/>
 
-A component can be hidden by setting its **Visibility** property to `false`. The visibility can be changed using the toggle button or dynamically by clicking **fx** and providing a logical expression.
+## Layout Components
 
-<img className="screenshot-full img-l" src="/img/app-builder/canvas/visibility.png" alt="App Builder: Canvas"/>
+In ToolJet, components related to the same feature can be grouped using a layout component such as a **[Container](#)** or a **[Form](#)**. Relevant components can be dragged and dropped into the layout component on the canvas to create a structured group.
 
-### Disable Components
+<img className="screenshot-full img-full" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
 
-A component can be disabled by setting its **Disable** property to true. This property can be updated using the toggle button or dynamically by clicking **fx** and providing a logical expression.
+## Managing Components on Canvas
 
-<img className="screenshot-full img-l" src="/img/app-builder/canvas/disable.png" alt="App Builder: Canvas"/>
+#### Select and Move Multiple Components
 
-### Clone Components
+Multiple components on the canvas can be selected by either clicking and dragging the cursor to cover them or by selecting individual components while holding the Shift key. Once selected, all components can be moved together as a group.
 
-You can clone existing components on the canvas by **cmd/ctrl + d**. Check other **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)**.
+***Select and Move Multiple Components GIF***
 
-<img className="screenshot-full img-l" src="/img/app-builder/canvas/clone.png" alt="App Builder: Canvas"/>
+#### Copy Component
+
+Components on the canvas can be copied using **Cmd/Ctrl + C**.
+
+<img className="screenshot-full img-full" src="/img/app-builder/canvas/copy.png" alt="App Builder: Canvas"/>
+
+#### Paste Component
+
+Copied components can be pasted onto the canvas using **Cmd/Ctrl + V**.
+
+<img className="screenshot-full img-full" src="/img/app-builder/canvas/paste.png" alt="App Builder: Canvas"/>
+
+#### Clone Component
+
+Components on the canvas can be cloned using **Cmd/Ctrl + D**.
+
+<img className="screenshot-full img-full" src="/img/app-builder/canvas/clone.png" alt="App Builder: Canvas"/>
+
+<br/><br/>
+
+:::note
+For additional shortcuts, refer to the [Keyboard Shortcuts Guide](/docs/tutorial/keyboard-shortcuts).
+:::
