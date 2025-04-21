@@ -111,7 +111,7 @@
     },
     "ca_certificate": {
       "ca_cert": {
-        "label": "CA Cert",
+        "label": "CA cert",
         "key": "ca_cert",
         "type": "textarea",
         "encrypted": true,
@@ -120,21 +120,21 @@
     },
     "client_certificate": {
       "client_key": {
-        "label": "Client Key",
+        "label": "Client key",
         "key": "client_key",
         "type": "textarea",
         "encrypted": true,
         "description": "Enter client key"
       },
       "client_cert": {
-        "label": "Client Cert",
+        "label": "Client cert",
         "key": "client_cert",
         "type": "textarea",
         "encrypted": true,
         "description": "Enter client certificate"
       },
       "ca_cert": {
-        "label": "CA Cert",
+        "label": "CA cert",
         "key": "ca_cert",
         "type": "textarea",
         "encrypted": true,

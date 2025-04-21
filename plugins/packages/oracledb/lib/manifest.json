@@ -49,7 +49,7 @@
   },
   "properties": {
     "client_path_type": {
-      "label": "Client Library Location",
+      "label": "Client library location",
       "key": "client_path_type",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for client library",
@@ -128,7 +128,7 @@
     },
     "default": {
       "instant_client_version": {
-        "label": "Instant Client version",
+        "label": "Instant client version",
         "key": "instant_client_version",
         "type": "dropdown",
         "description": "Select Instant Client version",

@@ -113,7 +113,7 @@
     },
     "ca_certificate": {
       "ca": {
-        "label": "CA Cert",
+        "label": "CA cert",
         "key": "ca",
         "type": "textarea",
         "encrypted": true,
@@ -122,21 +122,21 @@
     },
     "self_signed": {
       "ca": {
-        "label": "Server Cert",
+        "label": "Server cert",
         "key": "ca",
         "type": "textarea",
         "encrypted": true,
         "description": "Enter client key"
       },
       "cert": {
-        "label": "Client Cert",
+        "label": "Client cert",
         "key": "cert",
         "type": "textarea",
         "encrypted": true,
         "description": "Enter client certificate"
       },
       "key": {
-        "label": "Client Key",
+        "label": "Client key",
         "key": "key",
         "type": "text",
         "encrypted": true,
