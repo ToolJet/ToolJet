@@ -131,13 +131,13 @@ jobs:
           curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
             -H 'Content-Type: application/json' \
             --data-raw '{
-              "companyName": "ToolJet"
+              "companyName": "ToolJet",
               "name": "The Developer",
               "workspaceName": "Tooljet'\''s workspace",
               "email": "dev@tooljet.io",
               "password": "password"
             }'
-            
+
       - name: docker logs
         run: sudo docker logs postgrest
 
@@ -243,7 +243,7 @@ jobs:
           curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
             -H 'Content-Type: application/json' \
             --data-raw '{
-              "companyName": "ToolJet"
+              "companyName": "ToolJet",,
               "name": "The Developer",
               "workspaceName": "Tooljet'\''s workspace",
               "email": "dev@tooljet.io",
