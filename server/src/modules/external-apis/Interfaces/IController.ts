@@ -1,4 +1,4 @@
-import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto } from '../dto/external_apis.dto';
+import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
 export interface IExternalApisController {
