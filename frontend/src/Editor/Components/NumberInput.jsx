@@ -162,14 +162,12 @@ export const NumberInput = function NumberInput({
       exposedVariables.value = value;
     }
     setExposedVariables(exposedVariables);
-
     isInitialRender.current = false;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
     const setText = async function (text) {
       const newValue = Number(parseFloat(text).toFixed(properties.decimalPlaces));
       setInputValue(newValue);
