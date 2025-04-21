@@ -3,7 +3,11 @@ id: custom-component
 title: Custom Component
 ---
 
-ToolJet allows you to create your own React component using the **Custom Component**, providing greater flexibility and customization for your application.
+ToolJet allows you to create your own React component using the **Custom Component**, providing greater flexibility and customization for your application. The **Custom Component** has two main properties:
+
+1. **[Data](#data)**: Used to pass data or query names to the component. These queries can be triggered from inside the component.
+2. **[Code](#code)**: Used to write the React code for the **Custom Component**. ToolJet offers two built-in functions to interact with the component: [Update Data](#update-data-function) function and [Run Query](#run-query-function) function.
+
 
 ## Data
 
