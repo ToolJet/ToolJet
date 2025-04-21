@@ -43,8 +43,8 @@ jobs:
         if: env.is_fork == 'true'
         run: |
           git remote add fork "${REPO_URL}"
-          git fetch fork pull/${{ env.PR_NUMBER }}/head:${{ env.BRANCH_NAME }}
-          git checkout ${{ env.BRANCH_NAME }}
+          git fetch fork ${{ github.event.pull_request.head.ref }}:pr-${{ env.PR_NUMBER }}
+          git checkout pr-${{ env.PR_NUMBER }}
 
       - name: Checkout Default Branch
         if: env.is_fork == 'false'
