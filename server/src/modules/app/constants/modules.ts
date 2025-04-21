@@ -37,4 +37,5 @@ export enum MODULES {
   TEMPLATES = 'Templates',
   AI = 'ai',
   AUDIT_LOGS = 'auditLogs',
+  EXTERNAL_APIS = 'externalApis',
 }
