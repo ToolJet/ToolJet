@@ -22,19 +22,19 @@ Through Global Settings, you can costomize the following properties of the **Can
 
 ## Building the User Interface
 
-To build the user interface, components can be dragged from the [Component Library](#) on the right. The Component Handle can be used to reposition a component without affecting others. A component can be resized from any of its edges or corners.
+To build the user interface, components can be dragged from the [Component Library](#) on the right. The Component Handle can be used to reposition a component. A component can be resized from any of its edges or corners.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/drag.gif" alt="App Builder: Canvas"/>
 
 ### Grid, Snapping and Markers
 
-ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. These features help streamline the layout process and ensure clean, well-aligned designs with minimal effort. Each cell on the canvas grid has a fixed height of 10 pixels. The width of each cell adjusts based on the screen size. The grid consists of 43 columns, while the number of rows varies depending on the overall height of the application.
+ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. Each cell on the canvas grid has a fixed height of 10 pixels. The width of each cell adjusts based on the screen size. The grid consists of 43 columns, while the number of rows varies depending on the overall height of the application.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/snap.png" alt="App Builder: Canvas"/>
 
 ## Layout Components
 
-In ToolJet, components related to the same feature can be grouped using a layout component such as a **[Container](#)** or a **[Form](#)**. Relevant components can be dragged and dropped into the layout component on the canvas to create a structured group.
+In ToolJet, components can be grouped using a layout component such as a **[Container](#)** or a **[Form](#)**. Relevant components can be dragged and dropped into the layout component on the canvas to create a structured group.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
 

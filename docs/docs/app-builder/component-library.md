@@ -3,9 +3,7 @@ id: component-library
 title: UI Component Library
 ---
 
-**Components** in ToolJet are the basic building blocks used to create the interactive user interface. These are pre-designed components that can be placed onto the [canvas](#). The **Components Library**, located on the right side, contains all [available components](#available-components). Components can be added to the canvas by dragging them from the library and dropping them at the desired location.
-
-ToolJet offers a variety of components, ranging from multiple types of input components to dynamic views. Moreover, ToolJet provides the flexibility to build custom React components using the [custom component](#).
+**Components** in ToolJet are the basic building blocks used to create the interactive user interface. The **Components Library**, located on the right side, contains all [available components](#available-components). Components can be added to the canvas by dragging and dropping them at the desired location.
 
 <img className="screenshot-full img-full" src="/img/app-builder/components/component-library.png" alt="App Builder: Component library"/>
 

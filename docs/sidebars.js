@@ -136,7 +136,8 @@ const sidebars = {
           'label': 'Building the UI',
           'items': [
             'app-builder/canvas',
-            'app-builder/component-library'
+            'app-builder/component-library',
+            'app-builder/component-properties'
           ],
         },
         {
