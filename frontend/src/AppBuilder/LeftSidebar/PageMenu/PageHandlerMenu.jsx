@@ -20,6 +20,8 @@ export const PageHandlerMenu = ({ darkMode }) => {
   const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
   const clonePage = useStore((state) => state.clonePage);
   const markAsHomePage = useStore((state) => state.markAsHomePage);
+  const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
+
   // const popoverTargetRef = null;
   // console.log(
   //   {
@@ -163,6 +165,16 @@ export const PageHandlerMenu = ({ darkMode }) => {
                     disableOrEnablePage(editingPage.id, !editingPage.disabled);
                   }}
                   disabled={isHomePage}
+                />
+                <Field
+                  id={isDisabled ? 'enable-page' : 'disable-page'}
+                  text={isDisabled ? 'Page permission' : 'Page permission'}
+                  customClass={'delete-btn'}
+                  iconSrc={`assets/images/icons/editor/left-sidebar/authorization.svg`}
+                  closeMenu={closeMenu}
+                  callback={(id) => {
+                    togglePagePermissionModal(true);
+                  }}
                 />
                 <Field
                   id="delete-page"

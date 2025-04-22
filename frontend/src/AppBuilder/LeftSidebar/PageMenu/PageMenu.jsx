@@ -16,6 +16,7 @@ import { EditModal } from './EditModal';
 import { SettingsModal } from './SettingsModal';
 import { DeletePageConfirmationModal } from './DeletePageConfirmationModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import PagePermission from './PagePermission';
 
 export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
   const showAddNewPageInput = useStore((state) => state.showAddNewPageInput);
@@ -94,6 +95,7 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
         >
           <div>
             <PageHandlerMenu darkMode={darkMode} />
+            <PagePermission darkMode={darkMode} />
             <EditModal darkMode={darkMode} />
             <SettingsModal darkMode={darkMode} />
             <DeletePageConfirmationModal darkMode={darkMode} />

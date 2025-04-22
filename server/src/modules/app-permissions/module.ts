@@ -29,7 +29,7 @@ export class AppPermissionsModule {
         PagePermissionsRepository,
         FeatureAbilityFactory,
       ],
-      exports: [AppPermissionsUtilService],
+      exports: [AppPermissionsUtilService, AppPermissionsService],
     };
   }
 }
