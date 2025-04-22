@@ -15,6 +15,7 @@ import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import Switch from '@/Editor/CodeBuilder/Elements/Switch';
+import { usePrevious } from '@dnd-kit/utilities';
 
 export function Steps({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -31,6 +32,10 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
+  const variant = component?.component?.definition?.properties?.variant?.value;
+  const prevVariant = usePrevious(variant)
+  console.log("variant", component?.component?.definition);
+
 
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
@@ -47,6 +52,20 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
       properties.push(key);
     }
   }
+
+  // the default style of "number" & "titles" type are different for completed label
+  // TODO: Need to revisit this logic when text custom themes are implemented
+  useEffect(() => {
+    const completedLabelColor = component?.component?.definition?.styles?.completedLabel?.value;
+    if (variant !== prevVariant) {
+      if (variant === "numbers" && completedLabelColor === "#1B1F24") {
+        paramUpdated({ name: 'completedLabel' }, 'value', "#FFFFFF", 'styles', false, {});
+      } else if (variant === "titles" && completedLabelColor === "#FFFFFF") {
+        paramUpdated({ name: 'completedLabel' }, 'value', "#1B1F24", 'styles', false, {});
+      }
+    }
+
+  }, [variant])
 
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
@@ -374,15 +393,15 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                   )}
                   {isDynamicStepsEnabled
                     ? renderElement(
-                        component,
-                        componentMeta,
-                        paramUpdated,
-                        dataQueries,
-                        'schema',
-                        'properties',
-                        currentState,
-                        allComponents
-                      )
+                      component,
+                      componentMeta,
+                      paramUpdated,
+                      dataQueries,
+                      'schema',
+                      'properties',
+                      currentState,
+                      allComponents
+                    )
                     : _renderOptions()}
                 </>
               );
