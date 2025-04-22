@@ -108,7 +108,7 @@ function setSecurityHeaders(app, configService) {
             'cdn.jsdelivr.net',
             'https://esm.sh',
             'www.googletagmanager.com',
-          ],
+          ].concat(configService.get('CSP_WHITELISTED_DOMAINS')?.split(',') || []),
           'object-src': ["'self'", 'data:'],
           'media-src': ["'self'", 'data:'],
           'default-src': [
@@ -120,7 +120,7 @@ function setSecurityHeaders(app, configService) {
             "'self'",
             'blob:',
             'www.googletagmanager.com',
-          ],
+          ].concat(configService.get('CSP_WHITELISTED_DOMAINS')?.split(',') || []),
           'connect-src': ['ws://' + domain, "'self'", '*', 'data:'],
           'frame-ancestors': ['*'],
           'frame-src': ['*'],
