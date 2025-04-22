@@ -142,6 +142,7 @@ const RenderPageGroup = ({
 export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkMode, switchPageWrapper }) => {
   // Don't render empty folders if displaying only icons
   const tree = buildTree(pages, !!labelStyle?.label?.hidden);
+  const filteredPages = tree.filter((page) => !page?.isPageGroup || page.children?.length > 0);
 
   const currentPageId = useStore((state) => state.currentPageId);
   const currentPage = pages.find((page) => page.id === currentPageId);
@@ -149,14 +150,14 @@ export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkM
   return (
     <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
       {/* <Accordion alwaysOpen defaultActiveKey={tree.map((page) => page.id)}> */}
-      {tree.map((page, index) => {
+      {filteredPages.map((page, index) => {
         if (page.isPageGroup && page.children.length === 0 && labelStyle?.label?.hidden) {
           return null;
         }
         if (page.children && page.isPageGroup) {
           // if we are only displaying icons, we don't display the groups instead display separator to separate a page groups
           const renderSeparatorTop = index !== 0 && labelStyle?.label?.hidden;
-          const renderSeparatorBottom = !tree[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
+          const renderSeparatorBottom = !filteredPages[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
           return (
             <>
               {renderSeparatorTop && (

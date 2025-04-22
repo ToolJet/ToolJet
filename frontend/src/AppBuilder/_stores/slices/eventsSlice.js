@@ -1118,6 +1118,10 @@ export const createEventsSlice = (set, get) => ({
             toast('Valid page handle is required', {
               icon: '⚠️',
             });
+          mode === 'view' &&
+            toast.error('Access to this page is restricted. Contact admin to know more.', {
+              icon: '⚠️',
+            });
           return Promise.resolve();
         }
 
