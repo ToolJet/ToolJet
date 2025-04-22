@@ -62,7 +62,7 @@ export class AppsModule {
         DataSourcesRepository,
         AppImportExportService,
       ],
-      exports: [AppsUtilService],
+      exports: [AppsUtilService, AppImportExportService],
     };
   }
 }

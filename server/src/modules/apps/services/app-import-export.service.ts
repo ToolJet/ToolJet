@@ -1164,7 +1164,8 @@ export class AppImportExportService {
     manager: EntityManager,
     dataSource: DataSource,
     appVersionId: string,
-    user: User
+    user: User,
+    organizationId?: string
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
@@ -1189,7 +1190,7 @@ export class AppImportExportService {
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
           scope: 'global',
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId || organizationId,
         },
       });
     };
@@ -1200,7 +1201,7 @@ export class AppImportExportService {
           kind: dataSource.kind,
           type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
           scope: 'global',
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId || organizationId,
         },
       });
     };
@@ -1218,7 +1219,7 @@ export class AppImportExportService {
 
       if (plugin) {
         const newDataSource = manager.create(DataSource, {
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId || organizationId,
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
@@ -1233,7 +1234,7 @@ export class AppImportExportService {
 
     const createNewGlobalDs = async (ds: DataSource): Promise<DataSource> => {
       const newDataSource = manager.create(DataSource, {
-        organizationId: user.organizationId,
+        organizationId: user?.organizationId || organizationId,
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
@@ -1318,12 +1319,13 @@ export class AppImportExportService {
     importedApp: App,
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    organizationId?: string
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
     const organization: Organization = await manager.findOne(Organization, {
-      where: { id: user.organizationId },
+      where: { id: user?.organizationId || organizationId },
       relations: ['appEnvironments'],
     });
     let currentEnvironmentId: string;

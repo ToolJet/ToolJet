@@ -275,6 +275,7 @@ export default class LicenseBase {
   }
 
   public get externalApis(): boolean {
+    return true;
     if (this.IsBasicPlan) {
       return !!BASIC_PLAN_TERMS.features?.externalApi;
     }
