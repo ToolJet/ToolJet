@@ -38,6 +38,7 @@ export const MultiselectV2 = ({
     loadingState: multiSelectLoadingState,
     optionsLoadingState,
     sort,
+    showAllSelectedLabel,
   } = properties;
   const {
     selectedTextColor,
@@ -521,6 +522,7 @@ export const MultiselectV2 = ({
             doShowIcon={iconVisibility}
             containerRef={valueContainerRef}
             showAllOption={showAllOption}
+            showAllSelectedLabel={showAllSelectedLabel}
             isSelectAllSelected={isSelectAllSelected}
             setIsSelectAllSelected={(value) => {
               setIsSelectAllSelected(value);

@@ -36,7 +36,7 @@ const CustomValueContainer = ({ children, ...props }) => {
             </Placeholder>
           ) : (
             <span className="text-truncate" {...props} id="options" style={{ maxWidth: valueContainerWidth }}>
-              {isAllOptionsSelected ? 'All items are selected.' : values.join(', ')}
+              {selectProps?.showAllSelectedLabel && isAllOptionsSelected ? 'All items are selected.' : values.join(', ')}
             </span>
           )}
           {/* Rendering children except Placeholder component to preserve the default behavior of react-select like focus
