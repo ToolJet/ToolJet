@@ -98,7 +98,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       }
     }
 
-    if (isAllViewable || resourcePermissions.usableDataSourcesId?.length) {
+    if (isAllViewable) {
       can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION], DataSource);
       return;
     }
