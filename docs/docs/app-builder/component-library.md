@@ -29,7 +29,7 @@ title: UI Component Library
 
 <br/>
 
-### Select Inputs
+### Selection
 
 [Dropdown](#) <br/>
 [Radio Button](#) <br/>
@@ -67,10 +67,7 @@ title: UI Component Library
 ### Dynamic Views
 
 [Kanban](#) <br/>
-[Map](#) <br/>
 [Table](#) <br/>
-[Chat](#) <br/>
-[Bounded Box](#) <br/>
 [Listview](#) <br/>
 
 <br/>
@@ -96,6 +93,15 @@ title: UI Component Library
 
 <br/>
 
+### Visual Indicators
+
+[Divider](#) <br/>
+[Vertical Divider](#) <br/>
+[Circular Progressbar](#) <br/>
+[Spinner](#) <br/>
+
+<br/>
+
 ### Developer Utilities
 
 [Code Editor](#) <br/>
@@ -116,15 +122,15 @@ title: UI Component Library
 [Calendar](#) <br/>
 [Timeline](#) <br/>
 [Statistics](#) <br/>
+[Map](#) <br/>
+[Bounded Box](#) <br/>
 
 <br/>
 
-### Visual Indicators
+### Navigation
 
-[Divider](#) <br/>
-[Vertical Divider](#) <br/>
-[Circular Progressbar](#) <br/>
-[Spinner](#) <br/>
+[Pagination](#) <br/>
+[Steps](#) <br/>
 
 <br/>
 
@@ -136,10 +142,9 @@ title: UI Component Library
 
 <br/>
 
-### Navigation
+### Chatbot
 
-[Pagination](#) <br/>
-[Steps](#) <br/>
+[Chat](#) <br/>
 
 <br/>
 
