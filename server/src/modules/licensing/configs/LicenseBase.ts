@@ -44,11 +44,11 @@ export default class LicenseBase {
   private BASIC_PLAN_TERMS: Partial<Terms>;
 
   constructor(
+    BASIC_PLAN_TERMS?: Partial<Terms>,
     licenseData?: Partial<Terms>,
     updatedDate?: Date,
     startDate?: Date,
-    expiryDate?: Date,
-    BASIC_PLAN_TERMS?: Partial<Terms>
+    expiryDate?: Date
   ) {
     this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
 
