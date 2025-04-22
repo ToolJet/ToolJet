@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, Index } from 'typeorm';
 import { User } from './user.entity';
 import { PagePermission } from './page_permissions.entity';
 import { GroupPermissions } from './group_permissions.entity';
@@ -8,12 +8,15 @@ export class PageUser {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ name: 'page_permissions_id', type: 'uuid' })
   pagePermissionsId: string;
 
+  @Index()
   @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId: string | null;
 
+  @Index()
   @Column({ name: 'permission_groups_id', type: 'uuid', nullable: true })
   permissionGroupsId: string | null;
 
