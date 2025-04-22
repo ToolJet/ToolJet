@@ -297,6 +297,14 @@
         gap: 12px;
     }
 
+    .react-select__option {
+        padding: 8px 0px;
+        
+        input {
+            margin-right: 10px;
+        }
+    }
+
     .user-select-option {
         display: flex;
         align-items: center;
@@ -327,15 +335,32 @@
           flex-direction: column;
       
           .name {
-            font-weight: 600;
+            font-weight: 500;
             font-size: 14px;
             color: var(--slate12);
           }
       
           .email {
             font-size: 12px;
-            color: var(--slate10); // gray-500
+            color: var(--slate10);
           }
         }
+
+        .group-info {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+        
+            .name {
+              font-weight: 400;
+              font-size: 14px;
+              color: var(--slate12);
+            }
+        
+            .count {
+              font-size: 12px;
+              color: var(--slate9);
+            }
+          }
       }
 }

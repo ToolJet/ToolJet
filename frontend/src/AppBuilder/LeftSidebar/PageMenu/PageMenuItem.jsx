@@ -16,6 +16,7 @@ import { RenameInput } from './RenameInput';
 import IconSelector from './IconSelector';
 import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { shallow } from 'zustand/shallow';
 
 export const PageMenuItem = withRouter(
   memo(({ darkMode, page, navigate }) => {
@@ -27,6 +28,8 @@ export const PageMenuItem = withRouter(
     const isDisabled = page?.disabled ?? false;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
+    const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+    const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
     const showEditingPopover = useStore((state) => state.showEditingPopover);
     const {
       definition: { styles, properties },
@@ -195,8 +198,11 @@ export const PageMenuItem = withRouter(
                     {isHidden && !isDisabled && 'Hidden'}
                   </span>
                 </div>
-                {!shouldFreeze && (
-                  <div className={cx('right', { 'handler-menu-open': showEditingPopover })}>
+                <div style={{ marginLeft: '8px', marginRight: 'auto' }}>
+                  {licenseValid && page?.restricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
+                </div>
+                <div className={cx('right', { 'handler-menu-open': showEditingPopover })}>
+                  {!shouldFreeze && (
                     <button
                       style={{
                         backgroundColor: 'transparent',
@@ -215,8 +221,8 @@ export const PageMenuItem = withRouter(
                     >
                       <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             )}
           </div>

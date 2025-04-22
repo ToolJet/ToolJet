@@ -444,5 +444,9 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.selectedUsers = users;
       }),
+    setEditingPage: (page) =>
+      set((state) => {
+        state.editingPage = page;
+      }),
   };
 };

@@ -18,6 +18,7 @@ export default function PagePermission({ darkMode }) {
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const editingPage = useStore((state) => state.editingPage);
+  const setEditingPage = useStore((state) => state.setEditingPage);
   const appId = useStore((state) => state.app.appId);
   const selectedUserGroups = useStore((state) => state.selectedUserGroups);
   const setSelectedUserGroups = useStore((state) => state.setSelectedUserGroups);
@@ -31,15 +32,14 @@ export default function PagePermission({ darkMode }) {
   const [showUsersSelect, toggleUsersSelect] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  console.log({ editingPage, showUserGroupSelect });
+  const [pageToDelete, setPageToDelete] = useState(null);
 
   useEffect(() => {
     if (!editingPage?.id && !showPagePermissionModal) return;
     const fetchPagePermission = () => {
       appPermissionService.getPagePermission(appId, editingPage?.id).then((data) => {
         if (data) {
-          if (data[0]) {
+          if (data[0] && data[0]?.type === PERMISSION_TYPES.group) {
             setPagePermissionType(data[0]?.type?.toLowerCase());
             setPagePermission(data);
             toggleUserGroupSelect(true);
@@ -48,14 +48,32 @@ export default function PagePermission({ darkMode }) {
                 data[0]?.users?.map((user) => ({
                   label: user?.permissionGroup?.name,
                   value: user?.permissionGroup?.id,
+                  count: user?.permissionGroup?.count,
                 }))
+              );
+          } else if (data[0] && data[0]?.type === PERMISSION_TYPES.single) {
+            setPagePermissionType(data[0]?.type?.toLowerCase());
+            setPagePermission(data);
+            toggleUsersSelect(true);
+            data?.length &&
+              setSelectedUsers(
+                data[0]?.users?.map(({ user }) => {
+                  const firstName = user.firstName || '';
+                  const lastName = user.lastName || '';
+                  return {
+                    value: user.id,
+                    label: `${firstName} ${lastName}`.trim(),
+                    email: user.email,
+                    initials: `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase(),
+                  };
+                })
               );
           }
         }
       });
     };
     fetchPagePermission();
-  }, [appId, editingPage, setPagePermission, setSelectedUserGroups, showPagePermissionModal]);
+  }, [editingPage]);
 
   const permissionTypeOptions = useMemo(
     () => [
@@ -77,9 +95,7 @@ export default function PagePermission({ darkMode }) {
     ],
     []
   );
-  console.log({ pagePermission });
   const handlePermissionTypeChange = (value) => {
-    console.log({ value });
     switch (value) {
       case 'group': {
         toggleUserGroupSelect(true);
@@ -107,6 +123,9 @@ export default function PagePermission({ darkMode }) {
     toggleUsersSelect(false);
     setPagePermissionType('all');
     setPagePermission(null);
+    setEditingPage(null);
+    setSelectedUsers([]);
+    setSelectedUserGroups([]);
   };
 
   const createPagePermission = () => {
@@ -121,7 +140,7 @@ export default function PagePermission({ darkMode }) {
     appPermissionService
       .createPagePermission(appId, editingPage?.id, body)
       .then((data) => {
-        console.log({ data });
+        toast.success('Permission successfully created!');
       })
       .catch(() => {
         toast.error('Permission could not be created. Please try again!');
@@ -129,7 +148,6 @@ export default function PagePermission({ darkMode }) {
       .finally(() => {
         setIsLoading(false);
         handlePagePermissionModalClose();
-        toast.success('Permission successfully created!');
       });
   };
 
@@ -145,7 +163,7 @@ export default function PagePermission({ darkMode }) {
     appPermissionService
       .updatePagePermission(appId, editingPage?.id, body)
       .then((data) => {
-        console.log({ data });
+        toast.success('Permission successfully updated!');
       })
       .catch(() => {
         toast.error('Permission could not be updated. Please try again!');
@@ -153,16 +171,15 @@ export default function PagePermission({ darkMode }) {
       .finally(() => {
         setIsLoading(false);
         handlePagePermissionModalClose();
-        toast.success('Permission successfully updated!');
       });
   };
 
   const deletePagePermission = () => {
     setIsLoading(true);
     appPermissionService
-      .deletePagePermission(appId, editingPage?.id)
+      .deletePagePermission(appId, pageToDelete)
       .then((data) => {
-        console.log({ data });
+        toast.success('Permission successfully deleted!');
       })
       .catch(() => {
         toast.error('Permission could not be deleted. Please try again!');
@@ -170,14 +187,14 @@ export default function PagePermission({ darkMode }) {
       .finally(() => {
         setIsLoading(false);
         setShowConfirmDelete(false);
+        setPageToDelete(null);
         handlePagePermissionModalClose();
-        toast.success('Permission successfully deleted!');
       });
   };
 
   const renderPermissionTypeOptions = ({ label, icon }) => {
     return (
-      <div className="row permission-type-select">
+      <div className="row permission-type-select" style={{ padding: '0px 8px' }}>
         <div className="col-auto">
           <SolidIcon width="20" name={icon} />
         </div>
@@ -211,6 +228,7 @@ export default function PagePermission({ darkMode }) {
           pagePermission && (
             <span
               onClick={(e) => {
+                setPageToDelete(editingPage?.id);
                 togglePagePermissionModal(false);
                 setShowConfirmDelete(true);
               }}
@@ -268,20 +286,17 @@ export default function PagePermission({ darkMode }) {
 }
 
 const UserGroupSelect = () => {
-  console.log('rendering');
   const appId = useStore((state) => state.app.appId);
-  const editingPage = useStore((state) => state.editingPage);
   const selectedUserGroups = useStore((state) => state.selectedUserGroups);
   const setSelectedUserGroups = useStore((state) => state.setSelectedUserGroups);
   const [userGroups, setUserGroups] = useState([]);
   useEffect(() => {
     const fetchUserGroups = () => {
       appPermissionService.getUsers(appId, 'user-groups').then((data) => {
-        console.log({ data });
         if (data?.length) {
           const groups = [];
           data.map((group) => {
-            groups.push({ value: group.id, label: group.name });
+            groups.push({ value: group.id, label: group.name, count: group.count });
           });
           setUserGroups(groups);
         }
@@ -290,7 +305,26 @@ const UserGroupSelect = () => {
     fetchUserGroups();
   }, []);
 
-  console.log({ selectedUserGroups, userGroups });
+  const CustomOption = (props) => {
+    const { data, isFocused, isSelected } = props;
+
+    return (
+      <components.Option {...props}>
+        <div className={`user-select-option ${isFocused ? 'focused' : ''}`}>
+          <input
+            style={{ width: '1.2rem', height: '1.2rem', borderRadius: '6px !important' }}
+            type={'checkbox'}
+            className="form-check-input"
+            checked={isSelected}
+          />
+          <div className="group-info">
+            <div className="name">{data.label}</div>
+            <div className="count">{data.count} users</div>
+          </div>
+        </div>
+      </components.Option>
+    );
+  };
 
   return (
     <div>
@@ -300,10 +334,12 @@ const UserGroupSelect = () => {
         options={userGroups}
         value={selectedUserGroups}
         width={'100%'}
-        // customOption={renderPermissionTypeOptions}
+        closeMenuOnSelect={false}
+        components={{ Option: CustomOption, MenuList: CustomMenuList }}
         useMenuPortal={false}
-        //   menuIsOpen={true}
+        hideSelectedOptions={false}
         onChange={(groups) => setSelectedUserGroups(groups)}
+        info="Only user groups with access to this application can be selected"
       />
     </div>
   );
@@ -318,7 +354,6 @@ const UserSelect = () => {
   useEffect(() => {
     const fetchUsers = () => {
       appPermissionService.getUsers(appId, 'users').then((data) => {
-        console.log({ data });
         if (data?.length) {
           const users = [];
           data.map((user) => {
@@ -343,6 +378,12 @@ const UserSelect = () => {
     return (
       <components.Option {...props}>
         <div className={`user-select-option ${isFocused ? 'focused' : ''}`}>
+          <input
+            style={{ width: '1.2rem', height: '1.2rem', borderRadius: '6px !important' }}
+            type={'checkbox'}
+            className="form-check-input"
+            checked={isSelected}
+          />
           <div className="avatar">{data.initials}</div>
           <div className="user-info">
             <div className="name">{data.label}</div>
@@ -353,8 +394,12 @@ const UserSelect = () => {
     );
   };
 
-  console.log({ users });
-
+  const selectStyles = {
+    option: (base) => ({
+      ...base,
+      padding: '8px 0px',
+    }),
+  };
   return (
     <div>
       <label className="form-label mt-3">Users</label>
@@ -363,15 +408,35 @@ const UserSelect = () => {
         options={users}
         value={selectedUsers}
         width={'100%'}
-        // customOption={renderUserSelectOptions}
         useMenuPortal={false}
-        components={{ Option: CustomOption }}
-        // menuIsOpen={true}
+        closeMenuOnSelect={false}
+        components={{ Option: CustomOption, MenuList: CustomMenuList }}
+        styles={selectStyles}
+        hideSelectedOptions={false}
+        info="Only user with access to this application can be selected"
         onChange={(users) => {
-          console.log({ userstemp: users });
           setSelectedUsers(users);
         }}
       />
     </div>
+  );
+};
+
+const CustomMenuList = (props) => {
+  const { info } = props.selectProps;
+  return (
+    <components.MenuList {...props}>
+      <div className="info-container" style={{ marginLeft: '12px', marginRight: '12px', marginTop: '8px' }}>
+        <div className="col-md-1 info-btn">
+          <SolidIcon name="informationcircle" fill="#3E63DD" />
+        </div>
+        <div className="col-md-11">
+          <div className="message">
+            <p style={{ lineHeight: '18px' }}>{info}</p>
+          </div>
+        </div>
+      </div>
+      {props.children}
+    </components.MenuList>
   );
 };

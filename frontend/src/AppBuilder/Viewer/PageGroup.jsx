@@ -142,8 +142,7 @@ const RenderPageGroup = ({
 export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkMode, switchPageWrapper }) => {
   // Don't render empty folders if displaying only icons
   const tree = buildTree(pages, !!labelStyle?.label?.hidden);
-  const filteredPages = tree.filter((page) => !page?.isPageGroup || page.children?.length > 0);
-
+  const filteredPages = tree.filter((page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted);
   const currentPageId = useStore((state) => state.currentPageId);
   const currentPage = pages.find((page) => page.id === currentPageId);
   const homePageId = useStore((state) => state.app.homePageId);
