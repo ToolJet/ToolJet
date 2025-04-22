@@ -12,6 +12,7 @@ import { MODULES } from '@modules/app/constants/modules';
 
 @InitModule(MODULES.LICENSING)
 @Controller('license/workflows')
+@InitModule(MODULES.LICENSING)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class LicenseWorkflowsController implements ILicenseWorkflowsController {
   constructor(protected readonly licenseWorkflowsService: LicenseWorkflowsService) {}

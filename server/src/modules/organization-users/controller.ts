@@ -41,7 +41,7 @@ export class OrganizationUsersController implements IOrganizationUsersController
   @InitFeature(FEATURE_KEY.SUGGEST_USERS)
   @Get('users/suggest')
   async getUserSuggestions(@User() user, @Query('input') searchInput) {
-    const users = await this.organizationUsersService.fetchUsersByValue(user?.organization_id, searchInput);
+    const users = await this.organizationUsersService.fetchUsersByValue(user?.organizationId, searchInput);
     const response = {
       users,
     };
