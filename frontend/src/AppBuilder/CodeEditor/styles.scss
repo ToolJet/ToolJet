@@ -220,6 +220,9 @@
         .query-hinter{
             flex-grow: 1;
         }
+        .cm-editor {
+            min-height: 150px !important;
+        }
     }
     .code-editor-query-panel{
         &.show-line-numbers{
@@ -398,6 +401,12 @@
     }
 }
 
+.rest-api-body-codehinter {
+    .cm-editor {
+        min-height: 150px !important;
+    }
+}
+
 .border-danger {
     .cm-editor {
         border: 1px solid red !important;
@@ -405,7 +414,6 @@
 }
 
 .runjs-editor .cm-editor {
-    min-height: 150px !important;
     border: none !important;
 }
 
