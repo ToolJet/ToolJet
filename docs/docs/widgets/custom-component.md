@@ -3,129 +3,140 @@ id: custom-component
 title: Custom Component
 ---
 
-**Custom Component** can be used to create your own React component when the needed functionality isn't available in other components.
+ToolJet allows you to create your own React component using the **Custom Component**, providing greater flexibility and customization for your application. The **Custom Component** has two main properties:
 
-<div style={{textAlign: 'center'}}>
+1. **[Data](#data)**: Used to pass data or query names to the component. These queries can be triggered from inside the component.
+2. **[Code](#code)**: Used to write the React code for the **Custom Component**. ToolJet offers two built-in functions to interact with the component: [Update Data](#update-data-function) function and [Run Query](#run-query-function) function.
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/custom-component/custom-component-v2.png" alt="ToolJet - Widget Reference - Custom Component" />
 
-</div>
+## Data
 
-<div style={{paddingTop:'24px'}}>
+Data can be passed to a custom component using the **Data** field. The data should be structured as an object or an array of objects. Query name can also be passed through this field to trigger queries using the custom component.
 
-## Properties
+<img className="screenshot-full" src="/img/widgets/custom-component/data.png" alt="Custom Component Data Property" />
 
-### Data
-
-The data needs to be an object that needs to be passed as **data** props to the **Custom Component**.
-
-**Example:**
-
+#### Example:
 ```json
-{{{
-    title: "Hi! There",
-    buttonText: "Updated Text",
-    queryName: "runjs1"
+{{{ 
+    title: 'Hi! There', 
+    buttonText: 'Update Title',
+    queryName: 'fetchData'
+}}}
+```
+**OR**
+```json
+{{{ 
+    images: [ 
+	  { "url" : "https://reqres.in/img/faces/7-image.jpg", "title" : "Olivia"}, 
+	  { "url" : "https://reqres.in/img/faces/5-image.jpg", "title" : "Liam"}, 
+	  { "url" : "https://reqres.in/img/faces/3-image.jpg", "title" : "Sophia"}
+    ]
 }}}
 ```
 
-### Code
+### Passing Data Through Query
 
-This field is used to add a React code for your custom component. The packages for the custom component can be imported from [Skypack](https://www.skypack.dev/) or [esm](https://esm.sh/). For example, to import **React** package into the custom component it can be imported as `import React from 'https://cdn.skypack.dev/react'`.
+Data fetched from a query can also be passed to the **Custom Component** in the data object.
 
-ToolJet provides 3 props to interact with the app:
-- **data** is a shared object between a custom component and the ToolJet app.
-- **updateData** is a function that accepts a single object used to update the data passed to the custom component.
-- **runQuery** is a function that accepts a query name as a string used to run the query from the custom component.
+<img className="screenshot-full" src="/img/widgets/custom-component/query-data.png" alt="Custom Component Data Property" />
 
-**Example:**
+
+## Code
+
+The React code for a **Custom Component** can be added in the **Code** field. You can interact with the application through the custom component using the following parameter and in-built functions.
+
+### Data Parameter
+
+To access the data passed through the [data](#data) field, define the `data` parameter to the *MyCustomComponent* funtion.
+
+#### Example
 
 ```js
-import React from "https://cdn.skypack.dev/react";
-import ReactDOM from "https://cdn.skypack.dev/react-dom";
-import { Button, Container, Link } from "https://cdn.skypack.dev/@material-ui/core";
+import React from 'https://cdn.skypack.dev/react';
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
 
-const MyCustomComponent = ({data, updateData, runQuery}) => (
-    <Container>
-        <h1>{data.title}</h1>
-        <Button
-            color="primary"
-            variant="outlined"
-            onClick={() => {updateData({...data, title: 'Hello World!!'})}}>
-            {data.buttonText}
-        </Button>
-        <Button
-            color="primary"
-            variant="outlined"
-            onClick={() => {runQuery(data.queryName)}}
-        >
-            Run Query
-        </Button>
+const MyCustomComponent = ({data}) => (
+  <Container>
+      <p>Employee Name: <b>{data.name}</b></p>
+      <p>Designation: <b>{data.designation}</b></p>
+      <p>Department: <b>{data.department}</b></p>
     </Container>
 );
 
 const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
-
 ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
-:::info
-`Tooljet.connectComponent` acts as a HOC and it is required to get access to the data passed into the custom component and run the query.
-:::
+<img className="screenshot-full" src="/img/widgets/custom-component/data-prop.png" alt="Custom Component Data Property" />
 
-</div>
+### Update Data Function
 
-<div style={{paddingTop:'24px'}}>
+To update the data in the data object, you can use the in-built `updateData` function.
 
-## Component Specific Actions (CSA)
+#### Example
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+```js
+import React from 'https://cdn.skypack.dev/react';
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
 
-</div>
+const MyCustomComponent = ({data, updateData}) => (
+  <Container>
+    <p>Employee Name: <b>{data.name}</b></p>
+    <p>Status: <b>{data.status}</b></p>
+    <Button
+      color="primary"
+      variant="outlined"
+      onClick={() => {updateData({status: 'Inactive'})}}
+    >
+      {data.button}
+    </Button>
+  </Container>
+);
 
-<div style={{paddingTop:'24px'}}>
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);
+```
 
-## Exposed Variables
+<img className="screenshot-full" src="/img/widgets/custom-component/update-data.png" alt="Custom Component Data Property" />
 
-| <div style={{ width:"100px"}}> Variables  </div>    | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:----------- |:----------- |:---------- |
-| data | This variable will hold the variables assigned inside the `code` for custom component.| Access the value dynamically using JS: `{{components.customcomponent1.data.title}}`.|
+### Run Query Function
 
-</div>
+**Custom Component** in ToolJet can be used to trigger queries. You can specify the query name in the [data](#data) field. Use the in-built `runQuery` function to execute the query dynamically from within the **Custom Component**.
 
-<div style={{paddingTop:'24px'}}>
+#### Example
 
-## General
-### Tooltip
+```js
+import React from "https://cdn.skypack.dev/react";
+import ReactDOM from "https://cdn.skypack.dev/react-dom";
+import { Button, Container } from "https://cdn.skypack.dev/@material-ui/core";
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
+const MyCustomComponent = ({ data, runQuery }) => (
+  <Container>
+    <h1>Employee Details</h1>
+    <p>Name: <b>{data.name}</b></p>
+    <p>Designation: <b>{data.designation}</b></p>
+    <p>Department: <b>{data.department}</b></p>
+    <p>Address: <b>{data.address}</b></p>
+    <Button
+      color="primary"
+      variant="contained"
+      onClick={() => {
+        runQuery(data.queryName);
+      }}
+    >
+      Fetch Contact Info
+    </Button>
+  </Container>
+);
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);
+);
 
-</div>
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);
+```
 
-<div style={{paddingTop:'24px'}}>
-
-## Layout
-
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-----
-
-## Styles
-
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description   </div>                                                                                                                                                                                                                                           | <div style={{ width:"100px"}}> Default value </div> |
-|:---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |:--------- |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not visible after the app is deployed. | By default, it's set to `{{true}}`. |
-
-:::info
-Any property having **fx** button next to its field can be **programmatically configured**.
-:::
-
-</div>
+<img className="screenshot-full" src="/img/widgets/custom-component/run-query.png" alt="Custom Component Run Query code" />
