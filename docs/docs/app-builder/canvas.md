@@ -28,7 +28,7 @@ To build the user interface, components can be dragged from the [Component Libra
 
 ### Grid, Snapping and Markers
 
-ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. These features help streamline the layout process and ensure clean, well-aligned designs with minimal effort.
+ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. These features help streamline the layout process and ensure clean, well-aligned designs with minimal effort. Each cell on the canvas grid has a fixed height of 10 pixels. The width of each cell adjusts based on the screen size. The grid consists of 43 columns, while the number of rows varies depending on the overall height of the application.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/snap.png" alt="App Builder: Canvas"/>
 
