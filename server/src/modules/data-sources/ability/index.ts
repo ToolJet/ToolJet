@@ -98,12 +98,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       }
     }
 
-    if (isAllViewable) {
+    if (isAllViewable || resourcePermissions.usableDataSourcesId?.length) {
       can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION], DataSource);
-      return;
-    }
-    if (resourcePermissions.usableDataSourcesId?.length) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
       return;
     }
   }
