@@ -102,5 +102,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION], DataSource);
       return;
     }
+    if (resourcePermissions.usableDataSourcesId?.length) {
+      can([FEATURE_KEY.GET], DataSource);
+      if (dataSourceId && resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)) {
+        can([FEATURE_KEY.TEST_CONNECTION], DataSource);
+      }
+      return;
+    }
   }
 }
