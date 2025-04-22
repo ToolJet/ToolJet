@@ -1,17 +1,8 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "ClickUp datasource",
   "description": "Clickup plugin for task, list, and doc management",
   "type": "api",
-  "components": [
-    {
-      "type": "APIEndpoint",
-      "id": "clickup-endpoints",
-      "name": "ClickUp Endpoints",
-      "file": "./openapi.yaml"
-    }
-  ],
   "source": {
     "name": "ClickUp",
     "kind": "clickup",
