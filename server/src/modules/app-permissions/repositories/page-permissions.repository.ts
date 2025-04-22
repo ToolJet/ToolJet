@@ -13,9 +13,20 @@ export class PagePermissionsRepository extends Repository<PagePermission> {
 
   async getPagePermissions(pageId: string, manager?: EntityManager): Promise<PagePermission[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.find(PagePermission, {
+      const pagePermissions = await manager.find(PagePermission, {
         where: { pageId },
         relations: ['users', 'users.user', 'users.permissionGroup'],
+      });
+
+      return pagePermissions.map((permission) => {
+        if (permission.type === PAGE_PERMISSION_TYPE.GROUP) {
+          return {
+            ...permission,
+            groups: permission.users,
+            users: undefined,
+          };
+        }
+        return permission;
       });
     }, manager || this.manager);
   }
@@ -26,6 +37,11 @@ export class PagePermissionsRepository extends Repository<PagePermission> {
     manager?: EntityManager
   ): Promise<PagePermission> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      const existingPermission = await manager.findOne(PagePermission, { where: { pageId } });
+      if (existingPermission) {
+        throw new Error(`Page permission already exists for Page id: ${pageId}`);
+      }
+
       const pagePermission = manager.create(PagePermission, {
         pageId,
         type,
