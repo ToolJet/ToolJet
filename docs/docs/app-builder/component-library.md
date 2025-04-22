@@ -3,16 +3,150 @@ id: component-library
 title: UI Component Library
 ---
 
-**Components** in ToolJet are the basic building blocks used to create applications. These are pre-designed elements that can be placed onto the [canvas](#). The **Components Library**, located on the right side, contains all [available components](/docs/widgets/overview). Components can be added to the canvas by dragging them from the library. The components are organized into different categories and can be found either by scrolling or by using the search bar.
+**Components** in ToolJet are the basic building blocks used to create applications. These are pre-designed components that can be placed onto the [canvas](#). The **Components Library**, located on the right side, contains all [available components](#available-components). Components can be added to the canvas by dragging them from the library. 
 
 <img className="screenshot-full img-full" src="/img/app-builder/components/component-library.png" alt="App Builder: Component library"/>
 
-## Properties Panel
+## Available Components
 
-The **Properties Panel** displays all available settings for the selected component. It allows setting values, updating component names, and creating event handlers, etc. The available properties vary depending on the component type. The panel has two tabs: **Properties** and **Styles**. To open the Property Panel, select a component on the canvas and the panel will appear on the right side.
+<br/>
 
-<img className="screenshot-full img-full" src="/img/app-builder/components/properties-panel.png" alt="App Builder: Component library- right sidebar"/>
+<div style={{ display: 'flex' }}>
 
-## Custom Components
+<div style = {{ width:'30%' }} >
 
-ToolJet allows for the creation of **Custom Components** using React. This feature is invaluable for developers who require functionality beyond the pre-built components offered by ToolJet. To create a **Custom Component**, drag and drop the **Custom Component** onto the canvas, then configure its data and code accordingly. For more information, refer to the [Custom Component Guide](#).
+### Textual Inputs
+
+[Currency Input](#) <br/> 
+[Email Input](#) <br/>
+[Number Input](#) <br/>
+[Password Input](#) <br/>
+[Phone Input](#) <br/>
+[Text Input](#) <br/>
+[Color Picker](#) <br/>
+[Text Editor](#) <br/>
+[Textarea](#) <br/>
+
+<br/>
+
+### Select Inputs
+
+[Dropdown](#) <br/>
+[Radio Button](#) <br/>
+[Multiselect](#) <br/>
+[Toggle](#) <br/>
+[Checkbox](#) <br/>
+[Tree Select](#) <br/>
+[Range Slider](#) <br/>
+[Star Rating](#) <br/>
+
+<br/>
+
+### Layouts
+
+[Modal](#) <br/>
+[Tabs](#) <br/>
+[Forms](#) <br/>
+[Container](#) <br/>
+
+<br/>
+
+### Buttons
+
+[Button](#) <br/>
+[Button Group](#) <br/>
+
+</div>
+
+<div style = {{ width:'5%' }} >
+
+</div>
+
+<div style = {{ width:'30%' }} >
+
+### Dynamic Views
+
+[Kanban](#) <br/>
+[Map](#) <br/>
+[Table](#) <br/>
+[Chat](#) <br/>
+[Bounded Box](#) <br/>
+[Listview](#) <br/>
+
+<br/>
+
+### Document & Media
+
+[PDF](#) <br/>
+[Svg Image](#) <br/>
+[Image](#) <br/>
+[Link](#) <br/>
+[File Picker](#) <br/>
+[QR Scanner](#) <br/>
+
+<br/>
+
+### Date and Time
+
+[Date Time Picker](#) <br/>
+[Range Picker](#) <br/>
+[Time Picker](#) <br/>
+[Date Picker](#) <br/>
+[Timer](#) <br/>
+
+<br/>
+
+### Developer Utilities
+
+[Code Editor](#) <br/>
+[Iframe](#) <br/>
+[HTML Viewer](#) <br/>
+
+</div>
+
+<div style = {{ width:'5%' }} >
+
+</div>
+
+<div style = {{ width:'30%' }} >
+
+### Data Visualization
+
+[Chart](#) <br/>
+[Calendar](#) <br/>
+[Timeline](#) <br/>
+[Statistics](#) <br/>
+
+<br/>
+
+### Visual Indicators
+
+[Divider](#) <br/>
+[Vertical Divider](#) <br/>
+[Circular Progressbar](#) <br/>
+[Spinner](#) <br/>
+
+<br/>
+
+### Labels
+
+[Icon](#) <br/>
+[Text](#) <br/>
+[Tags](#) <br/>
+
+<br/>
+
+### Navigation
+
+[Pagination](#) <br/>
+[Steps](#) <br/>
+
+<br/>
+
+### Custom Component
+
+[Custom Component](#) <br/>
+
+</div>
+
+</div>
