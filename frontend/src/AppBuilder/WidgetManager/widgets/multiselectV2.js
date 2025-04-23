@@ -121,6 +121,12 @@ export const multiselectV2Config = {
       },
       accordian: 'Options',
     },
+    showAllSelectedLabel: {
+      type: 'toggle',
+      displayName: "Show 'All items are selected.'",
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'Options',
+    },
     optionsLoadingState: {
       type: 'toggle',
       displayName: 'Options loading state',
@@ -141,12 +147,6 @@ export const multiselectV2Config = {
       ],
       accordian: 'Options',
       isFxNotRequired: true,
-    },
-    showAllSelectedLabel: {
-      type: 'toggle',
-      displayName: 'Show all options selected label',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-      section: 'additionalActions',
     },
     loadingState: {
       type: 'toggle',
