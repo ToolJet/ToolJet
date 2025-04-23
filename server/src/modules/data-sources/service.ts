@@ -38,10 +38,16 @@ export class DataSourcesService implements IDataSourcesService {
       resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
       organizationId: user.organizationId,
     });
+    const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
-    const staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
+    let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
 
+
+    if (!shouldIncludeWorkflows) {
+      // remove workflowsdefault data source from static data sources
+      staticDataSources = staticDataSources.filter((dataSource) => dataSource.kind !== 'workflows');
+    }
     const decamelizedDatasources = decamelizeKeys([...staticDataSources, ...dataSources]);
     return { data_sources: decamelizedDatasources };
   }
