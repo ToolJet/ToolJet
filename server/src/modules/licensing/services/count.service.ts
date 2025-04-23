@@ -91,18 +91,20 @@ export class LicenseCountsService implements ILicenseCountsService {
 
   async getUsersCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+      const userStatusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
       const organizationStatusList = [WORKSPACE_STATUS.ACTIVE];
 
       if (!isOnlyActive) {
-        statusList.push(USER_STATUS.ARCHIVED);
+        userStatusList.push(USER_STATUS.ARCHIVED);
         organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
       }
+
       const userIdsWithoutNonActiveSuperadmins = (
         await this.userRepository.getUsers(
           {
+            status: In(userStatusList), // Apply status filter directly to users
             organizationUsers: {
-              status: In(statusList),
+              status: In(userStatusList),
               organization: {
                 status: In(organizationStatusList),
               },
@@ -114,6 +116,7 @@ export class LicenseCountsService implements ILicenseCountsService {
           manager
         )
       ).map((record) => record.id);
+
       const userIdsOfSuperAdmins = await this.#fetchSuperAdminIds(manager);
       const ids = [...new Set([...userIdsWithoutNonActiveSuperadmins, ...userIdsOfSuperAdmins])];
 
