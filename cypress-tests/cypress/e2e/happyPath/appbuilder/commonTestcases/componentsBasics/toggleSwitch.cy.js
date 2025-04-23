@@ -80,7 +80,7 @@ describe('ToggleSwitch Component Tests', () => {
         cy.apiCreateApp(`${fake.companyName}-Toggle-App`);
         cy.openApp();
         cy.dragAndDropWidget("Toggle Switch", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
