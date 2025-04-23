@@ -3,7 +3,7 @@ id: canvas
 title: Canvas and Layout Systems
 ---
 
-**Canvas** is the main playground in the ToolJet App Builder where the application is built and the user interface is designed. It also serves as the area for displaying data and results.
+**Canvas** is the main playground in the ToolJet App Builder where the application is built and the user interface is designed.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/canvas.png" alt="App Builder: Canvas"/>
 
@@ -11,7 +11,7 @@ title: Canvas and Layout Systems
 
 Through Global Settings, you can costomize the following properties of the **Canvas**:
 
-- **Max width of canvas**: Defines the maximum width of the canvas, which can be set in pixels or as a percentage of the screen size.
+- **Max width of canvas**: Defines the maximum width of the canvas, which can be set in pixels or as a percentage of the screen size. The height of the canvas expands automatically as more components are added.
 - **Canvas background**: Sets the background color of the canvas. This can also be controlled dynamically by clicking on **fx** and entering a logical expression.
 - **App mode**:  Select between three theme modes:
     - **Auto**: Adapts to the browser's theme settings or allows the user to switch between light and dark modes.
@@ -28,13 +28,13 @@ To build the user interface, components can be dragged from the [Component Libra
 
 ### Grid, Snapping and Markers
 
-ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. Each cell on the canvas grid has a fixed height of 10 pixels. The width of each cell adjusts based on the screen size. The grid consists of 43 columns, while the number of rows varies depending on the overall height of the application.
+ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. Each cell on the canvas grid has a fixed height of 10 pixels. The width of each cell adjusts based on the screen size.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/snap.png" alt="App Builder: Canvas"/>
 
-## Layout Components
+## Creating Layout
 
-In ToolJet, components can be grouped using a layout component such as a **[Container](#)** or a **[Form](#)**. Relevant components can be dragged and dropped into the layout component on the canvas to create a structured group.
+In ToolJet, components can be grouped using a layout component such as a **[Container](#)** or a **[Form](#)**. Relevant components can be dragged and dropped into the layout component on the canvas to create a section.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
 
@@ -60,7 +60,7 @@ Copied components can be pasted onto the canvas using **Cmd/Ctrl + V**.
 
 #### Clone Component
 
-Components on the canvas can be cloned using **Cmd/Ctrl + D**.
+Components on the canvas can be cloned using **Cmd/Ctrl + D**. Unlike copy and paste, cloning creates a duplicate of the selected component instantly
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/clone.png" alt="App Builder: Canvas"/>
 
