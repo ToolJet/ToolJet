@@ -11,7 +11,7 @@ These building blocks work together to let developers, product managers, and ent
 
 ## Building the Interface
 
-ToolJet offers a rich library of pre-built components – from basic inputs and buttons to tables, charts, and forms – that you can simply drag and drop onto the canvas. Laying out an interface is intuitive: you place components visually, resize and reposition them, and configure their properties through an easy-to-use Properties Panel, all without writing any code​.
+ToolJet offers a rich library of pre-built components – from basic inputs and buttons to tables, charts, and forms – that you can simply drag and drop onto the canvas. Designing an interface for your app is simple: you place components visually, resize and reposition them, and configure their properties through an easy-to-use Properties Panel, all without writing any code​.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full img-full" src="/img/app-builder/overview/components.png" alt="Components Preview" />
@@ -21,7 +21,7 @@ By default, components come with sensible styling and can be customized (text, c
 
 ## Connecting Your Data
 
-You can interact with your data sources through Queries. A query in ToolJet is a defined action that fetches, filters, or modifies data from a data source (for example, an SQL query, a REST API call, or even a Google Sheets operation). Queries act as the bridge between your UI and your back-end data​. 
+You can interact with your data sources through Queries. A query in ToolJet is a defined action that fetches, filters, or modifies data from a data source (Example: an SQL query, a REST API call, or even a Google Sheets operation). Queries act as the bridge between your UI and your back-end data​. 
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full img-full" src="/img/app-builder/overview/queries.png" alt="Queries Preview" />
@@ -31,13 +31,13 @@ They can retrieve data to display in components or send user input back to your 
 
 ## Making Apps Interactive
 
-Events in ToolJet define the interactive logic of your application – how the app responds when users do something or when certain conditions are met. ToolJet provides a declarative way to handle events through its Event Handlers configuration, so you can create complex behaviors without writing boilerplate code.
+Events in ToolJet define the interactive logic of your application – how the app responds when users performs some action or when certain conditions are met. ToolJet provides a declarative way to handle events through its Event Handlers configuration, so you can create complex behaviors without writing boilerplate code.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full img-full" src="/img/app-builder/overview/events.png" alt="Events Preview" />
 </div>
 
-There are many trigger points for events: a user clicking a button or submitting a form, a page loading, a query finishing its execution, etc. When an event is triggered, ToolJet can carry out actions in response (ToolJet actions include things like running a query, opening a modal, showing a notification, navigating to another page, etc.). You can chain events and actions to orchestrate multi-step flows.
+There are many trigger points for events: a user clicking a button or submitting a form, a page loading, a query finishing its execution, etc. When an event is triggered, ToolJet can carry out actions in response (ToolJet actions include things like running a query, opening a modal, showing a notification, navigating to another page, etc.). You can chain events and actions to build multi-step flows.
 
 ## Handling Complex Logic
 
