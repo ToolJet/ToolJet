@@ -399,7 +399,7 @@ export const EventManager = ({
     return (
       <Popover
         id="popover-basic"
-        style={{ width: '350px', maxWidth: '350px', height: '100%', overflow: 'auto' }}
+        style={{ width: '350px', maxWidth: '350px', maxHeight: '90%', overflow: 'auto' }}
         className={`${darkMode && 'dark-theme'} shadow`}
         data-cy="popover-card"
       >
