@@ -274,7 +274,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const renderChangeDataSource = () => {
     const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
       .filter(Boolean)
-      .filter((ds) => ds.kind === selectedQuery?.kind);
+      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC);
     if (isEmpty(selectableDataSources)) {
       return '';
     }
