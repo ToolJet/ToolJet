@@ -15,9 +15,11 @@ title: UI Component Library
 
 <div style = {{ width:'30%' }} >
 
-### Textual Inputs
+### 🔤 Textual Inputs
 
-[Currency Input](#) <br/> 
+*Collect user input with text, numbers, passwords, and more.* <br/>
+
+[Currency Input](#) <br/>
 [Email Input](#) <br/>
 [Number Input](#) <br/>
 [Password Input](#) <br/>
@@ -29,7 +31,9 @@ title: UI Component Library
 
 <br/>
 
-### Selection
+### ✅ Selection
+
+*Let users select their response from radio buttons, dropdowns, toggles, and more.*
 
 [Dropdown](#) <br/>
 [Radio Button](#) <br/>
@@ -42,16 +46,19 @@ title: UI Component Library
 
 <br/>
 
-### Layouts
+### 📐 Layouts
+
+*Arrange components in different layouts*
 
 [Modal](#) <br/>
-[Tabs](#) <br/>
 [Forms](#) <br/>
 [Container](#) <br/>
 
 <br/>
 
-### Buttons
+### 🕹️ Buttons
+
+*Trigger actions with clickable buttons.*
 
 [Button](#) <br/>
 [Button Group](#) <br/>
@@ -64,7 +71,9 @@ title: UI Component Library
 
 <div style = {{ width:'30%' }} >
 
-### Dynamic Views
+### 🖥️ Dynamic Views
+
+*Present data in interactive components.*
 
 [Kanban](#) <br/>
 [Table](#) <br/>
@@ -72,7 +81,9 @@ title: UI Component Library
 
 <br/>
 
-### Document & Media
+### 📂 Document & Media
+
+*Display PDFs, images, or accept media input.*
 
 [PDF](#) <br/>
 [Svg Image](#) <br/>
@@ -83,7 +94,9 @@ title: UI Component Library
 
 <br/>
 
-### Date and Time
+### 🗓️ Date and Time
+
+*Pick dates, times, or ranges easily.*
 
 [Date Time Picker](#) <br/>
 [Range Picker](#) <br/>
@@ -93,7 +106,9 @@ title: UI Component Library
 
 <br/>
 
-### Visual Indicators
+### 🔄 Visual Indicators
+
+*Show progress, or divide sections through visual cues.*
 
 [Divider](#) <br/>
 [Vertical Divider](#) <br/>
@@ -102,7 +117,9 @@ title: UI Component Library
 
 <br/>
 
-### Developer Utilities
+### 👨‍💻 Developer Utilities
+
+*Components to add code, iframe or present HTML code.*
 
 [Code Editor](#) <br/>
 [Iframe](#) <br/>
@@ -116,7 +133,9 @@ title: UI Component Library
 
 <div style = {{ width:'30%' }} >
 
-### Data Visualization
+### 📊 Data Visualization
+
+*Plot charts and graphs to display data trends.*
 
 [Chart](#) <br/>
 [Calendar](#) <br/>
@@ -127,14 +146,19 @@ title: UI Component Library
 
 <br/>
 
-### Navigation
+### 🧭 Navigation
+
+*Guide users with tabs, pagination or steps.*
 
 [Pagination](#) <br/>
 [Steps](#) <br/>
+[Tabs](#) <br/>
 
 <br/>
 
-### Labels
+### 🏷️ Labels
+
+*Display static text, icons, or tags.*
 
 [Icon](#) <br/>
 [Text](#) <br/>
@@ -142,13 +166,17 @@ title: UI Component Library
 
 <br/>
 
-### Chatbot
+### 🤖 Chatbot
+
+*Embed conversational interfaces for user interaction.*
 
 [Chat](#) <br/>
 
 <br/>
 
-### Custom Component
+### 🎨 Custom Component
+
+*Build your own React component.*
 
 [Custom Component](#) <br/>
 
