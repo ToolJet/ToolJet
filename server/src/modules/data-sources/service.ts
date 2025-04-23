@@ -33,15 +33,20 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
 
-  async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
+  async getForApp(query: GetQueryVariables, user: User, shouldIncludeWorkflows = true): Promise<{ data_sources: object[] }> {
     const userPermissions = await this.abilityService.resourceActionsPermission(user, {
       resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
       organizationId: user.organizationId,
     });
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
-    const staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
+    let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
 
+
+    if (!shouldIncludeWorkflows) {
+      // remove workflowsdefault data source from static data sources
+      staticDataSources = staticDataSources.filter((dataSource) => dataSource.kind !== 'workflows');
+    }
     const decamelizedDatasources = decamelizeKeys([...staticDataSources, ...dataSources]);
     return { data_sources: decamelizedDatasources };
   }
