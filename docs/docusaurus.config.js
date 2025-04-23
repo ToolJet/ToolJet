@@ -53,29 +53,18 @@ module.exports = {
       items: [
         {
           type: 'docsVersionDropdown',
-          position: 'right',
-        },
-        {
-          type: 'search',
           position: 'left',
         },
         {
-          href: 'https://github.com/ToolJet/ToolJet',
+          type: 'search',
           position: 'right',
-          className: 'navbar-social-link navbar-github-logo',
-          'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://tooljet.ai/slack',
+          href: 'https://www.tooljet.ai/',
           position: 'right',
-          className: 'navbar-social-link navbar-slack-logo',
-          'aria-label': 'Slack workspace',
-        },
-        {
-          href: 'https://twitter.com/ToolJet',
-          position: 'right',
-          className: 'navbar-social-link navbar-twitter-logo',
-          'aria-label': 'Twitter account',
+          label: 'Website',
+          className: 'navbar-signin',
+          'aria-label': 'Signin to ToolJet',
         },
         {
           href: 'https://app.tooljet.ai',
@@ -85,23 +74,62 @@ module.exports = {
           'aria-label': 'Signin to ToolJet',
         },
         {
-          href: 'https://tooljet.ai',
+          href: '#',
           position: 'right',
-          label: 'Website',
+          label: 'Try for free',
           className: 'navbar-website',
-          'aria-label': 'ToolJet website',
+          'aria-label': 'Try ToolJet for free',
         },
       ],
     },
     footer: {
-      style: 'dark',
+      style: 'light',
       links: [
         {
-          title: 'Docs',
+          title: 'Platform',
+          items: [
+            {
+              label: 'App builder',
+              href: '#',
+            },
+            {
+              label: 'AI Agent builder',
+              href: '#',
+            },
+            {
+              label: 'ToolJet Database',
+              href: '#',
+            },
+          ],
         },
         {
-          title: 'Community',
+          title: 'Solutions',
           items: [
+            {
+              label: 'Back office tools',
+              href: 'https://tooljet.ai/slack',
+            },
+            {
+              label: 'Business apps',
+              href: 'https://tooljet.ai/slack',
+            }
+          ],
+        },
+        {
+          title: 'Developers',
+          items: [
+            {
+              label: 'Blogs',
+              href: 'https://blog.tooljet.ai/',
+            },
+            {
+              label: 'Events',
+              href: '#',
+            },
+            {
+              label: 'GitHub',
+              href: 'https://github.com/ToolJet/ToolJet',
+            },
             {
               label: 'Slack',
               href: 'https://tooljet.ai/slack',
@@ -109,24 +137,45 @@ module.exports = {
           ],
         },
         {
-          title: 'More',
+          title: 'Templates',
           items: [
             {
-              label: 'GitHub',
-              href: 'https://github.com/ToolJet/ToolJet',
+              label: 'Lead management',
+              href: '#',
             },
             {
-              label: 'YouTube',
-              href: 'https://www.youtube.com/channel/UCf1p2G5Z7fPpvlBPf4l2I1w',
+              label: 'KPI management',
+              href: '#',
             },
             {
-              label: 'Twitter',
-              href: 'https://twitter.com/ToolJet',
+              label: 'Inventory management',
+              href: '#',
+            },
+            {
+              label: 'Leave management',
+              href: '#',
+            },
+            {
+              label: 'Applicant tracking',
+              href: '#',
             },
           ],
         },
+        {
+          title: 'Contact us',
+          items: [
+            {
+              label: 'hello@tooljet.com',
+              href: '#',
+            },
+            {
+              label: 'support@tooljet.com',
+              href: '#',
+            }
+          ],
+        },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.
+      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc. All rights reserved.
       <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />
       <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("c4rgfujgx6jef4722rcjfhj7dlmcipih",{host:"https://api.factors.ai"}),this}(),function(){var t=document.createElement("script");t.type="text/javascript",t.src="https://app.factors.ai/assets/factors.js",t.async=!0,(d=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,d)}();</script>
       <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>
