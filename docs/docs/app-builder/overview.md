@@ -3,9 +3,9 @@ id: overview
 title: Overview
 ---
 
-ToolJet’s app builder lets you build internal tools like dashboards, admin panels, and forms quickly. Whether you're building a simple interface or handling complex business logic, ToolJet gives you ability to do both.
+ToolJet’s app builder lets you build internal tools like dashboards, file management, workflow approvals, forms, directory management, tracking and scheduling applications quickly. 
 
-Developers, product managers, and enterprise teams can build applications with ease, following four simple steps to get up and running in minutes:
+Teams across engineering, product, operations, and business can build applications with ease, following four simple steps to get up and running in minutes.
 
 1. **Build the Interface** – Design visually with drag-and-drop components.
 
@@ -32,12 +32,12 @@ Each component comes with built-in styling options. You can customize text, colo
 
 You can connect your app to multiple [data sources](/docs/data-sources/overview) including relational, NoSQL or Vector databases, APIs, spreadsheets, and cloud services. Once connected, you can fetch, update, or manipulate data using queries.
 
-A query is an action that interacts with your data source, whether it's fetching records, filtering results, or writing back data. Queries act as the bridge between your UI and your data.
+A query is an action that interacts with your data source, whether it's fetching records, filtering results, or writing back data. It act as the bridge between your UI and your data.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/queries.png" alt="Queries Preview" /> </div>
 
 
-Use the Query Panel to build queries, either with a form-based interface or by writing code/SQL directly. You can use queries to fetch data to display in components or to push user inputs back to your database. You can run queries manually or make it run based on triggers like page load, user actions on components, or the success or failure of other queries.
+Use the Query Panel to build queries, either with a form-based interface or by writing code/SQL directly. You can use them to fetch data to display in components or to push user inputs back to your database.They can run manually or be triggered using events like page load, user actions on components, or the success or failure of other queries.
 
 ## 3. Making Apps Interactive 
 
@@ -57,21 +57,21 @@ ToolJet makes it easy to build apps without code, but when you need more control
 
 This gives developers the ability to handle complex scenarios with code, while still leveraging ToolJet’s low-code environment.
 
-ToolJet’s app builder gives you everything you need to build  and ship your internal tools quickly. Combining the speed of low-code with the ability to write custom code where needed, you can build anything from simple dashboards to complex workflows, all in one platform.
+ToolJet’s app builder gives you everything you need to build and ship your internal tools quickly without extensive coding knowledge. Combining the speed of low-code with the ability to write custom code where needed, you can build anything from simple dashboards to complex workflows, all in one platform.
 
 ## Usecases
 Here are some examples of what you can achieve with ToolJet:
-* Create a dashboard to visualize key metrics.
-* Build an admin panel for managing users and content.
-* Develop a form for collecting customer feedback.
-* Automate tasks across different systems.
-* Create a chatbot for customer support.
-* Build a reporting tool for sales analytics.
-* Develop a project management tool.
-* Create a survey or questionnaire.
-* Build a booking system for appointments.
-* Develop a workflow automation tool.
-* Create a file upload/download manager.
-* Build a real-time monitoring tool. 
+* Store inventory tracker
+* Warehouse picking & packing app
+* Digital loan processing app
+* Underwriting portal
+* Fraud detection app
+* Customer onboarding portal
+* Customer support assistant
+* Digital asset management portal
+* Regulatory compliance reporter
+* Field service dispatch system
+* Time sheet tracker
+* Software license management app
 
 Learn more about these usecases here: [https://www.tooljet.ai/templates](https://www.tooljet.ai/templates)
