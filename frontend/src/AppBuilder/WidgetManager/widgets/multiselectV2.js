@@ -123,7 +123,7 @@ export const multiselectV2Config = {
     },
     showAllSelectedLabel: {
       type: 'toggle',
-      displayName: "Show 'All items are selected.'",
+      displayName: 'Show "All items are selected"',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'Options',
     },
