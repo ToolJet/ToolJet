@@ -81,7 +81,7 @@ export class AppImportExportService {
     protected componentsService: ComponentsService
   ) {}
 
-  async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
+  async export(user: User, id: string, searchParams: any = {}, organizationId?: string): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     // filter by search params
@@ -91,7 +91,7 @@ export class AppImportExportService {
         .createQueryBuilder(App, 'apps')
         .where('apps.id = :id AND apps.organization_id = :organizationId', {
           id,
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId || organizationId,
         });
       const appToExport = await queryForAppToExport.getOne();
 
@@ -120,7 +120,7 @@ export class AppImportExportService {
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
         .where('app_environments.organizationId = :organizationId', {
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId || organizationId,
         })
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();

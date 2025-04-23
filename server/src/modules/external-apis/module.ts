@@ -5,6 +5,10 @@ import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
 import { ExternalApiSecurityGuard } from './guards/external-api-security.guard';
 import { RolesRepository } from '@modules/roles/repository';
+import { TooljetDbModule } from '@modules/tooljet-db/module';
+import { AppsModule } from '@modules/apps/module';
+import { OrganizationsModule } from '@modules/organizations/module';
+import { VersionModule } from '@modules/versions/module';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -14,7 +18,14 @@ export class ExternalApiModule {
 
     return {
       module: ExternalApiModule,
-      imports: [await RolesModule.register(configs), await GroupPermissionsModule.register(configs)],
+      imports: [
+        await RolesModule.register(configs),
+        await GroupPermissionsModule.register(configs),
+        await TooljetDbModule.register(configs),
+        await AppsModule.register(configs),
+        await OrganizationsModule.register(configs),
+        await VersionModule.register(configs),
+      ],
       providers: [
         ExternalApiUtilService,
         ExternalApisService,
