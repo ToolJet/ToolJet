@@ -1,3 +1,5 @@
+import { DefaultDataSourceKind } from '../types';
+
 export enum FEATURE_KEY {
   GET = 'GET',
   GET_FOR_APP = 'GET_FOR_APP',
@@ -21,3 +23,5 @@ export enum DataSourceScopes {
   LOCAL = 'local',
   GLOBAL = 'global',
 }
+
+export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];

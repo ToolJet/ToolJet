@@ -697,24 +697,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  async findDefaultDataSource(
-    kind: string,
-    appVersionId: string,
-    organizationId: string,
-    manager: EntityManager
-  ): Promise<DataSource> {
-    const defaultDataSource = await manager.findOne(DataSource, {
-      where: { kind, appVersionId, type: DataSourceTypes.STATIC },
-    });
-
-    if (defaultDataSource) {
-      return defaultDataSource;
-    }
-    const dataSource = await this.dataSourceRepository.createDefaultDataSource(kind, appVersionId, manager);
-    await this.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
-    return dataSource;
-  }
-
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
     const { provider, source_options = {}, plugin_id = null } = getDataSourceOauthUrlDto;
     const service = await this.pluginsServiceSelector.getService(plugin_id, provider);

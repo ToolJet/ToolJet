@@ -15,6 +15,9 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { SampleDataSourceService } from '@modules/data-sources/services/sample-ds.service';
 import { ISetupOrganizationsUtilService } from './interfaces/IUtilService';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
+import { DataSourcesUtilService } from '@modules/data-sources/util.service';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { DefaultDataSourceKinds } from '@modules/data-sources/constants';
 
 @Injectable()
 export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilService {
@@ -28,7 +31,9 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
     protected readonly sampleDBService: SampleDataSourceService,
     protected readonly licenseOrganizationService: LicenseOrganizationService,
     protected readonly licenseUserService: LicenseUserService,
-    protected readonly organizationUserRepository: OrganizationUsersRepository
+    protected readonly organizationUserRepository: OrganizationUsersRepository,
+    protected readonly dataSourceUtilService: DataSourcesUtilService,
+    protected readonly dataSourcesRepository: DataSourcesRepository
   ) {}
 
   async create(name: string, slug: string, user?: User, manager?: EntityManager): Promise<Organization> {
@@ -47,6 +52,17 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
       //create default theme for this organization
       await this.organizationThemesUtilService.createDefaultTheme(manager, organization.id);
       await this.tooljetDbTableOperationsService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
+
+      // Create static data sources for the organization
+      for (const defaultSource of DefaultDataSourceKinds) {
+        const dataSource = await this.dataSourcesRepository.createDefaultDataSource(
+          defaultSource,
+          organization.id,
+          manager
+        );
+        await this.dataSourceUtilService.createDataSourceInAllEnvironments(organization.id, dataSource.id, manager);
+      }
+
       return organization;
     }, manager);
   }

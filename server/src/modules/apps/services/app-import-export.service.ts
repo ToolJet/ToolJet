@@ -33,6 +33,7 @@ import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { ComponentsService } from './component.service';
+
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -43,7 +44,6 @@ interface AppResourceMappings {
   componentsMapping: Record<string, string>;
 }
 
-type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
 type DefaultDataSourceName =
   | 'restapidefault'
   | 'runjsdefault'
@@ -60,7 +60,6 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'tooljetdbdefault',
   'workflowsdefault',
 ];
-const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 const NewRevampedComponents: NewRevampedComponent[] = [
   'Text',
   'TextInput',
@@ -1149,12 +1148,7 @@ export class AppImportExportService {
     user: User,
     appResourceMappings: AppResourceMappings
   ) {
-    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user.organizationId,
-      appResourceMappings.appVersionMapping[appVersion.id],
-      DefaultDataSourceKinds,
-      manager
-    );
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);
     appResourceMappings.defaultDataSourceIdMapping[appVersion.id] = defaultDataSourceIds;
 
     return appResourceMappings;
@@ -1383,19 +1377,12 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
-  async createDefaultDataSourceForVersion(
-    organizationId: string,
-    versionId: string,
-    kinds: DefaultDataSourceKind[],
-    manager: EntityManager
-  ): Promise<any> {
-    const response = {};
-    for (const defaultSource of kinds) {
-      const dataSource = await this.dataSourcesRepository.createDefaultDataSource(defaultSource, versionId, manager);
-      response[defaultSource] = dataSource.id;
-      await this.dataSourcesUtilService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
-    }
-    return response;
+  async createDefaultDataSourceForVersion(organizationId: string, manager: EntityManager): Promise<any> {
+    const dataSources = await this.dataSourcesRepository.getStaticDataSources(organizationId, manager);
+    return dataSources?.reduce<Record<string, string>>((acc, source) => {
+      acc[source.kind] = source.id;
+      return acc;
+    }, {});
   }
 
   async setEditingVersionAsLatestVersion(manager: EntityManager, appVersionMapping: any, appVersions: Array<any>) {
@@ -1541,12 +1528,7 @@ export class AppImportExportService {
     await manager.save(version);
 
     // Create default data sources
-    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user.organizationId,
-      version.id,
-      DefaultDataSourceKinds,
-      manager
-    );
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);
     let envIdArray: string[] = [];
 
     const organization: Organization = await manager.findOne(Organization, {
