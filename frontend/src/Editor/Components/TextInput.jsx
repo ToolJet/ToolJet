@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -317,43 +315,45 @@ export const TextInput = function TextInput({
             stroke={1.5}
           />
         )}
-        <input
-          data-cy={dataCy}
-          ref={textInputRef}
-          className={`tj-text-input-widget ${
-            !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon`}
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
+        <div className="w-100">
+          <input
+            data-cy={dataCy}
+            ref={textInputRef}
+            className={`tj-text-input-widget ${
+              !isValid && showValidationError ? 'is-invalid' : ''
+            } validation-without-icon`}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') {
+                setInputValue(e.target.value);
+                fireEvent('onEnterPressed');
+              }
+            }}
+            onChange={(e) => {
               setInputValue(e.target.value);
-              fireEvent('onEnterPressed');
-            }
-          }}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-            fireEvent('onChange');
-          }}
-          onBlur={(e) => {
-            setShowValidationError(true);
-            setIsFocused(false);
-            e.stopPropagation();
-            fireEvent('onBlur');
-            setIsFocused(false);
-          }}
-          onFocus={(e) => {
-            setIsFocused(true);
-            e.stopPropagation();
+              fireEvent('onChange');
+            }}
+            onBlur={(e) => {
+              setShowValidationError(true);
+              setIsFocused(false);
+              e.stopPropagation();
+              fireEvent('onBlur');
+              setIsFocused(false);
+            }}
+            onFocus={(e) => {
+              setIsFocused(true);
+              e.stopPropagation();
 
-            setTimeout(() => {
-              fireEvent('onFocus');
-            }, 0);
-          }}
-          type="text"
-          placeholder={placeholder}
-          style={computedStyles}
-          value={value}
-          disabled={disable || loading}
-        />
+              setTimeout(() => {
+                fireEvent('onFocus');
+              }, 0);
+            }}
+            type="text"
+            placeholder={placeholder}
+            style={computedStyles}
+            value={value}
+            disabled={disable || loading}
+          />
+        </div>
         {loading && <Loader style={{ ...loaderStyle }} width="16" />}
       </div>
       {showValidationError && visibility && (

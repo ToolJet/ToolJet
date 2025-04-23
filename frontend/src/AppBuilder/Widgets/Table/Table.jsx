@@ -877,13 +877,13 @@ export const Table = React.memo(
 
     useEffect(() => {
       const pageData = page.map((row) => row.original);
-      if (preSelectRow.current) {
+      if (preSelectRow.current && !isEmpty(data)) {
         preSelectRow.current = false;
       } else {
         setExposedVariables({
           currentPageData: pageData,
           currentData: data,
-          selectedRow: [],
+          selectedRow: {},
           selectedRowId: null,
         });
         if (tableDetails.selectedRowId || !isEmpty(tableDetails.selectedRowDetails)) {
