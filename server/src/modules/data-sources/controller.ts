@@ -45,7 +45,7 @@ export class DataSourcesController implements IDataSourcesController {
     @Param('versionId') appVersionId,
     @Param('environmentId') environmentId
   ) {
-    return this.dataSourcesService.getForApp({ appVersionId, environmentId }, user, false);
+    return this.dataSourcesService.getForApp({ appVersionId, environmentId, shouldIncludeWorkflows: false }, user);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)

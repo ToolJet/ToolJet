@@ -33,11 +33,12 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
 
-  async getForApp(query: GetQueryVariables, user: User, shouldIncludeWorkflows = true): Promise<{ data_sources: object[] }> {
+  async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
     const userPermissions = await this.abilityService.resourceActionsPermission(user, {
       resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
       organizationId: user.organizationId,
     });
+    const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
     let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
