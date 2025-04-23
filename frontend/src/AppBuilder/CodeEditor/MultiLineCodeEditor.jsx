@@ -21,8 +21,9 @@ import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
-import { handleSearchPanel, SearchBtn } from './SearchBox';
+import { handleSearchPanel } from './SearchBox';
 import { isInsideParent } from './utils';
+import { CodeHinterBtns } from './CodehinterOverlayTriggers';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -72,6 +73,8 @@ const MultiLineCodeEditor = (props) => {
   const handleChange = (val) => (currentValueRef.current = val);
 
   const [editorView, setEditorView] = React.useState(null);
+
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = React.useState(false);
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);
@@ -248,7 +251,7 @@ const MultiLineCodeEditor = (props) => {
       ref={wrapperRef}
     >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
-        <SearchBtn view={editorView} />
+        <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} renderCopilot={renderCopilot} />
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
@@ -256,7 +259,6 @@ const MultiLineCodeEditor = (props) => {
           isMultiEditor={true}
           isQueryManager={isInsideQueryPane}
         />
-        {renderCopilot && renderCopilot()}
 
         <CodeHinter.Portal
           isCopilotEnabled={false}
@@ -316,12 +318,7 @@ const MultiLineCodeEditor = (props) => {
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager
                 onCreateEditor={(view) => setEditorView(view)}
-                onUpdate={(view) => {
-                  const icon = document.querySelector('.codehinter-search-btn');
-                  if (searchPanelOpen(view.state)) {
-                    icon.style.display = 'none';
-                  } else icon.style.display = 'block';
-                }}
+                onUpdate={(view) => setIsSearchPanelOpen(searchPanelOpen(view.state))}
               />
             </div>
             {showPreview && (
