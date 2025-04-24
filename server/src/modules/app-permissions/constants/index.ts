@@ -1,6 +1,7 @@
 export enum PAGE_PERMISSION_TYPE {
   SINGLE = 'SINGLE',
   GROUP = 'GROUP',
+  ALL = 'ALL',
 }
 
 export enum FEATURE_KEY {

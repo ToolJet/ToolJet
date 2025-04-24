@@ -12,7 +12,7 @@ export class AppPermissionsUtilService implements IUtilService {
     throw new Error('Method not implemented.');
   }
 
-  async getUsersWithViewAccess(appId: string, organizationId: string, endUserIds: string[]): Promise<User[]> {
+  async getUsersWithViewAccess(appId: string, organizationId: string): Promise<User[]> {
     throw new Error('Method not implemented.');
   }
 

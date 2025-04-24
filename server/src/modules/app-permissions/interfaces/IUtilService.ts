@@ -3,7 +3,7 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { CreatePagePermissionDto } from '../dto';
 
 export interface IUtilService {
-  getUsersWithViewAccess(appId: string, organizationId: string, endUserIds: string[]): Promise<User[]>;
+  getUsersWithViewAccess(appId: string, organizationId: string): Promise<User[]>;
 
   getUserGroupsWithViewAccess(appId: string, organizationId: string): Promise<GroupPermissions[]>;
 
