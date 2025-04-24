@@ -5,7 +5,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { restAPISelector } from "Selectors/restAPI";
 import { restAPIText } from "Texts/restAPI";
-import { fillDataSourceTextField } from "Support/utils/postgreSql";
+import { createAndRunRestAPIQuery } from "Support/utils/restAPI";
 
 const data = {};
 const authenticationDropdownSelector =
@@ -331,7 +331,8 @@ describe("Data source Rest API", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
     deleteDatasource(`cypress-${data.dataSourceName}-restapi`);
   });
-  it("Should verify connection for Rest API", () => {
+  it.only("Should verify connection for Rest API", () => {
+    const storedId = Cypress.env("storedId");
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
@@ -366,18 +367,89 @@ describe("Data source Rest API", () => {
       ]
     );
     cy.reload();
-    // cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
-    // cy.apiAddQueryToApp(
-    //   "restapi1",
-    //   {
-    //     method: "get",
-    //     url: "",
-    //     url_params: [["", ""]],
-    //     headers: [["", ""]],
-    //     cookies: [["", ""]],
-    //   },
-    //   `cypress-${data.dataSourceName}-restapi`,
-    //   "restapi"
-    // );
+
+    cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
+    cy.openApp();
+    createAndRunRestAPIQuery(
+      "get_restapi",
+      `cypress-${data.dataSourceName}-restapi`,
+      "GET",
+      "/api/users"
+    );
+    createAndRunRestAPIQuery(
+      "post_restapi",
+      `cypress-${data.dataSourceName}-restapi`,
+      "POST",
+      "",
+      [["Content-Type", "application/json"]],
+      [],
+      {
+        price: 200,
+        name: "Violin",
+      },
+      true,
+      "/api/users"
+    );
+    cy.readFile("cypress/fixtures/restAPI/storedId.json").then(
+      (postResponseID) => {
+        const id1 = postResponseID.id;
+        createAndRunRestAPIQuery(
+          "put_restapi_id",
+          `cypress-${data.dataSourceName}-restapi`,
+          "PUT",
+          "",
+          [["Content-Type", "application/json"]],
+          [],
+          {
+            price: 500,
+            name: "Guitar",
+          },
+          true,
+          `/api/users/${id1}`
+        );
+      }
+    );
+    cy.readFile("cypress/fixtures/restAPI/storedId.json").then(
+      (putResponseID) => {
+        const id2 = putResponseID.id;
+        createAndRunRestAPIQuery(
+          "patch_restapi_id",
+          `cypress-${data.dataSourceName}-restapi`,
+          "PATCH",
+          "",
+          [["Content-Type", "application/json"]],
+          [],
+          { price: 999 },
+          true,
+          `/api/users/${id2}`
+        );
+      }
+    );
+    cy.readFile("cypress/fixtures/restAPI/storedId.json").then(
+      (patchResponseID) => {
+        const id3 = patchResponseID.id;
+        createAndRunRestAPIQuery(
+          "get_restapi_id",
+          `cypress-${data.dataSourceName}-restapi`,
+          "GET",
+          "",
+          [],
+          [],
+          true,
+          `/api/users/${id3}`
+        );
+
+        createAndRunRestAPIQuery(
+          "delete_restapi_id",
+          `cypress-${data.dataSourceName}-restapi`,
+          "DELETE",
+          "",
+          [],
+          [],
+          true,
+          `/api/users/${id3}`
+        );
+      }
+    );
   });
 });
