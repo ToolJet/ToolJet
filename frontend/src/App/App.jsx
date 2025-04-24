@@ -81,9 +81,14 @@ class AppComponent extends React.Component {
     });
   };
 
+  addOverflowYHidden = () => {
+    document.documentElement.style.setProperty('overflow-y', 'hidden');
+  };
+
   componentDidMount() {
     authorizeWorkspace();
     this.fetchMetadata();
+    this.addOverflowYHidden();
     setFaviconAndTitle(null, null, this.props.location);
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
