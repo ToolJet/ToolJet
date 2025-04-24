@@ -26,6 +26,7 @@ export default function PagePermission({ darkMode }) {
   const setSelectedUsers = useStore((state) => state.setSelectedUsers);
   const pagePermission = useStore((state) => state.pagePermission);
   const setPagePermission = useStore((state) => state.setPagePermission);
+  const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
 
   const [pagePermissionType, setPagePermissionType] = useState('all');
   const [showUserGroupSelect, toggleUserGroupSelect] = useState(false);
@@ -45,7 +46,7 @@ export default function PagePermission({ darkMode }) {
             toggleUserGroupSelect(true);
             data?.length &&
               setSelectedUserGroups(
-                data[0]?.users?.map((user) => ({
+                data[0]?.groups?.map((user) => ({
                   label: user?.permissionGroup?.name,
                   value: user?.permissionGroup?.id,
                   count: user?.permissionGroup?.count,
@@ -141,6 +142,7 @@ export default function PagePermission({ darkMode }) {
       .createPagePermission(appId, editingPage?.id, body)
       .then((data) => {
         toast.success('Permission successfully created!');
+        updatePageWithPermissions(editingPage?.id, data);
       })
       .catch(() => {
         toast.error('Permission could not be created. Please try again!');
@@ -164,6 +166,7 @@ export default function PagePermission({ darkMode }) {
       .updatePagePermission(appId, editingPage?.id, body)
       .then((data) => {
         toast.success('Permission successfully updated!');
+        updatePageWithPermissions(editingPage?.id, data);
       })
       .catch(() => {
         toast.error('Permission could not be updated. Please try again!');
@@ -180,6 +183,7 @@ export default function PagePermission({ darkMode }) {
       .deletePagePermission(appId, pageToDelete)
       .then((data) => {
         toast.success('Permission successfully deleted!');
+        updatePageWithPermissions(pageToDelete, []);
       })
       .catch(() => {
         toast.error('Permission could not be deleted. Please try again!');

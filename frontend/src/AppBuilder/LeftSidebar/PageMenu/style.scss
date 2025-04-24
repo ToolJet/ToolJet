@@ -305,6 +305,10 @@
         }
     }
 
+    .react-select__menu-list {
+        overflow-y: unset !important;
+    }
+
     .user-select-option {
         display: flex;
         align-items: center;

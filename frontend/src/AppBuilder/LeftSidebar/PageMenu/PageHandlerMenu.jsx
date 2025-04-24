@@ -2,6 +2,7 @@ import React from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const PageHandlerMenu = ({ darkMode }) => {
   const setShowEditingPopover = useStore((state) => state.setShowEditingPopover);
@@ -21,6 +22,8 @@ export const PageHandlerMenu = ({ darkMode }) => {
   const clonePage = useStore((state) => state.clonePage);
   const markAsHomePage = useStore((state) => state.markAsHomePage);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   // const popoverTargetRef = null;
   // console.log(
@@ -166,16 +169,18 @@ export const PageHandlerMenu = ({ darkMode }) => {
                   }}
                   disabled={isHomePage}
                 />
-                <Field
-                  id={isDisabled ? 'enable-page' : 'disable-page'}
-                  text={isDisabled ? 'Page permission' : 'Page permission'}
-                  customClass={'delete-btn'}
-                  iconSrc={`assets/images/icons/editor/left-sidebar/authorization.svg`}
-                  closeMenu={closeMenu}
-                  callback={(id) => {
-                    togglePagePermissionModal(true);
-                  }}
-                />
+                {licenseValid && (
+                  <Field
+                    id={isDisabled ? 'enable-page' : 'disable-page'}
+                    text={isDisabled ? 'Page permission' : 'Page permission'}
+                    customClass={'delete-btn'}
+                    iconSrc={`assets/images/icons/editor/left-sidebar/authorization.svg`}
+                    closeMenu={closeMenu}
+                    callback={(id) => {
+                      togglePagePermissionModal(true);
+                    }}
+                  />
+                )}
                 <Field
                   id="delete-page"
                   text="Delete page"

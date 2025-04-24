@@ -95,7 +95,7 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
         >
           <div>
             <PageHandlerMenu darkMode={darkMode} />
-            <PagePermission darkMode={darkMode} />
+            {isLicensed ? <PagePermission darkMode={darkMode} /> : <></>}
             <EditModal darkMode={darkMode} />
             <SettingsModal darkMode={darkMode} />
             <DeletePageConfirmationModal darkMode={darkMode} />

@@ -41,7 +41,7 @@ export const savePageChanges = async (appId, versionId, pageId, diff, operation 
 };
 
 const createPageUpdateCommand =
-  (updatePaths, afterUpdateFn = () => {}) =>
+  (updatePaths, afterUpdateFn = () => {}, enableSave = true) =>
   (pageId, values) => {
     return (set, get) => {
       set((state) => {
@@ -57,7 +57,7 @@ const createPageUpdateCommand =
 
       const { app, currentVersionId } = get();
       const diff = _.zipObject(updatePaths, values);
-      savePageChanges(app.appId, currentVersionId, pageId, diff);
+      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
     };
   };
 
@@ -81,6 +81,8 @@ export const createPageMenuSlice = (set, get) => {
     state.showEditingPopover = false;
     state.editingPage = null;
   });
+
+  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => {}, false);
 
   return {
     editingPage: null,
@@ -194,6 +196,7 @@ export const createPageMenuSlice = (set, get) => {
       updatePageHandle(pageId, [value])(set, get);
     },
     updatePageGroupName: (pageId, value) => updatePageGroupName(pageId, [value])(set, get),
+    updatePageWithPermissions: (pageId, value) => updatePageWithPermissions(pageId, [value])(set, get),
     // unsure about this one
     clonePage: async (pageId) => {
       const {

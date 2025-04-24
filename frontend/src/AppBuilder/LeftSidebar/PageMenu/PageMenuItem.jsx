@@ -31,6 +31,7 @@ export const PageMenuItem = withRouter(
     const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
     const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
     const showEditingPopover = useStore((state) => state.showEditingPopover);
+    const restricted = page?.permissions && page?.permissions?.length > 0;
     const {
       definition: { styles, properties },
     } = useStore((state) => state.pageSettings);
@@ -199,7 +200,7 @@ export const PageMenuItem = withRouter(
                   </span>
                 </div>
                 <div style={{ marginLeft: '8px', marginRight: 'auto' }}>
-                  {licenseValid && page?.restricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
+                  {licenseValid && restricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
                 </div>
                 <div className={cx('right', { 'handler-menu-open': showEditingPopover })}>
                   {!shouldFreeze && (

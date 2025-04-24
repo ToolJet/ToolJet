@@ -15,7 +15,7 @@ const RenderPage = ({ page, currentPageId, switchPageWrapper, labelStyle, comput
   console.log({ isHomePage });
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
   const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
-  return page.hidden || page.disabled ? null : (
+  return (page.hidden || page.disabled) && page?.restricted ? null : (
     <FolderList
       key={page.handle}
       onClick={() => switchPageWrapper(page?.id)}
@@ -150,10 +150,15 @@ export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkM
     <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
       {/* <Accordion alwaysOpen defaultActiveKey={tree.map((page) => page.id)}> */}
       {filteredPages.map((page, index) => {
-        if (page.isPageGroup && page.children.length === 0 && labelStyle?.label?.hidden) {
+        if (
+          page.isPageGroup &&
+          page.children.length === 0 &&
+          labelStyle?.label?.hidden &&
+          !page.children.some((child) => child?.restricted === true)
+        ) {
           return null;
         }
-        if (page.children && page.isPageGroup) {
+        if (page.children && page.isPageGroup && !page.children.some((child) => child?.restricted === true)) {
           // if we are only displaying icons, we don't display the groups instead display separator to separate a page groups
           const renderSeparatorTop = index !== 0 && labelStyle?.label?.hidden;
           const renderSeparatorBottom = !filteredPages[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
@@ -193,7 +198,7 @@ export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkM
               )}
             </>
           );
-        } else {
+        } else if (!page.isPageGroup) {
           return (
             <RenderPage
               key={page.handle}
