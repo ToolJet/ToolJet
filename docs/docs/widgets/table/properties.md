@@ -257,6 +257,12 @@ Disable condition allows you to control whether the Table is enabled or disabled
 | **Cell height** | Determines the size of the table cells.  | Choose between **Condensed** or **Regular** size. You can also set it programmatically using **fx**.  |
 | **Max row height** | Controls the maximum height of rows when **Content wrap** is enabled. | Select **Auto** or define a **Custom** size. You can also set it programmatically using **fx**. |
 
+:::note
+For **Custom Max Row Height**, the minimum value depends on the Cell height setting:
+- When **Cell Height** is set to **Regular**, the minimum height is **45 px**.
+- When **Cell Height** is set to **Condensed**, the minimum height is **39 px**.
+:::
+
 ## Action Button
 | Action     | Description     | Configuration Options    |
 |:-------------------|:----------------|:-----------------------|
