@@ -47,3 +47,23 @@ Displays additional information when the component is hovered over.
 
 <img className="screenshot-full img-l" src="/img/app-builder/properties/tooltip.png" alt="App Builder: Properties Panel"/>
 
+### Devices
+
+| Property |  Description | Expected Value |
+|:---------- |:----------- |:----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Colors
+
+ToolJet allows customization of component colors. Colors can be set by entering a hex code or dynamically through the **fx** option.
+
+### Border Radius
+
+The border radius of a component can be configured from the Styles tab to control the roundness of its corners.
+
+### Box Shadow
+
+Adds shadow effects around the component to enhance its appearance. This setting is available under the Styles tab.
