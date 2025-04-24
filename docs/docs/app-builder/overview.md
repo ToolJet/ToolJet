@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-ToolJet’s app builder lets you build internal tools like dashboards, file management, workflow approvals, forms, directory management, tracking and scheduling applications quickly. 
+ToolJet’s app builder lets you build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
 
 Teams across engineering, product, operations, and business can build applications with ease, following four simple steps to get up and running in minutes.
 
