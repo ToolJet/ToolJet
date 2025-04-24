@@ -7,6 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { appPermissionService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
+import Spinner from '@/_ui/Spinner';
 
 const PERMISSION_TYPES = {
   single: 'SINGLE',
@@ -18,7 +19,6 @@ export default function PagePermission({ darkMode }) {
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const editingPage = useStore((state) => state.editingPage);
-  const setEditingPage = useStore((state) => state.setEditingPage);
   const appId = useStore((state) => state.app.appId);
   const selectedUserGroups = useStore((state) => state.selectedUserGroups);
   const setSelectedUserGroups = useStore((state) => state.setSelectedUserGroups);
@@ -33,48 +33,96 @@ export default function PagePermission({ darkMode }) {
   const [showUsersSelect, toggleUsersSelect] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPermissionsLoading, setPermissionsLoading] = useState(true);
   const [pageToDelete, setPageToDelete] = useState(null);
+  const [initialSelectedGroups, setInitialSelectedGroups] = useState([]);
+  const [initialSelectedUsers, setInitialSelectedUsers] = useState([]);
+  const [initalPagePermissionType, setInitialPagePermissionType] = useState('all');
 
   useEffect(() => {
-    if (!editingPage?.id && !showPagePermissionModal) return;
+    if (!showPagePermissionModal) return;
     const fetchPagePermission = () => {
-      appPermissionService.getPagePermission(appId, editingPage?.id).then((data) => {
+      appPermissionService.getPagePermission(appId, editingPage?.id || pageToDelete).then((data) => {
         if (data) {
           if (data[0] && data[0]?.type === PERMISSION_TYPES.group) {
+            const groups =
+              data[0]?.groups?.map((user) => ({
+                label: user?.permissionGroup?.name,
+                value: user?.permissionGroup?.id,
+                count: user?.permissionGroup?.count,
+              })) ?? [];
             setPagePermissionType(data[0]?.type?.toLowerCase());
+            setInitialPagePermissionType(data[0]?.type?.toLowerCase());
             setPagePermission(data);
             toggleUserGroupSelect(true);
-            data?.length &&
-              setSelectedUserGroups(
-                data[0]?.groups?.map((user) => ({
-                  label: user?.permissionGroup?.name,
-                  value: user?.permissionGroup?.id,
-                  count: user?.permissionGroup?.count,
-                }))
-              );
+            setPageToDelete(null);
+            setInitialSelectedGroups(groups);
+            data?.length && setSelectedUserGroups(groups);
           } else if (data[0] && data[0]?.type === PERMISSION_TYPES.single) {
+            const users =
+              data[0]?.users?.map(({ user }) => {
+                const firstName = user.firstName || '';
+                const lastName = user.lastName || '';
+                return {
+                  value: user.id,
+                  label: `${firstName} ${lastName}`.trim(),
+                  email: user.email,
+                  initials: `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase(),
+                };
+              }) ?? [];
             setPagePermissionType(data[0]?.type?.toLowerCase());
+            setInitialPagePermissionType(data[0]?.type?.toLowerCase());
             setPagePermission(data);
             toggleUsersSelect(true);
-            data?.length &&
-              setSelectedUsers(
-                data[0]?.users?.map(({ user }) => {
-                  const firstName = user.firstName || '';
-                  const lastName = user.lastName || '';
-                  return {
-                    value: user.id,
-                    label: `${firstName} ${lastName}`.trim(),
-                    email: user.email,
-                    initials: `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase(),
-                  };
-                })
-              );
+            setPageToDelete(null);
+            setInitialSelectedUsers(users);
+            data?.length && setSelectedUsers(users);
           }
         }
+        setPermissionsLoading(false);
       });
     };
     fetchPagePermission();
-  }, [editingPage]);
+  }, [showPagePermissionModal, pageToDelete]);
+
+  const isSelectionUnchanged = useMemo(() => {
+    if (pagePermissionType === 'group') {
+      if (!selectedUserGroups.length) return true;
+      const current = selectedUserGroups
+        .map((g) => g.value)
+        .sort()
+        .join(',');
+      const initial = initialSelectedGroups
+        .map((g) => g.value)
+        .sort()
+        .join(',');
+      return current === initial;
+    } else if (pagePermissionType === 'single') {
+      if (!selectedUsers.length) return true;
+      const current = selectedUsers
+        .map((u) => u.value)
+        .sort()
+        .join(',');
+      const initial = initialSelectedUsers
+        .map((u) => u.value)
+        .sort()
+        .join(',');
+      return current === initial;
+    } else {
+      if (!pagePermission?.length) {
+        return true;
+      } else {
+        return initalPagePermissionType == pagePermissionType;
+      }
+    }
+  }, [
+    pagePermissionType,
+    selectedUserGroups,
+    initialSelectedGroups,
+    selectedUsers,
+    initialSelectedUsers,
+    initalPagePermissionType,
+  ]);
 
   const permissionTypeOptions = useMemo(
     () => [
@@ -124,9 +172,10 @@ export default function PagePermission({ darkMode }) {
     toggleUsersSelect(false);
     setPagePermissionType('all');
     setPagePermission(null);
-    setEditingPage(null);
     setSelectedUsers([]);
     setSelectedUserGroups([]);
+    setInitialSelectedGroups([]);
+    setInitialSelectedUsers([]);
   };
 
   const createPagePermission = () => {
@@ -184,15 +233,16 @@ export default function PagePermission({ darkMode }) {
       .then((data) => {
         toast.success('Permission successfully deleted!');
         updatePageWithPermissions(pageToDelete, []);
+        setPageToDelete(null);
       })
       .catch(() => {
         toast.error('Permission could not be deleted. Please try again!');
+        setShowConfirmDelete(false);
+        togglePagePermissionModal(true);
       })
       .finally(() => {
         setIsLoading(false);
         setShowConfirmDelete(false);
-        setPageToDelete(null);
-        handlePagePermissionModalClose();
       });
   };
 
@@ -223,7 +273,7 @@ export default function PagePermission({ darkMode }) {
         handleClose={handlePagePermissionModalClose}
         confirmBtnProps={{
           title: pagePermission ? 'Update' : pagePermissionType === 'all' ? 'Default permission' : 'Create permission',
-          disabled: pagePermissionType == 'all' ? true : false,
+          disabled: isPermissionsLoading || isSelectionUnchanged,
           tooltipMessage: '',
         }}
         darkMode={darkMode}
@@ -243,29 +293,37 @@ export default function PagePermission({ darkMode }) {
         }
       >
         <div className="page-permission">
-          <div className="info-container">
-            <div className="col-md-1 info-btn">
-              <SolidIcon name="informationcircle" fill="#3E63DD" />
+          {isPermissionsLoading ? (
+            <div className="spinner-center">
+              <Spinner />
             </div>
-            <div className="col-md-11">
-              <div className="message">
-                <p style={{ lineHeight: '18px' }}>
-                  Only selected users will be allowed to access this page. Read docs to know more.
-                </p>
+          ) : (
+            <>
+              <div className="info-container">
+                <div className="col-md-1 info-btn">
+                  <SolidIcon name="informationcircle" fill="#3E63DD" />
+                </div>
+                <div className="col-md-11">
+                  <div className="message">
+                    <p style={{ lineHeight: '18px' }}>
+                      Only selected users will be allowed to access this page. Read docs to know more.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <label className="form-label">Type</label>
-          <Select
-            options={permissionTypeOptions}
-            value={pagePermissionType}
-            width={'100%'}
-            customOption={renderPermissionTypeOptions}
-            useMenuPortal={false}
-            onChange={handlePermissionTypeChange}
-          />
-          {showUserGroupSelect && <UserGroupSelect />}
-          {showUsersSelect && <UserSelect />}
+              <label className="form-label">Type</label>
+              <Select
+                options={permissionTypeOptions}
+                value={pagePermissionType}
+                width={'100%'}
+                customOption={renderPermissionTypeOptions}
+                useMenuPortal={false}
+                onChange={handlePermissionTypeChange}
+              />
+              {showUserGroupSelect && <UserGroupSelect />}
+              {showUsersSelect && <UserSelect />}
+            </>
+          )}
         </div>
       </ModalBase>
       {showConfirmDelete && (

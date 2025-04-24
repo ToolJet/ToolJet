@@ -354,6 +354,7 @@
             display: flex;
             flex-direction: row;
             gap: 8px;
+            align-items: center;
         
             .name {
               font-weight: 400;
@@ -367,4 +368,10 @@
             }
           }
       }
+}
+
+.page-permission {
+    .spinner-center {
+        min-height: 250px;
+    }
 }
