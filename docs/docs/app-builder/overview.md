@@ -51,8 +51,7 @@ You can also chain multiple events and actions together, enabling complex multi-
 
 ## 4. Handling Complex Logic
 
-ToolJet makes it easy to build apps without code, but when you need more control, it offers the ability to add custom code to write your custom logic. You can create JavaScript or Python queries in app builder to perform calculations, transform data, trigger other queries, or update UI components. These snippets have full access to the component’s properties, other querie’s outputs, and the entire app’s state, allowing you to write custom logic for any use cases like conditional behaviour, data processing, or dynamic UI updates. 
-
+ToolJet makes it easy to build apps without code, but when you need more control, it offers the ability to add custom code to write your custom logic. You can create JavaScript or Python queries in app builder to perform calculations, transform data, trigger other queries, or update UI components. These snippets have full access to the component’s properties, other queries’ outputs, and the entire app’s state, allowing you to write custom logic for any use cases like conditional behavior, data processing, or dynamic UI updates.
 <div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/custom-code.png" alt="Custom Code Preview" /> </div>
 
 This gives developers the ability to handle complex scenarios with code, while still leveraging ToolJet’s low-code environment.
