@@ -3,6 +3,8 @@ import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { ToolTip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const PageHandlerMenu = ({ darkMode }) => {
   const setShowEditingPopover = useStore((state) => state.setShowEditingPopover);
@@ -24,24 +26,6 @@ export const PageHandlerMenu = ({ darkMode }) => {
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
-
-  // const popoverTargetRef = null;
-  // console.log(
-  //   {
-  //     setShowEditingPopover,
-  //     setShowRenameHandlerModal,
-  //     setEditingPage,
-  //     setShowPageEventsModal,
-  //     popoverTargetRef,
-  //     editingPage,
-  //     showRenameHandlerModal,
-  //     showPageEventsModal,
-  //     setEditingPageName,
-  //     showEditingPopover,
-  //     closeEditingPopover,
-  //   },
-  //   'editingPage'
-  // );
 
   const closeMenu = () => {
     closePageEditPopover();
@@ -124,7 +108,6 @@ export const PageHandlerMenu = ({ darkMode }) => {
                     callback={() => markAsHomePage(editingPage.id)}
                   />
                 )}
-
                 {!isDisabled && (
                   <Field
                     id={isHidden ? 'unhide-page' : 'hide-page'}
@@ -137,7 +120,6 @@ export const PageHandlerMenu = ({ darkMode }) => {
                     disabled={isHomePage}
                   />
                 )}
-
                 <Field
                   id="clone-page"
                   text="Duplicate page"
@@ -147,7 +129,6 @@ export const PageHandlerMenu = ({ darkMode }) => {
                     clonePage(editingPage.id);
                   }}
                 />
-
                 <Field
                   id="settings"
                   text="Event Handlers"
@@ -169,18 +150,32 @@ export const PageHandlerMenu = ({ darkMode }) => {
                   }}
                   disabled={isHomePage}
                 />
-                {licenseValid && (
-                  <Field
-                    id={isDisabled ? 'enable-page' : 'disable-page'}
-                    text={isDisabled ? 'Page permission' : 'Page permission'}
-                    customClass={'delete-btn'}
-                    iconSrc={`assets/images/icons/editor/left-sidebar/authorization.svg`}
-                    closeMenu={closeMenu}
-                    callback={(id) => {
-                      togglePagePermissionModal(true);
-                    }}
-                  />
-                )}
+
+                <Field
+                  id={isDisabled ? 'enable-page' : 'disable-page'}
+                  disabled={!licenseValid}
+                  classNames={'page-permission-btn'}
+                  text={() => {
+                    return (
+                      <ToolTip
+                        message={'Page permissions are available only in paid plans'}
+                        placement="right"
+                        show={!licenseValid}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div>Page permission</div>
+                          {!licenseValid && <SolidIcon name="enterprisesmall" />}
+                        </div>
+                      </ToolTip>
+                    );
+                  }}
+                  customClass={'delete-btn'}
+                  iconSrc={`assets/images/icons/editor/left-sidebar/authorization.svg`}
+                  closeMenu={closeMenu}
+                  callback={(id) => {
+                    togglePagePermissionModal(true);
+                  }}
+                />
                 <Field
                   id="delete-page"
                   text="Delete page"
@@ -240,7 +235,16 @@ const PageHandleField = ({ page, updatePageHandle }) => {
   );
 };
 
-const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = false, callback = () => null }) => {
+const Field = ({
+  id,
+  text,
+  iconSrc,
+  customClass = '',
+  classNames,
+  closeMenu,
+  disabled = false,
+  callback = () => null,
+}) => {
   const handleOnClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -250,7 +254,12 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = fals
 
   return (
     <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
-      <Button.UnstyledButton onClick={handleOnClick} styles={{ height: '28px' }} disabled={disabled}>
+      <Button.UnstyledButton
+        onClick={handleOnClick}
+        styles={{ height: '28px' }}
+        classNames={classNames}
+        disabled={disabled}
+      >
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
       </Button.UnstyledButton>
     </div>
