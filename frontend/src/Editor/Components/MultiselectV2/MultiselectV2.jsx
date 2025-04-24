@@ -549,6 +549,8 @@ export const MultiselectV2 = ({
             darkMode={darkMode}
             menuPlacement="auto"
             menuPortalTarget={document.body}
+            // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)
+            minMenuHeight={300}
           />
         </div>
       </div>
