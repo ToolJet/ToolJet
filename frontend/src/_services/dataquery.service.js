@@ -72,7 +72,7 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, signal) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -87,18 +87,30 @@ function run(queryId, resolvedOptions, options, versionId, environmentId) {
     url = `${config.apiUrl}/data-queries/${queryId}/run`;
   }
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function preview(query, options, versionId, environmentId) {
+function preview(query, options, versionId, environmentId, signal) {
   const body = {
     query,
     options: options,
     app_version_id: versionId,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(
     `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${
       environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
