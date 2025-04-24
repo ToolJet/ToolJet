@@ -20,7 +20,7 @@ export class ValidateQueryAppGuard implements CanActivate {
     const appId = request.body?.app_id;
     const user: User = request.user;
 
-    if (!versionId) {
+    if (!id && !versionId && !appId) {
       throw new BadRequestException();
     }
 
@@ -30,13 +30,13 @@ export class ValidateQueryAppGuard implements CanActivate {
     }
     let app;
     if (id) {
-      app = await this.appsRepository.findByDataQuery(id, user.organizationId, versionId);
+      app = await this.appsRepository.findByDataQuery(id, user?.organizationId, versionId);
     }
     if (appId) {
-      app = await this.appsRepository.findById(appId, user.organizationId, versionId);
+      app = await this.appsRepository.findById(appId, user?.organizationId, versionId);
     }
     if (versionId) {
-      app = await this.versionRepository.findAppFromVersion(versionId, user.organizationId);
+      app = await this.versionRepository.findAppFromVersion(versionId, user?.organizationId);
     }
 
     // If app is not found, throw NotFoundException

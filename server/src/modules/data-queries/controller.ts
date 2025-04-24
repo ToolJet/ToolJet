@@ -20,6 +20,7 @@ import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
+import { QueryAuthGuard } from './guards/query-auth.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -125,13 +126,7 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @UseGuards(
-    JwtAuthGuard,
-    ValidateQueryAppGuard,
-    AppFeatureAbilityGuard,
-    ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
-  )
+  @UseGuards(QueryAuthGuard)
   @Post(':id/run')
   async runQuery(
     @User() user: UserEntity,
