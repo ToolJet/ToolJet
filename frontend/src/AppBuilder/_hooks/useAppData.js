@@ -323,8 +323,8 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         let startingPage = appData.pages.find((page) => page.id === homePageId);
 
         //no access to homepage, set to the next available page
-        if (!homePageId) {
-          startingPage = appData.pages[0];
+        if (startingPage?.restricted) {
+          startingPage = appData.pages.find((page) => !page?.restricted);
         }
 
         if (initialLoadRef.current) {
@@ -341,7 +341,9 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
               window.history.replaceState(null, null, newUrl);
 
               if (page?.restricted) {
-                toast.error('Access to this page is restricted. Contact admin to know more.');
+                toast.error('Access to this page is restricted. Contact admin to know more.', {
+                  className: 'text-nowrap w-auto mw-100',
+                });
               }
             } else {
               startingPage = page;

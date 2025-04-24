@@ -190,11 +190,15 @@ export default function PagePermission({ darkMode }) {
     appPermissionService
       .createPagePermission(appId, editingPage?.id, body)
       .then((data) => {
-        toast.success('Permission successfully created!');
+        toast.success('Permission successfully created!', {
+          className: 'text-nowrap w-auto mw-100',
+        });
         updatePageWithPermissions(editingPage?.id, data);
       })
       .catch(() => {
-        toast.error('Permission could not be created. Please try again!');
+        toast.error('Permission could not be created. Please try again!', {
+          className: 'text-nowrap w-auto mw-100',
+        });
       })
       .finally(() => {
         setIsLoading(false);
@@ -214,11 +218,15 @@ export default function PagePermission({ darkMode }) {
     appPermissionService
       .updatePagePermission(appId, editingPage?.id, body)
       .then((data) => {
-        toast.success('Permission successfully updated!');
+        toast.success('Permission successfully updated!', {
+          className: 'text-nowrap w-auto mw-100',
+        });
         updatePageWithPermissions(editingPage?.id, data);
       })
       .catch(() => {
-        toast.error('Permission could not be updated. Please try again!');
+        toast.error('Permission could not be updated. Please try again!', {
+          className: 'text-nowrap w-auto mw-100',
+        });
       })
       .finally(() => {
         setIsLoading(false);
@@ -231,12 +239,16 @@ export default function PagePermission({ darkMode }) {
     appPermissionService
       .deletePagePermission(appId, pageToDelete)
       .then((data) => {
-        toast.success('Permission successfully deleted!');
+        toast.success('Permission successfully deleted!', {
+          className: 'text-nowrap w-auto mw-100',
+        });
         updatePageWithPermissions(pageToDelete, []);
         setPageToDelete(null);
       })
       .catch(() => {
-        toast.error('Permission could not be deleted. Please try again!');
+        toast.error('Permission could not be deleted. Please try again!', {
+          className: 'text-nowrap w-auto mw-100',
+        });
         setShowConfirmDelete(false);
         togglePagePermissionModal(true);
       })
