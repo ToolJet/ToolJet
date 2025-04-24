@@ -131,6 +131,19 @@ export const buttonGroupConfig = {
         defaultValue: 'left',
       },
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+    },
   },
   exposedVariables: {
     selected: [1],
@@ -162,6 +175,7 @@ export const buttonGroupConfig = {
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },
       selectedTextColor: { value: '#FFFFFF' },
+      padding: { value: 'default' },
       selectedBackgroundColor: { value: 'var(--primary-brand)' },
       alignment: { value: 'left' },
     },
