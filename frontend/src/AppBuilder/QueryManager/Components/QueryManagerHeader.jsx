@@ -246,7 +246,7 @@ const RunButton = ({ buttonLoadingState }) => {
   );
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
-  const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+↩';
+  const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+Enter';
   return (
     <span>
       <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
@@ -257,11 +257,11 @@ const RunButton = ({ buttonLoadingState }) => {
           leadingIcon="play01"
           disabled={isInDraft}
           isLoading={isLoading}
-          className={isMac ? '!tw-w-[88px]' : '!tw-w-[100px]'}
+          className={isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
           data-cy="query-run-button"
         >
           Run
-          <span className="query-manager-btn-shortcut">{isMac ? '⌘↩' : 'Ctrl+↩'}</span>
+          <span className="query-manager-btn-shortcut">{isMac ? '⌘↩' : 'Ctrl+Enter'}</span>
         </ButtonComponent>
       </ToolTip>
     </span>
@@ -281,7 +281,7 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const { t } = useTranslation();
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
-  const shortcutDisplay = `Preview query ${isMac ? '⌘⇧↩' : 'Ctrl+⇧+↩'}`;
+  const shortcutDisplay = `Preview query ${isMac ? '⌘⇧↩' : 'Ctrl+Shift+Enter'}`;
   return (
     <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
       <ButtonComponent
