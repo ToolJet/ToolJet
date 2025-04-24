@@ -223,7 +223,8 @@ export class AppImportExportService {
     externalResourceMappings = {},
     isGitApp = false,
     tooljetVersion = '',
-    cloning = false
+    cloning = false,
+    organizationId?: string
   ): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
