@@ -331,7 +331,7 @@ describe("Data source Rest API", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
     deleteDatasource(`cypress-${data.dataSourceName}-restapi`);
   });
-  it.only("Should verify connection for Rest API", () => {
+  it("Should verify basic connection for Rest API", () => {
     const storedId = Cypress.env("storedId");
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
