@@ -21,6 +21,7 @@ import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
+import { RunQuerySourceGuard } from './guards/run-query.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -126,7 +127,7 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @UseGuards(QueryAuthGuard)
+  @UseGuards(QueryAuthGuard, RunQuerySourceGuard)
   @Post(':id/run')
   async runQuery(
     @User() user: UserEntity,
