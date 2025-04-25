@@ -7,6 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Modal = function Modal({
   id,
@@ -20,6 +21,7 @@ export const Modal = function Modal({
   dataCy,
   height,
 }) {
+  const moduleId = useModuleId();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -48,7 +50,7 @@ export const Modal = function Modal({
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
-  const mode = useStore((state) => state.currentMode, shallow);
+  const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const setModalOpenOnCanvas = useStore((state) => state.setModalOpenOnCanvas);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/

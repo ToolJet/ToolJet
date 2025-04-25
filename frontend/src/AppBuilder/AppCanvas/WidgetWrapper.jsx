@@ -6,6 +6,8 @@ import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { NO_OF_GRIDS } from './appCanvasConstants';
 
 const WidgetWrapper = memo(
   ({
@@ -20,29 +22,40 @@ const WidgetWrapper = memo(
     mode,
     darkMode,
   }) => {
+    const moduleId = useModuleId();
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const stylesDefinition = useStore(
-      (state) => state.getComponentDefinition(id)?.component?.definition?.styles,
+      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
     );
-    const layoutData = useStore((state) => state.getComponentDefinition(id)?.layouts?.[currentLayout], shallow);
+    let layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout], shallow);
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
-    const componentType = useStore((state) => state.getComponentDefinition(id)?.component?.component, shallow);
+    const componentType = useStore(
+      (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
+      shallow
+    );
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
     const canShowInCurrentLayout = useStore((state) => {
-      const others = state.getResolvedComponent(id, subContainerIndex)?.others;
+      const others = state.getResolvedComponent(id, subContainerIndex, moduleId)?.others;
       return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
     });
     const visibility = useStore((state) => {
-      const component = state.getResolvedComponent(id, subContainerIndex);
+      const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
       if (component?.properties?.visibility === false || component?.styles?.visibility === false) return false;
       return true;
     });
 
     if (!canShowInCurrentLayout || !layoutData) {
       return null;
+    }
+
+    // Override layout data with 0 and width to 43 for ModuleContainer in view mode to make the child components relative to the ModuleViewer
+    if (componentType === 'ModuleContainer' && mode === 'view') {
+      layoutData.top = 0;
+      layoutData.left = 0;
+      layoutData.width = NO_OF_GRIDS;
     }
 
     const width = gridWidth * layoutData?.width;
@@ -55,6 +68,8 @@ const WidgetWrapper = memo(
       border: visibility === false ? `1px solid var(--border-default)` : 'none',
     };
 
+    const isModuleContainer = componentType === 'ModuleContainer';
+
     if (!componentType) return null;
     return (
       <>
@@ -65,6 +80,7 @@ const WidgetWrapper = memo(
             'position-absolute': readOnly,
             'active-target': isWidgetActive,
             'opacity-0': isDragging || isResizing,
+            'module-container': isModuleContainer,
           })}
           data-id={`${id}`}
           id={id}
@@ -74,12 +90,12 @@ const WidgetWrapper = memo(
             // zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
             ...styles,
           }}
-          onMouseEnter={(e) => {
-            if (isDragging) return;
+          onMouseEnter={() => {
+            if (isDragging || isModuleContainer) return;
             setHoveredComponentForGrid(id);
           }}
           onMouseLeave={() => {
-            if (isDragging) return;
+            if (isDragging || isModuleContainer) return;
             setHoveredComponentForGrid('');
           }}
         >
@@ -91,8 +107,8 @@ const WidgetWrapper = memo(
               showHandle={isWidgetActive}
               componentType={componentType}
               visibility={visibility}
-              customClassName={componentType === 'ModuleContainer' ? 'module-container' : ''}
-              hideDelete={componentType === 'ModuleContainer'}
+              customClassName={isModuleContainer ? 'module-container' : ''}
+              isModuleContainer={isModuleContainer}
             />
           )}
           <RenderWidget

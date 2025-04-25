@@ -28,7 +28,7 @@ import { distinctUntilChanged } from 'rxjs';
 import { convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
-
+import { useMounted } from '@/_hooks/use-mount';
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
  * This will get redundanted once api response for appdata is made uniform across all the endpoints.
@@ -62,11 +62,15 @@ const useAppData = (
   { environmentId, versionId } = {},
   moduleMode = false
 ) => {
+  const mounted = useMounted();
+  const initModules = useStore((state) => state.initModules, shallow);
+  moduleMode && !mounted && initModules(moduleId);
+
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
-  const app = useStore((state) => state.app);
+  const app = useStore((state) => state.appStore.modules[moduleId].app);
   const user = useStore((state) => state.user);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
@@ -86,7 +90,7 @@ const useAppData = (
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
   const pages = useStore((state) => state.modules[moduleId]?.pages || []);
-  const currentPageId = useStore((state) => state.currentPageId);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -110,7 +114,7 @@ const useAppData = (
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
   const appMode = useStore((state) => state.globalSettings.appMode);
   const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
-  const isComponentLayoutReady = useStore((state) => state.isComponentLayoutReady, shallow);
+  const isComponentLayoutReady = useStore((state) => state.appStore.modules[moduleId].isComponentLayoutReady, shallow);
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
@@ -118,7 +122,6 @@ const useAppData = (
 
   const setModulesIsLoading = useStore((state) => state.setModulesIsLoading, shallow);
   const setModulesList = useStore((state) => state.setModulesList, shallow);
-  const initModules = useStore((state) => state.initModules, shallow);
 
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
@@ -128,7 +131,7 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  const slug = pathParams?.slug;
+  const slug = moduleMode ? '' : pathParams?.slug;
 
   const match = useMatch('/applications/:slug/:pageHandle');
 
@@ -160,11 +163,6 @@ const useAppData = (
   };
 
   useEffect(() => {
-    if (!moduleMode) return;
-    initModules(moduleId);
-  }, [initModules, moduleId, moduleMode]);
-
-  useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
       const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
       setPageSwitchInProgress(false);
@@ -175,7 +173,7 @@ const useAppData = (
   }, [pageSwitchInProgress, currentPageId, moduleMode]);
 
   useEffect(() => {
-    if (moduleMode) return;
+    // if (moduleMode) return;
     const subscription = authenticationService.currentSession
       .pipe(
         distinctUntilChanged((prev, curr) => {
@@ -212,14 +210,32 @@ const useAppData = (
   }, [appMode, darkMode, moduleId]);
 
   useEffect(() => {
-    if (!currentSession || moduleMode) {
+    if (!currentSession) {
       return;
     }
-    const queryParams = getPreviewQueryParams();
-    const isPublicAccess =
-      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
-    const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
+
     let appDataPromise;
+
+    // if (moduleMode) {
+    //   appDataPromise = appService.fetchApp(appId);
+    //   appDataPromise.then(async (result) => {
+    //     let appData = { ...result };
+    //     console.log('appData--- ', appData);
+    //     return;
+    //     // setApp({
+    //     //   appName: appData.name,
+    //     //   appId: appData.id,
+    //     //   slug: appData.slug,
+    //     // });
+    //   });
+    // }
+
+    const queryParams = moduleMode ? {} : getPreviewQueryParams();
+    const isPublicAccess = moduleMode
+      ? false
+      : (currentSession?.load_app && currentSession?.authentication_failed) ||
+        (!queryParams.version && mode !== 'edit');
+    const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
     if (isPublicAccess) {
       appDataPromise = appService.fetchAppBySlug(slug);
     } else {
@@ -275,7 +291,7 @@ const useAppData = (
         editorEnvironment?.name
       );
 
-      setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
+      !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
       fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -298,36 +314,42 @@ const useAppData = (
       const homePageId =
         appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
 
-      setApp({
-        appName: appData.name,
-        appId: appData.id,
-        slug: appData.slug,
-        currentAppEnvironmentId: editorEnvironment.id,
-        isMaintenanceOn:
-          'is_maintenance_on' in result
-            ? result.is_maintenance_on
-            : 'isMaintenanceOn' in result
-            ? result.isMaintenanceOn
-            : false,
-        organizationId: appData.organizationId || appData.organization_id,
-        homePageId: homePageId,
-        isPublic: appData.is_public,
-        creationMode: appData.creation_mode,
-      });
-      setIsEditorFreezed(appData.should_freeze_editor);
-      setGlobalSettings(
-        mapKeys(appData.editing_version?.global_settings || appData.global_settings, (value, key) => camelCase(key))
+      setApp(
+        {
+          appName: appData.name,
+          appId: appData.id,
+          slug: appData.slug,
+          currentAppEnvironmentId: editorEnvironment.id,
+          isMaintenanceOn:
+            'is_maintenance_on' in result
+              ? result.is_maintenance_on
+              : 'isMaintenanceOn' in result
+              ? result.isMaintenanceOn
+              : false,
+          organizationId: appData.organizationId || appData.organization_id,
+          homePageId: homePageId,
+          isPublic: appData.is_public,
+          creationMode: appData.creation_mode,
+        },
+        moduleId
       );
 
+      if (!moduleMode) {
+        setIsEditorFreezed(appData.should_freeze_editor);
+        setGlobalSettings(
+          mapKeys(appData.editing_version?.global_settings || appData.global_settings, (value, key) => camelCase(key))
+        );
+        setPageSettings(
+          computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
+        );
+      }
+
       setPages(pages, moduleId);
-      setPageSettings(
-        computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
-      );
 
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
 
-      if (initialLoadRef.current) {
+      if (initialLoadRef.current && !moduleMode) {
         // if initial load, check if the path has a page handle and set that as the starting page
         const initialLoadPath = location.pathname.split('/').pop();
         const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
@@ -344,18 +366,23 @@ const useAppData = (
 
         // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
       }
-      setCurrentPageHandle(startingPage.handle);
-      updateFeatureAccess();
+      setCurrentPageHandle(startingPage.handle, moduleId);
       setCurrentPageId(startingPage.id, moduleId);
-      setResolvedPageConstants({
-        id: startingPage?.id,
-        handle: startingPage?.handle,
-        name: startingPage?.name,
-      });
+      setResolvedPageConstants(
+        {
+          id: startingPage?.id,
+          handle: startingPage?.handle,
+          name: startingPage?.name,
+        },
+        moduleId
+      );
       setComponentNameIdMapping(moduleId);
-      updateEventsField('events', appData.events);
-      setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
-      setAppHomePageId(homePageId);
+      updateEventsField('events', appData.events, moduleId);
+      if (!moduleMode) {
+        updateFeatureAccess();
+        setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+      }
+      setAppHomePageId(homePageId, moduleId);
 
       const queryData =
         isPublicAccess || (mode !== 'edit' && appData.is_public)
@@ -363,10 +390,13 @@ const useAppData = (
           : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
       const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
       dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
-      setQueries(dataQueries);
+      setQueries(dataQueries, moduleId);
       if (dataQueries?.length > 0) {
-        setSelectedQuery(dataQueries[0]?.id);
-        initialiseResolvedQuery(dataQueries.map((query) => query.id));
+        !moduleMode && setSelectedQuery(dataQueries[0]?.id);
+        initialiseResolvedQuery(
+          dataQueries.map((query) => query.id),
+          moduleId
+        );
       }
       const constants = constantsResp?.constants;
 
@@ -380,26 +410,31 @@ const useAppData = (
             orgSecrets[constant.name] = constant.value;
           }
         });
-        setResolvedConstants(orgConstants);
-        setSecrets(orgSecrets);
+        setResolvedConstants(orgConstants, moduleId);
+        setSecrets(orgSecrets, moduleId);
       }
       setQueryMapping(moduleId);
 
-      setResolvedGlobals('environment', editorEnvironment);
-      setResolvedGlobals('mode', { value: mode });
-      setResolvedGlobals('currentUser', {
-        ...user,
-        groups: currentSession?.groups,
-        role: currentSession?.role?.name,
-        ssoUserInfo: currentSession?.ssoUserInfo,
-        ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
-          ? { metadata: currentSession?.currentUser?.metadata }
-          : {}),
-      });
-      setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
+      setResolvedGlobals('environment', editorEnvironment, moduleId);
+      setResolvedGlobals('mode', { value: mode }, moduleId);
+      setResolvedGlobals(
+        'currentUser',
+        {
+          ...user,
+          groups: currentSession?.groups,
+          role: currentSession?.role?.name,
+          ssoUserInfo: currentSession?.ssoUserInfo,
+          ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
+            ? { metadata: currentSession?.currentUser?.metadata }
+            : {}),
+        },
+        moduleId
+      );
+      setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
       initDependencyGraph(moduleId);
-      setCurrentMode(mode); // TODO: set mode based on the slug/appDef
+      setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
       if (
+        !moduleMode &&
         state.ai &&
         state?.prompt &&
         initialLoadRef.current &&
@@ -412,7 +447,7 @@ const useAppData = (
         showWalkthrough = false;
       }
       // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
-      if (!isPublicAccess) {
+      if (!isPublicAccess && !moduleMode) {
         const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
         useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
         fetchGlobalDataSources(
@@ -421,24 +456,25 @@ const useAppData = (
           editorEnvironment.id
         );
       }
-      useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
-      updateReleasedVersionId(appData.current_version_id);
+      if (!moduleMode) {
+        useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
+        updateReleasedVersionId(appData.current_version_id);
+      }
 
-      setEditorLoading(false);
+      setEditorLoading(false, moduleId);
       initialLoadRef.current = false;
       // only show if app is not created from prompt
-      if (showWalkthrough) initEditorWalkThrough();
-      checkAndSetTrueBuildSuggestionsFlag();
+      if (showWalkthrough && !moduleMode) initEditorWalkThrough();
+      !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
       return () => {
         document.title = retrieveWhiteLabelText();
       };
     });
-  }, [setApp, setEditorLoading, currentSession, moduleMode]);
+  }, [setApp, setEditorLoading, currentSession, moduleMode, moduleId]);
 
   useEffect(() => {
-    if (moduleMode) return;
     if (isComponentLayoutReady) {
-      runOnLoadQueries().then(() => {
+      runOnLoadQueries(moduleId).then(() => {
         let startingPage = pages.find((page) => page.id === currentPageId);
         const currentPageEvents = events.filter(
           (event) => event.target === 'page' && event.sourceId === startingPage.id
@@ -462,13 +498,13 @@ const useAppData = (
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
 
     if (isEnvChanged || isVersionChanged) {
-      setEditorLoading(true);
+      setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id).then(async (appData) => {
-        cleanUpStore();
+        cleanUpStore(false);
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
@@ -503,7 +539,7 @@ const useAppData = (
         );
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
-        updateEventsField('events', appData.events);
+        updateEventsField('events', appData.events, moduleId);
         // const queryData = await dataqueryService.getAll(currentVersionId);
 
         if (isEnvChanged) {
@@ -529,7 +565,7 @@ const useAppData = (
         const queryData = await dataqueryService.getAll(currentVersionId);
         const dataQueries = queryData.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
-        setQueries(dataQueries);
+        setQueries(dataQueries, moduleId);
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
@@ -558,10 +594,10 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
-        setEditorLoading(false);
+        setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);
 
   useEffect(() => {
     if (moduleMode) return;

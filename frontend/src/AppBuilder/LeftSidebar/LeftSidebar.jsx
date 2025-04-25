@@ -10,6 +10,7 @@ import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
+import { useModuleId, useAppType } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
@@ -24,6 +25,8 @@ export const BaseLeftSidebar = ({
   renderAIChat = () => null,
   isModuleEditor = false,
 }) => {
+  const moduleId = useModuleId();
+  const appType = useAppType();
   const [
     pinned,
     selectedSidebarItem,
@@ -41,7 +44,7 @@ export const BaseLeftSidebar = ({
       state.selectedSidebarItem,
       state.setIsLeftSideBarPinned,
       state.setSelectedSidebarItem,
-      state.currentMode,
+      state.modeStore.modules[moduleId].currentMode,
       state.queryPanel.queryPanelHeight,
       state.debugger.unreadErrorCount,
       state.debugger.resetUnreadErrorCount,
@@ -99,6 +102,8 @@ export const BaseLeftSidebar = ({
             // popoverContentHeight={popoverContentHeight}
             setPinned={setPinned}
             pinned={pinned}
+            moduleId={moduleId}
+            appType={appType}
           />
         );
       case 'tooljetai':

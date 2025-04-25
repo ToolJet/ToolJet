@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { APP_HEADER_HEIGHT } from '../AppCanvas/appCanvasConstants';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { RenderPageAndPageGroup } from './PageGroup';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const ViewerSidebarNavigation = ({
   isMobileDevice,
@@ -20,10 +21,11 @@ export const ViewerSidebarNavigation = ({
   isSidebarPinned,
   toggleSidebarPinned,
 }) => {
+  const moduleId = useModuleId();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const license = useStore((state) => state.license);
 
   if (isMobileDevice) {
@@ -95,7 +97,7 @@ export const ViewerSidebarNavigation = ({
       version: selectedVersionName,
       env: selectedEnvironmentName,
     };
-    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), true);
+    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), moduleId);
   };
 
   const isLicensed =

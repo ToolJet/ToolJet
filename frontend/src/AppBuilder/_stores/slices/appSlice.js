@@ -9,26 +9,84 @@ import { replaceEntityReferencesWithIds } from '../utils';
 import _ from 'lodash';
 
 const initialState = {
-  app: {},
-  canvasHeight: null,
   isSaving: false,
-  globalSettings: {},
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
+  globalSettings: {},
   isViewer: false,
   isComponentLayoutReady: false,
+  appStore: {
+    modules: {
+      canvas: {
+        canvasHeight: null,
+        app: {},
+        isViewer: false,
+        isComponentLayoutReady: false,
+      },
+    },
+  },
 };
 
 export const createAppSlice = (set, get) => ({
   ...initialState,
-  setIsViewer: (isViewer) => set(() => ({ isViewer }), false, 'setIsViewer'),
-  setApp: (app) => set(() => ({ app }), false, 'setApp'),
-  setAppName: (name) => set((state) => ({ app: { ...state.app, appName: name } }), false, 'setAppName'),
-  setAppHomePageId: (homePageId) => set((state) => ({ app: { ...state.app, homePageId } }), false, 'setAppHomePageId'),
-  setIsComponentLayoutReady: (isReady) =>
-    set(() => ({ isComponentLayoutReady: isReady }), false, 'setIsComponentLayoutReady'),
-  setCanvasHeight: (canvasHeight) => set({ canvasHeight }, false, 'setCanvasHeight'),
-  updateCanvasBottomHeight: (components) => {
+  initializeAppSlice: (moduleId) => {
+    set(
+      (state) => {
+        state.appStore.modules[moduleId] = { ...initialState.appStore.modules.canvas };
+      },
+      false,
+      'initializeAppSlice'
+    );
+  },
+  setIsViewer: (isViewer, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].isViewer = isViewer;
+      },
+      false,
+      'setIsViewer'
+    ),
+  setApp: (app, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].app = app;
+      },
+      false,
+      'setApp'
+    ),
+  setAppName: (name, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].app.appName = name;
+      },
+      false,
+      'setAppName'
+    ),
+  setAppHomePageId: (homePageId, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].app.homePageId = homePageId;
+      },
+      false,
+      'setAppHomePageId'
+    ),
+  setIsComponentLayoutReady: (isReady, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].isComponentLayoutReady = isReady;
+      },
+      false,
+      'setIsComponentLayoutReady'
+    ),
+  setCanvasHeight: (canvasHeight, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].canvasHeight = canvasHeight;
+      },
+      false,
+      'setCanvasHeight'
+    ),
+  updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
     const { currentLayout, currentMode, setCanvasHeight } = get();
     const maxHeight = Object.values(components).reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
@@ -40,23 +98,25 @@ export const createAppSlice = (set, get) => ({
     }, 0);
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
-    setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
+    setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
   },
-  setIsAppSaving: (isSaving) => {
+  setIsAppSaving: (isSaving, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.app.isSaving = isSaving;
+        state.appStore.modules[moduleId].app.isSaving = isSaving;
       },
       false,
       'setIsAppSaving'
     );
   },
   setGlobalSettings: (globalSettings) => set(() => ({ globalSettings }), false, 'setGlobalSettings'),
-  toggleAppMaintenance: () => {
-    const { isMaintenanceOn, appId } = get().app;
+  toggleAppMaintenance: (moduleId = 'canvas') => {
+    const { isMaintenanceOn, appId } = get().appStore.modules[moduleId].app;
 
     appsService.setMaintenance(appId, !isMaintenanceOn).then(() => {
-      set((state) => ({ app: { ...state.app, isMaintenanceOn: !isMaintenanceOn } }));
+      set((state) => {
+        state.appStore.modules[moduleId].app.isMaintenanceOn = !isMaintenanceOn;
+      });
       if (isMaintenanceOn) {
         toast.success('Application is on maintenance.');
       } else {
@@ -64,9 +124,9 @@ export const createAppSlice = (set, get) => ({
       }
     });
   },
-  globalSettingsChanged: async (options) => {
-    const componentNameIdMapping = get().modules.canvas.componentNameIdMapping;
-    const queryNameIdMapping = get().modules.canvas.queryNameIdMapping;
+  globalSettingsChanged: async (options, moduleId = 'canvas') => {
+    const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+    const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
     for (const [key, value] of Object.entries(options)) {
       if (value?.[1]?.a == undefined) {
         options[key] = value;
@@ -77,10 +137,10 @@ export const createAppSlice = (set, get) => ({
     }
     // Replace entity references with ids if present
     const newOptions = replaceEntityReferencesWithIds(options, componentNameIdMapping, queryNameIdMapping);
-    const { app, currentVersionId, currentPageId } = get();
+    const { appStore, currentVersionId, currentPageId } = get();
     try {
       const res = await appVersionService.autoSaveApp(
-        app.appId,
+        appStore.modules[moduleId].app.appId,
         currentVersionId,
         { globalSettings: newOptions },
         'global_settings',
@@ -93,7 +153,7 @@ export const createAppSlice = (set, get) => ({
       console.error('Error updating page:', error);
     }
   },
-  switchPage: (pageId, handle, queryParams = []) => {
+  switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas') => {
     get().debugger.resetUnreadErrorCount();
     // reset stores
     if (get().pageSwitchInProgress) {
@@ -120,15 +180,15 @@ export const createAppSlice = (set, get) => ({
     const isPreview = currentMode !== 'edit';
     //!TODO clear all queued tasks
     cleanUpStore(true);
-    setCurrentPageId(pageId, 'canvas');
-    setComponentNameIdMapping('canvas');
-    setQueryMapping('canvas');
+    setCurrentPageId(pageId, moduleId);
+    setComponentNameIdMapping(moduleId);
+    setQueryMapping(moduleId);
 
     const isLicenseValid =
       !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
       _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
-    const appId = get().app.appId;
+    const appId = get().appStore.modules[moduleId].app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
       if (key === 'env' && isLicenseValid) return false;
@@ -136,7 +196,7 @@ export const createAppSlice = (set, get) => ({
     });
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
-    const slug = get().app.slug;
+    const slug = get().appStore.modules[moduleId].app.slug;
 
     navigate(
       `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
@@ -147,11 +207,14 @@ export const createAppSlice = (set, get) => ({
       }
     );
     const newPage = pages.find((p) => p.id === pageId);
-    setResolvedPageConstants({
-      id: newPage?.id,
-      handle: newPage?.handle,
-      name: newPage?.name,
-    });
+    setResolvedPageConstants(
+      {
+        id: newPage?.id,
+        handle: newPage?.handle,
+        name: newPage?.name,
+      },
+      moduleId
+    );
     setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
     initDependencyGraph('canvas');
     setPageSwitchInProgress(true);
@@ -159,8 +222,9 @@ export const createAppSlice = (set, get) => ({
   setPageSwitchInProgress: (isInProgress) =>
     set(() => ({ pageSwitchInProgress: isInProgress }), false, 'setPageSwitchInProgress'),
 
-  cleanUpStore: (isPageSwitch = false) => {
-    get().resetUndoRedoStack();
+  cleanUpStore: (isPageSwitch = false, moduleId) => {
+    const { resetUndoRedoStack, initModules } = get();
+    resetUndoRedoStack();
     set((state) => {
       state.modules.canvas.componentNameIdMapping = {};
       state.selectedComponents = [];
@@ -176,26 +240,30 @@ export const createAppSlice = (set, get) => ({
       state.resolvedStore.modules.canvas.customResolvables = {};
       state.resolvedStore.modules.canvas.exposedValues.components = {};
       state.resolvedStore.modules.canvas.exposedValues.page.variables = {};
+      // initModules(moduleId);
     });
   },
 
-  setSlug: (slug) => {
+  setSlug: (slug, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.app.slug = slug;
+        state.appStore.modules[moduleId].app.slug = slug;
       },
       false,
       'setSlug'
     );
   },
-  setIsPublic: (isPublic) => {
+  setIsPublic: (isPublic, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.app.isPublic = isPublic;
+        state.appStore.modules[moduleId].app.isPublic = isPublic;
       },
       false,
       'setIsPublic'
     );
+  },
+  getAppId: (moduleId = 'canvas') => {
+    return get().appStore.modules[moduleId].app.appId;
   },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
 });

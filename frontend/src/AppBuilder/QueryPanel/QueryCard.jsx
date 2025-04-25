@@ -13,9 +13,11 @@ import useStore from '@/AppBuilder/_stores/store';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
 import { debounce } from 'lodash';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
-  const appId = useStore((state) => state.app.appId);
+  const moduleId = useModuleId();
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);

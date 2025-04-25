@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
+import { App } from '@entities/app.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
@@ -14,6 +15,7 @@ import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import { AppVersion } from '@entities/app_version.entity';
 import { IPageService } from '../interfaces/services/IPageService';
+import { find } from 'lodash';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -303,5 +305,19 @@ export class PageService implements IPageService {
 
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager);
     }, appVersionId);
+  }
+
+  async findModuleContainer(app: App): Promise<any> {
+    const version = app.appVersions[0];
+    const pages = await this.findPagesForVersion(version.id);
+    const page = pages[0];
+    const components = await this.componentsService.getAllComponents(page.id);
+
+    const moduleContainer = find(
+      Object.values(components),
+      (component) => component?.component?.component === 'ModuleContainer'
+    );
+
+    return moduleContainer;
   }
 }

@@ -21,6 +21,7 @@ import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 //TODO: Revisit the logic of height (dropRef)
 
 /*
@@ -46,8 +47,10 @@ export const Container = React.memo(
     componentType,
     appType,
   }) => {
+    const moduleId = useModuleId();
     const realCanvasRef = useRef(null);
-    const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
+    const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
+
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
@@ -56,12 +59,13 @@ export const Container = React.memo(
       shallow
     );
     const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-    const currentMode = useStore((state) => state.currentMode, shallow);
+    const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
-    }, [componentType, index, currentMode]);
+    }, [index, componentType, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: appType === 'module' && componentType !== 'ModuleContainer' ? [] : 'box',
@@ -144,7 +148,7 @@ export const Container = React.memo(
     }
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
     useEffect(() => {
-      useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
+      useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
 
@@ -229,7 +233,7 @@ export const Container = React.memo(
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas',
-          'show-grid': isOverCurrent && (index === 0 || index === null),
+          'show-grid': isOverCurrent && (index === 0 || index === null) && currentMode === 'edit',
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"

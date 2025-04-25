@@ -14,7 +14,7 @@ const AppLoader = (props) => {
 
   switch (appType) {
     case 'front-end':
-      return <RenderAppBuilder {...props} />;
+      return <RenderAppBuilder appType="front-end" {...props} />;
     case 'workflow':
       return <RenderWorkflow {...props} />;
     case 'module':

@@ -4,6 +4,7 @@ import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -18,10 +19,11 @@ export const ConfigHandle = ({
   showHandle,
   componentType,
   visibility,
-  hideDelete,
+  isModuleContainer,
 }) => {
+  const moduleId = useModuleId();
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
-  const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
+  const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
     shallow
@@ -42,6 +44,7 @@ export const ConfigHandle = ({
     // If one component is hovered and one is selected, show the handle for the hovered component
     return (
       isWidgetHovered ||
+      isModuleContainer ||
       (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered)
     );
   }, shallow);
@@ -124,7 +127,7 @@ export const ConfigHandle = ({
               data-cy={`${componentName.toLowerCase()}-inspect-button`}
               className="config-handle-inspect"
             />
-            {!hideDelete && (
+            {!isModuleContainer && (
               <span
                 style={{ cursor: 'pointer', marginLeft: '5px' }}
                 onClick={() => {

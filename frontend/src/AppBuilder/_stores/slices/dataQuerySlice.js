@@ -21,10 +21,20 @@ const initialState = {
 };
 
 export const createDataQuerySlice = (set, get) => ({
+  initializeDataQuerySlice: (moduleId = 'canvas') => {
+    set(
+      (state) => {
+        state.dataQuery.queries.modules[moduleId] = [];
+      },
+      false,
+      'initializeDataQuerySlice'
+    );
+  },
   dataQuery: {
     ...initialState,
-    checkExistingQueryName: (newName) => get().dataQuery.queries.modules.canvas.some((query) => query.name === newName),
-    getCurrentModuleQueries: (moduleId) => get().dataQuery.queries.modules[moduleId],
+    checkExistingQueryName: (newName, moduleId = 'canvas') =>
+      get().dataQuery.queries.modules[moduleId].some((query) => query.name === newName),
+    getCurrentModuleQueries: (moduleId = 'canvas') => get().dataQuery.queries.modules[moduleId],
     setQueries: (queries, moduleId = 'canvas') => {
       set(
         (state) => {
@@ -48,7 +58,7 @@ export const createDataQuerySlice = (set, get) => ({
     },
     createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas') => {
       const appVersionId = get().currentVersionId;
-      const appId = get().app.appId;
+      const appId = get().appStore.modules[moduleId].app.appId;
       const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource);
       const options = { ...defaultOptions, ...customOptions };
       const kind = selectedDataSource.kind;
@@ -120,12 +130,16 @@ export const createDataQuerySlice = (set, get) => ({
 
           get().addNewQueryMapping(data.id, data.name, moduleId);
           //! we need default value in store so that query can be resolved if referenced from other entity
-          get().setResolvedQuery(data.id, {
-            isLoading: false,
-            data: [],
-            rawData: [],
-            id: data.id,
-          });
+          get().setResolvedQuery(
+            data.id,
+            {
+              isLoading: false,
+              data: [],
+              rawData: [],
+              id: data.id,
+            },
+            moduleId
+          );
         })
         .catch((error) => {
           set((state) => {
@@ -219,8 +233,8 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .finally(() => setIsAppSaving(false));
 
-      get().removeNode(`queries.${queryId}`);
-      get().updateDependencyValues(`queries.${queryId}`);
+      get().removeNode(`queries.${queryId}`, moduleId);
+      get().updateDependencyValues(`queries.${queryId}`, moduleId);
     },
     duplicateQuery: (id, appId, moduleId = 'canvas') => {
       set((state) => {
@@ -265,12 +279,16 @@ export const createDataQuerySlice = (set, get) => ({
 
           get().addNewQueryMapping(data.id, data.name, moduleId);
           //! we need default value in store so that query can be resolved if referenced from other entity
-          get().setResolvedQuery(data.id, {
-            isLoading: false,
-            data: [],
-            rawData: [],
-            id: data.id,
-          });
+          get().setResolvedQuery(
+            data.id,
+            {
+              isLoading: false,
+              data: [],
+              rawData: [],
+              id: data.id,
+            },
+            moduleId
+          );
 
           const events = getEventsByComponentsId(queryToClone.id);
 
@@ -403,12 +421,23 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .finally(() => setIsAppSaving(false));
     }, 500),
-    runOnLoadQueries: async () => {
+    runOnLoadQueries: async (moduleId = 'canvas') => {
       const queries = get().dataQuery.queries.modules.canvas;
       try {
         for (const query of queries) {
           if ((query.options.runOnPageLoad || query.options.run_on_page_load) && isQueryRunnable(query)) {
-            await get().queryPanel.runQuery(query.id, query.name, undefined, undefined, {}, false, true, 'canvas');
+            await get().queryPanel.runQuery(
+              query.id,
+              query.name,
+              undefined,
+              undefined,
+              {},
+              undefined,
+              undefined,
+              false,
+              true,
+              moduleId
+            );
           }
         }
         return Promise.resolve();

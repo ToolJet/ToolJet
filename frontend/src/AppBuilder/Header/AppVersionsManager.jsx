@@ -6,6 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { decodeEntities } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
@@ -14,6 +15,7 @@ const appVersionLoadingStatus = Object.freeze({
 });
 
 export const AppVersionsManager = function ({ darkMode }) {
+  const moduleId = useModuleId();
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
 
   const [deleteVersion, setDeleteVersion] = useState({
@@ -54,15 +56,15 @@ export const AppVersionsManager = function ({ darkMode }) {
       deleteVersionAction: state.deleteVersionAction,
       selectedEnvironment: state.selectedEnvironment,
       currentLayout: state.currentLayout,
-      appId: state.app.appId,
+      appId: state.appStore.modules[moduleId].app.appId,
       releasedVersionId: state.releasedVersionId,
       editingVersion: state.editingVersion,
       setCurrentVersionId: state.setCurrentVersionId,
       currentVersionId: state.currentVersionId,
-      creationMode: state.app.creationMode,
-      isPublic: state.app.isPublic,
-      isViewer: state.isViewer,
-      currentMode: state.currentMode,
+      creationMode: state.appStore.modules[moduleId].app.creationMode,
+      isPublic: state.appStore.modules[moduleId].app.isPublic,
+      isViewer: state.appStore.modules[moduleId].isViewer,
+      currentMode: state.modeStore.modules[moduleId].currentMode,
     }),
     shallow
   );

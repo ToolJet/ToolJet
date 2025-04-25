@@ -15,6 +15,7 @@ import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import Spinner from '@/_ui/Spinner';
 
 export const Viewer = ({
   id: appId,
@@ -50,28 +51,29 @@ export const Viewer = ({
     toggleCurrentLayout,
   } = useStore(
     (state) => ({
-      isEditorLoading: state.isEditorLoading,
-      currentMode: state.currentMode,
+      isEditorLoading: state.loaderStore.modules[moduleId].isEditorLoading,
+      currentMode: state.modeStore.modules[moduleId].currentMode,
       currentLayout: state.currentLayout,
       editingVersion: state.editingVersion,
       selectedVersion: state.selectedVersion,
       currentCanvasWidth: state.currentCanvasWidth,
-      appName: state.app.appName,
-      homePageId: state?.app.homepageId,
-      currentPageId: state.currentPageId,
+      appName: state.appStore.modules[moduleId].app.appName,
+      homePageId: state.appStore.modules[moduleId].app.homepageId,
+      currentPageId: state.modules[moduleId].currentPageId,
       globalSettings: state.globalSettings,
-      pages: state.modules.canvas.pages,
+      pages: state.modules[moduleId].pages,
       modules: state.modules,
       globalSettingsChanged: state.globalSettingsChanged,
       pageSettings: state.pageSettings,
       updateCanvasHeight: state.updateCanvasBottomHeight,
-      isMaintenanceOn: state.app.isMaintenanceOn,
+      isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
       setIsViewer: state.setIsViewer,
       toggleCurrentLayout: state.toggleCurrentLayout,
     }),
     shallow
   );
-  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
+
+  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
   const changeDarkMode = useStore((state) => state.changeDarkMode);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
@@ -124,9 +126,9 @@ export const Viewer = ({
   useEffect(() => {
     const isMobileDevice = deviceWindowWidth < 600;
     toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
-    setIsViewer(true);
+    setIsViewer(true, moduleId);
     return () => {
-      setIsViewer(false);
+      setIsViewer(false, moduleId);
     };
   }, []);
 
@@ -171,8 +173,8 @@ export const Viewer = ({
 
   if (isEditorLoading) {
     return (
-      <div className={cx('apploader', { 'dark-theme theme-dark': darkMode })}>
-        <TJLoader />
+      <div className={cx('apploader', { 'dark-theme theme-dark': darkMode, 'module-mode': moduleMode })}>
+        {moduleMode ? <Spinner /> : <TJLoader />}
       </div>
     );
   } else if (isMaintenanceOn) {
@@ -252,9 +254,13 @@ export const Viewer = ({
                                   changeToDarkMode={changeToDarkMode}
                                 />
                               )}
-                              <AppCanvas isViewerSidebarPinned={isSidebarPinned} />
+                              <AppCanvas
+                                isViewerSidebarPinned={isSidebarPinned}
+                                isViewer={true}
+                                appId={appId}
+                                appType={appType}
+                              />
                             </div>
-                            {/* {!licenseValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />} */}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

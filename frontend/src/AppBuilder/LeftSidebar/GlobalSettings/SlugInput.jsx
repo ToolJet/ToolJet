@@ -8,9 +8,11 @@ import { getHostURL, replaceEditorURL } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import { useTranslation } from 'react-i18next';
 import { shallow } from 'zustand/shallow';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 // import { useStore } from '@/store';
 
 const SlugInput = () => {
+  const moduleId = useModuleId();
   const {
     slug: oldSlug,
     appId,
@@ -20,11 +22,11 @@ const SlugInput = () => {
   } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
-      slug: state.app.slug,
-      appId: state.app.appId,
-      app: state.app,
+      slug: state.appStore.modules[moduleId].app.slug,
+      appId: state.appStore.modules[moduleId].app.appId,
+      app: state.appStore.modules[moduleId].app,
       setApp: state.setApp,
-      currentPage: state.modules.canvas.pages[state.currentPageId],
+      currentPage: state.modules[moduleId].pages[state.modules[moduleId].currentPageIndex],
     }),
     shallow
   );

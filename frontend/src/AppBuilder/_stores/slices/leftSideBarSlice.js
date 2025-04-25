@@ -37,9 +37,9 @@ export const createLeftSideBarSlice = (set, get) => ({
       toggleLeftSidebar(true);
     }
   },
-  getComponentIdToAutoScroll: (componentId) => {
+  getComponentIdToAutoScroll: (componentId, moduleId = 'canvas') => {
     const { getCurrentPageComponents, getAllExposedValues, modalsOpenOnCanvas } = get();
-    const currentPageComponents = getCurrentPageComponents();
+    const currentPageComponents = getCurrentPageComponents(moduleId);
 
     let targetComponentId = componentId;
     let current = componentId;
@@ -66,7 +66,7 @@ export const createLeftSideBarSlice = (set, get) => ({
 
         const tabId = parentId.replace(regForTabs, ''); // Extract tab id from parent id
 
-        const { currentTab } = getAllExposedValues().components?.[tabId] || {};
+        const { currentTab } = getAllExposedValues(moduleId).components?.[tabId] || {};
         const activeTabIndex = Number(currentTab);
 
         nextPossibleCandidate = tabId;

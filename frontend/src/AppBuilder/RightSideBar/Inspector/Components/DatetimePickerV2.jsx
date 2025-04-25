@@ -9,6 +9,7 @@ import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import styles from '@/_ui/Select/styles';
 import moment from 'moment-timezone';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const DATE_FORMAT_OPTIONS = [
   {
@@ -101,12 +102,13 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     allComponents,
     pages,
   } = restProps;
+  const moduleId = useModuleId();
   const items = [];
   const additionalActions = [];
   const properties = [];
   const formatting = [];
   const validations = Object.keys(componentMeta.validation || {});
-  const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
+  const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id, null, moduleId)?.properties);
   const isDateFormatFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
   const isTimeFormatFxOn = componentMeta?.definition?.properties?.timeFormat?.fxActive || false;
   const dateFormat = resolvedProperties?.dateFormat ?? resolvedProperties?.format;

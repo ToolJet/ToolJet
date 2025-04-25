@@ -807,7 +807,7 @@ button {
     }
   }
 
-  .editor .viewer .main {
+  .viewer .main {
     height: auto !important;
 
     .canvas-container {
@@ -2724,6 +2724,14 @@ hr {
   max-height: 10px;
   z-index: 100;
   min-width: 108px;
+
+  &.module-container {
+    .handle-content {
+      cursor: move;
+      color: #fff;
+      background: #c6cad0 !important;
+    }
+  }
 }
 
 
@@ -7570,6 +7578,13 @@ tbody {
 
 .apploader {
   height: 100vh;
+
+  &.module-mode {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   .app-container {
     height: 100%;

@@ -11,8 +11,10 @@ import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import { useTranslation } from 'react-i18next';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { shallow } from 'zustand/shallow';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 const CanvasSettings = ({ darkMode }) => {
+  const moduleId = useModuleId();
   const {
     globalSettings,
     globalSettingsChanged,
@@ -24,7 +26,7 @@ const CanvasSettings = ({ darkMode }) => {
     (state) => ({
       globalSettings: state.globalSettings,
       updateGlobalSettings: state.updateGlobalSettings,
-      isMaintenanceOn: state.app.isMaintenanceOn,
+      isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
       globalSettingsChanged: state.globalSettingsChanged,
       toggleAppMaintenance: state.toggleAppMaintenance,
       resolveOthers: state.resolveOthers,

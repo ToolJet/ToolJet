@@ -18,15 +18,19 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 
-export const AppCanvas = ({ appId, isViewerSidebarPinned, appType }) => {
+export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isViewer = false }) => {
+  const moduleId = useModuleId();
+  const isModuleMode = useIsModuleMode();
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
-  const canvasHeight = useStore((state) => state.canvasHeight);
-  const creationMode = useStore((state) => state.app.creationMode);
-  const environmentLoadingState = useStore((state) => state.environmentLoadingState || state.isEditorLoading);
-  const [canvasWidth, setCanvasWidth] = useState(getCanvasWidth());
+  const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
+  const creationMode = useStore((state) => state.appStore.modules[moduleId].app.creationMode);
+  const environmentLoadingState = useStore(
+    (state) => state.environmentLoadingState || state.loaderStore.modules[moduleId].isEditorLoading
+  );
+  const [canvasWidth, setCanvasWidth] = useState(getCanvasWidth(moduleId));
   const gridWidth = canvasWidth / NO_OF_GRIDS;
-  const currentMode = useStore((state) => state.currentMode, shallow);
+  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const pageSidebarStyle = useStore((state) => state?.pageSettings?.definition?.properties?.style, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
@@ -41,8 +45,6 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType }) => {
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
-  const moduleId = useModuleId();
-  const isModuleMode = useIsModuleMode();
 
   const hideSidebar = isModuleMode || isPagesSidebarHidden;
 
@@ -55,14 +57,29 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType }) => {
 
   useEffect(() => {
     function handleResize() {
-      const _canvasWidth = document.getElementById('real-canvas')?.getBoundingClientRect()?.width;
+      const _canvasWidth =
+        moduleId === 'canvas'
+          ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
+          : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
-    window.addEventListener('resize', handleResize);
+
+    if (moduleId === 'canvas') {
+      window.addEventListener('resize', handleResize);
+    } else {
+      const elem = document.getElementById(moduleId);
+      const resizeObserver = new ResizeObserver(handleResize);
+      if (elem) resizeObserver.observe(elem);
+
+      return () => {
+        if (elem) resizeObserver.unobserve(elem);
+        resizeObserver.disconnect();
+      };
+    }
     handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned]);
+  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId]);
 
   const styles = useMemo(() => {
     const canvasBgColor =

@@ -18,7 +18,7 @@ import {
   VersionReleaseDto,
 } from './dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { APP_TYPES, FEATURE_KEY } from './constants';
+import { FEATURE_KEY } from './constants';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -37,6 +37,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { PageService } from './services/page.service';
 import { EventsService } from './services/event.service';
+import { ComponentsService } from './services/component.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
@@ -57,7 +58,8 @@ export class AppsService implements IAppsService {
     protected readonly pageService: PageService,
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
-    protected readonly aiUtilService: AiUtilService
+    protected readonly aiUtilService: AiUtilService,
+    protected readonly componentsService: ComponentsService
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
@@ -208,6 +210,12 @@ export class AppsService implements IAppsService {
         totalFolderCount = totalCount;
       } else {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type);
+      }
+
+      if (type === 'module') {
+        for (const app of apps) {
+          app.moduleContainer = await this.pageService.findModuleContainer(app);
+        }
       }
 
       const totalCount = await this.appsUtilService.count(user, searchKey, type);

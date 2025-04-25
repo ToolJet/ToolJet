@@ -30,6 +30,7 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const EventManager = ({
   sourceId,
@@ -43,6 +44,7 @@ export const EventManager = ({
   customEventRefs = undefined,
   component,
 }) => {
+  const moduleId = useModuleId();
   const components = useStore((state) => state.getCurrentPageComponents());
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
@@ -57,7 +59,7 @@ export const EventManager = ({
   const allAppEvents = useEvents();
   const { createAppVersionEventHandlers, deleteAppVersionEventHandler, updateAppVersionEventHandlers } =
     useEventActions();
-  const appId = useStore((state) => state.app.appId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const eventsUpdatedLoader = useStore((state) => state.eventsSlice.getEventsUpdatedLoader(), shallow);
   const eventsCreatedLoader = useStore((state) => state.eventsSlice.getEventsCreatedLoader(), shallow);
@@ -95,9 +97,9 @@ export const EventManager = ({
       return a.index - b.index;
     });
 
-    setEvents(sortedEvents || []);
+    setEvents(sortedEvents || [], moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(currentEvents)]);
+  }, [JSON.stringify(currentEvents), moduleId]);
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };

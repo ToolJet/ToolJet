@@ -7,6 +7,8 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+
 const shouldAddBoxShadowAndVisibility = [
   'Table',
   'TextInput',
@@ -38,23 +40,27 @@ const RenderWidget = ({
   inCanvas = false,
   darkMode,
 }) => {
-  const componentDefinition = useStore((state) => state.getComponentDefinition(id), shallow);
+  const moduleId = useModuleId();
+  const componentDefinition = useStore((state) => state.getComponentDefinition(id, moduleId), shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
   const component = componentDefinition?.component;
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
   const resolvedProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex)?.properties,
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties,
     shallow
   );
-  const resolvedStyles = useStore((state) => state.getResolvedComponent(id, subContainerIndex)?.styles, shallow);
+  const resolvedStyles = useStore(
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.styles,
+    shallow
+  );
   const fireEvent = useStore((state) => state.eventsSlice.fireEvent, shallow);
   const resolvedGeneralProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex)?.general,
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.general,
     shallow
   );
   const resolvedGeneralStyles = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex)?.generalStyles,
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.generalStyles,
     shallow
   );
   const unResolvedValidation = componentDefinition?.component?.definition?.validation || {};
@@ -64,10 +70,13 @@ const RenderWidget = ({
   const setExposedValue = useStore((state) => state.setExposedValue, shallow);
   const setExposedValues = useStore((state) => state.setExposedValues, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
-  const resolvedValidation = useStore((state) => state.getResolvedComponent(id)?.validation, shallow);
+  const resolvedValidation = useStore(
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.validation,
+    shallow
+  );
   const parentId = component?.parent;
   const customResolvables = useStore(
-    (state) => state.resolvedStore.modules.canvas?.customResolvables?.[parentId],
+    (state) => state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId],
     shallow
   );
   const { t } = useTranslation();
@@ -100,31 +109,31 @@ const RenderWidget = ({
     (key, value) => {
       // Check if the component is inside the subcontainer and it has its own onOptionChange(setExposedValue) function
       if (onOptionChange === null) {
-        setExposedValue(id, key, value);
+        setExposedValue(id, key, value, moduleId);
         // Trigger an update when the child components is directly linked to any component
-        updateDependencyValues(`components.${id}.${key}`);
+        updateDependencyValues(`components.${id}.${key}`, moduleId);
       } else {
         onOptionChange(key, value, id, subContainerIndex);
       }
     },
-    [id, setExposedValue, updateDependencyValues, subContainerIndex, onOptionChange]
+    [id, setExposedValue, updateDependencyValues, subContainerIndex, onOptionChange, moduleId]
   );
   const setExposedVariables = useCallback(
     (exposedValues) => {
       if (onOptionsChange === null) {
-        setExposedValues(id, 'components', exposedValues);
+        setExposedValues(id, 'components', exposedValues, moduleId);
       } else {
         onOptionsChange(exposedValues, id, subContainerIndex);
       }
     },
-    [id, setExposedValues, onOptionsChange]
+    [id, setExposedValues, onOptionsChange, moduleId]
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(eventName, id, 'canvas', customResolvables?.[subContainerIndex] ?? {}, options);
+      fireEvent(eventName, id, moduleId, customResolvables?.[subContainerIndex] ?? {}, options);
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, subContainerIndex]
+    [fireEvent, id, customResolvables, subContainerIndex, moduleId]
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);

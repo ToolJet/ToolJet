@@ -58,8 +58,8 @@ export const useEventActions = (moduleId = 'canvas') => {
   );
 
   const memoizedUpdateEventsField = useCallback(
-    (field, value) => updateEventsField(field, value, moduleId),
-    [updateEventsField, moduleId]
+    (field, value, moduleId) => updateEventsField(field, value, moduleId),
+    [updateEventsField]
   );
 
   return {
@@ -71,6 +71,17 @@ export const useEventActions = (moduleId = 'canvas') => {
 };
 
 export const createEventsSlice = (set, get) => ({
+  initializeEventsSlice: (moduleId) => {
+    set(
+      (state) => {
+        state.eventsSlice.module[moduleId] = {
+          ...initialState.module.canvas,
+        };
+      },
+      false,
+      'initializeEventsSlice'
+    );
+  },
   eventsSlice: {
     ...initialState,
     setEvents: (events, moduleId = 'canvas') => {
@@ -97,25 +108,17 @@ export const createEventsSlice = (set, get) => ({
       );
     },
     fireEvent: (eventName, id, moduleId, customResolvables, options) => {
-      const { eventsSlice } = get();
-      const {
-        handleEvent,
-        isEditorLoading,
-        module: {
-          [moduleId]: { events },
-        },
-      } = eventsSlice;
+      const { eventsSlice, getCurrentMode, getEditorLoading } = get();
+      const { handleEvent } = eventsSlice;
+      const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
-      const mode = get().currentMode;
-      if (isEditorLoading) return;
-      // if (mode === 'edit' && eventName === 'onClick') {
-      //   onComponentClick(id, component);
-      // }
+      const mode = getCurrentMode(moduleId);
+      if (getEditorLoading(moduleId)) return;
       handleEvent(
         eventName,
         componentEvents,
         { ...options, customVariables: { ...customResolvables } },
-        'canvas',
+        moduleId,
         mode
       );
     },
@@ -128,7 +131,7 @@ export const createEventsSlice = (set, get) => ({
         },
       } = eventsSlice;
       const componentEvents = events.filter((event) => event.sourceId === id);
-      executeActionsForEventId('onClick', componentEvents, mode);
+      executeActionsForEventId('onClick', componentEvents, mode, moduleId);
     },
     addEvent: (event, moduleId = 'canvas') =>
       set((state) => {
@@ -163,46 +166,46 @@ export const createEventsSlice = (set, get) => ({
     createAppVersionEventHandlers: async (event, moduleId) => {
       // get().actions.setIsSaving(true);
       // set({ eventsCreatedLoader: true });
-      get().eventsSlice.updateEventsField('eventsCreatedLoader', true);
-      const appId = get().app.appId;
+      get().eventsSlice.updateEventsField('eventsCreatedLoader', true, moduleId);
+      const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       appVersionService
         .createAppVersionEventHandler(appId, versionId, event)
         .then((response) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false);
-          get().eventsSlice.addEvent(response);
+          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+          get().eventsSlice.addEvent(response, moduleId);
         })
         .catch((err) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false);
+          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
           toast.error(err?.error || 'An error occurred while creating the event handler');
         });
     },
     deleteAppVersionEventHandler: async (eventId, index, moduleId = 'canvas') => {
-      const appId = get().app.appId;
+      const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
-      get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', index);
+      get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', index, moduleId);
       const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
-      get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', null);
+      get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', null, moduleId);
       if (response?.affected === 1) {
-        get().eventsSlice.removeEvent(eventId);
+        get().eventsSlice.removeEvent(eventId, moduleId);
       }
     },
     updateAppVersionEventHandlers: async (events, updateType = 'update', param, moduleId = 'canvas') => {
       if (param === 'actionId') {
-        get().eventsSlice.updateEventsField('actionsUpdatedLoader', true);
+        get().eventsSlice.updateEventsField('actionsUpdatedLoader', true, moduleId);
       }
       if (param === 'eventId') {
-        get().eventsSlice.updateEventsField('eventsUpdatedLoader', true);
+        get().eventsSlice.updateEventsField('eventsUpdatedLoader', true, moduleId);
       }
       const componentNameIdMapping = get().modules['canvas'].componentNameIdMapping;
       const queryNameIdMapping = get().modules['canvas'].queryNameIdMapping;
       //! Revisit this
-      const appId = get().app.appId;
+      const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       const newEvents = replaceEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
       const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
-      get().eventsSlice.updateEventsField('actionsUpdatedLoader', false);
-      get().eventsSlice.updateEventsField('eventsUpdatedLoader', false);
+      get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
+      get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
       set((state) => {
         const eventsInState = state.eventsSlice.getModuleEvents('canvas');
         const newEvents = eventsInState.map((event) => {
@@ -265,19 +268,19 @@ export const createEventsSlice = (set, get) => ({
         return foundEvent && foundEvent.name === eventName;
       });
       try {
-        return get().eventsSlice.onEvent(eventName, filteredEvents, options, mode);
+        return get().eventsSlice.onEvent(eventName, filteredEvents, options, mode, moduleId);
       } catch (error) {
         console.error(error);
       }
     },
-    onEvent: async (eventName, events, options = {}, mode = 'edit') => {
+    onEvent: async (eventName, events, options = {}, mode = 'edit', moduleId = 'canvas') => {
       const executeActionsForEventId = get().eventsSlice.executeActionsForEventId;
       const customVariables = options?.customVariables ?? {};
       const { setExposedValue } = get();
 
       if (eventName === 'onPageLoad') {
         // for onPageLoad events, we need to execute the actions after the page is loaded
-        executeActionsForEventId('onPageLoad', events, mode, customVariables);
+        executeActionsForEventId('onPageLoad', events, mode, customVariables, moduleId);
       }
       if (eventName === 'onTrigger') {
         const { queryPanel, dataQuery } = get();
@@ -286,7 +289,7 @@ export const createEventsSlice = (set, get) => ({
         const { queryName, parameters } = options;
         const queryId = queries.filter((query) => query.name === queryName && isQueryRunnable(query))?.[0]?.id;
         if (!queryId) return;
-        runQuery(queryId, queryName, true, mode, parameters);
+        runQuery(queryId, queryName, true, mode, parameters, undefined, undefined, false, false, moduleId);
       }
       if (eventName === 'onTableActionButtonClicked') {
         const { action, tableActionEvents } = options;
@@ -295,7 +298,7 @@ export const createEventsSlice = (set, get) => ({
         if (action && executeableActions) {
           for (const event of executeableActions) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event.event, mode, customVariables);
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
             }
           }
         } else {
@@ -309,7 +312,7 @@ export const createEventsSlice = (set, get) => ({
         if (column && tableColumnEvents) {
           for (const event of tableColumnEvents) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event.event, mode, customVariables);
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
             }
           }
         } else {
@@ -320,13 +323,13 @@ export const createEventsSlice = (set, get) => ({
       if (eventName === 'onCalendarEventSelect') {
         const { id, calendarEvent } = options;
         setExposedValue(id, 'selectedEvent', calendarEvent);
-        executeActionsForEventId('onCalendarEventSelect', events, mode, customVariables);
+        executeActionsForEventId('onCalendarEventSelect', events, mode, customVariables, moduleId);
       }
 
       if (eventName === 'onCalendarSlotSelect') {
         const { id, selectedSlots } = options;
         setExposedValue(id, 'selectedSlots', selectedSlots);
-        executeActionsForEventId('onCalendarSlotSelect', events, mode, customVariables);
+        executeActionsForEventId('onCalendarSlotSelect', events, mode, customVariables, moduleId);
       }
 
       if (
@@ -384,31 +387,31 @@ export const createEventsSlice = (set, get) => ({
           'onTableDataDownload',
         ].includes(eventName)
       ) {
-        executeActionsForEventId(eventName, events, mode, customVariables);
+        executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
       }
       if (eventName === 'onBulkUpdate') {
-        await executeActionsForEventId(eventName, events, mode, customVariables);
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
       }
 
       if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
         if (!events || !Array.isArray(events) || events.length === 0) return;
-        await executeActionsForEventId(eventName, events, mode, customVariables);
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
       }
     },
-    executeActionsForEventId: async (eventId, events = [], mode, customVariables) => {
+    executeActionsForEventId: async (eventId, events = [], mode, customVariables, moduleId = 'canvas') => {
       if (!events || !Array.isArray(events) || events.length === 0) return;
       const filteredEvents = events
         ?.filter((event) => event?.event.eventId === eventId)
         ?.sort((a, b) => a.index - b.index);
 
       for (const event of filteredEvents) {
-        await get().eventsSlice.executeAction(event, mode, customVariables);
+        await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
       }
     },
     logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error') {
       const { event = eventObj } = eventObj;
       const pages = get().modules.canvas.pages;
-      const currentPageId = get().currentPageId;
+      const currentPageId = get().getCurrentPageId('canvas');
       const currentPage = pages.find((page) => page.id === currentPageId);
       const componentIdMapping = get().modules['canvas'].componentNameIdMapping;
       const componentName = Object.keys(componentIdMapping).find(
@@ -477,7 +480,7 @@ export const createEventsSlice = (set, get) => ({
         timestamp: moment().toISOString(),
       });
     },
-    executeAction: debounce(async (eventObj, mode, customVariables = {}) => {
+    executeAction: debounce(async (eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
       const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
@@ -567,7 +570,7 @@ export const createEventsSlice = (set, get) => ({
                 eventId,
                 false,
                 false,
-                'canvas'
+                moduleId
               );
             } catch (error) {
               get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
@@ -819,13 +822,8 @@ export const createEventsSlice = (set, get) => ({
                 return {
                   ...param,
                   value: value,
-                  // value: resolveCode(re.valueWithBrackets, getAllExposedValues()),
                 };
               });
-              // const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
-              //   ...param,
-              //   value: resolveReferences(param.value, getAllExposedValues(), customVariables),
-              // }));
 
               const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
               return actionPromise ?? Promise.resolve();
@@ -844,7 +842,7 @@ export const createEventsSlice = (set, get) => ({
                 throw new Error('No page ID provided');
               }
               const { switchPage } = get();
-              const page = get().modules.canvas.pages.find((page) => page.id === event.pageId);
+              const page = get().modules[moduleId].pages.find((page) => page.id === event.pageId);
               const queryParams = event.queryParams || [];
               if (!page.disabled) {
                 const resolvedQueryParams = [];
@@ -864,7 +862,7 @@ export const createEventsSlice = (set, get) => ({
                     }
                   }
                 });
-                switchPage(page.id, page.handle, resolvedQueryParams);
+                switchPage(page.id, page.handle, resolvedQueryParams, moduleId);
               } else {
                 toast.error('Page is disabled');
                 //!TODO push to debugger
@@ -888,14 +886,14 @@ export const createEventsSlice = (set, get) => ({
       }
     }),
 
-    generateAppActions: (queryId, mode, isPreview = false) => {
+    generateAppActions: (queryId, mode, isPreview = false, moduleId = 'canvas') => {
       const { getCurrentPageComponents, dataQuery, eventsSlice, queryPanel, modules } = get();
       const { previewQuery } = queryPanel;
       const { executeAction } = eventsSlice;
-      const currentComponents = Object.entries(getCurrentPageComponents());
+      const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
 
-      const runQuery = (queryName = '', parameters) => {
-        const query = dataQuery.queries.modules['canvas'].find((query) => {
+      const runQuery = (queryName = '', parameters, moduleId = 'canvas') => {
+        const query = dataQuery.queries.modules[moduleId].find((query) => {
           const isFound = query.name === queryName;
           if (isPreview) {
             return isFound;
@@ -928,7 +926,7 @@ export const createEventsSlice = (set, get) => ({
           parameters: processedParams,
         };
 
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const setVariable = (key = '', value = '') => {
@@ -938,7 +936,7 @@ export const createEventsSlice = (set, get) => ({
             key,
             value,
           };
-          return executeAction(event, mode, {});
+          return executeAction(event, mode, {}, moduleId);
         }
       };
 
@@ -948,7 +946,7 @@ export const createEventsSlice = (set, get) => ({
             actionId: 'get-custom-variable',
             key,
           };
-          return executeAction(event, mode, {});
+          return executeAction(event, mode, {}, moduleId);
         }
       };
 
@@ -958,7 +956,7 @@ export const createEventsSlice = (set, get) => ({
             actionId: 'unset-custom-variable',
             key,
           };
-          return executeAction(event, mode, {});
+          return executeAction(event, mode, {}, moduleId);
         }
       };
 
@@ -968,14 +966,14 @@ export const createEventsSlice = (set, get) => ({
           alertType,
           message,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const logout = () => {
         const event = {
           actionId: 'logout',
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const showModal = (modalName = '') => {
@@ -990,7 +988,7 @@ export const createEventsSlice = (set, get) => ({
           actionId: 'show-modal',
           modal,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const closeModal = (modalName = '') => {
@@ -1005,7 +1003,7 @@ export const createEventsSlice = (set, get) => ({
           actionId: 'close-modal',
           modal,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const setLocalStorage = (key = '', value = '') => {
@@ -1014,7 +1012,7 @@ export const createEventsSlice = (set, get) => ({
           key,
           value,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const copyToClipboard = (contentToCopy = '') => {
@@ -1022,7 +1020,7 @@ export const createEventsSlice = (set, get) => ({
           actionId: 'copy-to-clipboard',
           contentToCopy,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const goToApp = (slug = '', queryParams = []) => {
@@ -1031,7 +1029,7 @@ export const createEventsSlice = (set, get) => ({
           slug,
           queryParams,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const generateFile = (fileName, fileType, data) => {
@@ -1045,7 +1043,7 @@ export const createEventsSlice = (set, get) => ({
           data,
           fileType,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const setPageVariable = (key = '', value = '') => {
@@ -1054,7 +1052,7 @@ export const createEventsSlice = (set, get) => ({
           key,
           value,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const getPageVariable = (key = '') => {
@@ -1062,7 +1060,7 @@ export const createEventsSlice = (set, get) => ({
           actionId: 'get-page-variable',
           key,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const unsetPageVariable = (key = '') => {
@@ -1070,10 +1068,10 @@ export const createEventsSlice = (set, get) => ({
           actionId: 'unset-page-variable',
           key,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
-      const switchPage = (pageHandle, queryParams = []) => {
+      const switchPage = (pageHandle, queryParams = [], moduleId = 'canvas') => {
         if (isPreview) {
           mode != 'view' &&
             toast('Page will not be switched for query preview', {
@@ -1081,7 +1079,7 @@ export const createEventsSlice = (set, get) => ({
             });
           return Promise.resolve();
         }
-        const pages = modules.canvas.pages;
+        const pages = modules[moduleId].pages;
         const transformedPageHandle = pageHandle?.toLowerCase();
         const pageId = pages.find((page) => page.handle === transformedPageHandle)?.id;
 
@@ -1098,7 +1096,7 @@ export const createEventsSlice = (set, get) => ({
           pageId,
           queryParams,
         };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const logInfo = (log) => {
@@ -1107,7 +1105,7 @@ export const createEventsSlice = (set, get) => ({
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = { actionId: 'log-info', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const logError = (log) => {
@@ -1116,7 +1114,7 @@ export const createEventsSlice = (set, get) => ({
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = { actionId: 'log-error', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       const log = (log) => {
@@ -1125,7 +1123,7 @@ export const createEventsSlice = (set, get) => ({
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = { actionId: 'log', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
-        return executeAction(event, mode, {});
+        return executeAction(event, mode, {}, moduleId);
       };
 
       return {

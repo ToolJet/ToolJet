@@ -2,8 +2,12 @@ import React, { createContext, useContext } from 'react';
 
 export const ModuleContext = createContext();
 
-export const ModuleProvider = ({ moduleId, isModuleMode, appType, children }) => {
-  return <ModuleContext.Provider value={{ moduleId, isModuleMode, appType }}>{children}</ModuleContext.Provider>;
+export const ModuleProvider = ({ moduleId, isModuleMode, appType, isModuleEditor, children }) => {
+  return (
+    <ModuleContext.Provider value={{ moduleId, isModuleMode, appType, isModuleEditor }}>
+      {children}
+    </ModuleContext.Provider>
+  );
 };
 
 export const useModuleId = () => {
@@ -29,4 +33,12 @@ export const useAppType = () => {
     throw new Error('useAppType must be used within a ModuleProvider');
   }
   return context.appType;
+};
+
+export const useIsModuleEditor = () => {
+  const context = useContext(ModuleContext);
+  if (!context) {
+    throw new Error('useIsModuleEditor must be used within a ModuleProvider');
+  }
+  return context.isModuleEditor;
 };

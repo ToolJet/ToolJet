@@ -8,6 +8,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { buildTree } from '../LeftSidebar/PageMenu/Tree/utilities';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RenderPage = ({ page, currentPageId, switchPageWrapper, labelStyle, computeStyles, darkMode, homePageId }) => {
   const isHomePage = page.id === homePageId;
@@ -141,11 +142,12 @@ const RenderPageGroup = ({
 
 export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkMode, switchPageWrapper }) => {
   // Don't render empty folders if displaying only icons
+  const moduleId = useModuleId();
   const tree = buildTree(pages, !!labelStyle?.label?.hidden);
 
   const currentPageId = useStore((state) => state.currentPageId);
   const currentPage = pages.find((page) => page.id === currentPageId);
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   return (
     <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
       {/* <Accordion alwaysOpen defaultActiveKey={tree.map((page) => page.id)}> */}

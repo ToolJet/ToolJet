@@ -37,6 +37,8 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { Component } from 'src/entities/component.entity';
+import { Layout } from 'src/entities/layout.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -89,8 +91,51 @@ export class AppsUtilService implements IAppsUtilService {
         })
       );
 
+      if (type === 'module') {
+        const moduleContainer = await manager.save(
+          manager.create(Component, {
+            name: 'ModuleContainer',
+            type: 'ModuleContainer',
+            pageId: defaultHomePage.id,
+            properties: {
+              inputItems: { value: [] },
+              outputItems: { value: [] },
+            },
+            styles: {
+              backgroundColor: { value: '#fff' },
+            },
+            displayPreferences: {
+              showOnDesktop: { value: '{{true}}' },
+              showOnMobile: { value: '{{true}}' },
+            },
+          })
+        );
+
+        await manager.save(
+          manager.create(Layout, {
+            component: moduleContainer,
+            type: 'desktop',
+            top: 50,
+            left: 6,
+            height: 400,
+            width: 38,
+          })
+        );
+
+        await manager.save(
+          manager.create(Layout, {
+            component: moduleContainer,
+            type: 'mobile',
+            top: 50,
+            left: 6,
+            height: 400,
+            width: 38,
+          })
+        );
+      }
+
       // Set default values for app version
-      appVersion.showViewerNavigation = true;
+      appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
         hideHeader: false,
@@ -406,6 +451,10 @@ export class AppsUtilService implements IAppsUtilService {
       .innerJoin('viewable_apps.user', 'user')
       .addSelect(['user.firstName', 'user.lastName'])
       .where('viewable_apps.organizationId = :organizationId', { organizationId: user.organizationId });
+
+    if (type === 'module') {
+      viewableAppsQb.leftJoinAndSelect('viewable_apps.appVersions', 'versions');
+    }
 
     if (type) viewableAppsQb.andWhere('viewable_apps.type = :type', { type: type });
 

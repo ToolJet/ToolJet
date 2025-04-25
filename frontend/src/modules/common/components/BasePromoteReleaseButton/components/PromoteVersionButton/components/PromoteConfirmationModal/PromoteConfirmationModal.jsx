@@ -9,8 +9,10 @@ import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
+  const moduleId = useModuleId();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);
@@ -22,7 +24,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     (state) => ({
       promoteAppVersionAction: state.promoteAppVersionAction,
       selectedVersion: state.selectedVersion,
-      creationMode: state.app.creationMode,
+      creationMode: state.appStore.modules[moduleId].app.creationMode,
     }),
     shallow
   );

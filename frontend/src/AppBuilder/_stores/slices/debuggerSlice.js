@@ -32,7 +32,7 @@ export const createDebuggerSlice = (set, get) => ({
     log: (log) => {
       set(
         (state) => {
-          log.page = get().currentPageId;
+          log.page = get().getCurrentPageId('canvas');
           state.debugger.logs.unshift(log);
           if (log.logLevel === 'error') state.debugger.unreadErrorCount++;
         },
@@ -44,7 +44,7 @@ export const createDebuggerSlice = (set, get) => ({
     logMultiple: (logs) => {
       set(
         (state) => {
-          state.debugger.logs.push(...logs.map((log) => ({ ...log, page: get().currentPageId })));
+          state.debugger.logs.push(...logs.map((log) => ({ ...log, page: get().getCurrentPageId('canvas') })));
           state.debugger.unreadErrorCount += logs.length;
         },
         false,
@@ -84,20 +84,20 @@ export const createDebuggerSlice = (set, get) => ({
       return transformedStyles;
     },
 
-    validateComponents: (components) => {
+    validateComponents: (components, moduleId = 'canvas') => {
       const validateComponent = get().debugger.validateComponent;
       const entries = Object.entries(components).map(([id, component]) => {
         // If component is an array, validate each component in the array and return the array
         if (Array.isArray(component)) {
-          return [id, component.map((c) => validateComponent(id, c))];
+          return [id, component.map((c) => validateComponent(id, c, moduleId))];
         }
-        return [id, validateComponent(id, component)];
+        return [id, validateComponent(id, component, moduleId)];
       });
       return Object.fromEntries(entries);
     },
 
-    validateComponent: (id, component) => {
-      const componentDefinition = get().getComponentDefinition(id);
+    validateComponent: (id, component, moduleId = 'canvas') => {
+      const componentDefinition = get().getComponentDefinition(id, moduleId);
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
@@ -135,7 +135,7 @@ export const createDebuggerSlice = (set, get) => ({
       };
 
       const logs = allErrors.map((error) => ({
-        page: get().currentPageId,
+        page: get().getCurrentPageId('canvas'),
         type: 'component',
         kind: 'component',
         key: `${componentName} - ${error.property}`,
@@ -158,10 +158,10 @@ export const createDebuggerSlice = (set, get) => ({
       return newComponent;
     },
 
-    validateProperty: (componentId, type, property, value) => {
+    validateProperty: (componentId, type, property, value, moduleId = 'canvas') => {
       const log = get().debugger.log;
 
-      const componentDefinition = get().getComponentDefinition(componentId);
+      const componentDefinition = get().getComponentDefinition(componentId, moduleId);
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
@@ -179,7 +179,7 @@ export const createDebuggerSlice = (set, get) => ({
 
       if (valid === false) {
         log({
-          page: get().currentPageId,
+          page: get().getCurrentPageId('canvas'),
           type: 'component',
           kind: 'component',
           key: `${componentName} - ${componentMeta[type][property]?.displayName}`,

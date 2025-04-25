@@ -55,6 +55,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
     componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
     componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+    componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo.moduleContainer.layouts;
 
     const inputItems = Object.values(
@@ -669,10 +670,14 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);
 }
 
-export const getCanvasWidth = (currentLayout) => {
-  if (currentLayout === 'mobile') {
-    return CANVAS_WIDTHS.deviceWindowWidth;
+export const getCanvasWidth = (moduleId = 'canvas') => {
+  if (moduleId !== 'canvas') {
+    return '100%';
   }
+
+  // if (currentLayout === 'mobile') {
+  //   return CANVAS_WIDTHS.deviceWindowWidth;
+  // }
   const windowWidth = window.innerWidth;
   const widthInPx = windowWidth - (CANVAS_WIDTHS.leftSideBarWidth + CANVAS_WIDTHS.rightSideBarWidth);
   const canvasMaxWidth = useStore.getState().globalSettings.canvasMaxWidth;
