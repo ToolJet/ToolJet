@@ -656,7 +656,7 @@ const ColumnForm = ({
         shouldDisableCreateBtn={
           isEmpty(columnName) ||
           isEmpty(dataType) ||
-          (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial') ||
+          (dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue)) ||
           disabledSaveButton
         }
         showToolTipForFkOnReadDocsSection={true}

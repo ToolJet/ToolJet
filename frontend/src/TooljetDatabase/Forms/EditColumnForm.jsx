@@ -536,10 +536,9 @@ const ColumnForm = ({
   }, [columnName]);
 
   useEffect(() => {
-    const shouldDisableForNullValue =
-      isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial';
+    const shouldDisableForNullValue = dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue);
     setDisabledSaveButton(shouldDisableForNullValue);
-  }, [isNotNull, defaultValue]);
+  }, [isNotNull, defaultValue, dataType]);
 
   const handleInputError = (bool = false) => {
     setDisabledSaveButton(bool);
