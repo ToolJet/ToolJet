@@ -502,3 +502,18 @@ export const handleDeactivateTargets = () => {
     component.classList.remove('non-dragging-component');
   });
 };
+export const computeScrollDelta = ({ source }) => {
+  // Only need to calculate scroll delta when moving from a sub-container
+  if (source.slotId !== 'real-canvas') {
+    const subContainerWrap = document
+      .querySelector(`#canvas-${source.slotId}`)
+      ?.closest('.sub-container-overflow-wrap');
+
+    return subContainerWrap?.scrollTop || 0;
+  }
+
+  // Default case: No scroll adjustment needed
+  return 0;
+};
+
+export const computeScrollDeltaOnDrag = computeScrollDelta;

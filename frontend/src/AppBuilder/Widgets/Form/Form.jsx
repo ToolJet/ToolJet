@@ -45,6 +45,7 @@ export const Form = function Form(props) {
     showFooter = false,
     headerHeight = 80,
     footerHeight = 80,
+    canvasHeight,
   } = properties;
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -268,6 +269,8 @@ export const Form = function Form(props) {
 
   const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  // const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight);
+
   const updateHeaderSizeInStore = ({ newHeight }) => {
     const _height = parseInt(newHeight, 10);
     setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
@@ -278,6 +281,18 @@ export const Form = function Form(props) {
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
 
+  const [canHeight, setCanHeight] = useState('100%');
+  useEffect(() => {
+    // const newHeight = parseInt(height, 10) - 14;
+
+    // const autoCanvasHeight = document.querySelector(`#canvas-${id}`)?.scrollHeight;
+    const wrapHeight = parseInt(computedFormBodyHeight, 10);
+    // Set height to the larger value between computed body height and canvas scroll height
+    const maxHeight = Math.max(wrapHeight, canvasHeight || 10);
+
+    const roundedHeight = Math.round(maxHeight / 10) * 10;
+    setCanHeight(`${roundedHeight}px`);
+  }, [computedFormBodyHeight, canvasHeight]);
   const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
   const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
   const formFooter = {
@@ -328,7 +343,7 @@ export const Form = function Form(props) {
         />
       )}
 
-      <div className="jet-form-body overflow-wrapper" style={formContent}>
+      <div className="jet-form-body sub-container-overflow-wrap" style={formContent}>
         {isLoading ? (
           <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
             <div className="spinner-border" role="status"></div>
@@ -336,17 +351,17 @@ export const Form = function Form(props) {
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%' }}>
             {!advanced && (
-              <div
-                className={'json-form-wrapper-disabled'}
-                style={{ width: '100%', height: computedFormBodyHeight || '100%' }}
-              >
+              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: canHeight || '100%' }}>
                 <SubContainer
                   id={id}
                   canvasHeight={parseInt(computedFormBodyHeight, 10)}
                   canvasWidth={width}
                   onOptionChange={onOptionChange}
                   onOptionsChange={onOptionsChange}
-                  styles={{ backgroundColor: computedStyles.backgroundColor }}
+                  styles={{
+                    backgroundColor: computedStyles.backgroundColor,
+                    height: canHeight,
+                  }}
                   darkMode={darkMode}
                   componentType="Form"
                 />

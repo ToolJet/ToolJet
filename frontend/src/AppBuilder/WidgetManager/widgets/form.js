@@ -147,6 +147,12 @@ export const formConfig = {
       isHidden: true,
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
     },
+    canvasHeight: {
+      type: 'numberInput',
+      displayName: 'Canvas height',
+      isHidden: true,
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
+    },
     footerHeight: {
       type: 'numberInput',
       displayName: 'Footer height',

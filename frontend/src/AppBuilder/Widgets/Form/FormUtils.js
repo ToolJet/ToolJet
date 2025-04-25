@@ -550,6 +550,5 @@ export const getBodyHeight = (height, showHeader, showFooter, headerHeight = 60,
 
   const rounded = Math.ceil(modalHeight / 10) * 10;
 
-  console.log('rounded', rounded)
   return `${Math.max(rounded - 20, 40)}px`;
 };
