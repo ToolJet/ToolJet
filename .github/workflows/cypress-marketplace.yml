@@ -113,14 +113,27 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
 
-      - name: Deploy with Docker Compose
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Update docker-compose file for CE
         run: |
-          curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml
-          mkdir postgres_data
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          # Update docker-compose.yaml with the new image
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+
+      - name: Update docker-compose file for CE
+        if: matrix.edition == 'ee'
+        run: |
+          # Update docker-compose.yaml with the new image
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
-          docker-compose up -d
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
 
       - name: Checking containers
         run: docker ps -a
