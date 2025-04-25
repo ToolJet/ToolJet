@@ -59,9 +59,11 @@ export const BulkUpsertPrimaryKey = () => {
           <CodeHinter
             type="basic"
             initialValue={
-              typeof bulkUpsertPrimaryKey?.rows === 'string'
-                ? bulkUpsertPrimaryKey?.rows
-                : JSON.stringify(bulkUpsertPrimaryKey?.rows ?? [])
+              bulkUpsertPrimaryKey?.rows
+                ? typeof bulkUpsertPrimaryKey?.rows === 'string'
+                  ? bulkUpsertPrimaryKey?.rows
+                  : JSON.stringify(bulkUpsertPrimaryKey?.rows)
+                : null
             }
             className="codehinter-plugins"
             placeholder="{{ [ { 'column1': 'value', ... } ] }}"
