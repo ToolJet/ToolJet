@@ -142,8 +142,18 @@ jobs:
             sleep 5
           done'
 
-      - name: Seeding
-        run: docker exec Tooljet-app npm run db:seed:prod
+      - name: Seeding (Setup Super Admin)
+        run: |
+          curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "companyName": "ToolJet",
+              "name": "The Developer",
+              "workspaceName": "Tooljet'\''s workspace",
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
 
       - name: Create Cypress environment file
         id: create-json
