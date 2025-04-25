@@ -15,15 +15,11 @@ const API_ENDPOINT =
 Cypress.Commands.add(
   "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
-    cy.visit("/");
-    cy.wait(1000);
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
-
-    cy.intercept("GET", API_ENDPOINT).as("library_apps");
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    cy.wait("@library_apps");
+    cy.wait(2000);
+    cy.get('[data-cy="main-wrapper"]', { timeout: 10000 }).should("be.visible");
   }
 );
 
@@ -400,35 +396,38 @@ Cypress.Commands.add("getPosition", (componentName) => {
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
 
+  // cy.intercept("GET", API_ENDPOINT).as("library_apps");
   cy.visit("/my-workspace");
-  cy.intercept("GET", API_ENDPOINT).as("library_apps");
+  cy.wait(2000)
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-  cy.wait("@library_apps");
-  // });
+  // cy.wait("@library_apps");
 });
 
 Cypress.Commands.add(
   "visitSlug",
   ({
     actualUrl,
-    currentUrl = `${Cypress.config("baseUrl")}/error/unknown`,
+    errorUrls = [
+      `${Cypress.config("baseUrl")}/error/unknown`,
+      `${Cypress.config("baseUrl")}/error/restricted`,
+    ],
   }) => {
-    // Ensure actualUrl is provided
     if (!actualUrl) {
       throw new Error("actualUrl is required for visitSlug command.");
     }
 
     cy.visit(actualUrl);
 
-    // Dynamically wait for the correct URL or handle navigation errors
     cy.url().then((url) => {
-      if (url === currentUrl) {
-        cy.log(`Navigation resulted in unexpected URL: ${url}. Retrying...`);
+      if (errorUrls.includes(url)) {
+        cy.log(`Navigation resulted in error URL: ${url}. Retrying...`);
         cy.visit(actualUrl);
+        cy.wait(1000);
       }
     });
   }
 );
+
 
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {
@@ -520,16 +519,6 @@ Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
   element.should("be.visible").and("have.text", text);
 });
 
-Cypress.Commands.add("loginWithCredentials", (email, password) => {
-  cy.get(onboardingSelectors.loginEmailInput, { timeout: 20000 }).should(
-    "be.visible"
-  );
-  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
-  cy.get(onboardingSelectors.signInButton).click();
-  cy.wait(3000);
-  cy.get(commonSelectors.pageLogo).should("be.visible");
-});
 
 Cypress.Commands.add("getAppId", (appName) => {
   cy.task("dbConnection", {

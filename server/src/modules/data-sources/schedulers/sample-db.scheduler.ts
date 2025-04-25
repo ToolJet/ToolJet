@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { runPopulateScript } from '../../scripts/populate-sample-db';
+import { runPopulateScript } from '../../../../scripts/populate-sample-db';
 
 @Injectable()
 export class SampleDBScheduler {

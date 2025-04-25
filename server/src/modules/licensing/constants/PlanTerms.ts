@@ -25,7 +25,6 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     gitSync: false,
     comments: false,
     customThemes: false,
-    ai: true,
   },
   domains: [],
   workflows: {
@@ -79,5 +78,17 @@ export const BUSINESS_PLAN_TERMS = {
 export const ENTERPRISE_PLAN_TERMS = {
   auditLogs: {
     maximumDays: 30,
+  },
+};
+
+export const WORKFLOW_TEAM_PLAN_TERMS: Partial<Terms> = {
+  workflows: {
+    execution_timeout: 60,
+    instance: {
+      total: LICENSE_LIMIT.UNLIMITED,
+      daily_executions: LICENSE_LIMIT.UNLIMITED,
+      monthly_executions: LICENSE_LIMIT.UNLIMITED,
+    },
+    //Only sending instance not workspace
   },
 };

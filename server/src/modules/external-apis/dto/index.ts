@@ -12,6 +12,7 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 
 export enum Status {
   ACTIVE = 'active',
@@ -40,6 +41,10 @@ export class WorkspaceDto {
   @ValidateIf((o) => !o.id)
   @IsNotEmpty()
   name?: string;
+
+  @IsEnum(USER_ROLE)
+  @IsOptional()
+  role?: USER_ROLE;
 
   @IsEnum(Status)
   @IsOptional()

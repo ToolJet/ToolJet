@@ -114,7 +114,7 @@ describe("App Version", () => {
     cy.wait(3000);
 
     // cy.reload();
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", { timeout: 10000 });
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", { timeout: 10000 });
 
     // Preview and release verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
