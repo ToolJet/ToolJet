@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-ToolJet’s app builder lets you build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
+ToolJet’s app builder enables your to build and ship your internal tools quickly without extensive coding knowledge. You can build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
 
 Teams across engineering, product, operations, and business can build applications with ease, following four simple steps to get up and running in minutes.
 
@@ -30,7 +30,7 @@ Each component comes with built-in styling options. You can customize text, colo
 
 ## 2. Connecting Your Data
 
-You can connect your app to multiple [data sources](/docs/data-sources/overview) including relational, NoSQL or Vector databases, APIs, spreadsheets, and cloud services. Once connected, you can fetch, update, or manipulate data using queries.
+You can connect your app to multiple [data sources](/docs/data-sources/overview) including SQL, NoSQL or vector databases, APIs, spreadsheets, and cloud services. Once connected, you can fetch, update, or manipulate data using queries.
 
 A query is an action that interacts with your data source, whether it's fetching records, filtering results, or writing back data. It act as the bridge between your UI and your data.
 
@@ -49,14 +49,14 @@ Events can be triggered by various actions such as a button click, form submissi
 
 You can also chain multiple events and actions together, enabling complex multi-step workflows without writing boilerplate code.
 
-## 4. Handling Complex Logic
+## 4. Handling Custom Logic
 
 ToolJet makes it easy to build apps without code, but when you need more control, it offers the ability to add custom code to write your custom logic. You can create JavaScript or Python queries in app builder to perform calculations, transform data, trigger other queries, or update UI components. These snippets have full access to the component’s properties, other queries’ outputs, and the entire app’s state, allowing you to write custom logic for any use cases like conditional behavior, data processing, or dynamic UI updates.
 <div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/custom-code.png" alt="Custom Code Preview" /> </div>
 
 This gives developers the ability to handle complex scenarios with code, while still leveraging ToolJet’s low-code environment.
 
-ToolJet’s app builder gives you everything you need to build and ship your internal tools quickly without extensive coding knowledge. Combining the speed of low-code with the ability to write custom code where needed, you can build anything from simple dashboards to complex workflows, all in one platform.
+Combining the speed of low-code with the ability to write custom code where needed, you can build anything from simple dashboards to complex workflows, all in one platform.
 
 ## Usecases
 Here are some examples of what you can achieve with ToolJet:
