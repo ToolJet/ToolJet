@@ -220,6 +220,9 @@
     "version": "1.0.0",
     "id": "apyhub",
     "author": "Tooljet",
-    "timestamp": "Wed, 05 Mar 2025 10:34:01 GMT"
+    "timestamp": "Wed, 05 Mar 2025 10:34:01 GMT",
+    "tags": [
+      "AI"
+    ]
   }
 ]
