@@ -179,7 +179,7 @@ export const dropdownV2Config = {
     accentColor: {
       type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--primary-brand)' },
       accordian: 'field',
     },
     selectedTextColor: {
@@ -336,7 +336,7 @@ export const dropdownV2Config = {
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       iconColor: { value: '#6A727C' },
-      accentColor: { value: '#4368E3' },
+      accentColor: { value: 'var(--primary-brand)' },
     },
   },
 };
