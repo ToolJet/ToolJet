@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "ClickUp datasource",
+  "description": "A schema defining ClickUp datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "clickup_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": "https://developer.clickup.com/openapi/673cf4cfdca96a0019533cad"
+    }
+  }
+  
+}
