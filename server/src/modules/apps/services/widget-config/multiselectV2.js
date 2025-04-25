@@ -148,6 +148,18 @@ export const multiselectV2Config = {
       accordian: 'Options',
       isFxNotRequired: true,
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear selection button',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    showSearchInput: {
+      type: 'toggle',
+      displayName: 'Show search in options',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -334,6 +346,8 @@ export const multiselectV2Config = {
       sort: { value: 'asc' },
       placeholder: { value: 'Select the options' },
       showAllSelectedLabel: { value: '{{true}}' },
+      showClearBtn: { value: '{{true}}' },
+      showSearchInput: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },

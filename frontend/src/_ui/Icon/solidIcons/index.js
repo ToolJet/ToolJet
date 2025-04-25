@@ -87,6 +87,7 @@ import Pin from './Pin.jsx';
 import Unpin from './Unpin.jsx';
 import AlignRight from './AlignRight';
 import Play from './Play.jsx';
+import Play01 from './Play01.jsx';
 import Plus from './Plus.jsx';
 import Plus01 from './Plus01.jsx';
 import Reload from './Reload.jsx';
@@ -698,6 +699,8 @@ const Icon = (props) => {
       return <StudentIcon {...props} />;
     case 'ai-crown':
       return <AICrown {...props} />;
+    case 'play01':
+      return <Play01 {...props} />;
     default:
       return <Apps {...props} />;
   }
