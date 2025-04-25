@@ -161,8 +161,8 @@ export const ColorPicker = function ({
     : { display: 'none' };
 
   return (
-    <div>
-      <div style={{ baseStyle, boxShadow }} className="form-control" data-cy={dataCy}>
+    <div className="h-100">
+      <div style={{ baseStyle, boxShadow, height: '100%' }} className="form-control" data-cy={dataCy}>
         <div
           className="d-flex h-100 justify-content-between align-items-center"
           onClick={() => setShowColorPicker(true)}

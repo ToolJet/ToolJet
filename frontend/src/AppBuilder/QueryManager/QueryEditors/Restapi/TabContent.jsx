@@ -68,7 +68,7 @@ export default ({
           );
         })}
       {bodyToggle && (
-        <div>
+        <div className="rest-api-body-codehinter">
           <CodeHinter
             type="extendedSingleLine"
             initialValue={(rawBody || jsonBody) ?? ''} // If raw_body is not set, set initial value to legacy json_body if present
