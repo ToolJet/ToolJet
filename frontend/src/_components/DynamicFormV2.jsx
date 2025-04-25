@@ -245,7 +245,7 @@ const DynamicFormV2 = ({
     const skipValidation =
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
 
-    const handleOptionChange = (key, value, flag) => {
+    const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
         setHasUserInteracted(true);
       }
@@ -318,7 +318,7 @@ const DynamicFormV2 = ({
           options: isRenderedAsQueryEditor
             ? options?.[key] ?? schema?.defaults?.[key]
             : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
-          optionchanged,
+          handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
@@ -331,7 +331,7 @@ const DynamicFormV2 = ({
         return {
           defaultChecked: currentValue,
           checked: currentValue,
-          onChange: (e) => optionchanged(key, e.target.checked),
+          onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
