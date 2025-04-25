@@ -1,0 +1,35 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Apyhub datasource",
+  "description": "A schema defining Apyhub datasource",
+  "type": "api",
+  "source": {
+    "name": "Apyhub",
+    "kind": "apyhub",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey" :{
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your ApyHub API Key",
+      "helpText": "For generating API Key, visit: <a href='https://apyhub.com/signup' target='_blank' rel='noreferrer'>ApyHub</a><br/>Note: Testing the connection will consume 5 Atoms"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}
