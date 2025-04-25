@@ -37,6 +37,7 @@ export const MultiselectV2 = ({
     loadingState: multiSelectLoadingState,
     optionsLoadingState,
     sort,
+    showAllSelectedLabel,
     showClearBtn,
     showSearchInput,
   } = properties;
@@ -544,6 +545,7 @@ export const MultiselectV2 = ({
             icon={icon}
             doShowIcon={iconVisibility}
             containerRef={valueContainerRef}
+            showAllSelectedLabel={showAllSelectedLabel}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
