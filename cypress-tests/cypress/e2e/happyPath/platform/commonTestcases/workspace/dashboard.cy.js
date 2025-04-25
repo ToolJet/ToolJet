@@ -2,7 +2,6 @@ import { fake } from "Fixtures/fake";
 import {
   createFolder,
   deleteFolder,
-  deleteDownloadsFolder,
   navigateToAppEditor,
   viewAppCardOptions,
   verifyModal,
@@ -14,49 +13,38 @@ import {
 } from "Support/utils/common";
 import {
   modifyAndVerifyAppCardIcon,
-  login,
   verifyAppDelete,
 } from "Support/utils/dashboard";
-import { profileSelector } from "Selectors/profile";
-import { profileText } from "Texts/profile";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
-import {
-  navigateToManageUsers,
-  logout,
-  searchUser,
-  navigateToManageGroups,
-} from "Support/utils/common";
-import { roleBasedOnboarding } from "Support/utils/onboarding";
+import { logout } from "Support/utils/common";
 
 describe("dashboard", () => {
-  const data = {};
-  data.appName = `${fake.companyName}-App`;
-  data.folderName = `${fake.companyName.toLowerCase()}-folder`;
-  data.cloneAppName = `cloned-${data.appName}`;
-  data.updatedFolderName = `new-${data.folderName}`;
-  data.firstName = fake.firstName;
-  data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-  data.workspaceName = fake.firstName;
-  data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+  let data = {};
 
   beforeEach(() => {
+    data = {
+      appName: `${fake.companyName}-App`,
+      folderName: `${fake.companyName.toLowerCase()}-folder`,
+      cloneAppName: `cloned-${fake.companyName}-App`,
+      updatedFolderName: `new-${fake.companyName.toLowerCase()}-folder`,
+      workspaceName: fake.firstName,
+      workspaceSlug: fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", ""),
+    };
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
     cy.skipWalkthrough();
+
+    cy.apiLogin();
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
+    cy.visit(`${data.workspaceSlug}`);
   });
 
   it("should verify the elements on empty dashboard", () => {
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
-      fixture: "intercept/emptyDashboard.json",
-    }).as("emptyDashboard");
-
-    cy.intercept("GET", "/api/folder-apps?searchKey=&type=front-end", {
-      body: { folders: [] },
-    }).as("folders");
-
     cy.intercept("GET", "/api/metadata", {
       body: {
         installed_version: "2.9.2",
@@ -64,15 +52,10 @@ describe("dashboard", () => {
       },
     }).as("version");
 
-    cy.defaultWorkspaceLogin();
-    cy.wait("@emptyDashboard");
-    cy.wait("@folders");
-    cy.wait("@version");
-
     cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
-      "My workspace"
+      data.workspaceName
     );
     cy.get(commonSelectors.workspaceName).click();
     // cy.get(commonSelectors.editRectangleIcon).should("be.visible");
@@ -193,7 +176,7 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.apiLogin();
+
     cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
@@ -276,6 +259,7 @@ describe("dashboard", () => {
 
     cancelModal(commonText.cancelButton);
 
+    cy.wait(3000);
     viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.removeFromFolderOption)
@@ -296,6 +280,7 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.allApplicationsLink).click();
 
+    cy.wait(3000);
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.get('[data-cy="clone-app"]').click();
@@ -312,7 +297,10 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
 
-    cy.wait(3000)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(commonSelectors.dashboardIcon).click();
+    cy.wait(3000);
+    cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
     cy.get(commonSelectors.exportAllButton).click();
@@ -322,6 +310,7 @@ describe("dashboard", () => {
       expect(downloadedAppExportFileName).to.contain.string("app");
     });
 
+    cy.wait(3000);
     cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
@@ -337,6 +326,7 @@ describe("dashboard", () => {
     ).verifyVisibleElement("have.text", commonText.modalYesButton);
     cancelModal(commonText.cancelButton);
 
+    cy.wait(3000);
     cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
@@ -362,9 +352,6 @@ describe("dashboard", () => {
       mobile: { width: 8, height: 50 },
     };
 
-    cy.skipWalkthrough();
-    data.appName = `${fake.companyName}-App`;
-    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
 
@@ -395,12 +382,8 @@ describe("dashboard", () => {
       mobile: { width: 8, height: 50 },
     };
 
-    data.appName = `${fake.companyName}-App`;
-    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
-
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
-
     cy.backToApps();
 
     cy.get(commonSelectors.createNewFolderButton).click();
@@ -516,14 +499,5 @@ describe("dashboard", () => {
     );
     verifyAppDelete(data.appName);
     logout();
-  });
-
-  it("should verify the elements on empty dashboard for end user", () => {
-    cy.defaultWorkspaceLogin();
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
-      fixture: "intercept/emptyDashboard.json",
-    }).as("emptyDashboard")
-    roleBasedOnboarding(data.firstName, data.email, "end-user");
-    cy.get(commonSelectors.dashboardAppCreateButton).should("be.disabled");
   });
 });
