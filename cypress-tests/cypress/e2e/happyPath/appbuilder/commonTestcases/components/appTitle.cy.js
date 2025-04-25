@@ -43,8 +43,10 @@ describe("Editor title", () => {
     cy.apiDeleteApp();
   });
   it("should verify titles", () => {
-    cy.url().should("include", "/my-workspace");
-    cy.title().should("eq", "Dashboard | ToolJet");
+    cy.url().should("include", "/tjs-workspace");
+    // cy.title().should("eq", "Dashboard | ToolJet");
+    cy.title().should("eq", "ToolJet");
+
     cy.log(data.appName);
 
     cy.openApp();
@@ -54,12 +56,20 @@ describe("Editor title", () => {
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
     cy.url().should("include", `/applications/${Cypress.env("appId")}`);
-    cy.title().should("eq", `Preview - ${data.appName} | ToolJet`);
+    cy.title().should("eq", `${data.appName} | ToolJet`);
+    // cy.title().should("eq", `Preview - ${data.appName} | ToolJet`);
+
     cy.go("back");
     cy.releaseApp();
-    cy.url().then((url) => cy.visit(`/applications/${url.split("/").pop()}`));
+    cy.url().then((url) => {
+      const appId = url.split("/").filter(Boolean).pop();
+      cy.log(appId);
+      cy.visit(`/applications/${appId}`);
+    });
 
     cy.url().should("include", `/applications/${Cypress.env("appId")}`);
-    cy.title().should("eq", `${data.appName}`);
+    cy.title().should("eq", `${data.appName} | ToolJet`);
+    // cy.title().should("eq", `${data.appName}`);
   });
 });
+

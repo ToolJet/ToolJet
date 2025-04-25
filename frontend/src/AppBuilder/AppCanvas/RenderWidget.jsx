@@ -192,6 +192,7 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            dataCy={`draggable-widget-${componentName}`}
           />
         </div>
       </OverlayTrigger>
