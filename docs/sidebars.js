@@ -145,7 +145,10 @@ const sidebars = {
           'type': 'category',
           'label': 'Connecting with Data Sources',
           'items': [
-            'app-builder/import-libraries/runjs',
+            'app-builder/connecting-with-data-sources/creating-managing-queries',
+            'app-builder/connecting-with-data-sources/accessing-query-results',
+            'app-builder/connecting-with-data-sources/transforming-data',
+            'app-builder/connecting-with-data-sources/binding-data-to-components'
           ],
         },
         {
