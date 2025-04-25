@@ -44,7 +44,7 @@ export const containerConfig = {
       displayName: 'Show header',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
+        defaultValue: true,
       },
     },
   },
@@ -154,7 +154,7 @@ export const containerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      showHeader: { value: `{{false}}` },
+      showHeader: { value: `{{true}}` },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
