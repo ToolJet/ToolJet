@@ -1,5 +1,5 @@
 ---
-id: azureblob
+id: azureblobstorage
 title: Azure Blob
 ---
 

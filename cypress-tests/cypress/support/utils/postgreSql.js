@@ -48,27 +48,25 @@ export const selectAndAddDataSource = (
   dataSourceName
 ) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
-  cy.wait(1000)
+  cy.wait(1000);
   cy.get(`[data-cy="${cyParamName(dscategory)}-datasource-button"]`).click();
-  cy.wait(500)
+  cy.wait(500);
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
-  cy.get(`[data-cy="data-source-${(dataSource).toLowerCase()}"]`)
+  cy.get(`[data-cy="data-source-${dataSource.toLowerCase()}"]`)
     .parent()
     .within(() => {
       cy.get(
-        `[data-cy="data-source-${(
-          dataSource
-        ).toLowerCase()}"]>>>.datasource-card-title`
+        `[data-cy="data-source-${dataSource.toLowerCase()}"]>>>.datasource-card-title`
       ).realHover("mouse");
       cy.get(
         `[data-cy="${cyParamName(dataSource).toLowerCase()}-add-button"]`
       ).click();
     });
 
-  cy.wait(1000)
-  cy.get(postgreSqlSelector.buttonSave).should("be.disabled")
+  cy.wait(1000);
+  cy.get(postgreSqlSelector.buttonSave).should("be.disabled");
   cy.clearAndType(
-    '[data-cy="data-source-name-input-filed"]',
+    '[data-cy="data-source-name-input-field"]',
     cyParamName(`cypress-${dataSourceName}-${dataSource}`)
   );
   cy.get(postgreSqlSelector.buttonSave).click();
@@ -127,7 +125,8 @@ export const fillDataSourceTextField = (
   );
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`).then(($field) => {
     if ($field.is(":disabled")) {
-      cy.get(".datasource-edit-btn").click();
+      cy.get(".datasource-edit-btn").wait(500).click();
+      cy.wait(500);
     }
   });
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
@@ -135,7 +134,9 @@ export const fillDataSourceTextField = (
     .should("eq", placeholder.replace(/\u00a0/g, " "));
 
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
+    .wait(500)
     .clear()
+    .wait(500)
     .type(input, args);
 };
 
@@ -184,4 +185,4 @@ export const addWidgetsToAddUser = () => {
   addEventHandlerToRunQuery("add_data_using_widgets");
 };
 
-export const addListviewToVerifyData = () => { };
+export const addListviewToVerifyData = () => {};
