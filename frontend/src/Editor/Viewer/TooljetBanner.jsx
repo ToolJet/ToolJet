@@ -16,7 +16,7 @@ const TooljetBanner = ({ isDarkMode }) => {
     <div
       className="powered-with-tj"
       onClick={() => {
-        const url = `https://tooljet.com/?utm_source=powered_by_banner&utm_medium=${instanceId}&utm_campaign=self_hosted`;
+        const url = `https://tooljet.com`;
         window.open(url, '_blank');
       }}
     >
