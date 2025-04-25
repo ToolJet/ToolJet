@@ -47,7 +47,7 @@ const OnboardingForm = ({
     <OnboardingUIWrapper>
       <OnboardingFormInsideWrapper>
         <div className="onboarding-questions-form">
-          <div className="steps">
+          <div className="steps" data-cy="steps-details">
             <div className={iconClasses} onClick={handleBackClick} data-cy="back-button">
               <LeftArow />
             </div>

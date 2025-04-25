@@ -3,7 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { elasticsearchText } from "Texts/elasticsearch";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
@@ -18,6 +18,7 @@ const data = {};
 describe("Data source Elasticsearch", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
@@ -46,12 +47,27 @@ describe("Data source Elasticsearch", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      elasticsearchText.elasticSearch,
-      data.lastName
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-elasticsearch`,
+      "elasticsearch",
+      [
+        { key: "host", value: "localhost" },
+        { key: "port", value: 9200 },
+        { key: "username", value: "" },
+        { key: "password", value: "", encrypted: true },
+        { key: "ssl_enabled", value: true, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+      ]
     );
-
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-elasticsearch-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-elasticsearch`
+    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -74,7 +90,7 @@ describe("Data source Elasticsearch", () => {
     );
     cy.get(postgreSqlSelector.labelSSLCertificate).verifyVisibleElement(
       "have.text",
-      postgreSqlText.sslCertificate
+      "SSL Certificate"
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",

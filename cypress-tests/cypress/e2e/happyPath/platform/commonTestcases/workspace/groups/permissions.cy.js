@@ -466,7 +466,7 @@ describe("Manage Groups", () => {
         cy.wait(500);
 
         cy.apiCreateGDS(
-            `${Cypress.env('server_host')}/api/v2/data_sources`,
+            `${Cypress.env('server_host')}/api/data-sources`,
             `cypress-${data.dsName}-qc-postgresql`,
             "postgresql",
             [

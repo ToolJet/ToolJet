@@ -59,6 +59,8 @@ import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';
 import DatepickerV2 from './datepickerv2.jsx';
+import PhoneInput from './phoneinput.jsx';
+import EmailInput from './emailinput.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -99,9 +101,13 @@ const WidgetIcon = (props) => {
       return <Datepicker {...props} />;
     case 'datetimepickerv2':
       return <DateTimePickerV2 {...props} />;
+    case 'emailinput':
+      return <EmailInput {...props} />;
+    case 'phoneinput':
+      return <PhoneInput {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
-    case 'divider':
+    case 'horizontaldivider':
       return <Divider {...props} />;
     case 'divider-horizondal':
       return <DividerHorizondal {...props} />;
@@ -180,6 +186,7 @@ const WidgetIcon = (props) => {
     case 'text':
       return <Text {...props} />;
     case 'textarea':
+    case 'textarealegacy':
       return <TextArea {...props} />;
     case 'textinput':
       return <Textinput {...props} />;
