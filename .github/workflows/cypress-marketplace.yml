@@ -63,31 +63,11 @@ jobs:
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: false
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: docker buildx build --platform=linux/amd64 -f docker/ce-production.Dockerfile  . -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          file: docker/ee/ee-production.Dockerfile
-          push: false
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: docker buildx build --platform=linux/amd64 -f docker/ee/ee-production.Dockerfile  . -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
 
       - name: Set up environment variables
         run: |
