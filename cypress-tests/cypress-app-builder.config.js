@@ -76,7 +76,7 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/happyPath/appbuilder/commonTestcases/!(*components)/**/*.cy.js",
+      "cypress/e2e/happyPath/appbuilder/commonTestcases/**/*.cy.js",
       "cypress/e2e/happyPath/appbuilder/ceTestcases/**/*.cy.js"
     ],
     numTestsKeptInMemory: 1,
