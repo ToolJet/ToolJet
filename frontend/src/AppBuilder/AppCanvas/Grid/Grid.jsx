@@ -588,6 +588,11 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
+          if(resizingComponentId !== e.target.id) {
+            useGridStore.getState().actions.setResizingComponentId(e.target.id);
+            showGridLines();
+          }
+          
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
           if (currentWidget.component?.parent) {
@@ -648,9 +653,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             return false;
           }
           handleActivateNonDraggingComponents();
-          useGridStore.getState().actions.setResizingComponentId(e.target.id);
           e.setMin([gridWidth, GRID_HEIGHT]);
-          showGridLines();
         }}
         onResizeEnd={(e) => {
           try {
@@ -952,7 +955,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           const isParentModal = isParentNewModal || isParentLegacyModal || isParentModalSlot;
 
           if (isParentModal) {
-            const modalContainer = e.target.closest('.tj-modal-widget-content');
+            const modalContainer = e.target.closest('.tj-modal--container');
             const mainCanvas = document.getElementById('real-canvas');
 
             const mainRect = mainCanvas.getBoundingClientRect();

@@ -106,3 +106,15 @@
   bottom: unset;
 }
 
+.jet-container.jet-container-json-form {
+  padding: 0px;
+
+  .wj-form-header::after,
+  .wj-form-footer::after {
+    left: -3px;
+    right: -3px;
+  }
+  .jet-form-body fieldset {
+    padding: 20px;
+  }
+}

@@ -277,7 +277,7 @@ export const Modal = function Modal({
 
       <Modal.Component
         show={showModal}
-        contentClassName="modal-component"
+        contentClassName="modal-component tj-modal--container"
         container={document.getElementsByClassName('real-canvas')[0]}
         size={size}
         keyboard={true}
