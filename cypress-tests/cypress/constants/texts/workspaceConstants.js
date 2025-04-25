@@ -4,7 +4,7 @@ export const workspaceConstantsText = {
     secretsConstantInfo: "To resolve a secret workspace constant use {{secrets.access_token}}Read documentation",
     emptyStateHeader: "No Workspace constants yet",
     emptyStateText:
-        "Use workspace constants seamlessly in both the app builder and data source connections across ToolJet.",
+        "Use workspace constants seamlessly within both the app builder and data source connections across the platform.",
     addNewConstantButton: "+ Create new constant",
     addConstatntText: "Add new constant in production ",
     constantCreatedToast: (type) => { return `${type} constant created successfully!` },

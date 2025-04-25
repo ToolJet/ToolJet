@@ -73,6 +73,7 @@ const UsersFilter = ({ filterList, resetSearch }) => {
               useMenuPortal={true}
               closeMenuOnSelect={true}
               width="161.25px"
+              placeholder="All"
             />
           </div>
         </div>
