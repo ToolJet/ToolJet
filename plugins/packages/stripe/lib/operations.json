@@ -1,16 +1,16 @@
 {
-    "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-    "title": "Stripe datasource",
-    "description": "A schema defining stripe datasource",
-    "type": "api",
-    "defaults": {},
-    "properties": {
-      "operation": {
-        "label": "",
-        "key": "stripe_operation",
-        "type": "react-component-api-endpoint",
-        "description": "Single select dropdown for operation",
-        "specUrl": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json"
-      }
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Stripe datasource",
+  "description": "A schema defining stripe datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "stripe_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json"
     }
   }
+}

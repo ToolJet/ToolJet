@@ -10,8 +10,7 @@
       "key": "clickup_operation",
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
-      "specUrl": "https://developer.clickup.com/openapi/673cf4cfdca96a0019533cad"
+      "spec_url": "https://developer.clickup.com/openapi/673cf4cfdca96a0019533cad"
     }
   }
-  
 }

@@ -244,7 +244,7 @@ const DynamicForm = ({
     encrypted,
     placeholders = {},
     editorType = 'basic',
-    specUrl = '',
+    spec_url = '',
     disabled = false,
     buttonText,
     text,
@@ -485,7 +485,7 @@ const DynamicForm = ({
         };
       case 'react-component-api-endpoint':
         return {
-          specUrl: specUrl,
+          specUrl: spec_url,
           optionsChanged,
           options,
           darkMode,
@@ -671,7 +671,12 @@ const DynamicForm = ({
                 </label>
               )}
 
-              <div data-cy={`${String(flipComponentDropdown.label).toLocaleLowerCase().replace(/\s+/g, '-')}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+              <div
+                data-cy={`${String(flipComponentDropdown.label)
+                  .toLocaleLowerCase()
+                  .replace(/\s+/g, '-')}-select-dropdown`}
+                className={cx({ 'flex-grow-1': isHorizontalLayout })}
+              >
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
