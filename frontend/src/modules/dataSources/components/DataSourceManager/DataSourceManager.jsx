@@ -915,6 +915,7 @@ class DataSourceManagerComponent extends React.Component {
       addingDataSource,
       datasourceName,
       validationError,
+      validationMessages,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
     const createSelectedDataSource = (dataSource) => {
@@ -924,7 +925,9 @@ class DataSourceManagerComponent extends React.Component {
     const sampleDBmodalBodyStyle = isSampleDb ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' } : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
-      ? deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName
+      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
+          selectedDataSource?.name === datasourceName) ||
+        !isEmpty(validationMessages)
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
