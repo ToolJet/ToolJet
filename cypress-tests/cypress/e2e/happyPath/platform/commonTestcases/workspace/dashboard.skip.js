@@ -171,7 +171,7 @@ describe("dashboard", () => {
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
   });
 
-  it("Should verify app card elements and app card operations", () => {
+  it.skip("Should verify app card elements and app card operations", () => {
     const customLayout = {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },

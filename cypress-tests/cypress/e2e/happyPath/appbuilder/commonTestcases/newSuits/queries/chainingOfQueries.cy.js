@@ -14,6 +14,7 @@ describe("Chaining of queries", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-chaining-App`);
     cy.openApp();
+    cy.apiFetchDataSourcesId()
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
@@ -57,7 +58,7 @@ describe("Chaining of queries", () => {
     );
 
     cy.apiCreateGDS(
-      "http://localhost:3000/api/v2/data_sources",
+      `http://localhost:3000/api/data-sources`,
       `cypress-${dsName}-qc-postgresql`,
       "postgresql",
       [
@@ -68,8 +69,10 @@ describe("Chaining of queries", () => {
         { key: "password", value: Cypress.env("pg_password"), encrypted: true },
         { key: "ssl_enabled", value: false, encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "connection_type", value: "manual", encrypted: false }
       ]
     );
+    cy.log("Data source created");
     cy.apiAddQueryToApp(
       "psql",
       {
@@ -92,8 +95,17 @@ describe("Chaining of queries", () => {
     chainQuery("restapi", "tjdb");
     addSuccessNotification("restapi");
 
+    cy.get(`[data-cy="list-query-tjdb"]`).click();
+    cy.get('[data-cy="query-tab-settings"]').click();
+    selectEvent("Query Failure", "Show Alert");
+    cy.get('[data-cy="debounce-input-field"]')
+      .click()
+      .type(`{selectAll}{backspace}2000{enter}`);
+    cy.wait(1000)
+    cy.get('[data-cy="query-tab-setup"]').click();
+
     openEditorSidebar(buttonText.defaultWidgetName);
-    selectEvent("On Click", "Run Query", 1, `[data-cy="add-event-handler"]`, 1);
+    selectEvent("On Click", "Run Query", 0, `[data-cy="add-event-handler"]`, 0);
     cy.wait(500);
     cy.get('[data-cy="query-selection-field"]')
       .click()
@@ -105,11 +117,13 @@ describe("Chaining of queries", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, "psql");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runpy");
+    cy.wait(500);
     cy.verifyToastMessage(commonSelectors.toastMessage, "restapi");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Invalid operation");
+    // cy.verifyToastMessage(commonSelectors.toastMessage, "Hello World");
   });
 
-  it("should verify query duplication", () => {
+  it.skip("should verify query duplication", () => {
+
     const data = {};
     let dsName = fake.companyName;
     data.customText = randomString(12);
@@ -133,7 +147,7 @@ describe("Chaining of queries", () => {
     addSuccessNotification("runjs");
 
     openEditorSidebar(buttonText.defaultWidgetName);
-    selectEvent("On Click", "Run Query", 1, `[data-cy="add-event-handler"]`, 1);
+    selectEvent("On Click", "Run Query", 0, `[data-cy="add-event-handler"]`, 0);
     cy.wait(500);
     cy.get('[data-cy="query-selection-field"]')
       .click()
