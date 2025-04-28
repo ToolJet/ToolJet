@@ -102,7 +102,7 @@ module.exports = {
           title: 'Solutions',
           items: [
             { label: 'Back office tools', to: 'https://www.tooljet.ai/building-back-office-apps' },
-            { label: 'Business apps', to: 'https://www.tooljet.ai/business-applications' },
+            { label: 'Business applications', to: 'https://www.tooljet.ai/business-applications' },
           ],
         },
         {
