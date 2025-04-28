@@ -489,7 +489,22 @@ img {
   text-decoration: none;
   font-size: 12px;
   font-weight: 600;
-  margin-right: 6px;
+  border-radius: 6px;
+}
+
+.navbar-website,
+.navbar-website:hover {
+  margin: 0px 6px !important;
+}
+
+.navbar-signin,
+.navbar-signin:hover {
+  padding: 6px 9px !important;  
+}
+
+.navbar-signin:hover,
+.navbar-website:hover{
+  background-color: #F0F1F2;
 }
 
 @media screen and (max-width: 996px) {
@@ -577,6 +592,7 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   border: 1px solid #CCD1D5 !important;
   border-radius: 6px !important;
   background: transparent !important;
+  height: 31.8px !important;
 }
 
 .DocSearch-Button-Key {
@@ -602,6 +618,7 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 .navbarSearchContainer_Bca1 {
   border-right: 1px solid #E4E7EB !important;
   padding: 4px 16px !important;
+  margin-right: 8px;
 }
 
 .dropdown-archived-versions {
