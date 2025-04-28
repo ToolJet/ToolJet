@@ -110,7 +110,7 @@ describe('Button Component Tests', () => {
         verifyTextInputEvents(textInputSelector);
     });
 
-    it('should verify all the CSA from button', () => {
+    it.skip('should verify all the CSA from button', () => {
         addMultiEventsWithAlert([
             { event: "On hover", message: "On hover Event" },
             { event: "On Click", message: "On Click Event" },

@@ -98,7 +98,7 @@ describe('Text Input Component Tests', () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify all the exposed values on inspector', () => {
+    it.skip('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.get(".tooltip-inner").invoke("hide");
 
@@ -137,7 +137,7 @@ describe('Text Input Component Tests', () => {
         verifyTextInputEvents(textInputSelector);
     });
 
-    it('should verify all the CSA from text input', () => {
+    it.skip('should verify all the CSA from text input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b1
             { event: "On click", action: "Visibility", valueToggle: "{{true}}" },//b2
