@@ -68,13 +68,14 @@ export const Container = React.memo(
     }, [index, componentType, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
-      accept: appType === 'module' && componentType !== 'ModuleContainer' ? [] : 'box',
+      accept: 'box',
       hover: (item) => {
         item.canvasRef = realCanvasRef?.current;
         item.canvasId = id;
         item.canvasWidth = getContainerCanvasWidth();
       },
       drop: async ({ componentType, component }, monitor) => {
+        if (appType === 'module' && componentType !== 'ModuleContainer') return;
         const didDrop = monitor.didDrop();
         if (didDrop) return;
         if (componentType === 'PDF' && !isPDFSupported()) {

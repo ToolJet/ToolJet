@@ -5,6 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -69,7 +70,9 @@ export const ConfigHandle = ({
         if (componentType === 'Tabs') {
           setFocusedParentId(`${id}-${currentTab}`);
         } else {
-          setFocusedParentId(id);
+          if (DROPPABLE_PARENTS.has(componentType)) {
+            setFocusedParentId(id);
+          }
         }
       }}
     >

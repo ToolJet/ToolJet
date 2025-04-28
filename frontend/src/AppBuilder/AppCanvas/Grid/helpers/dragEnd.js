@@ -54,6 +54,7 @@ import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
 } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { DROPPABLE_PARENTS } from '../../appCanvasConstants';
 
 const CANVAS_ID = 'canvas';
 const REAL_CANVAS_ID = 'real-canvas';
@@ -84,8 +85,6 @@ export class DragEntity {
  * This class helps determine if a slot is valid and handles various properties like modals.
  */
 export class DropAreaEntity {
-  static dropAreaWidgets = ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'ModalV2', 'Listview', 'Container', 'Table'];
-
   constructor(widget, slotId) {
     this.widget = widget; // The widget that owns this slot
     this.id = widget?.id || CANVAS_ID; // ID of the widget
@@ -119,7 +118,7 @@ export class DropAreaEntity {
 
   // Determines if the slot is a valid drop target
   get isDroppable() {
-    return DropAreaEntity.dropAreaWidgets.includes(this.widgetType);
+    return DROPPABLE_PARENTS.has(this.widgetType);
   }
 
   // Returns the type of slot (header, footer, body, etc.)
@@ -143,7 +142,7 @@ export class DropAreaEntity {
  * - Any restrictions based on parent-child relationships
  */
 export class DragContext {
-  constructor({ sourceSlotId, targetSlotId, draggedWidgetId, widgets }) {
+  constructor({ sourceSlotId, targetSlotId, draggedWidgetId, widgets, isModuleEditor = false }) {
     const sourceWidgetId = sourceSlotId?.slice(0, 36);
     const sourceWidget = getWidgetById(widgets, sourceWidgetId);
 
@@ -156,6 +155,7 @@ export class DragContext {
     this.target = new DropAreaEntity(targetWidget, targetSlotId);
     this.dragged = new DragEntity(draggedWidget);
     this.widgets = widgets;
+    this.isModuleEditor = isModuleEditor;
   }
 
   /**
@@ -168,27 +168,38 @@ export class DragContext {
   }
 
   get isDroppable() {
-    const { dragged, target } = this;
+    const { dragged, target, isModuleEditor } = this;
+
+    // If the target is the canvas and we are in module editor,
+    // then we don't want to drop the widget outside the module
+    if (isModuleEditor && target.id === 'canvas') {
+      return false;
+    }
 
     const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
     const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
 
     const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
     return !restrictedWidgets.includes(dragged.widgetType);
-    ß;
   }
 }
 
 /**
  * Constructs the **dragging context** by gathering all relevant details from the event.
  */
-export function dragContextBuilder({ event, widgets }) {
+export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
   const draggedWidgetId = event.target.id;
   const draggedWidget = getWidgetById(widgets, draggedWidgetId);
   const sourceSlotId = draggedWidget.parent;
 
   // Initialize drag context
-  const context = new DragContext({ widgets, draggedWidgetId, sourceSlotId, targetSlotId: sourceSlotId });
+  const context = new DragContext({
+    widgets,
+    draggedWidgetId,
+    sourceSlotId,
+    targetSlotId: sourceSlotId,
+    isModuleEditor,
+  });
 
   // Determine the potential drop target
   const targetSlotId = getDroppableSlotIdOnScreen(event, widgets);
@@ -210,7 +221,7 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
     .map((ele) => extractSlotId(ele))
     .filter((slotId) => {
       const widgetType = getWidgetById(widgets, slotId.slice(0, 36))?.component?.component || CANVAS_ID;
-      return DropAreaEntity.dropAreaWidgets.includes(widgetType);
+      return DROPPABLE_PARENTS.has(widgetType);
     });
 
   return slotId;

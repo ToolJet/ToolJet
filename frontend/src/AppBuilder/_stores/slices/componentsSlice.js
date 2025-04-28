@@ -1451,7 +1451,9 @@ export const createComponentsSlice = (set, get) => ({
   setFocusedParentId: (parentId) => {
     set((state) => {
       state.focusedParentId = parentId;
-    });
+    }),
+      false,
+      { type: 'setFocusedParentId', payload: { parentId } };
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas') => {
     set(

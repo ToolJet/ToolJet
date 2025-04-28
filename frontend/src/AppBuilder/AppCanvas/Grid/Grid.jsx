@@ -28,7 +28,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
-import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
+import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -37,7 +37,7 @@ const RESIZABLE_CONFIG = {
 };
 export const GRID_HEIGHT = 10;
 
-export default function Grid({ gridWidth, currentLayout, appType }) {
+export default function Grid({ gridWidth, currentLayout, appType, isModuleEditor }) {
   const moduleId = useModuleId();
   const lastDraggedEventsRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
@@ -50,6 +50,7 @@ export default function Grid({ gridWidth, currentLayout, appType }) {
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
+
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
@@ -454,9 +455,7 @@ export default function Grid({ gridWidth, currentLayout, appType }) {
               widgetId = widgetId.split('-').slice(0, -1).join('-');
               widgetType = boxList.find(({ id }) => id === widgetId)?.component?.component;
             }
-            if (
-              !['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Table'].includes(widgetType)
-            ) {
+            if (!DROPPABLE_PARENTS.has(widgetType)) {
               isDroppable = false;
             }
           }
@@ -470,10 +469,15 @@ export default function Grid({ gridWidth, currentLayout, appType }) {
         .map(({ component }) => component.component);
       const parentId = draggedOverElemId?.length > 36 ? draggedOverElemId.slice(0, 36) : draggedOverElemId;
       const parentWidgetType = getComponentTypeFromId(parentId);
-      const restrictedWidgetsTobeDropped =
+      let restrictedWidgetsTobeDropped =
         RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType]?.filter((widgetType) =>
           widgetsTypeToBeDropped.includes(widgetType)
         ) || [];
+
+      if (isModuleEditor && parentId === undefined) {
+        restrictedWidgetsTobeDropped = widgetsTypeToBeDropped;
+        // useGridStore.getState().actions.setIsGroupHandleHoverd(false);
+      }
       const isParentChangeAllowed = isEmpty(restrictedWidgetsTobeDropped);
 
       if (!isParentChangeAllowed) {
@@ -498,7 +502,12 @@ export default function Grid({ gridWidth, currentLayout, appType }) {
         });
 
         // Show error message
-        toast.error(`${restrictedWidgetsTobeDropped} is not compatible as a child component of ${parentWidgetType}`);
+        if (isModuleEditor) {
+          // Added this to hide configHandle when multiple components were dragged using the configHandle and placed outside the module
+          setSelectedComponents([]);
+        } else {
+          toast.error(`${restrictedWidgetsTobeDropped} is not compatible as a child component of ${parentWidgetType}`);
+        }
       }
 
       const parentElm = draggedOverElem || document.getElementById('real-canvas');
@@ -853,7 +862,7 @@ export default function Grid({ gridWidth, currentLayout, appType }) {
             if (!e.lastEvent) return;
 
             // Build the drag context from the event
-            const dragContext = dragContextBuilder({ event: e, widgets: boxList });
+            const dragContext = dragContextBuilder({ event: e, widgets: boxList, isModuleEditor });
             const { target, source, dragged } = dragContext;
 
             const targetSlotId = target?.slotId;
