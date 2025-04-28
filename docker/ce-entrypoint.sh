@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+service postgresql start
+
 if [ -d "./server/dist" ]; then
   SETUP_CMD='npm run db:setup:prod'
 else
