@@ -83,95 +83,52 @@ module.exports = {
       ],
     },
     footer: {
-      style: 'light',
+      style: 'light', 
+      logo: {
+        alt: 'ToolJet Logo',
+        src: 'img/docs_logo.svg',
+        srcDark: 'img/docs_logo_dark.svg',
+      },
       links: [
         {
           title: 'Platform',
           items: [
-            {
-              label: 'App builder',
-              href: '#',
-            },
-            {
-              label: 'AI Agent builder',
-              href: '#',
-            },
-            {
-              label: 'ToolJet Database',
-              href: '#',
-            },
+            { label: 'App builder', to: 'https://www.tooljet.ai/visual-app-builder' },
+            { label: 'AI Agent builder', to: 'https://www.tooljet.ai/ai-agent-builder' },
+            { label: 'ToolJet Database', to: 'https://www.tooljet.ai/database' },
           ],
         },
         {
           title: 'Solutions',
           items: [
-            {
-              label: 'Back office tools',
-              href: 'https://tooljet.ai/slack',
-            },
-            {
-              label: 'Business apps',
-              href: 'https://tooljet.ai/slack',
-            }
+            { label: 'Back office tools', to: 'https://www.tooljet.ai/building-back-office-apps' },
+            { label: 'Business apps', to: 'https://www.tooljet.ai/business-applications' },
           ],
         },
         {
           title: 'Developers',
           items: [
-            {
-              label: 'Blogs',
-              href: 'https://blog.tooljet.ai/',
-            },
-            {
-              label: 'Events',
-              href: '#',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/ToolJet/ToolJet',
-            },
-            {
-              label: 'Slack',
-              href: 'https://tooljet.ai/slack',
-            },
+            { label: 'Blogs', to: 'https://blog.tooljet.ai/' },
+            { label: 'Events', to: 'https://www.tooljet.ai/events' },
+            { label: 'GitHub', href: 'https://github.com/ToolJet/ToolJet' },
+            { label: 'Slack', href: 'https://tooljet.ai/slack' },
           ],
         },
         {
           title: 'Templates',
           items: [
-            {
-              label: 'Lead management',
-              href: '#',
-            },
-            {
-              label: 'KPI management',
-              href: '#',
-            },
-            {
-              label: 'Inventory management',
-              href: '#',
-            },
-            {
-              label: 'Leave management',
-              href: '#',
-            },
-            {
-              label: 'Applicant tracking',
-              href: '#',
-            },
+            { label: 'Lead management', to: 'https://www.tooljet.ai/templates/lead-management-system' },
+            { label: 'KPI management', to: 'https://www.tooljet.ai/templates/kpi-management-dashboard' },
+            { label: 'Inventory management', to: 'https://www.tooljet.ai/templates/inventory-management-system' },
+            { label: 'Leave management', to: 'https://www.tooljet.ai/templates/leave-management-portal' },
+            { label: 'Applicant tracking', to: 'https://www.tooljet.ai/templates/applicant-tracking-system' },
           ],
         },
         {
           title: 'Contact us',
           items: [
-            {
-              label: 'hello@tooljet.com',
-              href: '#',
-            },
-            {
-              label: 'support@tooljet.com',
-              href: '#',
-            }
+            { label: 'hello@tooljet.com', href: 'mailto:hello@tooljet.com' },
+            { label: 'support@tooljet.com', href: 'mailto:support@tooljet.com' },
           ],
         },
       ],
@@ -181,7 +138,7 @@ module.exports = {
       <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5L8R522S" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       `,
-    },
+    },    
     algolia: {
       appId: 'O8HQRLI0WA',
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
