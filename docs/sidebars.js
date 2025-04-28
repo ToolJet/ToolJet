@@ -138,7 +138,8 @@ const sidebars = {
             'app-builder/canvas',
             'app-builder/component-library',
             'app-builder/component-properties',
-            'app-builder/multi-page'
+            'app-builder/multi-page',
+            'app-builder/component-data'
           ],
         },
         {
