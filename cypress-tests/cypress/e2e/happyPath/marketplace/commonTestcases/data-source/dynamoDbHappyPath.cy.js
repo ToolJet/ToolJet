@@ -19,7 +19,7 @@ const data = {};
 
 describe("Data source DynamoDB", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
     cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()

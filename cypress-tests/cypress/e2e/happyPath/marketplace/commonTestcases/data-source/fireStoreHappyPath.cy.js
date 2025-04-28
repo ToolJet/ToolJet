@@ -17,7 +17,7 @@ const data = {};
 
 describe("Data source Firestore", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
     cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()

@@ -26,7 +26,7 @@ const data = {};
 
 describe("Data sources MySql", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
     cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()

@@ -19,7 +19,7 @@ const data = {};
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
     cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
