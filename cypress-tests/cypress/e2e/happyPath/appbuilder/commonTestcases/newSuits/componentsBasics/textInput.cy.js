@@ -95,7 +95,7 @@ describe('Text Input Component Tests', () => {
         cy.apiCreateApp(`${fake.companyName}-Textinput-App`);
         cy.openApp();
         cy.dragAndDropWidget("Text Input", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {

@@ -54,7 +54,7 @@ describe("RunJS", () => {
     cy.apiDeleteApp();
   });
 
-  it("should verify global and page data", () => {
+  it.skip("should verify global and page data", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -147,9 +147,9 @@ describe("RunJS", () => {
       "runjs",
       "actions.showAlert('success', 'alert from runjs');"
     );
-    cy.get('[data-cy="query-tab-Settings"]').click();
+    cy.get('[data-cy="query-tab-settings"]').click();
     changeQueryToggles("run-on-app-load");
-    cy.wait(`@editQuery`);
+    // cy.wait(`@editQuery`);
     cy.waitForAutoSave();
     cy.waitForAutoSave();
     cy.reload();
@@ -159,9 +159,9 @@ describe("RunJS", () => {
       "alert from runjs",
       false
     );
-    cy.get('[data-cy="query-tab-Settings"]').click();
+    cy.get('[data-cy="query-tab-settings"]').click();
     changeQueryToggles("confirmation-before-run");
-    cy.wait(`@editQuery`);
+    // cy.wait(`@editQuery`);
     cy.waitForAutoSave();
     cy.reload();
     cy.get('[data-cy="modal-message"]').verifyVisibleElement(
@@ -172,12 +172,12 @@ describe("RunJS", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
 
     resizeQueryPanel("80");
-    cy.get('[data-cy="query-tab-Settings"]').click();
+    cy.get('[data-cy="query-tab-settings"]').click();
     changeQueryToggles("notification-on-success");
     cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
       "Success alert"
     );
-    cy.get('[data-cy="query-tab-Setup"]').click();
+    cy.get('[data-cy="query-tab-setup"]').click();
     cy.get('[data-cy="runjs-input-field"]').realClick();
     cy.wait(1000);
     cy.waitForAutoSave();

@@ -91,7 +91,7 @@ describe("Global Actions", () => {
         cy.waitForAutoSave();
         addInputOnQueryField("runjs", "actions.showModal('modal1');");
         query("run");
-        cy.get('[data-cy="modal-title"]').should("be.visible");
+        cy.get('.text-widget-section > div').should("be.visible");
 
         addInputOnQueryField("runjs", "actions.closeModal('modal1');");
         query("run");
@@ -114,7 +114,7 @@ describe("Global Actions", () => {
             "actions.setLocalStorage('localStorage','data from runjs');"
         );
         query("run");
-
+        cy.wait(500)
         cy.getAllLocalStorage().then((result) => {
             expect(result[Cypress.config().baseUrl].localStorage).to.deep.equal(
                 "data from runjs"

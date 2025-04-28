@@ -108,7 +108,9 @@ jobs:
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
-          sleep 5
+
+      - name: sleep 5
+        run: sleep 5
 
       - name: Start services
         run: |
@@ -160,7 +162,7 @@ jobs:
           name: screenshots-appbuilder-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
-  Cypress-App-builder-Subpath:
+  Cypress-App-builder-Subpath: 
     runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-app-builder-subpath' }}
