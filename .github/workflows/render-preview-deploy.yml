@@ -83,10 +83,6 @@ jobs:
                 "value": "tooljet"
               },
               {
-                "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
-              },
-              {
                 "key": "PG_DB",
                 "value": "${{ env.PR_NUMBER }}-ce"
               },
@@ -103,10 +99,6 @@ jobs:
                 "value": "tooljet"
               },
               {
-                "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
-              },
-              {
                 "key": "TOOLJET_DB_PORT",
                 "value": "5432"
               },
@@ -116,7 +108,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://tooljet:${{ secrets.RENDER_PG_PASS }}@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
+                "value": "postgres://tooljet:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
               },
               {
                 "key": "PGRST_HOST",
