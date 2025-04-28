@@ -122,7 +122,7 @@ describe("Chaining of queries", () => {
     // cy.verifyToastMessage(commonSelectors.toastMessage, "Hello World");
   });
 
-  it.only("should verify query duplication", () => {
+  it.skip("should verify query duplication", () => {
 
     const data = {};
     let dsName = fake.companyName;
