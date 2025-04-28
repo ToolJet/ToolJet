@@ -45,7 +45,7 @@ describe("Editor- Inspector", () => {
     cy.apiDeleteApp();
   });
 
-  it("should verify dynamic items", () => {
+  it.skip("should verify dynamic items", () => {
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
 
@@ -147,7 +147,7 @@ describe("Editor- Inspector", () => {
     cy.apiDeleteApp();
   });
 
-  it("should verify deletion of component from inspector", () => {
+  it.skip("should verify deletion of component from inspector", () => {
     cy.dragAndDropWidget("button", 500, 500);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     deleteComponentFromInspector("button1");

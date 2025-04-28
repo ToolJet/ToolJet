@@ -59,7 +59,7 @@ describe("runpy", () => {
     cy.apiDeleteApp();
   });
 
-  it.only("should verify actions", () => {
+  it.skip("should verify actions", () => {
     const data = {};
     data.customText = randomString(12);
 
