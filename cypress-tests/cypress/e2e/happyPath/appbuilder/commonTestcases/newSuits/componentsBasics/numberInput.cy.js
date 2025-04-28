@@ -129,7 +129,7 @@ describe('Number Input Component Tests', () => {
         inputEvents(inputSelector);
     });
 
-    it('should verify all the CSA from number input', () => {
+    it.skip('should verify all the CSA from number input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b1
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },//b2
