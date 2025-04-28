@@ -17,6 +17,7 @@ describe("Editor- Inspector", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-inspector-App`);
     cy.openApp("?key=value");
+    cy.viewport(1800, 1800);
   });
 
   it("should verify the values of inspector", () => {
@@ -52,7 +53,7 @@ describe("Editor- Inspector", () => {
     cy.get(multipageSelector.sidebarPageButton).click();
     addNewPage("test_page");
 
-    cy.dragAndDropWidget("Button", 500, 500);
+    cy.dragAndDropWidget("Button", 100, 100);
     selectEvent("On click", "Switch page");
     cy.get('[data-cy="switch-page-label-and-input"] > .select-search').click().type("home{enter}");
 
@@ -141,8 +142,8 @@ describe("Editor- Inspector", () => {
     cy.dragAndDropWidget("Button", 500, 300);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     openNode("components");
-    cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).realHover();
-    cy.get('[style="height: 13px; width: 13px;"] > img').click();
+    cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).eq(0).realHover();
+    cy.get('[style="height: 13px; width: 13px;"] > img').last().click();
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
     cy.apiDeleteApp();
   });
