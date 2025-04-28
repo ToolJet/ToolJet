@@ -18,7 +18,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 
-export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isViewer = false }) => {
+export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isModuleEditor, isViewer = false }) => {
   const moduleId = useModuleId();
   const isModuleMode = useIsModuleMode();
   const canvasContainerRef = useRef();
@@ -147,7 +147,12 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isViewer = fa
             <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
           )}
           <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-          <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
+          <HotkeyProvider
+            mode={currentMode}
+            canvasMaxWidth={canvasMaxWidth}
+            currentLayout={currentLayout}
+            isModuleEditor={isModuleEditor}
+          >
             {environmentLoadingState !== 'loading' && (
               <div>
                 <Container
@@ -166,7 +171,12 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isViewer = fa
             )}
 
             {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-              <Grid currentLayout={currentLayout} gridWidth={gridWidth} appType={appType} />
+              <Grid
+                currentLayout={currentLayout}
+                gridWidth={gridWidth}
+                appType={appType}
+                isModuleEditor={isModuleEditor}
+              />
             )}
           </HotkeyProvider>
         </div>

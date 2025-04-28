@@ -54,7 +54,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           </Suspense>
           {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
           <DndProvider backend={HTML5Backend}>
-            <AppCanvas appId={appId} appType={appType} />
+            <AppCanvas appId={appId} appType={appType} isModuleEditor={isModuleEditor} />
             <QueryPanel darkMode={darkMode} />
             <RightSideBar darkMode={darkMode} isModuleEditor={isModuleEditor} />
           </DndProvider>

@@ -21,6 +21,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   }, [componentTypes]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(1);
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
@@ -29,9 +30,14 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const handleSearchQueryChange = useCallback(
     debounce((e) => {
       const { value } = e.target;
-      filterComponents(value);
+      setSearchQuery(value);
+
+      if (activeTab === 1) {
+        filterComponents(value);
+      }
+      // No need to filter modules here as we pass searchQuery to ModuleManager
     }, 125),
-    []
+    [activeTab]
   );
 
   const filterComponents = useCallback((value) => {
@@ -162,13 +168,15 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   const handleChangeTab = (tab) => {
     setActiveTab(tab);
+    // When changing tabs, we don't need to reset the search
+    // The search query will be applied to the new tab
   };
 
   const renderSection = () => {
     if (activeTab === 1) {
       return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
     }
-    return <ModuleManager />;
+    return <ModuleManager searchQuery={searchQuery} />;
   };
 
   return (
@@ -184,10 +192,17 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           initialValue={''}
           callBack={(e) => handleSearchQueryChange(e)}
           onClearCallback={() => {
-            filterComponents('');
+            setSearchQuery('');
+            if (activeTab === 1) {
+              filterComponents('');
+            }
           }}
-          placeholder={t('globals.searchComponents', 'Search widgets')}
-          customClass={`tj-widgets-search-input  tj-text-xsm`}
+          placeholder={
+            activeTab === 1
+              ? t('globals.searchComponents', 'Search widgets')
+              : t('globals.searchModules', 'Search modules')
+          }
+          customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
           width={266}
         />
