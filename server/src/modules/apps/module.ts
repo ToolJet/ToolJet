@@ -19,6 +19,7 @@ import { FeatureAbilityFactory } from './ability';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
+import { UsersModule } from '@modules/users/module';
 @Module({})
 export class AppsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -44,6 +45,7 @@ export class AppsModule {
         await AppEnvironmentsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
+        await UsersModule.register(configs),
       ],
       controllers: [AppsController],
       providers: [

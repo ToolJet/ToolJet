@@ -3,7 +3,6 @@ import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { RolesModule } from '@modules/roles/module';
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
-import { ExternalApiSecurityGuard } from './guards/external-api-security.guard';
 import { RolesRepository } from '@modules/roles/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
@@ -26,13 +25,7 @@ export class ExternalApiModule {
         await OrganizationsModule.register(configs),
         await VersionModule.register(configs),
       ],
-      providers: [
-        ExternalApiUtilService,
-        ExternalApisService,
-        ExternalApiSecurityGuard,
-        FeatureAbilityFactory,
-        RolesRepository,
-      ],
+      providers: [ExternalApiUtilService, ExternalApisService, FeatureAbilityFactory, RolesRepository],
       controllers: [ExternalApisController],
       exports: [ExternalApiUtilService],
     };
