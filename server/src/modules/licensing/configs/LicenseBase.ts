@@ -287,7 +287,7 @@ export default class LicenseBase {
 
   public get serverSideGlobal(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.serverSideGlobal;
+      return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobal;
     }
     return this._isServerSideGlobal;
   }
