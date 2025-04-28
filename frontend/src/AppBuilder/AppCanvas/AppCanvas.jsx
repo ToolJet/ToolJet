@@ -139,7 +139,7 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isModuleEdito
       >
         <div
           style={{
-            minWidth: `calc((100vw - 300px) - 48px)`,
+            minWidth: isModuleMode ? '100%' : `calc((100vw - 300px) - 48px)`,
           }}
           className={`app-${appId} _tooljet-page-${getPageId()}`}
         >

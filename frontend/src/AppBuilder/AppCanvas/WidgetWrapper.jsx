@@ -28,7 +28,14 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
     );
-    let layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout], shallow);
+    let layoutData = useStore((state) => {
+      const layout = state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout];
+      // Override layout data with 0 and width to 43 for ModuleContainer in view mode to make the child components relative to the ModuleViewer
+      if (componentType === 'ModuleContainer' && mode === 'view') {
+        return { ...layout, top: 0, left: 0, width: NO_OF_GRIDS };
+      }
+      return layout;
+    }, shallow);
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
@@ -51,12 +58,11 @@ const WidgetWrapper = memo(
       return null;
     }
 
-    // Override layout data with 0 and width to 43 for ModuleContainer in view mode to make the child components relative to the ModuleViewer
-    if (componentType === 'ModuleContainer' && mode === 'view') {
-      layoutData.top = 0;
-      layoutData.left = 0;
-      layoutData.width = NO_OF_GRIDS;
-    }
+    // if (componentType === 'ModuleContainer' && mode === 'view') {
+    //   layoutData.top = 0;
+    //   layoutData.left = 0;
+    //   layoutData.width = NO_OF_GRIDS;
+    // }
 
     const width = gridWidth * layoutData?.width;
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);

@@ -122,6 +122,9 @@ const useAppData = (
 
   const setModulesIsLoading = useStore((state) => state.setModulesIsLoading, shallow);
   const setModulesList = useStore((state) => state.setModulesList, shallow);
+  const setModuleDefinition = useStore((state) => state.setModuleDefinition);
+  const getModuleDefinition = useStore((state) => state.getModuleDefinition);
+  const deleteModuleDefinition = useStore((state) => state.deleteModuleDefinition);
 
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
@@ -215,33 +218,30 @@ const useAppData = (
     }
 
     let appDataPromise;
-
-    // if (moduleMode) {
-    //   appDataPromise = appService.fetchApp(appId);
-    //   appDataPromise.then(async (result) => {
-    //     let appData = { ...result };
-    //     console.log('appData--- ', appData);
-    //     return;
-    //     // setApp({
-    //     //   appName: appData.name,
-    //     //   appId: appData.id,
-    //     //   slug: appData.slug,
-    //     // });
-    //   });
-    // }
-
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess = moduleMode
       ? false
       : (currentSession?.load_app && currentSession?.authentication_failed) ||
         (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
-    if (isPublicAccess) {
-      appDataPromise = appService.fetchAppBySlug(slug);
+
+    if (moduleMode) {
+      const moduleDefinition = getModuleDefinition(appId);
+      if (moduleDefinition) {
+        // clean up the module definition from the store
+        deleteModuleDefinition(appId);
+        appDataPromise = Promise.resolve(moduleDefinition);
+      } else {
+        appDataPromise = appService.fetchApp(appId);
+      }
     } else {
-      appDataPromise = isPreviewForVersion
-        ? appVersionService.getAppVersionData(appId, versionId)
-        : appService.fetchApp(appId);
+      if (isPublicAccess) {
+        appDataPromise = appService.fetchAppBySlug(slug);
+      } else {
+        appDataPromise = isPreviewForVersion
+          ? appVersionService.getAppVersionData(appId, versionId)
+          : appService.fetchApp(appId);
+      }
     }
 
     // const appDataPromise = appService.fetchApp(appId);
@@ -383,6 +383,9 @@ const useAppData = (
         setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
       }
       setAppHomePageId(homePageId, moduleId);
+      if (!moduleMode && appData.modules) {
+        setModuleDefinition(appData.modules);
+      }
 
       const queryData =
         isPublicAccess || (mode !== 'edit' && appData.is_public)

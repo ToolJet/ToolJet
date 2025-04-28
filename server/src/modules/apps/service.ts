@@ -214,7 +214,8 @@ export class AppsService implements IAppsService {
 
       if (type === 'module') {
         for (const app of apps) {
-          app.moduleContainer = await this.pageService.findModuleContainer(app);
+          const appVersionId = app?.appVersions[0]?.id;
+          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId);
         }
       }
 
