@@ -26,7 +26,6 @@ describe("Data source amazon athena", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.defaultWorkspaceLogin();
-    cy.intercept("POST", "/api/data_queries").as("createQuery");
   });
 
   it("Should verify elements on amazon athena connection form", () => {

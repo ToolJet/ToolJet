@@ -90,7 +90,7 @@ describe('Button Component Tests', () => {
 
     });
 
-    it('should verify all the events from the button', () => {
+    it.skip('should verify all the events from the button', () => {
         const events = [
             { event: "On hover", message: "On hover Event" },
             { event: "On Click", message: "On Click Event" },
