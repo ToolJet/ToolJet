@@ -19,8 +19,8 @@ const clientAuthenticationDropdown =
 
 describe("Data source Rest API", () => {
   beforeEach(() => {
+    cy.apiLogin();
     cy.defaultWorkspaceLogin();
-    cy.intercept("GET", "/api/v2/data_sources");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
