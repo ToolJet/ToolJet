@@ -72,7 +72,7 @@ jobs:
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -80,7 +80,7 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "PG_PASS",
@@ -96,11 +96,11 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "TOOLJET_DB_PASS",
@@ -116,7 +116,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-ce-tjdb"
+                "value": "postgres://tooljet:${{ secrets.RENDER_PG_PASS }}@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -161,18 +161,6 @@ jobs:
               {
                 "key": "SMTP_PASSWORD",
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
-              },
-              {
-                "key": "TEMPORAL_SERVER_ADDRESS",
-                "value": "https://auto-setup-1-25-1.onrender.com"
-              },
-              {
-                "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
-                "value": "tooljet-ce-pr-${{ env.PR_NUMBER }}"
-              },
-              {
-                "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
-                "value": "default"
               },
               {
                 "key": "TOOLJET_MARKETPLACE_URL",

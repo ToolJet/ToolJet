@@ -79,10 +79,10 @@ COPY ./docker/ce-entrypoint.sh ./app/server/entrypoint.sh
 
 WORKDIR /app
 
-USER postgres
-RUN service postgresql start && \
-    psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
