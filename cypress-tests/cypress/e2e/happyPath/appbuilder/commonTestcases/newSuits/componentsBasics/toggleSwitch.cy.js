@@ -137,6 +137,8 @@ describe('ToggleSwitch Component Tests', () => {
         cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
 
         cy.get(commonWidgetSelector.draggableWidget("button2")).click();
+        cy.wait(500);
+        cy.forceClickOnCanvas();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("be.visible");
 
         cy.get(commonWidgetSelector.draggableWidget("button3")).click();
