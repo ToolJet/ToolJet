@@ -3,6 +3,8 @@ set -e
 
 service postgresql start
 
+redis-server /etc/redis/redis.conf &
+
 echo "
    _____           _   ___      _
   |_   _|         | | |_  |    | |
