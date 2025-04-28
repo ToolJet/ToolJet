@@ -33,21 +33,21 @@ function Footer() {
                     <img 
                       src="/img/github-icon.svg"
                       alt="GitHub" 
-                      style={{ width: '22px', height: '22px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
+                      style={{ width: '24px', height: '24px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
                     />
                   </a>
                   <a href="https://tooljet.ai/slack" target="_blank" rel="noopener noreferrer">
                     <img
                       src="/img/slack-icon.svg"
                       alt="Slack"
-                      style={{ width: '22px', height: '22px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
+                      style={{ width: '24px', height: '24px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
                     />
                   </a>
                   <a href="https://x.com/ToolJet" target="_blank" rel="noopener noreferrer">
                     <img 
                       src="/img/x-icon.svg" 
                       alt="X" 
-                      style={{ width: '22px', height: '22px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
+                      style={{ width: '24px', height: '24px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
                     />
                   </a>
                 </div>
