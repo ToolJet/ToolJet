@@ -17,6 +17,7 @@ describe("Editor- Inspector", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-inspector-App`);
     cy.openApp("?key=value");
+    cy.viewport(1800, 1800);
   });
 
   it("should verify the values of inspector", () => {
@@ -52,7 +53,7 @@ describe("Editor- Inspector", () => {
     cy.get(multipageSelector.sidebarPageButton).click();
     addNewPage("test_page");
 
-    cy.dragAndDropWidget("Button", 500, 500);
+    cy.dragAndDropWidget("Button", 100, 100);
     selectEvent("On click", "Switch page");
     cy.get('[data-cy="switch-page-label-and-input"] > .select-search').click().type("home{enter}");
 
@@ -72,7 +73,9 @@ describe("Editor- Inspector", () => {
     cy.dragAndDropWidget("Button", 500, 300);
     selectEvent("On click", "Set variable");
     addSupportCSAData("event-key", "globalVar");
+    cy.wait(500)
     addSupportCSAData("variable", "globalVar");
+    cy.wait(500)
 
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
@@ -141,8 +144,8 @@ describe("Editor- Inspector", () => {
     cy.dragAndDropWidget("Button", 500, 300);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     openNode("components");
-    cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).realHover();
-    cy.get('[style="height: 13px; width: 13px;"] > img').click();
+    cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).eq(0).realHover();
+    cy.get('[style="height: 13px; width: 13px;"] > img').last().click();
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
     cy.apiDeleteApp();
   });
@@ -151,7 +154,7 @@ describe("Editor- Inspector", () => {
     cy.dragAndDropWidget("button", 500, 500);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     deleteComponentFromInspector("button1");
-    cy.verifyToastMessage(`[class=go3958317564]`, "Component deleted! (⌘ + Z to undo)");
+    cy.verifyToastMessage(`[class=go3958317564]`, "Component deleted! (ctrl + Z to undo)");
 
     navigateToCreateNewVersionModal((currentVersion = "v1"));
     createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));

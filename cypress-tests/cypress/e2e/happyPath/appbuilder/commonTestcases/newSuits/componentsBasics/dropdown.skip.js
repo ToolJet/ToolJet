@@ -8,21 +8,17 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
 
 
-describe('Checkbox Component Tests', () => {
+describe('Dropdown Component Tests', () => {
     const functions = [
 
         {
-            "key": "setValue",
+            "key": "clear",
             "type": "Function"
         },
         {
-            "key": "toggle",
+            "key": "selectOption",
             "type": "Function"
-        },
-        {
-            "key": "setChecked",
-            "type": "Function"
-        },
+        }, ,
         {
             "key": "setVisibility",
             "type": "Function"
@@ -34,12 +30,25 @@ describe('Checkbox Component Tests', () => {
         {
             "key": "setLoading",
             "type": "Function"
-        }
+        },
+        {
+            "key": "selectedOption",
+            "type": "Object"
+        },
+        {
+            "key": "options",
+            "type": "Array"
+        },
     ]
     const exposedValues = [{
+        "key": "searchText",
+        "type": "String",
+        "value": "\"\""
+    },
+    {
         "key": "label",
         "type": "String",
-        "value": "\"Label\""
+        "value": "\"Select\""
     },
     {
         "key": "isVisible",
@@ -57,11 +66,6 @@ describe('Checkbox Component Tests', () => {
         "value": "false"
     },
     {
-        "key": "value",
-        "type": "Boolean",
-        "value": "false"
-    },
-    {
         "key": "isLoading",
         "type": "Boolean",
         "value": "false"
@@ -71,6 +75,11 @@ describe('Checkbox Component Tests', () => {
         "type": "Boolean",
         "value": "true"
     },
+    {
+        "key": "value",
+        "type": "String",
+        "value": "2"
+    }
 
         // {
         //     "key": "id",
@@ -81,10 +90,10 @@ describe('Checkbox Component Tests', () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Checkbox-App`);
+        cy.apiCreateApp(`${fake.companyName}-Dropdown-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Checkbox", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.dragAndDropWidget("Dropdown", 50, 50);
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -92,33 +101,42 @@ describe('Checkbox Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("checkbox1", exposedValues, verifyValue);
+        openAndVerifyNode("dropdown1", exposedValues, verifyValue);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
     });
 
-    it.skip('should verify all the events from the Checkbox', () => {
+    it('should verify all the events from the dropdown', () => {
         const events = [
-            { event: "On Change", message: "On Change Event" },
+            { event: "On Focus", message: "On Focus Event" },
+            { event: "On Blur", message: "On Blur Event" },
+            { event: "On select", message: "On select Event" },
+            { event: "On search text changes", message: "On search Event" }
         ];
 
+
         addMultiEventsWithAlert(events, false);
-        const textInputSelector = '[data-cy="draggable-widget-checkbox1"]';
+        const textInputSelector = '[data-cy="draggable-widget-dropdown1"]';
 
         const verifyTextInputEvents = (selector) => {
-            cy.forceClickOnCanvas();
-            cy.get(selector).find('input').click({ force: true });
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
+            cy.get(selector).click();
+            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Focus Event', false);
 
-            // cy.get(selector).click();
-            // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false);
+            // cy.get(selector).type('r');
+            // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
+
+            // cy.get(selector).type('{enter}');
+            // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Enter Event', false);
+
+            cy.forceClickOnCanvas();
+            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Blur Event', false);
         };
 
         verifyTextInputEvents(textInputSelector);
     });
 
-    it('should verify all the CSA from Checkbox', () => {
+    it('should verify all the CSA from dropdown', () => {
         const events = [
             { event: "On Change", message: "On Change Event" },
         ];
@@ -129,14 +147,14 @@ describe('Checkbox Component Tests', () => {
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },//b3
             { event: "On click", action: "Set disable", valueToggle: "{{true}}" },//b4
             { event: "On click", action: "Set disable", valueToggle: "{{false}}" },//b5
-            { event: "On click", action: "Set checked", value: "true" },//b6
+            { event: "On click", action: "Set value", value: "true" },//b6
             { event: "On click", action: "Toggle" },//b7
             { event: "On click", action: "Set loading", valueToggle: "{{true}}" },//b8
             { event: "On click", action: "Set loading", valueToggle: "{{false}}" },//b9
 
         ];
-        addCSA("checkbox1", actions);
-        let component = "checkbox1";
+        addCSA("dropdown1", actions);
+        let component = "dropdown1";
         cy.get(commonWidgetSelector.draggableWidget("button1")).click();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
 
@@ -149,15 +167,11 @@ describe('Checkbox Component Tests', () => {
         cy.get(commonWidgetSelector.draggableWidget("button4")).click();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("have.attr", "data-disabled", 'false');
 
-        // cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-        // cy.get(commonWidgetSelector.draggableWidget(component)).should("have.text", "New Button Text");
-
         cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component)).find('input').should('be.checked')
-        // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("have.text", "New Button Text");
 
         cy.get(commonWidgetSelector.draggableWidget("button6")).click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
+        cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false);
 
         cy.get(commonWidgetSelector.draggableWidget("button7")).click();
         cy.get(commonWidgetSelector.draggableWidget(component))
@@ -166,7 +180,7 @@ describe('Checkbox Component Tests', () => {
                 cy.get(".tj-widget-loader").should("be.visible");
             });
 
-        cy.get(commonWidgetSelector.draggableWidget("button8")).click();
+        cy.get(commonWidgetSelector.draggableWidget("button9")).click();
         cy.notVisible(".tj-widget-loader");
 
     });

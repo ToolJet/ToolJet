@@ -11,8 +11,7 @@ import cx from 'classnames';
 import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from '../DropdownV2/utils';
-import useStore from '@/AppBuilder/_stores/store';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 
 export const MultiselectV2 = ({
   id,
@@ -37,6 +36,10 @@ export const MultiselectV2 = ({
     placeholder,
     loadingState: multiSelectLoadingState,
     optionsLoadingState,
+    sort,
+    showAllSelectedLabel,
+    showClearBtn,
+    showSearchInput,
   } = properties;
   const {
     selectedTextColor,
@@ -72,12 +75,9 @@ export const MultiselectV2 = ({
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
-  const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
-  const currentMode = useStore((state) => state.currentMode);
-  const isEditor = currentMode === 'edit';
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
   useEffect(() => {
@@ -100,9 +100,20 @@ export const MultiselectV2 = ({
             isDisabled: data?.disable ?? false,
           }))
       : [];
-    return _selectOptions;
+    return sortArray(_selectOptions, sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
+
+  const modifiedSelectOptions = useMemo(() => {
+    // Adding select all option dynamically to the options
+    if (showAllOption && !optionsLoadingState) {
+      return [
+        // Appended search input value so that it is always visible
+        { label: `Select all ${searchInputValue}`, value: 'multiselect-custom-menulist-select-all' },
+        ...selectOptions,
+      ];
+    } else return selectOptions;
+  }, [showAllOption, JSON.stringify(selectOptions), optionsLoadingState, searchInputValue]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
@@ -128,8 +139,28 @@ export const MultiselectV2 = ({
     }
     return false;
   }
+
   const onChangeHandler = (items, action) => {
-    setInputValue(items);
+    const SELECT_ALL = 'multiselect-custom-menulist-select-all';
+
+    if (action.option?.value === SELECT_ALL) {
+      // Case 1 - If select all is selected
+      if (action.action === 'select-option') {
+        setInputValue(modifiedSelectOptions);
+      } else {
+        setInputValue([]);
+      }
+    } else if (items?.some((item) => item.value === SELECT_ALL)) {
+      // Case 2 - If select all is not selected but selected options include select all
+      setInputValue(items.filter((item) => item.value !== SELECT_ALL));
+    } else if (selectOptions?.length === items?.length) {
+      // Case 3 - If all options are selected except select all
+      setInputValue(modifiedSelectOptions);
+    } else {
+      // Case 4 - Normal selection
+      setInputValue(items);
+    }
+
     fireEvent('onSelect');
     setUserInteracted(true);
   };
@@ -269,26 +300,34 @@ export const MultiselectV2 = ({
       fireEvent('onSearchTextChanged');
     }
   };
-  const handleClickOutside = (event) => {
+  const handleClickOutsideSelect = (event) => {
     let menu = document.getElementById(`dropdown-multiselect-widget-custom-menu-list-${id}`);
     if (
+      isMultiselectOpen &&
       multiselectRef.current &&
       !multiselectRef.current.contains(event.target) &&
       menu &&
       !menu.contains(event.target)
     ) {
-      if (isMultiselectOpen) {
-        fireEvent('onBlur');
-        setIsMultiselectOpen(false);
-        setSearchInputValue('');
-      }
+      setIsMultiselectOpen(false);
+      fireEvent('onBlur');
+      setSearchInputValue('');
     }
   };
 
-  const handleClickInEditor = (e) => {
-    if (e.target.className.includes('clear-indicator') || isMultiselectOpen) return;
-    e.stopPropagation();
-    selectRef.current?.onControlMouseDown(e);
+  const handleClickInsideSelect = () => {
+    if (isMultiSelectDisabled || isMultiSelectLoading) return;
+    if (isMultiselectOpen) {
+      setIsMultiselectOpen(false);
+      fireEvent('onBlur');
+      setSearchInputValue('');
+    } else {
+      setIsMultiselectOpen(true);
+      fireEvent('onFocus');
+      if (!showSearchInput) {
+        selectRef.current.focus();
+      }
+    }
   };
 
   const setInputValue = (values) => {
@@ -303,20 +342,11 @@ export const MultiselectV2 = ({
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside, { capture: true });
+    document.addEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside, { capture: true });
+      document.removeEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     };
-  }, [isMultiselectOpen]);
-
-  // Handle Select all logic
-  useEffect(() => {
-    if (selectOptions?.length === selected?.length) {
-      setIsSelectAllSelected(true);
-    } else {
-      setIsSelectAllSelected(false);
-    }
-  }, [selectOptions, selected]);
+  }, [isMultiselectOpen, componentName]);
 
   const customStyles = {
     container: (base) => ({
@@ -414,7 +444,7 @@ export const MultiselectV2 = ({
     }),
     menuList: (provided) => ({
       ...provided,
-      padding: '4px',
+      padding: '0 4px',
       // this is needed otherwise :active state doesn't look nice, gap is required
       display: 'flex',
       flexDirection: 'column',
@@ -425,6 +455,7 @@ export const MultiselectV2 = ({
     menu: (provided) => ({
       ...provided,
       marginTop: '5px',
+      borderRadius: '8px',
     }),
   };
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
@@ -467,17 +498,18 @@ export const MultiselectV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100" onMouseDownCapture={isEditor && handleClickInEditor}>
+        <div className="w-100 px-0 h-100" onClick={handleClickInsideSelect} onTouchEnd={handleClickInsideSelect}>
           <Select
             ref={selectRef}
             menuId={id}
             isDisabled={isMultiSelectDisabled}
             value={selected}
             onChange={onChangeHandler}
-            options={selectOptions}
+            options={modifiedSelectOptions}
             styles={customStyles}
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
+            showSearchInput={showSearchInput}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             menuIsOpen={isMultiselectOpen}
@@ -487,7 +519,7 @@ export const MultiselectV2 = ({
               ValueContainer: CustomValueContainer,
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
-              ClearIndicator: CustomClearIndicator,
+              ClearIndicator: showClearBtn ? CustomClearIndicator : () => null,
               DropdownIndicator: isMultiSelectLoading ? () => null : CustomDropdownIndicator,
             }}
             isClearable
@@ -497,21 +529,15 @@ export const MultiselectV2 = ({
             tabSelectsValue={false}
             controlShouldRenderValue={false}
             isSearchable={false}
-            onMenuOpen={() => {
-              setIsMultiselectOpen(true);
-              fireEvent('onFocus');
-            }}
-            onMenuClose={() => {
-              setIsMultiselectOpen(false);
-              fireEvent('onBlur');
-            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !isMultiselectOpen) {
+              if (e.key === 'Enter' && !isMultiselectOpen && !isMultiSelectLoading) {
                 setIsMultiselectOpen(true);
+                fireEvent('onFocus');
                 e.preventDefault();
               }
               if (e.key === 'Escape' && isMultiselectOpen) {
                 setIsMultiselectOpen(false);
+                fireEvent('onBlur');
                 e.preventDefault();
               }
             }}
@@ -519,21 +545,14 @@ export const MultiselectV2 = ({
             icon={icon}
             doShowIcon={iconVisibility}
             containerRef={valueContainerRef}
-            showAllOption={showAllOption}
-            isSelectAllSelected={isSelectAllSelected}
-            setIsSelectAllSelected={(value) => {
-              setIsSelectAllSelected(value);
-              if (!value) {
-                fireEvent('onSelect');
-              }
-            }}
-            setSelected={setInputValue}
+            showAllSelectedLabel={showAllSelectedLabel}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
-            fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
             menuPortalTarget={document.body}
+            // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)
+            minMenuHeight={300}
           />
         </div>
       </div>

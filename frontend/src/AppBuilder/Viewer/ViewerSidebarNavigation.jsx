@@ -149,7 +149,7 @@ export const ViewerSidebarNavigation = ({
               const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
               // eslint-disable-next-line import/namespace
               const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
-              return page.hidden || page.disabled ? null : (
+              return page.hidden || page.disabled || page?.restricted ? null : (
                 <FolderList
                   key={page.handle}
                   onClick={() => switchPageWrapper(page?.id)}

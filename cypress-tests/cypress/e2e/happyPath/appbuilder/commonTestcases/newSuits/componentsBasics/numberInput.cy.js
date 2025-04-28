@@ -8,7 +8,7 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
 
 
-describe('Password Input Component Tests', () => {
+describe('Number Input Component Tests', () => {
     const functions = [
 
         {
@@ -42,8 +42,8 @@ describe('Password Input Component Tests', () => {
     ]
     const exposedValues = [{
         "key": "value",
-        "type": "String",
-        "value": "\"\""
+        "type": "Number",
+        "value": "0"
     },
     {
         "key": "isMandatory",
@@ -84,10 +84,10 @@ describe('Password Input Component Tests', () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Passwordinput-App`);
+        cy.apiCreateApp(`${fake.companyName}-Numberinput-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Password Input", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.dragAndDropWidget("Number Input", 50, 50);
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -95,13 +95,13 @@ describe('Password Input Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("passwordinput1", exposedValues, verifyValue);
+        openAndVerifyNode("numberinput1", exposedValues, verifyValue);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
     });
 
-    it.skip('should verify all the events from the password input', () => {
+    it('should verify all the events from the number input', () => {
         const events = [
             { event: "On Focus", message: "On Focus Event" },
             { event: "On Blur", message: "On Blur Event" },
@@ -110,13 +110,13 @@ describe('Password Input Component Tests', () => {
         ];
 
         addMultiEventsWithAlert(events);
-        const inputSelector = '[data-cy="draggable-widget-passwordinput1"]';
+        const inputSelector = '[data-cy="draggable-widget-numberinput1"]';
 
         const inputEvents = (selector) => {
             cy.get(selector).click();
             cy.verifyToastMessage(commonSelectors.toastMessage, 'On Focus Event', false);
 
-            cy.get(selector).type('r');
+            cy.get(selector).type('1');
             cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
 
             cy.get(selector).type('{enter}');
@@ -129,7 +129,7 @@ describe('Password Input Component Tests', () => {
         inputEvents(inputSelector);
     });
 
-    it('should verify all the CSA from password input', () => {
+    it('should verify all the CSA from number input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b1
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },//b2
@@ -141,8 +141,8 @@ describe('Password Input Component Tests', () => {
             { event: "On click", action: "Set blur" },//b8
             { event: "On click", action: "Set loading", valueToggle: "{{true}}" },//b9
         ];
-        addCSA("passwordinput1", actions);
-        verifyCSA('passwordinput1');
+        addCSA("numberinput1", actions);
+        verifyCSA('numberinput1');
     });
 
     // afterEach(() => {

@@ -43,7 +43,7 @@ describe("Editor title", () => {
     cy.apiDeleteApp();
   });
   it("should verify titles", () => {
-    cy.url().should("include", "/tjs-workspace");
+    cy.url().should("include", "/tooljets-workspace");
     // cy.title().should("eq", "Dashboard | ToolJet");
     cy.title().should("eq", "ToolJet");
 

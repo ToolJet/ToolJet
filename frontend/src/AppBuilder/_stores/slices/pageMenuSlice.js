@@ -41,7 +41,7 @@ export const savePageChanges = async (appId, versionId, pageId, diff, operation 
 };
 
 const createPageUpdateCommand =
-  (updatePaths, afterUpdateFn = () => {}) =>
+  (updatePaths, afterUpdateFn = () => {}, enableSave = true) =>
   (pageId, values) => {
     return (set, get) => {
       set((state) => {
@@ -57,7 +57,7 @@ const createPageUpdateCommand =
 
       const { app, currentVersionId } = get();
       const diff = _.zipObject(updatePaths, values);
-      savePageChanges(app.appId, currentVersionId, pageId, diff);
+      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
     };
   };
 
@@ -82,6 +82,8 @@ export const createPageMenuSlice = (set, get) => {
     state.editingPage = null;
   });
 
+  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => {}, false);
+
   return {
     editingPage: null,
     showEditingPopover: false,
@@ -96,6 +98,11 @@ export const createPageMenuSlice = (set, get) => {
     isPageGroup: false,
     pageSettingSelected: false,
     pageSettings: {},
+    showPagePermissionModal: false,
+    permissionPage: null,
+    selectedUserGroups: [],
+    selectedUsers: [],
+    pagePermission: null,
 
     toggleSearch: (show) =>
       set((state) => {
@@ -117,7 +124,6 @@ export const createPageMenuSlice = (set, get) => {
 
     closePageEditPopover: () =>
       set((state) => {
-        state.editingPage = null;
         state.showEditingPopover = false;
         state.showEditPageEventsModal = false;
         state.showRenamePageHandleModal = false;
@@ -190,6 +196,7 @@ export const createPageMenuSlice = (set, get) => {
       updatePageHandle(pageId, [value])(set, get);
     },
     updatePageGroupName: (pageId, value) => updatePageGroupName(pageId, [value])(set, get),
+    updatePageWithPermissions: (pageId, value) => updatePageWithPermissions(pageId, [value])(set, get),
     // unsure about this one
     clonePage: async (pageId) => {
       const {
@@ -419,5 +426,30 @@ export const createPageMenuSlice = (set, get) => {
         console.error('Error updating page:', error);
       }
     },
+
+    setPagePermission: (pagePermission) =>
+      set((state) => {
+        state.pagePermission = pagePermission;
+      }),
+
+    togglePagePermissionModal: (show) => {
+      set((state) => {
+        state.showPagePermissionModal = show;
+      });
+    },
+
+    setSelectedUserGroups: (groups) =>
+      set((state) => {
+        state.selectedUserGroups = groups;
+      }),
+
+    setSelectedUsers: (users) =>
+      set((state) => {
+        state.selectedUsers = users;
+      }),
+    setEditingPage: (page) =>
+      set((state) => {
+        state.editingPage = page;
+      }),
   };
 };

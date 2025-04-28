@@ -8,7 +8,7 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
 
 
-describe('Number Input Component Tests', () => {
+describe('Text Input Component Tests', () => {
     const functions = [
 
         {
@@ -28,6 +28,14 @@ describe('Number Input Component Tests', () => {
             "type": "Function"
         },
         {
+            "key": "disable",
+            "type": "Function"
+        },
+        {
+            "key": "visibility",
+            "type": "Function"
+        },
+        {
             "key": "setVisibility",
             "type": "Function"
         },
@@ -42,8 +50,8 @@ describe('Number Input Component Tests', () => {
     ]
     const exposedValues = [{
         "key": "value",
-        "type": "Number",
-        "value": "0"
+        "type": "String",
+        "value": "\"\""
     },
     {
         "key": "isMandatory",
@@ -84,10 +92,10 @@ describe('Number Input Component Tests', () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Numberinput-App`);
+        cy.apiCreateApp(`${fake.companyName}-Textinput-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Number Input", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.dragAndDropWidget("Text Input", 50, 50);
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -95,13 +103,13 @@ describe('Number Input Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("numberinput1", exposedValues, verifyValue);
+        openAndVerifyNode("textinput1", exposedValues, verifyValue);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
     });
 
-    it('should verify all the events from the number input', () => {
+    it('should verify all the events from the text input', () => {
         const events = [
             { event: "On Focus", message: "On Focus Event" },
             { event: "On Blur", message: "On Blur Event" },
@@ -110,13 +118,13 @@ describe('Number Input Component Tests', () => {
         ];
 
         addMultiEventsWithAlert(events);
-        const inputSelector = '[data-cy="draggable-widget-numberinput1"]';
+        const textInputSelector = '[data-cy="draggable-widget-textinput1"]';
 
-        const inputEvents = (selector) => {
+        const verifyTextInputEvents = (selector) => {
             cy.get(selector).click();
             cy.verifyToastMessage(commonSelectors.toastMessage, 'On Focus Event', false);
 
-            cy.get(selector).type('1');
+            cy.get(selector).type('r');
             cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
 
             cy.get(selector).type('{enter}');
@@ -126,14 +134,14 @@ describe('Number Input Component Tests', () => {
             cy.verifyToastMessage(commonSelectors.toastMessage, 'On Blur Event', false);
         };
 
-        inputEvents(inputSelector);
+        verifyTextInputEvents(textInputSelector);
     });
 
-    it('should verify all the CSA from number input', () => {
+    it('should verify all the CSA from text input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b1
-            { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },//b2
-            { event: "On click", action: "Set disable", valueToggle: "{{true}}" },//b3
+            { event: "On click", action: "Visibility", valueToggle: "{{true}}" },//b2
+            { event: "On click", action: "Disable", valueToggle: "{{true}}" },//b3
             { event: "On click", action: "Set disable", valueToggle: "{{false}}" },//b4
             { event: "On click", action: "Set text", value: "1199999" },//b5
             { event: "On click", action: "Clear" },//b6
@@ -141,8 +149,8 @@ describe('Number Input Component Tests', () => {
             { event: "On click", action: "Set blur" },//b8
             { event: "On click", action: "Set loading", valueToggle: "{{true}}" },//b9
         ];
-        addCSA("numberinput1", actions);
-        verifyCSA('numberinput1');
+        addCSA("textinput1", actions);
+        verifyCSA('textinput1');
     });
 
     // afterEach(() => {
