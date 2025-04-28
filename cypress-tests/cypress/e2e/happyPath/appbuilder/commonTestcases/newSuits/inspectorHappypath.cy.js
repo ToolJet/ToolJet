@@ -73,7 +73,9 @@ describe("Editor- Inspector", () => {
     cy.dragAndDropWidget("Button", 500, 300);
     selectEvent("On click", "Set variable");
     addSupportCSAData("event-key", "globalVar");
+    cy.wait(500)
     addSupportCSAData("variable", "globalVar");
+    cy.wait(500)
 
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
@@ -152,7 +154,7 @@ describe("Editor- Inspector", () => {
     cy.dragAndDropWidget("button", 500, 500);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     deleteComponentFromInspector("button1");
-    cy.verifyToastMessage(`[class=go3958317564]`, "Component deleted! (⌘ + Z to undo)");
+    cy.verifyToastMessage(`[class=go3958317564]`, "Component deleted! (ctrl + Z to undo)");
 
     navigateToCreateNewVersionModal((currentVersion = "v1"));
     createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
