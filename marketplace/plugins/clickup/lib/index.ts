@@ -1,76 +1,71 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
-import { SourceOptions, QueryOptions } from './types';
-import got, { Headers } from 'got'; // Pasted from stripe plugin for testing purposes.
-import axios, { AxiosInstance } from 'axios';
+import { SourceOptions } from './types';
+import got, { Headers } from 'got';
 
 export default class Clickup implements QueryService {
-
-  /* 
-   * Pasted from stripe plugin for testing purposes.
-   *
   authHeader(token: string): Headers {
-    return { Authorization: `Bearer ${token}` };
-  }*/
+    return { Authorization: token };
+  }
 
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    /*
-     * Pasted from stripe plugin for testing purposes.
-     *
-    let result = {};
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     const operation = queryOptions.operation;
-
     const apiKey = sourceOptions.apiKey;
     const baseUrl = 'https://api.clickup.com/api';
     const path = queryOptions['path'];
-    let url = `${baseUrl}${path}`;
 
     const pathParams = queryOptions['params']['path'];
     const queryParams = queryOptions['params']['query'];
     const bodyParams = queryOptions['params']['request'];
 
-    // Replace path params of url
+    // Replace path params in URL
+    let modifiedPath = path;
     for (const param of Object.keys(pathParams)) {
-      url = url.replace(`{${param}}`, pathParams[param]);
+      modifiedPath = modifiedPath.replace(`{${param}}`, pathParams[param]);
     }
 
-    let response = null;
+    const url = `${baseUrl}${modifiedPath}`;
 
     try {
-      if (operation === 'get') {
+      let response;
+
+      if (operation === 'get' || operation === 'delete') {
         response = await got(url, {
           method: operation,
           headers: this.authHeader(apiKey),
           searchParams: queryParams,
         });
       } else {
+        // post, put, patch operations
         const resolvedBodyParams = this.resolveBodyparams(bodyParams);
         response = await got(url, {
           method: operation,
           headers: this.authHeader(apiKey),
-          form: resolvedBodyParams,
+          json: resolvedBodyParams,
           searchParams: queryParams,
         });
       }
 
-      result = JSON.parse(response.body);
+      return {
+        status: 'ok',
+        data: JSON.parse(response.body),
+      };
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.response.body, {});
-    }*/
-
-    return {
-      status: 'ok',
-      data: {},
-    };
+      throw new QueryError('Query could not be completed', error.response?.body || error.message, {});
+    }
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const client = await this.getConnection(sourceOptions);
+    const apiKey = sourceOptions.apiKey;
 
     try {
-      const response = await client.get('/v2/team');
+      const response = await got('https://api.clickup.com/api/v2/team', {
+        headers: this.authHeader(apiKey),
+      });
+
+      const data = JSON.parse(response.body);
 
       // Check if at least one team (workspace) is returned
-      if (response.data?.teams?.length > 0) {
+      if (data?.teams?.length > 0) {
         return {
           status: 'ok',
         };
@@ -78,30 +73,10 @@ export default class Clickup implements QueryService {
         throw new QueryError('No teams found', 'The team list is empty', {});
       }
     } catch (error) {
-      throw new QueryError(
-        'Connection could not be established',
-        error?.response?.data?.err || error?.message,
-        {}
-      );
+      throw new QueryError('Connection could not be established', error.response?.body || error.message, {});
     }
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<AxiosInstance> {
-    const { apiKey } = sourceOptions;
-
-    const client = axios.create({
-      baseURL: 'https://api.clickup.com/api',
-      headers: {
-        Authorization: apiKey,
-      }
-    });
-
-    return client;
-  }
-
-  /*
-   * Pasted from stripe plugin for testing purposes.
-   *
   private resolveBodyparams(bodyParams: object): object {
     if (typeof bodyParams === 'string') {
       return bodyParams;
@@ -120,5 +95,5 @@ export default class Clickup implements QueryService {
     }
 
     return expectedResult;
-  }*/
+  }
 }
