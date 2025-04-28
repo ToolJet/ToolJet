@@ -14,7 +14,7 @@ const data = {};
 describe("Data source SMTP", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");

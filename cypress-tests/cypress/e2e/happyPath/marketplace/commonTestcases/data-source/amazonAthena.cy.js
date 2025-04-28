@@ -25,7 +25,7 @@ data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("Data source amazon athena", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
   });
 
   it("Should verify elements on amazon athena connection form", () => {

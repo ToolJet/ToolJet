@@ -189,12 +189,15 @@ describe("Add all Data sources to app", () => {
     cy.wrap(dataSourcesMarketplace).each((dsName) => {
       cy.get(commonSelectors.globalDataSourceIcon).click();
       selectAndAddDataSource("databases", dsName, dsName);
-      cy.wait(500);
+      cy.wait(1000);
     });
 
-    cy.get(commonSelectors.dashboardIcon).click();
-    cy.get(commonSelectors.appCreateButton).click();
-    cy.get(commonSelectors.appNameInput).click().type(data.dsNamefake1);
+    cy.get(commonSelectors.dashboardIcon).should("be.visible").click();
+    cy.get(commonSelectors.appCreateButton).should("be.visible").click();
+    cy.get(commonSelectors.appNameInput)
+      .should("be.visible")
+      .click()
+      .type(data.dsNamefake1);
     cy.get(commonSelectors.createAppButton).click();
     cy.skipWalkthrough();
 
@@ -203,7 +206,7 @@ describe("Add all Data sources to app", () => {
       cy.get(".css-4e90k9").type(
         `cypress-${cyParamName(dsName)}-${cyParamName(dsName)}`
       );
-      cy.wait(500);
+      cy.wait(1000);
 
       cy.contains(
         `[id*="react-select-"]`,
@@ -212,7 +215,7 @@ describe("Add all Data sources to app", () => {
         .should("be.visible")
         .click();
 
-      cy.wait(500);
+      cy.wait(1000);
     });
   });
 });

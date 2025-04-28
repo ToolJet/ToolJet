@@ -26,7 +26,7 @@ data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("Data source HarperDB", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
   });
 
   it("Should verify elements on HarperDB connection form", () => {

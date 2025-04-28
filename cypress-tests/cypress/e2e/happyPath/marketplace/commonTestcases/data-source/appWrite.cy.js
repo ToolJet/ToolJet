@@ -25,7 +25,7 @@ data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("Data source AppWrite", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
   });
 
   it("Should verify elements on appwrite connection form", () => {

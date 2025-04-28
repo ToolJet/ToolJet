@@ -18,7 +18,7 @@ const data = {};
 describe("Data source Elasticsearch", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
     data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 

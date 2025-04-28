@@ -25,7 +25,7 @@ data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("Data source Airtable", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
   });
 
   it("Should verify elements on connection AirTable form", () => {
