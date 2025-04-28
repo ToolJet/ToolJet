@@ -110,7 +110,7 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
-          setSelectedQuery(data.id, data);
+          setSelectedQuery(data.id, moduleId);
           if (shouldRunQuery) setQueryToBeRun(data);
 
           /** Checks if there is an API call cached. If yes execute it */
@@ -275,7 +275,7 @@ export const createDataQuerySlice = (set, get) => ({
               ...state.dataQuery.queries.modules[moduleId],
             ];
           });
-          setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
+          setSelectedQuery(data.id, moduleId);
 
           get().addNewQueryMapping(data.id, data.name, moduleId);
           //! we need default value in store so that query can be resolved if referenced from other entity
