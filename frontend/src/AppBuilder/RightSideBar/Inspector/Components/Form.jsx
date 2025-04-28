@@ -124,24 +124,6 @@ export const baseComponentProperties = (
     });
   }
 
-  items.push({
-    title: 'Additional actions',
-    isOpen: true,
-    children: additionalActions?.map((property) =>
-      renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode
-      )
-    ),
-  });
-
   if (events.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.events', 'Events')}`,
@@ -163,6 +145,24 @@ export const baseComponentProperties = (
     });
   }
 
+  items.push({
+    title: 'Additional actions',
+    isOpen: true,
+    children: additionalActions?.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode
+      )
+    ),
+  });
+
   if (validations.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.validation', 'Validation')}`,
@@ -181,25 +181,6 @@ export const baseComponentProperties = (
       ),
     });
   }
-
-  items.push({
-    title: `${i18next.t('widget.common.general', 'General')}`,
-    isOpen: true,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          layoutPropertyChanged,
-          dataQueries,
-          'tooltip',
-          'general',
-          currentState,
-          allComponents
-        )}
-      </>
-    ),
-  });
 
   items.push({
     title: `${i18next.t('widget.common.devices', 'Devices')}`,

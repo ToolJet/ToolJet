@@ -18,7 +18,7 @@ import {
   VersionReleaseDto,
 } from './dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { APP_TYPES, FEATURE_KEY } from './constants';
+import { FEATURE_KEY } from './constants';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
