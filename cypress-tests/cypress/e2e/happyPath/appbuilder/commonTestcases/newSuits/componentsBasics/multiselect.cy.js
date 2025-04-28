@@ -8,7 +8,7 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
 
 
-describe('Dropdown Component Tests', () => {
+describe('Multiselect Component Tests', () => {
     const functions = [
 
         {
@@ -18,7 +18,10 @@ describe('Dropdown Component Tests', () => {
         {
             "key": "selectOption",
             "type": "Function"
-        }, ,
+        }, {
+            "key": "deselectOptions",
+            "type": "Function"
+        },
         {
             "key": "setVisibility",
             "type": "Function"
@@ -90,10 +93,10 @@ describe('Dropdown Component Tests', () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Dropdown-App`);
+        cy.apiCreateApp(`${fake.companyName}-Multiselect-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Dropdown", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.dragAndDropWidget("Multiselect", 50, 50);
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -101,13 +104,13 @@ describe('Dropdown Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("dropdown1", exposedValues, verifyValue);
+        openAndVerifyNode("multiselect1", exposedValues, verifyValue);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
     });
 
-    it('should verify all the events from the dropdown', () => {
+    it('should verify all the events from the Multiselect', () => {
         const events = [
             { event: "On Focus", message: "On Focus Event" },
             { event: "On Blur", message: "On Blur Event" },
@@ -136,7 +139,7 @@ describe('Dropdown Component Tests', () => {
         verifyTextInputEvents(textInputSelector);
     });
 
-    it('should verify all the CSA from dropdown', () => {
+    it.only('should verify all the CSA from multiselect', () => {
         const events = [
             { event: "On Change", message: "On Change Event" },
         ];
@@ -153,8 +156,8 @@ describe('Dropdown Component Tests', () => {
             { event: "On click", action: "Set loading", valueToggle: "{{false}}" },//b9
 
         ];
-        addCSA("dropdown1", actions);
-        let component = "dropdown1";
+        addCSA("multiselect1", actions);
+        let component = "multiselect1";
         cy.get(commonWidgetSelector.draggableWidget("button1")).click();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
 

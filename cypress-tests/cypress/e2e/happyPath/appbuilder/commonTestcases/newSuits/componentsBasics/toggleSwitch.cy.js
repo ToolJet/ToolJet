@@ -8,20 +8,17 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
 
 
-describe('Multiselect Component Tests', () => {
+describe('ToggleSwitch Component Tests', () => {
     const functions = [
 
         {
-            "key": "clear",
+            "key": "setValue",
             "type": "Function"
         },
         {
-            "key": "selectOption",
+            "key": "toggle",
             "type": "Function"
-        }, {
-            "key": "deselectOptions",
-            "type": "Function"
-        },
+        }, ,
         {
             "key": "setVisibility",
             "type": "Function"
@@ -33,25 +30,12 @@ describe('Multiselect Component Tests', () => {
         {
             "key": "setLoading",
             "type": "Function"
-        },
-        {
-            "key": "selectedOption",
-            "type": "Object"
-        },
-        {
-            "key": "options",
-            "type": "Array"
-        },
+        }
     ]
     const exposedValues = [{
-        "key": "searchText",
-        "type": "String",
-        "value": "\"\""
-    },
-    {
         "key": "label",
         "type": "String",
-        "value": "\"Select\""
+        "value": "\"Label\""
     },
     {
         "key": "isVisible",
@@ -69,6 +53,11 @@ describe('Multiselect Component Tests', () => {
         "value": "false"
     },
     {
+        "key": "value",
+        "type": "Boolean",
+        "value": "false"
+    },
+    {
         "key": "isLoading",
         "type": "Boolean",
         "value": "false"
@@ -78,11 +67,6 @@ describe('Multiselect Component Tests', () => {
         "type": "Boolean",
         "value": "true"
     },
-    {
-        "key": "value",
-        "type": "String",
-        "value": "2"
-    }
 
         // {
         //     "key": "id",
@@ -93,10 +77,10 @@ describe('Multiselect Component Tests', () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Multiselect-App`);
+        cy.apiCreateApp(`${fake.companyName}-Toggle-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Multiselect", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.dragAndDropWidget("Toggle Switch", 50, 50);
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -104,42 +88,33 @@ describe('Multiselect Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("multiselect1", exposedValues, verifyValue);
+        openAndVerifyNode("toggleswitch1", exposedValues, verifyValue);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
     });
 
-    it('should verify all the events from the Multiselect', () => {
+    it('should verify all the events from the Toggle', () => {
         const events = [
-            { event: "On Focus", message: "On Focus Event" },
-            { event: "On Blur", message: "On Blur Event" },
-            { event: "On select", message: "On select Event" },
-            { event: "On search text changes", message: "On search Event" }
+            { event: "On Change", message: "On Change Event" },
         ];
 
-
         addMultiEventsWithAlert(events, false);
-        const textInputSelector = '[data-cy="draggable-widget-dropdown1"]';
+        const textInputSelector = '[data-cy="draggable-widget-toggleswitch1"]';
 
         const verifyTextInputEvents = (selector) => {
-            cy.get(selector).click();
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Focus Event', false);
-
-            // cy.get(selector).type('r');
-            // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
-
-            // cy.get(selector).type('{enter}');
-            // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Enter Event', false);
-
             cy.forceClickOnCanvas();
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Blur Event', false);
+            cy.get(selector).find('input').click({ force: true });
+            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
+
+            // cy.get(selector).click();
+            // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false);
         };
 
         verifyTextInputEvents(textInputSelector);
     });
 
-    it.only('should verify all the CSA from multiselect', () => {
+    it.only('should verify all the CSA from toggle', () => {
         const events = [
             { event: "On Change", message: "On Change Event" },
         ];
@@ -156,12 +131,14 @@ describe('Multiselect Component Tests', () => {
             { event: "On click", action: "Set loading", valueToggle: "{{false}}" },//b9
 
         ];
-        addCSA("multiselect1", actions);
-        let component = "multiselect1";
+        addCSA("toggleswitch1", actions);
+        let component = "toggleswitch1";
         cy.get(commonWidgetSelector.draggableWidget("button1")).click();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
 
         cy.get(commonWidgetSelector.draggableWidget("button2")).click();
+        cy.wait(500);
+        cy.forceClickOnCanvas();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("be.visible");
 
         cy.get(commonWidgetSelector.draggableWidget("button3")).click();

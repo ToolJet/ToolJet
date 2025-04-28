@@ -8,7 +8,7 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
 
 
-describe('ToggleSwitch Component Tests', () => {
+describe('Checkbox Component Tests', () => {
     const functions = [
 
         {
@@ -18,7 +18,11 @@ describe('ToggleSwitch Component Tests', () => {
         {
             "key": "toggle",
             "type": "Function"
-        }, ,
+        },
+        {
+            "key": "setChecked",
+            "type": "Function"
+        },
         {
             "key": "setVisibility",
             "type": "Function"
@@ -77,10 +81,10 @@ describe('ToggleSwitch Component Tests', () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Toggle-App`);
+        cy.apiCreateApp(`${fake.companyName}-Checkbox-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Toggle Switch", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        cy.dragAndDropWidget("Checkbox", 50, 50);
+        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -88,19 +92,19 @@ describe('ToggleSwitch Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("toggleswitch1", exposedValues, verifyValue);
+        openAndVerifyNode("checkbox1", exposedValues, verifyValue);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
     });
 
-    it('should verify all the events from the Toggle', () => {
+    it('should verify all the events from the Checkbox', () => {
         const events = [
             { event: "On Change", message: "On Change Event" },
         ];
 
         addMultiEventsWithAlert(events, false);
-        const textInputSelector = '[data-cy="draggable-widget-toggleswitch1"]';
+        const textInputSelector = '[data-cy="draggable-widget-checkbox1"]';
 
         const verifyTextInputEvents = (selector) => {
             cy.forceClickOnCanvas();
@@ -114,7 +118,7 @@ describe('ToggleSwitch Component Tests', () => {
         verifyTextInputEvents(textInputSelector);
     });
 
-    it.only('should verify all the CSA from toggle', () => {
+    it('should verify all the CSA from Checkbox', () => {
         const events = [
             { event: "On Change", message: "On Change Event" },
         ];
@@ -125,14 +129,14 @@ describe('ToggleSwitch Component Tests', () => {
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },//b3
             { event: "On click", action: "Set disable", valueToggle: "{{true}}" },//b4
             { event: "On click", action: "Set disable", valueToggle: "{{false}}" },//b5
-            { event: "On click", action: "Set value", value: "true" },//b6
+            { event: "On click", action: "Set checked", value: "true" },//b6
             { event: "On click", action: "Toggle" },//b7
             { event: "On click", action: "Set loading", valueToggle: "{{true}}" },//b8
             { event: "On click", action: "Set loading", valueToggle: "{{false}}" },//b9
 
         ];
-        addCSA("toggleswitch1", actions);
-        let component = "toggleswitch1";
+        addCSA("checkbox1", actions);
+        let component = "checkbox1";
         cy.get(commonWidgetSelector.draggableWidget("button1")).click();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
 
@@ -145,11 +149,15 @@ describe('ToggleSwitch Component Tests', () => {
         cy.get(commonWidgetSelector.draggableWidget("button4")).click();
         cy.get(commonWidgetSelector.draggableWidget(component)).should("have.attr", "data-disabled", 'false');
 
+        // cy.get(commonWidgetSelector.draggableWidget("button5")).click();
+        // cy.get(commonWidgetSelector.draggableWidget(component)).should("have.text", "New Button Text");
+
         cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component)).should("have.text", "New Button Text");
+        cy.get(commonWidgetSelector.draggableWidget(component)).find('input').should('be.checked')
+        // cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
 
         cy.get(commonWidgetSelector.draggableWidget("button6")).click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false);
+        cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
 
         cy.get(commonWidgetSelector.draggableWidget("button7")).click();
         cy.get(commonWidgetSelector.draggableWidget(component))
@@ -158,7 +166,7 @@ describe('ToggleSwitch Component Tests', () => {
                 cy.get(".tj-widget-loader").should("be.visible");
             });
 
-        cy.get(commonWidgetSelector.draggableWidget("button9")).click();
+        cy.get(commonWidgetSelector.draggableWidget("button8")).click();
         cy.notVisible(".tj-widget-loader");
 
     });
