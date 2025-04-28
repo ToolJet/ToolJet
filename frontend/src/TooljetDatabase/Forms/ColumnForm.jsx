@@ -469,7 +469,7 @@ const ColumnForm = ({
               )}
             </div>
           </ToolTip>
-          {isNotNull === true && dataType?.value !== 'serial' && rows?.length > 0 && defaultValue?.length <= 0 ? (
+          {isNotNull === true && dataType?.value !== 'serial' && defaultValue?.length <= 0 ? (
             <span className="form-error-message">
               Default value is required to populate this field in existing rows as NOT NULL constraint is added
             </span>
