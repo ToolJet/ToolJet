@@ -100,6 +100,7 @@ export class AppsUtilService implements IAppsUtilService {
             properties: {
               inputItems: { value: [] },
               outputItems: { value: [] },
+              visibility: { value: '{{true}}' },
             },
             styles: {
               backgroundColor: { value: '#fff' },
