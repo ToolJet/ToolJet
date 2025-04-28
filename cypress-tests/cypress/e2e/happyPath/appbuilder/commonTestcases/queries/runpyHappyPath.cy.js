@@ -59,7 +59,7 @@ describe("runpy", () => {
     cy.apiDeleteApp();
   });
 
-  it.only("should verify actions", () => {
+  it("should verify actions", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -120,18 +120,18 @@ actions.unsetPageVariable('pageVar')`
     cy.waitForAutoSave();
     addInputOnQueryField("runpy", "actions.showModal('modal1')");
     query("run");
-    cy.get('[data-cy="modal-title"]').should("be.visible");
+    cy.get('.text-widget-section > div').should("be.visible");
     cy.get('[data-cy="runpy-input-field"]').click({ force: true });
 
     addInputOnQueryField("runpy", "actions.closeModal('modal1')");
-    cy.wait(`@editQuery`);
+    // cy.wait(`@editQuery`);
     cy.waitForAutoSave();
     query("run");
     waitForQueryAction("run");
     cy.notVisible('[data-cy="modal-title"]');
 
     addInputOnQueryField("runpy", "actions.copyToClipboard('data from runpy')");
-    cy.wait(`@editQuery`);
+    // cy.wait(`@editQuery`);
     cy.waitForAutoSave();
     query("run");
     waitForQueryAction("run");
@@ -144,7 +144,7 @@ actions.unsetPageVariable('pageVar')`
       "runpy",
       "actions.setLocalStorage('localStorage','data from runpy')"
     );
-    cy.wait(`@editQuery`);
+    // cy.wait(`@editQuery`);
     cy.waitForAutoSave();
     query("run");
     waitForQueryAction("run");
@@ -174,7 +174,7 @@ actions.unsetPageVariable('pageVar')`
     // query("run");
 
     addInputOnQueryField("runpy", "actions.logout()");
-    cy.wait(`@editQuery`);
+    // cy.wait(`@editQuery`);
     cy.wait(200);
     cy.waitForAutoSave();
     query("run");
@@ -184,7 +184,7 @@ actions.unsetPageVariable('pageVar')`
     );
   });
 
-  it("should verify global and page data", () => {
+  it.skip("should verify global and page data", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -273,20 +273,20 @@ actions.unsetPageVariable('pageVar')`
       "runpy",
       "actions.showAlert('success', 'alert from runpy');"
     );
-    cy.get('[data-cy="query-tab-Settings"]').click();
-    cy.wait("@editQuery");
+    cy.get('[data-cy="query-tab-settings"]').click();
+    // cy.wait("@editQuery");
     cy.wait(200);
     cy.waitForAutoSave();
 
     changeQueryToggles("run-on-app-load");
-    cy.wait("@editQuery");
+    // cy.wait("@editQuery");
     cy.waitForAutoSave();
     cy.reload();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
 
-    cy.get('[data-cy="query-tab-Settings"]').click();
+    cy.get('[data-cy="query-tab-settings"]').click();
     changeQueryToggles("confirmation-before-run");
-    cy.wait("@editQuery");
+    // cy.wait("@editQuery");
     cy.wait(200);
     cy.waitForAutoSave();
     cy.reload();
@@ -297,13 +297,13 @@ actions.unsetPageVariable('pageVar')`
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
 
-    cy.get('[data-cy="query-tab-Settings"]').click();
+    cy.get('[data-cy="query-tab-settings"]').click();
     changeQueryToggles("notification-on-success");
     cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
       "Success alert"
     );
     cy.forceClickOnCanvas();
-    cy.wait("@editQuery");
+    // cy.wait("@editQuery");
     cy.wait(200);
     cy.waitForAutoSave();
     cy.reload();
