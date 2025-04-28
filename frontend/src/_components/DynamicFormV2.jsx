@@ -30,6 +30,8 @@ const DynamicFormV2 = ({
   validationMessages,
   setValidationMessages,
   clearValidationMessages,
+  showValidationErrors,
+  clearValidationErrorBanner,
 }) => {
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
@@ -89,18 +91,48 @@ const DynamicFormV2 = ({
 
   React.useEffect(() => {
     if (!hasUserInteracted) return;
-    const { valid, errors } = dsm.validateData(options);
 
-    if (valid) {
-      clearValidationMessages();
-    } else {
-      setValidationMessages(errors, schema);
-      const requiredFields = errors
-        .filter((error) => error.keyword === 'required')
-        .map((error) => error.params.missingProperty);
-      setConditionallyRequiredProperties(requiredFields);
+    const timeout = setTimeout(() => {
+      validateOptions();
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [options, hasUserInteracted, validateOptions]);
+
+  const validateOptions = React.useCallback(async () => {
+    try {
+      const { valid, errors } = await dsm.validateData(options);
+
+      if (valid) {
+        clearValidationMessages();
+        clearValidationErrorBanner();
+      } else {
+        setValidationMessages(errors, schema);
+        const requiredFields = errors
+          .filter((error) => error.keyword === 'required')
+          .map((error) => error.params.missingProperty);
+        setConditionallyRequiredProperties(requiredFields);
+      }
+    } catch (error) {
+      console.error('❌ Validation error:', error);
     }
-  }, [options]);
+  }, [
+    dsm,
+    options,
+    clearValidationMessages,
+    clearValidationErrorBanner,
+    setValidationMessages,
+    schema,
+    setConditionallyRequiredProperties,
+  ]);
+
+  React.useEffect(() => {
+    if (showValidationErrors) {
+      setHasUserInteracted(true);
+      const allFieldKeys = Object.keys(options);
+      setInteractedFields(new Set(allFieldKeys));
+    }
+  }, [showValidationErrors, options]);
 
   React.useEffect(() => {
     const prevDataSourceId = prevDataSourceIdRef.current;
@@ -210,8 +242,10 @@ const DynamicFormV2 = ({
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
+    const skipValidation =
+      (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
 
-    const handleOptionChange = (key, value, flag) => {
+    const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
         setHasUserInteracted(true);
       }
@@ -262,14 +296,13 @@ const DynamicFormV2 = ({
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
-          isValidatedMessages:
-            !hasUserInteracted || !interactedFields.has(key)
-              ? { valid: null, message: '' } // skip validation for initial render and untouched elements
-              : validationMessages[key]
-              ? { valid: false, message: validationMessages[key] }
-              : isRequired && !isEncrypted
-              ? { valid: true, message: '' }
-              : { valid: null, message: '' }, // handle optional && encrypted fields
+          isValidatedMessages: skipValidation
+            ? { valid: null, message: '' } // skip validation for initial render and untouched elements
+            : validationMessages[key]
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' }, // handle optional && encrypted fields
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       }
@@ -285,7 +318,7 @@ const DynamicFormV2 = ({
           options: isRenderedAsQueryEditor
             ? options?.[key] ?? schema?.defaults?.[key]
             : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
-          optionchanged,
+          handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
@@ -298,7 +331,7 @@ const DynamicFormV2 = ({
         return {
           defaultChecked: currentValue,
           checked: currentValue,
-          onChange: (e) => optionchanged(key, e.target.checked),
+          onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
