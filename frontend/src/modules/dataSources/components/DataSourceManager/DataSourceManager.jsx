@@ -365,7 +365,7 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
-  setValidationMessages = (errors, schema) => {
+  setValidationMessages = (errors, schema, interactedFields) => {
     const errorMap = errors.reduce((acc, error) => {
       // Get property name from either required error or dataPath
       const property =
@@ -382,8 +382,15 @@ class DataSourceManagerComponent extends React.Component {
       return acc;
     }, {});
     this.setState({ validationMessages: errorMap });
-    const validationMessageArray = Object.values(this.state.validationMessages);
-    this.setState({ validationError: validationMessageArray });
+    const filteredValidationBanner = interactedFields
+      ? Object.keys(this.state.validationMessages)
+          .filter((key) => interactedFields.has(key))
+          .reduce((result, key) => {
+            result.push(this.state.validationMessages[key]);
+            return result;
+          }, [])
+      : Object.values(this.state.validationMessages);
+    this.setState({ validationError: filteredValidationBanner });
   };
 
   renderSourceComponent = (kind, isPlugin = false) => {

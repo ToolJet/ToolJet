@@ -103,28 +103,77 @@ const DynamicFormV2 = ({
     try {
       const { valid, errors } = await dsm.validateData(options);
 
+      const conditionallyRequiredFields = processAllOfConditions(schema, options);
+      setConditionallyRequiredProperties(conditionallyRequiredFields);
+
       if (valid) {
         clearValidationMessages();
         clearValidationErrorBanner();
       } else {
-        setValidationMessages(errors, schema);
-        const requiredFields = errors
-          .filter((error) => error.keyword === 'required')
-          .map((error) => error.params.missingProperty);
-        setConditionallyRequiredProperties(requiredFields);
+        setValidationMessages(errors, schema, interactedFields);
       }
     } catch (error) {
-      console.error('❌ Validation error:', error);
+      console.error('Validation error:', error);
     }
   }, [
     dsm,
     options,
+    processAllOfConditions,
+    schema,
     clearValidationMessages,
     clearValidationErrorBanner,
     setValidationMessages,
-    schema,
-    setConditionallyRequiredProperties,
+    interactedFields,
   ]);
+
+  const processAllOfConditions = React.useCallback((schema, options, path = []) => {
+    let requiredFields = [];
+
+    if (schema.allOf) {
+      schema.allOf.forEach((condition) => {
+        if (condition.if && condition.then) {
+          const conditionMatches = Object.entries(condition.if.properties || {}).every(([propName, propCondition]) => {
+            const propertyPath = [...path, propName];
+
+            let currentValue = options;
+            for (const segment of propertyPath) {
+              if (!currentValue || typeof currentValue !== 'object') {
+                return false;
+              }
+              currentValue = currentValue[segment]?.value;
+            }
+
+            return propCondition.const === currentValue;
+          });
+
+          if (conditionMatches) {
+            if (condition.then.required) {
+              requiredFields = [...requiredFields, ...condition.then.required];
+            }
+
+            if (condition.then.allOf) {
+              const nestedRequired = processAllOfConditions({ allOf: condition.then.allOf }, options, path);
+              requiredFields = [...requiredFields, ...nestedRequired];
+            }
+
+            if (condition.then.properties) {
+              Object.entries(condition.then.properties).forEach(([propName, propSchema]) => {
+                if (propSchema.allOf) {
+                  const nestedRequired = processAllOfConditions({ allOf: propSchema.allOf }, options, [
+                    ...path,
+                    propName,
+                  ]);
+                  requiredFields = [...requiredFields, ...nestedRequired];
+                }
+              });
+            }
+          }
+        }
+      });
+    }
+
+    return requiredFields;
+  }, []);
 
   React.useEffect(() => {
     if (showValidationErrors) {
@@ -221,6 +270,7 @@ const DynamicFormV2 = ({
         return Input;
       case 'password-v3':
       case 'text-v3':
+      case 'password-v3-textarea':
         return InputV3;
       case 'textarea':
         return Textarea;
@@ -277,6 +327,7 @@ const DynamicFormV2 = ({
         };
       }
       case 'password-v3':
+      case 'password-v3-textarea':
       case 'text-v3': {
         return {
           key,
@@ -338,7 +389,7 @@ const DynamicFormV2 = ({
         return {
           options: list,
           value: options?.[key]?.value || options?.[key],
-          onChange: (value) => optionchanged(key, value),
+          onChange: (value) => handleOptionChange(key, value, true),
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
         };
@@ -437,6 +488,7 @@ const DynamicFormV2 = ({
                   {label &&
                     widget !== 'text-v3' &&
                     widget !== 'password-v3' &&
+                    widget !== 'password-v3-textarea' &&
                     renderLabel(label, uiProperties[key].tooltip)}
                 </div>
               )}
