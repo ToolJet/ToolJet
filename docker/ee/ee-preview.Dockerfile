@@ -109,15 +109,38 @@ COPY  ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 WORKDIR /app
 
 # ENV defaults
-ENV TOOLJET_HOST=http://localhost:80 \
-    PGRST_HOST=http://localhost:3000 \
-    PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
-    TOOLJET_DB=tooljet_db \
-    ENABLE_TOOLJET_DB=true \
+USER root
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://deb.debian.org/debian"
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+USER postgres
+RUN service postgresql start && \
+    psql -c "create role tooljet with login superuser password 'postgres';"
+USER root
+
+# ENV defaults
+ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
+    NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
-    ORM_LOGGING=all \
+    PG_DB=tooljet_production \
+    PG_USER=tooljet \
+    PG_PASS=postgres \
+    PG_HOST=localhost \
+    ENABLE_TOOLJET_DB=true \
+    TOOLJET_DB_HOST=localhost \
+    TOOLJET_DB_USER=tooljet \
+    TOOLJET_DB_PASS=postgres \
+    TOOLJET_DB=tooljet_db \
+    PGRST_HOST=http://localhost:3000 \
+    PGRST_DB_URI=postgres://tooljet:postgres@localhost/tooljet_db \
+    PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+    PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+    ORM_LOGGING=true \
+    DEPLOYMENT_PLATFORM=docker:local \
+    REDIS_PASS= \
     TERM=xterm
 
 CMD ["/usr/bin/supervisord"]
