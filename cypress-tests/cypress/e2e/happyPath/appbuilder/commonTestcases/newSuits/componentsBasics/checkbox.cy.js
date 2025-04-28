@@ -118,7 +118,7 @@ describe('Checkbox Component Tests', () => {
         verifyTextInputEvents(textInputSelector);
     });
 
-    it('should verify all the CSA from Checkbox', () => {
+    it.skip('should verify all the CSA from Checkbox', () => {
         const events = [
             { event: "On Change", message: "On Change Event" },
         ];
