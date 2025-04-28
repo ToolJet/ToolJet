@@ -104,8 +104,6 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-COPY  ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
-
 WORKDIR /app
 
 # ENV defaults

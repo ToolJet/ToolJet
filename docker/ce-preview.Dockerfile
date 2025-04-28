@@ -75,8 +75,6 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-COPY ./docker/ce-preview.sh ./app/server/entrypoint.sh
-
 WORKDIR /app
 
 USER root
