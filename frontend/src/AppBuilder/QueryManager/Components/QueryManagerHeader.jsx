@@ -110,6 +110,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
                 (tab.condition === undefined || tab.condition) && (
                   <p
                     key={tab.id}
+                    data-cy={`query-tab-${tab.label.toLowerCase()}`}
                     className="m-0 d-flex align-items-center h-100"
                     onClick={() => setActiveTab(tab.id)}
                     style={{
@@ -151,8 +152,8 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
   const inputRef = useRef();
 
@@ -274,8 +275,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();

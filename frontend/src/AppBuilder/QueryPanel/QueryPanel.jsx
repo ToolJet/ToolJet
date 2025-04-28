@@ -170,6 +170,7 @@ export const QueryPanel = ({ darkMode }) => {
             }}
           >
             <button
+              data-cy="query-manager-toggle-button"
               className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button gap-1"
               onClick={toggleQueryEditor}
             >

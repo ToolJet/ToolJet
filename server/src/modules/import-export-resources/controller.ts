@@ -3,7 +3,6 @@ import { User } from '@modules/app/decorators/user.decorator';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
-import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { isVersionGreaterThan } from 'src/helpers/utils.helper';
 import { APP_ERROR_TYPE } from 'src/helpers/error_type.constant';
 import { ImportExportResourcesService } from './service';
@@ -14,6 +13,7 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/guard';
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { FEATURE_KEY } from './constants';
+import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 
 @Controller({
   path: 'resources',

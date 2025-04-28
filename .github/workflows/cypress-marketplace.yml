@@ -67,8 +67,8 @@ jobs:
         with:
           context: .
           file: docker/ce-production.Dockerfile
-          push: false
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -80,8 +80,8 @@ jobs:
         with:
           context: .
           file: docker/ee/ee-production.Dockerfile
-          push: false
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -116,10 +116,16 @@ jobs:
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-      - name: Update docker-compose file
+      - name: Update docker-compose file for CE
         run: |
           # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+
+      - name: Update docker-compose file for CE
+        if: matrix.edition == 'ee'
+        run: |
+          # Update docker-compose.yaml with the new image
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
 
       - name: Install Docker Compose
         run: |
@@ -128,6 +134,9 @@ jobs:
 
       - name: Run docker-compose file
         run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
 
       - name: Checking containers
         run: docker ps -a
@@ -142,8 +151,18 @@ jobs:
             sleep 5
           done'
 
-      - name: Seeding
-        run: docker exec Tooljet-app npm run db:seed:prod
+      - name: Seeding (Setup Super Admin)
+        run: |
+          curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "companyName": "ToolJet",
+              "name": "The Developer",
+              "workspaceName": "Tooljet'\''s workspace",
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
 
       - name: Create Cypress environment file
         id: create-json

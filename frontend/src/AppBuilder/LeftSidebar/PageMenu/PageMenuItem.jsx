@@ -183,7 +183,7 @@ export const PageMenuItem = withRouter(
             ) : (
               <>
                 {' '}
-                <div className="left">
+                <div className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
                   {icon()}
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
                     {page.name}

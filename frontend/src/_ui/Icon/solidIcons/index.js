@@ -232,6 +232,8 @@ import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
 import Code from './Code.jsx';
+import WorkflowV3 from './WorkflowV3.jsx';
+import WorkspaceV3 from './WorkspaceV3.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -579,6 +581,10 @@ const Icon = (props) => {
       return <Warning {...props} />;
     case 'warning-user-notfound':
       return <WarningUserNotFound {...props} />;
+    case 'workflowv3':
+      return <WorkflowV3 {...props} />;
+    case 'workspacev3':
+      return <WorkspaceV3 {...props} />;
     case 'workspaceconstants':
       return <WorkspaceConstants {...props} />;
     case 'zoomin':
