@@ -168,7 +168,11 @@ jobs:
               }
             ],
             "serviceDetails": {
-              "disk": null,
+              "disk": {
+                "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-disk",
+                "mountPath": "/data",
+                "sizeGB": 10
+              },
               "env": "docker",
               "envSpecificDetails": {
                 "dockerCommand": "",
