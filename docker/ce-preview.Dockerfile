@@ -108,10 +108,6 @@ ENV TOOLJET_HOST=http://localhost \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \
-    REDIS_HOST=localhost \
-    REDIS_PORT=6379 \
-    REDIS_USER=default \
-    REDIS_PASS= \
     TERM=xterm
 
 CMD ["/usr/bin/supervisord"]
