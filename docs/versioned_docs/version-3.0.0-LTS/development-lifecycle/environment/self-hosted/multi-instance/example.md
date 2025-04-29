@@ -18,7 +18,7 @@ The company wants to create an **Inventory Management System**. A developer star
 
 -   Developers then build the app in the App Builder by dragging and dropping components and adding relevant queries. Once the changes are complete, they can use the GitSync button in the top bar to push a commit to the Git repository.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/appbuilder-1.png" alt="self-hosted-env-concept" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-m" src="/img/development-lifecycle/environments/example-1.png" alt="self-hosted-env-concept" />
 
 
 -   Once committed, the updates appear in the Git repository, showing the commit message, author, and timestamp.
@@ -38,7 +38,7 @@ After configuring GitSync for the staging instance with the same Git repository 
 -   Choose the app from the dropdown list. The app name and last commit details appear.
     
 -   Click **Import App** to import it into the staging instance.
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-m" src="/img/development-lifecycle/environments/import-2.png" alt="self-hosted-env-concept" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-m" src="/img/development-lifecycle/environments/example-2.png" alt="self-hosted-env-concept" />
 
 - Once the apps are imported into the staging instance, all data sources are imported as well. However, for security reasons, passwords and secrets in the data source configuration are not included. 
 - To ensure the app functions properly in the staging instance and can be tested with staging data, users must re-enter these details in the configuration.
@@ -66,7 +66,7 @@ Testers in the **staging instance** update the app by:
 -   Clicking the **GitSync** button in the top bar.
     
 -   A modal appears with an option to **Check for Updates**.
-<img  className="screenshot-full img-m" src="/img/development-lifecycle/environments/check-updates.png" alt="self-hosted-env-concept" />
+<img  className="screenshot-full img-m" src="/img/development-lifecycle/environments/example-3.png" alt="self-hosted-env-concept" />
     
 -   Clicking **Check for Updates** fetches the latest changes from the Git repository.
     
@@ -74,7 +74,7 @@ Testers in the **staging instance** update the app by:
     
 -   Clicking **Pull Changes** syncs the latest updates into the staging instance.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/environments/update-app.png" alt="self-hosted-env-concept" />
+<img className="screenshot-full img-m" src="/img/development-lifecycle/environments/example-4.png" alt="self-hosted-env-concept" />
 
 ### Deploying to Production
 

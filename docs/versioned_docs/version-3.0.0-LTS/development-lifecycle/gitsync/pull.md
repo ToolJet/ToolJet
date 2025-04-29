@@ -9,26 +9,39 @@ Once the GitSync is configured and the changes are committed to the git reposito
 
 To restore an application from a git repository, click on the kebab menu (three dots) on the right side of the **Create new app** button on the dashboard. Click on the **Import from git repository** option.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/restore-app.png" alt="GitSync" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/gitsync/restore-app.png" alt="GitSync" />
 
-On clicking the **Import from git repository** option, a modal will open with the dropdown to select the app to be imported from the git repository. Once the app is selected, the app name and the last commit will be displayed. Click on the **Import app** button to import the app from the git repository. 
+When you click on the **Import from Git repository** option, a modal will appear with a dropdown to select the app you want to import from the Git repository.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/importmodal-v2.png" alt="GitSync" />
+After selecting an app, you can:
+- Edit the application name. The app imported from the Git repository should have a unique name. If the app's name is the same as that of an existing app in the workspace, the user will need to either rename the existing app or delete it to successfully import another app with the same name.
+- Enable the **Make application editable** checkbox if you want to modify the app after import. If you leave this checkbox unchecked, you will still have the option to enable editing later when you open the application in the App Builder.
 
-**Note**:
-- The app imported from the git repository cannot be edited. To edit the application, you will need to clone it.
-- The app imported from the Git repository should have a unique name. If the app's name is the same as that of an existing app in the workspace, the user will need to either rename the existing app or delete it to successfully import another app with the same name.
-- Workspace constants are not synced with the git repository. After pulling the app, if the app throws an error, the user will need to manually add the workspace constants.
+Once everything is configured, click the **Import app** button to complete the import process.
+
+The workspace constants are not synced with the Git repository. After pulling the app, if it throws an error, you may need to manually add the required workspace constants.
+
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/gitsync/pull/pull-1.png" alt="GitSync" />
+
+
 
 ## Pull Changes
 
-You can check for updates and pull changes from the git repository by following these steps:
+If other developers in your company have made updates to an app, you can pull the latest commit to get those changes.
 
-1. Click on the **GitSync** button, a modal will open with the option to **Check for updates**. 
+To check for updates and pull changes from the Git repository, follow these steps:
+
+1. Click on the **GitSync** button, a modal will open and under the pull tab there will be an option to **Check for updates**. 
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/gitsync/pull/pull-2.png" alt="GitSync" />
 
 2. Click on the **Check for updates** button to check for updates in the git repository. If there are any updates, you will see the details of the updates such as commit message, author, and the date in the modal. 
 
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/gitsync/pull/pull-3.png" alt="GitSync" />
+
 3. Click on the **Pull changes** button to pull the changes from the git repository.
 
-    <img className="screenshot-full" src="/img/gitsync/updatecheck.png" alt="GitSync" />
+
+
 
