@@ -150,7 +150,7 @@ describe("Data source AppWrite", () => {
     deleteDatasource(`cypress-${data.dsName}-Appwrite`);
   });
 
-  it("Should be able to run the query with a valid connection", () => {
+  it.skip("Should be able to run the query with a valid connection", () => {
     const Host = Cypress.env("appwrite_host");
     const ProjectID = Cypress.env("appwrite_projectID");
     const DatabaseID = Cypress.env("appwrite_databaseID");

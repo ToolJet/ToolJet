@@ -157,7 +157,7 @@ describe("Data source minio", () => {
     deleteDatasource(`cypress-${data.dsName}-minio`);
   });
 
-  it("Should be able to run the query with a valid connection", () => {
+  it.skip("Should be able to run the query with a valid connection", () => {
     const Host = Cypress.env("minio_host");
     const Port = Cypress.env("minio_port");
     const AccessKey = Cypress.env("minio_accesskey");

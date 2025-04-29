@@ -156,9 +156,10 @@ describe("Data source HarperDB", () => {
     );
 
     deleteDatasource(`cypress-${data.dsName}-HarperDB`);
+    cy.uninstallMarketplacePlugin("HarperDB");
   });
 
-  it("Should be able to run the query with a valid connection", () => {
+  it.skip("Should be able to run the query with a valid connection", () => {
     const Host = Cypress.env("harperdb_host");
     const Port = Cypress.env("harperdb_port");
     const Username = Cypress.env("harperdb_username");

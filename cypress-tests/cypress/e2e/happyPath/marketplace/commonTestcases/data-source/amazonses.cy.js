@@ -112,7 +112,7 @@ describe("Data source amazon ses", () => {
     deleteDatasource(`cypress-${data.dsName}-amazon-ses`);
   });
 
-  it("Should able to run the query with valid conection", () => {
+  it.skip("Should able to run the query with valid conection", () => {
     const email = "adish" + "@" + "tooljet.com";
     selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 

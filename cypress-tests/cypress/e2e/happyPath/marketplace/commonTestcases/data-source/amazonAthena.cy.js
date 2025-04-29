@@ -188,11 +188,13 @@ describe("Data source amazon athena", () => {
     cy.get(".css-4e90k9").type(`${data.dsName}`);
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
-
+    cy.get(`[data-cy="list-query-${data.dsName}"]`).should("be.visible");
     cy.get('[data-cy="query-input-field"]').clearAndTypeOnCodeMirror(
       "SHOW DATABASES;"
     );
-
+    cy.get(
+      '[data-cy="query-input-field"] >>> .cm-editor >> .cm-content > .cm-line'
+    ).should("have.text", "SHOW DATABASES;");
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

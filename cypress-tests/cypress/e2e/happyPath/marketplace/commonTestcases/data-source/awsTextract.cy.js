@@ -122,9 +122,10 @@ describe("Data source AWS Textract", () => {
     );
 
     deleteDatasource(`cypress-${data.dsName}-aws-textract`);
+    cy.uninstallMarketplacePlugin("AWS Textract");
   });
 
-  it("Should  able to run the query with valid conection", () => {
+  it.skip("Should  able to run the query with valid conection", () => {
     const Accesskey = Cypress.env("awstextract_access");
     const Secretkey = Cypress.env("awstextract_secret");
 

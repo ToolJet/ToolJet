@@ -573,3 +573,33 @@ Cypress.Commands.add("getAppId", (appName) => {
     return appId;
   });
 });
+
+Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
+  const MARKETPLACE_URL = `${Cypress.config("baseUrl")}/integrations/marketplace`;
+
+  cy.visit(MARKETPLACE_URL);
+  cy.wait(1000);
+
+  cy.get('[data-cy="-list-item"]').eq(0).click();
+  cy.wait(1000);
+
+  cy.get(".plugins-card").each(($card) => {
+    cy.wrap($card)
+      .find(".font-weight-medium.text-capitalize")
+      .invoke("text")
+      .then((text) => {
+        if (text.trim() === pluginName) {
+          cy.wrap($card).find(".link-primary").contains("Remove").click();
+          cy.wait(1000);
+
+          cy.get('[data-cy="delete-plugin-title"]').should("be.visible");
+          cy.get('[data-cy="yes-button"]').click();
+          cy.wait(2000);
+
+          cy.log(`${pluginName} has been successfully uninstalled.`);
+        } else {
+          cy.log(`${pluginName} is not installed. Skipping uninstallation.`);
+        }
+      });
+  });
+});

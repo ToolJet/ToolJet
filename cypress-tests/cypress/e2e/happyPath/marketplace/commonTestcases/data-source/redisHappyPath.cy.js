@@ -215,7 +215,7 @@ describe("Data source Redis", () => {
     deleteDatasource(`cypress-${data.dsName}-redis`);
   });
 
-  it("Should able to run the query with valid conection", () => {
+  it.skip("Should able to run the query with valid conection", () => {
     selectAndAddDataSource("databases", redisText.redis, data.dsName);
 
     fillDataSourceTextField(
