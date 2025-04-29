@@ -83,6 +83,10 @@ jobs:
                 "value": "tooljet"
               },
               {
+                "key": "PG_PASS",
+                "value": "postgres"
+              },
+              {
                 "key": "PG_DB",
                 "value": "${{ env.PR_NUMBER }}-ce"
               },
@@ -97,6 +101,10 @@ jobs:
               {
                 "key": "TOOLJET_DB_USER",
                 "value": "tooljet"
+              },
+              {
+                "key": "TOOLJET_DB_PASS",
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
