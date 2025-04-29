@@ -75,18 +75,20 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-COPY ./docker/ce-entrypoint.sh ./app/server/entrypoint.sh
-
 WORKDIR /app
 
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://deb.debian.org/debian"
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+USER postgres
+RUN service postgresql start && \
+    psql -c "create role tooljet with login superuser password 'postgres';"
+USER root
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
-    PORT=80 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
