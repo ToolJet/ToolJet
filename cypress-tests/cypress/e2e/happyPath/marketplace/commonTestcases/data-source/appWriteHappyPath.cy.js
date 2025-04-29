@@ -20,12 +20,12 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source AppWrite", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on appwrite connection form", () => {

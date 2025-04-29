@@ -1,8 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { twilioText } from "Texts/twilio";
-import { twilioSelectors } from "Selectors/Plugins";
+import { GraphQLText } from "Texts/graphQL";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
@@ -18,21 +17,18 @@ import {
 } from "Support/utils/dataSource";
 
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
-import { pluginSelectors } from "Selectors/plugins";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-describe("Data source Twilio", () => {
+describe("Data source GraphQL", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on Twilio connection form", () => {
-    const AuthToken = Cypress.env("twilio_auth_token");
-    const AccountSID = Cypress.env("twilio_account_SID");
-    const MessageSID = Cypress.env("twilio_messaging_service_SID");
+  it("Should verify elements on GraphQL connection form", () => {
+    const Url = Cypress.env("GraphQl_Url");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
@@ -58,24 +54,12 @@ describe("Data source Twilio", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", twilioText.twilio, data.dsName);
+    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
 
     fillDataSourceTextField(
-      twilioText.authTokenLabel,
-      twilioText.authTokenPlaceholder,
-      AuthToken
-    );
-
-    fillDataSourceTextField(
-      twilioText.accountSidLabel,
-      twilioText.accountSidPlaceholder,
-      AccountSID
-    );
-
-    fillDataSourceTextField(
-      twilioText.messagingSIDLabel,
-      twilioText.messagingSIDPalceholder,
-      MessageSID
+      GraphQLText.urlInputLabel,
+      GraphQLText.urlInputPlaceholder,
+      Url
     );
 
     cy.get(postgreSqlSelector.buttonSave)
@@ -86,35 +70,21 @@ describe("Data source Twilio", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-twilio`);
+    deleteDatasource(`cypress-${data.dsName}-GraphQL`);
   });
 
-  it("Should verify functionality of Twilio connection form", () => {
-    const AuthToken = Cypress.env("twilio_auth_token");
-    const AccountSID = Cypress.env("twilio_account_SID");
-    const MessageSID = Cypress.env("twilio_messaging_service_SID");
+  it("Should verify the functionality of GraphQL connection form", () => {
+    const Url = Cypress.env("GraphQl_Url");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    selectAndAddDataSource("databases", twilioText.twilio, data.dsName);
+    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
 
     fillDataSourceTextField(
-      twilioText.authTokenLabel,
-      twilioText.authTokenPlaceholder,
-      AuthToken
-    );
-
-    fillDataSourceTextField(
-      twilioText.accountSidLabel,
-      twilioText.accountSidPlaceholder,
-      AccountSID
-    );
-
-    fillDataSourceTextField(
-      twilioText.messagingSIDLabel,
-      twilioText.messagingSIDPalceholder,
-      MessageSID
+      GraphQLText.urlInputLabel,
+      GraphQLText.urlInputPlaceholder,
+      Url
     );
 
     cy.get(postgreSqlSelector.buttonSave)
@@ -125,36 +95,21 @@ describe("Data source Twilio", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-twilio`);
+    deleteDatasource(`cypress-${data.dsName}-GraphQL`);
   });
 
-  it("Should be able to run the query with a valid connection", () => {
-    const AuthToken = Cypress.env("twilio_auth_token");
-    const AccountSID = Cypress.env("twilio_account_SID");
-    const MessageSID = Cypress.env("twilio_messaging_service_SID");
-    const MessageNumber = Cypress.env("twilio_message_number");
+  it("Should able to run the query with valid conection", () => {
+    const Url = Cypress.env("GraphQl_Url");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    selectAndAddDataSource("databases", twilioText.twilio, data.dsName);
+    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
 
     fillDataSourceTextField(
-      twilioText.authTokenLabel,
-      twilioText.authTokenPlaceholder,
-      AuthToken
-    );
-
-    fillDataSourceTextField(
-      twilioText.accountSidLabel,
-      twilioText.accountSidPlaceholder,
-      AccountSID
-    );
-
-    fillDataSourceTextField(
-      twilioText.messagingSIDLabel,
-      twilioText.messagingSIDPalceholder,
-      MessageSID
+      GraphQLText.urlInputLabel,
+      GraphQLText.urlInputPlaceholder,
+      Url
     );
 
     cy.get(postgreSqlSelector.buttonSave)
@@ -164,6 +119,8 @@ describe("Data source Twilio", () => {
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
+
+    cy.get(commonSelectors.globalDataSourceIcon).click();
 
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.appCreateButton).click();
@@ -176,13 +133,12 @@ describe("Data source Twilio", () => {
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
-    cy.get(pluginSelectors.operationDropdown).click().type("Send SMS{enter}");
-
-    cy.get(twilioSelectors.toNumberInputField).clearAndTypeOnCodeMirror(
-      MessageNumber
-    );
-    cy.get(twilioSelectors.bodyInput).clearAndTypeOnCodeMirror(
-      twilioText.messageText
+    cy.get('[data-cy="query-input-field"]').clearAndTypeOnCodeMirror(
+      `{
+      allFilms {
+      films { title director }
+      }
+      }`
     );
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
@@ -191,7 +147,7 @@ describe("Data source Twilio", () => {
     );
     deleteAppandDatasourceAfterExecution(
       data.dsName,
-      `cypress-${data.dsName}-twilio`
+      `cypress-${data.dsName}-GraphQL`
     );
   });
 });

@@ -20,12 +20,12 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source AWS Lambda", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
   it("Should  verify elements on AWS Lambda connection form", () => {
@@ -80,6 +80,7 @@ describe("Data source AWS Lambda", () => {
     );
 
     deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 
   it("Should  verify the functionality of AWS Lambda connection form", () => {
@@ -113,6 +114,7 @@ describe("Data source AWS Lambda", () => {
     );
 
     deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 
   it("Should  able to run the query with valid conection", () => {

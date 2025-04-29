@@ -20,13 +20,13 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source HarperDB", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on HarperDB connection form", () => {
@@ -102,6 +102,7 @@ describe("Data source HarperDB", () => {
     );
 
     deleteDatasource(`cypress-${data.dsName}-HarperDB`);
+    cy.uninstallMarketplacePlugin("HarperDB");
   });
 
   it("Should verify functionality of HarperDB connection form", () => {
