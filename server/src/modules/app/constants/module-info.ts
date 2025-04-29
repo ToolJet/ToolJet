@@ -35,6 +35,7 @@ import { FEATURES as AUDIT_LOGS_FEATURES } from '@modules/audit-logs/constants/f
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '.';
 import { FEATURES as WHITE_LABELLING_FEATURES } from '@modules/white-labelling/constant/feature';
+import { FEATURES as APP_PERMISSIONS_FEATURES } from '@modules/app-permissions/constants/features';
 import { FEATURES as EXTERNAL_API_FEATURES } from '@modules/external-apis/constants/feature';
 
 const GROUP_PERMISSIONS_FEATURES =
@@ -75,6 +76,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...ORGANIZATION_CONSTANT,
   ...AI_FEATURES,
   ...WHITE_LABELLING_FEATURES,
+  ...APP_PERMISSIONS_FEATURES,
   ...AUDIT_LOGS_FEATURES,
   ...EXTERNAL_API_FEATURES,
 };

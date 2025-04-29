@@ -381,7 +381,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           {activeTab === 1 && renderQueryElement()}
           {activeTab === 2 && renderTransformation()}
           {activeTab === 3 && renderQueryOptions()}
-          <div className="pb-5" />
           <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
         </>
       )}

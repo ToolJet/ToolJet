@@ -1,6 +1,7 @@
 export enum OrganizationConstantType {
   GLOBAL = 'Global',
   SECRET = 'Secret',
+  SERVER = 'Server',
 }
 
 export enum FEATURE_KEY {
