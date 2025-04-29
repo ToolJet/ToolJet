@@ -412,7 +412,7 @@ jobs:
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -420,11 +420,11 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_DB",
@@ -436,15 +436,15 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
@@ -456,7 +456,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-ee-tjdb"
+                "value": "postgres://tooljet:postgres@localhost/${{ env.PR_NUMBER }}-ee-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -1112,4 +1112,3 @@ jobs:
   #           } catch (e) {
   #             console.log(e)
   #           }
-
