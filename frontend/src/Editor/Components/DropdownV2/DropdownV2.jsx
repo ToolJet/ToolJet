@@ -269,6 +269,11 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    setExposedVariable('value', currentValue);
+  }, [currentValue]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     const validationStatus = validate(currentValue);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);

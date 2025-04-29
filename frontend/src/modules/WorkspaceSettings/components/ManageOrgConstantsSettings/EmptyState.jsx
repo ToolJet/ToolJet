@@ -20,7 +20,7 @@ const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading, se
               </p>
               {canCreateVariable && searchTerm === '' && (
                 <ButtonSolid
-                  data-cy="add-new-constant-button"
+                  data-cy="table-add-new-constant-button"
                   vaiant="primary"
                   onClick={() => setIsManageVarDrawerOpen(true)}
                   className="add-new-constant-button"

@@ -6,16 +6,16 @@ import { TooljetDbImportExportService } from '@modules/tooljet-db/services/toolj
 import { ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { isEmpty } from 'lodash';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InternalTableRepository } from '@modules/tooljet-db/repository';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class ImportExportResourcesService {
   constructor(
     protected readonly appImportExportService: AppImportExportService,
     protected readonly tooljetDbImportExportService: TooljetDbImportExportService,
-    protected readonly internalTableRepository: InternalTableRepository,
-    protected eventEmitter: EventEmitter2
+    protected readonly internalTableRepository: InternalTableRepository
   ) {}
 
   async export(
@@ -94,15 +94,12 @@ export class ImportExportResourcesService {
 
         imports.app.push({ id: createdApp.id, name: createdApp.name });
 
-        // FIXME: TooljetDB: Uncomment this when audit logs constants are added
-        // this.eventEmitter.emit('auditLogEntry', {
-        //   userId: user.id,
-        //   organizationId: user.organizationId,
-        //   resourceId: createdApp.id,
-        //   resourceType: ResourceTypes.APP,
-        //   resourceName: createdApp.name,
-        //   actionType: ActionTypes.APP_CREATE,
-        // });
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: createdApp.id,
+          resourceName: createdApp.name,
+        });
       }
     }
 

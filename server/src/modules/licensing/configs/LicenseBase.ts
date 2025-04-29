@@ -1,6 +1,10 @@
 import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
-import { BASIC_PLAN_TERMS, BUSINESS_PLAN_TERMS, ENTERPRISE_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
+import {
+  BUSINESS_PLAN_TERMS,
+  ENTERPRISE_PLAN_TERMS,
+  WORKFLOW_TEAM_PLAN_TERMS,
+} from '@modules/licensing/constants/PlanTerms';
 
 export default class LicenseBase {
   private _appsCount: number | string;
@@ -36,8 +40,19 @@ export default class LicenseBase {
   private _workspaceId: string;
   private _isAi: boolean;
   private _ai: object;
+  private _isExternalApis: boolean;
+  private _isAppWhiteLabelling: boolean;
+  private BASIC_PLAN_TERMS: Partial<Terms>;
 
-  constructor(licenseData?: Partial<Terms>, updatedDate?: Date, startDate?: Date, expiryDate?: Date) {
+  constructor(
+    BASIC_PLAN_TERMS?: Partial<Terms>,
+    licenseData?: Partial<Terms>,
+    updatedDate?: Date,
+    startDate?: Date,
+    expiryDate?: Date
+  ) {
+    this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
+
     if (process.env.NODE_ENV === 'test') {
       const now = new Date();
       now.setMinutes(now.getMinutes() + 30);
@@ -54,6 +69,8 @@ export default class LicenseBase {
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
+      this._isExternalApis = true;
+      this._isAppWhiteLabelling = true;
       return;
     }
     if (!licenseData) {
@@ -89,6 +106,7 @@ export default class LicenseBase {
     this._isSAML = this.getFeatureValue('saml');
     this._isCustomStyling = this.getFeatureValue('customStyling');
     this._isWhiteLabelling = this.getFeatureValue('whiteLabelling');
+    this._isAppWhiteLabelling = this.getFeatureValue('appWhiteLabelling');
     this._isCustomThemes = this.getFeatureValue('customThemes');
     this._isServerSideGlobal = this.getFeatureValue('serverSideGlobal');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
@@ -96,6 +114,7 @@ export default class LicenseBase {
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
+    this._isExternalApis = this.getFeatureValue('externalApis');
   }
 
   private getFeatureValue(key: string) {
@@ -118,21 +137,21 @@ export default class LicenseBase {
 
   public get apps(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.apps || this._appsCount || LICENSE_LIMIT.UNLIMITED;
+      return this.BASIC_PLAN_TERMS.apps || this._appsCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._appsCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get tables(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.database?.table || this._tablesCount || LICENSE_LIMIT.UNLIMITED;
+      return this.BASIC_PLAN_TERMS.database?.table || this._tablesCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._tablesCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get maxDurationForAuditLogs(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.auditLogs?.maximumDays || 0;
+      return this.BASIC_PLAN_TERMS.auditLogs?.maximumDays || 0;
     }
     const maxDuration =
       typeof this._maxDurationForAuditLogs === 'string'
@@ -152,35 +171,35 @@ export default class LicenseBase {
 
   public get users(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.users?.total || this._usersCount || LICENSE_LIMIT.UNLIMITED;
+      return this.BASIC_PLAN_TERMS.users?.total || this._usersCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._usersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get editorUsers(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.users?.editor || this._editorUsersCount || LICENSE_LIMIT.UNLIMITED;
+      return this.BASIC_PLAN_TERMS.users?.editor || this._editorUsersCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._editorUsersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get viewerUsers(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.users?.viewer || this._viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
+      return this.BASIC_PLAN_TERMS.users?.viewer || this._viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get superadminUsers(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.users?.superadmin || this._superadminUsersCount || LICENSE_LIMIT.UNLIMITED;
+      return this.BASIC_PLAN_TERMS.users?.superadmin || this._superadminUsersCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._superadminUsersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get workspaces(): number | string {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.workspaces || this._workspacesCount || LICENSE_LIMIT.UNLIMITED;
+      return this.BASIC_PLAN_TERMS.workspaces || this._workspacesCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._workspacesCount || LICENSE_LIMIT.UNLIMITED;
   }
@@ -191,102 +210,115 @@ export default class LicenseBase {
 
   public get domains(): Array<{ hostname?: string; subpath?: string }> {
     if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.domains || this._domainsList || [];
+      return this.BASIC_PLAN_TERMS.domains || this._domainsList || [];
     }
     return this._domainsList || [];
   }
 
   public get auditLogs(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.auditLogs;
+      return !!this.BASIC_PLAN_TERMS.features?.auditLogs;
     }
     return this._isAuditLogs;
   }
 
   public get oidc(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.oidc;
+      return !!this.BASIC_PLAN_TERMS.features?.oidc;
     }
     return this._isOidc;
   }
 
   public get ldap(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.ldap;
+      return !!this.BASIC_PLAN_TERMS.features?.ldap;
     }
     return this._isLdap;
   }
 
   public get gitSync(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.gitSync;
+      return !!this.BASIC_PLAN_TERMS.features?.gitSync;
     }
     return this._isGitSync;
   }
 
   public get saml(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.saml;
+      return !!this.BASIC_PLAN_TERMS.features?.saml;
     }
     return this._isSAML;
   }
 
   public get multiEnvironment(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.multiEnvironment;
+      return !!this.BASIC_PLAN_TERMS.features?.multiEnvironment;
     }
     return this._isMultiEnvironment;
   }
 
   public get customStyling(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.customStyling;
+      return !!this.BASIC_PLAN_TERMS.features?.customStyling;
     }
     return this._isCustomStyling;
   }
 
   public get whiteLabelling(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.whiteLabelling;
+      return !!this.BASIC_PLAN_TERMS.features?.whiteLabelling;
     }
     return this._isWhiteLabelling;
   }
 
+  public get appWhiteLabelling(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.appWhiteLabelling;
+    }
+    return this._isAppWhiteLabelling;
+  }
+
   public get customThemes(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.customThemes;
+      return !!this.BASIC_PLAN_TERMS.features?.customThemes;
     }
     return this._isCustomThemes;
   }
 
   public get serverSideGlobal(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.serverSideGlobal;
+      return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobal;
     }
     return this._isServerSideGlobal;
+  }
+  public get externalApis(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.externalApi;
+    }
+    return this._isExternalApis;
   }
 
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.multiPlayerEdit;
+      return !!this.BASIC_PLAN_TERMS.features?.multiPlayerEdit;
     }
     return this._isMultiPlayerEdit;
   }
 
   public get comments(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.comments;
+      return !!this.BASIC_PLAN_TERMS.features?.comments;
     }
     return this._isComments;
   }
 
   public get ai(): object {
-    return this._ai;
+    return this._ai || {};
   }
 
   public get aiFeature(): boolean {
     if (this.IsBasicPlan) {
-      return !!BASIC_PLAN_TERMS.features?.ai;
+      return !!this.BASIC_PLAN_TERMS.features?.ai;
     }
     return this._isAi;
   }
@@ -314,6 +346,7 @@ export default class LicenseBase {
       gitSync: this.gitSync,
       comments: this.comments,
       ai: this.aiFeature,
+      appWhiteLabelling: this.appWhiteLabelling,
     };
   }
 
@@ -361,9 +394,9 @@ export default class LicenseBase {
   }
 
   public get workflows(): object {
-    if (this.IsBasicPlan) {
-      return BASIC_PLAN_TERMS.workflows;
+    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL) {
+      return this.BASIC_PLAN_TERMS.workflows;
     }
-    return this._workflows ?? BASIC_PLAN_TERMS.workflows;
+    return this._workflows ?? WORKFLOW_TEAM_PLAN_TERMS.workflows;
   }
 }
