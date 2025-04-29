@@ -1,18 +1,17 @@
 import React, { useState, forwardRef, useRef, useEffect, useCallback } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
-import Eye1 from '@/_ui/Icon/solidIcons/Eye1';
-import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { shallow } from 'zustand/shallow';
-import { Tooltip } from 'react-tooltip';
+import { ToolTip } from '@/_components';
 import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { debounce } from 'lodash';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
@@ -27,6 +26,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+
   useEffect(() => {
     if (selectedQuery?.name) {
       setShowCreateQuery(false);
@@ -245,34 +245,26 @@ const RunButton = ({ buttonLoadingState }) => {
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
+  const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
+  const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+Enter';
   return (
-    <span
-      {...(isInDraft && {
-        'data-tooltip-id': 'query-header-btn-run',
-        'data-tooltip-content': 'Connect a data source to run',
-      })}
-    >
-      <button
-        onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-        className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)}`}
-        data-cy="query-run-button"
-        disabled={isInDraft}
-        {...(isInDraft && {
-          'data-tooltip-id': 'query-header-btn-run',
-          'data-tooltip-content': 'Publish the query to run',
-        })}
-      >
-        <span
-          className={cx({
-            invisible: isLoading,
-          })}
+    <span>
+      <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+        <ButtonComponent
+          size="medium"
+          variant="secondary"
+          onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
+          leadingIcon="play01"
+          disabled={isInDraft}
+          isLoading={isLoading}
+          className={isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
+          data-cy="query-run-button"
         >
-          <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
-        </span>
-        <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
-      </button>
-      {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+          Run
+          <span className="query-manager-btn-shortcut">{isMac ? '⌘↩' : 'Ctrl+Enter'}</span>
+        </ButtonComponent>
+      </ToolTip>
     </span>
   );
 };
@@ -288,20 +280,22 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();
+  const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
+  const shortcutDisplay = `Preview query ${isMac ? '⌘⇧↩' : 'Ctrl+Shift+Enter'}`;
   return (
-    <button
-      disabled={!hasPermissions}
-      onClick={onClick}
-      className={cx(`default-tertiary-button ${buttonLoadingState(isPreviewQueryLoading)} `, {
-        disabled: !hasPermissions,
-      })}
-      data-cy={'query-preview-button'}
-    >
-      <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
-        <Eye1 width={14} fill="var(--slate9)" />
-      </span>
-      <span>{t('editor.queryManager.preview', 'Preview')}</span>
-    </button>
+    <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+      <ButtonComponent
+        size="medium"
+        variant="outline"
+        onClick={onClick}
+        // className="!tw-w-[100px]"
+        disabled={!hasPermissions}
+        isLoading={isPreviewQueryLoading}
+        data-cy={'query-preview-button'}
+      >
+        Preview
+      </ButtonComponent>
+    </ToolTip>
   );
 };

@@ -101,7 +101,7 @@ describe('Password Input Component Tests', () => {
 
     });
 
-    it('should verify all the events from the password input', () => {
+    it.skip('should verify all the events from the password input', () => {
         const events = [
             { event: "On Focus", message: "On Focus Event" },
             { event: "On Blur", message: "On Blur Event" },

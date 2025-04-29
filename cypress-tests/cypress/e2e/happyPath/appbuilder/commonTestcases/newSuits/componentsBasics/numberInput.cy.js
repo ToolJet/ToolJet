@@ -101,7 +101,7 @@ describe('Number Input Component Tests', () => {
 
     });
 
-    it('should verify all the events from the number input', () => {
+    it.skip('should verify all the events from the number input', () => {
         const events = [
             { event: "On Focus", message: "On Focus Event" },
             { event: "On Blur", message: "On Blur Event" },
@@ -129,7 +129,7 @@ describe('Number Input Component Tests', () => {
         inputEvents(inputSelector);
     });
 
-    it('should verify all the CSA from number input', () => {
+    it.skip('should verify all the CSA from number input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b1
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },//b2

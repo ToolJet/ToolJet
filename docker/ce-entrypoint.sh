@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ -f "./.env" ]; then
+  export $(grep -v '^#' ./.env | xargs -d '\n') || true
+fi
+
 if [ -d "./server/dist" ]; then
   SETUP_CMD='npm run db:setup:prod'
 else

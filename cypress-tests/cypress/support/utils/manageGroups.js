@@ -853,6 +853,9 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
     commonSelectors.toastMessage,
     groupsText.groupCreatedToast
   );
+  addUserInGroup(groupName, email);
+};
+export const addUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
   cy.wait(2000);
@@ -862,7 +865,7 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
     commonSelectors.toastMessage,
     groupsText.userAddedToast
   );
-};
+}
 
 export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fillUserInviteForm(firstName, email);

@@ -351,7 +351,7 @@ describe("Text Input", () => {
     ).should("have.css", "border-radius", "20px");
   });
 
-  it.skip("should verify the app preview", () => {});
+  it.skip("should verify the app preview", () => { });
 
   it("should verify CSA", () => {
     const data = {};
