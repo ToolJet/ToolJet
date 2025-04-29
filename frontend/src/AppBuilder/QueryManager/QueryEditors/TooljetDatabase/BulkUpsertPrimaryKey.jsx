@@ -3,25 +3,30 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
-export const BulkUploadPrimaryKey = () => {
+export const BulkUpsertPrimaryKey = () => {
   const {
     columns,
-    bulkUpdatePrimaryKey,
-    handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged,
-    handlePrimaryKeyOptionChangedForBulkUpdate,
+    bulkUpsertPrimaryKey,
+    handleBulkUpsertRowsOptionChanged,
+    handlePrimaryKeyOptionChangedForBulkUpsert,
   } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
     const primaryKeys = columns.reduce((acc, column) => {
-      if (column?.isPrimaryKey) {
+      if (column?.keytype === 'PRIMARY KEY' || column?.isPrimaryKey) {
         acc.push(column?.accessor);
       }
       return acc;
     }, []);
 
-    handlePrimaryKeyOptionChangedForBulkUpdate(primaryKeys);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (primaryKeys.length > 0) {
+      handlePrimaryKeyOptionChangedForBulkUpsert(primaryKeys);
+    }
   }, [columns]);
+
+  const handleRowsChange = (value) => {
+    handleBulkUpsertRowsOptionChanged(value);
+  };
 
   return (
     <div className="tab-content-wrapper tj-db-field-wrapper mt-2 d-flex flex-column custom-gap-16">
@@ -33,7 +38,7 @@ export const BulkUploadPrimaryKey = () => {
         >
           <input
             type="text"
-            value={bulkUpdatePrimaryKey?.primary_key?.join(', ') || ''}
+            value={bulkUpsertPrimaryKey?.primary_key?.join(', ') || ''}
             style={{
               width: '100%',
               height: '100%',
@@ -42,31 +47,32 @@ export const BulkUploadPrimaryKey = () => {
               background: 'transparent',
             }}
             disabled
-            placeholder="Column1"
+            placeholder={''}
           />
         </div>
       </div>
       <div className="field-container d-flex tooljetdb-worflow-operations">
         <label className="form-label flex-shrink-0" data-cy="">
-          Rows to update
+          Rows to upsert
         </label>
         <div className="field flex-grow-1 minw-400-w-400">
           <CodeHinter
             type="basic"
             initialValue={
-              bulkUpdatePrimaryKey?.rows_update
-                ? `{{${JSON.stringify(bulkUpdatePrimaryKey?.rows_update ?? [])}}}`
+              bulkUpsertPrimaryKey?.rows
+                ? typeof bulkUpsertPrimaryKey?.rows === 'string'
+                  ? bulkUpsertPrimaryKey?.rows
+                  : JSON.stringify(bulkUpsertPrimaryKey?.rows)
                 : null
             }
             className="codehinter-plugins"
             placeholder="{{ [ { 'column1': 'value', ... } ] }}"
-            onChange={(newValue) => {
-              const [_, __, resolvedValue] = resolveReferences(newValue);
-              handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged(resolvedValue);
-            }}
+            onChange={handleRowsChange}
           />
         </div>
       </div>
     </div>
   );
 };
+
+export default BulkUpsertPrimaryKey;

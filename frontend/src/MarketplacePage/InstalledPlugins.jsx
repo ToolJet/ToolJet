@@ -68,7 +68,7 @@ export const InstalledPlugins = () => {
           })}
           {!fetching && installedPlugins?.length === 0 && (
             <div className="empty">
-              <p className="empty-title">No results found</p>
+              <p className="empty-title">No plugins added. Please add a plugin from the Marketplace.</p>
             </div>
           )}
         </div>
