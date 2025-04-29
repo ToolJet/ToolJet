@@ -3,7 +3,7 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 5,
+    width: 10,
     height: 200,
   },
   component: 'Container',
@@ -47,10 +47,16 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
+    headerHeight: {
+      type: 'numberInput',
+      displayName: 'Header height',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
+    },
   },
   defaultChildren: [
     {
       componentName: 'Text',
+      slotName: 'header',
       layout: {
         top: 20,
         left: 1,
@@ -58,6 +64,7 @@ export const containerConfig = {
       },
       displayName: 'ContainerText',
       properties: ['text'],
+      slotName: 'header',
       accessorKey: 'text',
       styles: ['fontWeight', 'textSize', 'textColor'],
       defaultValue: {
@@ -71,7 +78,7 @@ export const containerConfig = {
   events: {},
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -80,7 +87,7 @@ export const containerConfig = {
       accordian: 'container',
     },
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -89,22 +96,13 @@ export const containerConfig = {
       accordian: 'header',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#fff',
       },
       accordian: 'container',
-    },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Height',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 80,
-      },
-      accordian: 'header',
     },
     borderRadius: {
       type: 'numberInput',
@@ -157,12 +155,14 @@ export const containerConfig = {
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      headerHeight: { value: `{{80}}` },
     },
     events: [],
     styles: {
       backgroundColor: { value: '#fff' },
       headerBackgroundColor: { value: '#fff' },
       borderRadius: { value: '4' },
+      headerHeight: { value: '{{80}}' },
       borderColor: { value: '#fff' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

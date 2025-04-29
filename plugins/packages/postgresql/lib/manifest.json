@@ -269,7 +269,7 @@
           "key": "ca_cert",
           "label": "CA Cert",
           "description": "Enter ca certificate",
-          "widget": "textarea"
+          "widget": "password-v3-textarea"
         }
       },
       "self_signed": {
@@ -278,22 +278,21 @@
           "key": "client_key",
           "label": "Client Key",
           "description": "Enter client key",
-          "widget": "textarea"
+          "widget": "password-v3-textarea"
         },
         "client_cert": {
           "$ref": "#/properties/client_cert",
           "key": "client_cert",
           "label": "Client Cert",
           "description": "Enter client certificate",
-          "widget": "textarea"
+          "widget": "password-v3-textarea"
         },
         "root_cert": {
           "$ref": "#/properties/root_cert",
           "key": "root_cert",
           "label": "Root Cert",
           "description": "Enter root certificate",
-          "widget": "textarea",
-          "required": true
+          "widget": "password-v3-textarea"
         }
       }
     },

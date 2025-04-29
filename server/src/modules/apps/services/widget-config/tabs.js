@@ -13,6 +13,7 @@ export const tabsConfig = {
         top: 60,
         left: 17,
         height: 100,
+        width: 7,
       },
       tab: 0,
       properties: ['source'],
@@ -109,11 +110,11 @@ export const tabsConfig = {
   events: { onTabSwitch: { displayName: 'On tab switch' } },
   styles: {
     highlightColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Highlight color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: 'var(--primary-brand)',
       },
     },
     visibility: {
@@ -174,7 +175,7 @@ export const tabsConfig = {
     },
     events: [],
     styles: {
-      highlightColor: { value: '#375FCF' },
+      highlightColor: { value: 'var(--primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tabWidth: { value: 'auto' },

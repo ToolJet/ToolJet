@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+service postgresql start
+
 echo "
    _____           _   ___      _
   |_   _|         | | |_  |    | |

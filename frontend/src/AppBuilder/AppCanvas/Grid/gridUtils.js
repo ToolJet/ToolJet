@@ -415,6 +415,20 @@ export function hideGridLines() {
   document.getElementById('real-canvas')?.classList.add('hide-grid');
 }
 
+export function showGridLinesOnSlot(slotId) {
+  var canvasElm = document.getElementById(`canvas-${slotId}`);
+
+  canvasElm.classList.remove('hide-grid');
+  canvasElm.classList.add('show-grid');
+}
+
+export function hideGridLinesOnSlot(slotId) {
+  var canvasElm = document.getElementById(`canvas-${slotId}`);
+
+  canvasElm.classList.remove('show-grid');
+  canvasElm.classList.add('hide-grid');
+}
+
 // Track previously active elements for efficient cleanup
 let previousActiveWidgets = null;
 let previousActiveCanvas = null;
@@ -488,3 +502,18 @@ export const handleDeactivateTargets = () => {
     component.classList.remove('non-dragging-component');
   });
 };
+export const computeScrollDelta = ({ source }) => {
+  // Only need to calculate scroll delta when moving from a sub-container
+  if (source.slotId !== 'real-canvas') {
+    const subContainerWrap = document
+      .querySelector(`#canvas-${source.slotId}`)
+      ?.closest('.sub-container-overflow-wrap');
+
+    return subContainerWrap?.scrollTop || 0;
+  }
+
+  // Default case: No scroll adjustment needed
+  return 0;
+};
+
+export const computeScrollDeltaOnDrag = computeScrollDelta;

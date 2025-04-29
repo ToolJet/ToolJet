@@ -473,6 +473,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
   const actions = [
     'runQuery',
     'setVariable',
+    'unsetAllVariables',
     'unSetVariable',
     'showAlert',
     'logout',
@@ -483,6 +484,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
     'goToApp',
     'generateFile',
     'setPageVariable',
+    'unsetAllPageVariables',
     'unsetPageVariable',
     'switchPage',
     'logInfo',
@@ -707,4 +709,16 @@ export const parsePropertyPath = (property) => {
   }
 
   return result;
+};
+
+export const baseTheme = {
+  definition: {
+    brand: {
+      colors: {
+        primary: { light: '#4368E3', dark: '#4A6DD9' },
+        secondary: { light: '#6A727C', dark: '#CFD3D8' },
+        tertiary: { light: '#1E823B', dark: '#318344' },
+      },
+    },
+  },
 };

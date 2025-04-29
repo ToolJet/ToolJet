@@ -105,7 +105,7 @@ export const textConfig = {
       accordian: 'Text',
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: {
         schema: { type: 'string' },
@@ -185,7 +185,7 @@ export const textConfig = {
     },
 
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -195,7 +195,7 @@ export const textConfig = {
       colorPickerPosition: 'top',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
