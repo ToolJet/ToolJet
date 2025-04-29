@@ -133,7 +133,7 @@ describe("Data source MongoDB", () => {
       "have.text",
       mongoDbText.errorConnectionRefused
     );
-    cy.get('[data-cy="query-select-dropdown"]').type(
+    cy.get('[data-cy="connection-type-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
     );
     cy.get('[data-cy="label-connection-string"]').verifyVisibleElement(
