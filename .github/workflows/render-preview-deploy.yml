@@ -12,7 +12,7 @@ permissions:
 
 jobs:
 
-# Community Edition
+# Community Edition CE
   create-ce-review-app:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
@@ -170,7 +170,7 @@ jobs:
             "serviceDetails": {
               "disk": {
                 "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-disk",
-                "mountPath": "/var/lib/postgresql/13/main",
+                "mountPath": "/data",
                 "sizeGB": 10
               },
               "env": "docker",
