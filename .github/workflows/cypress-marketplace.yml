@@ -2,7 +2,7 @@ name: Cypress Marketplace
 
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled]
 
   workflow_dispatch:
 
