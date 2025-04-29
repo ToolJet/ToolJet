@@ -79,6 +79,10 @@ export const ActionTypes = [
     ],
   },
   {
+    name: 'Unset all variables',
+    id: 'unset-all-custom-variables',
+  },
+  {
     name: 'Unset variable',
     id: 'unset-custom-variable',
     options: [{ name: 'key', type: 'code', default: '' }],
@@ -97,6 +101,10 @@ export const ActionTypes = [
     ],
   },
   {
+    name: 'Unset all page variables',
+    id: 'unset-all-page-variables',
+  },
+  {
     name: 'Unset page variable',
     id: 'unset-page-variable',
     options: [
@@ -104,6 +112,7 @@ export const ActionTypes = [
       { name: 'value', type: 'code', default: '' },
     ],
   },
+
   {
     name: 'Control component',
     id: 'control-component',

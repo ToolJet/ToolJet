@@ -1,9 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 import {
   addQuery,
@@ -21,6 +20,7 @@ const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -51,13 +51,20 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "ClickHouse", data.dataSourceName);
-
-    // cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-    //   //username,password,host,port,protocol,dbname,usepost, trimquery,gzip,debug,raw
-    //   "have.value",
-    //   "ClickHouse"
-    // );
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-clickhouse`,
+      "clickhouse",
+      []
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-clickhouse-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-clickhouse`
+    );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelUserName
@@ -78,7 +85,7 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.labelDbName).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelDbName
+      "Database Name"
     );
     cy.get('[data-cy="label-protocol"]').verifyVisibleElement(
       "have.text",
@@ -140,11 +147,7 @@ describe("Data sources", () => {
       Cypress.env("pg_host")
     );
     fillDataSourceTextField(postgreSqlText.labelPort, "8123", "8123");
-    fillDataSourceTextField(
-      postgreSqlText.labelDbName,
-      "database name",
-      "{del}"
-    );
+    fillDataSourceTextField("Database Name", "database name", "{del}");
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,

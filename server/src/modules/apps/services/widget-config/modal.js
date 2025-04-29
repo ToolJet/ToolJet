@@ -20,19 +20,6 @@ export const modalConfig = {
         defaultValue: 'This title can be changed',
       },
     },
-    titleAlignment: {
-      type: 'select',
-      displayName: 'Title alignment',
-      options: [
-        { name: 'left', value: 'left' },
-        { name: 'center', value: 'center' },
-        { name: 'right', value: 'right' },
-      ],
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'left',
-      },
-    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -94,7 +81,7 @@ export const modalConfig = {
   },
   styles: {
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
@@ -102,7 +89,7 @@ export const modalConfig = {
       },
     },
     headerTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header title color',
       validation: {
         schema: { type: 'string' },
@@ -110,7 +97,7 @@ export const modalConfig = {
       },
     },
     bodyBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Body background color',
       validation: {
         schema: { type: 'string' },
@@ -134,7 +121,7 @@ export const modalConfig = {
       },
     },
     triggerButtonBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button background color',
       validation: {
         schema: { type: 'string' },
@@ -142,7 +129,7 @@ export const modalConfig = {
       },
     },
     triggerButtonTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button text color',
       validation: {
         schema: { type: 'string' },
@@ -188,7 +175,7 @@ export const modalConfig = {
       bodyBackgroundColor: { value: '#ffffffff' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
-      triggerButtonBackgroundColor: { value: '#4D72FA' },
+      triggerButtonBackgroundColor: { value: 'var(--primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
   },

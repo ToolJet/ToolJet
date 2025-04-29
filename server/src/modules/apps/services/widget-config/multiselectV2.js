@@ -121,6 +121,12 @@ export const multiselectV2Config = {
       },
       accordian: 'Options',
     },
+    showAllSelectedLabel: {
+      type: 'toggle',
+      displayName: 'Show "All items are selected"',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'Options',
+    },
     optionsLoadingState: {
       type: 'toggle',
       displayName: 'Options loading state',
@@ -129,6 +135,30 @@ export const multiselectV2Config = {
         defaultValue: true,
       },
       accordian: 'Options',
+    },
+    sort: {
+      type: 'switch',
+      displayName: 'Sort options',
+      validation: { schema: { type: 'string' }, defaultValue: 'asc' },
+      options: [
+        { displayName: 'None', value: 'none' },
+        { displayName: 'a-z', value: 'asc' },
+        { displayName: 'z-a', value: 'desc' },
+      ],
+      accordian: 'Options',
+      isFxNotRequired: true,
+    },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear selection button',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    showSearchInput: {
+      type: 'toggle',
+      displayName: 'Show search in options',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
     },
     loadingState: {
       type: 'toggle',
@@ -165,7 +195,7 @@ export const multiselectV2Config = {
 
   styles: {
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -218,32 +248,32 @@ export const multiselectV2Config = {
     },
 
     fieldBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
 
     fieldBorderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
       validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Error Text',
       validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
@@ -256,7 +286,7 @@ export const multiselectV2Config = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Icon color',
       validation: {
         schema: { type: 'string' },
@@ -313,7 +343,11 @@ export const multiselectV2Config = {
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
       optionsLoadingState: { value: '{{false}}' },
+      sort: { value: 'asc' },
       placeholder: { value: 'Select the options' },
+      showAllSelectedLabel: { value: '{{true}}' },
+      showClearBtn: { value: '{{true}}' },
+      showSearchInput: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
@@ -365,7 +399,7 @@ export const multiselectV2Config = {
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       iconColor: { value: '#6A727C' },
-      accentColor: { value: '#4368E3' },
+      accentColor: { value: 'var(--primary-brand)' },
     },
   },
 };

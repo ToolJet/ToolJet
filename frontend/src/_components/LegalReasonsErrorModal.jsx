@@ -67,7 +67,7 @@ const LegalReasonsErrorModal = ({
               <Button className="upgrade-btn" autoFocus onClick={() => {}}>
                 <a
                   style={{ color: 'white', textDecoration: 'none' }}
-                  href={`https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${currentUser?.instance_id}`}
+                  href={`https://www.tooljet.com/pricing`}
                   target="_blank"
                   rel="noopener noreferrer"
                   data-cy="upgrade-button"

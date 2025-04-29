@@ -52,7 +52,14 @@ export const getInputBackgroundColor = ({ fieldBackgroundColor, darkMode, isLoad
 };
 
 export const highlightText = (text = '', highlight) => {
-  const parts = text?.split(new RegExp(`(${highlight})`, 'gi'));
+  // Escape special regex characters in the highlight string
+  const escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  const safeHighlight = highlight ? escapeRegExp(highlight) : '';
+  const parts = text?.split(new RegExp(`(${safeHighlight})`, 'gi'));
+
   return (
     <span>
       {parts.map((part, index) =>
@@ -66,4 +73,13 @@ export const highlightText = (text = '', highlight) => {
       )}
     </span>
   );
+};
+
+export const sortArray = (arr, sort) => {
+  if (sort === 'asc') {
+    return arr.sort((a, b) => a.label?.localeCompare(b.label));
+  } else if (sort === 'desc') {
+    return arr.sort((a, b) => b.label?.localeCompare(a.label));
+  }
+  return arr;
 };

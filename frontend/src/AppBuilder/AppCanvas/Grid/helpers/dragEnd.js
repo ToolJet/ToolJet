@@ -175,7 +175,6 @@ export class DragContext {
 
     const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
     return !restrictedWidgets.includes(dragged.widgetType);
-    ß;
   }
 }
 
