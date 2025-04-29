@@ -2,7 +2,7 @@ name: Cypress Platform
 
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled]
   workflow_dispatch:
 
 env:
@@ -12,14 +12,9 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
-    if: |
-      github.event.action == 'labeled' &&
-      (
-        github.event.label.name == 'run-cypress' || 
-        github.event.label.name == 'run-ce-cypress-platform' || 
-        github.event.label.name == 'run-ee-cypress-platform'
-      )
-
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+        contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-platform') || 
+        contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-platform')
     strategy:
       matrix:
         edition: >-
