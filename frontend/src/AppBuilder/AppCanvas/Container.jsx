@@ -214,8 +214,6 @@ export const Container = React.memo(
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
               ? canvasBgColor
-              : componentType === 'ModuleContainer'
-              ? 'inherit'
               : '#f0f0f0',
           width: getCanvasWidth(),
           maxWidth: (() => {

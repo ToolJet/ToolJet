@@ -572,4 +572,42 @@ export class AppsUtilService implements IAppsUtilService {
 
     return components;
   }
+
+  async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
+    const versionToLoad = versionId
+      ? await this.versionRepository.findVersion(versionId)
+      : app.currentVersionId
+      ? await this.versionRepository.findVersion(app.currentVersionId)
+      : await this.versionRepository.findVersion(app.editingVersion?.id);
+
+    const modules = await dbTransactionWrap(async (manager) => {
+      const moduleComponents = await manager
+        .createQueryBuilder(Component, 'component')
+        .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
+        .leftJoinAndSelect(AppVersion, 'app_version', 'app_version.id = page.app_version_id')
+        .leftJoinAndSelect(App, 'app', 'app.id = app_version.app_id')
+        .andWhere(
+          `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
+          {
+            module: 'ModuleViewer',
+            appVersionId: versionToLoad.id,
+            appId: app.id,
+          }
+        )
+        .getMany();
+
+      const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+
+      const modules =
+        moduleAppIds.length > 0
+          ? await manager
+              .createQueryBuilder(App, 'app')
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .distinct(true)
+              .getMany()
+          : [];
+      return modules;
+    });
+    return modules;
+  }
 }

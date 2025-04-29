@@ -28,14 +28,10 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
     );
-    let layoutData = useStore((state) => {
-      const layout = state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout];
-      // Override layout data with 0 and width to 43 for ModuleContainer in view mode to make the child components relative to the ModuleViewer
-      if (componentType === 'ModuleContainer' && mode === 'view') {
-        return { ...layout, top: 0, left: 0, width: NO_OF_GRIDS };
-      }
-      return layout;
-    }, shallow);
+    const layoutData = useStore(
+      (state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout],
+      shallow
+    );
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
@@ -58,18 +54,18 @@ const WidgetWrapper = memo(
       return null;
     }
 
-    // if (componentType === 'ModuleContainer' && mode === 'view') {
-    //   layoutData.top = 0;
-    //   layoutData.left = 0;
-    //   layoutData.width = NO_OF_GRIDS;
-    // }
+    let newLayoutData = layoutData;
 
-    const width = gridWidth * layoutData?.width;
+    if (componentType === 'ModuleContainer' && mode === 'view') {
+      newLayoutData = { ...layoutData, top: 0, left: 0, width: NO_OF_GRIDS };
+    }
+
+    const width = gridWidth * newLayoutData?.width;
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);
     const styles = {
       width: width + 'px',
       height: visibility === false ? '10px' : `${height}px`,
-      transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+      transform: `translate(${newLayoutData.left * gridWidth}px, ${newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       border: visibility === false ? `1px solid var(--border-default)` : 'none',
     };
@@ -108,8 +104,8 @@ const WidgetWrapper = memo(
           {mode == 'edit' && (
             <ConfigHandle
               id={id}
-              widgetTop={layoutData.top}
-              widgetHeight={layoutData.height}
+              widgetTop={newLayoutData.top}
+              widgetHeight={newLayoutData.height}
               showHandle={isWidgetActive}
               componentType={componentType}
               visibility={visibility}
@@ -120,7 +116,7 @@ const WidgetWrapper = memo(
           <RenderWidget
             id={id}
             componentType={componentType}
-            widgetHeight={layoutData.height}
+            widgetHeight={newLayoutData.height}
             widgetWidth={width}
             inCanvas={inCanvas}
             subContainerIndex={subContainerIndex}

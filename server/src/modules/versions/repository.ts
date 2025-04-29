@@ -164,4 +164,20 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersion.app;
     }, manager || this.manager);
   }
+
+  async findVersionsFromApp(app: App, manager?: EntityManager): Promise<AppVersion[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersions = await manager.find(AppVersion, {
+        where: { appId: app.id },
+        relations: [
+          'app',
+          'dataQueries',
+          'dataQueries.dataSource',
+          'dataQueries.plugins',
+          'dataQueries.plugins.manifestFile',
+        ],
+      });
+      return appVersions;
+    }, manager || this.manager);
+  }
 }
