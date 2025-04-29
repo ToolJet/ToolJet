@@ -5,15 +5,6 @@ if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
 fi
 
-# Start Postgres
-service postgresql start
-
-# Create role if it doesn't exist
-if ! PGPASSWORD="$PG_PASS" psql -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='${PG_USER}'" | grep -q 1; then
-  echo "Creating role ${PG_USER} with password from PG_PASS env variable..."
-  PGPASSWORD="$PG_PASS" psql -U postgres -c "CREATE ROLE ${PG_USER} WITH LOGIN SUPERUSER PASSWORD '${PG_PASS}';"
-fi
-
 if [ -d "./server/dist" ]; then
   SETUP_CMD='npm run db:setup:prod'
 else
