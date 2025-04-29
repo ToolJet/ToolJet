@@ -12,9 +12,13 @@ env:
 jobs:
   Cypress-App-Builder:
     runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'run-ce-app-builder') || 
-        contains(github.event.pull_request.labels.*.name, 'run-ee-app-builder') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress')
+    # if: |
+    #   contains(github.event.pull_request.labels.*.name, 'run-ce-app-builder') || 
+    #   contains(github.event.pull_request.labels.*.name, 'run-ee-app-builder') || 
+    #   contains(github.event.pull_request.labels.*.name, 'run-cypress')
+    steps:
+      - name: Log all labels
+        run: echo "Labels: ${{ toJson(github.event.pull_request.labels.*.name) }}"
     strategy:
       matrix:
         edition: >-
