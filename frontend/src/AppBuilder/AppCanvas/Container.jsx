@@ -159,7 +159,8 @@ export const Container = React.memo(
         !isPagesSidebarHidden &&
         isViewerSidebarPinned &&
         currentLayout !== 'mobile' &&
-        currentMode !== 'edit'
+        currentMode !== 'edit' &&
+        appType !== 'module'
       ) {
         return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
       }

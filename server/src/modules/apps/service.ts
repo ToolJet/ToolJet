@@ -348,44 +348,54 @@ export class AppsService implements IAppsService {
   }
 
   async getBySlug(app: App, user: User): Promise<any> {
-    const versionToLoad = app.currentVersionId
-      ? await this.versionRepository.findVersion(app.currentVersionId)
-      : await this.versionRepository.findVersion(app.editingVersion?.id);
+    const prepareResponse = async (app) => {
+      const versionToLoad = app.currentVersionId
+        ? await this.versionRepository.findVersion(app.currentVersionId)
+        : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
-    const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
-    const appTheme = await this.organizationThemeUtilService.getTheme(
-      app.organizationId,
-      versionToLoad?.globalSettings?.theme?.id
-    );
+      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+      const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
+      const appTheme = await this.organizationThemeUtilService.getTheme(
+        app.organizationId,
+        versionToLoad?.globalSettings?.theme?.id
+      );
 
-    if (app?.isPublic && user) {
-      this.eventEmitter.emit('auditLogEntry', {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceType: MODULES.APP,
-        resourceName: app.name,
-        actionType: MODULE_INFO.APP.GET_BY_SLUG,
-      });
-    }
+      if (app?.isPublic && user) {
+        this.eventEmitter.emit('auditLogEntry', {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: app.id,
+          resourceType: MODULES.APP,
+          resourceName: app.name,
+          actionType: MODULE_INFO.APP.GET_BY_SLUG,
+        });
+      }
 
-    // serialize
-    return {
-      current_version_id: app['currentVersionId'],
-      data_queries: versionToLoad?.dataQueries,
-      definition: versionToLoad?.definition,
-      is_public: app.isPublic,
-      is_maintenance_on: app.isMaintenanceOn,
-      name: app.name,
-      slug: app.slug,
-      events: eventsForVersion,
-      pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
-      homePageId: versionToLoad.homePageId,
-      globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
-      showViewerNavigation: versionToLoad.showViewerNavigation,
-      pageSettings: versionToLoad?.pageSettings,
+      // serialize
+      return {
+        current_version_id: app['currentVersionId'],
+        data_queries: versionToLoad?.dataQueries,
+        definition: versionToLoad?.definition,
+        is_public: app.isPublic,
+        is_maintenance_on: app.isMaintenanceOn,
+        name: app.name,
+        slug: app.slug,
+        events: eventsForVersion,
+        pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
+        homePageId: versionToLoad.homePageId,
+        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        showViewerNavigation: versionToLoad.showViewerNavigation,
+        pageSettings: versionToLoad?.pageSettings,
+      };
     };
+
+    const response = await prepareResponse(app);
+
+    const modules = await this.appsUtilService.fetchModules(app, false, undefined);
+
+    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
+
+    return response;
   }
 
   async release(app: App, user: User, versionReleaseDto: VersionReleaseDto) {

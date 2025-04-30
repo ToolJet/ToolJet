@@ -142,6 +142,8 @@ const useAppData = (
 
   const initialLoadRef = useRef(true);
 
+  const appTypeRef = useRef(null);
+
   const fetchAndInjectCustomStyles = async (isPublicAccess = false) => {
     try {
       const head = document.head || document.getElementsByTagName('head')[0];
@@ -313,6 +315,8 @@ const useAppData = (
       // handles the getappdataby slug api call. Gets the homePageId from the appData.
       const homePageId =
         appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
+
+      appTypeRef.current = appData.type;
 
       setApp(
         {
@@ -616,6 +620,8 @@ const useAppData = (
       ); // Adding a timeout of 2 seconds as fallback
     }
   }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
+
+  return appTypeRef.current;
 };
 
 export default useAppData;

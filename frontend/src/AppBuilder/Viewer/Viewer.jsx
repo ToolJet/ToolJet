@@ -25,12 +25,11 @@ export const Viewer = ({
   environmentId,
   versionId,
   moduleMode = false,
-  appType = 'front-end',
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
-  useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode);
+  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode);
 
   const {
     isEditorLoading,
@@ -80,7 +79,7 @@ export const Viewer = ({
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
 
-  const hideSidebar = moduleMode || isPagesSidebarHidden;
+  const hideSidebar = moduleMode || isPagesSidebarHidden || appType === 'module';
 
   const computeCanvasMaxWidth = useCallback(() => {
     if (globalSettings?.maxCanvasWidth) {
@@ -223,7 +222,7 @@ export const Viewer = ({
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
                               close: !isSidebarPinned,
-                              'w-100': moduleMode,
+                              'w-100': moduleMode || appType === 'module',
                             })}
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',

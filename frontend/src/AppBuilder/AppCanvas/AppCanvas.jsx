@@ -46,7 +46,7 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isModuleEdito
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
 
-  const hideSidebar = isModuleMode || isPagesSidebarHidden;
+  const hideSidebar = isModuleMode || isPagesSidebarHidden || appType === 'module';
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
