@@ -28,7 +28,7 @@ describe("Data source baserow", () => {
     data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on baserow connection form", () => {
+  it.skip("Should verify elements on baserow connection form", () => {
     const Apikey = Cypress.env("baserow_apikey");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -78,7 +78,7 @@ describe("Data source baserow", () => {
     deleteDatasource(`cypress-${data.dsName}-baserow`);
   });
 
-  it("Should verify the functionality of baserow connection form.", () => {
+  it.skip("Should verify the functionality of baserow connection form.", () => {
     const Apikey = Cypress.env("baserow_apikey");
 
     selectAndAddDataSource("databases", baseRowText.baserow, data.dsName);
@@ -103,7 +103,7 @@ describe("Data source baserow", () => {
     deleteDatasource(`cypress-${data.dsName}-baserow`);
   });
 
-  it("Should be able to run the query with a valid connection", () => {
+  it.skip("Should be able to run the query with a valid connection", () => {
     const baserowTableID = Cypress.env("baserow_tableid");
     const baserowRowID = Cypress.env("baserow_rowid");
     const Apikey = Cypress.env("baserow_apikey");

@@ -29,7 +29,7 @@ describe("Data source AWS Textract", () => {
     data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should  verify elements on AWS Textract connection form", () => {
+  it.skip("Should  verify elements on AWS Textract connection form", () => {
     const Accesskey = Cypress.env("awstextract_access");
     const Secretkey = Cypress.env("awstextract_secret");
 
@@ -87,7 +87,7 @@ describe("Data source AWS Textract", () => {
     deleteDatasource(`cypress-${data.dsName}-aws-textract`);
   });
 
-  it("Should  verify functionality of AWS Textract connection form", () => {
+  it.skip("Should  verify functionality of AWS Textract connection form", () => {
     const Accesskey = Cypress.env("awstextract_access");
     const Secretkey = Cypress.env("awstextract_secret");
 

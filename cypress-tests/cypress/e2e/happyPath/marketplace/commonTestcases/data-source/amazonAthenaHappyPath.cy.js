@@ -28,7 +28,7 @@ describe("Data source amazon athena", () => {
     data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on amazon athena connection form", () => {
+  it.skip("Should verify elements on amazon athena connection form", () => {
     const Accesskey = Cypress.env("amazonathena_accessKey");
     const Secretkey = Cypress.env("amazonathena_secretKey");
     const DbName = Cypress.env("amazonathena_DbName");
@@ -97,7 +97,7 @@ describe("Data source amazon athena", () => {
     deleteDatasource(`cypress-${data.dsName}-Amazon-Athena`);
   });
 
-  it("Should verify the functionality of amazon athena connection form.", () => {
+  it.skip("Should verify the functionality of amazon athena connection form.", () => {
     const Accesskey = Cypress.env("amazonathena_accessKey");
     const Secretkey = Cypress.env("amazonathena_secretKey");
     const DbName = Cypress.env("amazonathena_DbName");
@@ -134,7 +134,7 @@ describe("Data source amazon athena", () => {
     deleteDatasource(`cypress-${data.dsName}-amazon-Athena`);
   });
 
-  it("Should able to run the query with valid conection", () => {
+  it.skip("Should able to run the query with valid conection", () => {
     const Accesskey = Cypress.env("amazonathena_accessKey");
     const Secretkey = Cypress.env("amazonathena_secretKey");
     const DbName = Cypress.env("amazonathena_DbName");

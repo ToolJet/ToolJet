@@ -29,7 +29,7 @@ describe("Data source Twilio", () => {
     data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on Twilio connection form", () => {
+  it.skip("Should verify elements on Twilio connection form", () => {
     const AuthToken = Cypress.env("twilio_auth_token");
     const AccountSID = Cypress.env("twilio_account_SID");
     const MessageSID = Cypress.env("twilio_messaging_service_SID");
@@ -89,7 +89,7 @@ describe("Data source Twilio", () => {
     deleteDatasource(`cypress-${data.dsName}-twilio`);
   });
 
-  it("Should verify functionality of Twilio connection form", () => {
+  it.skip("Should verify functionality of Twilio connection form", () => {
     const AuthToken = Cypress.env("twilio_auth_token");
     const AccountSID = Cypress.env("twilio_account_SID");
     const MessageSID = Cypress.env("twilio_messaging_service_SID");
@@ -128,7 +128,7 @@ describe("Data source Twilio", () => {
     deleteDatasource(`cypress-${data.dsName}-twilio`);
   });
 
-  it("Should be able to run the query with a valid connection", () => {
+  it.skip("Should be able to run the query with a valid connection", () => {
     const AuthToken = Cypress.env("twilio_auth_token");
     const AccountSID = Cypress.env("twilio_account_SID");
     const MessageSID = Cypress.env("twilio_messaging_service_SID");

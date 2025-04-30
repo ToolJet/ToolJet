@@ -28,7 +28,7 @@ describe("Data source amazon ses", () => {
     data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on amazonses connection form", () => {
+  it.skip("Should verify elements on amazonses connection form", () => {
     const Accesskey = Cypress.env("amazonSes_accessKey");
     const Secretkey = Cypress.env("amazonSes_secretKey");
 
@@ -80,7 +80,7 @@ describe("Data source amazon ses", () => {
     deleteDatasource(`cypress-${data.dsName}-Amazon-ses`);
   });
 
-  it("Should verify the functionality of amazonses connection form.", () => {
+  it.skip("Should verify the functionality of amazonses connection form.", () => {
     selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();

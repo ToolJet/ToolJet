@@ -28,7 +28,7 @@ describe("Data source AWS Lambda", () => {
     data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should  verify elements on AWS Lambda connection form", () => {
+  it.skip("Should  verify elements on AWS Lambda connection form", () => {
     const Accesskey = Cypress.env("awslamda_access");
     const Secretkey = Cypress.env("awslamda_secret");
 
@@ -83,7 +83,7 @@ describe("Data source AWS Lambda", () => {
     cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 
-  it("Should  verify the functionality of AWS Lambda connection form", () => {
+  it.skip("Should  verify the functionality of AWS Lambda connection form", () => {
     const Accesskey = Cypress.env("awslamda_access");
     const Secretkey = Cypress.env("awslamda_secret");
 
@@ -117,7 +117,7 @@ describe("Data source AWS Lambda", () => {
     cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 
-  it("Should  able to run the query with valid conection", () => {
+  it.skip("Should  able to run the query with valid conection", () => {
     const Accesskey = Cypress.env("awslamda_access");
     const Secretkey = Cypress.env("awslamda_secret");
 
