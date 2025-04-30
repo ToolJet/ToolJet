@@ -38,7 +38,19 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget supervisor
+
+RUN apt-get update && apt-get install -y \
+    gnupg \
+    wget \
+    unzip \
+    curl \
+    lsb-release \
+    freetds-dev \
+    libaio1 \
+    postgresql-13 \
+    supervisor \
+    locales && \
+    locale-gen en_US.UTF-8
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
