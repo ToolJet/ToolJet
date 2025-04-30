@@ -85,6 +85,7 @@ export const Container = React.memo(
           return;
         }
 
+        // IMPORTANT: This logic needs to be changed when we implement the module versioning
         const moduleInfo = component?.moduleId
           ? {
               moduleId: component.moduleId,

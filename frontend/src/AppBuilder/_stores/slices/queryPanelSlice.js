@@ -284,7 +284,8 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       //   const queryState = { ...getCurrentState(), parameters };
-      const queryState = { ...get().getAllExposedValues('canvas'), parameters };
+      const queryState = { ...get().getAllExposedValues(moduleId), parameters };
+
       const options = getQueryVariables(dataQuery.options, queryState, {
         components: get().getComponentNameIdMapping(moduleId),
         queries: get().getQueryNameIdMapping(moduleId),
@@ -342,11 +343,16 @@ export const createQueryPanelSlice = (set, get) => ({
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
         } else {
+          let versionId = currentVersionId;
+          // IMPORTANT: This logic needs to be changed when we implement the module versioning
+          if (moduleId !== 'canvas') {
+            versionId = get().resolvedStore.modules.canvas.components[moduleId].properties.moduleVersionId;
+          }
           queryExecutionPromise = dataqueryService.run(
             queryId,
             options,
             query?.options,
-            currentVersionId,
+            versionId,
             !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
         }
