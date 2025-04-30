@@ -87,6 +87,8 @@ RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
+ENV PGDATA=/data
+
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     NODE_ENV=production \
