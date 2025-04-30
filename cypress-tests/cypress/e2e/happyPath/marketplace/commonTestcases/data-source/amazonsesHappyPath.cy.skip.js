@@ -1,9 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { pluginSelectors } from "Selectors/plugins";
-import { awsTextractSelectors } from "Selectors/Plugins";
 import { postgreSqlText } from "Texts/postgreSql";
-import { awsTextractText } from "Texts/awsTextract";
+import { amazonSesText } from "Texts/amazonSes";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
@@ -22,16 +21,16 @@ import { dataSourceSelector } from "../../../../../constants/selectors/dataSourc
 
 const data = {};
 
-describe("Data source AWS Textract", () => {
+describe("Data source amazon ses", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
     data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should  verify elements on AWS Textract connection form", () => {
-    const Accesskey = Cypress.env("awstextract_access");
-    const Secretkey = Cypress.env("awstextract_secret");
+  it.skip("Should verify elements on amazonses connection form", () => {
+    const Accesskey = Cypress.env("amazonSes_accessKey");
+    const Secretkey = Cypress.env("amazonSes_secretKey");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
@@ -57,13 +56,7 @@ describe("Data source AWS Textract", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.installMarketplacePlugin("AWS Textract");
-
-    selectAndAddDataSource(
-      "databases",
-      awsTextractText.awsTextract,
-      data.dsName
-    );
+    selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
     cy.get(".react-select__option").contains("US West (N. California)").click();
@@ -71,7 +64,7 @@ describe("Data source AWS Textract", () => {
     cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
     fillDataSourceTextField(
-      awsTextractText.labelSecretKey,
+      amazonSesText.labelSecretKey,
       "**************",
       Secretkey
     );
@@ -84,83 +77,71 @@ describe("Data source AWS Textract", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-aws-textract`);
+    deleteDatasource(`cypress-${data.dsName}-Amazon-ses`);
   });
 
-  it("Should  verify functionality of AWS Textract connection form", () => {
-    const Accesskey = Cypress.env("awstextract_access");
-    const Secretkey = Cypress.env("awstextract_secret");
-
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
-    cy.installMarketplacePlugin("AWS Textract");
-
-    selectAndAddDataSource(
-      "databases",
-      awsTextractText.awsTextract,
-      data.dsName
-    );
+  it.skip("Should verify the functionality of amazonses connection form.", () => {
+    selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
     cy.get(".react-select__option").contains("US West (N. California)").click();
 
-    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
-
     fillDataSourceTextField(
-      awsTextractText.labelSecretKey,
-      "**************",
-      Secretkey
+      amazonSesText.labelAccesskey,
+      amazonSesText.placeholderAccessKey,
+      Cypress.env("amazonSes_accessKey")
+    );
+    fillDataSourceTextField(
+      amazonSesText.labelSecretKey,
+      amazonSesText.placeholderSecretKey,
+      Cypress.env("amazonSes_secretKey")
     );
 
-    cy.get(postgreSqlSelector.buttonSave)
-      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
-      .click();
+    cy.get(postgreSqlSelector.buttonSave).click();
+
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
-
-    deleteDatasource(`cypress-${data.dsName}-aws-textract`);
-    cy.uninstallMarketplacePlugin("AWS Textract");
-  });
-
-  it.skip("Should  able to run the query with valid conection", () => {
-    const Accesskey = Cypress.env("awstextract_access");
-    const Secretkey = Cypress.env("awstextract_secret");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
+    cy.get(
+      `[data-cy="cypress-${data.dsName}-amazon-ses-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.dsName}-amazon-ses`);
 
-    cy.installMarketplacePlugin("AWS Textract");
+    deleteDatasource(`cypress-${data.dsName}-amazon-ses`);
+  });
 
-    selectAndAddDataSource(
-      "databases",
-      awsTextractText.awsTextract,
-      data.dsName
-    );
+  it.skip("Should able to run the query with valid conection", () => {
+    const email = "adish" + "@" + "tooljet.com";
+    selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
-    cy.get(".react-select__option")
-      .contains("US West (N. California)")
-      .wait(500)
-      .click();
-
-    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
+    cy.get(".react-select__option").contains("US West (N. California)").click();
 
     fillDataSourceTextField(
-      awsTextractText.labelSecretKey,
-      "**************",
-      Secretkey
+      amazonSesText.labelAccesskey,
+      amazonSesText.placeholderAccessKey,
+      Cypress.env("amazonSes_accessKey")
+    );
+    fillDataSourceTextField(
+      amazonSesText.labelSecretKey,
+      amazonSesText.placeholderSecretKey,
+      Cypress.env("amazonSes_secretKey")
     );
 
-    cy.get(postgreSqlSelector.buttonSave)
-      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
-      .click();
+    cy.get(postgreSqlSelector.buttonSave).click();
+
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
+
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.dsName}-amazon-ses-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.dsName}-amazon-ses`);
+    cy.wait(1000);
 
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.appCreateButton).click();
@@ -173,43 +154,42 @@ describe("Data source AWS Textract", () => {
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
-    // Verifying analyze document operation
     cy.get(pluginSelectors.operationDropdown)
       .click()
-      .wait(500)
-      .type("Analyze Document{enter}");
+      .type("Email service{enter}");
 
     cy.wait(500);
 
-    cy.get(awsTextractSelectors.documentInputField).clearAndTypeOnCodeMirror(
-      awsTextractText.documentName
+    cy.get(pluginSelectors.sendEmailInputField)
+      .realClick()
+      .realType('{{["', { force: true, delay: 0 })
+      .realType("mekhla@tooljet.com", { force: true, delay: 0 });
+
+    cy.get(pluginSelectors.ccEmailInputField)
+      .realClick()
+      .realType('{{["', { force: true, delay: 0 })
+      .realType("mani@tooljet.com", { force: true, delay: 0 });
+
+    cy.get(pluginSelectors.bccEmailInputField)
+      .realClick()
+      .realType('{{["', { force: true, delay: 0 })
+      .realType("midhun@tooljet.com", { force: true, delay: 0 });
+
+    cy.get(pluginSelectors.sendEmailFromInputField)
+      .realClick()
+      .realType("adish", { force: true, delay: 0 })
+      .realType("@", { force: true, delay: 0 })
+      .realType("tooljet.com", { force: true, delay: 0 });
+
+    cy.get(pluginSelectors.emailSubjetInputField).clearAndTypeOnCodeMirror(
+      "Testmail for amazon ses"
     );
 
-    cy.wait(500);
-
-    cy.get(dataSourceSelector.queryPreviewButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      `Query (${data.dsName}) completed.`
-    );
-    // Verifying Analyze document stored in AWS S3 operation
-
-    cy.get(pluginSelectors.operationDropdown)
-      .click()
-      .wait(500)
-      .type("Analyze document stored in AWS S3{enter}");
-
-    cy.wait(500);
-
-    cy.get(awsTextractSelectors.bucketNameInputField).clearAndTypeOnCodeMirror(
-      awsTextractText.bucketName
+    cy.get(pluginSelectors.emailbodyInputField).clearAndTypeOnCodeMirror(
+      "Body text for amazon ses"
     );
 
-    cy.get(awsTextractSelectors.keyNameInputField).clearAndTypeOnCodeMirror(
-      awsTextractText.keyName
-    );
-
-    cy.wait(500);
+    cy.wait(1000);
 
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
@@ -218,8 +198,7 @@ describe("Data source AWS Textract", () => {
     );
     deleteAppandDatasourceAfterExecution(
       data.dsName,
-      `cypress-${data.dsName}-aws-textract`
+      `cypress-${data.dsName}-amazon-ses`
     );
-    cy.uninstallMarketplacePlugin("AWS Textract");
   });
 });
