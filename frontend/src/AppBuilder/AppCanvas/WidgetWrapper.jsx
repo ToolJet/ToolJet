@@ -46,6 +46,8 @@ const WidgetWrapper = memo(
     });
     const visibility = useStore((state) => {
       const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+      const componentExposedVisibility = state.getExposedValueOfComponent(id, moduleId)?.isVisible;
+      if (componentExposedVisibility === false) return false;
       if (component?.properties?.visibility === false || component?.styles?.visibility === false) return false;
       return true;
     });
@@ -67,7 +69,7 @@ const WidgetWrapper = memo(
       height: visibility === false ? '10px' : `${height}px`,
       transform: `translate(${newLayoutData.left * gridWidth}px, ${newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
-      border: visibility === false ? `1px solid var(--border-default)` : 'none',
+      border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
     };
 
     const isModuleContainer = componentType === 'ModuleContainer';
@@ -111,6 +113,7 @@ const WidgetWrapper = memo(
               visibility={visibility}
               customClassName={isModuleContainer ? 'module-container' : ''}
               isModuleContainer={isModuleContainer}
+              subContainerIndex={subContainerIndex}
             />
           )}
           <RenderWidget

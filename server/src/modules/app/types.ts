@@ -16,6 +16,7 @@ export interface UserAllPermissions {
 export interface FeatureConfig {
   license?: LICENSE_FIELD;
   auditLogsKey?: string;
+  skipAuditLogs?: boolean;
   isPublic?: boolean;
   shouldNotSkipPublicApp?: boolean;
 }

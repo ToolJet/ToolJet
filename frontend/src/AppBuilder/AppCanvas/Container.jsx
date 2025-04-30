@@ -5,7 +5,12 @@ import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop } from 'react-dnd';
-import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from './appCanvasUtils';
+import {
+  addChildrenWidgetsToParent,
+  addNewWidgetToTheEditor,
+  computeViewerBackgroundColor,
+  getSubContainerWidthAfterPadding,
+} from './appCanvasUtils';
 import {
   CANVAS_WIDTHS,
   NO_OF_GRIDS,
@@ -22,6 +27,8 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import useSortedComponents from '../_hooks/useSortedComponents';
+
 //TODO: Revisit the logic of height (dropRef)
 
 /*
@@ -139,12 +146,7 @@ export const Container = React.memo(
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
         if (id === 'canvas') return canvasWidth;
-        if (componentType === 'Container' || componentType === 'Form') {
-          return (
-            canvasWidth - (2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING)
-          );
-        }
-        return canvasWidth - 2; // Need to update this 2 to correct value for other subcontainers
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id);
       }
       return realCanvasRef?.current?.offsetWidth;
     }
@@ -200,6 +202,7 @@ export const Container = React.memo(
         </div>
       );
     };
+    const sortedComponents = useSortedComponents(components, currentLayout, id);
 
     return (
       <div
@@ -252,7 +255,7 @@ export const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {components.map((id) => (
+          {sortedComponents.map((id) => (
             <WidgetWrapper
               id={id}
               key={id}

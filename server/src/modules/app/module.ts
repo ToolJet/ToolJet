@@ -42,6 +42,9 @@ import { WorkflowsModule } from '@modules/workflows/module';
 import { ModulesModule } from '@modules/modules/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { EventsModule } from '@modules/events/module';
+import { ExternalApiModule } from '@modules/external-apis/module';
 
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -96,6 +99,9 @@ export class AppModule implements OnModuleInit {
       await ModulesModule.register(configs),
       await AiModule.register(configs),
       await CustomStylesModule.register(configs),
+      await AppPermissionsModule.register(configs),
+      await EventsModule.register(configs),
+      await ExternalApiModule.register(configs),
     ];
 
     return {

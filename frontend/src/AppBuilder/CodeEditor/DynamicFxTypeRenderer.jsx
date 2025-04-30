@@ -19,9 +19,11 @@ import { Datepicker } from '../CodeBuilder/Elements/Datepicker';
 import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
 import { Query } from '../CodeBuilder/Elements/Query';
+import { ColorSwatches } from '@/modules/Appbuilder/components';
 
 const AllElements = {
   Color,
+  ColorSwatches,
   Json,
   Toggle,
   Select,

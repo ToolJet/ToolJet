@@ -446,7 +446,7 @@ export const createEventsSlice = (set, get) => ({
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
-          customLog: `${event.description}`,
+          customLog: `${event.key}`,
         };
 
         return headerMap[source] || '';
@@ -459,7 +459,7 @@ export const createEventsSlice = (set, get) => ({
           page: 'Event Errors with page',
           component: 'Component Event',
           query: 'Event Errors with query',
-          customLog: 'Custom Log',
+          customLog: 'Queries',
         };
 
         return errorTargetMap[source];
@@ -472,8 +472,9 @@ export const createEventsSlice = (set, get) => ({
         error: {
           message: error.message,
           description: JSON.stringify(error.message, null, 2),
-          ...(event.component && componentId && { componentId: componentId }),
+          ...(event.component === 'component' && componentId && { componentId: componentId }),
         },
+        description: event?.description,
         errorTarget: constructErrorTarget(),
         options: options,
         strace: 'app_level',
@@ -586,7 +587,7 @@ export const createEventsSlice = (set, get) => ({
             //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
             const resolvedValue = getResolvedValue(event.url, customVariables);
             // const url = resolveReferences(event.url, undefined, customVariables);
-            window.open(resolvedValue, '_blank');
+            window.open(resolvedValue, event?.windowTarget === 'newTab' ? '_blank' : '_self');
             return Promise.resolve();
           }
           case 'go-to-app': {
@@ -692,6 +693,12 @@ export const createEventsSlice = (set, get) => ({
             return getVariable(key);
           }
 
+          case 'unset-all-custom-variables': {
+            const { unsetAllVariables } = get();
+            unsetAllVariables();
+            return Promise.resolve();
+          }
+
           case 'unset-custom-variable': {
             const { unsetVariable } = get();
             const key = getResolvedValue(event.key, customVariables);
@@ -746,6 +753,12 @@ export const createEventsSlice = (set, get) => ({
             const { getPageVariable } = get();
             const key = getResolvedValue(event.key, customVariables);
             return getPageVariable(key);
+          }
+
+          case 'unset-all-page-variables': {
+            const { unsetAllPageVariables } = get();
+            unsetAllPageVariables();
+            return Promise.resolve();
           }
 
           case 'unset-page-variable': {
@@ -844,7 +857,9 @@ export const createEventsSlice = (set, get) => ({
               const { switchPage } = get();
               const page = get().modules[moduleId].pages.find((page) => page.id === event.pageId);
               const queryParams = event.queryParams || [];
-              if (!page.disabled) {
+              if (page.restricted && mode !== 'edit') {
+                toast.error('Access to this page is restricted. Contact admin to know more.');
+              } else if (!page.disabled) {
                 const resolvedQueryParams = [];
                 queryParams.forEach((param) => {
                   resolvedQueryParams.push([
@@ -948,6 +963,13 @@ export const createEventsSlice = (set, get) => ({
           };
           return executeAction(event, mode, {}, moduleId);
         }
+      };
+
+      const unsetAllVariables = () => {
+        const event = {
+          actionId: 'unset-all-custom-variables',
+        };
+        return executeAction(event, mode, {});
       };
 
       const unSetVariable = (key = '') => {
@@ -1063,6 +1085,13 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {}, moduleId);
       };
 
+      const unsetAllPageVariables = () => {
+        const event = {
+          actionId: 'unset-all-page-variables',
+        };
+        return executeAction(event, mode, {});
+      };
+
       const unsetPageVariable = (key = '') => {
         const event = {
           actionId: 'unset-page-variable',
@@ -1099,30 +1128,51 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {}, moduleId);
       };
 
-      const logInfo = (log) => {
+      const logInfo = (log, isFromTransformation) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log-info', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log-info',
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
+          description: log,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {}, moduleId);
       };
 
-      const logError = (log) => {
+      const logError = (log, isFromTransformation = false) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log-error', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log-error',
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
+          description: log,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {}, moduleId);
       };
 
-      const log = (log) => {
+      const log = (log, isFromTransformation = false) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log',
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
+          description: log,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {}, moduleId);
       };
 
@@ -1130,6 +1180,7 @@ export const createEventsSlice = (set, get) => ({
         runQuery,
         setVariable,
         getVariable,
+        unsetAllVariables,
         unSetVariable,
         showAlert,
         logout,
@@ -1141,6 +1192,7 @@ export const createEventsSlice = (set, get) => ({
         generateFile,
         setPageVariable,
         getPageVariable,
+        unsetAllPageVariables,
         unsetPageVariable,
         switchPage,
         logInfo,

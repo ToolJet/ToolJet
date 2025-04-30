@@ -21,6 +21,7 @@ export const ConfigHandle = ({
   componentType,
   visibility,
   isModuleContainer,
+  subContainerIndex,
 }) => {
   const { moduleId } = useModuleContext();
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -44,13 +45,14 @@ export const ConfigHandle = ({
     const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
     // If one component is hovered and one is selected, show the handle for the hovered component
     return (
-      isWidgetHovered ||
-      isModuleContainer ||
-      (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered)
+      (subContainerIndex === 0 || subContainerIndex === null) &&
+      (isWidgetHovered ||
+        isModuleContainer ||
+        (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered))
     );
   }, shallow);
-  let height = visibility === false ? 10 : widgetHeight;
 
+  let height = visibility === false ? 10 : widgetHeight;
   return (
     <div
       className={`config-handle ${customClassName}`}
@@ -62,7 +64,7 @@ export const ConfigHandle = ({
             : position === 'top'
             ? '-20px'
             : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
-        visibility: _showHandle ? 'visible' : 'hidden',
+        visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
       }}
       onClick={(e) => {

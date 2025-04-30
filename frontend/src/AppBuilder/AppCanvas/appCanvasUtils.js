@@ -6,7 +6,16 @@ import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+  TAB_CANVAS_PADDING,
+  MODAL_CANVAS_PADDING,
+} from './appCanvasConstants';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -47,7 +56,7 @@ export const addNewWidgetToTheEditor = (
   left = Math.round(left / gridWidth);
   // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
 
   let customLayouts = undefined;
 
@@ -62,13 +71,19 @@ export const addNewWidgetToTheEditor = (
       moduleInfo.moduleContainer.component.definition.properties?.input_items?.value ?? {}
     );
 
-    console.log('inputItems--- ', inputItems);
-
     for (const { name, default_value } of inputItems) {
       componentData.definition.properties[name] = { value: default_value };
     }
   }
 
+  // Ensure minimum width
+  width = Math.max(width, 1);
+
+  // Adjust position and width if exceeding grid bounds
+  if (width + left > NO_OF_GRIDS) {
+    left = Math.max(0, NO_OF_GRIDS - width);
+    width = Math.min(width, NO_OF_GRIDS);
+  }
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;
@@ -275,6 +290,12 @@ const getSelectedText = () => {
 
 // TODO: Move this function to componentSlice
 export const copyComponents = ({ isCut = false, isCloning = false }) => {
+  const selectedText = window.getSelection()?.toString().trim();
+  if (selectedText) {
+    navigator.clipboard.writeText(selectedText);
+    return;
+  }
+
   const selectedComponents = useStore.getState().getSelectedComponentsDefinition();
   if (selectedComponents.length < 1) return getSelectedText();
   const allComponents = useStore.getState().getCurrentPageComponents();
@@ -525,7 +546,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
         targetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
-        (['Container', 'Form', 'Modal'].includes(components?.[key]?.component.component) &&
+        (['Container', 'Form', 'ModalV2'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {
@@ -537,6 +558,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
   }
 
   pastedComponents.forEach((component) => {
+    component = deepClone(component);
     const newComponentId = isCut ? component.id : uuidv4();
     const componentName = computeComponentName(component.component.component, {
       ...components,
@@ -577,15 +599,28 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     componentData.definition.others.showOnMobile.value = currentLayout === 'mobile' ? `{{true}}` : `{{false}}`;
 
     // Adjust width if parent changed
-    let width = component.layouts.desktop.width;
+    let width = component.layouts[currentLayout].width;
 
     if (targetParentId !== component.component?.parent) {
       const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
       const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
       width = Math.round((width * oldContainerWidth) / containerWidth);
+
+      // Ensure minimum width
+      width = Math.max(width, 1);
+
+      // Adjust position and width if exceeding grid bounds
+      if (width + component.layouts[currentLayout].left > NO_OF_GRIDS) {
+        component.layouts[currentLayout].left = Math.max(0, NO_OF_GRIDS - width);
+        width = Math.min(width, NO_OF_GRIDS);
+      }
     }
 
-    component.layouts[currentLayout].width = width;
+    component.layouts[currentLayout] = {
+      ...component.layouts[currentLayout],
+      width,
+    };
+
     const newComponent = {
       component: {
         ...componentData,
@@ -736,4 +771,26 @@ export const getSubContainerIdWithSlots = (parentId) => {
     }
   }
   return cleanParentId;
+};
+
+export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId) => {
+  let padding = 2; //Need to update this 2 to correct value for other subcontainers
+  if (componentType === 'Container' || componentType === 'Form') {
+    padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  }
+  if (componentType === 'Tabs') {
+    padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  }
+  if (componentType === 'ModalV2') {
+    const isModalHeader = componentId?.includes('header');
+    if (isModalHeader) {
+      const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
+        ?.hideCloseButton;
+      console.log('isModalHeaderCloseBtnEnabled', isModalHeaderCloseBtnEnabled);
+      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
+    } else {
+      padding = 2 * MODAL_CANVAS_PADDING;
+    }
+  }
+  return canvasWidth - padding;
 };

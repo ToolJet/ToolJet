@@ -98,6 +98,7 @@ export const PreviewBox = ({
   const [largeDataset, setLargeDataset] = useState(false);
   const globals = useStore((state) => state.getAllExposedValues(moduleId).constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
+  const globalServerConstantsRegex = /^\{\{.*globals\.server.*\}\}$/;
 
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;
@@ -120,11 +121,11 @@ export const PreviewBox = ({
   let previewContent = resolvedValue;
   let isGlobalConstant = currentValue && currentValue.includes('{{constants.');
   let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
+  const isServerConstant = currentValue && currentValue.match(globalServerConstantsRegex);
   let invalidConstants = null;
   let undefinedError = null;
   if (isGlobalConstant || isSecretConstant) {
     invalidConstants = verifyConstant(currentValue, globals, secrets);
-    console.log('invalidConstants', invalidConstants);
   }
   if (invalidConstants?.length) {
     undefinedError = { type: 'Invalid constants' };
@@ -199,7 +200,11 @@ export const PreviewBox = ({
       const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
       setError({
-        message: isSecretError ? 'secrets cannot be used in apps' : _error,
+        message: isServerConstant
+          ? 'Server variables cannot be used in apps'
+          : isSecretError
+          ? 'secrets cannot be used in apps'
+          : _error,
         value: isSecretError
           ? 'Undefined'
           : jsErrorType === 'Invalid'
@@ -224,6 +229,7 @@ export const PreviewBox = ({
         isWorkspaceVariable={isWorkspaceVariable}
         isSecretConstant={isSecretConstant || false}
         isLargeDataset={largeDataset}
+        isServerConstant={isServerConstant}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -242,8 +248,11 @@ const RenderResolvedValue = ({
   withValidation,
   isWorkspaceVariable,
   isSecretConstant = false,
+  isServerConstant = false,
   isLargeDataset,
 }) => {
+  const isServerSideGlobalEnabled = useStore((state) => !!state?.license?.featureAccess?.serverSideGlobal, shallow);
+
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
 
@@ -266,7 +275,11 @@ const RenderResolvedValue = ({
       }`
     : previewType;
 
-  const previewContent = isSecretConstant
+  const previewContent = isServerConstant
+    ? isServerSideGlobalEnabled
+      ? 'Server variables would be resolved at runtime'
+      : 'Server variables are only available in paid plans'
+    : isSecretConstant
     ? 'Values of secret constants are hidden'
     : !withValidation
     ? resolvedValue
@@ -296,13 +309,9 @@ const PreviewContainer = ({
   ...restProps
 }) => {
   const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement, validationFn } = restProps;
-
   const [errorMessage, setErrorMessage] = useState('');
-
   const typeofError = getCurrentNodeType(errorMessage);
-
   const errorMsg = typeofError === 'Array' ? errorMessage[0] : errorMessage;
-
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const popover = (
     <Popover
@@ -425,10 +434,12 @@ const PreviewContainer = ({
     <>
       {!isPortalOpen && (
         <Overlay
-          placement="left"
+          placement={previewPlacement || 'left'}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
           show={showPreview}
           rootClose
+          shouldUpdatePosition={true}
+          container={document.body}
           popperConfig={{
             modifiers: [
               {
@@ -443,6 +454,7 @@ const PreviewContainer = ({
               {
                 name: 'preventOverflow',
                 options: {
+                  enabled: true,
                   boundary: 'viewport',
                   altAxis: true,
                   tether: false,
@@ -451,10 +463,17 @@ const PreviewContainer = ({
               {
                 name: 'offset',
                 options: {
-                  offset: [33, 15],
+                  offset: [0, 3],
                 },
               },
             ],
+            onFirstUpdate: (state) => {
+              // Force position update on first render
+              // This is done to avoid scroll issue
+              if (state.elements.popper) {
+                state.elements.popper.style.position = 'fixed';
+              }
+            },
           }}
         >
           {(props) => React.cloneElement(popover, props)}

@@ -9,10 +9,14 @@ import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const shouldAddBoxShadowAndVisibility = [
+const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
   'TextInput',
+  'TextArea',
   'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
   'NumberInput',
   'Text',
   'Checkbox',
@@ -27,6 +31,10 @@ const shouldAddBoxShadowAndVisibility = [
   'DaterangePicker',
   'DatePickerV2',
   'TimePicker',
+  'Divider',
+  'VerticalDivider',
+  'Link',
+  'Form',
 ];
 
 const RenderWidget = ({
@@ -95,6 +103,7 @@ const RenderWidget = ({
         ...{ widgetValue: value },
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables,
+        componentType,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]
@@ -149,7 +158,7 @@ const RenderWidget = ({
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
         trigger={
-          inCanvas && shouldAddBoxShadowAndVisibility.includes(component?.component)
+          inCanvas && SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
             ? !resolvedProperties?.tooltip?.toString().trim()
               ? null
               : ['hover', 'focus']
@@ -162,7 +171,7 @@ const RenderWidget = ({
             props,
             text: inCanvas
               ? `${
-                  shouldAddBoxShadowAndVisibility.includes(component?.component)
+                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
                     ? resolvedProperties?.tooltip
                     : resolvedGeneralProperties?.tooltip
                 }`
@@ -193,6 +202,7 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            dataCy={`draggable-widget-${componentName}`}
           />
         </div>
       </OverlayTrigger>

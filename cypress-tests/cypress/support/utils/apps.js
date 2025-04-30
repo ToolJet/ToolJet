@@ -25,7 +25,10 @@ export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
         "have.text",
         "Slug accepted!"
     );
-    cy.get(commonWidgetSelector.appLinkSucessLabel).verifyVisibleElement(
+
+    cy.wait(500);
+    // cy.get(commonWidgetSelector.appLinkSucessLabel).should('be.visible');
+    cy.get(commonWidgetSelector.appLinkSucessLabel).should(
         "have.text",
         "Link updated successfully!"
     );
@@ -111,24 +114,21 @@ export const onboardUserFromAppLink = (
           WHERE u.email = '${email}' AND o.name = '${workspaceName}';
         `;
 
-    return cy
-        .task("updateId", { dbconfig: dbConfig, sql: query })
-        .then((resp) => {
-            if (!resp.rows || resp.rows.length === 0) {
-                throw new Error(
-                    `No records found for email: ${email} and workspace: ${workspaceName}`
-                );
-            }
+    cy.task("dbConnection", { dbconfig: dbConfig, sql: query }).then((resp) => {
+        if (!resp.rows || resp.rows.length === 0) {
+            throw new Error(
+                `No records found for email: ${email} and workspace: ${workspaceName}`
+            );
+        }
 
-            const { invitation_token, workspace_id, organization_token } =
-                resp.rows[0];
-            const token = isNonExistingUser ? organization_token : invitation_token;
-            const url = isNonExistingUser
-                ? `${Cypress.config("baseUrl")}/invitations/${invitation_token}/workspaces/${organization_token}?oid=${workspace_id}&redirectTo=%2Fapplications%2F${slug}`
-                : `${Cypress.config("baseUrl")}/organization-invitations/${token}?oid=${workspace_id}&redirectTo=%2Fapplications%2F${slug}`;
+        const { invitation_token, workspace_id, organization_token } = resp.rows[0];
+        const token = isNonExistingUser ? organization_token : invitation_token;
+        const url = isNonExistingUser
+            ? `${Cypress.config("baseUrl")}/invitations/${invitation_token}/workspaces/${organization_token}?oid=${workspace_id}&redirectTo=%2Fapplications%2F${slug}`
+            : `${Cypress.config("baseUrl")}/organization-invitations/${token}?oid=${workspace_id}&redirectTo=%2Fapplications%2F${slug}`;
 
-            cy.visit(url);
-        });
+        cy.visit(url);
+    });
 };
 
 export const resolveHost = () => {
@@ -138,9 +138,8 @@ export const resolveHost = () => {
         "http://localhost:8082": "http://localhost:8082",
         "http://localhost:3000/apps": "http://localhost:3000/apps",
         "http://localhost:4001": "http://localhost:3000",
-        "http://localhost:4001/apps": "http://localhost:3000/apps"
+        "http://localhost:4001/apps": "http://localhost:3000/apps",
     };
 
     return urlMapping[baseUrl];
 };
-

@@ -12,13 +12,43 @@ permissions:
 
 jobs:
 
-# Community Edition
-
+# Community Edition CE
   create-ce-review-app:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
 
     steps:
+      - name: Sync repo
+        uses: actions/checkout@v3
+
+      - name: Check if Forked Repository
+        id: check_repo
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "is_fork=true" >> $GITHUB_ENV
+            echo "FORKED_OWNER=${{ github.event.pull_request.head.repo.owner.login }}" >> $GITHUB_ENV
+          else
+            echo "is_fork=false" >> $GITHUB_ENV
+          fi
+
+      - name: Set Repository URL
+        run: |
+          if [[ "$is_fork" == "true" ]]; then
+            echo "REPO_URL=https://github.com/${FORKED_OWNER}/ToolJet" >> $GITHUB_ENV
+          else
+            echo "REPO_URL=https://github.com/ToolJet/ToolJet" >> $GITHUB_ENV
+          fi
+
+      - name: Fetch and Checkout Forked Branch
+        if: env.is_fork == 'true'
+        run: |
+          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
+          git checkout ${{ env.BRANCH_NAME }}
+
+      - name: Checkout Default Branch
+        if: env.is_fork == 'false'
+        uses: actions/checkout@v3
+
       - name: Creating deployment for CE
         id: create-ce-deployment
         run: |
@@ -34,7 +64,7 @@ jobs:
             "name": "ToolJet CE PR #${{ env.PR_NUMBER }}",
             "notifyOnFail": "default",
             "ownerId": "tea-caeo4bj19n072h3dddc0",
-            "repo": "https://github.com/ToolJet/ToolJet",
+            "repo": "'"$REPO_URL"'",
             "slug": "tooljet-ce-pr-${{ env.PR_NUMBER }}",
             "suspended": "not_suspended",
             "suspenders": [],
@@ -42,7 +72,7 @@ jobs:
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -50,11 +80,11 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_DB",
@@ -66,15 +96,15 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
@@ -86,7 +116,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-ce-tjdb"
+                "value": "postgres://tooljet:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -131,18 +161,6 @@ jobs:
               {
                 "key": "SMTP_PASSWORD",
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
-              },
-              {
-                "key": "TEMPORAL_SERVER_ADDRESS",
-                "value": "https://auto-setup-1-25-1.onrender.com"
-              },
-              {
-                "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
-                "value": "tooljet-ce-pr-${{ env.PR_NUMBER }}"
-              },
-              {
-                "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
-                "value": "default"
               },
               {
                 "key": "TOOLJET_MARKETPLACE_URL",
@@ -394,7 +412,7 @@ jobs:
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -402,11 +420,11 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_DB",
@@ -418,15 +436,15 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "tooljet"
               },
               {
                 "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
@@ -438,7 +456,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-ee-tjdb"
+                "value": "postgres://tooljet:postgres@localhost/${{ env.PR_NUMBER }}-ee-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -1094,4 +1112,3 @@ jobs:
   #           } catch (e) {
   #             console.log(e)
   #           }
-

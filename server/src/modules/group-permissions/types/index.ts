@@ -19,6 +19,7 @@ export interface GranularPermissionQuerySearchParam {
   name?: SearchParamItem;
   type?: string;
   groupId?: string;
+  filterDataSource?: boolean;
 }
 interface SearchParamItem {
   value: string;

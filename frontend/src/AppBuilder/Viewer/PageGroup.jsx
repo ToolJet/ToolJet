@@ -16,7 +16,7 @@ const RenderPage = ({ page, currentPageId, switchPageWrapper, labelStyle, comput
   console.log({ isHomePage });
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
   const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
-  return page.hidden || page.disabled ? null : (
+  return (page.hidden || page.disabled) && page?.restricted ? null : (
     <FolderList
       key={page.handle}
       onClick={() => switchPageWrapper(page?.id)}
@@ -144,21 +144,26 @@ export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkM
   // Don't render empty folders if displaying only icons
   const { moduleId } = useModuleContext();
   const tree = buildTree(pages, !!labelStyle?.label?.hidden);
-
+  const filteredPages = tree.filter((page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted);
   const currentPageId = useStore((state) => state.currentPageId);
   const currentPage = pages.find((page) => page.id === currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   return (
     <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
       {/* <Accordion alwaysOpen defaultActiveKey={tree.map((page) => page.id)}> */}
-      {tree.map((page, index) => {
-        if (page.isPageGroup && page.children.length === 0 && labelStyle?.label?.hidden) {
+      {filteredPages.map((page, index) => {
+        if (
+          page.isPageGroup &&
+          page.children.length === 0 &&
+          labelStyle?.label?.hidden &&
+          !page.children.some((child) => child?.restricted === true)
+        ) {
           return null;
         }
-        if (page.children && page.isPageGroup) {
+        if (page.children && page.isPageGroup && !page.children.some((child) => child?.restricted === true)) {
           // if we are only displaying icons, we don't display the groups instead display separator to separate a page groups
           const renderSeparatorTop = index !== 0 && labelStyle?.label?.hidden;
-          const renderSeparatorBottom = !tree[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
+          const renderSeparatorBottom = !filteredPages[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
           return (
             <>
               {renderSeparatorTop && (
@@ -195,7 +200,7 @@ export const RenderPageAndPageGroup = ({ pages, labelStyle, computeStyles, darkM
               )}
             </>
           );
-        } else {
+        } else if (!page.isPageGroup) {
           return (
             <RenderPage
               key={page.handle}

@@ -13,6 +13,7 @@ export const listviewConfig = {
         top: 15,
         left: 3,
         height: 100,
+        width: 7,
       },
       properties: ['source'],
       accessorKey: 'imageURL',
@@ -120,7 +121,7 @@ export const listviewConfig = {
   },
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -128,7 +129,7 @@ export const listviewConfig = {
       },
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },

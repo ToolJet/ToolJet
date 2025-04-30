@@ -134,7 +134,11 @@ const SlugInput = () => {
             </div>
           )}
         </div>
-        <label className="label label-success label-updated" data-cy="app-link-success-label">
+        <label
+          className="label label-success label-updated"
+          data-cy="app-link-success-label"
+          style={{ padding: '0px' }}
+        >
           {isSlugUpdated ? `Link updated successfully!` : ''}
         </label>
       </div>

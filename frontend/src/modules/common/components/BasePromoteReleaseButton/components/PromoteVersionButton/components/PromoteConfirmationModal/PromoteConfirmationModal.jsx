@@ -128,7 +128,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
               FROM
             </div>
             <div className="env-name" data-cy="current-env-name">
-              {capitalize(data?.current.name)}
+              {capitalize(data?.current?.name)}
             </div>
           </div>
           <div className="arrow-container">
@@ -146,11 +146,11 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
               TO
             </div>
             <div className="env-name" data-cy="target-env-name">
-              {capitalize(data?.target.name)}
+              {capitalize(data?.target?.name)}
             </div>
           </div>
         </div>
-        {data?.current.name === 'development' && (
+        {data?.current?.name === 'development' && (
           <div className="env-change-info" data-cy="env-change-info-text">
             You won&apos;t be able to edit this version after promotion. Are you sure you want to continue?
           </div>
