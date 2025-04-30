@@ -89,6 +89,9 @@ USER root
 
 ENV PGDATA=/data
 
+RUN useradd -ms /bin/bash postgres
+RUN mkdir -p /data && chown -R postgres:postgres /data
+
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     NODE_ENV=production \
