@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-ToolJet’s app builder enables your to build and ship your internal tools quickly without extensive coding knowledge. You can build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
+ToolJet’s app builder offers a low-code environment that helps you build and deploy internal tools quickly without extensive coding knowledge. You can build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
 
 Teams across engineering, product, operations, and business can build applications with ease, following four simple steps to get up and running in minutes.
 
@@ -56,7 +56,7 @@ ToolJet makes it easy to build apps without code, but when you need more control
 
 This gives developers the ability to handle complex scenarios with code, while still leveraging ToolJet’s low-code environment.
 
-Combining the speed of low-code with the ability to write custom code where needed, you can build anything from simple dashboards to complex workflows, all in one platform.
+Combining the speed of low-code with the ability to write custom code where needed, you can build any buisness application, from simple dashboards to complex workflows, all in one platform.
 
 ## Usecases
 Here are some examples of what you can achieve with ToolJet:
