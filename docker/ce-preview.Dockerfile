@@ -38,19 +38,7 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-
-RUN apt-get update && apt-get install -y \
-    gnupg \
-    wget \
-    unzip \
-    curl \
-    lsb-release \
-    freetds-dev \
-    libaio1 \
-    postgresql-13 \
-    supervisor \
-    locales && \
-    locale-gen en_US.UTF-8
+RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget supervisor
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -90,10 +78,13 @@ COPY --from=builder /app/server/dist ./app/server/dist
 WORKDIR /app
 
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN echo "deb http://deb.debian.org/debian"
-RUN apt update && apt -y install --fix-missing postgresql-13 postgresql-client-13 supervisor
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg && \
+    apt-get update && \
+    apt-get install -y postgresql-13 postgresql-client-13 supervisor && \
+    ln -s /usr/lib/postgresql/13/bin/initdb /usr/bin/initdb
+
+
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
