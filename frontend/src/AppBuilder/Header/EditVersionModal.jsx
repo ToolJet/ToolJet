@@ -4,10 +4,10 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [isEditingVersion, setIsEditingVersion] = useState(false);
   const {
     updateVersionNameAction,

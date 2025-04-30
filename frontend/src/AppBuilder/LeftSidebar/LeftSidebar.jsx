@@ -10,7 +10,7 @@ import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
-import { useModuleId, useAppType } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
@@ -23,10 +23,8 @@ export const BaseLeftSidebar = ({
   switchDarkMode,
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
-  isModuleEditor = false,
 }) => {
-  const moduleId = useModuleId();
-  const appType = useAppType();
+  const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
     pinned,
     selectedSidebarItem,

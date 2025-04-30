@@ -49,7 +49,7 @@ import { EmptyState } from './Components/EmptyState';
 import { LoadingState } from './Components/LoadingState';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -88,7 +88,7 @@ export const Table = React.memo(
     // events,
     // setProperty,
   }) => {
-    const moduleId = useModuleId();
+    const { moduleId } = useModuleContext();
     const component = useStore((state) => state.getComponentDefinition(id, moduleId), shallow);
     const exposedNewRows = useStore((state) => state.getExposedValueOfComponent(id)?.newRows || [], shallow);
     const validateWidget = useStore((state) => state.validateWidget, shallow);

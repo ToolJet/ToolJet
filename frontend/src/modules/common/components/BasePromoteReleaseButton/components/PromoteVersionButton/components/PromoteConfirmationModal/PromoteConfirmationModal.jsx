@@ -9,10 +9,10 @@ import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);

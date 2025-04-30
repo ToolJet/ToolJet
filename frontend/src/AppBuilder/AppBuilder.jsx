@@ -49,14 +49,14 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       <ErrorBoundary>
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
           <Suspense fallback={<div>Loading...</div>}>
-            <EditorHeader darkMode={darkMode} isModuleEditor={isModuleEditor} />
-            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} isModuleEditor={isModuleEditor} />
+            <EditorHeader darkMode={darkMode} />
+            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
           </Suspense>
           {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
           <DndProvider backend={HTML5Backend}>
-            <AppCanvas appId={appId} appType={appType} isModuleEditor={isModuleEditor} />
+            <AppCanvas appId={appId} />
             <QueryPanel darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} isModuleEditor={isModuleEditor} />
+            <RightSideBar darkMode={darkMode} />
           </DndProvider>
           <Popups darkMode={darkMode} />
         </ModuleProvider>

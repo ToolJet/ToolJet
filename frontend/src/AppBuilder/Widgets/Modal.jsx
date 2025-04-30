@@ -7,7 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Modal = function Modal({
   id,
@@ -21,7 +21,7 @@ export const Modal = function Modal({
   dataCy,
   height,
 }) {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -18,7 +18,7 @@ const CreateVersionModal = ({
   fetchingOrgGit,
   handleCommitOnVersionCreation = () => {},
 }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
 

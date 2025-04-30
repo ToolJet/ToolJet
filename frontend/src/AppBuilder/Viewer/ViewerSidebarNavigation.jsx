@@ -9,7 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { APP_HEADER_HEIGHT } from '../AppCanvas/appCanvasConstants';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { RenderPageAndPageGroup } from './PageGroup';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const ViewerSidebarNavigation = ({
   isMobileDevice,
@@ -21,7 +21,7 @@ export const ViewerSidebarNavigation = ({
   isSidebarPinned,
   toggleSidebarPinned,
 }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);

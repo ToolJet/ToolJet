@@ -13,10 +13,10 @@ import BuildSuggestions from './BuildSuggestions';
 import GitSyncManager from './GitSyncManager';
 import UpdatePresenceMultiPlayer from './UpdatePresenceMultiPlayer';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const EditorHeader = ({ darkMode, isModuleEditor }) => {
-  const moduleId = useModuleId();
+export const EditorHeader = ({ darkMode }) => {
+  const { moduleId, isModuleEditor } = useModuleContext();
   const { isSaving, saveError, isVersionReleased } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,

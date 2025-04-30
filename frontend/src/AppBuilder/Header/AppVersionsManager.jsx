@@ -6,7 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { decodeEntities } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
@@ -15,7 +15,7 @@ const appVersionLoadingStatus = Object.freeze({
 });
 
 export const AppVersionsManager = function ({ darkMode }) {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
 
   const [deleteVersion, setDeleteVersion] = useState({

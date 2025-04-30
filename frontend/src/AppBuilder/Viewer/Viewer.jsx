@@ -195,7 +195,7 @@ export const Viewer = ({
               className={cx('viewer wrapper', { 'mobile-layout': currentLayout, 'theme-dark dark-theme': darkMode })}
             >
               <DndProvider backend={HTML5Backend}>
-                <ModuleProvider moduleId={moduleId} isModuleMode={moduleMode} appType={appType}>
+                <ModuleProvider moduleId={moduleId} isModuleMode={moduleMode} appType={appType} isModuleEditor={false}>
                   {renderHeader()}
                   <div className="sub-section">
                     <div className="main">

@@ -8,11 +8,11 @@ import { getHostURL, replaceEditorURL } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import { useTranslation } from 'react-i18next';
 import { shallow } from 'zustand/shallow';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 // import { useStore } from '@/store';
 
 const SlugInput = () => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const {
     slug: oldSlug,
     appId,

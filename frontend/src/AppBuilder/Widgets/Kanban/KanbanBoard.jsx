@@ -26,7 +26,7 @@ import cx from 'classnames';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const dropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
@@ -41,7 +41,7 @@ const dropAnimation = {
 const TRASH_ID = 'void';
 
 export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
   const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;

@@ -8,10 +8,10 @@ import Cross from '@/_ui/Icon/solidIcons/Cross';
 import useStore from '@/AppBuilder/_stores/store';
 import { buildTree } from '../LeftSidebar/PageMenu/Tree/utilities';
 import * as Icons from '@tabler/icons-react';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const groupActive = currentPage.pageGroupId === pageGroup?.id;
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
@@ -80,7 +80,7 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
 };
 
 const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, currentPage }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const tree = buildTree(pages);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   return (
@@ -126,7 +126,7 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
 };
 
 const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeToDarkMode, showDarkModeToggle }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const license = useStore((state) => state.license);

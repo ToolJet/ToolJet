@@ -29,7 +29,7 @@ import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
   edge: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
@@ -37,8 +37,8 @@ const RESIZABLE_CONFIG = {
 };
 export const GRID_HEIGHT = 10;
 
-export default function Grid({ gridWidth, currentLayout, appType, isModuleEditor }) {
-  const moduleId = useModuleId();
+export default function Grid({ gridWidth, currentLayout }) {
+  const { moduleId, isModuleEditor } = useModuleContext();
   const lastDraggedEventsRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);

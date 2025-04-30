@@ -5,10 +5,10 @@ import './selecto.scss';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const EditorSelecto = () => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);

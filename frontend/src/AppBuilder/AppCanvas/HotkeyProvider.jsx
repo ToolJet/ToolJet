@@ -4,8 +4,10 @@ import useStore from '@/AppBuilder/_stores/store';
 import { pasteComponents, copyComponents } from './appCanvasUtils';
 import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, isModuleEditor = false }) => {
+export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }) => {
+  const { isModuleEditor } = useModuleContext();
   const canvasRef = useRef(null);
   const focusedParentId = useStore((state) => state.focusedParentId, shallow);
   const handleUndo = useStore((state) => state.handleUndo);

@@ -10,6 +10,14 @@ export const ModuleProvider = ({ moduleId, isModuleMode, appType, isModuleEditor
   );
 };
 
+export const useModuleContext = () => {
+  const context = useContext(ModuleContext);
+  if (!context) {
+    throw new Error('useModuleContext must be used within a ModuleProvider');
+  }
+  return context;
+};
+
 export const useModuleId = () => {
   const context = useContext(ModuleContext);
   if (!context) {

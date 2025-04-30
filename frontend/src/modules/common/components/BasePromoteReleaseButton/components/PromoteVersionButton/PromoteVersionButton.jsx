@@ -4,10 +4,10 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { PromoteConfirmationModal } from './components';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PromoteVersionButton = () => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [promoteModalData, setPromoteModalData] = useState(null);
   const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment } = useStore(
     (state) => ({

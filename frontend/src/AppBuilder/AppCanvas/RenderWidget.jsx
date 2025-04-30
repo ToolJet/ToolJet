@@ -7,7 +7,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const shouldAddBoxShadowAndVisibility = [
   'Table',
@@ -40,7 +40,7 @@ const RenderWidget = ({
   inCanvas = false,
   darkMode,
 }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const componentDefinition = useStore((state) => state.getComponentDefinition(id, moduleId), shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
   const component = componentDefinition?.component;

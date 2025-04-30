@@ -11,10 +11,10 @@ import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import { useTranslation } from 'react-i18next';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { shallow } from 'zustand/shallow';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const CanvasSettings = ({ darkMode }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const {
     globalSettings,
     globalSettingsChanged,

@@ -2,10 +2,10 @@ import React from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const PageHandlerMenu = ({ darkMode }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const setShowEditingPopover = useStore((state) => state.setShowEditingPopover);
   const setShowPageEventsModal = useStore((state) => state.setShowPageEventsModal);
 

@@ -16,7 +16,7 @@ import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFa
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const ModalV2 = function Modal({
   id,
@@ -30,7 +30,7 @@ export const ModalV2 = function Modal({
   dataCy,
   height,
 }) {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,

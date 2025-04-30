@@ -4,7 +4,7 @@ import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 
 const CONFIG_HANDLE_HEIGHT = 20;
@@ -22,7 +22,7 @@ export const ConfigHandle = ({
   visibility,
   isModuleContainer,
 }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(

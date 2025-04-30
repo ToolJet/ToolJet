@@ -16,11 +16,11 @@ import { RenameInput } from './RenameInput';
 import IconSelector from './IconSelector';
 import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const PageMenuItem = withRouter(
   memo(({ darkMode, page, navigate }) => {
-    const moduleId = useModuleId();
+    const { moduleId } = useModuleContext();
     const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
     const isHomePage = page.id === homePageId;
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);

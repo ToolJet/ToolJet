@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Container } from './Container';
 import Grid from './Grid';
 import { EditorSelecto } from './Selecto';
-import { useModuleId, useIsModuleMode } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
@@ -18,9 +18,8 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 
-export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isModuleEditor, isViewer = false }) => {
-  const moduleId = useModuleId();
-  const isModuleMode = useIsModuleMode();
+export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) => {
+  const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
@@ -147,12 +146,7 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isModuleEdito
             <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
           )}
           <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-          <HotkeyProvider
-            mode={currentMode}
-            canvasMaxWidth={canvasMaxWidth}
-            currentLayout={currentLayout}
-            isModuleEditor={isModuleEditor}
-          >
+          <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
             {environmentLoadingState !== 'loading' && (
               <div>
                 <Container
@@ -171,12 +165,7 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, appType, isModuleEdito
             )}
 
             {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-              <Grid
-                currentLayout={currentLayout}
-                gridWidth={gridWidth}
-                appType={appType}
-                isModuleEditor={isModuleEditor}
-              />
+              <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
             )}
           </HotkeyProvider>
         </div>

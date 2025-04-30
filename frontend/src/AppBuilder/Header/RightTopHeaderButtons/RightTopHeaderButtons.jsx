@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RightTopHeaderButtons = ({ isModuleEditor }) => {
   return (
@@ -22,7 +22,7 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
 };
 
 const PreviewAndShareIcons = () => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const {
     featureAccess,
     currentPageHandle,

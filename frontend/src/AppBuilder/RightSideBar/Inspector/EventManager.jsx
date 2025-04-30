@@ -30,7 +30,7 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const EventManager = ({
   sourceId,
@@ -44,7 +44,7 @@ export const EventManager = ({
   customEventRefs = undefined,
   component,
 }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const components = useStore((state) => state.getCurrentPageComponents());
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup

@@ -21,7 +21,7 @@ import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 //TODO: Revisit the logic of height (dropRef)
 
 /*
@@ -47,7 +47,7 @@ export const Container = React.memo(
     componentType,
     appType,
   }) => {
-    const moduleId = useModuleId();
+    const { moduleId } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
 

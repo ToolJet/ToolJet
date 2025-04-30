@@ -13,7 +13,7 @@ import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -91,7 +91,7 @@ export const PreviewBox = ({
   isWorkspaceVariable,
   validationFn,
 }) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
