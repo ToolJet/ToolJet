@@ -20,7 +20,7 @@ const clientAuthenticationDropdown =
 describe("Data source Rest API", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -332,7 +332,6 @@ describe("Data source Rest API", () => {
     deleteDatasource(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify basic connection for Rest API", () => {
-    const storedId = Cypress.env("storedId");
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,

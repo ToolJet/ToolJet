@@ -14,9 +14,9 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
-        contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-marketplace') || 
-        contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-marketplace')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-marketplace') ||
+      contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-marketplace')
 
     strategy:
       matrix:
@@ -159,13 +159,12 @@ jobs:
               "password": "password"
             }'
 
-
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
+          json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
           dir: "./cypress-tests"
 
       - name: Marketplace
@@ -185,8 +184,8 @@ jobs:
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
 
     steps:
       - name: Checkout
