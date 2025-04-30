@@ -25,8 +25,7 @@ export const BulkUpsertPrimaryKey = () => {
   }, [columns]);
 
   const handleRowsChange = (value) => {
-    const [_, __, resolvedValue] = resolveReferences(value);
-    handleBulkUpsertRowsOptionChanged(resolvedValue);
+    handleBulkUpsertRowsOptionChanged(value);
   };
 
   return (
@@ -59,7 +58,13 @@ export const BulkUpsertPrimaryKey = () => {
         <div className="field flex-grow-1 minw-400-w-400">
           <CodeHinter
             type="basic"
-            initialValue={bulkUpsertPrimaryKey?.rows ? `{{${JSON.stringify(bulkUpsertPrimaryKey?.rows ?? [])}}}` : null}
+            initialValue={
+              bulkUpsertPrimaryKey?.rows
+                ? typeof bulkUpsertPrimaryKey?.rows === 'string'
+                  ? bulkUpsertPrimaryKey?.rows
+                  : JSON.stringify(bulkUpsertPrimaryKey?.rows)
+                : bulkUpsertPrimaryKey?.rows
+            }
             className="codehinter-plugins"
             placeholder="{{ [ { 'column1': 'value', ... } ] }}"
             onChange={handleRowsChange}
