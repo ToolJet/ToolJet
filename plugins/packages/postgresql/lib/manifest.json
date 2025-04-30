@@ -302,7 +302,7 @@
         "key": "connection_string",
         "label": "Connection string",
         "description": "postgres://username:password@hostname:port/database?sslmode=require",
-        "widget": "text",
+        "widget": "password-v3-textarea",
         "required": true
       }
     }
