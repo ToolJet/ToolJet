@@ -19,13 +19,14 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+data.queryName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Airtable", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection AirTable form", () => {
@@ -199,7 +200,7 @@ describe("Data source Airtable", () => {
     cy.get('[data-cy="show-ds-popover-button"]').click();
     cy.get(".css-4e90k9").type(`${data.dsName}`);
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
-    cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName1);
+    cy.get('[data-cy="query-rename-input"]').clear().type(data.queryName);
 
     cy.get(airTableSelector.operationSelectDropdown)
       .click()
@@ -225,7 +226,7 @@ describe("Data source Airtable", () => {
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      `Query (${data.dsName1}) completed.`
+      `Query (${data.queryName}) completed.`
     );
 
     // Verify Delete record operation
@@ -277,7 +278,7 @@ describe("Data source Airtable", () => {
       cy.get(dataSourceSelector.queryPreviewButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        `Query (${data.dsName1}) completed.`
+        `Query (${data.queryName}) completed.`
       );
       deleteAppandDatasourceAfterExecution(
         data.dsName,

@@ -167,6 +167,10 @@ Cypress.Commands.add("deleteApp", (appName) => {
     .click();
   cy.get(commonSelectors.deleteAppOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    commonText.appDeletedToast
+  );
   cy.wait("@appDeleted");
 });
 
