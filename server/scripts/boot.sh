@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Only initialize if the directory is empty
+if [ ! -s "/data/PG_VERSION" ]; then
+  echo "Initializing PostgreSQL data directory in /data..."
+  initdb -D /data
+fi
+
 service postgresql start
 
 echo "
