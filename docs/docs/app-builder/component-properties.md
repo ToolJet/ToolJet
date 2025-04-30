@@ -3,6 +3,67 @@ id: component-properties
 title: Component Properties
 ---
 
+Using **Component Properties**, you can define how a component looks, behaves, or interacts with the application. Each component has its own set of properties based on its functionality.
+
+This guide provides an overview of component properties using a few example components. For detailed information on any specific component and its properties, refer to the [individual component guide](#).
+
+## Text Input
+
+Using the component properties of the **Text Input** component, you can customize its appearance, define validation rules for the input, and control how it interacts with the rest of the application. You can define the following properties:
+
+- **Label**: Defines the text label displayed alongside the input field.
+- **Placeholder**: Displays example text inside the input field when it is empty, offering users a hint about the type of input required.
+- **Default Value**: The default value that the component will hold when the app is loaded.
+- **Events**: By configuring event properties, you can make the component perform certain tasks automatically when a defined interaction occurs. For example, run a query when the user enters input, or reset a form when the input changes.
+- **Validation**: Validation properties allow you to add a layer of input checking to ensure data quality and enforce rules before submission. For example, making the field mandatory, adding a regex to validate input or define minimum or maximum numbers of characters allowed.
+- **Styles**: Define visual attributes like colors, spacing, alignment, and border radius to adjust how the component appears.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
 ToolJet offers a variety of highly customizable components. Each component can be customized by setting its properties. The Properties Panel, which appears on the right side when a component is selected, includes two tabs:
 
 - **Properties**: Used to configure the functional aspects of the component.
@@ -66,4 +127,4 @@ The border radius of a component can be configured from the Styles tab to contro
 
 ### Box Shadow
 
-Adds shadow effects around the component to enhance its appearance. This setting is available under the Styles tab.
+Adds shadow effects around the component to enhance its appearance. This setting is available under the Styles tab. -->
