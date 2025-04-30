@@ -86,8 +86,8 @@ module.exports = {
       style: 'light', 
       logo: {
         alt: 'ToolJet Logo',
-        src: 'img/docs_logo.svg',
-        srcDark: 'img/docs_logo_dark.svg',
+        src: '/img/docs_logo.svg',
+        srcDark: '/img/docs_logo_dark.svg',
       },
       links: [
         {
