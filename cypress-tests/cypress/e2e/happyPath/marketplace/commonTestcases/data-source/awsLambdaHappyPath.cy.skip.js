@@ -1,7 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
+import { pluginSelectors } from "Selectors/plugins";
 import { postgreSqlText } from "Texts/postgreSql";
-import { GraphQLText } from "Texts/graphQL";
+import { awsLambdaText } from "Texts/awsLambda";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
@@ -19,16 +20,17 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-describe("Data source GraphQL", () => {
+describe("Data source AWS Lambda", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on GraphQL connection form", () => {
-    const Url = Cypress.env("GraphQl_Url");
+  it.skip("Should  verify elements on AWS Lambda connection form", () => {
+    const Accesskey = Cypress.env("awslamda_access");
+    const Secretkey = Cypress.env("awslamda_secret");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
@@ -54,12 +56,19 @@ describe("Data source GraphQL", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
+    cy.installMarketplacePlugin("AWS Lambda");
+
+    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
+
+    cy.get(".react-select__dropdown-indicator").eq(1).click();
+    cy.get(".react-select__option").contains("US West (N. California)").click();
+
+    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
     fillDataSourceTextField(
-      GraphQLText.urlInputLabel,
-      GraphQLText.urlInputPlaceholder,
-      Url
+      awsLambdaText.labelSecretKey,
+      "**************",
+      Secretkey
     );
 
     cy.get(postgreSqlSelector.buttonSave)
@@ -70,21 +79,30 @@ describe("Data source GraphQL", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-GraphQL`);
+    deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 
-  it("Should verify the functionality of GraphQL connection form", () => {
-    const Url = Cypress.env("GraphQl_Url");
+  it.skip("Should  verify the functionality of AWS Lambda connection form", () => {
+    const Accesskey = Cypress.env("awslamda_access");
+    const Secretkey = Cypress.env("awslamda_secret");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
+    cy.installMarketplacePlugin("AWS Lambda");
+
+    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
+
+    cy.get(".react-select__dropdown-indicator").eq(1).click();
+    cy.get(".react-select__option").contains("US West (N. California)").click();
+
+    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
     fillDataSourceTextField(
-      GraphQLText.urlInputLabel,
-      GraphQLText.urlInputPlaceholder,
-      Url
+      awsLambdaText.labelSecretKey,
+      "**************",
+      Secretkey
     );
 
     cy.get(postgreSqlSelector.buttonSave)
@@ -95,32 +113,43 @@ describe("Data source GraphQL", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-GraphQL`);
+    deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 
-  it("Should able to run the query with valid conection", () => {
-    const Url = Cypress.env("GraphQl_Url");
+  it.skip("Should  able to run the query with valid conection", () => {
+    const Accesskey = Cypress.env("awslamda_access");
+    const Secretkey = Cypress.env("awslamda_secret");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
+    cy.installMarketplacePlugin("AWS Lambda");
+
+    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
+
+    cy.get(".react-select__dropdown-indicator").eq(1).click();
+    cy.get(".react-select__option")
+      .contains("US West (N. California)")
+      .wait(500)
+      .click();
+
+    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
     fillDataSourceTextField(
-      GraphQLText.urlInputLabel,
-      GraphQLText.urlInputPlaceholder,
-      Url
+      awsLambdaText.labelSecretKey,
+      "**************",
+      Secretkey
     );
 
     cy.get(postgreSqlSelector.buttonSave)
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .click();
+
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
-
-    cy.get(commonSelectors.globalDataSourceIcon).click();
 
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.appCreateButton).click();
@@ -133,13 +162,18 @@ describe("Data source GraphQL", () => {
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
-    cy.get('[data-cy="query-input-field"]').clearAndTypeOnCodeMirror(
-      `{
-      allFilms {
-      films { title director }
-      }
-      }`
-    );
+    cy.get(pluginSelectors.operationDropdown)
+      .click()
+      .type("Invoke Lambda Function{enter}");
+
+    cy.wait(500);
+
+    cy.get(
+      '[data-cy="function-name-section"] .cm-content'
+    ).clearAndTypeOnCodeMirror("testAwslambdaPlugin");
+
+    cy.wait(500);
+
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -147,7 +181,8 @@ describe("Data source GraphQL", () => {
     );
     deleteAppandDatasourceAfterExecution(
       data.dsName,
-      `cypress-${data.dsName}-GraphQL`
+      `cypress-${data.dsName}-aws-lambda`
     );
+    cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 });
