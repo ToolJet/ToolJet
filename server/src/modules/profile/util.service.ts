@@ -5,10 +5,28 @@ import { FilesRepository } from '@modules/files/repository';
 import { File } from '@entities/file.entity';
 import { IProfileUtilService } from '@modules/profile/interfaces/IService';
 import { CreateFileDto } from '@modules/files/dto/index';
+import { ProfileUpdateDto } from './dto';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { User } from '@entities/user.entity';
 
 @Injectable()
 export class ProfileUtilService implements IProfileUtilService {
-  constructor(protected readonly filesRepository: FilesRepository, protected userRepository: UserRepository) {}
+  constructor(protected readonly filesRepository: FilesRepository, protected readonly userRepository: UserRepository) {}
+
+  private async setAuditLogForUser(userId: string, manager: EntityManager): Promise<void> {
+    const user = await manager.findOneOrFail(User, {
+      where: { id: userId },
+    });
+
+    const auditLogEntry = {
+      userId: user.id,
+      organizationId: user.defaultOrganizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
+  }
 
   async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager): Promise<File> {
     const user = await this.userRepository.getUser({
@@ -31,6 +49,15 @@ export class ProfileUtilService implements IProfileUtilService {
     if (currentAvatarId) {
       await this.filesRepository.removeOne(currentAvatarId, manager);
     }
+
+    await this.setAuditLogForUser(userId, manager);
     return avatar;
+  }
+
+  async updateUserName(userId: string, updateUserDto: ProfileUpdateDto, manager: EntityManager): Promise<void> {
+    const { first_name: firstName, last_name: lastName } = updateUserDto;
+
+    await manager.update(User, { id: userId }, { firstName, lastName });
+    await this.setAuditLogForUser(userId, manager);
   }
 }

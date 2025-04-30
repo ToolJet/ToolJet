@@ -34,6 +34,7 @@ export class SessionService {
     response.clearCookie('tj_auth_token');
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(UserSessions, { id: sessionId, userId });
+      await this.sessionUtilService.setAuditLogForUser(userId, manager);
     });
   }
 

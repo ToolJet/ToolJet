@@ -24,6 +24,8 @@ import { Response } from 'express';
 import { UserCsvRow } from './interfaces';
 import { IOrganizationUsersService } from './interfaces/IService';
 import { UpdateOrgUserDto } from './dto';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 @Injectable()
 export class OrganizationUsersService implements IOrganizationUsersService {
   constructor(
@@ -91,6 +93,15 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       status: WORKSPACE_USER_STATUS.ARCHIVED,
       invitationToken: null,
     });
+
+    const auditLogEntry = {
+      userId: organizationUser.userId,
+      organizationId: organizationUser.organizationId,
+      resourceId: organizationUser.user.id,
+      resourceName: organizationUser.user.email,
+    };
+
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
   }
 
   async archiveFromAll(userId: string): Promise<void> {
@@ -160,6 +171,15 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           sender: user.firstName,
         },
       });
+
+      const auditLogEntry = {
+        userId: organizationUser.userId,
+        organizationId: organizationUser.organizationId,
+        resourceId: organizationUser.user.id,
+        resourceName: organizationUser.user.email,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
+
       return;
     }
 
