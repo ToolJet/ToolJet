@@ -1,0 +1,123 @@
+import React, { useState } from 'react';
+import StringNode from './StringNode';
+import FunctionNode from './FunctionNode';
+import NumberNode from './NumberNode';
+import BooleanNode from './BooleanNode';
+import NullNode from './NullNode';
+import ArrayNode from './ArrayNode';
+import ObjectNode from './ObjectNode';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
+import { DefaultCopyIcon } from '../../DefaultCopyIcon';
+import { copyToClipboard } from '../../utils';
+
+const Row = ({ label, value, level = 1, absolutePath }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const Node = () => {
+    if (typeof value === 'string') {
+      return <StringNode value={value} />;
+    } else if (typeof value === 'undefined' || value === null) {
+      return <NullNode value={value} />;
+    } else if (typeof value === 'number') {
+      return <NumberNode value={value} />;
+    } else if (typeof value === 'boolean') {
+      return <BooleanNode value={value} />;
+    } else if (Array.isArray(value)) {
+      return <ArrayNode value={value} />;
+    } else if (typeof value === 'object') {
+      return <ObjectNode value={value} />;
+    } else if (typeof value === 'function') {
+      return <FunctionNode />;
+    }
+  };
+
+  const isObject = typeof value === 'object' && !Array.isArray(value) && value !== null;
+  const isArray = Array.isArray(value);
+
+  return (
+    <div>
+      <div className="json-viewer-row-container" style={{ marginLeft: level > 1 ? '8px' : '0px' }}>
+        <div className="json-viewer-row" onClick={() => setIsExpanded((prev) => !prev)}>
+          <div className="json-viewer-expand-icon">
+            {(isArray || isObject) &&
+              (isExpanded ? (
+                <SolidIcon
+                  name="TriangleUpCenter"
+                  size={12}
+                  color="#1F99ED"
+                  style={{ marginRight: '4px' }}
+                  className="json-viewer-expand-icon"
+                />
+              ) : (
+                <SolidIcon
+                  name="rightarrrow"
+                  size={12}
+                  color="#1F99ED"
+                  style={{ marginRight: '4px' }}
+                  className="json-viewer-expand-icon"
+                />
+              ))}
+          </div>
+          <div className="json-viewer-label-container">
+            <span>{label}</span>
+          </div>
+          <div className="json-viewer-value-container">
+            <Node />
+          </div>
+          <div className="json-viewer-actions-container">
+            <ToolTip message={'Copy to clipboard'}>
+              <span
+                onClick={() => {
+                  copyToClipboard(absolutePath);
+                }}
+                className="copy-to-clipboard json-viewer-action-icon"
+              >
+                <DefaultCopyIcon height={12} width={12} />
+              </span>
+            </ToolTip>
+            <ToolTip message={'Copy value'}>
+              <span
+                onClick={() => {
+                  copyToClipboard(value);
+                }}
+                className="json-viewer-action-icon"
+              >
+                <SolidIcon width="12" height="12" name="copy" />
+              </span>
+            </ToolTip>
+          </div>
+        </div>
+      </div>
+      {isExpanded && isObject && (
+        <div
+          className="json-viewer-children"
+          style={{ marginLeft: `${20 * level}px`, borderLeft: '1px solid var(--border-weak)' }}
+        >
+          {Object.entries(value).map(([key, val]) => (
+            <Row key={key} label={key} value={val} level={level + 1} absolutePath={`${absolutePath}.${key}`} />
+          ))}
+        </div>
+      )}
+      {isExpanded && isArray && (
+        <div
+          className="json-viewer-children"
+          style={{ marginLeft: `${20 * level}px`, borderLeft: '1px solid var(--border-weak)' }}
+        >
+          {value.map((item, index) => {
+            return (
+              <Row
+                key={index}
+                label={`${index}`}
+                value={item}
+                level={level + 1}
+                absolutePath={`${absolutePath}.${index}`}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Row;

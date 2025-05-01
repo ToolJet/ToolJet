@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import TreeView, { flattenTree } from 'react-accessible-treeview';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -11,7 +11,6 @@ import { isEmpty } from 'lodash';
 
 const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths = new Set() }) => {
   const searchValue = useStore((state) => state.inspectorSearchValue, shallow);
-  // const getSelectedNodes = useStore((state) => state.getSelectedNodes, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const setSearchValue = useStore((state) => state.setInspectorSearchValue, shallow);
   const [selectedNodePath, setSelectedNodePath] = React.useState(null);
@@ -38,6 +37,7 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     return [new Set(result), expandedIdSet];
   }, [searchValue, JSON.stringify(searchablePaths)]);
 
+  // Do not remove this code, once we have the data in the correct format, we can use this function to filter the data
   // const recursiveFn = (obj) => {
   //   if (!obj || typeof obj !== 'object') return [];
   //   let isCompletelyExposed = false;
@@ -89,10 +89,9 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     return filtered.map((item) => item.id);
   }, [flattendedData, expandedIds]);
 
-  console.log('selectedData', selectedData);
   return (
     <>
-      {!selectedNodePath || isEmpty(selectedData) ? (
+      {!selectedNodePath || (typeof selectedData == 'object' && isEmpty(selectedData)) ? (
         <div>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
             <SearchBox

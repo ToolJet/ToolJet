@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-// import { runQuery } from '@/AppBuilder/_utils/queryPanel';
+import { copyToClipboard } from './utils';
 
 const useCallbackActions = () => {
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
@@ -38,12 +38,6 @@ const useCallbackActions = () => {
     const { nodeName } = data;
     const id = getQueryIdFromName(nodeName);
     setSelectedQuery(id);
-  };
-
-  const copyToClipboard = (data) => {
-    const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
-    navigator.clipboard.writeText(stringified);
-    return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
   const handleAutoScrollToComponent = (data) => {

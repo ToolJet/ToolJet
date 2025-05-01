@@ -1,9 +1,9 @@
 import React from 'react';
 
-export const DefaultCopyIcon = () => (
+export const DefaultCopyIcon = ({ height = 12, width = 12 }) => (
   <svg
-    width="13"
-    height="13"
+    width={width}
+    height={height}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"

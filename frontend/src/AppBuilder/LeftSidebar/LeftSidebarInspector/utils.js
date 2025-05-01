@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+
 export const formatInspectorDataMisc = (obj, type, searchablePaths = new Set()) => {
   if (typeof obj !== 'object' || obj === null) return [];
   const data = Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }));
@@ -125,25 +127,8 @@ export const extractComponentName = (path) => {
   }
 };
 
-export const getTheme = (darkMode) => {
-  return {
-    scheme: 'custom',
-    author: 'chris kempson (http://chriskempson.com)',
-    base00: 'transparent',
-    base01: '#303030',
-    base02: '#505050',
-    base03: '#b0b0b0',
-    base04: '#d0d0d0',
-    base05: '#1B1F24',
-    base06: '#f5f5f5',
-    base07: '#ffffff',
-    base08: '#fb0120',
-    base09: '#9467BD',
-    base0A: '#fda331',
-    base0B: '#2CA02C',
-    base0C: '#76c7b7',
-    base0D: '#e4e0db',
-    base0E: '#d381c3',
-    base0F: '#be643c',
-  };
+export const copyToClipboard = (data) => {
+  const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
+  navigator.clipboard.writeText(stringified);
+  return toast.success('Copied to the clipboard', { position: 'top-center' });
 };
