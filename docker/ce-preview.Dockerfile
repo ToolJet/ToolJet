@@ -87,8 +87,12 @@ RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
+# Create the disk mount path and set ownership BEFORE switching to `postgres`
+RUN mkdir -p /var/data && chown -R postgres:postgres /var/data
+
 USER postgres
 RUN /usr/lib/postgresql/13/bin/initdb -D /var/data
+
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
