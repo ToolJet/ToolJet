@@ -320,7 +320,7 @@ button {
 }
 
 .accordion-item {
-  border: solid var(--slate5);
+  border: solid var(--border-weak);
   border-width: 0px 0px 1px 0px;
 }
 
@@ -346,21 +346,15 @@ button {
 }
 
 .accordion-item-trigger {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%23ACB2B9"/></svg>') !important;
-  height: 12px !important;
-  width: 12px !important;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
   transition: transform 0.3s;
   display: inherit !important;
-  opacity: 0.7;
+  height: 1rem;
+  width: 1rem;
+  padding: 0.25rem;
 }
 
 .accordion-item-trigger:not(.collapsed) {
-  transform: rotate(180deg);
-  opacity: 1;
-
+  transform: rotate(90deg);
 }
 
 .accordion-button::after {
@@ -373,7 +367,7 @@ button {
 
 
 .accordion-body {
-  padding: 4px 16px 16px 16px !important;
+  padding: 1rem !important;
 
   .form-label {
     font-weight: 400;
@@ -1597,10 +1591,6 @@ button {
 .theme-dark {
   .accordion-button::after {
     background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none"><path d="M8.19426 3.5L3.80582 3.5C3.22697 3.5 2.86632 4.12791 3.15798 4.6279L5.35221 8.38943C5.64161 8.88556 6.35846 8.88556 6.64787 8.38943L8.8421 4.6279C9.13376 4.12791 8.77311 3.5 8.19426 3.5Z" fill="%23ffffff"/></svg>');
-  }
-
-  .accordion-item-trigger {
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none"><path d="M8.19426 3.5L3.80582 3.5C3.22697 3.5 2.86632 4.12791 3.15798 4.6279L5.35221 8.38943C5.64161 8.88556 6.35846 8.88556 6.64787 8.38943L8.8421 4.6279C9.13376 4.12791 8.77311 3.5 8.19426 3.5Z" fill="%23ffffff"/></svg>') !important;
   }
 
   .homepage-body {
@@ -15836,11 +15826,6 @@ textarea.tj-text-input-widget{
   margin-bottom: 4px;
 }
 
-.accordion-header {
-  height: 52px;
-}
-
-
 .CodeMirror-placeholder {
   min-width: 265px !important;
 }
@@ -18779,34 +18764,21 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .accordion-button.inspector {
-  width: 300;
-  height: 32px;
   justify-content: space-between;
-  padding-top: 6px;
-  padding-right: 16px;
-  padding-bottom: 6px;
-  padding-left: 16px;
+  padding: 0.375rem 1rem !important;
   border-bottom-width: 1px;
   font-family: IBM Plex Sans;
   font-weight: 500;
   font-size: 12px;
   line-height: 20px;
   letter-spacing: 0%;
-  background: var(--Background-surface-layer-02, #F6F8FA);
-  color: var(--Text-placeholder, #6A727C) !important;
+  background-color: var(--interactive-default);
 
-}
-
-.dark-theme {
-  .accordion-button.inspector {
-    background: var(--slate3);
-    color: var(--slate12);
+  &:hover {
+    background-color: var(--interactive-hover);
   }
 }
 
-#inspector-tabpane-properties .accordion-header {
-  height:32px;
-}
 .cm-tooltip {
   z-index: 9999 !important;
 }
