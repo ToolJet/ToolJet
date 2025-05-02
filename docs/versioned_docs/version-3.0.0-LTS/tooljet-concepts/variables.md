@@ -54,4 +54,4 @@ To learn more about different types of variables and their usage, go through the
 **[Setting and unsetting variables and page variables](/docs/how-to/run-actions-from-runjs)** <br/>
 **[Exposed variables](/docs/tooljet-concepts/exposed-variables)** <br/>
 **[Environment variables](/docs/setup/env-vars/)** <br/>
-**[Workspace variables](/docs/security/constants/variables)**
+**[Workspace variables](/docs/org-management/workspaces/workspace-variables/)**

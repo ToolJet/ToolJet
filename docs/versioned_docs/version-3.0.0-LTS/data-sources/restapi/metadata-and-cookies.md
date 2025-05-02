@@ -11,7 +11,7 @@ Metadata is additional information about the data returned by the REST API. This
 While accessing the properties of the metadata object, which contains a hyphen, you can use the bracket notation. For example, to access the `user-agent` property, you can use `{{queries.restapi1.metadata.request.headers["user-agent"]}}` or `{{queries.restapi1.metadata.request.headers."user-agent"}}`.
 :::
 
-<details id="tj-dropdown">
+<details>
 <summary>**Example Metadata**</summary>
 
 ```json

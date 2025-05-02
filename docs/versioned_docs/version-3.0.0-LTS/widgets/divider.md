@@ -37,23 +37,26 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| Layout | Description | Expected Value  |
-| :-------------- | :-----------------| :------------------ |
-| Show on Desktop  | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on Mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div>    | Expected Value                                                  |
+| :------------------------------------------- | :----------------------------------------------------| :-------------------------------------------------------------- |
+| Show on Desktop                              | Makes the component visible in desktop view.         | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on Mobile                               | Makes the component visible in mobile view.          | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
----
-
 <div style={{paddingTop:'24px'}}>
+
+---
 
 ## Styles
 
-| Property   | Description  | Configuration Options  |
-|:---------- |:------------ |:-----------------------|
-| Divider Color   | Sets the color of the divider.  | Select the color or click on **fx** and input code that programmatically returns a HEX color code. |
-| Visibility  | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Box Shadow   | Sets the box shadow properties of the component.  | Select the box shadow color and adjust related properties or set it programmatically using **fx**. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                               |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Divider Color                               | It is used to set the color of the divider. Use hex code to set the background color.           |
+| Visibility                                  | This property is used to set the visibility of the divider. The property accepts Boolean value. |
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::
 
 </div>

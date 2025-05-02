@@ -5,41 +5,36 @@ title: Google Cloud Run
 
 # Deploying ToolJet on Google Cloud Run
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
-:::
-
 :::info
-You should manually set up a **PostgreSQL database** to be used by ToolJet. We recommend using **Cloud SQL** for this purpose. 
-
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-service setup**, it's recommended to use an **external Redis instance**.
+You should manually set up a PostgreSQL database to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
+Also for deploying ToolJet 3.0, Redis, Postgrest along with PostgreSQL are required.
 :::
 
 <!-- Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI. -->
 
 ## Deploying ToolJet application
+1. Create a new Google Cloud Run Service:
+        
+We are using a multi-container setup
 
-### Services and Components
-
-| Service         | Component        | Description |
-|----------------|-----------------|-------------|
-| **Cloud Run**  | `tooljet-app`    | Runs the main ToolJet application. |
-| **Cloud SQL**  | `TOOLJET_DB`     | Stores ToolJet-created tables and app data. |
-| **Cloud SQL**  | `PG_DB`          | Database used to store application data |
-
-**1. Create a new Google Cloud Run Service:**
+- **Google Cloud Run service**
+  - **tooljet-app (container - 1)**
+  - **postgrest (container - 2)**
+  - **redis (container - 3)**
+- **Cloud SQL (for PostgreSQL)**
+  - **for both (TOOLJET_DB and PG_DB)** 
 
 <div style={{textAlign: 'left'}}>
   <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
 </div>
 
-**2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per your requirements.**
+2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per your requirements.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth-V3.png" alt="ingress-auth" />
   </div>
 
-**3. Under the containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:**
+3. Under the containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
@@ -58,75 +53,32 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
   </div>
 
-**4. Under environmental variables, please add the below ToolJet application variables:**
-
-  You can use these variables for: tooljet-app:
-```env
-TOOLJET_HOST=<Endpoint url>
-LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-SECRET_KEY_BASE=<generate using openssl rand -hex 64>
-
-PG_USER=<username>
-PG_HOST=<postgresql-instance-ip>
-PG_PASS=<password>
-PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-```
-
-Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
-
-## ToolJet Database
-
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
-
-#### Setting Up ToolJet Database
-
-To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
-
-```env
-TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
-TOOLJET_DB_HOST=<postgresql-database-host>
-TOOLJET_DB_USER=<username>
-TOOLJET_DB_PASS=<password>
-```
-
-:::note 
-Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
-:::
-
-Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
-
-:::tip
-If you have openssl installed, you can run the 
-command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
-
-If this parameter is not specified, PostgREST will refuse authentication requests.
-:::
-
-```env
-PGRST_HOST=localhost:3001
-PGRST_LOG_LEVEL=info
-PGRST_DB_PRE_CONFIG=postgrest.pre_config
-PGRST_SERVER_PORT=3001
-PGRST_DB_URI=
-PGRST_JWT_SECRET=
-```
-
-The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
-
-#### Format:
-
-```env
-PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
-```
-
-**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
-
+4. Under environmental variables, please add the below ToolJet application variables. 
+  
+  You can use these variables in the container 1: tooljet-app
+| **Environment Variable**   | **Value**                     |
+|-----------------------------|-------------------------------|
+| `LOCKBOX_MASTER_KEY`       | `<generate using open ssl>`   |
+| `SECRET_KEY_BASE`          | `<generate using open ssl>`   |
+| `PG_USER`                  | `postgres`                   |
+| `PG_HOST`                  | `<postgresql-instance-ip>`    |
+| `PG_PASS`                  | `<password>`                 |
+| `PG_DB`                    | `tooljet_production`          |
+| `TOOLJET_DB`               | `tooljet_db`      |
+| `TOOLJET_DB_USER`          | `postgres`                   |
+| `TOOLJET_DB_HOST`          | `<postgresql-instance-ip>`    |
+| `TOOLJET_DB_PASS`          | `<password>`                 |
+| `PGRST_HOST`               | `localhost:3001`             |
+| `PGRST_JWT_SECRET`         | `<generate using open ssl>`   |
+| `REDIS_HOST`               | `localhost`                  |
+| `REDIS_PORT`               | `6379`                       |
+| `REDIS_USER`               | `default`                    |
+| `TOOLJET_HOST`             | `<Endpoint url>`             |
 
 **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars). 
+
+
+  Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
 
 
@@ -139,6 +91,47 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" />
+  </div>
+
+## Deploy 2nd container: Postgrest
+
+Check for the option **ADD-CONTAINER**.
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/add-container.png" alt="add-container" />
+  </div>
+
+1. For the Postgrest container image `postgrest/postgrest:v12.2.0`.
+
+  **Note:** v12.2.0 is recommended for Postgrest.
+
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/postgrest-container.png" alt="postgrest-container" />
+  </div>
+
+2. You can add the following environment variables in the **variables and secrets of postgrest container**, for the postgrest container to communicate to the **tooljet-app**.
+
+| **Environment Variable**   | **Value**                                                   |
+|-----------------------------|------------------------------------------------------------|
+| `PGRST_DB_PRE_CONFIG`      | `postgrest.pre_config`                                      |
+| `PGRST_JWT_SECRET`         | `<generate using openssl>`                                  |
+| `PGRST_DB_URI`             | `postgres://<user>:password@<tooljet_db_host>/<tooljet_db>` |
+| `PGRST_SERVER_PORT`        | `3001`                                                      |
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/postgrest-environment-variables.png" alt="postgrest-environment-variables" />
+  </div>
+
+
+## Deploy 3rd container: Redis
+
+Check for the option **ADD-CONTAINER** and create another container for Redis.
+
+For the Redis container we recommend using image `redis:6.2`
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/redis-container.png" alt="redis-container" />
   </div>
 
 
@@ -160,6 +153,5 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
-
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

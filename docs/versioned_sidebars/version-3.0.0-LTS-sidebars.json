@@ -1,125 +1,72 @@
 {
   "docs": [
+    "doc-home-page",
     {
       "type": "category",
       "label": "Getting Started",
-      "className": "category-as-header getting-started-header",
-      "collapsed": false,
-      "collapsible": false,
       "items": [
-        "doc-home-page",
         "getting-started/platform-overview",
-        "getting-started/quickstart-guide",
-        {
-          "type": "category",
-          "label": "ToolJet Concepts",
-          "items": [
-            "tooljet-concepts/what-are-components",
-            "tooljet-concepts/what-are-datasources",
-            "tooljet-concepts/what-are-queries",
-            "tooljet-concepts/inspector",
-            "tooljet-concepts/what-are-events",
-            "tooljet-concepts/actions",
-            "tooljet-concepts/variables",
-            "tooljet-concepts/how-to-access-values",
-            "tooljet-concepts/component-specific-actions",
-            "tooljet-concepts/exposed-variables",
-            "tooljet-concepts/pages",
-            "tooljet-concepts/run-js",
-            "tooljet-concepts/styling-components",
-            "tooljet-concepts/workspace-constants",
-            "tooljet-concepts/permissions",
-            "tooljet-concepts/super-admin"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "How To",
-          "items": [
-            "how-to/use-url-params-on-load",
-            "how-to/pass-query-params-in-custom-components",
-            "how-to/use-custom-parameters",
-            "how-to/pass-values-in-rest-api",
-            "how-to/build-dynamic-forms",
-            "how-to/setup-rsyslog",
-            "how-to/conditionally-display-components",
-            "how-to/use-inspector",
-            "how-to/use-form-component",
-            "how-to/access-cellvalue-rowdata",
-            "how-to/conditionally-format-table",
-            "how-to/bulk-update-multiple-rows",
-            "how-to/delete-multiple-rows",
-            "how-to/use-server-side-pagination",
-            "how-to/access-currentuser",
-            "how-to/use-axios-in-runjs",
-            "how-to/run-actions-from-runjs",
-            "how-to/intentionally-fail-js-query",
-            "how-to/run-query-at-specified-intervals",
-            "how-to/use-to-py-function-in-runpy",
-            "how-to/access-users-location",
-            "how-to/use-s3-signed-url-to-upload-docs",
-            "how-to/s3-custom-endpoints",
-            "how-to/upload-files-aws",
-            "how-to/upload-files-gcs",
-            "how-to/loading-image-pdf-from-db",
-            "how-to/use-events-on-chart",
-            "how-to/print-multi-tabs-report",
-            "how-to/display-listview-record-on-new-page"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Deployment",
-          "link": {
-            "type": "doc",
-            "id": "setup/index"
-          },
-          "items": [
-            "setup/try-tooljet",
-            "setup/choose-your-tooljet",
-            "setup/system-requirements",
-            "setup/digitalocean",
-            "setup/docker",
-            "setup/ec2",
-            "setup/ecs",
-            "setup/openshift",
-            "setup/helm",
-            "setup/kubernetes",
-            "setup/kubernetes-gke",
-            "setup/kubernetes-aks",
-            "setup/kubernetes-eks",
-            "setup/azure-container",
-            "setup/google-cloud-run",
-            "setup/env-vars",
-            "setup/http-proxy",
-            "setup/tooljet-subpath",
-            "setup/v2-migration-guide",
-            "setup/upgrade-to-lts",
-            "setup/upgrade-to-v3",
-            "setup/cloud-v3-migration"
-          ]
-        }
+        "getting-started/quickstart-guide"
       ]
     },
     {
       "type": "category",
-      "label": "Build with AI",
-      "className": "category-as-header build-with-ai-header",
-      "collapsed": false,
-      "collapsible": false,
+      "label": "ToolJet Concepts",
       "items": [
-        "build-with-ai/overview",
-        "build-with-ai/generate-applications",
-        "build-with-ai/ai-docs-assistant",
-        "build-with-ai/tooljet-mcp"
+        "tooljet-concepts/what-are-components",
+        "tooljet-concepts/what-are-datasources",
+        "tooljet-concepts/what-are-queries",
+        "tooljet-concepts/inspector",
+        "tooljet-concepts/what-are-events",
+        "tooljet-concepts/actions",
+        "tooljet-concepts/variables",
+        "tooljet-concepts/how-to-access-values",
+        "tooljet-concepts/component-specific-actions",
+        "tooljet-concepts/exposed-variables",
+        "tooljet-concepts/pages",
+        "tooljet-concepts/run-js",
+        "tooljet-concepts/styling-components",
+        "tooljet-concepts/workspace-constants",
+        "tooljet-concepts/permissions",
+        "tooljet-concepts/super-admin"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Setup",
+      "link": {
+        "type": "doc",
+        "id": "setup/index"
+      },
+      "items": [
+        "setup/try-tooljet",
+        "setup/choose-your-tooljet",
+        "setup/system-requirements",
+        "setup/digitalocean",
+        "setup/docker",
+        "setup/ec2",
+        "setup/ecs",
+        "setup/openshift",
+        "setup/helm",
+        "setup/kubernetes",
+        "setup/kubernetes-gke",
+        "setup/kubernetes-aks",
+        "setup/kubernetes-eks",
+        "setup/azure-container",
+        "setup/google-cloud-run",
+        "setup/client",
+        "setup/env-vars",
+        "setup/http-proxy",
+        "setup/tooljet-subpath",
+        "setup/v2-migration-guide",
+        "setup/upgrade-to-lts",
+        "setup/upgrade-to-v3",
+        "setup/cloud-v3-migration"
       ]
     },
     {
       "type": "category",
       "label": "App Builder",
-      "collapsed": false,
-      "collapsible": false,
-      "className": "category-as-header app-builder-header",
       "items": [
         "app-builder/overview",
         {
@@ -131,15 +78,7 @@
             "app-builder/walkthrough/using-code",
             "app-builder/walkthrough/accessing-values",
             "app-builder/walkthrough/variables",
-            "app-builder/importing-exporting-applications",
-            {
-              "type": "category",
-              "label": "Import Libraries",
-              "items": [
-                "app-builder/import-libraries/runjs",
-                "app-builder/import-libraries/runpy"
-              ]
-            }
+            "app-builder/importing-exporting-applications"
           ]
         },
         {
@@ -181,16 +120,6 @@
                         "widgets/chart/chart-properties",
                         "widgets/chart/chart-examples",
                         "widgets/chart/transforming-data-for-charts"
-                      ]
-                    },
-                    {
-                      "type": "category",
-                      "label": "Chat",
-                      "items": [
-                        "widgets/chat/overview",
-                        "widgets/chat/properties",
-                        "widgets/chat/csa",
-                        "widgets/chat/markdown"
                       ]
                     },
                     "widgets/checkbox",
@@ -237,7 +166,7 @@
                         {
                           "type": "category",
                           "label": "Serverside Operations",
-                          "items": [
+                          "items" : [
                             "widgets/table/serverside-operations/overview",
                             "widgets/table/serverside-operations/search",
                             "widgets/table/serverside-operations/sort",
@@ -297,22 +226,56 @@
             }
           ]
         },
-        "tutorial/transformations",
         "app-builder/anti-patterns",
         "tutorial/keyboard-shortcuts"
       ]
     },
     {
       "type": "category",
+      "label": "How To",
+      "items": [
+        "how-to/use-url-params-on-load",
+        "how-to/pass-query-params-in-custom-components",
+        "how-to/use-custom-parameters",
+        "how-to/pass-values-in-rest-api",
+        "how-to/build-dynamic-forms",
+        "how-to/setup-rsyslog",
+        "how-to/conditionally-display-components",
+        "how-to/use-inspector",
+        "how-to/use-form-component",
+        "how-to/access-cellvalue-rowdata",
+        "how-to/conditionally-format-table",
+        "how-to/bulk-update-multiple-rows",
+        "how-to/delete-multiple-rows",
+        "how-to/use-server-side-pagination",
+        "how-to/access-currentuser",
+        "how-to/use-axios-in-runjs",
+        "how-to/import-external-libraries-using-runpy",
+        "how-to/import-external-libraries-using-runjs",
+        "how-to/run-actions-from-runjs",
+        "how-to/intentionally-fail-js-query",
+        "how-to/run-query-at-specified-intervals",
+        "how-to/use-to-py-function-in-runpy",
+        "how-to/access-users-location",
+        "how-to/use-s3-signed-url-to-upload-docs",
+        "how-to/s3-custom-endpoints",
+        "how-to/upload-files-aws",
+        "how-to/upload-files-gcs",
+        "how-to/loading-image-pdf-from-db",
+        "how-to/use-events-on-chart",
+        "how-to/print-multi-tabs-report",
+        "how-to/display-listview-record-on-new-page"
+      ]
+    },
+    {
+      "type": "category",
       "label": "Data Sources",
-      "className": "category-as-header data-sources-header",
-      "collapsed": false,
-      "collapsible": false,
       "items": [
         "data-sources/overview",
+        "data-sources/sample-data-sources",
         {
           "type": "category",
-          "label": "Data Sources library",
+          "label": "Datasources library",
           "items": [
             "data-sources/airtable",
             "data-sources/s3",
@@ -341,7 +304,6 @@
             "data-sources/mssql",
             "data-sources/mysql",
             "data-sources/n8n",
-            "data-sources/nocodb",
             "data-sources/notion",
             "data-sources/openapi",
             "data-sources/oracledb",
@@ -350,7 +312,7 @@
             {
               "type": "category",
               "label": "REST API",
-              "collapsed": true,
+              "collapsed": false,
               "items": [
                 "data-sources/restapi/configuration",
                 "data-sources/restapi/authentication",
@@ -374,54 +336,13 @@
             "data-sources/zendesk"
           ]
         },
-        {
-          "type": "category",
-          "label": "Marketplace",
-          "collapsed": true,
-          "items": [
-            "marketplace/marketplace-overview",
-            {
-              "type": "category",
-              "label": "Marketplace Plugins",
-              "items": [
-                "marketplace/plugins/marketplace-plugin-awsredshift",
-                "marketplace/plugins/marketplace-plugin-textract",
-                "marketplace/plugins/marketplace-plugin-aws-lambda",
-                "marketplace/plugins/marketplace-plugin-engagespot",
-                "marketplace/plugins/marketplace-plugin-github",
-                "marketplace/plugins/marketplace-plugin-harperdb",
-                "marketplace/plugins/marketplace-plugin-openai",
-                "marketplace/plugins/marketplace-plugin-plivo",
-                "marketplace/plugins/marketplace-plugin-salesforce",
-                "marketplace/plugins/marketplace-plugin-supabase",
-                "marketplace/plugins/marketplace-plugin-pocketbase",
-                "marketplace/plugins/marketplace-plugin-portkey",
-                "marketplace/plugins/marketplace-plugin-Presto",
-                "marketplace/plugins/marketplace-plugin-jira",
-                "marketplace/plugins/marketplace-plugin-sharepoint",
-                "marketplace/plugins/marketplace-plugin-pinecone",
-                "marketplace/plugins/marketplace-plugin-gemini",
-                "marketplace/plugins/marketplace-plugin-anthropic",
-                "marketplace/plugins/marketplace-plugin-mistral_ai",
-                "marketplace/plugins/marketplace-plugin-hugging_face",
-                "marketplace/plugins/marketplace-plugin-cohere",
-                "marketplace/plugins/marketplace-plugin-weaviate",
-                "marketplace/plugins/marketplace-plugin-qdrant",
-                "marketplace/plugins/marketplace-plugin-azurerepos"
-              ]
-            }
-          ]
-        },
-        "data-sources/permissions",
-        "data-sources/sample-data-sources"
+        "tutorial/transformations",
+        "data-sources/local-data-sources-migration"
       ]
     },
     {
       "type": "category",
       "label": "ToolJet Database",
-      "className": "category-as-header tjdb-header",
-      "collapsed": false,
-      "collapsible": false,
       "items": [
         "tooljet-db/tooljet-database",
         "tooljet-db/database-editor",
@@ -440,10 +361,100 @@
     },
     {
       "type": "category",
+      "label": "Org Management",
+      "items": [
+        "dashboard",
+        {
+          "type": "category",
+          "label": "Workspaces",
+          "items": [
+            "org-management/workspaces/workspace_overview",
+            "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace-variables-migration",
+            "org-management/workspaces/workspace_constants"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "User Authentication",
+          "items": [
+            "user-authentication/user-lifecycle",
+            "user-authentication/workspace-login",
+            {
+              "type": "category",
+              "label": "SSO",
+              "items": [
+                "user-authentication/sso/github",
+                "user-authentication/sso/google",
+                {
+                  "type": "category",
+                  "label": "OpenId Connect",
+                  "link": {
+                    "type": "generated-index",
+                    "title": "OpenId Connect",
+                    "description": " ",
+                    "keywords": [
+                      "okta",
+                      "openid",
+                      "azureAD"
+                    ]
+                  },
+                  "collapsed": true,
+                  "items": [
+                    "user-authentication/sso/openid/setup",
+                    "user-authentication/sso/openid/azuread",
+                    "user-authentication/sso/openid/okta",
+                    "user-authentication/sso/openid/google-openid"
+                  ]
+                },
+                "user-authentication/sso/oidc",
+                "user-authentication/sso/ldap",
+                "user-authentication/sso/saml",
+                "user-authentication/sso/auto-sso-login"
+              ]
+            }
+          ]
+        },
+        "org-management/permissions",
+        "tutorial/manage-users-groups",
+        "tutorial/tooljet-api",
+        "Enterprise/audit_logs",
+        "Enterprise/white-label",
+        "Enterprise/superadmin",
+        {
+          "type": "category",
+          "label": "Licensing",
+          "items": [
+            "org-management/licensing/tooljet-cloud",
+            "org-management/licensing/self-hosted"
+          ]
+        },
+        "org-management/smtp-configuration"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Release Management",
+      "items": [
+        {
+          "type": "category",
+          "label": "GitSync",
+          "items": [
+            "release-management/gitsync/overview",
+            "release-management/gitsync/tj-config",
+            "release-management/gitsync/ssh-config",
+            "release-management/gitsync/delete-gitsync",
+            "release-management/gitsync/git-push",
+            "release-management/gitsync/git-pull"
+          ]
+        },
+        "release-management/multi-environment",
+        "tutorial/versioning-and-release"
+      ]
+    },
+    {
+      "type": "category",
       "label": "Workflows",
-      "className": "category-as-header workflows-header",
-      "collapsed": false,
-      "collapsible": false,
       "items": [
         "workflows/overview",
         "workflows/nodes",
@@ -454,338 +465,107 @@
           "type": "category",
           "label": "How-to",
           "items": [
-            "workflows/how-to/trigger-using-webhook",
-            "workflows/how-to/trigger-workflow-from-app"
+            "workflows/trigger-using-webhook",
+            "workflows/trigger-workflow-from-app"
           ]
         }
       ]
     },
     {
       "type": "category",
-      "label": "Setup ToolJet",
-      "className": "category-as-header setup-tj-header",
-      "collapsible": false,
-      "collapsed": false,
-      "items": [
-        "tj-setup/overview",
-        "tj-setup/tj-deployment",
-        {
-          "type": "category",
-          "label": "Licensing",
-          "items": [
-            "tj-setup/licensing/self-hosted",
-            "tj-setup/licensing/cloud"
-          ]
-        },
-        "tj-setup/instances",
-        "tj-setup/workspaces",
-        {
-          "type": "category",
-          "label": "Branding",
-          "items": [
-            "tj-setup/org-branding/white-labeling",
-            "tj-setup/org-branding/custom-domain"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Setup SMTP Server",
-          "link": {
-            "type": "doc",
-            "id": "tj-setup/smtp-setup/configuration"
-          },
-          "items": [
-            "tj-setup/smtp-setup/configuration",
-            "tj-setup/smtp-setup/email-providers"
-          ]
-        },
-        "tj-setup/whitelist-cdn-domains"
-      ]
-    },
-    {
-      "type": "category",
-      "collapsed": false,
-      "collapsible": false,
-      "className": "category-as-header user-management-header",
-      "label": "User Management and Access Control",
-      "items": [
-        "user-management/overview",
-        {
-          "type": "category",
-          "label": "Onboard and Offboard Users",
-          "items": [
-            "user-management/onboard-users/overview",
-            "user-management/onboard-users/invite-user",
-            "user-management/onboard-users/bulk-invite-users",
-            "user-management/onboard-users/self-signup-user",
-            "user-management/onboard-users/user-metadata",
-            "user-management/onboard-users/archive-user"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Authentication",
-          "items": [
-            {
-              "type": "category",
-              "label": "Self-hosted",
-              "items": [
-                "user-management/authentication/self-hosted/overview",
-                "user-management/authentication/self-hosted/instance-login",
-                "user-management/authentication/self-hosted/workspace-login"
-              ]
-            },
-            "user-management/authentication/cloud-login"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Role Based Access Control",
-          "items": [
-            "user-management/role-based-access/super-admin",
-            "user-management/role-based-access/user-roles",
-            "user-management/role-based-access/custom-groups",
-            "user-management/role-based-access/access-control"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Single Sign-On (SSO)",
-          "link": {
-            "type": "doc",
-            "id": "user-management/sso/overview"
-          },
-          "items": [
-            "user-management/sso/overview",
-            "user-management/sso/github",
-            "user-management/sso/google",
-            {
-              "type": "category",
-              "label": "OpenID Connect",
-              "link": {
-                "type": "doc",
-                "id": "user-management/sso/oidc/setup"
-              },
-              "items": [
-                "user-management/sso/oidc/setup",
-                "user-management/sso/oidc/azuread",
-                "user-management/sso/oidc/okta",
-                "user-management/sso/oidc/google"
-              ]
-            },
-            "user-management/sso/ldap",
-            {
-              "type": "category",
-              "label": "SAML",
-              "link": {
-                "type": "doc",
-                "id": "user-management/sso/saml/setup"
-              },
-              "items": [
-                "user-management/sso/saml/setup",
-                "user-management/sso/saml/okta"
-              ]
-            }
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Group Sync",
-          "items": [
-            "user-management/group-sync/oidc"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Profile Management",
-          "items": [
-            "user-management/profile-management/user-details",
-            "user-management/profile-management/reset-password",
-            "user-management/profile-management/user-profile"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "category",
-      "collapsed": false,
-      "collapsible": false,
-      "className": "category-as-header dev-cycle-header",
-      "label": "Development Lifecycle",
-      "items": [
-        "development-lifecycle/overview",
-        {
-          "type": "category",
-          "label": "Release Management",
-          "items": [
-            "development-lifecycle/release/version-control",
-            "development-lifecycle/release/release-rollback",
-            "development-lifecycle/release/share-app"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Git Sync",
-          "items": [
-            "development-lifecycle/gitsync/overview",
-            {
-              "type": "category",
-              "label": "Connect to Git Repo",
-              "items": [
-                "development-lifecycle/gitsync/connect-to-git-repo/connection-method",
-                {
-                  "type": "category",
-                  "label": "Git SSH Protocol",
-                  "items": [
-                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config",
-                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config"
-                  ]
-                },
-                "development-lifecycle/gitsync/connect-to-git-repo/github-config"
-              ]
-            },
-            "development-lifecycle/gitsync/delete-gitsync",
-            "development-lifecycle/gitsync/push",
-            "development-lifecycle/gitsync/pull"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Environment",
-          "items": [
-            {
-              "type": "category",
-              "label": "Self-Hosted",
-              "items": [
-                "development-lifecycle/environment/self-hosted/multi-environment",
-                "development-lifecycle/environment/self-hosted/example-configuration",
-                {
-                  "type": "category",
-                  "label": "Multi-Instance",
-                  "items": [
-                    "development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment",
-                    "development-lifecycle/environment/self-hosted/multi-instance/example-configuration"
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Cloud",
-              "items": [
-                "development-lifecycle/environment/cloud/multi-environment",
-                "development-lifecycle/environment/cloud/example-configuration"
-              ]
-            }
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Backup",
-          "items": [
-            "development-lifecycle/backup/gitsync-backup"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "category",
-      "label": "Security and Monitoring",
-      "collapsed": false,
-      "collapsible": false,
-      "className": "category-as-header security-header",
-      "items": [
-        {
-          "type": "category",
-          "label": "Constants",
-          "items": [
-            "security/constants/constants",
-            "security/constants/variables"
-          ]
-        },
-        "security/audit-logs",
-        "security/compliance"
-      ]
-    },
-    {
-      "type": "category",
-      "label": "ToolJet API",
-      "className": "category-as-header tj-api-header",
-      "collapsible": false,
+      "label": "Marketplace",
       "collapsed": true,
       "items": [
-        "tooljet-api"
+        "marketplace/marketplace-overview",
+        {
+          "type": "category",
+          "label": "Marketplace Plugins",
+          "items": [
+            "marketplace/plugins/marketplace-plugin-awsredshift",
+            "marketplace/plugins/marketplace-plugin-textract",
+            "marketplace/plugins/marketplace-plugin-aws-lambda",
+            "marketplace/plugins/marketplace-plugin-engagespot",
+            "marketplace/plugins/marketplace-plugin-github",
+            "marketplace/plugins/marketplace-plugin-harperdb",
+            "marketplace/plugins/marketplace-plugin-openai",
+            "marketplace/plugins/marketplace-plugin-plivo",
+            "marketplace/plugins/marketplace-plugin-salesforce",
+            "marketplace/plugins/marketplace-plugin-supabase",
+            "marketplace/plugins/marketplace-plugin-pocketbase",
+            "marketplace/plugins/marketplace-plugin-portkey",
+            "marketplace/plugins/marketplace-plugin-Presto",
+            "marketplace/plugins/marketplace-plugin-jira",
+            "marketplace/plugins/marketplace-plugin-sharepoint",
+            "marketplace/plugins/marketplace-plugin-pinecone"
+          ]
+        }
       ]
     },
+    "tooljet-copilot",
+    "security",
+    "tracking",
     {
       "type": "category",
-      "label": "Resources",
-      "className": "category-as-header resources-header",
+      "label": "Project Overview",
       "collapsed": true,
-      "collapsible": false,
       "items": [
-        {
-          "type": "link",
-          "label": "Release Notes",
-          "href": "https://app.tooljet.ai/applications/release-notes"
-        },
+        "project-overview/release-notes",
         {
           "type": "link",
           "label": "Roadmap",
           "href": "https://github.com/orgs/ToolJet/projects/15"
         },
-        "versions",
-        "tracking",
+        "versions"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Contributing Guide",
+      "collapsed": true,
+      "items": [
+        "contributing-guide/setup/architecture",
         {
           "type": "category",
-          "label": "Contributing Guide",
-          "collapsed": true,
+          "label": "Setup",
           "items": [
-            "contributing-guide/setup/architecture",
-            {
-              "type": "category",
-              "label": "Setup",
-              "items": [
-                "contributing-guide/setup/codespaces",
-                "contributing-guide/setup/macos",
-                "contributing-guide/setup/docker",
-                "contributing-guide/setup/ubuntu",
-                "contributing-guide/setup/windows",
-                "contributing-guide/setup/system-requirements-for-contributing"
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Marketplace",
-              "items": [
-                "contributing-guide/marketplace/marketplace-setup",
-                "contributing-guide/marketplace/creating-a-plugin"
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Documentation",
-              "items": [
-                "contributing-guide/documentation-guidelines/introduction",
-                "contributing-guide/documentation-guidelines/pr-checklist",
-                "contributing-guide/documentation-guidelines/style-guide"
-              ]
-            },
-            "tooljet-cli",
-            "contributing-guide/testing",
-            "contributing-guide/l10n",
-            {
-              "type": "category",
-              "label": "Troubleshooting",
-              "items": [
-                "contributing-guide/troubleshooting/eslint",
-                "contributing-guide/troubleshooting/runpy-limitations"
-              ]
-            },
-            "contributing-guide/code-of-conduct",
-            "contributing-guide/slackcoc"
+            "contributing-guide/setup/codespaces",
+            "contributing-guide/setup/macos",
+            "contributing-guide/setup/docker",
+            "contributing-guide/setup/ubuntu",
+            "contributing-guide/setup/windows",
+            "contributing-guide/setup/system-requirements-for-contributing"
           ]
-        }
+        },
+        {
+          "type": "category",
+          "label": "Marketplace",
+          "items": [
+            "contributing-guide/marketplace/marketplace-setup",
+            "contributing-guide/marketplace/creating-a-plugin"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Documentation",
+          "items": [
+            "contributing-guide/documentation-guidelines/introduction",
+            "contributing-guide/documentation-guidelines/pr-checklist",
+            "contributing-guide/documentation-guidelines/style-guide"
+          ]
+        },
+        "tooljet-cli",
+        "contributing-guide/testing",
+        "contributing-guide/l10n",
+        {
+          "type": "category",
+          "label": "Troubleshooting",
+          "items": [
+            "contributing-guide/troubleshooting/eslint",
+            "contributing-guide/troubleshooting/runpy-limitations"
+          ]
+        },
+        "contributing-guide/code-of-conduct",
+        "contributing-guide/slackcoc"
       ]
     }
   ]

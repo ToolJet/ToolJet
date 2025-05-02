@@ -23,51 +23,13 @@ helm install tooljet tooljet/tooljet
 
 Remember to replace the variables with your specific configuration values.
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
-
 ## ToolJet Database
 
 ToolJet offers a hosted database solution that allows you to build applications quickly and manage your data effortlessly. The ToolJet database requires no setup and provides a user-friendly interface for data management.
 
 For more information about the ToolJet database, you can visit [here](/docs/tooljet-db/tooljet-database).
 
-## Redis Configuration  
-For a multi-service or multi-pod setup, it is recommended to use an external Redis instance.
-
-**Default Behavior:**  
-- Redis is included in the Helm chart but **disabled by default**.  
-
-**When to Enable Redis?**  
-- If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.  
-
-Enabling or Disabling Redis in `values.yaml`  
-
-To **enable Redis**, modify the following section in `values.yaml`: 
-
-```yaml
-redis:
-  enabled: true  # Set to true if ReplicaSet > 1
-  fullnameOverride: redis
-  auth:
-    enabled: true
-    password: "tooljet"
-  master:
-    service:
-      port: 6379 
-``` 
-
-**Using an External Redis Instance:**  
-- To configure an external Redis, update the `values.yaml` with the following variables:  
-
-  ```yaml
-  REDIS_HOST=<external_redis_host>
-  REDIS_PORT=<external_redis_port>
-  REDIS_USER=<external_redis_user>
-  REDIS_PASSWORD=<external_redis_password>
-  ```
-
+You need to set up and deploy the PostgREST server, which facilitates querying the ToolJet Database.
 
 ## Upgrading to the Latest LTS Version
 

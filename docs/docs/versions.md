@@ -7,14 +7,15 @@ title: ToolJet Documentation Versions
 
 | Version    | Documentation                                   |
 |------------|-------------------------------------------------|
-| 3.0.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/) |
+| 3.5.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/) |
+| 3.0.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/3.0.0-LTS/) |
 | 2.50.0-LTS | [Documentation](https://docs.tooljet.ai/docs/2.50.0-LTS/)  |
 
 ## Beta Version (Pre-Release)
 
 | Version     | Documentation                             | 
 |-------------|-------------------------------------------|
-| 3.1.0-Beta 🚧   | [Documentation](https://docs.tooljet.ai/docs/beta/) |
+| 3.11.0-Beta 🚧   | [Documentation](https://docs.tooljet.ai/docs/beta/) |
 
 ## Past Versions (Not Maintained Anymore)
 
