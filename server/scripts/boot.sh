@@ -6,13 +6,25 @@ echo "[boot.sh] Setting ownership and permissions on /var/data..."
 chown -R postgres:postgres /var/data
 chmod 0700 /var/data
 
+# Remove stale postmaster.pid if it exists and no process is using it
+if [ -f /var/data/postmaster.pid ]; then
+  echo "[boot.sh] Found existing postmaster.pid. Checking if process is alive..."
+  pid=$(head -n1 /var/data/postmaster.pid)
+  if ! kill -0 "$pid" 2>/dev/null; then
+    echo "[boot.sh] Removing stale postmaster.pid (PID $pid not alive)..."
+    rm -f /var/data/postmaster.pid
+  else
+    echo "[boot.sh] PostgreSQL already running with PID $pid. Skipping startup."
+  fi
+fi
+
 # Initialize PostgreSQL if it hasn't been initialized
 if [ ! -f /var/data/PG_VERSION ]; then
   echo "[boot.sh] Initializing PostgreSQL database..."
   su postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/data"
 fi
 
-# Start PostgreSQL via supervisord
+# Start supervisord
 echo "[boot.sh] Starting supervisord..."
 /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &
 
