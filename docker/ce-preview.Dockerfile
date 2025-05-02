@@ -87,7 +87,8 @@ RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
-ENV PGDATA=/data
+USER postgres
+RUN /usr/lib/postgresql/13/bin/initdb -D /var/data
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
