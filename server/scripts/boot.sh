@@ -1,15 +1,16 @@
 #!/bin/bash
 set -e
 
-# Init PostgreSQL data dir only if needed
+# Ensure ownership of data directory
+chown -R postgres:postgres /var/data
+
+# Initialize PostgreSQL data directory if empty
 if [ ! -f /var/data/PG_VERSION ]; then
   echo "[boot.sh] Initializing PostgreSQL data directory..."
-  /usr/lib/postgresql/13/bin/initdb -D /var/data
+  su postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/data"
 else
   echo "[boot.sh] PostgreSQL data directory already initialized."
 fi
-
-service postgresql start
 
 echo "
    _____           _   ___      _
@@ -23,6 +24,7 @@ Everything you need to build internal tools!
 GitHub: https://github.com/ToolJet/ToolJet
 "
 
+# Run database setup and start
 npm run db:setup:prod
 npm run db:seed:prod
 npm run start:prod
