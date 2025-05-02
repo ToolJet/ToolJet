@@ -170,7 +170,7 @@ jobs:
             "serviceDetails": {
               "disk": {
                 "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
-                "mountPath": "var/lib/postgresql/13/main",
+                "mountPath": "/var/lib/postgresql/13/main",
                 "sizeGB": 0
               },
               "env": "docker",
