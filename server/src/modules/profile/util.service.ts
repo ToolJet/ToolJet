@@ -60,4 +60,16 @@ export class ProfileUtilService implements IProfileUtilService {
     await manager.update(User, { id: userId }, { firstName, lastName });
     await this.setAuditLogForUser(userId, manager);
   }
+
+  async updateUserPassword(userId: string, password: string, manager: EntityManager): Promise<void> {
+    await manager.update(
+      User,
+      { id: userId },
+      {
+        password,
+        passwordRetryCount: 0,
+      }
+    );
+    await this.setAuditLogForUser(userId, manager);
+  }
 }

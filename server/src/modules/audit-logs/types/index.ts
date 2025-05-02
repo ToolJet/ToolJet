@@ -18,6 +18,7 @@ export interface AuditLogFields {
   organizationId: string;
   resourceId: string;
   resourceType: MODULES;
+  resourceData?: object;
   actionType: string;
   resourceName?: string;
   ipAddress?: string;
