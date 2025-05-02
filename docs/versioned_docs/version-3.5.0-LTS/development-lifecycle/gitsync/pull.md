@@ -3,7 +3,7 @@ id: pull
 title: Pull Changes from Git Repo
 ---
 
-Once the GitSync is configured and the changes are committed to the git repository, after that the changes can be pulled from the git repository for the following use cases:
+Once the git sync is configured and the changes are committed to the git repository, after that the changes can be pulled from the git repository for the following use cases:
 
 - [Sequential Development](#sequential-development) - Allows multiple developers to work on the same application, one after another.
 - [Application Migration](#application-migration) - To use multi instance as multi environment.
@@ -11,19 +11,24 @@ Once the GitSync is configured and the changes are committed to the git reposito
 
 ## Sequential Development
 
-Starting from version `3.5.x-ee-lts`, GitSync can be used to do sequential developement, allowing multiple developers to work on a single application in a sequential manner. In this approach, one developer makes changes and commits them, and the next developer must pull the latest commit before beginning any new changes. Follow these steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **enabled**, the application name can also be updates while importing.
+Starting from version `3.5.35-ee-lts`, git sync can be used to do sequential developement, allowing multiple developers to work on a single application in a sequential manner. In this approach, one developer makes changes and commits them, and the next developer must pull the latest commit before beginning any new changes. 
+
+For example - If the Developer A commits (Commit A), then Developer B must pull the latest commit before starting work and subsequently makes a new commit. Otherwise the work commited by Developer A might be lost.
+
+
+Follow these steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **enabled**, the application name can also be updates while importing.
 
 :::caution
-ToolJet tracks only the latest commit in the Git repository. **It is essential to pull the latest changes before beginning any new modifications** or making a new commit. Changes may be lost in the following or similar scenario:
+ToolJet tracks only the latest commit in the Git repository. **It is essential to pull the latest changes before beginning any new modifications** or making a new commit.
+:::
 
-If Developer A and Developer B both pull the application and begin making changes, and Developer A commits (Commit A) before Developer B, followed by Developer B committing without pulling Commit A, the changes made by Developer A will be lost.
-
-The correct sequence is - Developer A commits (Commit A), then Developer B pulls the latest commit before starting work and subsequently makes a new commit.
+:::info
+Simultaneous Development using git sync is planned to release in upcoming versions.
 :::
 
 ## Application Migration
 
-ToolJet supports the use of multiple instances as multiple environments — Development, Staging, and Production. Applications can be migrated between these environments using GitSync. For more details, refer to the [Instance as Environment](/docs/development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment) guide.
+ToolJet supports the use of multiple instances as multiple environments — Development, Staging, and Production. Applications can be migrated between these environments using git sync. For more details, refer to the [Instance as Environment](/docs/development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment) guide.
 
 To migrate an application to the staging or production environment, follow the steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **disabled** during import to prevent unintended commits from these environments.
 
@@ -35,7 +40,7 @@ Any ToolJet application stored in a Git repository can be restored by following 
 
 To import an application from a git repository, click on the kebab menu (three dots) on the right side of the **Create new app** button on the dashboard. Click on the **Import from git repository** option.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/restore-app.png" alt="GitSync" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/restore-app.png" alt="git sync" />
 
 On clicking the **Import from git repository** option, a modal will appear with the following configuration options:
 
@@ -45,7 +50,7 @@ On clicking the **Import from git repository** option, a modal will appear with 
 
 Once everything is configured, click on the **Import app** button to import the app from the git repository. 
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/gitsync/importmodal-v3.png" alt="GitSync" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/gitsync/importmodal-v3.png" alt="git sync" />
 
 :::info
 In the current version, workspace constants are not synced with the Git repository and must be configured manually.
@@ -63,5 +68,5 @@ You can check for updates and pull changes from the git repository by following 
 
 3. Click on the **Pull changes** button to pull the changes from the git repository.
 
-    <img className="screenshot-full img-s" src="/img/gitsync/updatecheck-v2.png" alt="GitSync" />
+    <img className="screenshot-full img-s" src="/img/gitsync/updatecheck-v2.png" alt="git sync" />
 
