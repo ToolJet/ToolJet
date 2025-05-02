@@ -450,9 +450,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             if (typeof replacement === 'string' || typeof replacement === 'number') {
               // If replacement is a string, perform the replace
               resolvedValue = resolvedValue.replace(variable, String(replacement));
+            } else if (replacement === undefined || replacement === null) {
+              resolvedValue = replacement; //Prevent from stringifying undefined or null
             } else {
               // If replacement is an object or an array, assign the whole value to resolvedValue
-              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+              resolvedValue = options[resolvedValue];
             }
           }
           if (parent && key !== null) {
