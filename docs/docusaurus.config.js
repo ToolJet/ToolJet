@@ -159,7 +159,7 @@ module.exports = {
           lastVersion: '3.0.0-LTS',
           versions: {
             current: {
-              label: '3.1.0-Beta 🚧',
+              label: '3.11.0-Beta 🚧',
               path: 'beta',
               banner: 'none',
               badge: false
@@ -169,6 +169,7 @@ module.exports = {
               badge: false
             },
             "3.0.0-LTS": {
+              label: '3.5.0-LTS',
               banner: 'none',
               badge: false
             }
