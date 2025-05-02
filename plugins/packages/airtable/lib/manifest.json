@@ -2,38 +2,34 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Airtable datasource",
   "description": "A schema defining airtable datasource",
-  "type": "api",
-  "source": {
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
     "name": "Airtable",
     "kind": "airtable",
-    "exposedVariables": {
-      "isLoading": false,
-      "data": {},
-      "rawData": {}
-    },
-    "options": {
-      "personal_access_token": {
-        "type": "string",
-        "encrypted": true
-      }
-    },
-    "customTesting": true
-  },
-  "defaults": {
-    "personal_access_token": {
-      "value": ""
-    }
+    "type": "api"
   },
   "properties": {
     "personal_access_token": {
-      "label": "Personal access token",
-      "key": "personal_access_token",
-      "type": "password",
-      "description": "Personal access token for airtable",
-      "helpText": "For generating personal access token, visit: <a href='https://airtable.com/account' target='_blank' rel='noreferrer'>Airtable account page</a>"
+      "type": "string",
+      "title": "Personal access token",
+      "description": "Personal access token for airtable"
     }
   },
+  "tj:encrypted": [
+    "personal_access_token"
+  ],
   "required": [
     "personal_access_token"
-  ]
+  ],
+  "tj:ui:properties": {
+    "personal_access_token": {
+      "$ref": "#/properties/personal_access_token",
+      "key": "personal_access_token",
+      "label": "Personal access token",
+      "description": "Personal access token for airtable",
+      "widget": "password-v3-textarea",
+      "required": true
+    }
+  }
 }
