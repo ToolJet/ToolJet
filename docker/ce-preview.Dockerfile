@@ -89,7 +89,9 @@ RUN service postgresql start
 USER root
 
 # Create the disk mount path and set ownership BEFORE switching to `postgres`
-RUN mkdir -p /var/data && chown -R postgres:postgres /var/data
+RUN mkdir -p /var/data && \
+    chown -R postgres:postgres /var/data && \
+    chmod 0700 /var/data
 
 # Ensure boot.sh is executable
 RUN chmod +x /app/server/scripts/boot.sh

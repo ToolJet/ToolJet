@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
 
-# Ensure correct ownership
-echo "[boot.sh] Ensuring correct ownership of /var/data..."
+# Ensure correct ownership and permissions
+echo "[boot.sh] Setting ownership and permissions on /var/data..."
 chown -R postgres:postgres /var/data
+chmod 0700 /var/data
 
 # Initialize PostgreSQL if it hasn't been initialized
 if [ ! -f /var/data/PG_VERSION ]; then
