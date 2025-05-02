@@ -8280,6 +8280,10 @@ tbody {
   }
 }
 
+.query-manager-btn-shortcut {
+  color: var(--text-disabled) !important;
+}
+
 .font-weight-500 {
   font-weight: 500;
 }
@@ -11602,10 +11606,6 @@ tbody {
   border-radius: 12px;
   margin: 0px auto 12px auto;
   cursor: pointer;
-}
-
-.user-csv-template-wrap {
-  margin-top: 24px;
 }
 
 

@@ -4,6 +4,7 @@ import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
 
 import {
   addQuery,
@@ -21,6 +22,7 @@ const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -51,7 +53,28 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "SQL Server", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-sql-server`,
+      "mssql",
+      [
+        { key: "host", value: "localhost" },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: "" },
+        { key: "username", value: "" },
+        { key: "password", value: "", encrypted: true },
+        { key: "azure", value: false, encrypted: false },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-sql-server-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-sql-server`
+    );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -67,7 +90,7 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.labelDbName).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelDbName
+      "Database Name"
     );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
@@ -78,8 +101,8 @@ describe("Data sources", () => {
       "Password"
     );
 
-    cy.get('[data-cy="label-azure"]').verifyVisibleElement(
-      "have.text",
+    cy.get('[data-cy^="label-azure-"]').verifyVisibleElement(
+      "contain",
       "Azure"
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
@@ -135,7 +158,7 @@ describe("Data sources", () => {
       "1433"
     );
     fillDataSourceTextField(
-      postgreSqlText.labelDbName,
+      "Database Name",
       postgreSqlText.placeholderNameOfDB,
       Cypress.env("sqlserver_db")
     );

@@ -33,6 +33,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Divider',
   'VerticalDivider',
   'Link',
+  'Form',
 ];
 
 const RenderWidget = ({
@@ -193,6 +194,7 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            dataCy={`draggable-widget-${componentName}`}
           />
         </div>
       </OverlayTrigger>

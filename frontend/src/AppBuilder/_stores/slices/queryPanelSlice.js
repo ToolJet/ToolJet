@@ -1092,5 +1092,23 @@ export const createQueryPanelSlice = (set, get) => ({
     isQuerySelected: (queryId) => {
       return get().queryPanel.selectedQuery?.id === queryId;
     },
+    runQueryOnShortcut: () => {
+      const { queryPanel } = get();
+      const { runQuery, selectedQuery } = queryPanel;
+      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true);
+    },
+    previewQueryOnShortcut: (moduleId = 'canvas') => {
+      const { queryPanel } = get();
+      const { previewQuery, selectedQuery, selectedDataSource } = queryPanel;
+      const query = {
+        data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+        pluginId: selectedDataSource.pluginId,
+        options: { ...selectedQuery?.options },
+        kind: selectedDataSource.kind,
+        name: selectedQuery?.name ?? '',
+        id: selectedQuery?.id,
+      };
+      previewQuery(query, false, undefined, moduleId);
+    },
   },
 });

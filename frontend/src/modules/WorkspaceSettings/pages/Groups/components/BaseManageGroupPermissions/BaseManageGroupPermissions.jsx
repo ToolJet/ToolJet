@@ -804,7 +804,7 @@ class BaseManageGroupPermissions extends React.Component {
                     classes="group-banner"
                     size="xsmall"
                     type={featureAccess?.licenseStatus?.licenseType}
-                    customMessage={'Custom groups & permissions are available in our paid plans.'}
+                    customMessage={'Custom groups & permissions are paid features'}
                     showCustomGroupBanner={true}
                   />
                 )}
