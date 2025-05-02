@@ -168,6 +168,10 @@ module.exports = {
               banner: 'none',
               badge: false
             },
+            "3.0.0-LTS": {
+              banner: 'none',
+              badge: false
+            },
             "3.5.0-LTS": {
               banner: 'none',
               badge: false
