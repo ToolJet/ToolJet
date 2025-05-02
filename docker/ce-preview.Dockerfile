@@ -86,6 +86,7 @@ RUN apt update && apt -y install --fix-missing postgresql-13 postgresql-client-1
 
 USER postgres
 RUN service postgresql start
+USER root
 
 # Create the disk mount path and set ownership BEFORE switching to `postgres`
 RUN mkdir -p /var/data && chown -R postgres:postgres /var/data
