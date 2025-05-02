@@ -85,9 +85,7 @@ RUN echo "deb http://deb.debian.org/debian"
 RUN apt update && apt -y install --fix-missing postgresql-13 postgresql-client-13 supervisor
 
 USER postgres
-RUN service postgresql start && \
-    psql -c "create role tooljet with login superuser password 'postgres';"
-USER root
+RUN service postgresql start
 
 # Create the disk mount path and set ownership BEFORE switching to `postgres`
 RUN mkdir -p /var/data && chown -R postgres:postgres /var/data

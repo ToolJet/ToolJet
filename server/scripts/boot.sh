@@ -1,30 +1,34 @@
 #!/bin/bash
 set -e
 
-# Ensure ownership
+# Ensure correct ownership
+echo "[boot.sh] Ensuring correct ownership of /var/data..."
 chown -R postgres:postgres /var/data
 
-# Initialize PostgreSQL if needed
+# Initialize PostgreSQL if it hasn't been initialized
 if [ ! -f /var/data/PG_VERSION ]; then
-  echo "[boot.sh] Initializing PostgreSQL..."
+  echo "[boot.sh] Initializing PostgreSQL database..."
   su postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/data"
 fi
 
-# Start PostgreSQL via Supervisord (already configured)
+# Start PostgreSQL via supervisord
+echo "[boot.sh] Starting supervisord..."
 /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &
 
 # Wait for PostgreSQL to be ready
-echo "[boot.sh] Waiting for PostgreSQL to start..."
-while ! pg_isready -h localhost -U postgres; do
+echo "[boot.sh] Waiting for PostgreSQL to become ready..."
+until pg_isready -h localhost -U postgres > /dev/null 2>&1; do
   sleep 1
 done
 
-# Create 'tooljet' role if missing
-echo "[boot.sh] Creating role 'tooljet'..."
-psql -U postgres -h localhost -c "CREATE ROLE tooljet WITH LOGIN SUPERUSER PASSWORD 'postgres';" 2>/dev/null || true
+# Create 'tooljet' role if it doesn't exist
+echo "[boot.sh] Creating role 'tooljet' (if not exists)..."
+psql -U postgres -h localhost -tc "SELECT 1 FROM pg_roles WHERE rolname='tooljet'" | grep -q 1 || \
+psql -U postgres -h localhost -c "CREATE ROLE tooljet WITH LOGIN SUPERUSER PASSWORD 'postgres';"
 
-# Your existing setup
-echo "
+# Welcome banner
+cat << 'EOF'
+
    _____           _   ___      _
   |_   _|         | | |_  |    | |
     | | ___   ___ | |   | | ___| |_
@@ -33,8 +37,11 @@ echo "
     \_/\___/ \___/|_\____/ \___|\__|
 
 GitHub: https://github.com/ToolJet/ToolJet
-"
 
+EOF
+
+# Run ToolJet setup and start
+echo "[boot.sh] Setting up database and starting ToolJet..."
 npm run db:setup:prod
 npm run db:seed:prod
 npm run start:prod
