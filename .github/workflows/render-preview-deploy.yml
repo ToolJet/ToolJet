@@ -170,7 +170,7 @@ jobs:
             "serviceDetails": {
               "disk": {
                 "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-disk",
-                "mountPath": "/data",
+                "mountPath": "/var/data",
                 "sizeGB": 10
               },
               "env": "docker",
