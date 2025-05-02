@@ -83,6 +83,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN echo "deb http://deb.debian.org/debian"
 RUN apt update && apt -y install --fix-missing postgresql-13 postgresql-client-13 supervisor
+
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
@@ -91,8 +92,8 @@ USER root
 # Create the disk mount path and set ownership BEFORE switching to `postgres`
 RUN mkdir -p /var/data && chown -R postgres:postgres /var/data
 
-USER postgres
-RUN /usr/lib/postgresql/13/bin/initdb -D /var/data
+# Ensure boot.sh is executable
+RUN chmod +x /app/server/scripts/boot.sh
 
 
 # ENV defaults

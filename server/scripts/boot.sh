@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
 
-# Only initialize if the directory is empty
-if [ ! -s "/data/PG_VERSION" ]; then
-  echo "Initializing PostgreSQL data directory in /data..."
-  initdb -D /data
+# Init PostgreSQL data dir only if needed
+if [ ! -f /var/data/PG_VERSION ]; then
+  echo "[boot.sh] Initializing PostgreSQL data directory..."
+  /usr/lib/postgresql/13/bin/initdb -D /var/data
+else
+  echo "[boot.sh] PostgreSQL data directory already initialized."
 fi
 
 service postgresql start
