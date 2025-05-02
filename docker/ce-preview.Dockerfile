@@ -55,6 +55,7 @@ ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21
 WORKDIR /
 
 RUN mkdir -p /app /var/log/supervisor && chown -R root:root /var/log/supervisor
+RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 COPY /deploy/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # copy npm scripts
