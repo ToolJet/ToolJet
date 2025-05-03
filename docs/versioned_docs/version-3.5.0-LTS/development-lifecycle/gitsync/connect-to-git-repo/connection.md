@@ -10,7 +10,7 @@ The table below provides a comparison between SSH and HTTPS connection methods t
 
 | Feature | HTTPS | SSH |
 |---------|-----|-------|
-| **Connection type** |  Individual git connection (Currently we only support GitHub)  | Single connection which work for any git provider <br/> ( Example: GitHub, Gitea, GitLab etc )  |
+| **Connection type** |  Individual git connection (Currently we only support [GitHub](/docs/development-lifecycle/gitsync/connect-to-git-repo/github-config))  | Single connection which work for any git provider <br/> ( Example: [GitHub](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#github), [Gitea](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#gitea), [GitLab](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#gitlab), etc. )  |
 | **Port Blocking** | No port blocking issues  | May face port blocking due to firewall issues  |
 | **Branch Configuration** | Can be configured directly from the ToolJet UI | Must be configured using environment variables |
 | **Default Branch** | main | master |
