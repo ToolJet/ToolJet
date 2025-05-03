@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-service postgresql start &
+service postgresql start
 
 DATA_DIR="/var/data/postgresql"
 if [ ! -s "$DATA_DIR/PG_VERSION" ]; then
