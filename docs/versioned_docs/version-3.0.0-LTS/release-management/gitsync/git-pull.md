@@ -3,7 +3,7 @@ id: git-pull
 title: Pulling Changes from Git Repo
 ---
 
-You can configure the GitSync feature on another workspace to pull the changes from the git repository. To configure the GitSync feature on another workspace, follow the steps mentioned in the [Setting up GitSync](#setting-up-gitsync) section.
+You can configure the GitSync feature on another workspace to pull the changes from the git repository. To configure the GitSync feature on another workspace, follow the steps mentioned in the [Setting up GitSync](/docs/3.0.0-LTS/release-management/gitsync/tj-config) section.
 
 Once the GitSync feature is configured, go to the ToolJet dashboard and click on the three dots on the right side of the **Create new app** button. Click on the **Import from git repository** option.
 
