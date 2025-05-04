@@ -62,11 +62,9 @@ For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net
 
 ## Querying MongoDB
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. 
-2. Select the operation that you want to perform and click **Save** to save the query.
+1. Click on **+** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. 
+2. Select the operation that you want to perform.
 3. Click on the **Run** button to run the query.
-
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/mo-query.png" alt="ToolJet - Mongo query"/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
@@ -76,30 +74,22 @@ Query results can be transformed using transformations. Read our transformations
 
 ## Supported Operations
 
-- **[List Collections](#list-collections)**
-- **[Find One](#find-one)**
-- **[Find Many](#find-many)**
-- **[Total Count](#total-count)**
-- **[Count](#count)**
-- **[Distinct](#distinct)**
-- **[Insert One](#insert-one)**
-- **[Insert Many](#insert-many)**
-- **[Update One](#update-one)**
-- **[Update Many](#update-many)**
-- **[Replace One](#replace-one)**
-- **[Find One and Update](#find-one-and-update)**
-- **[Find One and Replace](#find-one-and-replace)**
-- **[Find One and Delete](#find-one-and-delete)**
-- **[Aggregate](#aggregate)**
-- **[Delete One](#delete-one)**
-- **[Delete Many](#delete-many)**
-- **[Bulk Operations](#bulk-operations)**
-
 ### List Collections
 
 Returns list of collections
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/listCollection.png" alt="ToolJet - Mongo DB List Collection" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/listCollections-v2.png" alt="ToolJet - Mongo DB List Collection" style={{marginBottom:'15px'}}/>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+      0: {} 5 keys
+        name: "[]"
+        type: "collections"
+        options: {} 0 Keys
+        "..."
+```
+</details>
 
 ### Find One
 
@@ -110,9 +100,25 @@ Return a document which satisfy the given filter and options. [Reference](https:
 
 #### Optional Parameters:
 - **Filter**
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOne.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOne-v2.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: // { birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+      _id:"67d11dff037654fc4887c255"
+      name: "tooljet"
+```
+</details>
 
 ### Find Many
 
@@ -125,7 +131,24 @@ Return list of documents which satisfy the given filter and options. [Reference]
 - **Filter**
 - **Option**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findMany.png" alt="ToolJet - Mongo DB Find Many" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findMany-v2.png" alt="ToolJet - Mongo DB Find Many" style={{marginBottom:'15px'}}/>
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: // { birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    0: 2 keys
+      _id:"67d11dff037654fc4887c255"
+      name: "tooljet"
+```
+</details>
 
 ### Total Count
 
@@ -135,9 +158,24 @@ Returns an estimation of the number of documents in the collection based on coll
 - **Collection**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/totalCount.png" alt="ToolJet - Mongo DB Total Count" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/totalCount-v2.png" alt="ToolJet - Mongo DB Total Count" style={{marginBottom:'15px'}}/>
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Options: // { fullResponse: true }
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    count: 1
+```
+</details>
 
 ### Count
 
@@ -148,9 +186,25 @@ Returns the number of documents based on the filter. [Reference](https://mongodb
 
 #### Optional Parameters:
 - **Filter**
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/count.png" alt="ToolJet - Mongo DB Count" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/count-v2.png" alt="ToolJet - Mongo DB Count" style={{marginBottom:'15px'}}/>
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: // { birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }
+    Options: // { skip: 2 }
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    count: 1
+```
+</details>
 
 ### Distinct
 
@@ -162,9 +216,26 @@ Retrieve a list of distinct values for a field based on the filter. [Reference](
 
 #### Optional Parameters:
 - **Filter**
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/distinct.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/distinct-v2.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Field: name
+    Filter: // { directors: 'Barbra Streisand' , }
+    Option: // { comment: 'some comment' }
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    0: "tooljet"
+```
+</details>
 
 ### Insert One
 
@@ -175,17 +246,26 @@ Insert a document. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-
 - **Document**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/insertOne.png" alt="ToolJet - Mongo DB Insert One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/insertOne-v2.png" alt="ToolJet - Mongo DB Insert One" style={{marginBottom:'15px'}}/>
 
-#### Example:
-```json
-{
-    "name": "John Doe",
-    "age": 30
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Document: {"data" : 'version 3'}
+    Options: // { checkKeys: true }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    acknowledged: true
+    insertedId: "67d13a2fa80f0905be3a217c"
+```
+</details>
 
 ### Insert Many
 
@@ -196,23 +276,36 @@ Insert list of documents. [Reference](https://docs.mongodb.com/drivers/node/v4.0
 - **Document**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/insertMany.png" alt="ToolJet - Mongo DB Insert Many" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/insertMany-v2.png" alt="ToolJet - Mongo DB Insert Many" style={{marginBottom:'15px'}}/>
 
-#### Example
-```json
-[
-    {
-        "name": "Product1",
-        "price": 100
-    }, 
-    {
-        "name": "Product2",
-        "price": 150
-    }
-]
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Documents: "[
+  { 
+    "address" : 'ToolJet office' , "Floor" : '2' 
+  },
+  { 
+    "address" : 'ToolJet office 2.0' , "Floor" : '20' 
+  }
+ ]"
+    Options" // { checkKeys: true }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    acknowledged:true
+    insertedCount:2
+        insertedIds:{} 2 keys
+            0:"67d13ab66a216bb9be790c66"
+            1:"67d13ab66a216bb9be790c67"
+```
+</details>
 
 ### Update One
 
@@ -224,26 +317,30 @@ Update a document based on the filter. [Reference](https://docs.mongodb.com/driv
 - **Update**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/updateOne.png" alt="ToolJet - Mongo DB Update One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/updateOne-v2.png" alt="ToolJet - Mongo DB Update One" style={{marginBottom:'15px'}}/>
 
-#### Example
-##### Filter
-```json
-{
-    "name": "John Doe"
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: {"name" : 'tooljet'}
+    Update: // { $set: { status: 'Modified' } }
+    Option: // { comment: 'some comment' }
 ```
+</details>
 
-##### Update
+<details>
+<summary>**Example Response**</summary>
 ```json
-{
-    "$set": {
-        "age": 31
-    }
-}
+    acknowledged:true
+    modifiedCount:1
+    upsertedId:null
+    upsertedCount:0
+    matchedCount:0
 ```
+</details>
 
 ### Update Many
 
@@ -255,26 +352,30 @@ Update many documents based on the filter. [Reference](https://docs.mongodb.com/
 - **Update**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/updateMany.png" alt="ToolJet - Mongo DB Update Many" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/updateMany-v2.png" alt="ToolJet - Mongo DB Update Many" style={{marginBottom:'15px'}}/>
 
-#### Example
-##### Filter
-```json
-{
-    "status": "pending"
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: {"name" : 'tooljet'}
+    Update: { $set: { name: 'ToolJet' } }
+    Option: // { comment: 'some comment' }
 ```
+</details>
 
-##### Update
+<details>
+<summary>**Example Response**</summary>
 ```json
-{
-    "$set": {
-        "status": "completed"
-    }
-}
+    acknowledged:true
+    modifiedCount:1
+    upsertedId:null
+    upsertedCount:0
+    matchedCount:0
 ```
+</details>
 
 ### Replace One
 
@@ -286,26 +387,33 @@ Replace a document based on filter. [Reference](https://docs.mongodb.com/drivers
 - **Replacement**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/replaceOne.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/replaceOne-v2.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
 
-#### Example
-##### Filter
-```json
-{
-    "product_id": 123
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: {"name" : 'tooljet'}
+    Replacement: {
+    "name":'ToolJet',
+    "Description": "Low-code framework to build and deploy internal tools."
+    }
+    Options: // { comment: 'some comment' } }
 ```
+</details>
 
-##### Replacement
+<details>
+<summary>**Example Response**</summary>
 ```json
-{
-    "product_id": 123,
-    "name": "New Product",
-    "price": 200
-}
+    acknowledged:true
+    modifiedCount:1
+    upsertedId:null
+    upsertedCount:0
+    matchedCount:0
 ```
+</details>
 
 ### Find One and Update
 
@@ -317,26 +425,33 @@ If your application requires the document after updating, use this instead of **
 - **Update**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOneUpdate.png" alt="ToolJet - Mongo DB Find One and Update" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOneUpdate-v2.png" alt="ToolJet - Mongo DB Find One and Update" style={{marginBottom:'15px'}}/>
 
-#### Example
-##### Filter
-```json
-{
-    "employee_id": 456
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: {item : "apple"}
+    Update: { $set: { quantity: 60 } } 
+    Options: // { upsert: true }
 ```
+</details>
 
-##### Update
+<details>
+<summary>**Example Response**</summary>
 ```json
-{
-    "$inc": {
-        "salary": 5000
-    }
-}
+    lastErrorObject: {} 2 keys
+        n:1
+        updatedExisting:true
+    value:{} 3 keys
+        _id:"67d1450004f53ac77a359b3b"
+        item:"apple"
+        quantity:50
+    Ok:1
 ```
+</details>
 
 ### Find One and Replace
 
@@ -348,26 +463,33 @@ If your application requires the document after updating, use this instead of **
 - **Replacement**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOneReplace.png" alt="ToolJet - Mongo DB Find One and Replace" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOneReplace-v2.png" alt="ToolJet - Mongo DB Find One and Replace" style={{marginBottom:'15px'}}/>
 
-#### Example
-##### Filter
-```json
-{
-    "product_id": 789
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: // { title: 'apple' }
+    Replacement: { quantity: '150' }
+    Options: // { comment: 'some comment' }
 ```
+</details>
 
-##### Replacement 
+<details>
+<summary>**Example Response**</summary>
 ```json
-{
-    "product_id": 789,
-    "name": "Updated Product",
-    "price": 300
-}
+    lastErrorObject: {} 2 keys
+        n:1
+        updatedExisting:true
+    value:{} 3 keys
+        _id: "67d1450004f53ac77a359b3b"
+        item: "apple"
+        quantity: 60
+    Ok: 1
 ```
+</details>
 
 ### Find One and Delete
 
@@ -378,16 +500,32 @@ If your application requires the document after deleting, use this instead of **
 - **Filter**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOneDelete.png" alt="ToolJet - Mongo DB Find One and Delete" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/findOneDelete-v2.png" alt="ToolJet - Mongo DB Find One and Delete" style={{marginBottom:'15px'}}/>
 
-#### Example
-```json
-{
-    "order_id": 101
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: { quantity: '150' }
+    Options: // { sort: { field: -1 } }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    lastErrorObject: {} 1 key
+        n:1
+        updatedExisting:true
+    value: {} 2 keys
+        _id: "67d1450004f53ac77a359b3b"
+        item: "apple"
+        quantity: "150"
+    Ok: 1
+```
+</details>
 
 ### Aggregate
 
@@ -398,28 +536,28 @@ Aggregation operations are expressions you can use to produce reduced and summar
 - **Pipeline**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/aggregate.png" alt="ToolJet - Mongo DB Aggregate" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/aggregate-v2.png" alt="ToolJet - Mongo DB Aggregate" style={{marginBottom:'15px'}}/>
 
-#### Example
-```json
-[
-    {
-        "$match": {
-            "status": "completed"
-        }
-    }, 
-    {
-        "$group": {
-            "_id": "$product_id",
-            "totalSales": {
-                "$sum": "$amount"
-            }
-        }
-    }
-]
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Pipeline: [{ $match: { item: 'apple' } }]
+    Options: // { comment: 'some comment ' }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    0: {} 3 keys
+        _id: "67d1450004f53ac77a359b3b"
+        item: "apple"
+        "..."
+```
+</details>
 
 ### Delete One
 
@@ -430,16 +568,26 @@ Delete a record based on the filter. [Reference](https://docs.mongodb.com/driver
 - **Filter**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/deleteOne.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/deleteOne-v2.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
 
-#### Example
-```json
-{
-    "user_id": 123
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: { "name": 'ToolJet' }
+    Options: // { comment: 'some comment ' }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    acknowledged: true
+    deletedCount: 1
+```
+</details>
 
 ### Delete Many
 
@@ -450,16 +598,26 @@ Delete many records based on the filter. [Reference](https://docs.mongodb.com/dr
 - **Filter**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/deleteMany.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/deleteMany-v2.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
 
-#### Example
-```json
-{
-    "status": "cancelled"
-}
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collections: []
+    Filter: { "data": 'version 3' }
+    Options: // { comment: 'some comment ' }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    acknowledged: true
+    deletedCount: 1
+```
+</details>
 
 ### Bulk Operations
 
@@ -470,13 +628,15 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
 - **Operations**
 
 #### Optional Parameters:
-- **Option**
+- **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/bulkOperations.png" alt="ToolJet - Mongo DB Bulk Operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/bulkOperations-v2.png" alt="ToolJet - Mongo DB Bulk Operations" style={{marginBottom:'15px'}}/>
 
-#### Example
-```json
-[
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    Collection: []
+    Operations: [
     {
         "insertOne": {
             "document": {
@@ -505,7 +665,22 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
         }
     }
 ]
+    Options: // { comment: 'some comment' }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+      ok: 1
+      writeErrors: [] 0 items
+      writeConcernErrors: [] 1 item
+      insertIds: [] 1 item
+        0: {} 2 keys
+        nInserted: 1
+    "..."
+```
+</details>
 
 </div>
 
