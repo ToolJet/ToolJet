@@ -400,6 +400,13 @@ export class OnboardingService implements IOnboardingService {
       }
       const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
       await this.licenseUserService.validateUser(manager);
+      const auditLogEntry = {
+        userId: organizationUser.userId,
+        organizationId: organizationUser.organizationId,
+        resourceId: organizationUser.user.id,
+        resourceName: organizationUser.user.email,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
       return this.sessionUtilService.generateLoginResultPayload(
         response,
         user,
