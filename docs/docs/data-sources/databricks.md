@@ -5,9 +5,7 @@ title: Databricks
 
 Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to access and update your data in your Databricks Warehouses directly using SQL queries.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
 
 <div style={{paddingTop:'24px'}}>
 
@@ -31,15 +29,15 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 
 - Navigate to your Databricks workspace, select the desired SQL Warehouse, and find **Server Hostname** and **HTTP Path** within the connection details tab.
 
-<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
+<img className="screenshot-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
 
 - To generate a personal access token, access your Databricks User Settings, select the Developer tab, click Manage under Access Tokens, and then click on the **Generate New Token** button.
 
-<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/generate-token.png" alt="Databricks: Access Tokens" />
+<img className="screenshot-full" src="/img/datasource-reference/databricks/generate-token.png" alt="Databricks: Access Tokens" />
 
 - Navigate to the Databricks datasource configuration form in ToolJet, fill in the required parameters, and click the **Save** button. You can test the connection by clicking the **Test Connection** button.
 
-<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/setup-parameters.png" alt="Databricks: Setup Paramaters" />
+<img className="screenshot-full" src="/img/datasource-reference/databricks/setup-parameters-v2.png" alt="Databricks: Setup Paramaters" />
 
 </div>
 
@@ -75,64 +73,132 @@ Databricks supports standard SQL commands for data manipulation tasks.
 
 The following example demonstrates how to read data from a table. The query selects all the columns from the *customers* table.
 
+<img className="screenshot-full" src="/img/datasource-reference/databricks/readData-v2.png" alt="Databricks: Read Data Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
 ```sql
 SELECT * FROM customers 
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/databricks/readData.png" alt="Databricks: Read Data Query" style={{marginBottom:'15px'}}/>
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+[
+  {
+    "customer_id": "C001",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "1234567890",
+    "city": "New York",
+    "state": "NY",
+    "zip_code": "10001",
+    "country": "USA"
+  },
+  {
+    "customer_id": "C002",
+    "first_name": "Jane",
+    "last_name": "Smith",
+    "email": "jane.smith@example.com",
+    "phone": "0987654321",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip_code": "90001",
+    "country": "USA"
+  }
+]
+```
+</details>
 
 ### Write Data 
 
 The following example demonstrates how to write data to a table. The query inserts a new row into the *customers* table.
 
+<img className="screenshot-full" src="/img/datasource-reference/databricks/writeData-v2.png" alt="Databricks: Write Data Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
 ```sql
-INSERT INTO customers (
-    customer_id,
-    first_name,
-    last_name,
-    email,
-    phone,
-    city,
-    state,
-    zip_code,
-    country
-) VALUES ( 
-    '1001'
-    'Tom', 
-    'Hudson', 
-    'tom.hudson@example.com', 
-    '50493552', 
-    'San Clemente', 
-    'CA',
-    '92673',
-    'USA'
-);
+INSERT INTO customers VALUES
+('C001', 'John', 'Doe', 'john.doe@example.com', '1234567890', 'New York', 'NY', '10001', 'USA'),
+('C002', 'Jane', 'Smith', 'jane.smith@example.com', '0987654321', 'Los Angeles', 'CA', '90001', 'USA');
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/databricks/writeData.png" alt="Databricks: Write Data Query" style={{marginBottom:'15px'}}/>
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+[
+  {
+    "num_affected_rows": 2,
+    "num_inserted_rows": 2
+  }
+]
+```
+</details>
 
 ### Update Data 
 
 The following example demonstrates how to update data in a table. The query updates the *first_name* and *email* column of the *customers* table.
 
+<img className="screenshot-full" src="/img/datasource-reference/databricks/updateData-v2.png" alt="Databricks: Update Data Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
 ```sql
-UPDATE customer
-SET first_name = 'John',
-    email = 'john.hudson@example.com'
-WHERE customer_id = 1001;
+UPDATE customers
+SET first_name = 'Johnathan', email = 'johnathan.doe@example.com'
+WHERE customer_id = 'C001';
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/databricks/updateData.png" alt="Databricks: Update Data Query" style={{marginBottom:'15px'}}/>
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+[
+  {
+    "num_affected_rows": 1
+  }
+]
+```
+</details>
 
 ### Delete Data
 
 The following example demonstrates how to delete data from a table. The query deletes a row from the *customers* table.
 
+<img className="screenshot-full" src="/img/datasource-reference/databricks/deleteData-v2.png" alt="Databricks: Delete Data Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
 ```sql
-DELETE FROM customer
-WHERE customer_id = 1001;
+DELETE FROM customers WHERE customer_id = 'C001';
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/databricks/deleteData.png" alt="Databricks: Delete Data Query" style={{marginBottom:'15px'}}/>
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+[
+  {
+    "num_affected_rows": 1
+  }
+]
+```
+</details>
 
 </div>
