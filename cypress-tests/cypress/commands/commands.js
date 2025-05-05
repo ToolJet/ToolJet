@@ -227,9 +227,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -607,3 +607,26 @@ Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
       });
   });
 });
+Cypress.Commands.add("searchUser", (email) => {
+  cy.get(commonSelectors.searchUserInput).type(email);
+});
+
+
+Cypress.Commands.add("addUserWithMetadata", (name, email, metadata) => {
+
+  cy.visit("/manage-users");
+
+  cy.get('[data-testid="invite-user-button"]').click();
+
+  cy.get('[data-testid="invite-user-name"]').type(name);
+  cy.get('[data-testid="invite-user-email"]').type(email);
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    cy.get(`[data-testid="metadata-field-${key}"]`).type(value);
+  });
+
+  cy.get('[data-testid="submit-invite"]').click();
+
+  cy.get('[data-testid="invite-success-toast"]').should("be.visible");
+});
+
