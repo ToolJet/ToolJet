@@ -449,6 +449,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   isLoading: false,
                   ...(query.kind === 'restapi'
                     ? {
+                        metadata: data.metadata,
                         request: data.data.requestObject,
                         response: data.data.responseObject,
                         responseHeaders: data.data.responseHeaders,

@@ -1,8 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
-import { pluginSelectors } from "Selectors/plugins";
 import { postgreSqlText } from "Texts/postgreSql";
-import { awsLambdaText } from "Texts/awsLambda";
+import { GraphQLText } from "Texts/graphQL";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
@@ -20,17 +19,16 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-describe("Data source AWS Lambda", () => {
+describe("Data source GraphQL", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should  verify elements on AWS Lambda connection form", () => {
-    const Accesskey = Cypress.env("awslamda_access");
-    const Secretkey = Cypress.env("awslamda_secret");
+  it("Should verify elements on GraphQL connection form", () => {
+    const Url = Cypress.env("GraphQl_Url");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
@@ -56,19 +54,12 @@ describe("Data source AWS Lambda", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.installMarketplacePlugin("AWS Lambda");
-
-    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
-
-    cy.get(".react-select__dropdown-indicator").eq(1).click();
-    cy.get(".react-select__option").contains("US West (N. California)").click();
-
-    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
+    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
 
     fillDataSourceTextField(
-      awsLambdaText.labelSecretKey,
-      "**************",
-      Secretkey
+      GraphQLText.urlInputLabel,
+      GraphQLText.urlInputPlaceholder,
+      Url
     );
 
     cy.get(postgreSqlSelector.buttonSave)
@@ -79,29 +70,21 @@ describe("Data source AWS Lambda", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    deleteDatasource(`cypress-${data.dsName}-GraphQL`);
   });
 
-  it("Should  verify the functionality of AWS Lambda connection form", () => {
-    const Accesskey = Cypress.env("awslamda_access");
-    const Secretkey = Cypress.env("awslamda_secret");
+  it("Should verify the functionality of GraphQL connection form", () => {
+    const Url = Cypress.env("GraphQl_Url");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    cy.installMarketplacePlugin("AWS Lambda");
-
-    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
-
-    cy.get(".react-select__dropdown-indicator").eq(1).click();
-    cy.get(".react-select__option").contains("US West (N. California)").click();
-
-    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
+    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
 
     fillDataSourceTextField(
-      awsLambdaText.labelSecretKey,
-      "**************",
-      Secretkey
+      GraphQLText.urlInputLabel,
+      GraphQLText.urlInputPlaceholder,
+      Url
     );
 
     cy.get(postgreSqlSelector.buttonSave)
@@ -112,42 +95,32 @@ describe("Data source AWS Lambda", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    deleteDatasource(`cypress-${data.dsName}-GraphQL`);
   });
 
-  it("Should  able to run the query with valid conection", () => {
-    const Accesskey = Cypress.env("awslamda_access");
-    const Secretkey = Cypress.env("awslamda_secret");
+  it("Should able to run the query with valid conection", () => {
+    const Url = Cypress.env("GraphQl_Url");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    cy.installMarketplacePlugin("AWS Lambda");
-
-    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
-
-    cy.get(".react-select__dropdown-indicator").eq(1).click();
-    cy.get(".react-select__option")
-      .contains("US West (N. California)")
-      .wait(500)
-      .click();
-
-    cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
+    selectAndAddDataSource("databases", GraphQLText.GraphQL, data.dsName);
 
     fillDataSourceTextField(
-      awsLambdaText.labelSecretKey,
-      "**************",
-      Secretkey
+      GraphQLText.urlInputLabel,
+      GraphQLText.urlInputPlaceholder,
+      Url
     );
 
     cy.get(postgreSqlSelector.buttonSave)
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .click();
-
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
+
+    cy.get(commonSelectors.globalDataSourceIcon).click();
 
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.appCreateButton).click();
@@ -160,18 +133,13 @@ describe("Data source AWS Lambda", () => {
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
-    cy.get(pluginSelectors.operationDropdown)
-      .click()
-      .type("Invoke Lambda Function{enter}");
-
-    cy.wait(500);
-
-    cy.get(
-      '[data-cy="function-name-section"] .cm-content'
-    ).clearAndTypeOnCodeMirror("testAwslambdaPlugin");
-
-    cy.wait(500);
-
+    cy.get('[data-cy="query-input-field"]').clearAndTypeOnCodeMirror(
+      `{
+      allFilms {
+      films { title director }
+      }
+      }`
+    );
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -179,8 +147,7 @@ describe("Data source AWS Lambda", () => {
     );
     deleteAppandDatasourceAfterExecution(
       data.dsName,
-      `cypress-${data.dsName}-aws-lambda`
+      `cypress-${data.dsName}-GraphQL`
     );
-    cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 });

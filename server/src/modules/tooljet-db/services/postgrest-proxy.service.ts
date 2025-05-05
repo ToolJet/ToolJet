@@ -70,7 +70,8 @@ export class PostgrestProxyService {
     }
 
     if (['PATCH', 'POST'].includes(req.method)) {
-      await this.validateJSONBInputs(organizationId, internalTable.tableName, req.body);
+      const updatedRequestBody = await this.validateJSONBInputs(organizationId, internalTable.tableName, req.body);
+      req.body = { ...req.body, ...updatedRequestBody };
     }
 
     return this.httpProxy(req, res, next);
@@ -117,7 +118,12 @@ export class PostgrestProxyService {
       }
 
       if (['PATCH', 'POST'].includes(method)) {
-        await this.validateJSONBInputs(headers['tj-workspace-id'], internalTable.tableName, body);
+        const updatedRequestBody = await this.validateJSONBInputs(
+          headers['tj-workspace-id'],
+          internalTable.tableName,
+          body
+        );
+        body = { ...body, ...updatedRequestBody };
       }
 
       const reqHeaders = {
@@ -266,14 +272,19 @@ export class PostgrestProxyService {
       .map((column) => column.column_name);
 
     if (jsonbColumns.length) {
-      const inValidJsonbColumns = validateTjdbJSONBColumnInputs(jsonbColumns, body);
+      const { inValidValueColumnsList: inValidJsonbColumns, updatedRequestBody } = validateTjdbJSONBColumnInputs(
+        jsonbColumns,
+        body
+      );
       if (inValidJsonbColumns.length) {
         throw new HttpException(
           `Expected JSON values in the following columns : ${inValidJsonbColumns.join(', ')}`,
           400
         );
       }
+      return updatedRequestBody;
     }
+    return body;
   }
 }
 
