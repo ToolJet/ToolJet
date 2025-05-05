@@ -3,13 +3,11 @@ id: "creating-managing-queries"
 title: "Creating and Managing Queries"
 ---
 
-Queries are used to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
+You can connect your app to a variety of **[data sources](/docs/data-sources/overview)**, including SQL, NoSQL, and vector databases, as well as APIs, spreadsheets, and cloud services. After connecting a data source, you can use queries to fetch, update, or manipulate your data.
 
-You can create and manage queries in the Query Panel, located at the bottom of the App Builder. 
+A query is an operation that interacts with your data source, whether it’s retrieving records, filtering data, apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**. It act as the link between your app’s UI and your data.
 
-The Query Panel consists of two sections:
-- The **Query Manager** on the left side, which displays a list of all the created queries.
-- The **Query Editor** on the right side, used to configure the selected query.
+Queries are created in the Query Panel, located at the bottom of the App Builder, where you can either use a visual form-based builder or write code/SQL manually.
 
 <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/query-panel.png" alt="App Builder: Query Panel"/>
 
@@ -23,123 +21,80 @@ The Query Panel consists of two sections:
 
 ## Configuring the Query
 
-- Depending on the data source you’ve selected, you can configure your query using either GUI mode or SQL mode. For example, if you’re using a Postgres data source, you’ll have the option to choose between both available modes.
+Depending on the data source you’ve selected, you can configure your query using either GUI mode or SQL mode. For example, if you’re using a Postgres data source, you’ll have the option to choose between both available modes.
 
 ### GUI mode
 
-- For Postgre data source, you will have to enter the table name and choose the operations you want to perform. 
+- For Postgre data source, if you choose GUI mode, you will have to enter the table name and choose the operations you want to perform. 
 
-<img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/gui-mode.png" alt="App Builder: configure PostgreSQL queries"/>
+    <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/gui-mode.png" alt="App Builder: configure PostgreSQL queries"/>
 
-- For AWS S3 data source, you will have to select the bucket name, key, etc.
+- For the AWS S3 data source, you’ll need to provide details such as the bucket name, key, and other relevant parameters, based on the operation you’ve selected.
 
-<img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/aws-gui.png" alt="App Builder: configure AWS S3 queries"/>
+    <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/aws-gui.png" alt="App Builder: configure AWS S3 queries"/>
 
 
 ### SQL mode
 
-- For other data sources such as MYSQL, PostgreSQL or SQL Server, you can choose SQL mode where you can write the SQL query to perform your desired operation. 
+For data sources such as MYSQL, PostgreSQL or SQL Server, you can choose SQL mode where you can write the SQL query to perform your desired operation. 
 
 <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/sql-mode.png" alt="App Builder: configure PostgreSQL queries"/>
 
+## Custom Parameters
+You often need a query to fetch different data based on on user input, component state, or other logic. Custom parameters allow you to pass dynamic values into a query, making it reusable without hardcoding values.
 
-### Examples
+Let's say you have a query that fetches employee details based on department. Instead of creating a separate query for each department, you can define a parameter like `departmentName`, and use it to filter results dynamically.
 
-Let's explore CRUD operations for managing admin users with a PostgreSQL data source using a table named *admin_users*.
+To add parameters, simply click the **+ Add** button next to the Parameters label in the query editor.
 
-#### Reading Admin Users
-- Create a query named *getAdminUsers* that retrieves all admin users from the database.
+For each parameter, you need to specify:
+- **Name**: The identifier for the parameter.
+- **Default value**: This value can be a constant string, number, or object.
 
-```sql
-SELECT id, username, email, role, last_login, is_active FROM admin_users;
-```
+**Syntax for utilizing the parameter:** Employ `parameters.<identifier>` in your query. It's important to note that parameters can only be utilized within the specific query where they are defined.
 
-- To fetch a specific admin user by ID:
+Learn more about **[Using Custom Parameters](/docs/how-to/use-custom-parameters)**.
 
-```sql
-SELECT * FROM admin_users WHERE id = {{parameters.adminId}};
-```
+<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui3/queryparams-v2.png" alt="Custom Parameters" style={{marginBottom:'15px'}}/>
 
-- To search admin users by name or email:
+##  Transformations
 
-```sql
-SELECT * FROM admin_users 
-WHERE username ILIKE '%{{components.searchInput.value}}%' 
-OR email ILIKE '%{{components.searchInput.value}}%';
-```
+When working with real-world applications, the data you receive from APIs or databases often needs customization before displaying it in the components sometimes. You might want to show only certain fields, format timestamps, or map values into a specific data structure. That’s where Transformations come in.
 
-<img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/search-admin.png" alt="App Builder: SQL examples"/>
+For example, after fetching a list employees from an API for your application, you may only want to display the *id*, *name*, *status*, and *created_at* fields. You can transform the response with JavaScript (or Python), inside trasformation tab of the query to return just the data your component needs.
 
+<img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_.png" alt="App Builder: query transformations"/>
 
-#### Creating Admin Users
-- Define a query *createAdmin* to add a new admin user to the system.
+Refer to the **[Transformations](/transformations)** section to learn more about how to use Transformations in your queries. 
 
-```sql
-INSERT INTO admin_users (username, email, password_hash, role, is_active, created_at)
-VALUES (
-  '{{components.usernameInput.value}}', 
-  '{{components.emailInput.value}}', 
-  '{{components.passwordInput.value}}', 
-  '{{components.roleDropdown.value}}', 
-  {{components.isActiveToggle.value}}, 
-  CURRENT_TIMESTAMP
-);
-```
-<img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/create-admin.png" alt="App Builder: SQL example"/>
+## Events
 
-#### Updating Admin Users
-- Set up a query *updateAdmin* to modify an existing admin user's details.
+Events let you trigger actions when a query runs successfully or fails. These actions are similar to the actions performed in components, but they're specifically tied to query execution outcomes.
 
-```sql
-UPDATE admin_users
-SET 
-    username = '{{components.usernameInput.value}}',
-    email = '{{components.emailInput.value}}',
-    role = '{{components.roleDropdown.value}}',
-    is_active = {{components.isActiveToggle.value}},
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = {{components.adminTable.selectedRow.id}};
-```
+Let’s say you have a form that updates a request using a query called *updateEmployeeDetail*. Once the update is successful, you probably want your app to refresh the data automatically so the user sees the latest changes. You can do this by triggering another query, like *getEmployees* in the onSuccess event of *updateEmployeeDetail*. This way, users don’t have to refresh the page or click another button to see updated information. 
 
-- To update just the admin's status (active/inactive):
-
-```sql
-UPDATE admin_users
-SET 
-    is_active = {{!components.adminTable.selectedRow.is_active}},
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = {{components.adminTable.selectedRow.id}};
-```
-
-<img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/update-admin-status.png" alt="App Builder: SQL example"/>
-
-#### Deleting Admin Users
-- Create a query *deleteAdmin* to remove an admin user from the system.
-
-```sql
-DELETE FROM admin_users WHERE id = {{components.adminTable.selectedRow.id}};
-```
-
-<img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/delete-admin.png" alt="App Builder: SQL example"/>
-
-You can bind these queries to appropriate UI components like buttons, forms, and tables to create a complete admin user management interface.
-
-
-## Using Transformations and Events
-
-**Transformations**: After fetching data, you might want to format it (e.g., filtering out unnecessary fields or converting data types). ToolJet allows using JavaScript or Python for these transformations.
-
-**Event Handling**: Link queries with application events for dynamic interactions. For example, in the *updateRequest* query, you can set up an event to automatically run the *getAllRequests* query right after *updateRequest*. This ensures that the application retrieves and displays the updated data in the relevant components.
-
+<img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/events.png" alt="App Builder: query events"/>
 
 ## Advanced Settings and Debugging
 
-**Preview and Run**: Use the **Preview** button to test queries and view results in raw or JSON format before executing them within the app using the **Run** button.
+### Preview and Run
 
-**Configuration Settings**:
-- **Run this query on application load?**: Decide if the query should execute automatically when the app loads.
-- **Request confirmation before running query?**: Set up confirmations for query operations to prevent accidental data changes.
-- **Show notification on success?**: Configure notifications to inform users of successful operations. You can customize this property's notification message content and display duration.
+Before connecting a query to your app’s UI, use the Preview button to check what it returns. This is especially useful when working with external APIs or complex SQL, you can inspect the raw or JSON response, debug any issues, and make sure the data matches what your components need.
+
+Once things look good, use the Run button to execute the query and verify how it interacts with your components and other queries.
+
+### Triggers
+
+Triggers allow you to control when and how a query executes within your application. Following are the triggers available:
+
+- **Run this query on application load**: You can use this when you want data to be available as soon as the page loads, like auto-fetching a user’s dashboard data or populating dropdown options without requiring user input.
+
+- **Request confirmation before running query**: For actions that modify or delete data, enable this to prompt users for confirmation. It acts as a safeguard against accidental clicks that could alter critical records.
+     <img className="screenshot-full img-l" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/confirm.png" alt="App Builder: confirmation dialog"/>
+
+- **Show notification on success**: Let users know when actions are completed successfully. This improves UX by giving real-time feedback. You can customize the message and how long it stays visible.
+        <img className="screenshot-full img-l" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/notification.png" alt="App Builder: notification on query run"/>
+- **Retry on network errors** (REST API queries only): ToolJet provides an option to automatically retry REST API requests in case of certain network errors or specific HTTP status codes. By default, it retries a failed API request up to 3 times before marking it as failed. Refer to [REST API Documentation](/docs/data-sources/restapi/querying-rest-api/#retry-on-network-errors) for more details.
 
 
 
