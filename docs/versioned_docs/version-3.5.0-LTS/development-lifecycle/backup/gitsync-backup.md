@@ -11,4 +11,4 @@ To know how to push changes to a git repository using GitSync, please refer to *
 
 ## Restore Application
 
-Changes can be pulled from the git repository to restore an application. To know how to pull changes from a git repository using GitSync, please refer to **[Pull Changes from Git Repo](/docs/development-lifecycle/gitsync/pull)** guide. Ensure that the **Make application editable** checkbox is **enabled** if you intend to make new changes to the application, the application name can also be updates while importing.
+Changes can be pulled from the git repository to restore an application. To know how to pull changes from a git repository using GitSync, please refer to **[Pull Changes from Git Repo](/docs/development-lifecycle/gitsync/pull)** guide. Ensure that the **Make application editable** checkbox is **enabled** if you intend to make new changes to the application, the application name can also be updated while importing.
