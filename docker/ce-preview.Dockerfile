@@ -88,44 +88,6 @@ RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
-# Install Redis
-RUN apt update && apt -y install redis
-
-# Create appuser home & ensure permission for supervisord and services
-RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql /var/lib/redis && \
-    chown -R appuser:appuser /etc/supervisor /var/log/supervisor /var/lib/redis && \
-    chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
-
-# Configure Supervisor to manage PostgREST, ToolJet, and Redis
-RUN echo "[supervisord] \n" \
-    "nodaemon=true \n" \
-    "user=root \n" \
-    "\n" \
-    "[program:postgrest] \n" \
-    "command=/bin/postgrest \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "\n" \
-    "[program:tooljet] \n" \
-    "user=appuser \n" \
-    "command=/bin/bash -c '/app/server/scripts/init-db-boot.sh' \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/dev/stdout \n" \
-    "stderr_logfile_maxbytes=0 \n" \
-    "stdout_logfile=/dev/stdout \n" \
-    "stdout_logfile_maxbytes=0 \n" \
-    "\n" \
-    "[program:redis] \n" \
-    "user=appuser \n" \
-    "command=/usr/bin/redis-server \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/dev/stdout \n" \
-    "stderr_logfile_maxbytes=0 \n" \
-    "stdout_logfile=/dev/stdout \n" \
-    "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
-
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
