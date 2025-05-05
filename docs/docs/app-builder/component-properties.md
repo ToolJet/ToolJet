@@ -14,117 +14,29 @@ Using the component properties of the **Text Input** component, you can customiz
 - **Label**: Defines the text label displayed alongside the input field.
 - **Placeholder**: Displays example text inside the input field when it is empty, offering users a hint about the type of input required.
 - **Default Value**: The default value that the component will hold when the app is loaded.
-- **Events**: By configuring event properties, you can make the component perform certain tasks automatically when a defined interaction occurs. For example, run a query when the user enters input, or reset a form when the input changes.
+- **Events**: By configuring event properties, you can make the component perform certain tasks when a defined interaction occurs. For example, run a query when the user enters input, or reset a form when the input changes.
 - **Validation**: Validation properties allow you to add a layer of input checking to ensure data quality and enforce rules before submission. For example, making the field mandatory, adding a regex to validate input or define minimum or maximum numbers of characters allowed.
 - **Styles**: Define visual attributes like colors, spacing, alignment, and border radius to adjust how the component appears.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- 
-
-ToolJet offers a variety of highly customizable components. Each component can be customized by setting its properties. The Properties Panel, which appears on the right side when a component is selected, includes two tabs:
-
-- **Properties**: Used to configure the functional aspects of the component.
-- **Styles**: Used to customize the appearance, such as colors, border radius, and other styling options.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/app-builder/properties/properties-panel.png" alt="App Builder: Properties Panel"/>
-
-Each component has its own set of properties based on its functionality. This guide covers some of the commonly used properties across components.
-
-## Properties
-
-### Events
-
-Events can be configured for each component to trigger actions such as running a query, showing an alert, and more, based on specific user interactions like clicks or hover events.
-For more details, refer to the [Events and Logic](#) guide.
-
-<img className="screenshot-full img-l" src="/img/app-builder/properties/events.png" alt="App Builder: Properties Panel"/>
-
-### Additional Actions
-
-#### Show Loading State
-
-Displays a loading spinner when enabled. This can be toggled manually or configured dynamically by clicking **fx** and entering a logical expression.
-
-<img className="screenshot-full img-l" src="/img/app-builder/properties/loading.png" alt="App Builder: Properties Panel"/>
-
-#### Visibility
-
-Controls the visibility of the component. When disabled, the component is hidden. This can be managed using the toggle button or configured dynamically using **fx** with a logical expression.
-
-<img className="screenshot-full img-l" src="/img/app-builder/properties/visibility.png" alt="App Builder: Properties Panel"/>
-
-#### Disable
-
-Prevents user interaction with the component when enabled. This can be set using the toggle button or dynamically configured using **fx** with a logical expression.
-
-<img className="screenshot-full img-l" src="/img/app-builder/properties/disable.png" alt="App Builder: Properties Panel"/>
-
-#### Tooltip
-
-Displays additional information when the component is hovered over.
-
-<img className="screenshot-full img-l" src="/img/app-builder/properties/tooltip.png" alt="App Builder: Properties Panel"/>
-
-### Devices
-
-| Property |  Description | Expected Value |
-|:---------- |:----------- |:----------|
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-## Styles
-
-### Colors
-
-ToolJet allows customization of component colors. Colors can be set by entering a hex code or dynamically through the **fx** option.
-
-### Border Radius
-
-The border radius of a component can be configured from the Styles tab to control the roundness of its corners.
-
-### Box Shadow
-
-Adds shadow effects around the component to enhance its appearance. This setting is available under the Styles tab. -->
+## Table
+
+Using the component properties of the **Table** component, you can define how data is presented, how users interact with rows and columns, and what actions are triggered during interaction.
+
+- **Data**: Populate the table with data by entering an array of objects or dynamically fetching it through a query.
+- **Columns**: Customize each column’s behavior and appearance — such as type, visibility, editability, and data transformation. You can also use dynamic columns.
+- **Row Selection**: Enable features like single or bulk row selection, highlight selected rows, or set a default selection.
+- **Action Buttons**: Add row-level action buttons and configure interactions to trigger queries, display alerts, and more.
+- **Events**: By configuring event properties, you can make the component perform certain tasks when a defined interaction occurs. For example, show a modal, when a row is clicked.
+- **Search, Sort, Filter, Pagination**: Control how users explore data, with support for both client-side and server-side processing.
+- **Additional Actions**: Enable or disable buttons like add new row, download data, column selectors, or manage loading state, visibility or disability.
+- **Styles**: Customize visual attributes like colors and spacing, or set layout-related properties such as column header type, row style, cell height, and maximum row height.
+
+## Chart
+
+Using the component properties of the **Chart** component, you can control how data is visualized, define the structure of the chart, and specify interactions.
+
+- **Title**: Add a title to the chart.
+- **Use Plotly JSON Schema**: Directly define the chart using Plotly's JSON configuration for advanced customization and layout control.
+- **Chart Type**: Choose from a variety of supported chart types (e.g., bar, line, pie) to represent the data.
+- **Chart Data**: Bind the component to the data by providing an array of object with "x" and "y" keys, or fetch data dynamically through a query. 
+- **Events**: Configure actions to be triggered based on user interaction with the chart, such as opening a specified webpage when a user clicks on a data point.
