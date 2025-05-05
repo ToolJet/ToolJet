@@ -138,6 +138,8 @@ export const TreeViewHeader = (props) => {
           className="copy-menu-options-icon json-viewer-options-btn"
           style={{
             outline: 'none',
+            border: 'none',
+            boxShadow: 'none',
           }}
         >
           <SolidIcon data-cy={'menu-icon'} name="morevertical" width="18" fill={'#6A727C'} />

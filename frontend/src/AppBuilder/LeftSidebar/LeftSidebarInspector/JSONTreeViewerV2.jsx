@@ -11,6 +11,8 @@ import { isEmpty } from 'lodash';
 
 const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths = new Set() }) => {
   const searchValue = useStore((state) => state.inspectorSearchValue, shallow);
+  const getComponentIdFromName = useStore((state) => state.getComponentIdFromName, shallow);
+  const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const setSearchValue = useStore((state) => state.setInspectorSearchValue, shallow);
   const [selectedNodePath, setSelectedNodePath] = React.useState(null);
@@ -76,7 +78,27 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     setSelectedNodePath(null);
   };
 
-  const selectedData = selectedNodePath ? getResolvedValue(`{{${selectedNodePath}}}`) : {};
+  const selectedData = (() => {
+    if (selectedNodePath?.startsWith('components.')) {
+      // Split the selectedNode path using . and grab the second element if it exists
+      const pathArray = selectedNodePath.split('.');
+      const componentName = pathArray?.[1];
+      const componentId = getComponentIdFromName(componentName);
+      const component = getComponentDefinition(componentId);
+      const parent = component?.component?.parent;
+      if (parent) {
+        const parentComponent = getComponentDefinition(parent);
+        const parentType = parentComponent?.component?.component;
+        if (parentType === 'Form') {
+          return {
+            id: componentId,
+          };
+        }
+      }
+    }
+    return selectedNodePath ? getResolvedValue(`{{${selectedNodePath}}}`) : {};
+  })();
+
   const expandedIds = [...Array.from(pathSet), ...selectedNodes];
 
   const filteredIds = useMemo(() => {
@@ -86,7 +108,20 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
       const { path } = metadata || {};
       return expandedIdsSet.has(path);
     });
-    return filtered.map((item) => item.id);
+
+    return filtered
+      .map((item) => item.id)
+      .filter((path) => {
+        const pathArray = path.split('.');
+        // One by one combine and check if the path is in expandedIds or not
+        for (let i = pathArray.length - 1; i > 0; i--) {
+          const parentPath = pathArray.slice(0, i).join('.');
+          if (!expandedIdsSet.has(parentPath)) {
+            return false;
+          }
+        }
+        return true;
+      });
   }, [flattendedData, expandedIds]);
 
   return (
@@ -105,35 +140,36 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
               width={300}
             />
           </div>
+          <div className="json-tree-view">
+            <TreeView
+              data={flattendedData}
+              className="basic"
+              aria-label="basic example tree"
+              defaultExpandedIds={selectedNodes}
+              expandedIds={filteredIds}
+              key={key}
+              nodeRenderer={(props) => {
+                const { element } = props;
+                const { metadata } = element || {};
+                const { path } = metadata || {};
+                const data = {
+                  nodeName: element.name,
+                  selectedNodePath: path,
+                };
 
-          <TreeView
-            data={flattendedData}
-            className="basic"
-            aria-label="basic example tree"
-            defaultExpandedIds={selectedNodes}
-            expandedIds={filteredIds}
-            key={key}
-            nodeRenderer={(props) => {
-              const { element } = props;
-              const { metadata } = element || {};
-              const { path } = metadata || {};
-              const data = {
-                nodeName: element.name,
-                selectedNodePath: path,
-              };
-
-              return (
-                <Node
-                  {...props}
-                  darkMode={darkMode}
-                  setSelectedNodePath={setSelectedNodePath}
-                  searchValue={searchValue}
-                  iconsList={iconsList}
-                  data={data}
-                />
-              );
-            }}
-          />
+                return (
+                  <Node
+                    {...props}
+                    darkMode={darkMode}
+                    setSelectedNodePath={setSelectedNodePath}
+                    searchValue={searchValue}
+                    iconsList={iconsList}
+                    data={data}
+                  />
+                );
+              }}
+            />
+          </div>
         </div>
       ) : (
         <JSONViewer data={selectedData} darkMode={darkMode} path={selectedNodePath} backFn={backFn} />

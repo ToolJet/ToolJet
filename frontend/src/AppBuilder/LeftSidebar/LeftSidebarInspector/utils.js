@@ -19,7 +19,7 @@ export const formatInspectorDataMisc = (obj, type, searchablePaths = new Set()) 
           name,
           children: reduceData(value, currentPath, level + 1),
           metadata: {
-            type: 'misc',
+            type: type,
             path: currentPath,
             ...((path === 'page.variables' ? level === 2 : level === 1) && {
               data: typeof value === 'object' ? JSON.stringify(value) : value,
@@ -31,49 +31,6 @@ export const formatInspectorDataMisc = (obj, type, searchablePaths = new Set()) 
   };
 
   return reduceData(data, type);
-};
-
-export const formatInspectorComponentData = (
-  componentIdNameMapping,
-  exposedComponentsVariables,
-  searchablePaths = new Set()
-) => {
-  const data = Object.entries(componentIdNameMapping)
-    .map(([key, name]) => ({
-      key,
-      name: name || key,
-      value: exposedComponentsVariables[key] ?? { id: key },
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-
-  const reduceData = (obj, path = 'components', level = 1) => {
-    let data = obj;
-    if (!obj || typeof obj !== 'object' || level > 1) return [];
-    else if (!Array.isArray(obj)) {
-      data = Object.entries(obj);
-    }
-    return data
-      .filter((item) => item.name)
-      .reduce((acc, { key, name, value }) => {
-        const currentPath = path + `.${name}`;
-        searchablePaths.add(currentPath);
-        return [
-          ...acc,
-          {
-            id: currentPath,
-            name,
-            children: reduceData(value, currentPath, level + 1),
-            metadata: {
-              type: 'components',
-              path: currentPath,
-              ...(level === 1 && { data: typeof value === 'object' ? JSON.stringify(value) : value }),
-            },
-          },
-        ];
-      }, []);
-  };
-
-  return reduceData(data);
 };
 
 export const formatInspectorQueryData = (queryNameIdMapping, exposedQueries, searchablePaths = new Set()) => {

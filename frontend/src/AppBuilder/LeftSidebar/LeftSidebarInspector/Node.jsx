@@ -9,6 +9,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { HiddenOptions } from './HiddenOptions';
 import useCallbackActions from './useCallbackActions';
 import useStore from '@/AppBuilder/_stores/store';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { shallow } from 'zustand/shallow';
 
 const renderNodeIcons = (node, iconsList, darkMode) => {
@@ -56,21 +57,26 @@ export const Node = (props) => {
   const setSelectedNodes = useStore((state) => state.setSelectedNodes, shallow);
   const callbackActions = useCallbackActions() || [];
   const nodeIcon = renderNodeIcons(element.name, iconsList, darkMode);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const metadata = element.metadata || {};
-  const { type } = metadata;
+  const { type, path } = metadata;
   const nodeSpecificActions = callbackActions.filter((action) => [type].includes(action.for));
+  const onExpand = (node) => {
+    const { element } = node || {};
+    const { metadata } = element || {};
+    const { path } = metadata || {};
+    setSelectedNodes(path);
+  };
+
   const onSelect = (node) => {
     const { isBranch, element } = node || {};
     const { metadata } = element || {};
-    const { path } = metadata || {};
-    if (!isBranch) {
+    const { path, type } = metadata || {};
+    if (type) {
       setSelectedNodePath(path);
-    } else {
-      setSelectedNodePath(null);
     }
-
-    setSelectedNodes(path);
   };
+
   const nodeSpecificFilteredActions =
     nodeSpecificActions?.[0]?.actions?.filter((action) => {
       return action.enableInspectorTreeView;
@@ -84,27 +90,34 @@ export const Node = (props) => {
   return (
     // <div {...getNodeProps({ onClick: handleExpand })}>
     <div
-      onClick={() => onSelect(props)}
       style={{
-        marginLeft: 22 * (level - 1),
+        marginLeft: level > 1 ? 12 : 0,
+        // paddingLeft: '16px',
         opacity: isDisabled ? 0.5 : 1,
         height: level === 1 ? '28px' : '32px',
         display: 'flex',
         alignItems: 'center',
         color: level === 1 ? 'var(--text-placeholder, #6A727C)' : 'var(--text-default, #1B1F24)',
-        cursor: isBranch || level === 1 ? 'pointer' : 'default',
+        // borderLeft: level > 1 ? '1px solid var(--slate6, #D7DBDF)' : 'none',
       }}
     >
-      {(isBranch || level === 1) && (
+      {!['queries', 'globals', 'variables'].includes(type) && (
         <div className="node-expansion-icon">
-          {isExpanded ? (
-            <SolidIcon name="TriangleDownCenter" width="16" height="16" />
-          ) : (
-            <SolidIcon name="TriangleUpCenter" width="16" height="16" />
+          {(isBranch || level === 1 || path === 'page.variables') && (
+            <ButtonComponent
+              iconOnly
+              leadingIcon={isExpanded ? 'TriangleDownCenter' : 'rightarrrow'}
+              onClick={() => onExpand(props)}
+              variant="ghost"
+              fill="var(--icon-default,#ACB2B9)"
+              size="small"
+            />
           )}
         </div>
       )}
+
       <div
+        onClick={() => onSelect(props)}
         className={cx('node-content', {
           'node-content-hoverable': level !== 1,
           'node-content-active': actionClicked,
@@ -112,7 +125,7 @@ export const Node = (props) => {
       >
         {nodeIcon && <div className="node-icon">{nodeIcon}</div>}
         <div className="node-label">
-          <OverflowTooltip whiteSpace="normal" placement="top" style={{ height: '100%', width: '190px' }}>
+          <OverflowTooltip whiteSpace="normal" placement="top" style={{ height: '100%', width: '80%' }}>
             <Highlighter
               highlightClassName="node-highlight"
               searchWords={[searchValue]}

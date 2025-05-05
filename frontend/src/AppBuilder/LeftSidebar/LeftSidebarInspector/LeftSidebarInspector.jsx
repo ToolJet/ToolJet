@@ -7,8 +7,8 @@ import JSONTreeViewerV2 from './JSONTreeViewerV2';
 import _ from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useIconList from './useIconList';
-
-import { formatInspectorComponentData, formatInspectorDataMisc, formatInspectorQueryData } from './utils';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import { formatInspectorDataMisc, formatInspectorQueryData } from './utils';
 
 const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
   const exposedComponentsVariables = useStore((state) => state.getAllExposedValues().components, shallow);
@@ -18,6 +18,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
   const exposedPageVariables = useStore((state) => state.getAllExposedValues().page || {}, shallow);
   const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
   const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
+  const formatInspectorComponentData = useStore((state) => state.formatInspectorComponentData, shallow);
   const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
   const searchablePaths = useRef(new Set(['queries', 'components', 'globals', 'variables', 'page', 'constants']));
 
@@ -109,18 +110,14 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="State inspector">
           <div className="d-flex justify-content-end">
-            <ButtonSolid
-              title={`${pinned ? 'Unpin' : 'Pin'}`}
+            <ButtonComponent
+              iconOnly
+              leadingIcon={pinned ? 'unpin' : 'pin'}
               onClick={() => setPinned(!pinned)}
-              darkMode={darkMode}
-              styles={{ width: '28px', padding: 0 }}
-              data-cy={`left-sidebar-inspector`}
-              variant="ghostBlack"
-              className="left-sidebar-header-btn"
-              leftIcon={pinned ? 'unpin' : 'pin'}
-              iconWidth="14"
-              fill={`var(--slate12)`}
-            ></ButtonSolid>
+              variant="ghost"
+              fill="var(--icon-strong,#6A727C)"
+              size="medium"
+            />
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>

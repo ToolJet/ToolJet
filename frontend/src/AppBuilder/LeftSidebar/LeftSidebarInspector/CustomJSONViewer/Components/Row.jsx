@@ -43,7 +43,7 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
               (isExpanded ? (
                 <SolidIcon
                   name="TriangleUpCenter"
-                  size={12}
+                  size={14}
                   color="#1F99ED"
                   style={{ marginRight: '4px' }}
                   className="json-viewer-expand-icon"

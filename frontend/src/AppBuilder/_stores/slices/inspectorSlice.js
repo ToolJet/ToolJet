@@ -31,4 +31,103 @@ export const createInspectorSlice = (set, get) => ({
   setInspectorSearchResults: (results) => {
     set({ inspectorSearchResults: results });
   },
+  getAllComponentChildrenById: (id) => {
+    const { getComponentDefinition, getResolvedComponent } = get();
+    const component = getComponentDefinition(id);
+    const componentType = component?.component?.component;
+    switch (componentType) {
+      case 'Container':
+      case 'Form':
+      case 'ModalV2':
+        return [
+          ...get().getContainerChildrenMapping(id),
+          ...get().getContainerChildrenMapping(`${id}-header`),
+          ...get().getContainerChildrenMapping(`${id}-footer`),
+        ];
+      case 'Tabs': {
+        const tabs = getResolvedComponent(id)?.properties?.tabs;
+        const children = Array.isArray(tabs) ? tabs : [];
+        const res = children
+          ?.map((tab) => {
+            const tabId = `${id}-${tab.id}`;
+            return get().getContainerChildrenMapping(tabId);
+          })
+          .reduce((acc, curr) => {
+            return [...acc, ...curr];
+          }, []);
+        return res;
+      }
+      default:
+        return get().getContainerChildrenMapping(id);
+    }
+  },
+
+  formatInspectorComponentData: (
+    componentIdNameMapping,
+    exposedComponentsVariables,
+    searchablePaths = new Set(),
+    moduleId = 'canvas'
+  ) => {
+    const { getComponentDefinition, getAllComponentChildrenById } = get();
+    const data = Object.entries(componentIdNameMapping)
+      .filter(([key]) => {
+        const component = getComponentDefinition(key, moduleId);
+        return !component?.component?.parent;
+      })
+      .map(([key, name]) => {
+        const component = getComponentDefinition(key, moduleId);
+        let parentComponentType = null;
+        if (component?.component?.parent) {
+          const parentComponent = getComponentDefinition(component.component.parent, moduleId);
+          parentComponentType = parentComponent?.component?.component;
+        }
+        return {
+          key,
+          name: name || key,
+          parentType: parentComponentType,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+    const reduceData = (obj, path = 'components', level = 1) => {
+      let data = obj;
+      if (!obj || typeof obj !== 'object') return [];
+
+      return data
+        .filter((item) => item.name)
+        .reduce((acc, { key, name, parentType }) => {
+          const currentPath = `components.${name}`;
+          searchablePaths.add(currentPath);
+          const children = getAllComponentChildrenById(key).map((childKey) => {
+            const childComponent = getComponentDefinition(childKey);
+            let parentComponentType = null;
+            if (childComponent?.component?.parent) {
+              const parentComponent = getComponentDefinition(childComponent.component.parent);
+              parentComponentType = parentComponent?.component?.component;
+            }
+            return {
+              key: childKey,
+              name: childComponent?.component?.name,
+              parentType: parentComponentType,
+            };
+          });
+
+          return [
+            ...acc,
+            {
+              id: currentPath,
+              name,
+              children: reduceData(children, currentPath, level + 1),
+              metadata: {
+                type: 'components',
+                path: currentPath,
+                parentType: parentType,
+              },
+            },
+          ];
+        }, []);
+    };
+
+    return reduceData(data);
+  },
 });
