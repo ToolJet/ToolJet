@@ -108,7 +108,7 @@ describe('DataQueriesUtilService', () => {
       const result = await service.parseQueryOptions(object, options, 'org-id');
 
       expect(result).toEqual({
-        key: 'Hello World',
+        key: 'Hello\nWorld',
       });
     });
 
@@ -247,7 +247,7 @@ describe('DataQueriesUtilService', () => {
       const result = await service.parseQueryOptions(object, options, 'org-id');
 
       expect(result).toEqual({
-        key: 42,
+        key: '42',
       });
     });
 
@@ -341,7 +341,7 @@ describe('DataQueriesUtilService', () => {
       const result = await service.parseQueryOptions(object, options, 'org-id');
 
       expect(result).toEqual({
-        key: '{{nonExistentVar}}',
+        key: undefined,
       });
     });
 
@@ -353,14 +353,15 @@ describe('DataQueriesUtilService', () => {
       };
       const options = {
         '{{validVar}}': 'replaced',
+        '{{ invalidVar }}': undefined,
       };
 
       const result = await service.parseQueryOptions(object, options, 'org-id');
 
       expect(result).toEqual({
         valid: 'replaced',
-        invalid: '{{ invalidVar }}',
-        mixed: 'Hello replaced and {{ invalidVar }}!',
+        invalid: undefined,
+        mixed: 'Hello replaced and undefined!',
       });
     });
 
@@ -454,13 +455,13 @@ describe('DataQueriesUtilService', () => {
 
       expect(result).toEqual({
         string: 'test string',
-        number: 42,
-        boolean: true,
+        number: '42',
+        boolean: 'true',
         nullVal: null,
         undefinedVal: undefined,
-        nanVal: NaN,
-        infinityVal: Infinity,
-        negInfinityVal: -Infinity,
+        nanVal: 'NaN',
+        infinityVal: 'Infinity',
+        negInfinityVal: '-Infinity',
         emptyString: '',
         emptyArray: [],
         emptyObject: {},

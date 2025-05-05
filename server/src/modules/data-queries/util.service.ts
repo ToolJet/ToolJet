@@ -438,6 +438,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
           for (const variable of variables || []) {
             let replacement = options[variable];
+
             // Check if the replacement is an object
             if (typeof replacement === 'object' && replacement !== null) {
               // Ensure parent is a non-empty array before attempting to access its first element
@@ -447,13 +448,25 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               }
             }
             // Check type of replacement and assign accordingly
-            if (typeof replacement === 'string' || typeof replacement === 'number') {
+            if (
+              typeof replacement === 'string' ||
+              typeof replacement === 'number' ||
+              typeof replacement === 'boolean'
+            ) {
               // If replacement is a string, perform the replace
               resolvedValue = resolvedValue.replace(variable, String(replacement));
+            } else if (
+              resolvedValue.startsWith('{{') &&
+              resolvedValue.endsWith('}}') &&
+              (resolvedValue.match(/{{/g) || [])?.length === 1 &&
+              (replacement === undefined || replacement === null)
+            ) {
+              //Single variable replacement same as Case d
+              resolvedValue = options[resolvedValue];
             } else if (replacement === undefined || replacement === null) {
-              resolvedValue = replacement; //Prevent from stringifying undefined or null
+              // If replacement is undefined or null in a mixed string context, replace with undefined
+              resolvedValue = resolvedValue.replace(variable, replacement);
             } else {
-              // If replacement is an object or an array, assign the whole value to resolvedValue
               resolvedValue = options[resolvedValue];
             }
           }
