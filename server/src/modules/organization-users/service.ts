@@ -100,11 +100,9 @@ export class OrganizationUsersService implements IOrganizationUsersService {
   }
 
   async setAuditLog(organizationUser: OrganizationUser, manager: EntityManager) {
-    console.log('organization user', organizationUser.user);
     const organization = await manager.findOne(Organization, {
       where: { id: organizationUser.organizationId },
     });
-    console.log('organizaiton data', organization);
     const auditLogEntry = {
       userId: organizationUser.userId,
       organizationId: organizationUser.organizationId,
