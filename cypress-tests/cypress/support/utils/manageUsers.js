@@ -401,3 +401,37 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
 };
+
+export const inviteUserWithUserRoleAndMetadata = (firstName, email, role) => {
+  fillUserInviteForm(firstName, email);
+  cy.contains('button', 'Add more').click();
+  cy.get('input.input-control[placeholder="Key"]').type('test');
+  cy.get('input.input-control[placeholder="Value"][type="password"]').eq(0).type('abcd');
+  cy.wait(2000);
+
+  cy.get("body").then(($body) => {
+    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+
+    if (selectDropdown.length === 0) {
+      cy.get('[data-cy="user-group-select"]>>>>>').click();
+    }
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.wait(1000);
+  });
+
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.userCreatedToast
+  );
+
+  cy.wait(1000);
+  fetchAndVisitInviteLink(email);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(commonSelectors.signUpButton).click();
+  cy.wait(2000);
+  cy.get(commonSelectors.acceptInviteButton).click();
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
+};
