@@ -1,58 +1,83 @@
-FROM tooljet/tooljet:ee-lts-latest
+FROM node:18.18.2-buster AS builder
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN mkdir -p /app
+WORKDIR /app
 
-# Copy PostgREST executable
+# Scripts for building
+COPY ./package.json ./package.json
+
+# Build plugins
+COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+RUN npm --prefix plugins install
+COPY ./plugins/ ./plugins/
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production
+
+# Build frontend
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
+RUN npm --prefix frontend install
+COPY ./frontend/ ./frontend/
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
+
+ENV NODE_ENV=production
+
+# Build server
+COPY ./server/package.json ./server/package-lock.json ./server/
+RUN npm --prefix server install
+COPY ./server/ ./server/
+RUN npm install -g @nestjs/cli
+RUN npm --prefix server run build
+
+FROM node:18.18.2-bullseye
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN apt-get update && apt-get install -y freetds-dev libaio1 wget unzip
+
+# Install Oracle Instant Client
+WORKDIR /opt/oracle
+RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
+    wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
+    unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
+    unzip instantclient-basiclite-linux.x64-11.2.0.4.0.zip && rm -f instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
+    cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
+    cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
+    echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+
+ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
+
+WORKDIR /
+
+# Copy app files
+COPY --from=builder /app/package.json ./app/package.json
+COPY --from=builder /app/plugins/dist ./app/plugins/dist
+COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
+COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
+COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
+COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
+COPY --from=builder /app/frontend/build ./app/frontend/build
+COPY --from=builder /app/server/package.json ./app/server/package.json
+COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/node_modules ./app/server/node_modules
+COPY --from=builder /app/server/templates ./app/server/templates
+COPY --from=builder /app/server/scripts ./app/server/scripts
+COPY --from=builder /app/server/dist ./app/server/dist
+
+WORKDIR /app
 
 # Install PostgreSQL
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN apt update && apt -y install postgresql-13 postgresql-client-13
 
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
-# Install Redis
-RUN apt update && apt -y install redis
-
-# Create appuser home & ensure permission for supervisord and services
-RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql /var/lib/redis && \
-    chown -R appuser:appuser /etc/supervisor /var/log/supervisor /var/lib/redis && \
-    chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
-
-# Configure Supervisor to manage PostgREST, ToolJet, and Redis
-RUN echo "[supervisord] \n" \
-    "nodaemon=true \n" \
-    "user=root \n" \
-    "\n" \
-    "[program:postgrest] \n" \
-    "command=/bin/postgrest \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "\n" \
-    "[program:tooljet] \n" \
-    "user=appuser \n" \
-    "command=/bin/bash -c '/app/server/scripts/' \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/dev/stdout \n" \
-    "stderr_logfile_maxbytes=0 \n" \
-    "stdout_logfile=/dev/stdout \n" \
-    "stdout_logfile_maxbytes=0 \n" \
-    "\n" \
-    "[program:redis] \n" \
-    "user=appuser \n" \
-    "command=/usr/bin/redis-server \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/dev/stdout \n" \
-    "stderr_logfile_maxbytes=0 \n" \
-    "stdout_logfile=/dev/stdout \n" \
-    "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
-
-# ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
     NODE_ENV=production \
@@ -80,7 +105,4 @@ ENV TOOLJET_HOST=http://localhost \
     REDIS_PASS= \
     TERM=xterm
 
-# Set the entrypoint
-COPY ./docker/ee/ee-try-entrypoint-lts.sh /ee-try-entrypoint-lts.sh
-RUN chmod +x /ee-try-entrypoint-lts
-ENTRYPOINT ["/ee-try-entrypoint-lts.sh"]
+ENTRYPOINT ["/server/scripts/boot.sh"]
