@@ -38,7 +38,7 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget supervisor
+RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -77,21 +77,58 @@ COPY --from=builder /app/server/dist ./app/server/dist
 
 WORKDIR /app
 
+# Install PostgreSQL
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN echo "deb http://deb.debian.org/debian"
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
-
-ENV PATH="/usr/lib/postgresql/13/bin:$PATH"
 
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
+# Install Redis
+RUN apt update && apt -y install redis
+
+# Create appuser home & ensure permission for supervisord and services
+RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql /var/lib/redis && \
+    chown -R appuser:appuser /etc/supervisor /var/log/supervisor /var/lib/redis && \
+    chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
+
+# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+RUN echo "[supervisord] \n" \
+    "nodaemon=true \n" \
+    "user=root \n" \
+    "\n" \
+    "[program:postgrest] \n" \
+    "command=/bin/postgrest \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "\n" \
+    "[program:tooljet] \n" \
+    "user=appuser \n" \
+    "command=/bin/bash -c '/app/server/scripts/init-db-boot.sh' \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" \
+    "\n" \
+    "[program:redis] \n" \
+    "user=appuser \n" \
+    "command=/usr/bin/redis-server \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
+
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
+    PORT=80 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
@@ -111,6 +148,10 @@ ENV TOOLJET_HOST=http://localhost \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_USER=default \
+    REDIS_PASS= \
     TERM=xterm
 
 CMD ["/usr/bin/supervisord"]
