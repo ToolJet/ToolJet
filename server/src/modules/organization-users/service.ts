@@ -111,8 +111,8 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       resourceId: organizationUser.user.id,
       resourceName: organizationUser.user.email,
       resourceData: {
-        workspaceName: organization.name,
-        workspaceId: organization.id,
+        workspace_name: organization.name,
+        workspace_id: organization.id,
       },
     };
 

@@ -341,6 +341,9 @@ export class OnboardingService implements IOnboardingService {
         organizationId: organization?.id,
         resourceId: user.id,
         resourceName: user.email,
+        resourceData: {
+          signup_method: 'self-signup',
+        },
       });
 
       await this.licenseUserService.validateUser(manager);
@@ -401,10 +404,13 @@ export class OnboardingService implements IOnboardingService {
       const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
       await this.licenseUserService.validateUser(manager);
       const auditLogEntry = {
-        userId: organizationUser.userId,
-        organizationId: organizationUser.organizationId,
-        resourceId: organizationUser.user.id,
-        resourceName: organizationUser.user.email,
+        userId: user.id,
+        organizationId: organization.id,
+        resourceId: user.id,
+        resourceName: user.email,
+        resourceData: {
+          signup_method: 'invite-redemption',
+        },
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
       return this.sessionUtilService.generateLoginResultPayload(
@@ -552,7 +558,6 @@ export class OnboardingService implements IOnboardingService {
     if (user.status !== USER_STATUS.ACTIVE) {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
-
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: organizationUser.organizationId,
