@@ -461,10 +461,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               (resolvedValue.match(/{{/g) || [])?.length === 1 &&
               (replacement === undefined || replacement === null)
             ) {
-              //Single variable replacement same as Case d
+              //Single variable replacement for undefined and null ONLY
               resolvedValue = options[resolvedValue];
             } else if (replacement === undefined || replacement === null) {
-              // If replacement is undefined or null in a mixed string context, replace with undefined
+              // If replacement is undefined or null in a mixed string context, replace with stringify undefined
               resolvedValue = resolvedValue.replace(variable, replacement);
             } else {
               resolvedValue = options[resolvedValue];
