@@ -510,8 +510,6 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
-      console.log('current user logged', currentUser);
-      console.log('updated user logged', updatedUser);
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: currentUser.id,
         organizationId: currentOrganization.id,

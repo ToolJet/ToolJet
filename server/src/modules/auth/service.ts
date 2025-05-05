@@ -124,6 +124,9 @@ export class AuthService implements IAuthService {
           organizationId: organization.id,
           resourceId: user.id,
           resourceName: user.email,
+          resourceData: {
+            auth_method: 'password',
+          },
         });
       }
 
