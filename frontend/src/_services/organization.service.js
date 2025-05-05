@@ -18,7 +18,7 @@ export const organizationService = {
 
 function getUsersByValue(searchInput) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organizations/users/suggest?input=${searchInput}`, requestOptions).then(
+  return fetch(`${config.apiUrl}/organization-users/users/suggest?input=${searchInput}`, requestOptions).then(
     handleResponse
   );
 }

@@ -191,6 +191,7 @@ export class OauthService implements IOAuthService {
             [USER_ROLE.ADMIN],
             defaultOrganization.id,
             userDetails.id,
+            false,
             manager
           );
 
@@ -220,7 +221,7 @@ export class OauthService implements IOAuthService {
             if (!isInviteRedirect) {
               // no SSO login enabled organization available for user - creating new one
               const { name, slug } = generateNextNameAndSlug('My workspace');
-              organizationDetails = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
+              organizationDetails = await this.setupOrganizationsUtilService.create({ name, slug }, userDetails, manager);
               await this.userRepository.updateOne(
                 userDetails.id,
                 { defaultOrganizationId: organizationDetails.id },

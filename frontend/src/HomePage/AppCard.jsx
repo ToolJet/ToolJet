@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import { AppMenu } from './AppMenu';
 import moment from 'moment';
@@ -10,7 +10,6 @@ import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName, decodeEntities } from '@/_helpers/utils';
 const { defaultIcon } = configs;
@@ -32,6 +31,10 @@ export default function AppCard({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const cardRef = useRef();
+  const [popoverVisible, setPopoverVisible] = useState(true);
+  const [isNameOverflowing, setIsNameOverflowing] = useState(false);
+  const tooltipRef = useRef(null);
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -54,9 +57,45 @@ export default function AppCard({
   };
 
   useEffect(() => {
+    const checkOverflow = () => {
+      if (tooltipRef.current) {
+        setIsNameOverflowing(tooltipRef.current.scrollWidth > tooltipRef.current.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, []);
+
+  useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHovered]);
+  }, [isHovered, isMenuOpen]);
+
+  useEffect(() => {
+    const callBackFunction = (entries) => {
+      const [entry] = entries;
+      setPopoverVisible(isMenuOpen && entry.isIntersecting);
+    };
+
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1.0,
+    };
+
+    const currentCardRef = cardRef.current;
+    const observer = new IntersectionObserver(callBackFunction, options);
+    if (currentCardRef) {
+      observer.observe(currentCardRef);
+    }
+
+    return () => {
+      if (currentCardRef) {
+        observer.unobserve(currentCardRef);
+      }
+    };
+  }, [isMenuOpen]);
 
   const updated_at = app?.editing_version?.updated_at || app?.updated_at;
   const updated = moment(updated_at).fromNow(true);
@@ -136,8 +175,28 @@ export default function AppCard({
       </div>
     );
 
+  function AppNameDisplay({ tooltipRef }) {
+    const AppName = (
+      <h3
+        ref={tooltipRef}
+        className="app-card-name font-weight-500 tj-text-md"
+        data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
+      >
+        {decodeEntities(app.name)}
+      </h3>
+    );
+
+    return isNameOverflowing ? (
+      <ToolTip trigger={['hover']} message={app.name}>
+        {AppName}
+      </ToolTip>
+    ) : (
+      AppName
+    );
+  }
+
   return (
-    <div className="card homepage-app-card">
+    <div className="card homepage-app-card" ref={cardRef}>
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -158,7 +217,9 @@ export default function AppCard({
                   canUpdateApp={canUpdateApp(app)}
                   deleteApp={() => deleteApp(app)}
                   exportApp={() => exportApp(app)}
-                  isMenuOpen={isMenuOpen}
+                  isMenuOpen={setMenuOpen}
+                  popoverVisible={popoverVisible}
+                  setMenuOpen={setMenuOpen}
                   darkMode={darkMode}
                   currentFolder={currentFolder}
                   appType={appType}
@@ -169,14 +230,7 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          <ToolTip trigger={['hover']} message={app.name}>
-            <h3
-              className="app-card-name font-weight-500 tj-text-md"
-              data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
-            >
-              {decodeEntities(app.name)}
-            </h3>
-          </ToolTip>
+          <AppNameDisplay tooltipRef={tooltipRef} />
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
@@ -200,10 +254,10 @@ export default function AppCard({
                   <button
                     type="button"
                     className="tj-primary-btn tj-text-xsm edit-button"
-                    style={{ color: darkMode ? '#11181C' : '#FDFDFE' }}
+                    style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
                     data-cy="edit-button"
                   >
-                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
+                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
                 </Link>

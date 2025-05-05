@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
@@ -14,6 +14,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
+import { sortArray } from '@/Editor/Components/DropdownV2/utils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -27,10 +28,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     allComponents,
     pages,
   } = restProps;
+
+  const isInitialRender = useRef(true);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
-
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
+  const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
+  const sort = component?.component?.definition?.properties?.sort?.value;
 
   const constructOptions = () => {
     let optionsValue = component?.component?.definition?.properties?.options?.value;
@@ -89,6 +93,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     paramUpdated({ name: 'options' }, 'value', options, 'properties', false, props);
   };
 
+  const updateSortParam = (value) => {
+    paramUpdated({ name: 'sort' }, 'value', value, 'properties');
+  };
+
+  const updateOptions = (options) => {
+    setOptions(options);
+    updateAllOptionsParams(options);
+  };
+
   const generateNewOptions = () => {
     let found = false;
     let label = '';
@@ -114,8 +127,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const handleAddOption = () => {
     let _option = generateNewOptions();
     const _items = [...options, _option];
-    setOptions(_items);
-    updateAllOptionsParams(_items);
+    const sortedItems = sortArray(_items, sort);
+    updateOptions(sortedItems);
   };
 
   const handleDeleteOption = (index) => {
@@ -134,8 +147,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const handleValueChange = (value, index) => {
@@ -148,16 +160,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const reorderOptions = async (startIndex, endIndex) => {
     const result = [...options];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    setOptions(result);
-    updateAllOptionsParams(result);
+    updateOptions(result);
+    if (isSortingEnabled && sort !== 'none') {
+      updateSortParam('none');
+    }
   };
 
   const onDragEnd = ({ source, destination }) => {
@@ -200,9 +213,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           };
         }
       });
-      setOptions(_options);
+      updateOptions(_options);
       setMarkedAsDefault(_value);
-      updateAllOptionsParams(_options);
     }
   };
 
@@ -219,8 +231,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const handleDisableChange = (value, index) => {
@@ -236,8 +247,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const handleOnFxPress = (active, index, key) => {
@@ -253,12 +263,20 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   useEffect(() => {
-    setOptions(constructOptions());
+    if (!isInitialRender.current && isSortingEnabled) {
+      const sortedOptions = sortArray([...options], sort);
+      updateOptions(sortedOptions);
+    }
+  }, [sort]);
+
+  useEffect(() => {
+    const sortedOptions = sortArray(constructOptions(), sort);
+    updateOptions(sortedOptions);
+    isInitialRender.current = false;
   }, [isMultiSelect, component?.id]);
 
   const _renderOverlay = (item, index) => {
@@ -295,7 +313,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              initialValue={isMultiSelect ? `{{${markedAsDefault.includes(item.value)}}}` : item?.default?.value}
+              initialValue={isMultiSelect ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -372,7 +390,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => {
                   return (
-                    <Draggable key={item.value} draggableId={item.value} index={index}>
+                    <Draggable key={item?.value} draggableId={item?.value} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -385,9 +403,20 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             trigger="click"
                             placement="left"
                             rootClose
+                            onExited={() => {
+                              if (isSortingEnabled && sort !== 'none') {
+                                const sortedOptions = sortArray([...options], sort);
+                                updateOptions(sortedOptions);
+                              }
+                            }}
                             overlay={_renderOverlay(item, index)}
+                            onToggle={(isOpen) => {
+                              if (!isOpen) {
+                                document.activeElement?.blur(); // Manually trigger blur when popover closes
+                              }
+                            }}
                           >
-                            <div key={item.value}>
+                            <div key={item?.value}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}
@@ -399,7 +428,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {getResolvedValue(item.label)}
+                                    {getResolvedValue(item?.label)}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (
@@ -506,6 +535,28 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'showAllOption',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isMultiSelect &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showAllSelectedLabel',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isSortingEnabled &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'sort',
             'properties',
             currentState,
             allComponents

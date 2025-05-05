@@ -3,7 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   verifyCouldnotConnectWithAlert,
   deleteDatasource,
@@ -17,7 +17,8 @@ const data = {};
 
 describe("Data source Firestore", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -47,12 +48,20 @@ describe("Data source Firestore", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      firestoreText.firestore,
-      data.dataSourceName
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-firestore`,
+      "firestore",
+      [{ key: "gcp_key", value: "", encrypted: true }]
     );
-
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-firestore-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-firestore`
+    );
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
       "have.text",
       firestoreText.labelPrivateKey

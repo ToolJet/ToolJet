@@ -230,18 +230,20 @@ export function resolveReferences(
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
-          for (const dynamicVariable of dynamicVariables) {
-            const value = resolveString(
-              dynamicVariable,
-              state,
-              customObjects,
-              reservedKeyword,
-              withError,
-              forPreviewBox
-            );
+          if (dynamicVariables) {
+            for (const dynamicVariable of dynamicVariables) {
+              const value = resolveString(
+                dynamicVariable,
+                state,
+                customObjects,
+                reservedKeyword,
+                withError,
+                forPreviewBox
+              );
 
-            if (typeof value !== 'function') {
-              object = object.replace(dynamicVariable, value);
+              if (typeof value !== 'function') {
+                object = object.replace(dynamicVariable, value);
+              }
             }
           }
         }

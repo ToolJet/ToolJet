@@ -1,13 +1,14 @@
-import React from "react";
-import _ from "lodash";
-import QueryEditor from "./QueryEditor";
-import SourceEditor from "./SourceEditor";
-import { deepClone } from "@/_helpers/utilities/utils.helpers";
+import React from 'react';
+import _ from 'lodash';
+import QueryEditor from './QueryEditor';
+import SourceEditor from './SourceEditor';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export default ({
   getter,
-  options = [["", ""]],
+  options = [['', '']],
   optionchanged,
+  handleOptionChange,
   isRenderedAsQueryEditor,
   workspaceConstants,
   isDisabled,
@@ -16,27 +17,46 @@ export default ({
   dataCy,
 }) => {
   function addNewKeyValuePair(options) {
-    const newPairs = [...options, ["", ""]];
-    optionchanged(getter, newPairs);
+    const newPairs = [...options, ['', '']];
+
+    if (handleOptionChange) {
+      handleOptionChange(getter, newPairs, true);
+    } else {
+      optionchanged(getter, newPairs);
+    }
   }
 
   function removeKeyValuePair(index) {
     const newOptions = [...options];
     newOptions.splice(index, 1);
-    optionchanged(getter, newOptions);
+    if (handleOptionChange) {
+      handleOptionChange(getter, newOptions, true);
+    } else {
+      optionchanged(getter, newOptions);
+    }
   }
 
   function keyValuePairValueChanged(value, keyIndex, index) {
     if (!isRenderedAsQueryEditor) {
       const newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
-      options.length - 1 === index
-        ? addNewKeyValuePair(newOptions)
-        : optionchanged(getter, newOptions);
+      if (options.length - 1 === index) {
+        addNewKeyValuePair(newOptions);
+      } else {
+        if (handleOptionChange) {
+          handleOptionChange(getter, newOptions, true);
+        } else {
+          optionchanged(getter, newOptions);
+        }
+      }
     } else {
       let newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
-      optionchanged(getter, newOptions);
+      if (handleOptionChange) {
+        handleOptionChange(getter, newOptions, true);
+      } else {
+        optionchanged(getter, newOptions);
+      }
     }
   }
 
@@ -53,10 +73,6 @@ export default ({
   return isRenderedAsQueryEditor ? (
     <QueryEditor {...commonProps} />
   ) : (
-    <SourceEditor
-      {...commonProps}
-      workspaceConstants={workspaceConstants}
-      width={width}
-    />
+    <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} width={width} />
   );
 };

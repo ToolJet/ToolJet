@@ -195,6 +195,7 @@
 
   .text-tomato-9 {
     color: var(--tomato9);
+    font-weight: 500;
   }
 
   .text-slate-10 {
@@ -252,11 +253,24 @@
     background-color: var(--slate3);
   }
 
-  .error-target {
+  .error-target, .error-target-custom-log {
     background-color: var(--interactive-overlays-fill-hover) !important;
     padding: 4px 7px;
     border-radius: 7px;
     color: var(--slate10)
+  }
+
+  .error-target-custom-log {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    background: var(--purple5) !important;
+    color: var(--purple11);
+    width: fit-content;
+
+    svg {
+      margin-right: 1px;
+    }
   }
 }
 
@@ -701,6 +715,7 @@
 .sidebar-h-100-popover {
   position: relative;
   height: 100vh;
+  overflow-y:scroll !important;
   margin-top: 0px;
   border-radius: 0px !important;
 
@@ -756,6 +771,7 @@
   padding-bottom: 8px;
   width: 44px;
   max-height: 230px;
+  margin-bottom: var(--dynamic-margin-2, 0px); //please Remove after Basicplan banner is removed..
 }
 
 .tj-leftsidebar-icon-items {
