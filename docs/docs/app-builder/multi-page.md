@@ -3,82 +3,90 @@ id: multi-page
 title: Pages
 ---
 
-ToolJet allows the creation of multi-page applications. This feature helps in organizing different functionalities within a single application. Using multiple pages improves navigation and makes the application more structured and user-friendly.
+ToolJet allows creation of multi-page applications, helping you break your app into different sections. Instead of building everything on a single screen, you can create separate pages to organize different functionalities or enable navigation within your application.
 
-## Pages Panel
+ToolJet also supports [page groups](#), which let you group related pages together, simplifying organization of pages in a complex app. For example, all admin-related pages can go under one group, and user-related pages under another.
 
-The Pages panel on the left sidebar of the App Builder is used to [create](#add-page), manage, and navigate between different pages of the application.
+This guide discuss about how pages work, how to create new pages or page groups, and how to manage them.
 
-<img className="screenshot-full img-full" src="/img/app-builder/multi-page/page-panel.png" alt="App Builder: Properties Panel"/>
+## Page Properties
 
-## Panel Options
+Each page in ToolJet comes with properties that define its identity and behavior. These properties help in organizing, referencing, and securing pages within your application.
 
-### Add Page
+### Page Name
 
-To add a new page, click the **+** button in the header of the Pages panel. Enter the page name and press enter to create the page.
-
-<img className="screenshot-full img-m" src="/img/app-builder/multi-page/add-page.png" alt="App Builder: Properties Panel"/>
-
-### Settings
-
-Page navigation sidebar settings can be customized through the Settings button (⚙️) in the Pages panel. Clicking the button opens a configuration panel on the right.
-
-- **Collapsable**: Enables the sidebar to be collapsible in released applications.
-- **Style**: Allows selection between Text only, Text + icon, or Icon only for the sidebar display.
-- **Hide page menu in viewer mode**:  Hides the sidebar in viewer mode.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/app-builder/multi-page/settings.png" alt="App Builder: Properties Panel"/>
-
-The Style tab can be used to customize the appearance of the page navigation bar, such as text color, icon color, and etc.
-
-<img className="screenshot-full img-full" src="/img/app-builder/multi-page/style.png" alt="App Builder: Properties Panel"/>
-
-### Pin
-
-By default, the Pages panel closes when clicking outside of it. To keep it open, click the Pin button — this will keep the panel visible until it is unpinned.
-
-<img className="screenshot-full img-m" src="/img/app-builder/multi-page/pin.png" alt="App Builder: Properties Panel"/>
-
-## Page Options
-
-Several setting options are available for each page. To access them, click the kebab menu (three dots) on the right side of the page card.
-
-<img className="screenshot-full img-l" src="/img/app-builder/multi-page/page-option.png" alt="App Builder: Properties Panel"/>
+A display name for the page, shown in the app's navigation menu. It is used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to recognize in the menu.
 
 ### Page Handle
 
-**Page Handle** is the slug appended to the end of the application URL. By default, it is generated from the page name — converted to lowercase and with spaces replaced by hyphens. To change the page handle, click the edit icon next to it.
+The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL. By default, it's auto-generated from the page name — converted to lowercase and with spaces replaced by hyphens. You can change it manually by clicking the edit icon next to it.
 
-### Rename
+### Home Page
 
-The **Rename** option allows you to change the name of the page. Renaming a page does not affect the slug or page handle.
+The home page is the default landing page when the app launches. Only one page in an application can be set as the home page. It cannot be deleted, disabled, or hidden from the app menu.
 
-### Mark Home
+### Page Permission
 
-The **Mark Home** option sets a page as the default landing page of the application. When the application is opened, this page will be the first one displayed.
+Page permissions control who can access the page. You can choose to:
+- Allow access to all users with app access
+- Restrict access to selected users
+- Restrict access to selected [user groups](#)
 
-### Hide Page on App Menu
+## Manage Pages
 
-The **Hide page on app menu** option allows you to hide a page from the page navigation sidebar in Viewer Mode. A page marked as Home cannot be hidden.<br/>
-**Note**: Even when hidden, a page can still be accessed using the Switch Page action or directly through the page URL.
+### New Page
+
+You can add a new page to organize the app navigation or to separate different parts of your app. To add a new page, click on the **+ Add** button at the top of the Pages panel and select **Page**. Enter the page name and press enter to create the page.
+
+***Add Screenshot***
+
+### Page Group
+
+Releated pages can be grouped together using the page group. To add a new page group, click on the **+ Add** button at the top of the Pages panel and select **Group**. Enter the group name and press enter to create the group. You can then drag pages into the group folder. You can also add an icon to the group for better visual identification.
+
+***Add Screenshot***
 
 ### Duplicate
 
-The **Duplicate Page** option allows you to create an exact copy of the selected page. The duplicated page will appear in the Pages list and retain all components, settings, and configurations from the original.
-
-### Event Handlers
-
-**Event handlers** can be used to perform specific actions when certain events occur. The **On page load** event can be added to  trigger actions automatically when the page loads.
+The **Duplicate Page** allows you to create an exact copy of the selected page. The duplicated page will appear in the Pages list and retain all components, settings, and configurations from the original.
 
 ### Disable Page
 
-**Disable Page** option allows you to disable a page, making it inaccessible in viewer mode. A page marked as Home cannot be disabled.
+**Disable Page** allows you to disable a page, making it inaccessible in the released application. A page marked as Home cannot be disabled.
 
 ### Delete Page
 
 You can delete a page from an application using the Delete Page option. Page marked as home cannot be deleted.
 
+## App Menu
+
+The **App Menu** is the navigation panel that lets users switch between pages in your application. You can customize how it looks and works, or even hide certain pages from it.
+
+### Customize App Menu
+
+To customize the app menu, click on the Settings button (⚙️) in the header of the Pages panel to open the page menu configuration.
+
+- **Collapsable**: Allows users to collapse the menu in the released app.
+- **Style**: Choose how pages appear—Text only, Text + Icon, or Icon only.
+- **Hide page menu in viewer mode**:  Hides the menu in viewer mode.
+
+***Add Screenshot***
+
+The Style tab also lets you change colors for text, icons, background, and more.
+
+***Add Screenshot***
+
+### Hide Page on App Menu
+
+A page can be hidden from the app menu in a released application. Even when hidden, a page can still be accessed using the Switch Page action or directly through the page URL. A page marked as Home cannot be hidden.
+
+## Event Handlers
+
+ToolJet allows you to run specific actions when a page loads. You can set these actions using event handlers. For example, you can run a query automatically when a page opens.
+
 ## Exposed Variables
+
+Exposed variables are values from a page that can be accessed throughout the application. These include default page-level values like page name, page ID, and page handle. In addition to the default ones, custom page variables can also be defined and accessed as exposed variables.
 
 | Variable  | Description | How To Access |
 | ----------- | ----------- | ------------- |
