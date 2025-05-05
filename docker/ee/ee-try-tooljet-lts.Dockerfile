@@ -34,7 +34,7 @@ RUN echo "[supervisord] \n" \
     "\n" \
     "[program:tooljet] \n" \
     "user=appuser \n" \
-    "command=/bin/bash -c '/app/server/scripts/init-db-boot.sh' \n" \
+    "command=/bin/bash -c '/app/server/scripts/' \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
     "stderr_logfile=/dev/stdout \n" \
