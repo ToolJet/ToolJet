@@ -34,7 +34,7 @@ To migrate an application to the staging or production environment, follow the s
 
 ## Application Backup
 
-Any ToolJet application stored in a Git repository can be restored by following the steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **enabled** if you intend to make new changes to the application, the application name can also be updates while importing.
+Any ToolJet application stored in a Git repository can be restored by following the steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **enabled** if you intend to make new changes to the application, the application name can also be updated while importing.
 
 ## Import Application
 
