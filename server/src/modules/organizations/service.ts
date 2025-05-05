@@ -51,6 +51,11 @@ export class OrganizationsService implements IOrganizationsService {
     updatableData: OrganizationStatusUpdateDto
   ): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organization = await this.organizationRepository.findOne({ where: { id: organizationId } });
+      if (organization.isDefault) {
+        throw new NotAcceptableException('Default workspace cannot be archived');
+      }
+
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
       if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
         await this.licenseOrganizationService.validateOrganization(manager); //Check for only unarchiving
