@@ -12,7 +12,7 @@ export const Pagination = ({
   width,
 }) => {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow } = styles;
+  const { visibility, disabledState, boxShadow, alignment } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
 
   const pageChanged = (number) => {
@@ -65,7 +65,12 @@ export const Pagination = ({
   };
 
   return (
-    <div data-disabled={disabledState} className="d-flex align-items-center" data-cy={dataCy} style={{ boxShadow }}>
+    <div
+      data-disabled={disabledState}
+      className="d-flex align-items-center"
+      data-cy={dataCy}
+      style={{ boxShadow, justifyContent: alignment }}
+    >
       <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
           operator="<<"

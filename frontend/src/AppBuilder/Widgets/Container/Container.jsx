@@ -33,7 +33,8 @@ export const Container = ({
     shallow
   );
 
-  const { borderRadius, borderColor, boxShadow, headerHeight = 80 } = styles;
+  const { borderRadius, borderColor, boxShadow } = styles;
+  const { headerHeight = 80 } = properties;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:

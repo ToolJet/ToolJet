@@ -1,5 +1,6 @@
 import React from 'react';
 import DynamicForm from '@/_components/DynamicForm';
+import DynamicFormV2 from '@/_components/DynamicFormV2';
 import RunjsSchema from './Runjs.schema.json';
 import TooljetDbSchema from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/manifest.json';
 import RunpySchema from './Runpy.schema.json';
@@ -7,12 +8,37 @@ import WorkflowsSchema from './Workflows.schema.json';
 
 // eslint-disable-next-line import/no-unresolved
 import { allManifests } from '@tooljet/plugins/client';
+import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
+
+const getSchemaDetailsForRender = (schema) => {
+  if (schema['tj:version']) {
+    const dsm = new DataSourceSchemaManager(schema);
+    const initialSourceValues = dsm.getDefaults();
+    return {
+      name: schema['tj:source'].name,
+      kind: schema['tj:source'].kind,
+      type: schema['tj:source'].type,
+      options: initialSourceValues,
+    };
+  }
+
+  const _source = schema.source;
+  const def = schema.defaults ?? {};
+
+  return { ..._source, defaults: def };
+};
+
+const getSchemaMetadata = (schema, key) => {
+  if (schema['tj:version']) return schema['tj:source'][key];
+  // Need to depreciate old schema format
+  if (key === 'type') return schema.type;
+  return schema.source[key];
+};
 
 //Commonly Used DS
-
 export const CommonlyUsedDataSources = Object.keys(allManifests)
   .reduce((accumulator, currentValue) => {
-    const sourceName = allManifests[currentValue]?.source?.name;
+    const sourceName = getSchemaMetadata(allManifests[currentValue], 'name');
     if (
       sourceName === 'REST API' ||
       sourceName === 'MongoDB' ||
@@ -20,9 +46,7 @@ export const CommonlyUsedDataSources = Object.keys(allManifests)
       sourceName === 'Google Sheets' ||
       sourceName === 'PostgreSQL'
     ) {
-      const _source = allManifests[currentValue].source;
-      const def = allManifests[currentValue]?.defaults ?? {};
-      accumulator.push({ ..._source, defaults: def });
+      accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
     }
 
     return accumulator;
@@ -33,31 +57,23 @@ export const CommonlyUsedDataSources = Object.keys(allManifests)
   });
 
 export const DataBaseSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (allManifests[currentValue].type === 'database') {
-    const _source = allManifests[currentValue].source;
-    const def = allManifests[currentValue]?.defaults ?? {};
-
-    accumulator.push({ ..._source, defaults: def });
+  if (getSchemaMetadata(allManifests[currentValue], 'type') === 'database') {
+    accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
   }
 
   return accumulator;
 }, []);
-export const ApiSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (allManifests[currentValue].type === 'api') {
-    const _source = allManifests[currentValue].source;
-    const def = allManifests[currentValue]?.defaults ?? {};
 
-    accumulator.push({ ..._source, defaults: def });
+export const ApiSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
+  if (getSchemaMetadata(allManifests[currentValue], 'type') === 'api') {
+    accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
   }
 
   return accumulator;
 }, []);
 export const CloudStorageSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (allManifests[currentValue].type === 'cloud-storage') {
-    const _source = allManifests[currentValue].source;
-    const def = allManifests[currentValue]?.defaults ?? {};
-
-    accumulator.push({ ..._source, defaults: def });
+  if (getSchemaMetadata(allManifests[currentValue], 'type') === 'cloud-storage') {
+    accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
   }
 
   return accumulator;
@@ -73,8 +89,24 @@ export const DataSourceTypes = [
 ];
 
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  accumulator[currentValue] = (props) => <DynamicForm schema={allManifests[currentValue]} isGDS={true} {...props} />;
+  accumulator[currentValue] = (props) => {
+    const schema = allManifests[currentValue];
+
+    if (schema['tj:version']) {
+      return <DynamicFormV2 schema={schema} isGDS={true} {...props} />;
+    }
+
+    return <DynamicForm schema={schema} isGDS={true} {...props} />;
+  };
   return accumulator;
 }, {});
 
-export const SourceComponent = (props) => <DynamicForm schema={props.dataSourceSchema} isGDS={true} {...props} />;
+export const SourceComponent = (props) => {
+  const schema = props.dataSourceSchema;
+
+  if (schema['tj:version']) {
+    return <DynamicFormV2 schema={schema} isGDS={true} {...props} />;
+  }
+
+  return <DynamicForm schema={schema} isGDS={true} {...props} />;
+};

@@ -8,6 +8,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
 import { getQueryParams } from '@/_helpers/routes';
 import queryString from 'query-string';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const AppsRoute = ({ children, componentType }) => {
   const params = useParams();
@@ -20,6 +21,7 @@ export const AppsRoute = ({ children, componentType }) => {
   });
   const clonedElement = React.cloneElement(children, extraProps);
   const navigate = useNavigate();
+  const switchPage = useStore((state) => state.switchPage);
 
   /* 
    any extra logic specifc to the route can be done 
@@ -29,6 +31,10 @@ export const AppsRoute = ({ children, componentType }) => {
     if (isValidSession) {
       onValidSession();
     }
+
+    // handle back and forward navigation
+    window.addEventListener('popstate', handleBrowserNavigation);
+    return () => window.removeEventListener('popstate', handleBrowserNavigation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValidSession]);
 
@@ -67,6 +73,11 @@ export const AppsRoute = ({ children, componentType }) => {
       setExtraProps(restDetails);
       setLoading(false);
     }
+  };
+
+  const handleBrowserNavigation = (e) => {
+    const { id, handle } = e.state;
+    switchPage(id, handle, [], true);
   };
 
   return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;

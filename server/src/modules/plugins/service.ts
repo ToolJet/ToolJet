@@ -136,7 +136,7 @@ export class PluginsService implements IPluginsService {
     return Array.from(marketplacePluginsUsed);
   }
 
-  private async arePluginsInstalled(pluginsId: Array<string>): Promise<{ pluginsToBeInstalled: Array<string> }> {
+  private async findPluginsToBeInstalled(pluginsId: Array<string>): Promise<{ pluginsToBeInstalled: Array<string> }> {
     const pluginsToBeInstalled = [];
     if (!pluginsId.length) return { pluginsToBeInstalled };
 
@@ -154,30 +154,62 @@ export class PluginsService implements IPluginsService {
   async checkIfPluginsToBeInstalled(
     dataSources
   ): Promise<{ pluginsToBeInstalled: Array<string>; pluginsListIdToDetailsMap: any }> {
-    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
-    const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(dataSources, pluginsListIdToDetailsMap);
-    const { pluginsToBeInstalled } = await this.arePluginsInstalled(marketplacePluginsUsed);
-    return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
+    try {
+      const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+      const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(
+        dataSources,
+        pluginsListIdToDetailsMap
+      );
+      const { pluginsToBeInstalled } = await this.findPluginsToBeInstalled(marketplacePluginsUsed);
+      return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error,
+        'An error occurred while checking whether plugins need to be installed.'
+      );
+    }
   }
 
   async autoInstallPluginsForTemplates(pluginsToBeInstalled: Array<string>, shouldAutoInstall: boolean) {
-    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
-    if (shouldAutoInstall && pluginsToBeInstalled.length) {
-      const installedPluginsName = [];
-      for (const pluginId of pluginsToBeInstalled) {
-        const pluginDetails = pluginsListIdToDetailsMap[pluginId];
-        const installedPlugin = await this.install(pluginDetails);
-        installedPluginsName.push(installedPlugin.name);
+    const installedPluginsList = [];
+    const installedPluginsInfo = [];
+    try {
+      const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+      if (shouldAutoInstall && pluginsToBeInstalled.length) {
+        for (const pluginId of pluginsToBeInstalled) {
+          const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+          const installedPluginInfo = await this.install(pluginDetails);
+          installedPluginsList.push(installedPluginInfo.name);
+          installedPluginsInfo.push(installedPluginInfo);
+        }
+        return { installedPluginsList, installedPluginsInfo };
       }
-      return installedPluginsName;
-    }
 
-    if (!shouldAutoInstall && pluginsToBeInstalled.length) {
-      throw new NotFoundException(
-        `Plugins ( ${pluginsToBeInstalled
-          .map((pluginToBeInstalled) => pluginsListIdToDetailsMap[pluginToBeInstalled].name || pluginToBeInstalled)
-          .join(', ')} ) is not installed yet!`
-      );
+      if (!shouldAutoInstall && pluginsToBeInstalled.length) {
+        throw new NotFoundException(
+          `Plugins ( ${pluginsToBeInstalled
+            .map((pluginToBeInstalled) => pluginsListIdToDetailsMap[pluginToBeInstalled].name || pluginToBeInstalled)
+            .join(', ')} ) is not installed yet!`
+        );
+      }
+    } catch (error) {
+      if (installedPluginsInfo.length) {
+        const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
+        await this.uninstallPlugins(pluginsId);
+      }
+      throw new InternalServerErrorException(error, 'Error while installing marketplace plugins');
+    }
+  }
+
+  async uninstallPlugins(pluginsId: Array<string>) {
+    try {
+      if (!pluginsId.length) return;
+      for (const pluginId of pluginsId) {
+        await this.remove(pluginId);
+      }
+      return;
+    } catch (error) {
+      throw new InternalServerErrorException(error, 'Error while uninstalling marketplace plugins');
     }
   }
 }

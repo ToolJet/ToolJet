@@ -28,6 +28,9 @@ import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService'
 import { ITemporalService } from '@modules/workflows/interfaces/ITemporalService';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { validateEdition } from '@helpers/edition.helper';
+import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
+import { Reflector } from '@nestjs/core';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 let appContext: INestApplicationContext = undefined;
 
@@ -105,7 +108,9 @@ function setSecurityHeaders(app, configService) {
             'cdn.jsdelivr.net',
             'https://esm.sh',
             'www.googletagmanager.com',
-          ],
+          ].concat(configService.get('CSP_WHITELISTED_DOMAINS')?.split(',') || []),
+          'object-src': ["'self'", 'data:'],
+          'media-src': ["'self'", 'data:'],
           'default-src': [
             'maps.googleapis.com',
             'storage.googleapis.com',
@@ -115,8 +120,8 @@ function setSecurityHeaders(app, configService) {
             "'self'",
             'blob:',
             'www.googletagmanager.com',
-          ],
-          'connect-src': ['ws://' + domain, "'self'", '*'],
+          ].concat(configService.get('CSP_WHITELISTED_DOMAINS')?.split(',') || []),
+          'connect-src': ['ws://' + domain, "'self'", '*', 'data:'],
           'frame-ancestors': ['*'],
           'frame-src': ['*'],
         },
@@ -180,6 +185,7 @@ async function bootstrap() {
   });
 
   app.useLogger(app.get(Logger));
+  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), app.get(Logger), app.get(EventEmitter2)));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));

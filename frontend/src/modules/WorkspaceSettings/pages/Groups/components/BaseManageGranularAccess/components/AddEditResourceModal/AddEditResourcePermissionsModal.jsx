@@ -76,7 +76,9 @@ function AddEditResourcePermissionsModal({
       </div>
       {/* Till here */}
       <div className="form-group mb-3">
-        <label className="form-label bold-text">Permission</label>
+        <label className="form-label bold-text" data-cy="permission-label">
+          Permission
+        </label>
         {resourceType === 'Apps' ? (
           <AppPermissionsActions
             handleClickEdit={() => {
@@ -135,8 +137,18 @@ function AddEditResourcePermissionsModal({
               data-cy="all-apps-radio"
             />
             <div>
-              <span className="form-check-label">{allResourceTitle}</span>
-              <span className="tj-text-xsm">{allResourceText}</span>
+              <span
+                className="form-check-label"
+                data-cy={`${allResourceTitle.toLowerCase().replace(/\s+/g, '-')}-label`}
+              >
+                {allResourceTitle}
+              </span>
+              <span
+                className="tj-text-xsm"
+                data-cy={`${allResourceTitle.toLowerCase().replace(/\s+/g, '-')}-info-text`}
+              >
+                {allResourceText}
+              </span>
             </div>
           </label>
           <OverlayTrigger

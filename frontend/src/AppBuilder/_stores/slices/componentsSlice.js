@@ -439,7 +439,7 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  validateWidget: ({ validationObject, widgetValue, customResolveObjects }) => {
+  validateWidget: ({ validationObject, widgetValue, customResolveObjects, componentType }) => {
     const { getResolvedValue } = get();
     let isValid = true;
     let validationError = null;
@@ -454,6 +454,17 @@ export const createComponentsSlice = (set, get) => ({
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
     const re = new RegExp(validationRegex, 'g');
+
+    if (componentType === 'EmailInput' && widgetValue) {
+      const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
+      const emailRegex = new RegExp(validationRegex, 'g');
+      if (!emailRegex.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'Input should be a valid email',
+        };
+      }
+    }
 
     if (!re.test(widgetValue)) {
       return {
@@ -507,7 +518,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
 
-    if (resolvedMandatory == true && !widgetValue) {
+    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,
@@ -1833,6 +1844,9 @@ export const createComponentsSlice = (set, get) => ({
       ![
         'TextInput',
         'PasswordInput',
+        'EmailInput',
+        'PhoneInput',
+        'CurrencyInput',
         'NumberInput',
         'DropdownV2',
         'MultiselectV2',
@@ -1841,6 +1855,7 @@ export const createComponentsSlice = (set, get) => ({
         'DaterangePicker',
         'DatePickerV2',
         'TimePicker',
+        'TextArea',
       ].includes(componentType)
     ) {
       return layoutData?.height;
@@ -1880,5 +1895,29 @@ export const createComponentsSlice = (set, get) => ({
     set((state) => {
       state.modalsOpenOnCanvas = newModalOpenOnCanvas;
     });
+  },
+  updateContainerAutoHeight: (componentId) => {
+    if (
+      !componentId ||
+      componentId === 'canvas' ||
+      componentId.includes('-header') ||
+      componentId.includes('-footer')
+    ) {
+      return;
+    }
+    const { currentLayout, getCurrentPageComponents, setComponentProperty } = get();
+    const allComponents = getCurrentPageComponents();
+
+    const childComponents = getAllChildComponents(allComponents, componentId);
+    const maxHeight = Object.values(childComponents).reduce((max, component) => {
+      const layout = component?.layouts?.[currentLayout];
+      if (!layout) {
+        return max;
+      }
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
   },
 });
