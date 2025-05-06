@@ -84,6 +84,18 @@ export const TJDefaultTheme: Definition = {
         light: '#F6F6F6',
         dark: '#121518',
       },
+      surface1: {
+        light: '#FFFFFF',
+        dark: '#1E2226',
+      },
+      surface2: {
+        light: '#F6F8FA',
+        dark: '#2B3036',
+      },
+      surface3: {
+        light: '#E4E7EB',
+        dark: '#3C434B',
+      },
     },
   },
 };
