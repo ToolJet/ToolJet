@@ -121,6 +121,18 @@ class SurfaceColors {
   @ValidateNested()
   @Type(() => AppBackgroundColor)
   appBackground: AppBackgroundColor;
+
+  @ValidateNested()
+  @Type(() => Color)
+  surface1: Color;
+
+  @ValidateNested()
+  @Type(() => Color)
+  surface2: Color;
+
+  @ValidateNested()
+  @Type(() => Color)
+  surface3: Color;
 }
 
 class Surface {
