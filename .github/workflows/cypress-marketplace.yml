@@ -2,7 +2,7 @@ name: Cypress Marketplace
 
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled]
 
   workflow_dispatch:
 
@@ -14,13 +14,9 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: |
-      github.event.action == 'labeled' &&
-      (
-        github.event.label.name == 'run-cypress' || 
-        github.event.label.name == 'run-ce-cypress-marketplace' || 
-        github.event.label.name == 'run-ee-cypress-marketplace'
-      )
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-marketplace') ||
+      contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-marketplace')
 
     strategy:
       matrix:
@@ -44,7 +40,7 @@ jobs:
           mkdir -p ~/.docker/cli-plugins
           curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
           chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
           docker buildx use mybuilder
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
@@ -163,13 +159,12 @@ jobs:
               "password": "password"
             }'
 
-
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
+          json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
           dir: "./cypress-tests"
 
       - name: Marketplace
@@ -189,7 +184,8 @@ jobs:
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-marketplace-subpath' }}
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
 
     steps:
       - name: Checkout

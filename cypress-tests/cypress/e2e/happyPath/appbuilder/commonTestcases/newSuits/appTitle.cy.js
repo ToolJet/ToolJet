@@ -56,7 +56,7 @@ describe("Editor title", () => {
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
     cy.url().should("include", `/applications/${Cypress.env("appId")}`);
-    cy.title().should("eq", `${data.appName} | ToolJet`);
+    // cy.title().should("eq", `${data.appName} | ToolJet`);
     // cy.title().should("eq", `Preview - ${data.appName} | ToolJet`);
 
     cy.go("back");

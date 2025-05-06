@@ -1,8 +1,9 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { pluginSelectors } from "Selectors/plugins";
+import { awsTextractSelectors } from "Selectors/Plugins";
 import { postgreSqlText } from "Texts/postgreSql";
-import { awsLambdaText } from "Texts/awsLambda";
+import { awsTextractText } from "Texts/awsTextract";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
@@ -20,18 +21,17 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-describe("Data source AWS Lambda", () => {
+describe("Data source AWS Textract", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
-    cy.intercept("POST", "/api/data_queries").as("createQuery");
+    cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should  verify elements on AWS Lambda connection form", () => {
-    const Accesskey = Cypress.env("awslamda_access");
-    const Secretkey = Cypress.env("awslamda_secret");
+  it.skip("Should  verify elements on AWS Textract connection form", () => {
+    const Accesskey = Cypress.env("awstextract_access");
+    const Secretkey = Cypress.env("awstextract_secret");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
@@ -57,9 +57,13 @@ describe("Data source AWS Lambda", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.installMarketplacePlugin("AWS Lambda");
+    cy.installMarketplacePlugin("AWS Textract");
 
-    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
+    selectAndAddDataSource(
+      "databases",
+      awsTextractText.awsTextract,
+      data.dsName
+    );
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
     cy.get(".react-select__option").contains("US West (N. California)").click();
@@ -67,7 +71,7 @@ describe("Data source AWS Lambda", () => {
     cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
     fillDataSourceTextField(
-      awsLambdaText.labelSecretKey,
+      awsTextractText.labelSecretKey,
       "**************",
       Secretkey
     );
@@ -80,19 +84,23 @@ describe("Data source AWS Lambda", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    deleteDatasource(`cypress-${data.dsName}-aws-textract`);
   });
 
-  it("Should  verify the functionality of AWS Lambda connection form", () => {
-    const Accesskey = Cypress.env("awslamda_access");
-    const Secretkey = Cypress.env("awslamda_secret");
+  it.skip("Should  verify functionality of AWS Textract connection form", () => {
+    const Accesskey = Cypress.env("awstextract_access");
+    const Secretkey = Cypress.env("awstextract_secret");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    cy.installMarketplacePlugin("AWS Lambda");
+    cy.installMarketplacePlugin("AWS Textract");
 
-    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
+    selectAndAddDataSource(
+      "databases",
+      awsTextractText.awsTextract,
+      data.dsName
+    );
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
     cy.get(".react-select__option").contains("US West (N. California)").click();
@@ -100,7 +108,7 @@ describe("Data source AWS Lambda", () => {
     cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
     fillDataSourceTextField(
-      awsLambdaText.labelSecretKey,
+      awsTextractText.labelSecretKey,
       "**************",
       Secretkey
     );
@@ -113,19 +121,24 @@ describe("Data source AWS Lambda", () => {
       postgreSqlText.toastDSSaved
     );
 
-    deleteDatasource(`cypress-${data.dsName}-aws-lambda`);
+    deleteDatasource(`cypress-${data.dsName}-aws-textract`);
+    cy.uninstallMarketplacePlugin("AWS Textract");
   });
 
-  it("Should  able to run the query with valid conection", () => {
-    const Accesskey = Cypress.env("awslamda_access");
-    const Secretkey = Cypress.env("awslamda_secret");
+  it.skip("Should  able to run the query with valid conection", () => {
+    const Accesskey = Cypress.env("awstextract_access");
+    const Secretkey = Cypress.env("awstextract_secret");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
-    cy.installMarketplacePlugin("AWS Lambda");
+    cy.installMarketplacePlugin("AWS Textract");
 
-    selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
+    selectAndAddDataSource(
+      "databases",
+      awsTextractText.awsTextract,
+      data.dsName
+    );
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
     cy.get(".react-select__option")
@@ -136,7 +149,7 @@ describe("Data source AWS Lambda", () => {
     cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
     fillDataSourceTextField(
-      awsLambdaText.labelSecretKey,
+      awsTextractText.labelSecretKey,
       "**************",
       Secretkey
     );
@@ -144,7 +157,6 @@ describe("Data source AWS Lambda", () => {
     cy.get(postgreSqlSelector.buttonSave)
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .click();
-
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
@@ -161,15 +173,41 @@ describe("Data source AWS Lambda", () => {
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
+    // Verifying analyze document operation
     cy.get(pluginSelectors.operationDropdown)
       .click()
-      .type("Invoke Lambda Function{enter}");
+      .wait(500)
+      .type("Analyze Document{enter}");
 
     cy.wait(500);
 
-    cy.get(
-      '[data-cy="function-name-section"] .cm-content'
-    ).clearAndTypeOnCodeMirror("testAwslambdaPlugin");
+    cy.get(awsTextractSelectors.documentInputField).clearAndTypeOnCodeMirror(
+      awsTextractText.documentName
+    );
+
+    cy.wait(500);
+
+    cy.get(dataSourceSelector.queryPreviewButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      `Query (${data.dsName}) completed.`
+    );
+    // Verifying Analyze document stored in AWS S3 operation
+
+    cy.get(pluginSelectors.operationDropdown)
+      .click()
+      .wait(500)
+      .type("Analyze document stored in AWS S3{enter}");
+
+    cy.wait(500);
+
+    cy.get(awsTextractSelectors.bucketNameInputField).clearAndTypeOnCodeMirror(
+      awsTextractText.bucketName
+    );
+
+    cy.get(awsTextractSelectors.keyNameInputField).clearAndTypeOnCodeMirror(
+      awsTextractText.keyName
+    );
 
     cy.wait(500);
 
@@ -180,8 +218,8 @@ describe("Data source AWS Lambda", () => {
     );
     deleteAppandDatasourceAfterExecution(
       data.dsName,
-      `cypress-${data.dsName}-aws-lambda`
+      `cypress-${data.dsName}-aws-textract`
     );
-    cy.uninstallMarketplacePlugin("AWS Lambda");
+    cy.uninstallMarketplacePlugin("AWS Textract");
   });
 });

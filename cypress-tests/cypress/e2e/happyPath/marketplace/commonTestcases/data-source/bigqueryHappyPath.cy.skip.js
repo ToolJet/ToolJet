@@ -16,9 +16,8 @@ const data = {};
 
 describe("Data source BigQuery", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.defaultWorkspaceLogin();
-    cy.intercept("GET", "/api/v2/data_sources");
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
