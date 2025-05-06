@@ -5,16 +5,17 @@ title: Accessing Query Results
 
 Once your query is created and executed, the next step is to actually use the data, whether you’re displaying it in a table, populating dropdowns, or using it in logic for another query. Let’s walk through how you can work with query results.
 
-You can use `{{ }}` syntax to reference query data inside your components. For example, if you’ve created and run a query named *getEmployees*, you can access its result using `{{queries.getEmployees.data}}`. Now, you can bind this directly to a table’s data property to display employee details. Learn more about binding queries to components [here](/docs/app-builder/connecting-with-data-sources/binding-data-to-components).
+You can pass query results to a component by using the `{{ }}` syntax. For example, if you have a query named *getEmployees*, you can pass its data to a Table component by setting the table's data property to `{{queries.getEmployees.data}}`. Learn more about binding queries to components [here](/docs/app-builder/connecting-with-data-sources/binding-data-to-components).
 
 ## Explore and Debug with the Inspector
 
 To better understand what your query is returning, use the Inspector panel. Click on the Inspect button, select your query from the query dropdown. You'll see the following keys:
--	data: The processed response returned from the query, this is what you typically bind to components.
--	rawData: The original API response, useful for debugging.
--	isLoading: A boolean indicating whether the query is currently running. Great for showing loaders or disabling buttons during fetches.
+-	**data**: The processed response returned from the query, this is what you typically bind to components.
+-	**rawData**: The original API response, useful for debugging.
+-	**isLoading**: A boolean indicating whether the query is currently running. Great for showing loaders or disabling buttons during fetches.
 
-**Inspector Image**
+<img className="screenshot-full img-m" src="/img/app-builder/accessing-query-data/inspector.png" alt="App Builder: Query Panel"/>
+
 
 ### Quick Actions
 In the inspector, when you hover over a property like data, you’ll see two icons:

@@ -3,9 +3,9 @@ id: "creating-managing-queries"
 title: "Creating and Managing Queries"
 ---
 
-You can connect your app to a variety of **[data sources](/docs/data-sources/overview)**, including SQL, NoSQL, and vector databases, as well as APIs, spreadsheets, and cloud services. After connecting a data source, you can use queries to fetch, update, or manipulate your data.
+You can connect your app to the configured **[data sources](/docs/data-sources/overview)**, such as SQL, NoSQL, and vector databases, as well as APIs, spreadsheets, and cloud services by creating queries. After creating queries, you can use it to fetch, update, or manipulate your data.
 
-A query is an operation that interacts with your data source, whether it’s retrieving records, filtering data, apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**. It act as the link between your app’s UI and your data.
+A query is a low-code way to interacts with your data source, whether it’s retrieving records, filtering data, apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**. It act as the link between your app’s UI and your data.
 
 Queries are created in the Query Panel, located at the bottom of the App Builder, where you can either use a visual form-based builder or write code/SQL manually.
 
@@ -25,7 +25,7 @@ Depending on the data source you’ve selected, you can configure your query usi
 
 ### GUI mode
 
-- For Postgre data source, if you choose GUI mode, you will have to enter the table name and choose the operations you want to perform. 
+- For Postgres data source, if you choose GUI mode, you will have to enter the table name and choose the operations you want to perform. 
 
     <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/gui-mode.png" alt="App Builder: configure PostgreSQL queries"/>
 
