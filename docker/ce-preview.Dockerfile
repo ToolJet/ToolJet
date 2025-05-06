@@ -143,7 +143,8 @@ ENV TOOLJET_HOST=http://localhost \
     REDIS_PASS= \
     TERM=xterm
 
+USER root
 RUN chmod +x /app/server/scripts/boot.sh
 
-ENTRYPOINT ["/app/server/scripts/boot.sh"]
+ENTRYPOINT ["/server/scripts/boot.sh"]
 
