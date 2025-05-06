@@ -3,9 +3,23 @@ id: component-properties
 title: Component Properties
 ---
 
-Using **Component Properties**, you can define how a component looks, behaves, or interacts with the application. Each component has its own set of properties based on its functionality.
+Using **Component Properties**, you can define how a component looks, behaves, or interacts with the application.
 
-This guide provides an overview of component properties using a few example components. For detailed information on any specific component and its properties, refer to the [individual component guide](#).
+Each component has its own set of properties based on its functionality. Here’s an overview of common types of configurable properties:
+
+- **Labels and Data Fields**: For input components, you can configure label, add placeholders, default values, define validation rules, etc.
+- **Data**: Populate components with static values or dynamic data through queries.
+- **Events**: By configuring event properties, you can make the component perform certain tasks when a defined interaction occurs.
+- **Styles**: Define visual attributes like colors, spacing, alignment, and border radius to adjust how the component appears.
+
+These are just some common examples. For detailed information on any specific component and its properties, refer to the [individual component guide](#).
+
+
+<!-- 
+
+This guide provides an overview of component properties using a few example components. 
+
+For example - A input component will allow you to add a label, validation rules, etc. while in a table component you can customize the column behavior and appearance — such as column type, visibility, editability, and data transformation.
 
 ## Text Input
 
@@ -14,7 +28,7 @@ Using the component properties of the **Text Input** component, you can customiz
 - **Label**: Defines the text label displayed alongside the input field.
 - **Placeholder**: Displays example text inside the input field when it is empty, offering users a hint about the type of input required.
 - **Default Value**: The default value that the component will hold when the app is loaded.
-- **Events**: By configuring event properties, you can make the component perform certain tasks when a defined interaction occurs. For example, run a query when the user enters input, or reset a form when the input changes.
+- For example, run a query when the user enters input, or reset a form when the input changes.
 - **Validation**: Validation properties allow you to add a layer of input checking to ensure data quality and enforce rules before submission. For example, making the field mandatory, adding a regex to validate input or define minimum or maximum numbers of characters allowed.
 - **Styles**: Define visual attributes like colors, spacing, alignment, and border radius to adjust how the component appears.
 
@@ -39,4 +53,4 @@ Using the component properties of the **Chart** component, you can control how d
 - **Use Plotly JSON Schema**: Directly define the chart using Plotly's JSON configuration for advanced customization and layout control.
 - **Chart Type**: Choose from a variety of supported chart types (e.g., bar, line, pie) to represent the data.
 - **Chart Data**: Bind the component to the data by providing an array of object with "x" and "y" keys, or fetch data dynamically through a query. 
-- **Events**: Configure actions to be triggered based on user interaction with the chart, such as opening a specified webpage when a user clicks on a data point.
+- **Events**: Configure actions to be triggered based on user interaction with the chart, such as opening a specified webpage when a user clicks on a data point. -->
