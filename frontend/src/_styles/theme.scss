@@ -10781,6 +10781,10 @@ tbody {
   width: 660px;
 }
 
+.org-users-page-animation-fade {
+  height: 100%;
+}
+
 .org-users-page {
   .nav-tabs .nav-link.active {
     background-color: transparent !important;
@@ -10944,6 +10948,25 @@ tbody {
 
   path {
     fill: var(--indigo9);
+  }
+}
+
+.default-group-wrap-small {
+  gap: 4px;
+  width: 121px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--indigo3);
+  border-radius: 6px;
+  padding: 5px 10px;
+  
+  p {
+    font-weight: 500 !important;
+    line-height: 18px !important;
+    color: var(--indigo9);
+    font-family: 'IBM Plex Sans', sans-serif;
   }
 }
 
