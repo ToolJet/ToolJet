@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
-import { getTooljetEdition } from '@helpers/utils.helper';
+import { getCustomEnvVars, getTooljetEdition } from '@helpers/utils.helper';
 
 export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,13 +10,15 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
     }
 
     // Check if default workspace URL is configured
-    const defaultWorkspaceUrl = process.env.TOOLJET_DEFAULT_WORKSPACE_URL;
+    const defaultWorkspaceUrl = getCustomEnvVars('TOOLJET_DEFAULT_WORKSPACE_URL');
+    console.log('defaultWorkspaceUrl', defaultWorkspaceUrl);
     if (defaultWorkspaceUrl) {
       try {
+        console.log('inside try');
         const url = new URL(defaultWorkspaceUrl);
         const pathParts = url.pathname.split('/');
         const workspaceSlug = pathParts[pathParts.length - 1];
-
+        console.log('workspaceSlug', workspaceSlug);
         if (workspaceSlug) {
           await queryRunner.query(`
             UPDATE organizations 

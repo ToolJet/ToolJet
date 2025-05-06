@@ -454,3 +454,8 @@ export function getTooljetEdition(): string {
   const envVars = getEnvVars();
   return envVars['TOOLJET_EDITION']?.toLowerCase() || 'ce';
 }
+
+export function getCustomEnvVars(name: string) {
+  const envVars = getEnvVars();
+  return envVars[name] || '';
+}
