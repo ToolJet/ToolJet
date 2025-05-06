@@ -7,11 +7,23 @@ import { highlightText } from '../DropdownV2/utils';
 
 const CustomOption = (props) => {
   return (
-    <Option {...props}>
+    <Option
+      {...props}
+      innerProps={{
+        ...props.innerProps,
+        onTouchEnd: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          props.selectOption(props.data);
+        },
+      }}
+    >
       <div className="d-flex multiselct-widget-option">
         <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
         <span style={{ marginLeft: '5px' }}>
-          {highlightText(props.label?.toString(), props.selectProps.inputValue)}
+          {props.label?.includes('Select all')
+            ? 'Select all'
+            : highlightText(props.label?.toString(), props.selectProps.inputValue)}
         </span>
       </div>
     </Option>

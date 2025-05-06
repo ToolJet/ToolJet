@@ -1,15 +1,22 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppModule } from '@modules/app/module';
 import { NestFactory } from '@nestjs/core';
-import { LicenseCountsService } from '@ee/licensing/services/count.service';
 import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class EnforceNewBasicPlanLimits1742369617678 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    if (edition !== TOOLJET_EDITIONS.EE) {
+      console.log('Skipping migration for edition other than EE');
+      return;
+    }
     const manager = queryRunner.manager;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const { LicenseCountsService } = await import(`${await getImportPath(true, edition)}/licensing/services/count.service`);
     const licenseInitService = nestApp.get(LicenseInitService);
 
     const { isValid } = await licenseInitService.initForMigration(manager);

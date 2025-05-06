@@ -1,39 +1,11 @@
 import http from 'http';
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server } from 'ws';
-import { setupWSConnection, setPersistence } from 'y-websocket/bin/utils';
-import { RedisPubSub } from '../../helpers/redis';
+import { setupWSConnection } from 'y-websocket/bin/utils';
 import { maybeSetSubPath } from '../../helpers/utils.helper';
 import { isEmpty } from 'lodash';
 import { SessionUtilService } from '@modules/session/util.service';
 
-// TODO: Mock redis for test env
-if (process.env.NODE_ENV !== 'test') {
-  const redis = new RedisPubSub({
-    redisOpts: process.env.REDIS_URL
-      ? process.env.REDIS_URL
-      : {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: process.env.REDIS_PORT || 6379,
-          username: process.env.REDIS_USER || '',
-          password: process.env.REDIS_PASSWORD || '',
-        },
-  });
-
-  setPersistence({
-    provider: redis,
-    bindState: async (docName: any, ydoc: any) => {
-      const persistedYdoc = redis.bindState(docName, ydoc);
-      ydoc.on('update', persistedYdoc.updateHandler);
-      ydoc.awareness.on('update', (update, conn) => persistedYdoc.updateAwarenessHandler(ydoc.awareness, update, conn));
-    },
-    writeState: (docName: any, ydoc: any) => {
-      return new Promise((resolve) => {
-        resolve(redis.closeDoc(docName));
-      });
-    },
-  });
-}
 
 @WebSocketGateway({ path: maybeSetSubPath('/yjs') })
 export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {

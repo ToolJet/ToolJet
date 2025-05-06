@@ -19,6 +19,7 @@ import { AbilityUtilService } from '@modules/ability/util.service';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SetupOrganizationsModule } from '@modules/setup-organization/module';
 import { SSOConfigsRepository } from '@modules/login-configs/repository';
+import { ClearSSOResponseScheduler } from './schedulers/clear-sso-response.scheduler';
 
 @Module({})
 export class AuthModule {
@@ -72,6 +73,7 @@ export class AuthModule {
         AppEnvironmentUtilService,
         GroupPermissionsRepository,
         SSOConfigsRepository,
+        ClearSSOResponseScheduler,
       ],
       exports: [AuthUtilService],
     };

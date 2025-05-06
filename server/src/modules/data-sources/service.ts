@@ -38,10 +38,16 @@ export class DataSourcesService implements IDataSourcesService {
       resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
       organizationId: user.organizationId,
     });
+    const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
-    const staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
+    let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
 
+
+    if (!shouldIncludeWorkflows) {
+      // remove workflowsdefault data source from static data sources
+      staticDataSources = staticDataSources.filter((dataSource) => dataSource.kind !== 'workflows');
+    }
     const decamelizedDatasources = decamelizeKeys([...staticDataSources, ...dataSources]);
     return { data_sources: decamelizedDatasources };
   }
@@ -156,6 +162,10 @@ export class DataSourcesService implements IDataSourcesService {
       metadata: updateDataSourceDto,
     });
     return;
+  }
+
+  async decryptOptions(options: Record<string, any>) {
+    return await this.dataSourcesUtilService.decrypt(options);
   }
 
   async delete(dataSourceId: string, user: User) {

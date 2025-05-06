@@ -52,7 +52,7 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
         log: false;
       }
       expect(response.status).to.equal(201);
-      Cypress.env(`${name}-id`, response.body.id);
+      Cypress.env(`${kind}`, response.body.id);
 
       Cypress.log({
         name: "Create Data Source",
@@ -62,6 +62,30 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
     });
   });
 });
+
+Cypress.Commands.add("apiFetchDataSourcesId", () => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/data-sources/${Cypress.env("workspaceId")}/environments/${Cypress.env("environmentId")}/versions/${Cypress.env("editingVersionId")}`,
+      headers,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      const dataSources = response.body?.data_sources || [];
+
+      dataSources.forEach((item) => {
+        Cypress.env(`${item.kind}`, `${item.id}`);
+      });
+
+      Cypress.log({
+        name: "DS Fetch",
+        displayName: "Data Sources Fetched",
+        message: dataSources.map(ds => `\nKind: '${ds.kind}', Name: '${ds.id}'`).join(','),
+      });
+    });
+  });
+});
+
 
 Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
   cy.window({ log: false }).then((win) => {
@@ -140,14 +164,11 @@ Cypress.Commands.add(
     cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
     cy.wait("@getAppData").then((interception) => {
-      // Assuming the response body is a JSON object
       const responseData = interception.response.body;
 
-      // Set the response data as an environment variable
-      Cypress.env("apiResponseData", responseData);
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+      Cypress.env("environmentId", responseData.editorEnvironment.id);
 
-      // You can log it to check if the env var is set correctly
-      cy.log(Cypress.env("apiResponseData"));
     });
     cy.get(componentSelector, { timeout: 10000 });
   }
@@ -171,6 +192,7 @@ Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
       { log: false }
     ).then((response) => {
       expect(response.status).to.equal(201);
+      return response;
     });
   });
 });
@@ -267,6 +289,7 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
 Cypress.Commands.add(
   "apiAddQueryToApp",
   (queryName, options, dsName, dsKind) => {
+    cy.log(`${Cypress.env("server_host")}/api/data-queries/data-sources/${Cypress.env(dsKind)}/versions/${Cypress.env("editingVersionId")}`)
     cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
       const authToken = `tj_auth_token=${cookie.value}`;
       const workspaceId = Cypress.env("workspaceId");
@@ -286,7 +309,7 @@ Cypress.Commands.add(
 
         cy.request({
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/data-queries`,
+          url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${Cypress.env(dsKind)}/versions/${Cypress.env("editingVersionId")}`,
           headers: {
             "Content-Type": "application/json",
             Cookie: authToken,
