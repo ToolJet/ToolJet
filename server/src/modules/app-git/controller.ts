@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Post, Put, Param, Body, Delete, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Param, Body } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
@@ -21,8 +21,8 @@ export class AppGitController {
   @UseGuards(JwtAuthGuard)
   @Get('gitpull')
   async getAppsMetaFile(@User() user) {
-    // const result = await this.appGitService.gitPullAppInfo(user);
-    // return decamelizeKeys(result);
+    const result = await this.appGitService.gitPullAppInfo(user);
+    return decamelizeKeys(result);
   }
 
   @RequireFeature(LICENSE_FIELD.GIT_SYNC)
@@ -30,7 +30,7 @@ export class AppGitController {
   @UseGuards(JwtAuthGuard)
   @Post('gitpush/:appGitId/:versionId')
   async gitSyncApp(@User() user, @Param('appGitId') appGitId: string, @Body() appGitPushBody: AppGitPushDto) {
-    //await this.appGitService.syncApp(appGitPushBody, user, appGitId);
+    await this.appGitService.syncApp(appGitPushBody, user, appGitId);
   }
 
   @RequireFeature(LICENSE_FIELD.GIT_SYNC)
@@ -38,8 +38,8 @@ export class AppGitController {
   @UseGuards(JwtAuthGuard)
   @Get('gitpull/app/:appId')
   async getAppMetaFile(@User() user, @Param('appId') appId: string) {
-    // const result = await this.appGitService.gitPullAppInfo(user, appId);
-    // return decamelizeKeys(result);
+    const result = await this.appGitService.gitPullAppInfo(user, appId);
+    return decamelizeKeys(result);
   }
 
   @RequireFeature(LICENSE_FIELD.GIT_SYNC)
@@ -51,8 +51,8 @@ export class AppGitController {
     @Param('workspaceId') organizationId: string,
     @Param('versionId') versionId: string
   ) {
-    // const appGit = await this.appGitService.checkSyncApp(user, versionId, organizationId);
-    // return decamelizeKeys({ appGit });
+    const appGit = await this.appGitService.checkSyncApp(user, versionId, organizationId);
+    return decamelizeKeys({ appGit });
   }
 
   @RequireFeature(LICENSE_FIELD.GIT_SYNC)
@@ -60,8 +60,8 @@ export class AppGitController {
   @UseGuards(JwtAuthGuard)
   @Post('gitpull/app')
   async createGitApp(@User() user, @Body() appData: AppGitPullDto) {
-    // const app = await this.appGitService.createGitApp(user, appData);
-    // return decamelizeKeys({ app });
+    const app = await this.appGitService.createGitApp(user, appData);
+    return decamelizeKeys({ app });
   }
 
   @RequireFeature(LICENSE_FIELD.GIT_SYNC)
@@ -69,7 +69,7 @@ export class AppGitController {
   @UseGuards(JwtAuthGuard)
   @Post('gitpull/app/:appId')
   async pullGitAppChanges(@User() user, @Param('appId') appId, @Body() appData: AppGitPullUpdateDto) {
-    // const app = await this.appGitService.pullGitAppChanges(user, appData, appId);
-    // return decamelizeKeys({ app });
+    const app = await this.appGitService.pullGitAppChanges(user, appData, appId);
+    return decamelizeKeys({ app });
   }
 }

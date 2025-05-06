@@ -9,5 +9,6 @@ import { GitSyncService } from './service';
   imports: [TypeOrmModule.forFeature([OrganizationGitSync, Organization])],
   controllers: [GitSyncController],
   providers: [GitSyncService],
+  //register all imports dynamic PLoX
 })
 export class GitSyncModule {}

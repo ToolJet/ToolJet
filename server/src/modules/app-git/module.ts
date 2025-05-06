@@ -2,8 +2,6 @@ import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
 import { AppGitSync } from '@entities/app_git_sync.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppsModule } from '@modules/apps/module';
-import { GitSyncUtilService } from '@modules/git_sync/util.service';
 
 export class AppGitModule {
   static async register(): Promise<DynamicModule> {
@@ -13,6 +11,8 @@ export class AppGitModule {
     const { GitSyncUtilService } = await import(`${await getImportPath()}/git-sync/util.service`);
     const { AppsRepository } = await import(`${await getImportPath()}/apps/repository`);
     const { VersionRepository } = await import(`${await getImportPath()}/versions/repository`);
+
+    //Register the module
 
     return {
       module: AppGitModule,
