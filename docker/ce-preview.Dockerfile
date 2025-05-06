@@ -110,7 +110,6 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /et
 RUN apt update && apt -y install postgresql-13 postgresql-client-13
 
 USER postgres
-RUN /usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main
 
 # USER postgres
 # RUN service postgresql start && \
