@@ -7,16 +7,30 @@ Each component holds some data, which can be used to build dynamic and interacti
 
 This data is stored in the form of exposed variables. Each component has a different set of exposed variables based on its functionality — for example, an input field exposes a value, a table exposes a selectedRow, and so on. For detailed information on any specific component and its exposed variables, refer to the [individual component guide](#).
 
-This exposed variables can be used inside queries or can be refered to other components.
+The exposed variables from components can be used:
+- Inside queries — to send user inputs or values as parameters.
+- Inside other components — to dynamically display values, or interact with the component.
 
 ## Accessing Exposed Variable
 
 An exposed variable of a component can be accessed using the following syntax: <br/>
 `{{components.<component-name>.<variable-name>}}`
 
-Example: `{{components.numberinput1.value}}` - This will fetch the value user input in the number input component.
+Example: `{{components.numberinput1.value}}` - This will fetch the value entered by the user in the **numberinput1** component.
 
+## Inspector Panel
 
+In the App Builder, you can view all available exposed variables and their current values using the Inspector located in the left sidebar. For more details, refer to the [Inspector](#) guide.
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/app-builder/access-comp-data/inspector.png" alt="App Builder: Properties Panel"/>
+
+- Open the Component dropdown inside the Inspector.
+- Select the component you want to inspect.
+- A secondary dropdown will appear showing all exposed variables along with their current values.
+
+<img className="screenshot-full img-s" style={{ marginBottom:'15px' }} src="/img/app-builder/access-comp-data/comp-inspect.png" alt="App Builder: Properties Panel"/>
+
+In addition to variables, you may also see certain functions — these are known as Component-Specific Actions (CSA). These actions can be used to programmatically control components. Refer to the [Controlling Visibility and Interactivity of Components](#) guide to learn more about CSAs and how to use them.
 
 
 
@@ -76,14 +90,5 @@ A exposed variable of component can be accessed using the following syntax: <br/
 `{{components.<component-name>.<variable-name>}}`
 
 Example: `{{components.numberinput1.value}}` - This will fetch the value user input in the number input component.
-
-## Inspector Element
-
-To learn more about a component, its exposed variables, and available component-specific actions, use the Inspector located on the left sidebar of the app builder. For more details, refer to the [Inspector](#) guide.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-m" src="/img/app-builder/access-comp-data/inspector.png" alt="App Builder: Properties Panel"/>
-
-Within the Component dropdown of the Inspector, select the desired component to view a secondary dropdown listing all available functions and variables. Functions are also known as Component-Specific Actions (CSA) and can be used to interact with or control the component.
-
-<img className="screenshot-full img-m" src="/img/app-builder/access-comp-data/comp-inspect.png" alt="App Builder: Properties Panel"/> -->
+ -->
 

@@ -11,6 +11,8 @@ Each component has its own set of properties based on its functionality. Here’
 - **Data**: Populate components with static values or dynamic data through queries.
 - **Events**: By configuring event properties, you can make the component perform certain tasks when a defined interaction occurs.
 - **Styles**: Define visual attributes like colors, spacing, alignment, and border radius to adjust how the component appears.
+- **State**: Control component states such as loading, visibility, or disabled. These can be toggled manually or set programmatically using logical expressions.
+- **Device**: Configure whether the component should be visible on specific devices, such as mobile or desktop.
 
 These are just some common examples. For detailed information on any specific component and its properties, refer to the [individual component guide](#).
 

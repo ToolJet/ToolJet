@@ -22,7 +22,7 @@ The page handle is a unique identifier used to generate a shareable URL for the 
 
 ### Home Page
 
-The home page is the default landing page when the app launches. Only one page in an application can be set as the home page. It cannot be deleted, disabled, or hidden from the app menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name.
+The home page is the default landing page when the app launches. Only one page in an application can be set as the home page. It cannot be deleted, disabled, or hidden from the page menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name.
 
 ### Page Permission
 
@@ -60,13 +60,13 @@ The **Duplicate Page** allows you to create an exact copy of the selected page. 
 
 You can delete a page from an application using the Delete Page option. Page marked as home cannot be deleted.
 
-## App Menu
+## Page Menu
 
-The **App Menu** is the navigation panel that lets users switch between pages in your application. You can customize how it looks and works, or even hide certain pages from it.
+The **Page Menu** is the navigation panel that lets users switch between pages in your application. You can customize how it looks and works, or even hide certain pages from it.
 
-### Customize App Menu
+### Customize Page Menu
 
-To customize the app menu, click on the Settings button (⚙️) in the header of the Pages panel to open the page menu configuration.
+To customize the page menu, click on the Settings button (⚙️) in the header of the Pages panel to open the page menu configuration.
 
 - **Collapsable**: Allows users to collapse the menu in the released app.
 - **Style**: Choose how pages appear—Text only, Text + Icon, or Icon only.
@@ -80,7 +80,7 @@ The Style tab also lets you change colors for text, icons, background, and more.
 
 ### Hide Page on App Menu
 
-A page can be hidden from the app menu in a released application. Even when hidden, a page can still be accessed using the Switch Page action or directly through the page URL. A page marked as Home cannot be hidden.
+A page can be hidden from the page menu in a released application. Even when hidden, a page can still be accessed using the Switch Page action or directly through the page URL. A page marked as Home cannot be hidden.
 
 ## Event Handlers
 
@@ -101,7 +101,7 @@ Exposed variables are values from a page that can be accessed throughout the app
 
 You can manage pages and configure all the settings mentioned above using the Pages Panel on the left sidebar of the App Builder.
 
-- Settings (⚙️) - Click the gear icon to open the app menu settings.
+- Settings (⚙️) - Click the gear icon to open the page menu settings.
 - Pin - Use this to pin the panel. When unpinned, the panel will close automatically when clicking outside it.
 - Add - Use this to add a new page or create a new page group.
 
