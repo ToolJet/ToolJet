@@ -15,22 +15,24 @@ Each page in ToolJet comes with properties that define its identity and behavior
 
 ### Page Name
 
-A display name for the page, shown in the app's navigation menu. It is used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to recognize in the menu.
-
+A display name for the page, shown in the app's navigation menu. It is also used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to identify in the menu. The page name and icon can be updated using the kebab menu (three dots) next to the page name.
 ### Page Handle
 
 The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL. By default, it's auto-generated from the page name — converted to lowercase and with spaces replaced by hyphens. You can change it manually by clicking the edit icon next to it.
 
 ### Home Page
 
-The home page is the default landing page when the app launches. Only one page in an application can be set as the home page. It cannot be deleted, disabled, or hidden from the app menu.
+The home page is the default landing page when the app launches. Only one page in an application can be set as the home page. It cannot be deleted, disabled, or hidden from the app menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name.
 
 ### Page Permission
 
-Page permissions control who can access the page. You can choose to:
+Page permissions control who can access a particular page. You can choose to:
+
 - Allow access to all users with app access
 - Restrict access to selected users
 - Restrict access to selected [user groups](#)
+
+To configure page permissions, click the kebab menu (three dots) next to the page name, select Page permission, and choose an option from the modal that appears.
 
 ## Manage Pages
 
@@ -94,3 +96,17 @@ Exposed variables are values from a page that can be accessed throughout the app
 | name | Indicates the name of the page. | `{{page.name}}` |
 | id | Each page in the ToolJet app receives a unique identifier upon creation. | `{{page.id}}` |
 | variables | Variables is an object that contains all the variables created for a specific page using the [Set Page Variable](/docs/actions/set-page-variable) action.  | `{{page.variables.<pageVariableName>}}`, where `<pageVariableName>` refers to the variable name. |
+
+## Page Settings
+
+You can manage pages and configure all the settings mentioned above using the Pages Panel on the left sidebar of the App Builder.
+
+- Settings (⚙️) - Click the gear icon to open the app menu settings.
+- Pin - Use this to pin the panel. When unpinned, the panel will close automatically when clicking outside it.
+- Add - Use this to add a new page or create a new page group.
+
+***Add Screenshot***
+
+To configure individual page settings, click the kebab menu (three dots) next to the page name. Here you can update properties like the page handle, rename the page, set it as the home page, and more.
+
+***Add Screenshot***
