@@ -32,6 +32,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const EventManager = ({
   sourceId,
@@ -102,7 +103,7 @@ export const EventManager = ({
   }, [JSON.stringify(currentEvents)]);
 
   let actionOptions = ActionTypes.map((action) => {
-    return { name: action.name, value: action.id };
+    return { label: action.name, value: action.id, icon: action.icon };
   });
 
   let checkIfClicksAreInsideOf = document.querySelector('.cm-completionListIncompleteBottom');
@@ -394,6 +395,13 @@ export const EventManager = ({
     return defaultValue;
   };
 
+  const renderActionOption = (option) => (
+    <div className="d-flex align-items-center justify-content-start tw-gap-[8px]">
+      <SolidIcon name={option.icon} width="16px" height="16px" />
+      <span>{option.label}</span>
+    </div>
+  );
+
   function eventPopover(event, index) {
     return (
       <Popover
@@ -440,6 +448,7 @@ export const EventManager = ({
                 styles={styles}
                 useMenuPortal={false}
                 useCustomStyles={true}
+                customOption={renderActionOption}
               />
             </div>
           </div>
