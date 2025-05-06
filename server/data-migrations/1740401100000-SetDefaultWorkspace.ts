@@ -9,6 +9,27 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
       return;
     }
 
+    // Check if default workspace URL is configured
+    const defaultWorkspaceUrl = process.env.TOOLJET_DEFAULT_WORKSPACE_URL;
+    if (defaultWorkspaceUrl) {
+      try {
+        const url = new URL(defaultWorkspaceUrl);
+        const pathParts = url.pathname.split('/');
+        const workspaceSlug = pathParts[pathParts.length - 1];
+
+        if (workspaceSlug) {
+          await queryRunner.query(`
+            UPDATE organizations 
+            SET is_default = true 
+            WHERE slug = $1
+          `, [workspaceSlug]);
+          return;
+        }
+      } catch (err) {
+        console.log('Invalid TOOLJET_DEFAULT_WORKSPACE_URL format');
+      }
+    }
+
     // Set the first created organization as default
     await queryRunner.query(`
       UPDATE organizations 
