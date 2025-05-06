@@ -44,11 +44,6 @@ export class CreateAuditLogs1637909008629 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: 'resource_data',
-            type: 'json',
-            isNullable: true,
-          },
-          {
             name: 'ip_address',
             type: 'varchar',
             isNullable: true,
