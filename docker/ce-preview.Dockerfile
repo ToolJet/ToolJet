@@ -53,17 +53,20 @@ WORKDIR /
 RUN mkdir -p /app /var/log/supervisor
 
 # Inline supervisord config
+# Supervisord config
 RUN echo "\
 [supervisord]\n\
 nodaemon=true\n\
 \n\
-#[program:postgresql]\n\
-#command=/usr/lib/postgresql/13/bin/postgres -D /var/lib/postgresql/13/main\n\
-#user=postgres\n\
-#autostart=true\n\
-#autorestart=true\n\
-#stdout_logfile=/var/log/supervisor/postgres.log\n\
-#stderr_logfile=/var/log/supervisor/postgres_err.log\n\
+[program:postgresql]\n\
+command=/usr/lib/postgresql/13/bin/postgres -D /var/lib/postgresql/13/main\n\
+user=postgres\n\
+autostart=true\n\
+autorestart=true\n\
+stdout_logfile=/dev/stdout\n\
+stdout_logfile_maxbytes=0\n\
+stderr_logfile=/dev/stdout\n\
+stderr_logfile_maxbytes=0\n\
 \n\
 [program:postgrest]\n\
 command=/bin/postgrest\n\
@@ -107,9 +110,12 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /et
 RUN apt update && apt -y install postgresql-13 postgresql-client-13
 
 USER postgres
-RUN service postgresql start && \
-    psql -c "create role tooljet with login superuser password 'postgres';"
-USER root
+RUN /usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main
+
+# USER postgres
+# RUN service postgresql start && \
+#     psql -c "create role tooljet with login superuser password 'postgres';"
+# USER root
 
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
