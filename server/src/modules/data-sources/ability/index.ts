@@ -37,6 +37,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     // Oauth end points available to all
     can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
     can(FEATURE_KEY.AUTHORIZE, DataSource);
+    can(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE, DataSource);
+    can(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN, DataSource);
 
     if (isBuilder) {
       // Only builder can do scope change, Get call is there on app builder

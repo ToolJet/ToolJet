@@ -1,6 +1,6 @@
 import { DataSource } from '@entities/data_source.entity';
 import { Injectable } from '@nestjs/common';
-import { Brackets, DataSource as typeOrmDS, EntityManager, Repository } from 'typeorm';
+import { Brackets, DataSource as typeOrmDS, EntityManager, Repository, In } from 'typeorm';
 import { UserPermissions } from '@modules/ability/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -167,5 +167,28 @@ export class DataSourcesRepository extends Repository<DataSource> {
         where: { appVersionId: versionId, type: DataSourceTypes.STATIC },
       });
     }, manager || this.manager);
+  }
+
+  getDatasourceByKindAndOrg(kind: string, organisationId: string | string[]) {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.find(DataSource, {
+        where: {
+          kind: kind,
+          organizationId: typeof organisationId === 'string' ? organisationId : In(organisationId),
+        },
+        relations: ['dataQueries'],
+      });
+    });
+  }
+
+  getQueriesByDatasourceId(datasourceId) {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.find(DataSource, {
+        where: {
+          id: datasourceId,
+        },
+        relations: ['dataQueries'],
+      });
+    });
   }
 }

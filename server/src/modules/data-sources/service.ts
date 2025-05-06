@@ -22,6 +22,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
 import { FEATURE_KEY } from './constants';
+import { OrganizationsService } from '@modules/organizations/service';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -31,7 +32,8 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly abilityService: AbilityService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector
+    protected readonly pluginsServiceSelector: PluginsServiceSelector,
+    protected readonly organizationsService: OrganizationsService
   ) {}
 
   async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
@@ -206,7 +208,11 @@ export class DataSourcesService implements IDataSourcesService {
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
     const { environment_id, dataSourceId } = testDataSourceDto;
-    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId,user.defaultOrganizationId, environment_id);
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      user.defaultOrganizationId,
+      environment_id
+    );
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
@@ -231,5 +237,40 @@ export class DataSourcesService implements IDataSourcesService {
 
     await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;
+  }
+
+  async findQueriesLinkedToDatasource(user: User, datasourceId: string) {
+    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId);
+    if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
+
+    const queries = [];
+    dataSourceDetails.forEach((datasourceDetail) => {
+      const { dataQueries = [] } = datasourceDetail;
+      if (dataQueries.length) queries.push(...dataQueries);
+    });
+
+    return { datasources: dataSourceDetails.length, dependent_queries: queries.length };
+  }
+
+  async findDatasourcesAndQueriesOfMarketplacePlugin(user: User, dataSourceKind: string) {
+    const allWorkspace = await this.organizationsService.fetchOrganizations(user);
+    if (allWorkspace.totalCount == 0)
+      return { workspaces: allWorkspace.totalCount, datasources: 0, dependent_queries: 0 };
+    const workspaceIds = allWorkspace?.organizations?.map((workspace) => workspace.id);
+
+    const dataSourcesByWorkspace = await this.dataSourcesRepository.getDatasourceByKindAndOrg(
+      dataSourceKind,
+      workspaceIds
+    );
+
+    const queries = [];
+    dataSourcesByWorkspace?.forEach((datasource) => {
+      if (datasource.dataQueries.length) queries.push(...datasource.dataQueries);
+    });
+    return {
+      workspaces: allWorkspace.totalCount,
+      datasources: dataSourcesByWorkspace.length,
+      dependent_queries: queries.length,
+    };
   }
 }
