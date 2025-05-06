@@ -65,13 +65,14 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 rel="noreferrer"
                 disabled={isDisabled}
                 onClick={toggleEditing}
+                data-cy={`button-${(isEditing ? 'Cancel' : 'Edit').toLowerCase().replace(/\s+/g, '-')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
               </ButtonSolid>
             </div>
 
             <div className="col-auto mb-2">
-              <small className="text-green">
+              <small className="text-green" data-cy="encrypted-text">
                 <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                 Encrypted
               </small>

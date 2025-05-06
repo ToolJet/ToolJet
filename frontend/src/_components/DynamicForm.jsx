@@ -665,13 +665,13 @@ const DynamicForm = ({
                   className={cx('form-label')}
                   data-cy={`${String(flipComponentDropdown.label)
                     .toLocaleLowerCase()
-                    .replace(/\s+/g, '-')}-dropdown-label`}
+                    .replace(/[^a-z0-9]+/g, '-')}-dropdown-label`}
                 >
                   {flipComponentDropdown.label}
                 </label>
               )}
 
-              <div data-cy={`${String(flipComponentDropdown.label).toLocaleLowerCase().replace(/\s+/g, '-')}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+              <div data-cy={`${String(flipComponentDropdown.label).toLocaleLowerCase().replace(/[^a-z0-9]+/g, '-')}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}

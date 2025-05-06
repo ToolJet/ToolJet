@@ -475,6 +475,7 @@ const DynamicFormV2 = ({
                 'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,
               })}
+              data-cy={`${key.replace(/_/g, '-')}-section`}
               key={key}
             >
               {!isSpecificComponent && (
@@ -506,6 +507,7 @@ const DynamicFormV2 = ({
                   {...getElementProps(uiProperties[key])}
                   {...computedProps[propertyKey]}
                   data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                  dataCy={uiProperties[key].key.replace(/_/g, '-')}
                   //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}
                 />
@@ -541,13 +543,13 @@ const DynamicFormV2 = ({
                   className={cx('form-label')}
                   data-cy={`${String(flipComponentDropdown.label)
                     .toLocaleLowerCase()
-                    .replace(/\s+/g, '-')}-dropdown-label`}
+                    .replace(/[^a-z0-9]+/g, '-')}-dropdown-label`}
                 >
                   {flipComponentDropdown.label}
                 </label>
               )}
 
-              <div data-cy={'query-select-dropdown'} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+              <div data-cy={`${String(flipComponentDropdown.label).toLocaleLowerCase().replace(/[^a-z0-9]+/g, '-')}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false} />
               </div>
               {flipComponentDropdown.helpText && (

@@ -1127,7 +1127,7 @@ class DataSourceManagerComponent extends React.Component {
                       <div className="row w-100">
                         <div className="alert alert-danger" role="alert">
                           {validationError.map((error, index) => (
-                            <div key={index} className="text-muted" data-cy="connection-alert-text">
+                            <div key={index} className="text-muted" data-cy={`${String(error).toLocaleLowerCase().replace(/\s+/g, '-')}-field-alert-text`}>
                               {error}
                             </div>
                           ))}

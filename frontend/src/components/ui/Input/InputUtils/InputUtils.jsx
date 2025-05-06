@@ -14,7 +14,7 @@ export const ValidationMessage = ({ response, validationMessage, className }) =>
       type="helper"
       size="default"
       className={`tw-font-normal ${response === true ? 'tw-text-text-success' : '!tw-text-text-warning'}`}
-      data-cy="validation-label"
+      data-cy={`${String(validationMessage).toLocaleLowerCase().replace(/\s+/g, '-')}-validation-label`}
     >
       {validationMessage}
     </Label>
@@ -53,7 +53,7 @@ export const InputLabel = ({ disabled, label, required }) => (
     type="label"
     size="default"
     className={`tw-font-medium tw-mb-[2px] ${disabled ? 'tw-text-text-disabled' : ''}`}
-    data-cy="input-field-label"
+    data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-field-label`}
   >
     {label}
     {required && <RequiredIndicator disabled={disabled} />}
