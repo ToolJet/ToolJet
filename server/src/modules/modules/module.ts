@@ -11,6 +11,7 @@ import { VersionRepository } from '@modules/versions/repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AiModule } from '@modules/ai/module';
 import { AppsRepository } from '@modules/apps/repository';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
 @Module({})
 export class ModulesModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -33,6 +34,7 @@ export class ModulesModule {
         await AppEnvironmentsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
+        await AppPermissionsModule.register(configs),
       ],
       controllers: [ModulesController],
       providers: [
