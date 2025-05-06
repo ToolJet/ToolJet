@@ -78,11 +78,14 @@ describe("Private and Public apps", {
 
     // Test private access
     logout();
+    cy.visit("/");
+    cy.wait(1000);
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
+
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
     cy.wait(2000);
     cy.appUILogin();
@@ -116,6 +119,9 @@ describe("Private and Public apps", {
 
     inviteUserToWorkspace(data.firstName, data.email);
     logout();
+    cy.visit("/");
+    cy.wait(2000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     // Test private access
     cy.visitSlug({
@@ -141,6 +147,8 @@ describe("Private and Public apps", {
     cy.wait(1000);
     cy.apiMakeAppPublic();
     logout();
+    cy.wait(1000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
@@ -176,6 +184,9 @@ describe("Private and Public apps", {
     cy.defaultWorkspaceLogin();
     cy.apiMakeAppPublic();
     logout();
+
+    cy.wait(1000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
@@ -229,6 +240,8 @@ describe("Private and Public apps", {
 
     cy.get('[data-cy="viewer-page-logo"]').click();
     logout();
+    cy.wait(1000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     // Setup new workspace and app
     cy.defaultWorkspaceLogin();

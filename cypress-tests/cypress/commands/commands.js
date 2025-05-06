@@ -227,9 +227,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -421,6 +421,7 @@ Cypress.Commands.add(
     }
 
     cy.visit(actualUrl);
+    cy.wait(1000);
 
     cy.url().then((url) => {
       if (errorUrls.includes(url)) {
@@ -551,7 +552,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
