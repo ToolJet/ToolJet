@@ -1,7 +1,7 @@
 import { IAiUtilService } from './interfaces/IUtilService';
 
 export class AiUtilService implements IAiUtilService {
-  constructor() {}
+  constructor() { }
   public getAgentAssetPath(filename) {
     throw new Error('Method not implemented.');
   }
@@ -18,19 +18,19 @@ export class AiUtilService implements IAiUtilService {
     throw new Error('Method not implemented.');
   }
 
-  async createComponentfromSteps(steps, componentDatapath?: string): Promise<any> {
+  async createComponentFromSteps(steps, componentDatapath?: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
-  async getComponentsfromsteps(steps) {
+  async getComponentsFromsteps(steps): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
-  async createQueryfromSteps(steps) {
+  async createQueryFromSteps(steps): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
-  async getQueriesfromsteps(steps) {
+  async getQueriesFromsteps(steps): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
