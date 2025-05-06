@@ -358,12 +358,12 @@ const useAppData = (
             global_settings.theme = baseTheme;
           }
           setGlobalSettings(global_settings);
-
-          setPages(pages, moduleId);
-          setPageSettings(
-            computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
-          );
         }
+
+        setPages(pages, moduleId);
+        setPageSettings(
+          computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
+        );
 
         // set starting page as homepage initially
         let startingPage = appData.pages.find((page) => page.id === homePageId);
@@ -513,10 +513,15 @@ const useAppData = (
         };
       })
       .catch((error) => {
+        console.log('error--- ', error);
+
         if (isPublicAccess) {
           if (mode !== 'edit') {
             handleError('view', error);
           }
+        } else if (moduleMode) {
+          setEditorLoading(false, moduleId);
+          toast.error('Error fetching module data');
         }
       });
   }, [setApp, setEditorLoading, currentSession]);

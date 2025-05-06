@@ -202,7 +202,7 @@ export const Viewer = ({
                       <div
                         className="canvas-container align-items-center"
                         style={{
-                          backgroundColor: canvasBgColor,
+                          backgroundColor: moduleMode ? 'inherit' : canvasBgColor,
                         }}
                       >
                         <div className={`areas d-flex flex-rows app-${appId}`}>
