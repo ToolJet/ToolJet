@@ -135,11 +135,11 @@ const sidebars = {
           'type': 'category',
           'label': 'Building the UI',
           'items': [
-            'app-builder/canvas',
-            'app-builder/component-library',
-            'app-builder/component-properties',
-            'app-builder/multi-page',
-            'app-builder/component-data'
+            'app-builder/building-ui/canvas',
+            'app-builder/building-ui/component-library',
+            'app-builder/building-ui/component-properties',
+            'app-builder/building-ui/multi-page',
+            'app-builder/building-ui/component-data'
           ],
         },
         {
