@@ -192,18 +192,6 @@ export const BaseLeftSidebar = ({
           tip="Debugger"
           ref={setSideBarBtnRefs('debugger')}
         />
-        <SidebarItem
-          icon="settings"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('settings')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          tip="Settings"
-          ref={setSideBarBtnRefs('settings')}
-          isModuleEditor={isModuleEditor}
-        />
       </>
     );
   };
@@ -233,6 +221,18 @@ export const BaseLeftSidebar = ({
           ref={setSideBarBtnRefs('page')}
         />
         {renderCommonItems()}
+        <SidebarItem
+          icon="settings"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          // eslint-disable-next-line no-unused-vars
+          onClick={(e) => handleSelectedSidebarItem('settings')}
+          className={`left-sidebar-item  left-sidebar-layout`}
+          badge={true}
+          tip="Settings"
+          ref={setSideBarBtnRefs('settings')}
+          isModuleEditor={isModuleEditor}
+        />
       </>
     );
   };

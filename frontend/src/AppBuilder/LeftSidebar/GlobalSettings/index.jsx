@@ -11,25 +11,8 @@ import { ThemeSelect } from '@/modules/Appbuilder/components';
 import MaintenanceMode from './MaintenanceMode';
 import HideHeaderToggle from './HideHeaderToggle';
 
-const GlobalSettings = ({ darkMode, isModuleEditor }) => {
+const GlobalSettings = ({ darkMode }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
-
-  if (isModuleEditor) {
-    return (
-      <div>
-        <div bsPrefix="global-settings-popover" className="global-settings-panel">
-          <HeaderSection>
-            <HeaderSection.PanelHeader title="Global settings" />
-          </HeaderSection>
-          <div style={{ padding: '12px 16px' }} className={cx({ disabled: shouldFreeze })}>
-            <div className="tj-text-xsm color-slate12 ">
-              <AppExport darkMode={darkMode} />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
