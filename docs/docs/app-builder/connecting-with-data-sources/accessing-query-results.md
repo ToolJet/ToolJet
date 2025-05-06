@@ -18,7 +18,7 @@ To better understand what your query is returning, use the Inspector panel. Clic
 
 
 ### Quick Actions
-In the inspector, when you hover over a property like data, you’ll see two icons:
+In the inspector, when you hover over a property like data, you’ll see two icons, you can see in the above image there are icons besides the data dropdown. These icons allow you to quickly copy either the path or value of that property. Here’s what they do:
 1. Copy Path – Copies the full reference (e.g., `{{queries.getEmployees.data}}`) so you can paste it directly into component fields.
 2. Copy Value – Copies the actual data returned, useful when inspecting values or mocking responses.
 
