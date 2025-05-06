@@ -3,9 +3,9 @@ id: "creating-managing-queries"
 title: "Creating and Managing Queries"
 ---
 
-You can connect your app to the configured **[data sources](/docs/data-sources/overview)**, such as SQL, NoSQL, and vector databases, as well as APIs, spreadsheets, and cloud services by creating queries. After creating queries, you can use it to fetch, update, or manipulate your data.
+A query is a low-code way to interact with your **[data sources](/docs/data-sources/overview)**. You can connect your app to configured data sources—including SQL, NoSQL, vector databases, APIs, spreadsheets, and cloud services—by creating queries. 
 
-A query is a low-code way to interacts with your data source, whether it’s retrieving records, filtering data, apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**. It act as the link between your app’s UI and your data.
+ Whether it’s retrieving records from your MongoDB collection or updating data in a SQL database, you can use queries to interact with them. You can also apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**. It act as the link between your app’s UI and your data.
 
 Queries are created in the Query Panel, located at the bottom of the App Builder, where you can either use a visual form-based builder or write code/SQL manually.
 
@@ -21,15 +21,14 @@ Queries are created in the Query Panel, located at the bottom of the App Builder
 
 ## Configuring the Query
 
-Depending on the data source you’ve selected, you can configure your query using either GUI mode or SQL mode. For example, if you’re using a Postgres data source, you’ll have the option to choose between both available modes.
+The query configuration interface varies depending on the type of data source you've chosen. If you are using any SQL data source, you can configure your query using either GUI mode or SQL mode. Rest of the data sources can be configured using form-based GUI.
 
 ### GUI mode
 
-- For Postgres data source, if you choose GUI mode, you will have to enter the table name and choose the operations you want to perform. 
-
+- For the Postgres data source, when using GUI mode (as shown in the image below), you’ll need select the operations you want to perform and then fill out the required fields.
     <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/gui-mode.png" alt="App Builder: configure PostgreSQL queries"/>
 
-- For the AWS S3 data source, you’ll need to provide details such as the bucket name, key, and other relevant parameters, based on the operation you’ve selected.
+- In this example using the AWS S3 data source, we’re performing the **Upload object** operation to upload a file to an S3 bucket. You’ll need to provide details such as the bucket name, key, and other relevant parameters based on the selected operation.
 
     <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/aws-gui.png" alt="App Builder: configure AWS S3 queries"/>
 
@@ -39,6 +38,16 @@ Depending on the data source you’ve selected, you can configure your query usi
 For data sources such as MYSQL, PostgreSQL or SQL Server, you can choose SQL mode where you can write the SQL query to perform your desired operation. 
 
 <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/sql-mode.png" alt="App Builder: configure PostgreSQL queries"/>
+
+## Preview and Run
+
+Before connecting a query to your app’s UI, use the Preview button to check what it returns. This is especially useful when working with external APIs or complex SQL, you can inspect the raw or JSON response, debug any issues, and make sure the data matches what your components need.
+
+Once things look good, use the Run button to execute the query and verify how it interacts with your components and other queries.
+
+## JavaScript and Python queries
+
+You can also create JavaScript or Python queries to manipulate your data from other queries, write business logic, or integrate third-party libraries. Learn more about them in **[Running JavaScript](/docs/data-sources/run-js)** and **[Running Python](/docs/data-sources/run-py)** documentation.
 
 ## Custom Parameters
 You often need a query to fetch different data based on on user input, component state, or other logic. Custom parameters allow you to pass dynamic values into a query, making it reusable without hardcoding values.
@@ -69,7 +78,7 @@ Refer to the **[Transformations](/transformations)** section to learn more about
 
 ## Events
 
-Events let you trigger actions when a query runs successfully or fails. These actions are similar to the actions performed in components, but they're specifically tied to query execution outcomes.
+Events let you trigger actions when a query runs successfully or fails. These actions are similar to the actions performed in components, but they're specifically tied to query execution outcomes. You can create the events under the **Settings** tab in the query editor.
 
 Let’s say you have a form that updates a request using a query called *updateEmployeeDetail*. Once the update is successful, you probably want your app to refresh the data automatically so the user sees the latest changes. You can do this by triggering another query, like *getEmployees* in the onSuccess event of *updateEmployeeDetail*. This way, users don’t have to refresh the page or click another button to see updated information. 
 
@@ -77,15 +86,7 @@ Let’s say you have a form that updates a request using a query called *updateE
 
 ## Advanced Settings and Debugging
 
-### Preview and Run
-
-Before connecting a query to your app’s UI, use the Preview button to check what it returns. This is especially useful when working with external APIs or complex SQL, you can inspect the raw or JSON response, debug any issues, and make sure the data matches what your components need.
-
-Once things look good, use the Run button to execute the query and verify how it interacts with your components and other queries.
-
-### Triggers
-
-Triggers allow you to control when and how a query executes within your application. Following are the triggers available:
+In the query settings, you'll find Triggers. They allow you to control when and how a query executes within your application. Following are the triggers available:
 
 - **Run this query on application load**: You can use this when you want data to be available as soon as the page loads, like auto-fetching a user’s dashboard data or populating dropdown options without requiring user input.
 
