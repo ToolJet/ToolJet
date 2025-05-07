@@ -103,6 +103,13 @@ The database name provided for `TOOLJET_DB` will be utilized to create a new dat
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
 :::
 
+## Why ToolJet Requires Two Databases
+
+| **Environment Variable** | **Description** |
+|---------------------------|-----------------|
+| **TOOLJET_DB** | Stores ToolJet's internal metadata, including tables created within the platform |
+| **PG_DB** | The primary database for storing application data, used by the apps built on ToolJet to manage end-user data. |
+
 :::info
 If you intent you use the DB connection url and if the connection does not support ssl. Please use the below format using the variable TOOLJET_DB_URL.
 `postgres://username:password@hostname:port/database_name?sslmode=disable`
