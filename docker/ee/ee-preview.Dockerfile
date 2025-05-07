@@ -115,7 +115,7 @@ RUN rm -rf /var/lib/postgresql/13/main && \
     chown -R postgres:postgres /var/lib/postgresql
 
 # Initialize PostgreSQL
-RUN /usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main
+RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
 # Configure Supervisor to manage PostgREST, ToolJet, and Redis
 RUN echo "[supervisord] \n" \
