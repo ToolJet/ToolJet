@@ -57,6 +57,33 @@ While accessing the properties of the metadata object, which contains a hyphen, 
 ```
 </details>
 
+### Valid and Invalid Headers
+
+#### Valid Headers
+
+| Header Key | Header Value | Notes |
+|------------|--------------|-------|
+| Content-Type | 'application/json' | String values are valid and commonly used for specifying content type. |
+| X-Number | 42 | Numeric values are valid (e.g., 42, 3.14, -7). |
+| X-Boolean | true | Boolean values are valid (true or false). |
+| X-Trim-Me | <div style={{ width:"130px"}}> ' needs trimming ' </div>  | Valid after trimming. |
+| X-Empty-String	 | '' | Empty string values are valid. |
+
+### Invalid Headers
+
+| Header Key             | Header Value                | Reason Invalid                                |
+|------------------------|-----------------------------|-----------------------------------------------|
+| X-Null                 | null                        | null is not a valid header value.             |
+| X-Undefined            | undefined                   | undefined is not a valid header value.        |
+| X-NaN                  | NaN                         | Special numeric values like NaN are invalid.  |
+| X-Infinity             | Infinity                    | Infinity is not a valid primitive.            |
+| X-NegativeInfinity     | -Infinity                   | -Infinity is also invalid.                    |
+| X-Object               | `{ key: 'value' }  `        | Objects are not allowed as header values.     |
+| X-Array                | [1, 2, 3]                   | Arrays are not valid as header values.        |
+| X-Function             | ( ) => console.log('test')  | Functions cannot be serialized into headers.  |
+| X-Symbol               | Symbol('sym')               | Symbols are non-serializable and invalid.     |
+| *(empty key)*          | 'Empty key'                 | Header keys must not be empty.                |
+
 ## Cookies
 
 In addition to the data source level cookies, you can add query-specific cookies in the Query builder. These cookies will be sent only with the specific query created using this data source instance.
