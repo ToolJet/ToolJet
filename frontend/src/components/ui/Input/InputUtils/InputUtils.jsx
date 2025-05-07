@@ -3,7 +3,7 @@ import { Label } from '../../Label/Label';
 import ValidationIcon from './ValidationIcon';
 import { cn } from '@/lib/utils';
 import HelperIcon from './HelperIcon';
-import {generateCypressDataCy} from '../../../../modules/common/helpers/cypressHelpers.js';
+import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 export const ValidationMessage = ({ response, validationMessage, className }) => (
   <div className={cn('tw-flex tw-pl-[2px] tw-items-start tw-my-[2px]', className)}>

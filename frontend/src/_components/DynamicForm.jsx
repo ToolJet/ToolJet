@@ -26,7 +26,7 @@ import { Constants } from '@/_helpers/utils';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
-import {generateCypressDataCy} from '../modules/common/helpers/cypressHelpers';
+import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 
 const DynamicForm = ({
   schema,

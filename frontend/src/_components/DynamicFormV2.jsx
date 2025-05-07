@@ -14,7 +14,7 @@ import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
-import {generateCypressDataCy} from '../modules/common/helpers/cypressHelpers.js';
+import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
 
 const DynamicFormV2 = ({
   schema,
@@ -351,10 +351,10 @@ const DynamicFormV2 = ({
           isValidatedMessages: skipValidation
             ? { valid: null, message: '' } // skip validation for initial render and untouched elements
             : validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' }, // handle optional && encrypted fields
+              ? { valid: false, message: validationMessages[key] }
+              : isRequired
+                ? { valid: true, message: '' }
+                : { valid: null, message: '' }, // handle optional && encrypted fields
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       }
