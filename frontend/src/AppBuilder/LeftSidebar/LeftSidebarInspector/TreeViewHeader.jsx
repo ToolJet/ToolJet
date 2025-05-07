@@ -98,23 +98,22 @@ export const TreeViewHeader = (props) => {
 
   return (
     <div className="json-viewer-header">
-      <div className="json-viewer-back-btn" onClick={backFn}>
+      {/* <div className="json-viewer-back-btn" onClick={backFn}>
         <ArrowLeft tailOpacity="1" fill={'var(--slate12)'} width={'18'} />
+      </div> */}
+      <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={backFn}>
+        <span style={{ color: 'var(--slate11)' }}>{parentNode.charAt(0).toUpperCase() + parentNode.slice(1)}</span>
+
+        {pathArray.length > 1 &&
+          pathArray.slice(1).map((item, index) => (
+            <>
+              <CheveronRight fill={'var(--slate12)'} width={'18'} />
+              <span key={index} style={{ color: 'var(--slate12)' }}>
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </span>
+            </>
+          ))}
       </div>
-
-      <span style={{ color: 'var(--slate11)', marginLeft: '8px' }}>
-        {parentNode.charAt(0).toUpperCase() + parentNode.slice(1)}
-      </span>
-
-      {pathArray.length > 1 &&
-        pathArray.slice(1).map((item, index) => (
-          <>
-            <CheveronRight fill={'var(--slate12)'} width={'18'} />
-            <span key={index} style={{ color: 'var(--slate12)' }}>
-              {item.charAt(0).toUpperCase() + item.slice(1)}
-            </span>
-          </>
-        ))}
 
       <OverlayTrigger
         trigger={'click'}

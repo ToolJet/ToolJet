@@ -18878,13 +18878,24 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .json-tree-view {
-  ul {
-    margin-left:16px !important;
-    border-left: 1px solid var(--slate6, #D7DBDF);
-  }
+  // ul {
+  //   margin-left:16px !important;
+  //   border-left: 1px solid var(--slate6, #D7DBDF);
+  // }
 
   ul[role="tree"] {
+    margin-left:16px !important;
     border-left: none !important;
+    ul {
+      margin-left:16px !important;
+      border-left: none !important;
+      ul {
+        margin-left:10px !important;
+        padding-left:16px !important;
+        border-left: 1px solid var(--slate6, #D7DBDF) !important;
+      }
+    }
+
   }
 }
 
@@ -18936,9 +18947,11 @@ section.ai-message-prompt-input-wrapper {
 
 .node-icon {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   margin-right: 6px;
+  height: 14px;
+  width: 14px;
 }
 
 .node-label {
@@ -18964,10 +18977,10 @@ section.ai-message-prompt-input-wrapper {
 .node-content {
   display: flex;
   align-items: center;
-  padding: 0px 8px;
+  padding: 0px 0px 0px 8px;
   height: 100%;
   width: 100%;
-  border-radius: 6px;
+
 }
 
 .node-content-active {
@@ -18978,6 +18991,7 @@ section.ai-message-prompt-input-wrapper {
 
 .node-content-hoverable:hover, .node-content-active {
   background-color: var(--interactive-overlays-fill-hover);
+  cursor: pointer;
   .node-actions {
     display: flex;
   }
@@ -19014,9 +19028,13 @@ section.ai-message-prompt-input-wrapper {
   font-weight: 500;
   display: flex;
   flex-direction: row;
-  margin-left:20px;
-  margin-bottom:18px;
+  margin-left:16px;
+  margin-bottom:12px;
   margin-right: 18px;
+  margin-top: 8px;
+  height:28px;
+  align-items: center;
+
 }
 
 .json-viewer-back-btn {
@@ -19058,11 +19076,9 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .node-actions {
-
   justify-content: center;
   align-items: center;
   margin-left:auto;
-  margin-right: 24px;
   display: none;
   gap: 4px;
 }
@@ -19104,6 +19120,7 @@ section.ai-message-prompt-input-wrapper {
     border: none;
     background: transparent;
     border-radius: 10px;
+    top: -5px !important;
     &.dark-theme {
         .popover-body {
             box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.9), 0px 8px 16px 0px #000000;

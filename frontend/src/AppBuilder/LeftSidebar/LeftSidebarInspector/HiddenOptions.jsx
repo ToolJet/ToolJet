@@ -74,7 +74,7 @@ export const HiddenOptions = (props) => {
       {renderOptions()}
       <OverlayTrigger
         trigger={'click'}
-        placement={'bottom-start'}
+        placement={'bottom-end'}
         rootClose={false}
         show={showMenu}
         overlay={
@@ -114,12 +114,13 @@ export const HiddenOptions = (props) => {
             setShowMenu((prev) => !prev);
             setActionClicked((prev) => !prev);
           }}
-          className="copy-menu-options-icon"
+          className="node-action-icon"
           style={{
             outline: 'none',
+            ...(showMenu && { backgroundColor: 'var(--button-outline-pressed, rgba(136, 144, 153, 0.18)' }),
           }}
         >
-          <SolidIcon width="12" height="12" name="copy" />
+          <SolidIcon fill="#6A727C" width="12" height="12" name="copy" />
         </div>
       </OverlayTrigger>
     </div>

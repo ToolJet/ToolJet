@@ -19,20 +19,21 @@ const renderNodeIcons = (node, iconsList, darkMode) => {
       <WidgetIcon
         name={extractComponentName(icon?.iconPath)}
         fill={darkMode ? '#3A3F42' : '#D7DBDF'}
-        width="16"
-        height="16"
+        width="14"
+        height="14"
       />
     );
   }
+
   if (icon && icon.jsx) {
     if (icon?.tooltipMessage) {
       return (
         <ToolTip message={icon?.tooltipMessage}>
-          <div>{icon.jsx()}</div>
+          <div>{icon.jsx({ height: 14, width: 14 })}</div>
         </ToolTip>
       );
     }
-    return icon.jsx();
+    return icon.jsx({ height: 14, width: 14 });
   }
 };
 
@@ -91,30 +92,31 @@ export const Node = (props) => {
     // <div {...getNodeProps({ onClick: handleExpand })}>
     <div
       style={{
-        marginLeft: level > 1 ? 12 : 0,
+        // marginLeft: level > 1 ? 12 : 0,
         // paddingLeft: '16px',
         opacity: isDisabled ? 0.5 : 1,
-        height: level === 1 ? '28px' : '32px',
+        height: '20px',
         display: 'flex',
         alignItems: 'center',
         color: level === 1 ? 'var(--text-placeholder, #6A727C)' : 'var(--text-default, #1B1F24)',
+        fontWeight: level === 1 ? 500 : 400,
         // borderLeft: level > 1 ? '1px solid var(--slate6, #D7DBDF)' : 'none',
       }}
     >
-      {!['queries', 'globals', 'variables'].includes(type) && (
-        <div className="node-expansion-icon">
-          {(isBranch || level === 1 || path === 'page.variables') && (
-            <ButtonComponent
-              iconOnly
-              leadingIcon={isExpanded ? 'TriangleDownCenter' : 'rightarrrow'}
-              onClick={() => onExpand(props)}
-              variant="ghost"
-              fill="var(--icon-default,#ACB2B9)"
-              size="small"
-            />
-          )}
-        </div>
-      )}
+      {/* {!['queries', 'globals', 'variables'].includes(type) && ( */}
+      <div className="node-expansion-icon">
+        {(isBranch || level === 1 || path === 'page.variables') && (
+          <ButtonComponent
+            iconOnly
+            leadingIcon={isExpanded ? 'TriangleDownCenter' : 'rightarrrow'}
+            onClick={() => onExpand(props)}
+            variant="ghost"
+            fill="var(--icon-default,#ACB2B9)"
+            size="small"
+          />
+        )}
+      </div>
+      {/* )} */}
 
       <div
         onClick={() => onSelect(props)}
@@ -134,7 +136,7 @@ export const Node = (props) => {
             />
           </OverflowTooltip>
         </div>
-        <div className="node-actions">
+        <div className="node-actions" style={{ marginRight: 12 + nodeSpecificFilteredActions.length * 12 }}>
           <HiddenOptions
             nodeSpecificFilteredActions={nodeSpecificFilteredActions}
             generalActionsFiltered={generalActionsFiltered}

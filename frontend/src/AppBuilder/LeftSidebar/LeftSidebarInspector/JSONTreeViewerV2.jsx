@@ -7,6 +7,7 @@ import JSONViewer from './JSONViewer';
 import { SearchBox } from '@/_components';
 import { Node } from './Node';
 import { v4 as uuidv4 } from 'uuid';
+import InputComponent from '@/components/ui/Input/Index';
 import { isEmpty } from 'lodash';
 
 const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths = new Set() }) => {
@@ -128,8 +129,8 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     <>
       {!selectedNodePath || (typeof selectedData == 'object' && isEmpty(selectedData)) ? (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-            <SearchBox
+          <div style={{ margin: '8px 16px 12px 16px' }}>
+            {/* <SearchBox
               dataCy={`inspector-search`}
               initialValue={searchValue}
               callBack={(e) => setSearchValue(e.target.value)}
@@ -138,6 +139,16 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
               customClass={`tj-inspector-search-input  tj-text-xsm`}
               showClearButton={false}
               width={300}
+            /> */}
+
+            <InputComponent
+              leadingIcon="search01"
+              onChange={(e) => setSearchValue(e.target.value)}
+              onClear={() => setSearchValue('')}
+              size="medium"
+              placeholder="Search"
+              value={searchValue}
+              {...(searchValue && { trailingAction: 'clear' })}
             />
           </div>
           <div className="json-tree-view">
