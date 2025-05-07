@@ -660,17 +660,13 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       await this.licenseUserService.validateUser(manager);
 
       // Send welcome email
+      await this.licenseUserService.validateUser(manager);
       this.eventEmitter.emit('emailEvent', {
-        type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
-        payload: {
+          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+          payload: {
           to: user.email,
           name: user.firstName,
           invitationtoken: user.invitationToken,
-          organizationInvitationToken: organizationUser.invitationToken,
-          organizationId: defaultWorkspace.id,
-          organizationName: defaultWorkspace.name,
-          sender: null,
-          redirectTo: redirectTo,
         },
       });
 

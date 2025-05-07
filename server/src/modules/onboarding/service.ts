@@ -237,7 +237,8 @@ export class OnboardingService implements IOnboardingService {
         (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
           'true';
 
-      if (!(allowPersonalWorkspace || organizationToken)) {
+      const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+      if (!(defaultWorkspace || allowPersonalWorkspace || organizationToken)) {
         throw new BadRequestException('Invalid invitation link');
       }
       if (organizationToken) {
@@ -262,7 +263,8 @@ export class OnboardingService implements IOnboardingService {
           throw new BadRequestException('Please enter password');
         }
 
-        if (allowPersonalWorkspace) {
+        const activateDefaultWorkspace = defaultWorkspace || allowPersonalWorkspace;
+        if (activateDefaultWorkspace) {
           // Getting default workspace
           const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
             (ou) => ou.organizationId === user.defaultOrganizationId
