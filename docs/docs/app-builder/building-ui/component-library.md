@@ -10,7 +10,7 @@ title: Component Library
 ## Available Components
 
 | Category | Components |
-|----------|------------|
+|:----------|:------------|
 | **Buttons**  | [Button](#), [Button Group](#) |
 | **Data** | [Table](#), [Chart](#)|
 | **Layouts** | [Form](#), [Modal](#), [Container](#), [Tabs](#), [ListView](#), [Kanban](#), [Calendar](#) |
