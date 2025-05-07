@@ -135,7 +135,7 @@ const ApiEndpointInput = (props) => {
       {loadingSpec && (
         <div className="p-3">
           <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          {props.t('stripe', 'Please wait while we load the OpenAPI specification.')}
+          <span>Please wait while we load the OpenAPI specification.</span>
         </div>
       )}
       {options && !loadingSpec && (
