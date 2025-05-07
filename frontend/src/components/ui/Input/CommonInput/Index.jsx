@@ -3,6 +3,7 @@ import NumberInput from './NumberInput';
 import TextInput from './TextInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
 import { ButtonSolid } from '../../../../_components/AppButton';
+import {generateCypressDataCy} from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
   const { type, encrypted, validation, isValidatedMessages, isDisabled } = restProps;
@@ -65,7 +66,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 rel="noreferrer"
                 disabled={isDisabled}
                 onClick={toggleEditing}
-                data-cy={`button-${(isEditing ? 'Cancel' : 'Edit').toLowerCase().replace(/\s+/g, '-')}`}
+                data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
               </ButtonSolid>

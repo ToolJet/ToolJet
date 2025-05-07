@@ -3,6 +3,7 @@ import { Label } from '../../Label/Label';
 import ValidationIcon from './ValidationIcon';
 import { cn } from '@/lib/utils';
 import HelperIcon from './HelperIcon';
+import {generateCypressDataCy} from '../../../../modules/common/helpers/cypressHelpers.js';
 
 export const ValidationMessage = ({ response, validationMessage, className }) => (
   <div className={cn('tw-flex tw-pl-[2px] tw-items-start tw-my-[2px]', className)}>
@@ -14,7 +15,7 @@ export const ValidationMessage = ({ response, validationMessage, className }) =>
       type="helper"
       size="default"
       className={`tw-font-normal ${response === true ? 'tw-text-text-success' : '!tw-text-text-warning'}`}
-      data-cy={`${String(validationMessage).toLocaleLowerCase().replace(/\s+/g, '-')}-validation-label`}
+      data-cy={`${generateCypressDataCy(validationMessage)}-validation-label`}
     >
       {validationMessage}
     </Label>
@@ -53,7 +54,7 @@ export const InputLabel = ({ disabled, label, required }) => (
     type="label"
     size="default"
     className={`tw-font-medium tw-mb-[2px] ${disabled ? 'tw-text-text-disabled' : ''}`}
-    data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-field-label`}
+    data-cy={`${generateCypressDataCy(label)}-field-label`}
   >
     {label}
     {required && <RequiredIndicator disabled={disabled} />}

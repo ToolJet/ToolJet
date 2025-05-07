@@ -86,7 +86,7 @@ export default ({
 
       <div className="d-flex mb-2" style={{ height: '16px' }}>
         <ButtonSolid
-          data-cy={`${dataCy}-add-more-button`}
+          data-cy={`${dataCy}-add-button`}
           variant="ghostBlue"
           size="sm"
           onClick={() => addNewKeyValuePair(options)}

@@ -14,6 +14,7 @@ import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
+import {generateCypressDataCy} from '../modules/common/helpers/cypressHelpers.js';
 
 const DynamicFormV2 = ({
   schema,
@@ -437,7 +438,7 @@ const DynamicFormV2 = ({
       const labelElement = (
         <label
           className="form-label"
-          data-cy={`label-${String(label).toLowerCase().replace(/\s+/g, '-')}`}
+          data-cy={`label-${generateCypressDataCy(label)}`}
           style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >
           {label}
@@ -475,7 +476,7 @@ const DynamicFormV2 = ({
                 'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,
               })}
-              data-cy={`${key.replace(/_/g, '-')}-section`}
+              data-cy={`${generateCypressDataCy(key)}-section`}
               key={key}
             >
               {!isSpecificComponent && (
@@ -506,7 +507,7 @@ const DynamicFormV2 = ({
                 <Element
                   {...getElementProps(uiProperties[key])}
                   {...computedProps[propertyKey]}
-                  data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                  data-cy={`${generateCypressDataCy(label)}-text-field`}
                   dataCy={uiProperties[key].key.replace(/_/g, '-')}
                   //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}
@@ -541,15 +542,13 @@ const DynamicFormV2 = ({
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
                   className={cx('form-label')}
-                  data-cy={`${String(flipComponentDropdown.label)
-                    .toLocaleLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')}-dropdown-label`}
+                  data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
                 >
                   {flipComponentDropdown.label}
                 </label>
               )}
 
-              <div data-cy={`${String(flipComponentDropdown.label).toLocaleLowerCase().replace(/[^a-z0-9]+/g, '-')}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+              <div data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false} />
               </div>
               {flipComponentDropdown.helpText && (

@@ -36,6 +36,7 @@ import './dataSourceManager.theme.scss';
 import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
+import {generateCypressDataCy} from '../../../common/helpers/cypressHelpers';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -1127,7 +1128,7 @@ class DataSourceManagerComponent extends React.Component {
                       <div className="row w-100">
                         <div className="alert alert-danger" role="alert">
                           {validationError.map((error, index) => (
-                            <div key={index} className="text-muted" data-cy={`${String(error).toLocaleLowerCase().replace(/\s+/g, '-')}-field-alert-text`}>
+                            <div key={index} className="text-muted" data-cy={`${generateCypressDataCy(error)}-field-alert-text`}>
                               {error}
                             </div>
                           ))}
