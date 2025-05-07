@@ -34,9 +34,7 @@ describe("App Slug", () => {
     cy.visit("/my-workspace");
     cy.wait(1000);
 
-    cy.window({ log: false }).then((win) => {
-      win.localStorage.setItem("walkthroughCompleted", "true");
-    });
+    cy.skipWalkthrough()
     cy.visit(`/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`);
     cy.wait(1000);
 

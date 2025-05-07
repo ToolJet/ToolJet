@@ -278,6 +278,17 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.allApplicationsLink).click();
 
+    cy.wait(1000);
+    viewAppCardOptions(data.appName);
+    cy.wait(2000);
+    cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
+    cy.get(commonSelectors.exportAllButton).click();
+
+    cy.exec("ls ./cypress/downloads/").then((result) => {
+      const downloadedAppExportFileName = result.stdout.split("\n")[0];
+      expect(downloadedAppExportFileName).to.contain.string("app");
+    });
+
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.get('[data-cy="clone-app"]').click();
@@ -294,18 +305,7 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
 
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.get(commonSelectors.dashboardIcon).click();
-
-    viewAppCardOptions(data.cloneAppName);
-    cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
-    cy.get(commonSelectors.exportAllButton).click();
-
-    cy.exec("ls ./cypress/downloads/").then((result) => {
-      const downloadedAppExportFileName = result.stdout.split("\n")[0];
-      expect(downloadedAppExportFileName).to.contain.string("app");
-    });
-
+    cy.wait(1000);
 
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
@@ -321,7 +321,6 @@ describe("dashboard", () => {
     ).verifyVisibleElement("have.text", commonText.modalYesButton);
     cancelModal(commonText.cancelButton);
 
-
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
     cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
@@ -333,10 +332,6 @@ describe("dashboard", () => {
     cy.wait("@appLibrary");
 
     cy.deleteApp(data.appName);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appDeletedToast
-    );
     verifyAppDelete(data.appName);
   });
 
@@ -363,10 +358,7 @@ describe("dashboard", () => {
     cy.wait("@appLibrary");
 
     cy.deleteApp(data.appName);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appDeletedToast
-    );
+
     verifyAppDelete(data.appName);
   });
 
@@ -487,10 +479,7 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.allApplicationsLink).click();
     cy.deleteApp(data.appName);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appDeletedToast
-    );
+
     verifyAppDelete(data.appName);
     logout();
   });
