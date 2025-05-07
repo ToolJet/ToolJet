@@ -109,6 +109,10 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 
+USER postgres
+RUN /usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main
+USER root
+
 RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
     chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
 
