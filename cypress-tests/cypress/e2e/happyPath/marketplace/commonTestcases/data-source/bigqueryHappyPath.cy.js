@@ -4,6 +4,7 @@ import { postgreSqlText } from "Texts/postgreSql";
 import { bigqueryText } from "Texts/bigquery";
 import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
@@ -16,7 +17,7 @@ const data = {};
 describe("Data source BigQuery", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.intercept("GET", "/api/v2/data_sources");
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -50,10 +51,19 @@ describe("Data source BigQuery", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      bigqueryText.bigQuery,
-      data.dataSourceName
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-bigquery`,
+      "bigquery",
+      [{ key: "private_key", value: "", encrypted: true }]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-bigquery-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-bigquery`
     );
 
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(

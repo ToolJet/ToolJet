@@ -10,6 +10,8 @@ import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
+import { SessionModule } from '@modules/session/module';
+import { SampleDBScheduler } from './schedulers/sample-db.scheduler';
 
 export class DataSourcesModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -28,6 +30,7 @@ export class DataSourcesModule {
         await OrganizationConstantModule.register(configs),
         await InstanceSettingsModule.register(configs),
         await TooljetDbModule.register(configs),
+        await SessionModule.register(configs),
       ],
       providers: [
         DataSourcesService,
@@ -39,6 +42,7 @@ export class DataSourcesModule {
         PluginsRepository,
         SampleDataSourceService,
         FeatureAbilityFactory,
+        SampleDBScheduler,
       ],
       controllers: [DataSourcesController],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],

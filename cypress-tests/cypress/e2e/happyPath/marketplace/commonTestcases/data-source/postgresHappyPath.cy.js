@@ -3,6 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   addQuery,
   fillDataSourceTextField,
@@ -20,6 +21,7 @@ const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -52,10 +54,31 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      postgreSqlText.postgreSQL,
-      data.dataSourceName
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-postgresql`,
+      "postgresql",
+      [
+        { key: "connection_type", value: "manual", encrypted: false },
+        { key: "host", value: "localhost", encrypted: false },
+        { key: "port", value: 5432, encrypted: false },
+        { key: "ssl_enabled", value: true, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "password", value: null, encrypted: true },
+        { key: "ca_cert", value: null, encrypted: true },
+        { key: "client_key", value: null, encrypted: true },
+        { key: "client_cert", value: null, encrypted: true },
+        { key: "root_cert", value: null, encrypted: true },
+        { key: "connection_string", value: null, encrypted: true },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-postgresql-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-postgresql`
     );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(

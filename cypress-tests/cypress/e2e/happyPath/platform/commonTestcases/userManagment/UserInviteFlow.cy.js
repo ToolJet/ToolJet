@@ -200,7 +200,7 @@ describe("user invite flow cases", () => {
       });
   });
 
-  it.skip("Should verify the user onboarding with groups", () => {
+  it("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.groupName1 = fake.firstName.replaceAll("[^A-Za-z]", "");

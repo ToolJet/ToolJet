@@ -2,7 +2,7 @@ name: Cypress Marketplace
 
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled]
 
   workflow_dispatch:
 
@@ -14,13 +14,9 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: |
-      github.event.action == 'labeled' &&
-      (
-        github.event.label.name == 'run-cypress' || 
-        github.event.label.name == 'run-ce-cypress-marketplace' || 
-        github.event.label.name == 'run-ee-cypress-marketplace'
-      )
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+        contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-marketplace') || 
+        contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-marketplace')
 
     strategy:
       matrix:
@@ -44,7 +40,7 @@ jobs:
           mkdir -p ~/.docker/cli-plugins
           curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
           chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
           docker buildx use mybuilder
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
@@ -67,8 +63,8 @@ jobs:
         with:
           context: .
           file: docker/ce-production.Dockerfile
-          push: false
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -80,8 +76,8 @@ jobs:
         with:
           context: .
           file: docker/ee/ee-production.Dockerfile
-          push: false
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -116,10 +112,16 @@ jobs:
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-      - name: Update docker-compose file
+      - name: Update docker-compose file for CE
         run: |
           # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+
+      - name: Update docker-compose file for CE
+        if: matrix.edition == 'ee'
+        run: |
+          # Update docker-compose.yaml with the new image
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
 
       - name: Install Docker Compose
         run: |
@@ -128,6 +130,9 @@ jobs:
 
       - name: Run docker-compose file
         run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
 
       - name: Checking containers
         run: docker ps -a
@@ -142,8 +147,18 @@ jobs:
             sleep 5
           done'
 
-      - name: Seeding
-        run: docker exec Tooljet-app npm run db:seed:prod
+      - name: Seeding (Setup Super Admin)
+        run: |
+          curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "companyName": "ToolJet",
+              "name": "The Developer",
+              "workspaceName": "Tooljet'\''s workspace",
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
 
       - name: Create Cypress environment file
         id: create-json
@@ -170,7 +185,8 @@ jobs:
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-marketplace-subpath' }}
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
 
     steps:
       - name: Checkout

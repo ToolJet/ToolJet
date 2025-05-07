@@ -8,10 +8,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { VersionsCreateService } from './services/create.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { camelizeKeys, decamelizeKeys } from 'humps';
-import { MODULE_INFO } from '@modules/app/constants/module-info';
-import { MODULES } from '@modules/app/constants/modules';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
@@ -22,6 +19,8 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { IVersionService } from './interfaces/IService';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -29,7 +28,6 @@ export class VersionService implements IVersionService {
     protected readonly versionRepository: VersionRepository,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly createVersionService: VersionsCreateService,
-    protected readonly eventEmitter: EventEmitter2,
     protected readonly pageService: PageService,
     protected readonly eventsService: EventsService,
     protected readonly appUtilService: AppsUtilService,
@@ -72,13 +70,11 @@ export class VersionService implements IVersionService {
 
       await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
 
-      this.eventEmitter.emit('auditLogEntry', {
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
         resourceId: app.id,
-        resourceType: MODULES.APP,
         resourceName: app.name,
-        actionType: MODULE_INFO.VERSION.CREATE,
         metadata: {
           data: {
             updatedAppVersionName: versionCreateDto.versionName,
@@ -179,13 +175,11 @@ export class VersionService implements IVersionService {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
     }
 
-    this.eventEmitter.emit('auditLogEntry', {
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
       resourceId: app.id,
-      resourceType: MODULES.APP,
       resourceName: app.name,
-      actionType: MODULE_INFO.APP.UPDATE,
       metadata: { data: { updatedAppVersionName: appVersionUpdateDto.name, version: app.appVersions[0] } },
     });
     return;
@@ -196,13 +190,11 @@ export class VersionService implements IVersionService {
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
-    this.eventEmitter.emit('auditLogEntry', {
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
       resourceId: app.id,
-      resourceType: MODULES.APP,
       resourceName: app.name,
-      actionType: MODULE_INFO.APP.UPDATE,
       metadata: { data: { updatedGlobalSettings: appVersion } },
     });
     return;
@@ -253,13 +245,11 @@ export class VersionService implements IVersionService {
         await this.versionRepository.update(version.id, editableParams);
         const environments = await this.appEnvironmentUtilService.getAll(user.organizationId, app.id, manager);
 
-        this.eventEmitter.emit('auditLogEntry', {
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: app.id,
-          resourceType: MODULES.APP,
           resourceName: app.name,
-          actionType: MODULE_INFO.APP.UPDATE,
           metadata: {
             data: {
               name: 'Version Promoted',
@@ -268,7 +258,6 @@ export class VersionService implements IVersionService {
             },
           },
         });
-
         return { editorEnvironment: nextEnvironment, environments };
       }
     });

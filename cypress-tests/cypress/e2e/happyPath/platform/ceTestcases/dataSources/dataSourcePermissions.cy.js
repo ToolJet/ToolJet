@@ -46,7 +46,7 @@ describe("Datasource Manager", () => {
     data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-    const allDataSources = host.includes("8082") ? "All data sources (42)" : "All data sources (44)";
+    const allDataSources = host.includes("8082") ? "All data sources (43)" : "All data sources (45)";
     const allDatabase = host.includes("8082") ? "Databases (18)" : "Databases (20)";
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -214,7 +214,7 @@ describe("Datasource Manager", () => {
 
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "7 items ");
+    verifyValueOnInspector("table_preview", "10 items ");
     cy.get('[data-cy="show-ds-popover-button"]').click();
 
     cy.get(".p-2 > .tj-base-btn")
@@ -275,7 +275,7 @@ describe("Datasource Manager", () => {
     pinInspector();
 
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "7 items ");
+    verifyValueOnInspector("table_preview", "10 items ");
 
     //scope changing is pending
   });

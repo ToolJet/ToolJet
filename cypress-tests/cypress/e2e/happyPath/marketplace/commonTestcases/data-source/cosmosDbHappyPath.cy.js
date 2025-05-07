@@ -1,9 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 import {
   addQuery,
@@ -21,6 +20,7 @@ const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -50,7 +50,23 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
-    selectAndAddDataSource("databases", "CosmosDB", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-cosmosdb`,
+      "cosmosdb",
+      [
+        { key: "endpoint", value: "" },
+        { key: "key", value: "", encrypted: true },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-cosmosdb-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-cosmosdb`
+    );
 
     cy.get('[data-cy="label-end-point"]').verifyVisibleElement(
       "have.text",
@@ -92,7 +108,7 @@ describe("Data sources", () => {
     deleteDatasource(`cypress-${data.dataSourceName}-cosmosdb`);
   });
 
-  it.only("Should verify the functionality of CosmosDB connection form.", () => {
+  it("Should verify the functionality of CosmosDB connection form.", () => {
     selectAndAddDataSource("databases", "CosmosDB", data.dataSourceName);
 
     fillDataSourceTextField(
