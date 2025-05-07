@@ -31,6 +31,8 @@ jobs:
           else
             echo "is_fork=false" >> $GITHUB_ENV
           fi
+          echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=pr-${{ github.event.number }}" >> $GITHUB_ENV
 
       - name: Set Repository URL
         run: |
@@ -43,12 +45,15 @@ jobs:
       - name: Fetch and Checkout Forked Branch
         if: env.is_fork == 'true'
         run: |
-          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
+          git remote add fork "${REPO_URL}"
+          git fetch fork pull/${{ env.PR_NUMBER }}/head:${{ env.BRANCH_NAME }}
           git checkout ${{ env.BRANCH_NAME }}
 
       - name: Checkout Default Branch
         if: env.is_fork == 'false'
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Creating deployment for CE
         id: create-ce-deployment
