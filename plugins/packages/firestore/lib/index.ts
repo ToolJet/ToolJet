@@ -62,11 +62,10 @@ export default class FirestoreQueryService implements QueryService {
       
       if (error && error instanceof Error) {
         const firestoreError = error as any;
-        const { code, name, stack } = firestoreError;
+        const { code, name } = firestoreError;
 
         errorDetails.code = code as string;
         errorDetails.name = name;
-        errorDetails.stack = stack;
       }
 
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
