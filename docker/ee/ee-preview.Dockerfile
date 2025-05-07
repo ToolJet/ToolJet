@@ -107,7 +107,7 @@ WORKDIR /app
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
 
 # Remove existing data and create directory with proper ownership
 RUN rm -rf /var/lib/postgresql/13/main && \
