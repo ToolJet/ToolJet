@@ -277,6 +277,14 @@ export class OnboardingService implements IOnboardingService {
           // Activate default workspace
           await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
 
+          if(defaultWorkspace){
+            const personalWorkspaces = await this.organizationUsersUtilService.personalWorkspaces(user.id);
+            for(const personalWorkspace of personalWorkspaces){
+              // if any personal workspace left. activate those
+              await this.organizationUsersUtilService.activateOrganization(personalWorkspace, manager);  
+            }
+          }
+
           if (workspaceName) {
             const { slug } = generateNextNameAndSlug('My workspace');
             await this.organizationRepository.updateOne(

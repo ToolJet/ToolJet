@@ -343,7 +343,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async personalWorkspaces(userId: string): Promise<OrganizationUser[]> {
     const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
-      select: ['organizationId', 'invitationToken'],
+      select: ['organizationId', 'invitationToken', 'id'],
       where: { userId },
     });
     const personalWorkspaceArray: OrganizationUser[] = [];

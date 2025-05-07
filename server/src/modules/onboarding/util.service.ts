@@ -266,16 +266,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
               (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
               'true';
 
-            if(!existingUser.defaultOrganizationId && defaultWorkspace){
-              // Create organization user entry
-              await this.organizationUserRepository.createOne(
-                existingUser,
-                defaultWorkspace,
-                true,
-                manager,
-                WORKSPACE_USER_SOURCE.SIGNUP
-              );
-            } else if (!existingUser.defaultOrganizationId && isPersonalWorkspaceAllowed) {
+          if (!existingUser.defaultOrganizationId && isPersonalWorkspaceAllowed) {
               const personalWorkspaces = await this.organizationUsersUtilService.personalWorkspaces(existingUser.id);
               if (personalWorkspaces.length) {
                 defaultOrganizationId = personalWorkspaces[0].organizationId;
