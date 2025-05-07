@@ -3,11 +3,14 @@ id: pull
 title: Pull Changes from Git Repo
 ---
 
-Once the git sync is configured and the changes are committed to the git repository, after that the changes can be pulled from the git repository for the following use cases:
+The Pull operation fetches the latest committed changes from the connected Git repository and applies them to the current application. This is useful for keeping your application up-to-date with changes made by others or across different environments.
+
+Pulling changes is only possible after Git sync has been [configured](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config) and the desired changes have been [pushed](/docs/development-lifecycle/gitsync/push) to the Git repository.
 
 - [Sequential Development](#sequential-development) - Allows multiple developers to work on the same application, one after another.
 - [Application Migration](#application-migration) - To use multi instance as multi environment.
 - [Application Backup](#application-backup) - To restore an application backup.
+- Simultaneous Development - Enables multiple developers to work on the same application in parallel. This is planned to be released in upcoming versions.
 
 ## Sequential Development
 
@@ -16,25 +19,21 @@ Starting from version `v3.5.35-ee-lts`, git sync can be used to do sequential de
 For example - If the Developer A commits (Commit A), then Developer B must pull the latest commit before starting work and subsequently makes a new commit. Otherwise the work commited by Developer A might be lost.
 
 
-Follow these steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **enabled**, the application name can also be updates while importing.
+Follow these steps to [Import Application](#import-application). While importing, it is recommended to make the application editable if you intend to make changes. You can also update the application name during the import process.
 
 :::caution
 ToolJet tracks only the latest commit in the Git repository. **It is essential to pull the latest changes before beginning any new modifications** or making a new commit.
-:::
-
-:::info
-Simultaneous Development using git sync is planned to release in upcoming versions.
 :::
 
 ## Application Migration
 
 ToolJet supports the use of multiple instances as multiple environments — Development, Staging, and Production. Applications can be migrated between these environments using git sync. For more details, refer to the [Instance as Environment](/docs/development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment) guide.
 
-To migrate an application to the staging or production environment, follow the steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **disabled** during import to prevent unintended commits from these environments.
+To migrate an application to the staging or production environment, follow the steps to [Import Application](#import-application). While importing, you can choose to make the application editable or restrict it. It is recommended to disable editing to prevent unintended commits from the staging or production environments.
 
 ## Application Backup
 
-Any ToolJet application stored in a Git repository can be restored by following the steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **enabled** if you intend to make new changes to the application, the application name can also be updated while importing.
+Any ToolJet application stored in a Git repository can be restored by following the steps to [Import Application](#import-application). While importing, it is recommended to make the application editable if you intend to make changes. You can also update the application name during the import process.
 
 ## Import Application
 
