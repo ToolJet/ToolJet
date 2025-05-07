@@ -79,11 +79,10 @@ WORKDIR /app
 
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN echo "deb http://deb.debian.org/debian"
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN apt update && apt -y install postgresql-13 postgresql-client-13
+
 USER postgres
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
-RUN /usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
