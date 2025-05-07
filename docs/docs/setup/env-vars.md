@@ -107,7 +107,7 @@ Incase you want to trigger it manually, use the command `npm run db:create` on T
 
 | **Environment Variable** | **Description** |
 |---------------------------|-----------------|
-| **TOOLJET_DB** | Stores ToolJet's internal metadata, including tables created within the platform |
+| **TOOLJET_DB** | Stores ToolJet's internal metadata, including tables created within the platform. |
 | **PG_DB** | The primary database for storing application data, used by the apps built on ToolJet to manage end-user data. |
 
 :::info
