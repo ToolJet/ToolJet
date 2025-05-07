@@ -80,11 +80,6 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 
-USER postgres
-RUN service postgresql start && \
-    psql -c "create role tooljet with login superuser password 'postgres';"
-USER root
-
 RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
     chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
 
@@ -119,16 +114,16 @@ ENV TOOLJET_HOST=http://localhost \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
     PG_DB=tooljet_production \
-    PG_USER=tooljet \
+    PG_USER=postgres \
     PG_PASS=postgres \
     PG_HOST=localhost \
     ENABLE_TOOLJET_DB=true \
     TOOLJET_DB_HOST=localhost \
-    TOOLJET_DB_USER=tooljet \
+    TOOLJET_DB_USER=postgres \
     TOOLJET_DB_PASS=postgres \
     TOOLJET_DB=tooljet_db \
     PGRST_HOST=http://localhost:3000 \
-    PGRST_DB_URI=postgres://tooljet:postgres@localhost/tooljet_db \
+    PGRST_DB_URI=postgres://postgres:postgres@localhost/tooljet_db \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
     ORM_LOGGING=true \

@@ -80,7 +80,7 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "tooljet"
+                "value": "postgres"
               },
               {
                 "key": "PG_PASS",
@@ -100,7 +100,7 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "tooljet"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PASS",
@@ -116,7 +116,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://tooljet:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
+                "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -424,7 +424,7 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "tooljet"
+                "value": "postgres"
               },
               {
                 "key": "PG_PASS",
@@ -444,7 +444,7 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "tooljet"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PASS",
@@ -460,7 +460,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://tooljet:postgres@localhost/${{ env.PR_NUMBER }}-ee-tjdb"
+                "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -540,7 +540,11 @@ jobs:
               }
             ],
             "serviceDetails": {
-              "disk": null,
+              "disk": {
+                "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
+                "mountPath": "/data",
+                "sizeGB": 10
+              },
               "env": "docker",
               "envSpecificDetails": {
                 "dockerCommand": "",
