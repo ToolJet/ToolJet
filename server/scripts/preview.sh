@@ -1,12 +1,11 @@
 #!/bin/bash
 set -e
 
-# Start Redis
-# service redis-server start
-# redis-server /etc/redis/redis.conf
+# Ensure correct permissions before starting PostgreSQL
+chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql
 
-# Start Postgres
-service postgresql start
+# Start PostgreSQL as the correct user
+su - postgres -c "/usr/lib/postgresql/13/bin/pg_ctl -D /var/lib/postgresql/13/main -l /var/log/postgresql.log start"
 
 # Export the PORT variable to be used by the application
 export PORT=${PORT:-80}

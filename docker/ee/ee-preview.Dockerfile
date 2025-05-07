@@ -82,9 +82,6 @@ ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21
 
 WORKDIR /
 
-RUN mkdir -p /app /var/log/supervisor
-COPY /deploy/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 # copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
 # copy plugins dependencies
@@ -106,19 +103,59 @@ COPY --from=builder /app/server/dist ./app/server/dist
 
 WORKDIR /app
 
-# ENV defaults
+RUN apt update && apt -y install redis
+
+# Install PostgreSQL
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN echo "deb http://deb.debian.org/debian"
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
+RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
+    chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
+
+# Explicitly create PG main directory with correct ownership
+RUN mkdir -p /var/lib/postgresql/13/main && \
+    chown -R postgres:postgres /var/lib/postgresql
+
+# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+RUN echo "[supervisord] \n" \
+    "nodaemon=true \n" \
+    "user=root \n" \
+    "\n" \
+    "[program:postgrest] \n" \
+    "command=/bin/postgrest \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "\n" \
+    "[program:tooljet] \n" \
+    "user=root \n" \
+    "command=/bin/bash -c '/app/server/scripts/boot.sh' \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" \
+    "\n" \
+    "[program:redis] \n" \
+    "user=root \n" \
+    "command=/usr/bin/redis-server \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
+
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
+    PORT=80 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
@@ -137,7 +174,14 @@ ENV TOOLJET_HOST=http://localhost \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
+    HOME=/home/appuser \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_USER=default \
     REDIS_PASS= \
     TERM=xterm
 
-CMD ["/usr/bin/supervisord"]
+
+RUN chmod +x ./server/scripts/preview.sh
+# Set the entrypoint
+ENTRYPOINT ["./server/scripts/preview.sh"]
