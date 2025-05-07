@@ -129,19 +129,10 @@ export class DataSourcesController implements IDataSourcesController {
     return;
   }
 
-  @InitFeature(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN)
-  @UseGuards(FeatureAbilityGuard)
-  @Get('dependent-queries/marketplace-plugin/:kind')
-  async findDatasourcesAndQueriesOfMarketplacePlugin(@User() user: UserEntity, @Param('kind') dataSourceKind) {
-    // Check for CE ( Admin ) & EE ( Super Admin )
-    return await this.dataSourcesService.findDatasourcesAndQueriesOfMarketplacePlugin(user, dataSourceKind);
-  }
-
   @InitFeature(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE)
   @UseGuards(FeatureAbilityGuard)
   @Get('dependent-queries/:datasource_id')
   async findQueriesLinkedToDatasource(@User() user: UserEntity, @Param('datasource_id') datasourceId: string) {
-    // User must have delete permission
-    return await this.dataSourcesService.findQueriesLinkedToDatasource(user, datasourceId);
+    return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId);
   }
 }

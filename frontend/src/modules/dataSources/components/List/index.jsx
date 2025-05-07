@@ -193,7 +193,7 @@ export const List = ({ updateSelectedDatasource }) => {
         show={showDependentQueriesInfo}
         closeModal={() => setShowDependentQueriesInfo(false)}
       >
-        Cannot delete the datasource as it is used in the apps
+        <div className="mt-3 mb-3">Cannot delete the datasource as it is used in the apps</div>
       </Modal>
       <ConfirmDialog
         show={isDeleteModalVisible}

@@ -171,6 +171,12 @@ export class DataSourcesService implements IDataSourcesService {
     if (dataSource.type === DataSourceTypes.SAMPLE) {
       throw new BadRequestException('Cannot delete sample data source');
     }
+
+    const result = await this.findQueriesLinkedToDatasource(dataSourceId);
+    if (result.dependent_queries) {
+      throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
+    }
+
     await this.dataSourcesRepository.delete(dataSourceId);
     this.eventEmitter.emit('auditLogEntry', {
       userId: user.id,
@@ -239,7 +245,7 @@ export class DataSourcesService implements IDataSourcesService {
     return;
   }
 
-  async findQueriesLinkedToDatasource(user: User, datasourceId: string) {
+  async findQueriesLinkedToDatasource(datasourceId: string) {
     const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId);
     if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
 

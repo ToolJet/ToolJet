@@ -15,7 +15,6 @@ interface Features {
   [FEATURE_KEY.AUTHORIZE]: FeatureConfig;
   [FEATURE_KEY.GET_FOR_APP]: FeatureConfig;
   [FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE]: FeatureConfig;
-  [FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
