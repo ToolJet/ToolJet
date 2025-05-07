@@ -13,6 +13,8 @@ Everything you need to build internal tools!
 GitHub: https://github.com/ToolJet/ToolJet
 "
 
+service postgresql start
+
 npm run db:setup:prod
 npm run db:seed:prod
 npm run start:prod
