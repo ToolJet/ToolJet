@@ -670,7 +670,10 @@ const DynamicForm = ({
                 </label>
               )}
 
-              <div data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+              <div
+                data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
+                className={cx({ 'flex-grow-1': isHorizontalLayout })}
+              >
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}

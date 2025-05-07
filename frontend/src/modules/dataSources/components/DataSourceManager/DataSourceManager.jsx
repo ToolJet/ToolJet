@@ -385,11 +385,11 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ validationMessages: errorMap });
     const filteredValidationBanner = interactedFields
       ? Object.keys(this.state.validationMessages)
-        .filter((key) => interactedFields.has(key))
-        .reduce((result, key) => {
-          result.push(this.state.validationMessages[key]);
-          return result;
-        }, [])
+          .filter((key) => interactedFields.has(key))
+          .reduce((result, key) => {
+            result.push(this.state.validationMessages[key]);
+            return result;
+          }, [])
       : Object.values(this.state.validationMessages);
     this.setState({ validationError: filteredValidationBanner });
   };
@@ -927,15 +927,15 @@ class DataSourceManagerComponent extends React.Component {
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
       ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-        selectedDataSource?.name === datasourceName) ||
-      !isEmpty(validationMessages)
+          selectedDataSource?.name === datasourceName) ||
+        !isEmpty(validationMessages)
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       pluginsLoaded && (
         <div>
@@ -1128,7 +1128,11 @@ class DataSourceManagerComponent extends React.Component {
                       <div className="row w-100">
                         <div className="alert alert-danger" role="alert">
                           {validationError.map((error, index) => (
-                            <div key={index} className="text-muted" data-cy={`${generateCypressDataCy(error)}-field-alert-text`}>
+                            <div
+                              key={index}
+                              className="text-muted"
+                              data-cy={`${generateCypressDataCy(error)}-field-alert-text`}
+                            >
                               {error}
                             </div>
                           ))}

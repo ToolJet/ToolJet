@@ -21,8 +21,7 @@ export default ({
   return (
     <div className="table-content-wrapper">
       {options.length === 0 && (
-        <div className="empty-key-value"  
-        data-cy="label-empty-key-value">
+        <div className="empty-key-value" data-cy="label-empty-key-value">
           <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
           <span>There are no key value pairs added</span>
         </div>

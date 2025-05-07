@@ -351,10 +351,10 @@ const DynamicFormV2 = ({
           isValidatedMessages: skipValidation
             ? { valid: null, message: '' } // skip validation for initial render and untouched elements
             : validationMessages[key]
-              ? { valid: false, message: validationMessages[key] }
-              : isRequired
-                ? { valid: true, message: '' }
-                : { valid: null, message: '' }, // handle optional && encrypted fields
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' }, // handle optional && encrypted fields
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       }
@@ -548,7 +548,10 @@ const DynamicFormV2 = ({
                 </label>
               )}
 
-              <div data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+              <div
+                data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
+                className={cx({ 'flex-grow-1': isHorizontalLayout })}
+              >
                 <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false} />
               </div>
               {flipComponentDropdown.helpText && (
