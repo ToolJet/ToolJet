@@ -120,8 +120,20 @@ export const createGridSlice = (set, get) => ({
       let maxHeight = 0;
 
       if (isContainer) {
+        const componentType = getComponentTypeFromId(componentId);
+
+        const element = document.querySelector(`.dynamic-${componentId}`);
+        if (!element) {
+          deleteContainerTemporaryLayouts(componentId);
+          return;
+        }
+        let modifiedComponentId = componentId;
+        if (componentType === 'Tabs') {
+          const activeTab = element?.getAttribute('activetab');
+          modifiedComponentId = `${componentId}-${activeTab}`;
+        }
         const componentLayouts = get()
-          .getContainerChildrenMapping(componentId)
+          .getContainerChildrenMapping(modifiedComponentId)
           .reduce((acc, id) => {
             const component = currentPageComponents[id];
             if (!component) return acc;
@@ -130,12 +142,6 @@ export const createGridSlice = (set, get) => ({
               [id]: component.layouts[currentLayout],
             };
           }, {});
-
-        const element = document.querySelector(`.dynamic-${componentId}`);
-        if (!element) {
-          deleteContainerTemporaryLayouts(componentId);
-          return;
-        }
 
         const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
           return {
@@ -156,16 +162,16 @@ export const createGridSlice = (set, get) => ({
         }, 300);
 
         let extraHeight = 0;
-        const componentType = getComponentTypeFromId(componentId);
+
         if (componentType === 'Container') {
-          const { properties = {}, styles = {} } = getResolvedComponent(componentId) || {};
+          const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
           const { showHeader } = properties;
           const { headerHeight } = styles;
           if (showHeader && isProperNumber(headerHeight)) {
             extraHeight += headerHeight;
           }
         } else if (componentType === 'Form') {
-          const { properties = {}, styles = {} } = getResolvedComponent(componentId) || {};
+          const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
           const { showHeader, showFooter } = properties;
           const { headerHeight, footerHeight } = styles;
           if (showHeader && isProperNumber(headerHeight)) {
@@ -174,8 +180,9 @@ export const createGridSlice = (set, get) => ({
           if (showFooter && isProperNumber(footerHeight)) {
             extraHeight += footerHeight;
           }
+        } else if (componentType === 'Tabs') {
+          extraHeight = 50;
         }
-
         maxHeight = currentMax + 50 + extraHeight;
       }
 

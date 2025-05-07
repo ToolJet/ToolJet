@@ -36,6 +36,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'ModalV2',
   'Listview',
   'Link',
+  'Tabs',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -152,6 +153,7 @@ export const baseComponentProperties = (
       'Divider',
       'VerticalDivider',
       'Link',
+      'Tabs',
     ],
     Layout: [],
   };

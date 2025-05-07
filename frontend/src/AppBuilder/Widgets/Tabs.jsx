@@ -3,6 +3,9 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { shallow } from 'zustand/shallow';
+
 export const Tabs = function Tabs({
   id,
   component,
@@ -12,6 +15,8 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   setExposedVariables,
+  adjustComponentPositions,
+  currentLayout,
   fireEvent,
   styles,
   darkMode,
@@ -19,7 +24,7 @@ export const Tabs = function Tabs({
   properties,
 }) {
   const { tabWidth, boxShadow } = styles;
-  const { defaultTab, hideTabs, renderOnlyActiveTab } = properties;
+  const { defaultTab, hideTabs, renderOnlyActiveTab, dynamicHeight } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
 
   const widgetVisibility = styles?.visibility ?? true;
@@ -62,7 +67,22 @@ export const Tabs = function Tabs({
 
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
+  const componentCount = useStore(
+    (state) => state.getContainerChildrenMapping(`${id}-${currentTab}`)?.length || 0,
+    shallow
+  );
   const [bgColor, setBgColor] = useState('#fff');
+
+  useDynamicHeight({
+    dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    value: currentTab,
+    componentCount,
+  });
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
@@ -110,11 +130,12 @@ export const Tabs = function Tabs({
   const renderTabContent = (id, tab) => {
     return (
       <div
-        className={`tab-pane active`}
+        className={`tab-pane active ${properties.dynamicHeight && currentTab === tab.id && `dynamic-${id}`}`}
+        activetab={currentTab}
         style={{
           display: computeTabDisplay(id, tab.id),
-          height: parsedHideTabs ? height : height - 41,
-          position: 'absolute',
+          height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
+          position: 'relative',
           top: parsedHideTabs ? '0px' : '41px',
           width: '100%',
           padding: TAB_CANVAS_PADDING,
@@ -122,10 +143,10 @@ export const Tabs = function Tabs({
       >
         <SubContainer
           id={`${id}-${tab.id}`}
-          canvasHeight={'200'}
+          canvasHeight={dynamicHeight ? '100%' : '200'}
           canvasWidth={width}
           allowContainerSelect={true}
-          styles={{ backgroundColor: bgColor }}
+          styles={{ backgroundColor: bgColor, overflow: 'hidden auto' }}
           darkMode={darkMode}
           componentType="Tabs"
         />
@@ -144,9 +165,9 @@ export const Tabs = function Tabs({
   return (
     <div
       data-disabled={parsedDisabledState}
-      className="card tabs-component"
+      className={`card tabs-component `}
       style={{
-        height,
+        height: dynamicHeight ? '100%' : height,
         display: parsedWidgetVisibility ? 'flex' : 'none',
         backgroundColor: bgColor,
         boxShadow,
@@ -204,6 +225,9 @@ export const Tabs = function Tabs({
             }
           }}
           id={`${id}-${tab.id}`}
+          style={{
+            ...(dynamicHeight && currentTab === tab.id && { height: '100%' }),
+          }}
           key={tab.id}
         >
           {shouldRenderTabContent(tab) && renderTabContent(id, tab)}
