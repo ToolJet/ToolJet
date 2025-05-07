@@ -11,14 +11,11 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
 
     // Check if default workspace URL is configured
     const defaultWorkspaceUrl = getCustomEnvVars('TOOLJET_DEFAULT_WORKSPACE_URL');
-    console.log('defaultWorkspaceUrl', defaultWorkspaceUrl);
     if (defaultWorkspaceUrl) {
       try {
-        console.log('inside try');
         const url = new URL(defaultWorkspaceUrl);
         const pathParts = url.pathname.split('/');
         const workspaceSlug = pathParts[pathParts.length - 1];
-        console.log('workspaceSlug', workspaceSlug);
         if (workspaceSlug) {
           await queryRunner.query(`
             UPDATE organizations 
