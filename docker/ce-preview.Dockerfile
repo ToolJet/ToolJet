@@ -85,9 +85,12 @@ RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
-# Create appuser home & ensure permission for supervisord and services
-RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql && \
-    chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
+RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
+    chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
+
+# Explicitly create PG main directory with correct ownership
+RUN mkdir -p /var/lib/postgresql/13/main && \
+    chown -R postgres:postgres /var/lib/postgresql
 
 # Configure Supervisor to manage PostgREST, ToolJet, and Redis
 RUN echo "[supervisord] \n" \
