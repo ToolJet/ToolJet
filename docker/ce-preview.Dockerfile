@@ -38,7 +38,7 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget supervisor
+RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -53,9 +53,6 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
 WORKDIR /
-
-RUN mkdir -p /app /var/log/supervisor
-COPY /deploy/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
@@ -77,18 +74,44 @@ COPY --from=builder /app/server/dist ./app/server/dist
 
 WORKDIR /app
 
+# Install PostgreSQL
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
+# Create appuser home & ensure permission for supervisord and services
+RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql && \
+    chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
+
+# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+RUN echo "[supervisord] \n" \
+    "nodaemon=true \n" \
+    "user=root \n" \
+    "\n" \
+    "[program:postgrest] \n" \
+    "command=/bin/postgrest \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "\n" \
+    "[program:tooljet] \n" \
+    "user=root \n" \
+    "command=/bin/bash -c '/app/server/scripts/boot.sh' \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
+
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
+    PORT=80 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
@@ -110,4 +133,7 @@ ENV TOOLJET_HOST=http://localhost \
     HOME=/home/appuser \
     TERM=xterm
 
-CMD ["/usr/bin/supervisord"]
+
+RUN chmod +x ./server/scripts/preview.sh
+# Set the entrypoint
+ENTRYPOINT ["./server/scripts/preview.sh"]
