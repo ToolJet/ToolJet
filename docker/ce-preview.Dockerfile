@@ -1,6 +1,9 @@
 FROM node:18.18.2-buster AS builder
+# Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 RUN mkdir -p /app
+
 WORKDIR /app
 
 # Scripts for building
@@ -30,13 +33,14 @@ RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
 FROM node:18.18.2-bullseye
+# copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget unzip supervisor
+RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget supervisor
 
-# Install Oracle Instant Client
+# Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
 RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
     wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
@@ -45,54 +49,25 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
-
+# Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
 WORKDIR /
 
 RUN mkdir -p /app /var/log/supervisor
+COPY /deploy/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Supervisord config
-RUN echo "\
-[supervisord]\n\
-nodaemon=true\n\
-\n\
-[program:postgresql]\n\
-command=/usr/lib/postgresql/13/bin/postgres -D /var/lib/postgresql/13/main\n\
-user=postgres\n\
-autostart=true\n\
-autorestart=true\n\
-stdout_logfile=/dev/stdout\n\
-stdout_logfile_maxbytes=0\n\
-stderr_logfile=/dev/stdout\n\
-stderr_logfile_maxbytes=0\n\
-\n\
-[program:postgrest]\n\
-command=/bin/postgrest\n\
-autostart=true\n\
-autorestart=true\n\
-stderr_logfile=/dev/stdout\n\
-stderr_logfile_maxbytes=0\n\
-stdout_logfile=/dev/stdout\n\
-stdout_logfile_maxbytes=0\n\
-\n\
-[program:tooljet]\n\
-command=/bin/bash -c \"/app/server/scripts/boot.sh\"\n\
-autostart=true\n\
-autorestart=true\n\
-stderr_logfile=/dev/stdout\n\
-stderr_logfile_maxbytes=0\n\
-stdout_logfile=/dev/stdout\n\
-stdout_logfile_maxbytes=0" > /etc/supervisor/conf.d/supervisord.conf
-
-# Copy app files
+# copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
+# copy plugins dependencies
 COPY --from=builder /app/plugins/dist ./app/plugins/dist
 COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
 COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
 COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
+# copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
@@ -102,19 +77,18 @@ COPY --from=builder /app/server/dist ./app/server/dist
 
 WORKDIR /app
 
-# Install PostgreSQL
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13
-
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://deb.debian.org/debian"
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
+# ENV defaults
 ENV TOOLJET_HOST=http://localhost \
-    PORT=80 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
@@ -134,14 +108,6 @@ ENV TOOLJET_HOST=http://localhost \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \
-    REDIS_HOST=localhost \
-    REDIS_PORT=6379 \
-    REDIS_USER=default \
-    REDIS_PASS= \
     TERM=xterm
 
-USER root
-RUN chmod +x /app/server/scripts/boot.sh
-
-ENTRYPOINT ["/server/scripts/boot.sh"]
-
+CMD ["/usr/bin/supervisord"]
