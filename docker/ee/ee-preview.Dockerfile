@@ -103,8 +103,6 @@ COPY --from=builder /app/server/dist ./app/server/dist
 
 WORKDIR /app
 
-RUN apt update && apt -y install redis
-
 # Install PostgreSQL
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
@@ -136,16 +134,6 @@ RUN echo "[supervisord] \n" \
     "stderr_logfile=/dev/stdout \n" \
     "stderr_logfile_maxbytes=0 \n" \
     "stdout_logfile=/dev/stdout \n" \
-    "stdout_logfile_maxbytes=0 \n" \
-    "\n" \
-    "[program:redis] \n" \
-    "user=root \n" \
-    "command=/usr/bin/redis-server \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/dev/stdout \n" \
-    "stderr_logfile_maxbytes=0 \n" \
-    "stdout_logfile=/dev/stdout \n" \
     "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
 
 # ENV defaults
@@ -170,10 +158,6 @@ ENV TOOLJET_HOST=http://localhost \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \
-    REDIS_HOST=localhost \
-    REDIS_PORT=6379 \
-    REDIS_USER=default \
-    REDIS_PASS= \
     TERM=xterm
 
 
