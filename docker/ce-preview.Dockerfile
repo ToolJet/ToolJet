@@ -52,7 +52,6 @@ WORKDIR /
 
 RUN mkdir -p /app /var/log/supervisor
 
-# Inline supervisord config
 # Supervisord config
 RUN echo "\
 [supervisord]\n\
@@ -110,11 +109,9 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /et
 RUN apt update && apt -y install postgresql-13 postgresql-client-13
 
 USER postgres
-
-# USER postgres
-# RUN service postgresql start && \
-#     psql -c "create role tooljet with login superuser password 'postgres';"
-# USER root
+RUN service postgresql start && \
+    psql -c "create role tooljet with login superuser password 'postgres';"
+USER root
 
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
