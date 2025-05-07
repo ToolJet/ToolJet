@@ -55,10 +55,10 @@ RUN npm --prefix server run build
 
 FROM node:18.18.2-bullseye
 
-# RUN apt-get update -yq \
-#     && apt-get install curl gnupg zip -yq \
-#     && apt-get install -yq build-essential \
-#     && apt-get clean -y
+RUN apt-get update -yq \
+    && apt-get install curl gnupg zip -yq \
+    && apt-get install -yq build-essential \
+    && apt-get clean -y
 
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
