@@ -69,7 +69,7 @@ While accessing the properties of the metadata object, which contains a hyphen, 
 | X-Trim-Me | <div style={{ width:"130px"}}> ' needs trimming ' </div>  | Valid after trimming. |
 | X-Empty-String	 | '' | Empty string values are valid. |
 
-### Invalid Headers
+#### Invalid Headers
 
 | Header Key             | Header Value                | Reason Invalid                                |
 |------------------------|-----------------------------|-----------------------------------------------|
