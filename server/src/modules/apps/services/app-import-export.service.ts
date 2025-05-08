@@ -52,7 +52,17 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table' | 'Button' | 'Checkbox' | 'Divider' | 'VerticalDivider' | 'Link';
+type NewRevampedComponent =
+  | 'Text'
+  | 'TextInput'
+  | 'PasswordInput'
+  | 'NumberInput'
+  | 'Table'
+  | 'Button'
+  | 'Checkbox'
+  | 'Divider'
+  | 'VerticalDivider'
+  | 'Link';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -84,7 +94,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected readonly entityManager: EntityManager,
     protected componentsService: ComponentsService
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}, organizationId?: string): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -186,13 +196,13 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const events = await manager
@@ -1089,10 +1099,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
