@@ -7,10 +7,12 @@ The Pull operation fetches the latest committed changes from the connected Git r
 
 Pulling changes is only possible after Git sync has been [configured](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config) and the desired changes have been [pushed](/docs/development-lifecycle/gitsync/push) to the Git repository.
 
+**Git sync in ToolJet can be used for the following purposes:**
+
 - [Sequential Development](#sequential-development) - Allows multiple developers to work on the same application, one after another.
 - [Application Migration](#application-migration) - To use multi instance as multi environment.
 - [Application Backup](#application-backup) - To restore an application backup.
-- Simultaneous Development - Enables multiple developers to work on the same application in parallel. This is planned to be released in upcoming versions.
+- Simultaneous Development (Coming Soon) - Enables multiple developers to work on the same application in parallel.
 
 ## Sequential Development
 
