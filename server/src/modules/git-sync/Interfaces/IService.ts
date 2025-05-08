@@ -1,12 +1,16 @@
-import { OrganizationGitSync } from '../../../entities/organization_git_sync.entity';
 import { OrganizationGitCreateDto, OrganizationGitUpdateDto, OrganizationGitStatusUpdateDto } from '../dto';
 
 export interface IGitSyncService {
   deleteConfig(organizationId: string, organizationGit: string): Promise<void>;
 
-  createOrganizationGit(organizationGitCreateDto: OrganizationGitCreateDto): Promise<OrganizationGitSync>;
+  createOrganizationGit(organizationGitCreateDto: OrganizationGitCreateDto, userOrganizationId: string): Promise<any>;
 
-  updateOrgGit(organizationId: string, id: string, updateOrgGitDto: OrganizationGitUpdateDto): Promise<void>;
+  updateOrgGit(
+    userOrganizationId: string,
+    organizationId: string,
+    updateOrgGitDto: OrganizationGitUpdateDto,
+    gitType: string
+  ): Promise<void>;
 
   updateOrgGitStatus(
     organizationId: string,
@@ -16,7 +20,7 @@ export interface IGitSyncService {
 
   setFinalizeConfig(userId: string, organizationId: string, organizationGitId: string): Promise<void>;
 
-  getOrganizationById(userOrganizationId: string, organizationId: string): Promise<any>;
+  getOrganizationById(userOrganizationId: string, organizationId: string, gitType: string): Promise<any>;
 
   getOrgGitStatusById(userOrganizationId: string, organizationId: string): Promise<any>;
 }
