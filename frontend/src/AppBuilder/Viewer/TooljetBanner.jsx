@@ -1,7 +1,5 @@
 import React from 'react';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
-import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
 import { shallow } from 'zustand/shallow';
 
 const TooljetBanner = ({ isDarkMode }) => {
@@ -22,9 +20,8 @@ const TooljetBanner = ({ isDarkMode }) => {
     >
       Built with
       <span className={'powered-with-tj-icon'}>
-        <TooljetLogoIcon />
+        <img src={`assets/images/icons/${isDarkMode ? 'logo-dark' : 'logo-light'}.svg`} alt="alert" />
       </span>
-      <TooljetLogoText fill={isDarkMode ? '#ECEDEE' : '#11181C'} />
     </div>
   );
 };
