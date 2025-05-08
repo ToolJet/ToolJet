@@ -21,7 +21,7 @@ import config from 'config';
 import { capitalize, isEmpty } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
-import { camelizeKeys, decamelizeKeys } from 'humps';
+import { camelizeKeys, decamelizeKeys, decamelize } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -248,14 +248,26 @@ class DataSourceManagerComponent extends React.Component {
     const scope = this.state?.scope || selectedDataSource?.scope;
 
     const parsedOptions = Object?.keys(options)?.map((key) => {
-      const keyMeta = dataSourceMeta.options[key];
+      let keyMeta = dataSourceMeta.options[key];
+      let isEncrypted = false;
+      if (keyMeta) {
+        isEncrypted = keyMeta.encrypted;
+      }
+
+      // to resolve any casing mis-match
+      if (decamelize(key) !== key) {
+        const newKey = decamelize(key);
+        isEncrypted = dataSourceMeta.options[newKey].encrypted;
+      }
+
       return {
         key: key,
         value: options[key].value,
-        encrypted: keyMeta ? keyMeta.encrypted : false,
+        encrypted: isEncrypted,
         ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
+
     if (OAuthDs.includes(kind)) {
       const value = localStorage.getItem('OAuthCode');
       parsedOptions.push({ key: 'code', value, encrypted: false });
