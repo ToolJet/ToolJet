@@ -133,7 +133,7 @@ export class OnboardingService implements IOnboardingService {
           manager
         );
       } else {
-        if(defaultWorkspace) {
+        if(defaultWorkspace && !signingUpOrganization) {
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,
             defaultWorkspace,
@@ -263,7 +263,7 @@ export class OnboardingService implements IOnboardingService {
           throw new BadRequestException('Please enter password');
         }
 
-        const activateDefaultWorkspace = defaultWorkspace || allowPersonalWorkspace;
+        const activateDefaultWorkspace = (defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId) || allowPersonalWorkspace;
         if (activateDefaultWorkspace) {
           // Getting default workspace
           const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
@@ -277,7 +277,7 @@ export class OnboardingService implements IOnboardingService {
           // Activate default workspace
           await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
 
-          if(defaultWorkspace){
+          if(defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId){
             const personalWorkspaces = await this.organizationUsersUtilService.personalWorkspaces(user.id);
             for(const personalWorkspace of personalWorkspaces){
               // if any personal workspace left. activate those
