@@ -75,6 +75,8 @@ jobs:
           -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
           postgrest/postgrest:v12.2.0
 
+# sdjcknsdc          
+
       - name: Set up environment variables
         run: |
           echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
