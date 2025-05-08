@@ -533,7 +533,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   // this function simply replaces the id with name for queries and components inside resolvedStore
-  getResolvedState: (key, moduleId = 'canvas') => {
+  getResolvedState: (moduleId = 'canvas', key) => {
     const state = {
       components: {},
       queries: {},

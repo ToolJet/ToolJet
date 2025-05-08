@@ -78,7 +78,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
           return componentType === 'ModuleContainer';
         })
       ) {
-        if (['KeyC', 'KeyX', 'KeyV', 'Backspace'].includes(key)) {
+        if (['KeyC', 'KeyX', 'KeyV', 'KeyD', 'Backspace'].includes(key)) {
           return;
         }
       }

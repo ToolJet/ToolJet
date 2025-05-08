@@ -471,7 +471,8 @@ export const createQueryPanelSlice = (set, get) => ({
                   query.options.transformation,
                   query.options.transformationLanguage,
                   query,
-                  'edit'
+                  'edit',
+                  moduleId
                 );
                 if (finalData.status === 'failed') {
                   setResolvedQuery(
@@ -683,7 +684,8 @@ export const createQueryPanelSlice = (set, get) => ({
                     query.options.transformation,
                     query.options.transformationLanguage,
                     query,
-                    'edit'
+                    'edit',
+                    moduleId
                   );
                   if (finalData?.status === 'failed') {
                     onEvent('onDataQueryFailure', queryEvents);
@@ -743,7 +745,7 @@ export const createQueryPanelSlice = (set, get) => ({
       let result = {};
 
       try {
-        const resolvedState = get().getResolvedState();
+        const resolvedState = get().getResolvedState(moduleId);
         const queriesInCurentState = deepClone(resolvedState.queries);
         const appStateVars = deepClone(resolvedState.variables) ?? {};
         if (!isEmpty(query)) {
@@ -758,17 +760,17 @@ export const createQueryPanelSlice = (set, get) => ({
               },
 
               getData: () => {
-                const resolvedState = get().getResolvedState();
+                const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].data;
               },
 
               getRawData: () => {
-                const resolvedState = get().getResolvedState();
+                const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].rawData;
               },
 
               getloadingState: () => {
-                const resolvedState = get().getResolvedState();
+                const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].isLoading;
               },
             };
@@ -810,14 +812,21 @@ export const createQueryPanelSlice = (set, get) => ({
       return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
     },
 
-    runTransformation: async (rawData, transformation, transformationLanguage = 'javascript', query, mode = 'edit') => {
+    runTransformation: async (
+      rawData,
+      transformation,
+      transformationLanguage = 'javascript',
+      query,
+      mode = 'edit',
+      moduleId = 'canvas'
+    ) => {
       const data = rawData;
       const {
         queryPanel: { runPythonTransformation, createProxy },
         getResolvedState,
       } = get();
       let result = {};
-      const currentState = getResolvedState();
+      const currentState = getResolvedState(moduleId);
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -1012,7 +1021,7 @@ export const createQueryPanelSlice = (set, get) => ({
         //this will handle the preview case where you cannot find the queryDetails in state.
         formattedParams = { ...parameters };
       }
-      const resolvedState = get().getResolvedState();
+      const resolvedState = get().getResolvedState(moduleId);
       const queriesInResolvedState = deepClone(resolvedState.queries);
       for (const key of Object.keys(resolvedState.queries)) {
         queriesInResolvedState[key] = {
@@ -1028,17 +1037,17 @@ export const createQueryPanelSlice = (set, get) => ({
           },
 
           getData: () => {
-            const resolvedState = get().getResolvedState();
+            const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].data;
           },
 
           getRawData: () => {
-            const resolvedState = get().getResolvedState();
+            const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].rawData;
           },
 
           getloadingState: () => {
-            const resolvedState = get().getResolvedState();
+            const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].isLoading;
           },
         };
