@@ -148,7 +148,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 
   </div>
   
-  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars/#postgrest-server-required).
+  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars#postgrest).
 
   <div style={{textAlign: 'center'}}>
 
@@ -182,7 +182,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 
   </div>
 
-Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars/#enable-tooljet-database-required) and apply the changes.
+Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars#tooljet-database) and apply the changes.
 
 </div>
 

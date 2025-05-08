@@ -23,7 +23,7 @@ To enable automatic SSO login, follow these steps:
 
 2. Disable password login for your workspace.
 
-3. Add the following variable to your [enviroment variables](/docs/setup/env-vars#sso-configurations-optional):
+3. Add the following variable to your [enviroment variables](/docs/setup/env-vars#single-sign-on-sso):
 
 ``` yaml
 SSO_SKIP_LOGIN_SCREEN = true

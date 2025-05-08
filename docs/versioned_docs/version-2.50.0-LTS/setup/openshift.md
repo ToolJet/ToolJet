@@ -70,7 +70,7 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
 
 You can know more about tooljet database [here](/docs/tooljet-db/tooljet-database)
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database).
 
 ```
 https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/postgrest.yaml

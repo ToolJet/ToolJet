@@ -66,7 +66,7 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
 Click on deploy once the above parameters are set. 
 
 :::info
-Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+Once the Service is created and live, to make the Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
 ## Deploying ToolJet Database 
@@ -89,8 +89,7 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
 3. Under containers tab, please make sure the port is set 3000 and CPU capacity is set to 1GiB.
 
     <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
-  
-4. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](/docs/setup/env-vars/#enable-tooljet-database-required).
+4. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](/docs/setup/env-vars#tooljet-database).
 
 5. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for ToolJet application or the separate PostgreSQL database created respective to ToolJet Database from the drop-down option.
 
@@ -99,10 +98,10 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
     Click on deploy once the above parameters are set. 
 
     :::info
-    Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+    Once the Service is created and live, to make the Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
     :::
 
-6. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](./env-vars/#enable-tooljet-database-required)
+6. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars#tooljet-database)
 
     <img className="screenshot-full" src="/img/cloud-run/env-for-tooljet.png" alt="env-for-tooljet" />
 
