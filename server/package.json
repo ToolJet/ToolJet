@@ -92,7 +92,7 @@
     "helmet": "^4.6.0",
     "humps": "^2.0.1",
     "ioredis": "^5.0.4",
-    "isolated-vm": "^4.6.0",
+    "isolated-vm": "^5.0.4",
     "joi": "^17.4.1",
     "js-base64": "^3.7.2",
     "json5": "^2.2.3",
@@ -123,6 +123,7 @@
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.3.20",
+    "uuid": "^8.3.2",
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^8.17.1",
@@ -185,7 +186,7 @@
     "typescript": "^4.3.5"
   },
   "engines": {
-    "node": "18.18.2",
-    "npm": "9.8.1"
+    "node": "22.15.0",
+    "npm": "10.9.2"
   }
 }
