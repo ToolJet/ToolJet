@@ -46,7 +46,6 @@
 			}
 
 			&.active {
-				background-color: var(--surfaces-surface-01);
 				color: var(--currentStepLabel);
 				border: 2px solid var(--completedAccent);
 			}
