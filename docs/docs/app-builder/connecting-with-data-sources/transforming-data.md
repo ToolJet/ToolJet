@@ -60,3 +60,11 @@ If you’re more comfortable with Python, just switch the language in the transf
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_python.png" alt="App Builder: query transformations"/>
 
+
+Use Cases 
+-	Date formatting: Convert raw ISO timestamps into DD/MM/YYYY.
+-	Nested data: Flatten deeply nested objects for use in tables or dropdowns.
+-	Unit conversion: Convert currency, distance, or temperature values before display.
+-	Field renaming: Adjust field names to match component expectations.
+
+Transformations help you shape backend data into a frontend-friendly format, keeping your UI logic simple and your app easier to maintain.
