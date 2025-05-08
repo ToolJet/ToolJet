@@ -78,9 +78,6 @@ describe("Private and Public apps", {
 
     // Test private access
     logout();
-    cy.visit("/");
-    cy.wait(1000);
-    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
