@@ -1017,7 +1017,7 @@ export const EventManager = ({
                             }
 
                             // If there is already a focused event, set the skip flag to prevent unnecessary state updates.
-                            if (focusedEventIndex !== null) {
+                            if (focusedEventIndex !== null && showing) {
                               shouldSkipOnToggle.current = true;
                             }
 
