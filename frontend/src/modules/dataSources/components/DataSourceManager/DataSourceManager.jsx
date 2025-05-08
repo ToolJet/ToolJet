@@ -84,6 +84,7 @@ class DataSourceManagerComponent extends React.Component {
       creatingApp: false,
       validationError: [],
       validationMessages: {},
+      showValidationErrors: false,
     };
   }
 
@@ -219,11 +220,13 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceMeta,
       dataSourceSchema,
       validationMessages,
+      validationError,
     } = this.state;
 
     if (!isEmpty(validationMessages)) {
       const validationMessageArray = Object.values(validationMessages);
-      this.setState({ validationError: validationMessageArray });
+      this.setState({ validationError: validationMessageArray, showValidationErrors: true });
+
       toast.error(
         this.props.t(
           'editor.queryManager.dataSourceManager.toast.error.validationFailed',
@@ -362,7 +365,7 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
-  setValidationMessages = (errors, schema) => {
+  setValidationMessages = (errors, schema, interactedFields) => {
     const errorMap = errors.reduce((acc, error) => {
       // Get property name from either required error or dataPath
       const property =
@@ -379,10 +382,19 @@ class DataSourceManagerComponent extends React.Component {
       return acc;
     }, {});
     this.setState({ validationMessages: errorMap });
+    const filteredValidationBanner = interactedFields
+      ? Object.keys(this.state.validationMessages)
+          .filter((key) => interactedFields.has(key))
+          .reduce((result, key) => {
+            result.push(this.state.validationMessages[key]);
+            return result;
+          }, [])
+      : Object.values(this.state.validationMessages);
+    this.setState({ validationError: filteredValidationBanner });
   };
 
   renderSourceComponent = (kind, isPlugin = false) => {
-    const { options, isSaving } = this.state;
+    const { options, isSaving, showValidationErrors } = this.state;
 
     const sourceComponentName = kind?.charAt(0).toUpperCase() + kind?.slice(1);
     const ComponentToRender = isPlugin ? SourceComponent : SourceComponents[sourceComponentName] || SourceComponent;
@@ -402,6 +414,8 @@ class DataSourceManagerComponent extends React.Component {
         setValidationMessages={this.setValidationMessages}
         clearValidationMessages={() => this.setState({ validationMessages: {} })}
         setDefaultOptions={this.setDefaultOptions}
+        showValidationErrors={showValidationErrors}
+        clearValidationErrorBanner={() => this.setState({ validationError: [] })}
       />
     );
   };
@@ -901,6 +915,7 @@ class DataSourceManagerComponent extends React.Component {
       addingDataSource,
       datasourceName,
       validationError,
+      validationMessages,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
     const createSelectedDataSource = (dataSource) => {
@@ -910,7 +925,9 @@ class DataSourceManagerComponent extends React.Component {
     const sampleDBmodalBodyStyle = isSampleDb ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' } : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
-      ? deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName
+      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
+          selectedDataSource?.name === datasourceName) ||
+        !isEmpty(validationMessages)
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb

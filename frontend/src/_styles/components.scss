@@ -237,6 +237,16 @@ $btn-dark-color: #FFFFFF;
       }
     }
   }
+
+  .page-permission-btn {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+
+    &.disabled {
+      opacity: 1 !important;
+    }
+  }
 }
 
 .notification-dot {

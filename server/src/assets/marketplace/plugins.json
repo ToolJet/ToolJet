@@ -1,6 +1,6 @@
 [
   {
-    "name": "plivo",
+    "name": "Plivo",
     "description": "Plugin for Plivo APIs",
     "version": "1.0.0",
     "id": "plivo",
@@ -22,7 +22,9 @@
     "id": "openai",
     "author": "Tooljet",
     "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "AWS Textract",
@@ -35,7 +37,7 @@
   {
     "name": "HarperDB",
     "repo": "",
-    "description": "Plugin for HarperDB data source",
+    "description": "Plugin to store and query data from HarperDB",
     "version": "1.0.0",
     "id": "harperdb",
     "author": "Tooljet",
@@ -82,7 +84,7 @@
     "timestamp": "Thu, 29 Feb 2024 09:46:21 GMT"
   },
   {
-    "name": "salesforce",
+    "name": "Salesforce",
     "description": "API plugin from salesforce",
     "version": "1.0.0",
     "id": "salesforce",
@@ -91,7 +93,7 @@
   },
   {
     "name": "Presto",
-    "description": "Plugin for PrestoDB data source",
+    "description": "Plugin for open source SQL query engine",
     "version": "1.0.0",
     "id": "presto",
     "author": "Tooljet",
@@ -107,7 +109,7 @@
   },
   {
     "name": "Jira",
-    "description": "Plugin for Jira data source",
+    "description": "Integrate with Jira for projects management",
     "version": "1.0.0",
     "id": "jira",
     "author": "Tooljet",
@@ -120,16 +122,20 @@
     "id": "portkey",
     "author": "Portkey",
     "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Pinecone",
-    "description": "Plugin for Pinecone Vector DB",
+    "description": "Plugin to store and manage data in Vector DB",
     "version": "1.0.0",
     "id": "pinecone",
     "author": "Tooljet",
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Cohere",
@@ -138,7 +144,9 @@
     "id": "cohere",
     "author": "Tooljet",
     "timestamp": "Tue, 21 Jan 2025 05:09:30 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Mistral",
@@ -147,7 +155,9 @@
     "id": "mistral_ai",
     "author": "Tooljet",
     "timestamp": "Tue, 21 Jan 2025 06:35:01 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Hugging Face",
@@ -156,7 +166,9 @@
     "id": "hugging_face",
     "author": "Tooljet",
     "timestamp": "Thu, 23 Jan 2025 06:44:25 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Gemini",
@@ -165,7 +177,9 @@
     "id": "gemini",
     "author": "Tooljet",
     "timestamp": "Fri, 17 Jan 2025 18:04:48 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Anthropic",
@@ -174,16 +188,20 @@
     "id": "anthropic",
     "author": "Tooljet",
     "timestamp": "Mon, 20 Jan 2025 08:04:46 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Qdrant",
-    "description": "Plugin for Qdrant APIs",
+    "description": "Plugin to store and manage data in Vector DB",
     "version": "1.0.0",
     "id": "qdrant",
     "author": "Tooljet",
     "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Weaviate DB",
@@ -192,11 +210,13 @@
     "id": "weaviate",
     "author": "Tooljet",
     "timestamp": "Tue, 21 Jan 2025 16:55:28 GMT",
-    "tags": ["AI"]
+    "tags": [
+      "AI"
+    ]
   },
   {
-    "name": "azurerepos",
-    "description": "api plugin from azurerepos",
+    "name": "Azure Repos",
+    "description": "Plugin for managing Azure repositories",
     "version": "1.0.0",
     "id": "azurerepos",
     "author": "Tooljet",

@@ -771,6 +771,7 @@
   padding-bottom: 8px;
   width: 44px;
   max-height: 230px;
+  margin-bottom: var(--dynamic-margin-2, 0px); //please Remove after Basicplan banner is removed..
 }
 
 .tj-leftsidebar-icon-items {

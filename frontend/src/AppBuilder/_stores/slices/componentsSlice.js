@@ -1896,4 +1896,28 @@ export const createComponentsSlice = (set, get) => ({
       state.modalsOpenOnCanvas = newModalOpenOnCanvas;
     });
   },
+  updateContainerAutoHeight: (componentId) => {
+    if (
+      !componentId ||
+      componentId === 'canvas' ||
+      componentId.includes('-header') ||
+      componentId.includes('-footer')
+    ) {
+      return;
+    }
+    const { currentLayout, getCurrentPageComponents, setComponentProperty } = get();
+    const allComponents = getCurrentPageComponents();
+
+    const childComponents = getAllChildComponents(allComponents, componentId);
+    const maxHeight = Object.values(childComponents).reduce((max, component) => {
+      const layout = component?.layouts?.[currentLayout];
+      if (!layout) {
+        return max;
+      }
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+  },
 });

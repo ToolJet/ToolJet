@@ -45,7 +45,7 @@ export class DataSourcesController implements IDataSourcesController {
     @Param('versionId') appVersionId,
     @Param('environmentId') environmentId
   ) {
-    return this.dataSourcesService.getForApp({ appVersionId, environmentId }, user);
+    return this.dataSourcesService.getForApp({ appVersionId, environmentId, shouldIncludeWorkflows: false }, user);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -127,5 +127,12 @@ export class DataSourcesController implements IDataSourcesController {
   ) {
     await this.dataSourcesService.authorizeOauth2(id, environmentId, authorizeDataSourceOauthDto, user);
     return;
+  }
+
+  @InitFeature(FEATURE_KEY.AUTHORIZE)
+  @UseGuards(FeatureAbilityGuard)
+  @Post('decrypt')
+  async decryptOptions(@Body() options: Record<string, any>) {
+    return await this.dataSourcesService.decryptOptions(options);
   }
 }

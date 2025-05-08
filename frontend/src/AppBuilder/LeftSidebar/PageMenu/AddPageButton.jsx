@@ -31,6 +31,7 @@ export const PageGroupMenu = ({ darkMode, isLicensed, disabled }) => {
   if (!isLicensed) {
     return (
       <button
+        data-cy="add-page-button"
         disabled={disabled}
         onClick={(event) => {
           if (disabled) return;

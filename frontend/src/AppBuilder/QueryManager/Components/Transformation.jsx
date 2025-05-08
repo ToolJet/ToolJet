@@ -204,7 +204,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
       <br />
       <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
         <div className="col flex-grow-1">
-          <div style={{ borderRadius: '6px', marginBottom: '20px', background: darkMode ? '#272822' : '#F8F9FA' }}>
+          <div style={{ borderRadius: '6px', background: darkMode ? '#272822' : '#F8F9FA' }}>
             <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
               <Tab.Container
                 activeKey={lang}

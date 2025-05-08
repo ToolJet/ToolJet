@@ -192,7 +192,9 @@ const ConstantForm = ({
                   {error['name']}
                 </span>
                 {!error['name'] && (
-                  <small style={{ color: 'var(--text-placeholder)' }}>Name must be unique and max 50 characters</small>
+                  <small style={{ color: 'var(--text-placeholder)' }} data-cy="name-info">
+                    Name must be unique and max 50 characters
+                  </small>
                 )}
               </div>
             </div>

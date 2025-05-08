@@ -1,14 +1,14 @@
 import { IEmailUtilService } from '@modules/email/interfaces/IUtilService';
 import { INSTANCE_SETTINGS_TYPE, INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
-import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { WhiteLabellingUtilService } from '@modules/white-labelling/util.service';
 import { Injectable } from '@nestjs/common';
+import { SMTPUtilService } from '@modules/smtp/util.service';
 
 @Injectable()
 export class EmailUtilService implements IEmailUtilService {
   constructor(
-    protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
-    protected readonly whiteLabellingUtilService: WhiteLabellingUtilService
+    protected readonly whiteLabellingUtilService: WhiteLabellingUtilService,
+    protected readonly smtpUtilService: SMTPUtilService
   ) {}
 
   async retrieveWhiteLabelSettings(organizationId?: string | null): Promise<any> {
@@ -17,7 +17,7 @@ export class EmailUtilService implements IEmailUtilService {
   }
 
   async retrieveSmtpSettings(): Promise<any> {
-    const smtpSetting = await this.instanceSettingsUtilService.getSettings(
+    const smtpSetting = await this.smtpUtilService.getSmtpEnv(
       [
         INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED,
         INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN,

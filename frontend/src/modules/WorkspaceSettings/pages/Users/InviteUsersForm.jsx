@@ -13,6 +13,7 @@ import { EDIT_ROLE_MESSAGE } from '@/modules/common/constants';
 import ModalBase from '@/_ui/Modal';
 import { UserMetadata } from './components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 function InviteUsersForm({
   onClose,
@@ -33,7 +34,6 @@ function InviteUsersForm({
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
-  const [userLimits, setUserLimits] = useState({});
   const [existingGroups, setExistingGroups] = useState([]);
   const [newRole, setNewRole] = useState(null);
   const customGroups = groups.filter((group) => group.groupType === 'custom' && group?.disabled !== true);
@@ -59,6 +59,7 @@ function InviteUsersForm({
     },
   ];
   const [selectedGroups, setSelectedGroups] = useState([]);
+  const [limitReachedType, setLimitReachedType] = useState({});
   useEffect(() => {
     setFileUpload(false);
   }, [activeTab]);
@@ -68,6 +69,7 @@ function InviteUsersForm({
 
   const { super_admin } = authenticationService.currentSessionValue;
   const [featureAccess, setFeatureAccess] = useState({});
+  const edition = fetchEdition();
 
   useEffect(() => {
     fetchFeatureAccess();
@@ -81,8 +83,18 @@ function InviteUsersForm({
   };
 
   const fetchUserLimits = () => {
-    userService.getUserLimits('total').then((data) => {
-      setUserLimits(data);
+    userService.getUserLimits('all').then((data) => {
+      const licenseBannerObject = {
+        builderPercentage: data?.editorsCount?.percentage,
+        endUserPercentage: data?.viewersCount?.percentage,
+        builderTotal: data?.editorsCount?.total,
+        endUserTotal: data?.viewersCount?.total,
+        canAddUnlimitedBuilder: data?.editorsCount?.canAddUnlimited,
+        canAddUnlimitedEndUser: data?.viewersCount?.canAddUnlimited,
+        currentBuilder: data?.editorsCount?.current,
+        currentEndUser: data?.viewersCount?.current,
+      };
+      setLimitReachedType(licenseBannerObject);
     });
   };
 
@@ -325,8 +337,11 @@ function InviteUsersForm({
           </div>
           {activeTab == 1 ? (
             <div className="manage-users-drawer-content">
-              <LicenseBanner classes="mb-3" limits={userLimits} type="users" size="small" />
-              <div className={`invite-user-by-email ${isEditing && 'enable-edit-fields'}`}>
+              <LicenseBanner classes="mb-3" userLimits={limitReachedType} size="small" type={'user-limits'} />
+              <div
+                className={`invite-user-by-email ${isEditing && 'enable-edit-fields'}`}
+                style={{ flexDirection: 'row' }}
+              >
                 <form
                   onSubmit={isEditing ? handleEditUser : handleCreateUser}
                   noValidate
@@ -410,7 +425,7 @@ function InviteUsersForm({
             </div>
           ) : (
             <div className="manage-users-drawer-content-bulk">
-              <LicenseBanner limits={userLimits} type="users" size="small" />
+              <LicenseBanner classes="mb-3" userLimits={limitReachedType} size="small" type={'user-limits'} />
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
                   <div>
@@ -424,7 +439,7 @@ function InviteUsersForm({
                     <ButtonSolid
                       href={`${window.public_config?.TOOLJET_HOST}${
                         window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                      }assets/csv/sample_upload.csv`}
+                      }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
@@ -471,6 +486,7 @@ function InviteUsersForm({
               width="20"
               fill={'#FDFDFE'}
               isLoading={uploadingUsers || creatingUser}
+              iconCustomClass="icon-color"
             >
               {!isEditing
                 ? activeTab == 1

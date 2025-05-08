@@ -1214,7 +1214,6 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          appVersionId,
           scope: 'global',
           pluginId: plugin.id,
         });
@@ -1230,7 +1229,6 @@ export class AppImportExportService {
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
-        appVersionId,
         scope: 'global',
         pluginId: null,
       });

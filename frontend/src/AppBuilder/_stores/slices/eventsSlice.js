@@ -860,7 +860,9 @@ export const createEventsSlice = (set, get) => ({
               const { switchPage } = get();
               const page = get().modules.canvas.pages.find((page) => page.id === event.pageId);
               const queryParams = event.queryParams || [];
-              if (!page.disabled) {
+              if (page.restricted && mode !== 'edit') {
+                toast.error('Access to this page is restricted. Contact admin to know more.');
+              } else if (!page.disabled) {
                 const resolvedQueryParams = [];
                 queryParams.forEach((param) => {
                   resolvedQueryParams.push([

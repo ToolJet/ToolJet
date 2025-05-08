@@ -1,8 +1,8 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
 import { WhiteLabellingModule } from '@modules/white-labelling/module';
-import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { DataSourcesModule } from '@modules/data-sources/module';
+import { SMTPModule } from '@modules/smtp/module';
 
 export class EmailModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -14,8 +14,8 @@ export class EmailModule {
       module: EmailModule,
       imports: [
         await WhiteLabellingModule.register(configs),
-        await InstanceSettingsModule.register(configs),
         await DataSourcesModule.register(configs),
+        await SMTPModule.register(configs),
       ],
       providers: [EmailService, EmailListener, EmailUtilService],
     };

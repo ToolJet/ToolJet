@@ -4,7 +4,7 @@ import { s3Selector } from "Selectors/awss3";
 import { postgreSqlText } from "Texts/postgreSql";
 import { s3Text } from "Texts/awss3";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
@@ -20,7 +20,7 @@ const data = {};
 describe("Data sources AWS S3", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -51,7 +51,31 @@ describe("Data sources AWS S3", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-aws-s3`,
+      "s3",
+      [
+        { key: "access_key", value: "" },
+        { key: "secret_key", value: "", encrypted: true },
+        { key: "region", value: "" },
+        { key: "endpoint", value: "" },
+        { key: "endpoint_enabled", value: false, encrypted: false },
+        {
+          key: "instance_metadata_credentials",
+          value: "iam_access_keys",
+          encrypted: false,
+        },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-aws-s3-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-aws-s3`
+    );
     cy.get(s3Selector.accessKeyLabel).verifyVisibleElement(
       "have.text",
       s3Text.accessKey

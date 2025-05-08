@@ -34,7 +34,7 @@ export const verifyValue = (node, type, children, index = 0) => {
 };
 export const deleteComponentFromInspector = (node) => {
   cy.get('[data-cy="inspector-node-components"] > .node-key').click();
-  cy.get(`[data-cy="inspector-node-${node}"] > .node-key`).realHover().parent().find('[style="height: 13px; width: 13px;"] > img').click();
+  cy.get(`[data-cy="inspector-node-${node}"] > .node-key`).realHover().parent().find('[style="height: 13px; width: 13px;"] > img').last().click();
 };
 
 export const verifyfunctions = (node, type, index = 0) => {

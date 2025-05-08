@@ -511,7 +511,12 @@ class HomePageComponent extends React.Component {
           this.state.currentFolder.id
         );
         this.fetchFolders();
-        this.fetchAppsLimit();
+        if (this.props.appType === 'workflow') {
+          this.fetchWorkflowsInstanceLimit();
+          this.fetchWorkflowsWorkspaceLimit();
+        } else {
+          this.fetchAppsLimit();
+        }
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
@@ -520,6 +525,10 @@ class HomePageComponent extends React.Component {
       .finally(() => {
         this.cancelDeleteAppDialog();
       });
+  };
+
+  isExistingPlanUser = (date) => {
+    return new Date(date) < new Date('2025-04-01');
   };
 
   pageCount = () => {
@@ -928,6 +937,8 @@ class HomePageComponent extends React.Component {
         dependentPlugins: dependentPlugins,
       },
     };
+    const isAdmin = authenticationService?.currentSessionValue?.admin;
+    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -1231,31 +1242,6 @@ class HomePageComponent extends React.Component {
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
-                  {this.props.appType === 'front-end' && (
-                    <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
-                  )}
-                  {this.props.appType === 'workflow' &&
-                    (workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                      100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                      workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1 ||
-                      workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total ||
-                      100 > workflowWorkspaceLevelLimit.percentage >= 90 ||
-                      workflowWorkspaceLevelLimit.current === workflowWorkspaceLevelLimit.total - 1) && (
-                      <>
-                        <LicenseBanner
-                          classes="mb-3 small"
-                          limits={
-                            workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                            100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                            workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                              ? workflowInstanceLevelLimit
-                              : workflowWorkspaceLevelLimit
-                          }
-                          type="workflow"
-                          size="small"
-                        />
-                      </>
-                    )}
                 </div>
               )}
               <Folders
@@ -1271,6 +1257,31 @@ class HomePageComponent extends React.Component {
                 canCreateApp={this.canCreateApp()}
                 appType={this.props.appType}
               />
+              {this.props.appType === 'front-end' && (
+                <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+              )}
+              {this.props.appType === 'workflow' &&
+                (workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                  100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                  workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1 ||
+                  workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total ||
+                  100 > workflowWorkspaceLevelLimit.percentage >= 90 ||
+                  workflowWorkspaceLevelLimit.current === workflowWorkspaceLevelLimit.total - 1) && (
+                  <>
+                    <LicenseBanner
+                      classes="mb-3 small"
+                      limits={
+                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                          ? workflowInstanceLevelLimit
+                          : workflowWorkspaceLevelLimit
+                      }
+                      type="workflow"
+                      size="small"
+                    />
+                  </>
+                )}
               {authenticationService.currentSessionValue?.super_admin &&
                 this.isWithinSevenDaysOfSignUp(authenticationService.currentSessionValue?.consultation_banner_date) && (
                   <ConsultationBanner
@@ -1284,7 +1295,7 @@ class HomePageComponent extends React.Component {
                 />
               )}
 
-              <OrganizationList />
+              <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>
 
             <div
@@ -1359,6 +1370,13 @@ class HomePageComponent extends React.Component {
                     viewTemplateLibraryModal={this.showTemplateLibraryModal}
                     hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                     appType={this.props.appType}
+                    workflowsLimit={
+                      workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                      100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                      workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        ? workflowInstanceLevelLimit
+                        : workflowWorkspaceLevelLimit
+                    }
                   />
                 )}
                 {!isLoading && apps?.length === 0 && appSearchKey && (

@@ -80,8 +80,8 @@ describe("Workspace constants", () => {
     addNewconstants("restapiHeaderKey", "customHeader");
     addNewconstants("restapiHeaderValue", "key=value");
     addNewconstants("deleteConst", "deleteconst");
-    addNewconstants("gconst", "236");
-    addNewconstants("gconstUrl", "http://34.66.166.236:4000/");
+    addNewconstants("gconst", "108");
+    addNewconstants("gconstUrl", "http://20.29.40.108:4000/");
     addNewconstants("gconstEndpoint", "production");
 
     // create secret constants
@@ -118,13 +118,15 @@ describe("Workspace constants", () => {
 
     //Verify all static and datasource queries output in components
     for (let i = 3; i <= 16; i++) {
+      cy.log("Verifying textinput" + i);
       cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
         .verifyVisibleElement("have.value", "Production environment testing");
     }
 
     //verify global constant is resolved in static query url
     cy.get('[data-cy="list-query-restapistaticg"]').click();
-    cy.get('.rest-api-methods-select-element-container .codehinter-container').click();
+    cy.get('.rest-api-methods-select-element-container .codehinter-container').eq(0).click();
+    cy.wait(500)
     cy.get('.text-secondary').should('have.text', Cypress.env("constants_host"));
 
     //Verify global constant is resolved in static query preview

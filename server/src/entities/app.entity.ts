@@ -19,6 +19,7 @@ import { User } from './user.entity';
 import { GroupApps } from './group_apps.entity';
 import { AppGroupPermission } from './app_group_permission.entity';
 import { AiConversation } from './ai_conversation.entity';
+import { Organization } from './organization.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
@@ -45,6 +46,10 @@ export class App extends BaseEntity {
 
   @Column({ name: 'organization_id' })
   organizationId: string;
+
+  @ManyToOne(() => Organization)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
 
   @Column({ name: 'current_version_id' })
   currentVersionId: string;

@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -16,9 +17,11 @@ export class GroupUsers extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ name: 'user_id', nullable: false })
   userId: string;
 
+  @Index()
   @Column({ name: 'group_id', nullable: false })
   groupId: string;
 

@@ -29,6 +29,8 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { App } from '@entities/app.entity';
 import { AiModule } from '@modules/ai/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { RolesRepository } from '@modules/roles/repository';
 export class WorkflowsModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -69,6 +71,7 @@ export class WorkflowsModule {
           WorkflowExecutionNode,
           WorkflowExecutionNode,
           WorkflowExecutionEdge,
+          RolesRepository,
         ]),
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
@@ -91,6 +94,7 @@ export class WorkflowsModule {
         await FolderAppsModule.register(configs),
         await ThemesModule.register(configs),
         await AiModule.register(configs),
+        await AppPermissionsModule.register(configs),
       ],
       providers: [
         AppsAbilityFactory,
@@ -113,6 +117,7 @@ export class WorkflowsModule {
         WorkflowSchedulesService,
         TemporalService,
         FeatureAbilityFactory,
+        RolesRepository,
       ],
       controllers: [
         WorkflowsController,

@@ -21,6 +21,7 @@ export const BlankPage = function BlankPage({
   viewTemplateLibraryModal,
   appType,
   canCreateApp,
+  workflowsLimit,
 }) {
   const { t } = useTranslation();
   const whiteLabelText = retrieveWhiteLabelText();
@@ -43,6 +44,8 @@ export const BlankPage = function BlankPage({
   }
 
   const appCreationDisabled = !canCreateApp() || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
+  const workflowsCreationDisabled =
+    !canCreateApp() || (!workflowsLimit?.canAddUnlimited && workflowsLimit?.percentage >= 100);
 
   const templateOptionsView = (
     <>
@@ -133,12 +136,12 @@ export const BlankPage = function BlankPage({
                     <div className="row mt-4">
                       <div className="col-6">
                         <ButtonSolid
-                          disabled={appCreationDisabled}
                           leftIcon="plus"
                           onClick={openCreateAppModal}
                           isLoading={creatingApp}
                           data-cy="button-new-app-from-scratch"
                           className="col"
+                          disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
                           fill={'#FDFDFE'}
                         >
                           Create new {appType !== 'workflow' ? 'application' : 'workflow'}

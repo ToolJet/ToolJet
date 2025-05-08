@@ -1,8 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   addQuery,
   fillDataSourceTextField,
@@ -23,7 +23,8 @@ const data = {};
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -54,7 +55,25 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "InfluxDB", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-influxdb`,
+      "influxdb",
+      [
+        { key: "api_token", value: "", encrypted: true },
+        { key: "port", value: "8086", encrypted: false },
+        { key: "host", value: "", encrypted: false },
+        { key: "protocol", value: "http", encrypted: false },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-influxdb-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-influxdb`
+    );
 
     cy.get('[data-cy="label-api-token"]').verifyVisibleElement(
       "have.text",

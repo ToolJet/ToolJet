@@ -17,7 +17,9 @@ const ForgotPasswordInfoScreen = ({ email }) => {
     <div className="forgot-password-info-wrapper info-screen">
       <OnboardingUIWrapper>
         <FormHeader>Password has been reset</FormHeader>
-        <p className="message">{message}</p>
+        <p className="message" data-cy="reset-password-page-description">
+          {message}
+        </p>
         <div className="action-buttons pt-3">
           <button
             onClick={() =>

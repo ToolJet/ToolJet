@@ -18,7 +18,7 @@ export const generalSettings = () => {
 
   cy.get(ssoSelector.workspaceLoginPage.defaultSSO).click();
   cy.get(ssoSelector.defaultGoogle).verifyVisibleElement("have.text", "Google");
-  cy.get(ssoSelector.defaultGithub).verifyVisibleElement("have.text", "Github");
+  cy.get(ssoSelector.defaultGithub).verifyVisibleElement("have.text", "Git");
 
   cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
   cy.get(ssoSelector.saveButton).click();
@@ -416,7 +416,7 @@ export const resetDomain = () => {
     cy.request(
       {
         method: "PATCH",
-        url: `${Cypress.env("server_host")}/api/organizations`,
+        url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,

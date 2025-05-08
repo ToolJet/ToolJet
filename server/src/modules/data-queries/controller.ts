@@ -15,30 +15,30 @@ import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/gua
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
-import { QueryAuthGuard } from './guards/query-auth.guard';
 import { AbilityDecorator as Ability } from '@modules/app/decorators/ability.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
+import { QueryAuthGuard } from './guards/query-auth.guard';
+import { RunQuerySourceGuard } from './guards/run-query.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
   constructor(protected dataQueriesService: DataQueriesService) {}
 
-  // Add ability check - App editable
   @InitFeature(FEATURE_KEY.GET)
-  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, AppFeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId')
   index(@Param('versionId') versionId: string) {
     return this.dataQueriesService.getAll(versionId);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
-  // Add ability check - App editable and data source configurable
   @UseGuards(
     JwtAuthGuard,
     ValidateAppVersionGuard,
+    ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard
@@ -55,7 +55,6 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_ONE)
-  // Add ability check - App editable and data source editable
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
@@ -64,8 +63,9 @@ export class DataQueriesController implements IDataQueriesController {
     DataSourceFeatureAbilityGuard
   )
   @Patch(':id/versions/:versionId')
-  async updateDataSource(
+  async updateDataQuery(
     @User() user: UserEntity,
+    @AppDecorator() app: App,
     @Param('id') dataQueryId,
     @Param('versionId') versionId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
@@ -76,7 +76,7 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
-  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, AppFeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Patch('versions/:versionId')
   async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
     return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
@@ -97,7 +97,6 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_EDITOR)
-  // TODO: Validate against app edit access
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
@@ -108,6 +107,7 @@ export class DataQueriesController implements IDataQueriesController {
   @Post(':id/versions/:versionId/run/:environmentId')
   runQueryOnBuilder(
     @User() user: UserEntity,
+    @AppDecorator() app: App,
     @Param('id') dataQueryId,
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto,
@@ -127,11 +127,11 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  // TODO: Validate against app view access
-  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
+  @UseGuards(QueryAuthGuard, RunQuerySourceGuard)
   @Post(':id/run')
   async runQuery(
     @User() user: UserEntity,
+    @AppDecorator() app: App,
     @Param('id') dataQueryId,
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Res({ passthrough: true }) response: Response

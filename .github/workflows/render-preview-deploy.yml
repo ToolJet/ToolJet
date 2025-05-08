@@ -12,7 +12,7 @@ permissions:
 
 jobs:
 
-# Community Edition
+# Community Edition CE
   create-ce-review-app:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
@@ -72,7 +72,7 @@ jobs:
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -80,11 +80,11 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_DB",
@@ -96,15 +96,15 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
@@ -116,7 +116,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-ce-tjdb"
+                "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -163,24 +163,16 @@ jobs:
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
               },
               {
-                "key": "TEMPORAL_SERVER_ADDRESS",
-                "value": "https://auto-setup-1-25-1.onrender.com"
-              },
-              {
-                "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
-                "value": "tooljet-ce-pr-${{ env.PR_NUMBER }}"
-              },
-              {
-                "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
-                "value": "default"
-              },
-              {
                 "key": "TOOLJET_MARKETPLACE_URL",
                 "value": "${{ secrets.MARKETPLACE_BUCKET }}"
               }
             ],
             "serviceDetails": {
-              "disk": null,
+              "disk": {
+                "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
+                "mountPath": "/data",
+                "sizeGB": 10
+              },
               "env": "docker",
               "envSpecificDetails": {
                 "dockerCommand": "",
@@ -424,7 +416,7 @@ jobs:
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -432,11 +424,11 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_DB",
@@ -448,15 +440,15 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
@@ -468,7 +460,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-ee-tjdb"
+                "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -548,7 +540,11 @@ jobs:
               }
             ],
             "serviceDetails": {
-              "disk": null,
+              "disk": {
+                "name": "tooljet-ee-pr-${{ env.PR_NUMBER }}-postgresql",
+                "mountPath": "/data",
+                "sizeGB": 10
+              },
               "env": "docker",
               "envSpecificDetails": {
                 "dockerCommand": "",
@@ -561,7 +557,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "starter",
+                "plan": "standard",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-ee-pr-${{ env.PR_NUMBER }}.onrender.com"
@@ -1124,4 +1120,3 @@ jobs:
   #           } catch (e) {
   #             console.log(e)
   #           }
-

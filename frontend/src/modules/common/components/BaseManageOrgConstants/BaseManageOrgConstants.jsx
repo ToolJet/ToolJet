@@ -348,10 +348,10 @@ const BaseManageOrgConstants = ({
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
         })
-        .catch(({ error }) => {
+        .catch(({ error, data }) => {
           setErrors(error);
-          toast.error(error);
-          if (error === NoPermissionMessage) {
+          toast.error(data?.statusCode === 403 ? 'You do not have permissions to perform this action' : data?.message);
+          if (error === NoPermissionMessage || data?.statusCode === 403) {
             redirectToWorkspace();
           }
         })
@@ -364,10 +364,10 @@ const BaseManageOrgConstants = ({
         toast.success(`${variable.type} constant created successfully!`);
         onCancelBtnClicked();
       })
-      .catch(({ error }) => {
+      .catch(({ error, data }) => {
         setErrors(error);
-        toast.error(error || 'Constant could not be created');
-        if (error === NoPermissionMessage) {
+        toast.error(data?.statusCode === 403 ? 'You do not have permissions to perform this action' : data?.message);
+        if (error === NoPermissionMessage || data?.statusCode === 403) {
           redirectToWorkspace();
         }
       })
@@ -390,9 +390,10 @@ const BaseManageOrgConstants = ({
         setSelectedConstant(null);
         setMode(MODES.NULL);
       })
-      .catch(({ error }) => {
-        toast.error(error);
-        if (error === NoPermissionMessage) {
+      .catch(({ error, data }) => {
+        setErrors(error);
+        toast.error(data?.statusCode === 403 ? 'You do not have permissions to perform this action' : data?.message);
+        if (error === NoPermissionMessage || data?.statusCode === 403) {
           redirectToWorkspace();
         }
       })
@@ -472,8 +473,10 @@ const BaseManageOrgConstants = ({
               featureAceess={featureAccess}
               licenseType={featureAccess?.licenseStatus?.licenseType}
             />
+            <div style={{ marginTop: '850px' }}>
+              <OrganizationList />
+            </div>
           </div>
-          <OrganizationList />
         </div>
         <div className="page-wrapper mt-4">
           <div className="container-xl" style={{ width: '880px' }}>

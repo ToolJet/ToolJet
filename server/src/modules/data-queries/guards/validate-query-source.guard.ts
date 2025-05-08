@@ -45,6 +45,7 @@ export class ValidateQuerySourceGuard implements CanActivate {
     // Attach the found app to the request
     request.tj_data_source = dataSource;
     request.tj_resource_id = dataSource.id;
+    request.resource_type = dataSource?.type;
 
     // Return true to allow the request to proceed
     return true;

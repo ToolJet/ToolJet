@@ -40,7 +40,7 @@ export const verifyControlComponentAction = (widgetName, value) => {
 
 export const addBasicData = (data) => {
   openEditorSidebar(buttonText.defaultWidgetName);
-  verifyAndModifyParameter(buttonText.buttonTextLabel, data.widgetName);
+  verifyAndModifyParameter('Label', data.widgetName);
 
   openAccordion(commonWidgetText.accordionEvents);
   addDefaultEventHandler(data.alertMessage);

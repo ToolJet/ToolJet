@@ -3,7 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 import {
@@ -21,7 +21,8 @@ const data = {};
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -52,7 +53,27 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "CouchDB", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-couchdb`,
+      "couchdb",
+      [
+        { key: "username", value: "", encrypted: false },
+        { key: "password", value: "", encrypted: true },
+        { key: "database", value: "" },
+        { key: "port", value: "5984" },
+        { key: "host", value: "" },
+        { key: "protocol" },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-couchdb-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-couchdb`
+    );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -72,7 +93,7 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.labelDbName).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelDbName
+      "Database Name"
     );
 
     cy.get('[data-cy="label-protocol"]').verifyVisibleElement(
@@ -122,11 +143,7 @@ describe("Data sources", () => {
       Cypress.env("couchdb_host")
     );
     fillDataSourceTextField(postgreSqlText.labelPort, "5984 ", "5984");
-    fillDataSourceTextField(
-      postgreSqlText.labelDbName,
-      "database name",
-      "{del}"
-    );
+    fillDataSourceTextField("Database Name", "database name", "{del}");
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       "username for couchDB",

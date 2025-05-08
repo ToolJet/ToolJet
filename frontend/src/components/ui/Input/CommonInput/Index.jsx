@@ -32,21 +32,28 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
     }
   }, [isValidatedMessages]);
 
+  useEffect(() => {
+    if (isValid === true && (!isValidatedMessages || isValidatedMessages.valid === null)) {
+      setIsValid(true);
+    }
+  }, [isValid, isValidatedMessages]);
+
   const toggleEditing = () => {
     if (isDisabled) return;
 
     const willBeInEditMode = !isEditing;
     setIsEditing(willBeInEditMode);
-
-    if (willBeInEditMode) {
-      change({ target: { value: '' } });
-    }
+    change({ target: { value: '' } });
   };
 
   return (
     <div>
       <div className="d-flex">
-        {label && <InputLabel disabled={disabled} label={label} required={required} />}
+        {label && (
+          <div className="tw-flex-shrink-0">
+            <InputLabel disabled={disabled} label={label} required={required} />
+          </div>
+        )}
         {type === 'password' && (
           <div className="d-flex justify-content-between w-100">
             <div className="mx-1 col">

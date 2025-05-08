@@ -117,7 +117,7 @@ export const Header = memo(
           </div>
         </div>
         {showFilter && (
-          <Filter table={table} darkMode={darkMode} setFilters={setFilters} setShowFilter={setShowFilter} />
+          <Filter id={id} table={table} darkMode={darkMode} setFilters={setFilters} setShowFilter={setShowFilter} />
         )}
       </>
     );

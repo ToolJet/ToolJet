@@ -56,7 +56,7 @@ export const ModalWidget = ({ ...restProps }) => {
   return (
     <BootstrapModal
       {...restProps}
-      contentClassName="modal-component tj-modal-widget-content"
+      contentClassName="modal-component tj-modal--container tj-modal-widget-content"
       animation={true}
       onEscapeKeyDown={(e) => {
         e.preventDefault();

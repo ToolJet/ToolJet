@@ -52,7 +52,9 @@ export class OrganizationsService implements IOrganizationsService {
   ): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
+        await this.licenseOrganizationService.validateOrganization(manager); //Check for only unarchiving
+      }
       return;
     });
   }

@@ -192,8 +192,21 @@ export const returnWorkspaceIdIfNeed = (path) => {
 };
 export const getRedirectURL = (path) => {
   let redirectLoc = '/';
+  const instanceLevelRoutes = [
+    '/all-users',
+    '/all-workspaces',
+    '/manage-instance-settings',
+    '/white-labelling',
+    '/instance-login',
+    '/smtp',
+    '/license',
+  ];
   if (path) {
-    redirectLoc = `${returnWorkspaceIdIfNeed(path)}${path !== '/' ? path : ''}`;
+    if (instanceLevelRoutes.includes(path)) {
+      redirectLoc = `/settings${path}`;
+    } else {
+      redirectLoc = `${returnWorkspaceIdIfNeed(path)}${path !== '/' ? path : ''}`;
+    }
   } else {
     const redirectTo = getRedirectTo();
     const { from } = redirectTo ? { from: { pathname: redirectTo } } : { from: { pathname: '/' } };

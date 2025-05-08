@@ -30,6 +30,8 @@ const DynamicFormV2 = ({
   validationMessages,
   setValidationMessages,
   clearValidationMessages,
+  showValidationErrors,
+  clearValidationErrorBanner,
 }) => {
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
@@ -89,18 +91,97 @@ const DynamicFormV2 = ({
 
   React.useEffect(() => {
     if (!hasUserInteracted) return;
-    const { valid, errors } = dsm.validateData(options);
 
-    if (valid) {
-      clearValidationMessages();
-    } else {
-      setValidationMessages(errors, schema);
-      const requiredFields = errors
-        .filter((error) => error.keyword === 'required')
-        .map((error) => error.params.missingProperty);
-      setConditionallyRequiredProperties(requiredFields);
+    const timeout = setTimeout(() => {
+      validateOptions();
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [options, hasUserInteracted, validateOptions]);
+
+  const validateOptions = React.useCallback(async () => {
+    try {
+      const { valid, errors } = await dsm.validateData(options);
+
+      const conditionallyRequiredFields = processAllOfConditions(schema, options);
+      setConditionallyRequiredProperties(conditionallyRequiredFields);
+
+      if (valid) {
+        clearValidationMessages();
+        clearValidationErrorBanner();
+      } else {
+        setValidationMessages(errors, schema, interactedFields);
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
     }
-  }, [options]);
+  }, [
+    dsm,
+    options,
+    processAllOfConditions,
+    schema,
+    clearValidationMessages,
+    clearValidationErrorBanner,
+    setValidationMessages,
+    interactedFields,
+  ]);
+
+  const processAllOfConditions = React.useCallback((schema, options, path = []) => {
+    let requiredFields = [];
+
+    if (schema.allOf) {
+      schema.allOf.forEach((condition) => {
+        if (condition.if && condition.then) {
+          const conditionMatches = Object.entries(condition.if.properties || {}).every(([propName, propCondition]) => {
+            const propertyPath = [...path, propName];
+
+            let currentValue = options;
+            for (const segment of propertyPath) {
+              if (!currentValue || typeof currentValue !== 'object') {
+                return false;
+              }
+              currentValue = currentValue[segment]?.value;
+            }
+
+            return propCondition.const === currentValue;
+          });
+
+          if (conditionMatches) {
+            if (condition.then.required) {
+              requiredFields = [...requiredFields, ...condition.then.required];
+            }
+
+            if (condition.then.allOf) {
+              const nestedRequired = processAllOfConditions({ allOf: condition.then.allOf }, options, path);
+              requiredFields = [...requiredFields, ...nestedRequired];
+            }
+
+            if (condition.then.properties) {
+              Object.entries(condition.then.properties).forEach(([propName, propSchema]) => {
+                if (propSchema.allOf) {
+                  const nestedRequired = processAllOfConditions({ allOf: propSchema.allOf }, options, [
+                    ...path,
+                    propName,
+                  ]);
+                  requiredFields = [...requiredFields, ...nestedRequired];
+                }
+              });
+            }
+          }
+        }
+      });
+    }
+
+    return requiredFields;
+  }, []);
+
+  React.useEffect(() => {
+    if (showValidationErrors) {
+      setHasUserInteracted(true);
+      const allFieldKeys = Object.keys(options);
+      setInteractedFields(new Set(allFieldKeys));
+    }
+  }, [showValidationErrors, options]);
 
   React.useEffect(() => {
     const prevDataSourceId = prevDataSourceIdRef.current;
@@ -189,6 +270,7 @@ const DynamicFormV2 = ({
         return Input;
       case 'password-v3':
       case 'text-v3':
+      case 'password-v3-textarea':
         return InputV3;
       case 'textarea':
         return Textarea;
@@ -210,8 +292,10 @@ const DynamicFormV2 = ({
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
+    const skipValidation =
+      (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
 
-    const handleOptionChange = (key, value, flag) => {
+    const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
         setHasUserInteracted(true);
       }
@@ -243,6 +327,7 @@ const DynamicFormV2 = ({
         };
       }
       case 'password-v3':
+      case 'password-v3-textarea':
       case 'text-v3': {
         return {
           key,
@@ -262,14 +347,13 @@ const DynamicFormV2 = ({
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
-          isValidatedMessages:
-            !hasUserInteracted || !interactedFields.has(key)
-              ? { valid: null, message: '' } // skip validation for initial render and untouched elements
-              : validationMessages[key]
-              ? { valid: false, message: validationMessages[key] }
-              : isRequired && !isEncrypted
-              ? { valid: true, message: '' }
-              : { valid: null, message: '' }, // handle optional && encrypted fields
+          isValidatedMessages: skipValidation
+            ? { valid: null, message: '' } // skip validation for initial render and untouched elements
+            : validationMessages[key]
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' }, // handle optional && encrypted fields
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       }
@@ -285,7 +369,7 @@ const DynamicFormV2 = ({
           options: isRenderedAsQueryEditor
             ? options?.[key] ?? schema?.defaults?.[key]
             : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
-          optionchanged,
+          handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
@@ -298,14 +382,14 @@ const DynamicFormV2 = ({
         return {
           defaultChecked: currentValue,
           checked: currentValue,
-          onChange: (e) => optionchanged(key, e.target.checked),
+          onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
         return {
           options: list,
           value: options?.[key]?.value || options?.[key],
-          onChange: (value) => optionchanged(key, value),
+          onChange: (value) => handleOptionChange(key, value, true),
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
         };
@@ -404,6 +488,7 @@ const DynamicFormV2 = ({
                   {label &&
                     widget !== 'text-v3' &&
                     widget !== 'password-v3' &&
+                    widget !== 'password-v3-textarea' &&
                     renderLabel(label, uiProperties[key].tooltip)}
                 </div>
               )}

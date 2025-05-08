@@ -39,6 +39,7 @@ export interface ILicenseCountsService {
   fetchTotalAppCount(manager: EntityManager): Promise<number>;
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number>;
   organizationsCount(manager?: EntityManager): Promise<number>;
+  fetchTotalAppCount(manager: EntityManager): Promise<number>;
 }
 
 export interface ILicenseAppsService {

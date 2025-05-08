@@ -1,8 +1,18 @@
 .link-widget {
   a {
-    text-underline-offset: 32%; // Adds space between text and underline
-    &:hover {
-      color: var(--link-hover-color) !important;
+    text-decoration: none !important; 
+    pointer-events: none;
+    cursor: none !important;
+
+    .link-text {
+      pointer-events: all;
+      text-underline-offset: 32%; // Adds space between text and underline
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;
+        text-decoration-color: var(--link-hover-color) !important;
+        color: var(--link-hover-color) !important;
+      }
     }
-    }
+  }
 }

@@ -1,4 +1,5 @@
-import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto } from '../dto/external_apis.dto';
+import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto } from '../dto';
+import { EditUserRoleDto } from '@modules/roles/dto';
 
 export interface IExternalApisController {
   // Gets list of all users in the system
@@ -21,4 +22,7 @@ export interface IExternalApisController {
 
   // Gets list of all workspaces
   getAllWorkspaces(): Promise<any>;
+
+  // Updates user role
+  updateUserRole(workspaceId: string, editRoleDto: EditUserRoleDto): Promise<any>;
 }

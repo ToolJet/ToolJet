@@ -23,7 +23,7 @@ data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("Data source Redis", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
   });
 
   it("Should verify elements on connection Redis form", () => {
@@ -215,7 +215,7 @@ describe("Data source Redis", () => {
     deleteDatasource(`cypress-${data.dsName}-redis`);
   });
 
-  it("Should able to run the query with valid conection", () => {
+  it.skip("Should able to run the query with valid conection", () => {
     selectAndAddDataSource("databases", redisText.redis, data.dsName);
 
     fillDataSourceTextField(

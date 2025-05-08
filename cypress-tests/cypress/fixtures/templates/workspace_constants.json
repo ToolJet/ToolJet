@@ -2766,7 +2766,7 @@
                             "name": "restapiStaticUrlG",
                             "options": {
                                 "method": "get",
-                                "url": "http://34.66.166.236:4000/{{constants.gconstEndpoint}}",
+                                "url": "http://20.29.40.108:4000/{{constants.gconstEndpoint}}",
                                 "url_params": [
                                     [
                                         "",
@@ -2814,7 +2814,7 @@
                             "name": "restapiUrlS",
                             "options": {
                                 "method": "get",
-                                "url": "http://34.66.166.236:4000/{{secrets.sconstEndpoint}}",
+                                "url": "http://20.29.40.108:4000/{{secrets.sconstEndpoint}}",
                                 "url_params": [
                                     [
                                         "",
@@ -2908,7 +2908,7 @@
                             "name": "restapiUrlGS",
                             "options": {
                                 "method": "get",
-                                "url": "http://34.66.166.{{constants.gconst}}{{secrets.sconst}}/production",
+                                "url": "http://20.29.40.{{constants.gconst}}{{secrets.sconst}}/production",
                                 "url_params": [
                                     [
                                         "",
@@ -3419,7 +3419,7 @@
                             "environmentId": "dab04b8d-7d1a-468a-b219-b2e1d0169d8c",
                             "options": {
                                 "url": {
-                                    "value": "http://34.66.166.236:4000/{{constants.gconstEndpoint}}",
+                                    "value": "http://20.29.40.108:4000/{{constants.gconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {
@@ -3540,7 +3540,7 @@
                             "environmentId": "dab04b8d-7d1a-468a-b219-b2e1d0169d8c",
                             "options": {
                                 "url": {
-                                    "value": "http://34.66.166.236:4000/{{secrets.sconstEndpoint}}",
+                                    "value": "http://20.29.40.108:4000/{{secrets.sconstEndpoint}}",
                                     "encrypted": false
                                 },
                                 "auth_type": {
@@ -3782,7 +3782,7 @@
                             "environmentId": "dab04b8d-7d1a-468a-b219-b2e1d0169d8c",
                             "options": {
                                 "url": {
-                                    "value": "http://34.66.166.{{constants.gconst}}{{secrets.sconst}}/production",
+                                    "value": "http://20.29.40.{{constants.gconst}}{{secrets.sconst}}/production",
                                     "encrypted": false
                                 },
                                 "auth_type": {

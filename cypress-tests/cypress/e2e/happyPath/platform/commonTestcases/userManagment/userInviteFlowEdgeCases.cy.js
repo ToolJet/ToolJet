@@ -58,7 +58,8 @@ describe("inviteflow edge cases", () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
         logout();
 
-        cy.defaultWorkspaceLogin();
+        cy.apiLogin();
+        cy.visit(workspaceName);
         navigateToManageUsers();
         searchUser(data.email);
         cy.contains("td", data.email)

@@ -49,6 +49,7 @@
     align-items: center;
     justify-content: center;
     border-top: 1px solid var(--slate5);
+    margin-bottom: var(--dynamic-margin, 0px); //please Remove after Basicplan banner is removed..
 }
 
 .tj-org-select {

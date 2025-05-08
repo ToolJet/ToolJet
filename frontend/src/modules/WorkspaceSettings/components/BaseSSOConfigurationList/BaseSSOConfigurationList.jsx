@@ -409,7 +409,7 @@ class BaseSSOConfigurationList extends React.Component {
                     !this.isInstanceOptionEnabled(sso.sso) ||
                     (sso.sso === 'openid' && !featureAccess?.openid)
                   } // Disable the item if defaultSSO is false
-                  data-cy={`dropdwon-options-${sso.sso}`}
+                  data-cy={`dropdown-options-${sso.sso}`}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {this.getSSOIcon(sso.sso)}

@@ -31,6 +31,7 @@ export const ON_BOARDING_ROLES = [
 export const ERROR_TYPES = {
   URL_UNAVAILABLE: 'url-unavailable',
   RESTRICTED: 'restricted',
+  NO_ACCESSIBLE_PAGES: 'no-accessible-pages',
   INVALID: 'invalid-link',
   UNKNOWN: 'unknown',
   WORKSPACE_ARCHIVED: 'Organization is Archived',
@@ -50,6 +51,12 @@ export const ERROR_MESSAGES = {
     title: 'Restricted access',
     message: 'You don’t have access to this app. Kindly contact admin to know more.',
     cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  'no-accessible-pages': {
+    title: 'Restricted access',
+    message: 'You don’t have access to any page in this app. Kindly contact admin to know more.',
     retry: false,
     queryParams: [],
   },
