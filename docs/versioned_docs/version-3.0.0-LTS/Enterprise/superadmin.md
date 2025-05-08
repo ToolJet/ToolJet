@@ -20,7 +20,7 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | Manage SSO in their workspace | ✅ | ✅ |
 | Manage Workspace Variables in their workspace | ✅ | ✅ |
 | Manage Workspace Constants in their workspace | ✅ | ✅ |
-| [Manage data sources for the user group in their workspace](/docs/data-sources/overview#user-permissions) | ✅ | ✅ |
+| [Manage data sources for the user group in their workspace](/docs/3.0.0-LTS/data-sources/overview#user-permissions) | ✅ | ✅ |
 | [Access any user's personal workspace (create, edit or delete apps)](#access-any-workspace) | ❌ | ✅ |
 | [Archive Admin or any user of any workspace](#archiveunarchive-users) | ❌ | ✅ |
 | [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace) | ❌ | ✅ |

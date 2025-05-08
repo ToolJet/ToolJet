@@ -6,7 +6,7 @@ title: Kubernetes (EKS)
 Follow the steps below to deploy ToolJet on an EKS Kubernetes cluster.
 
 :::info
-You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an RDS PostgreSQL database. You can find the system requirements [here](/docs/setup/system-requirements#database-software)
+You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an RDS PostgreSQL database. You can find the system requirements [here](/docs/setup/system-requirements#postgresql)
 :::
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
@@ -46,7 +46,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
+To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database).
 
 1. Set up PostgREST server
 
