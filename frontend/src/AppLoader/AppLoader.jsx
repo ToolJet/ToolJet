@@ -12,8 +12,14 @@ const AppLoader = (props) => {
     resetAllStores();
   }, []);
 
-  if (appType === 'front-end') return <RenderAppBuilder {...props} />;
-  else if (appType === 'workflow') return <RenderWorkflow {...props} />;
+  switch (appType) {
+    case 'front-end':
+      return <RenderAppBuilder appType="front-end" {...props} />;
+    case 'workflow':
+      return <RenderWorkflow {...props} />;
+    case 'module':
+      return <RenderAppBuilder appType="module" {...props} />;
+  }
 };
 
 export default withTranslation()(AppLoader);

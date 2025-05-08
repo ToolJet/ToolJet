@@ -11,12 +11,14 @@ import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import { useTranslation } from 'react-i18next';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const CanvasSettings = ({ darkMode }) => {
+  const { moduleId } = useModuleContext();
   const { globalSettings, globalSettingsChanged, resolveOthers, getCanvasBackgroundColor } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
-      updateGlobalSettings: state.updateGlobalSettings,
+      isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
       globalSettingsChanged: state.globalSettingsChanged,
       resolveOthers: state.resolveOthers,
       getCanvasBackgroundColor: state.getCanvasBackgroundColor,

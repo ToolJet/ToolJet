@@ -1,10 +1,43 @@
 const initialState = {
-  isEditorLoading: true,
-  isCanvasLoading: false,
+  loaderStore: {
+    modules: {
+      canvas: {
+        isEditorLoading: true,
+      },
+    },
+  },
 };
 
-export const createLoaderSlice = (set) => ({
+export const createLoaderSlice = (set, get) => ({
   ...initialState,
-  setEditorLoading: (status) => set(() => ({ isEditorLoading: status }), false, 'setEditorLoading'),
-  setCanvasLoading: (status) => set(() => ({ isCanvasLoading: status }), false, 'setCanvasLoading'),
+  initializeLoaderSlice: (moduleId) => {
+    set(
+      (state) => {
+        state.loaderStore.modules[moduleId] = {
+          ...initialState.loaderStore.modules.canvas,
+        };
+      },
+      false,
+      'initializeLoaderSlice'
+    );
+  },
+  setEditorLoading: (status, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.loaderStore.modules[moduleId].isEditorLoading = status;
+      },
+      false,
+      'setEditorLoading'
+    ),
+  setIsLoaderLoading: (status, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.loaderStore.modules[moduleId] = {
+          isLoaderLoading: status,
+        };
+      },
+      false,
+      'setIsLoaderLoading'
+    ),
+  getEditorLoading: (moduleId) => get().loaderStore.modules[moduleId].isEditorLoading,
 });

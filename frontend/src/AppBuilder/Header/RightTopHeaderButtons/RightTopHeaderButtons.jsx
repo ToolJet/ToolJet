@@ -8,19 +8,21 @@ import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const RightTopHeaderButtons = () => {
+const RightTopHeaderButtons = ({ isModuleEditor }) => {
   return (
     <div className="d-flex justify-content-end navbar-right-section" style={{ width: '300px', paddingRight: '12px' }}>
       <div className=" release-buttons navbar-nav flex-row">
         <PreviewAndShareIcons />
-        <PromoteReleaseButton />
+        {!isModuleEditor && <PromoteReleaseButton />}
       </div>
     </div>
   );
 };
 
 const PreviewAndShareIcons = () => {
+  const { moduleId } = useModuleContext();
   const {
     featureAccess,
     currentPageHandle,
@@ -36,14 +38,14 @@ const PreviewAndShareIcons = () => {
   } = useStore(
     (state) => ({
       featureAccess: state.license?.featureAccess,
-      currentPageHandle: state?.currentPageHandle,
+      currentPageHandle: state?.modules[moduleId].currentPageHandle,
       selectedEnvironment: state.selectedEnvironment,
       isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
       editingVersion: state.editingVersion,
-      appId: state.app.appId,
-      app: state.app.app,
-      slug: state.app.slug,
-      isPublic: state.app.isPublic,
+      appId: state.appStore.modules[moduleId].app.appId,
+      app: state.appStore.modules[moduleId].app.app,
+      slug: state.appStore.modules[moduleId].app.slug,
+      isPublic: state.appStore.modules[moduleId].app.isPublic,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
     }),

@@ -1,20 +1,21 @@
 .active-target {
     outline: 1px solid #4af !important;
-} 
+}
 
-.main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {  
+.main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {
     outline: 1px solid #4af;
     z-index: 4 !important;
 }
 
-.main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {  
+.main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {
     // outline: 1px solid #4af;
     z-index: 4 !important;
+}
+
+.main-editor-canvas .widget-target.module-container {
+    outline: dotted 2px #CCD1D5 !important;
 }
 
 // .main-editor-canvas .widget-target:hover {
 //     outline: 1px solid #4af;
 //   }
-
-
-

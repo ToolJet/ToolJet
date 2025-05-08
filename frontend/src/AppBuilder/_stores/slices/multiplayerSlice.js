@@ -21,14 +21,14 @@ export const createMultiplayerSlice = (set, get) => ({
           diff,
           type,
           operation,
-          pageId: get().currentPageId,
+          pageId: get().getCurrentPageId('canvas'),
           versionId: get().selectedVersion?.id,
         });
       }
     },
 
     processUpdate: ({ diff, type, operation, pageId, versionId }) => {
-      const currentPageId = get().currentPageId;
+      const currentPageId = get().getCurrentPageId('canvas');
       const currentVersionId = get().selectedVersion?.id;
 
       if (currentPageId === pageId && currentVersionId === versionId)

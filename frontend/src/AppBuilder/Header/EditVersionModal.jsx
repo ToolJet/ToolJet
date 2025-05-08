@@ -4,8 +4,10 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) => {
+  const { moduleId } = useModuleContext();
   const [isEditingVersion, setIsEditingVersion] = useState(false);
   const {
     updateVersionNameAction,
@@ -15,7 +17,7 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
     (state) => ({
       updateVersionNameAction: state.updateVersionNameAction,
       selectedVersion: state.selectedVersion,
-      appId: state.app.appId,
+      appId: state.appStore.modules[moduleId].app.appId,
     }),
     shallow
   );

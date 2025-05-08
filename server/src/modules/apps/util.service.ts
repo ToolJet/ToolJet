@@ -37,6 +37,8 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { Component } from 'src/entities/component.entity';
+import { Layout } from 'src/entities/layout.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -89,8 +91,52 @@ export class AppsUtilService implements IAppsUtilService {
         })
       );
 
+      if (type === 'module') {
+        const moduleContainer = await manager.save(
+          manager.create(Component, {
+            name: 'ModuleContainer',
+            type: 'ModuleContainer',
+            pageId: defaultHomePage.id,
+            properties: {
+              inputItems: { value: [] },
+              outputItems: { value: [] },
+              visibility: { value: '{{true}}' },
+            },
+            styles: {
+              backgroundColor: { value: '#fff' },
+            },
+            displayPreferences: {
+              showOnDesktop: { value: '{{true}}' },
+              showOnMobile: { value: '{{true}}' },
+            },
+          })
+        );
+
+        await manager.save(
+          manager.create(Layout, {
+            component: moduleContainer,
+            type: 'desktop',
+            top: 50,
+            left: 6,
+            height: 400,
+            width: 38,
+          })
+        );
+
+        await manager.save(
+          manager.create(Layout, {
+            component: moduleContainer,
+            type: 'mobile',
+            top: 50,
+            left: 6,
+            height: 400,
+            width: 38,
+          })
+        );
+      }
+
       // Set default values for app version
-      appVersion.showViewerNavigation = true;
+      appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
         hideHeader: false,
@@ -407,6 +453,10 @@ export class AppsUtilService implements IAppsUtilService {
       .addSelect(['user.firstName', 'user.lastName'])
       .where('viewable_apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
+    if (type === 'module') {
+      viewableAppsQb.leftJoinAndSelect('viewable_apps.appVersions', 'versions');
+    }
+
     if (type) viewableAppsQb.andWhere('viewable_apps.type = :type', { type: type });
 
     if (searchKey) {
@@ -521,5 +571,43 @@ export class AppsUtilService implements IAppsUtilService {
     }
 
     return components;
+  }
+
+  async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
+    const versionToLoad = versionId
+      ? await this.versionRepository.findVersion(versionId)
+      : app.currentVersionId
+      ? await this.versionRepository.findVersion(app.currentVersionId)
+      : await this.versionRepository.findVersion(app.editingVersion?.id);
+
+    const modules = await dbTransactionWrap(async (manager) => {
+      const moduleComponents = await manager
+        .createQueryBuilder(Component, 'component')
+        .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
+        .leftJoinAndSelect(AppVersion, 'app_version', 'app_version.id = page.app_version_id')
+        .leftJoinAndSelect(App, 'app', 'app.id = app_version.app_id')
+        .andWhere(
+          `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
+          {
+            module: 'ModuleViewer',
+            appVersionId: versionToLoad.id,
+            appId: app.id,
+          }
+        )
+        .getMany();
+
+      const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+
+      const modules =
+        moduleAppIds.length > 0
+          ? await manager
+              .createQueryBuilder(App, 'app')
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .distinct(true)
+              .getMany()
+          : [];
+      return modules;
+    });
+    return modules;
   }
 }

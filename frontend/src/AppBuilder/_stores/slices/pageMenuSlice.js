@@ -199,10 +199,8 @@ export const createPageMenuSlice = (set, get) => {
     updatePageWithPermissions: (pageId, value) => updatePageWithPermissions(pageId, [value])(set, get),
     // unsure about this one
     clonePage: async (pageId) => {
-      const {
-        app: { appId },
-        currentVersionId,
-      } = get();
+      const { getAppId, currentVersionId } = get();
+      const appId = getAppId('canvas');
       const pages = get().modules.canvas.pages;
       const data = await appVersionService.clonePage(appId, currentVersionId, pageId);
       const newPages = data?.pages;
@@ -225,7 +223,7 @@ export const createPageMenuSlice = (set, get) => {
         pageId: pageId,
       };
       const pages = get().modules.canvas.pages;
-      const currentPageId = get().currentPageId;
+      const currentPageId = get().getCurrentPageId('canvas');
       const switchPage = get().switchPage;
       if (pages.length === 1) {
         toast.error('You cannot delete the only page in your app.');
@@ -250,11 +248,11 @@ export const createPageMenuSlice = (set, get) => {
      *  If home page is in the group, the group cannot be deleted
      * If current page is in the group, the page will be switched to home page
      */
-    deletePageGroup: async (pageGroupId, deleteAssociatedPages = false) => {
+    deletePageGroup: async (pageGroupId, deleteAssociatedPages = false, moduleId = 'canvas') => {
       const { app, currentVersionId } = get();
       const pages = get().modules.canvas.pages;
 
-      const homePageId = get().app.homePageId;
+      const homePageId = get().appStore.modules[moduleId].app.homePageId;
       const diff = {
         pageId: pageGroupId,
         deleteAssociatedPages,
@@ -267,7 +265,7 @@ export const createPageMenuSlice = (set, get) => {
           if (pages[i].id === homePageId && pages[i].pageGroupId === pageGroupId) {
             isHomePageInGroup = true;
           }
-          if (pages[i].id === get().currentPageId && pages[i].pageGroupId === pageGroupId) {
+          if (pages[i].id === get().getCurrentPageId('canvas') && pages[i].pageGroupId === pageGroupId) {
             isCurrentPageInGroup = true;
           }
         }
@@ -309,14 +307,14 @@ export const createPageMenuSlice = (set, get) => {
         await savePageChanges(app.appId, currentVersionId, pageGroupId, diff, 'delete');
       }
     },
-    markAsHomePage: async (pageId) => {
+    markAsHomePage: async (pageId, moduleId = 'canvas') => {
       const { app, currentVersionId, editingPage } = get();
       const diff = {
         homePageId: pageId,
       };
 
       set((state) => {
-        state.app.homePageId = pageId;
+        state.appStore.modules[moduleId].app.homePageId = pageId;
         state.showEditingPopover = false;
         state.editingPage = null;
       });
@@ -324,7 +322,7 @@ export const createPageMenuSlice = (set, get) => {
     },
     reorderPages: async (reorderdPages) => {
       const diff = {};
-      const currentPageId = get().currentPageId;
+      const currentPageId = get().getCurrentPageId('canvas');
       // update index of everything to avoid inconsistencies
       reorderdPages.forEach((page, index) => {
         diff[page.id] = {

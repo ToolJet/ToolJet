@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { WidgetBox } from '../WidgetBox';
+import { ModuleWidgetBox } from '@/modules/Modules/components';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { snapToGrid } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
-export const DragLayer = ({ index, component }) => {
+export const DragLayer = ({ index, component, isModuleTab = false }) => {
+  // const currentLayout = useStore((state) => state.currentLayout, shallow);
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
@@ -19,12 +21,17 @@ export const DragLayer = ({ index, component }) => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
 
+  // const size = isModuleTab
+  //   ? component.module_container.layouts[currentLayout]
+  //   : component.defaultSize || { width: 30, height: 40 };
+
   const size = component.defaultSize || { width: 30, height: 40 };
+
   return (
     <>
       {isDragging && <CustomDragLayer size={size} />}
-      <div ref={drag} className="draggable-box" style={{ height: '100%' }}>
-        <WidgetBox index={index} component={component} />
+      <div ref={drag} className="draggable-box" style={{ height: '100%', width: isModuleTab && '100%' }}>
+        {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
       </div>
     </>
   );

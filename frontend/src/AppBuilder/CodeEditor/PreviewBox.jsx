@@ -13,6 +13,7 @@ import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -90,11 +91,12 @@ export const PreviewBox = ({
   isWorkspaceVariable,
   validationFn,
 }) => {
+  const { moduleId } = useModuleContext();
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
   const [largeDataset, setLargeDataset] = useState(false);
-  const globals = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
+  const globals = useStore((state) => state.getAllExposedValues(moduleId).constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
   const globalServerConstantsRegex = /^\{\{.*globals\.server.*\}\}$/;
 

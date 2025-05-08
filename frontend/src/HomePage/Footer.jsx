@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Pagination from '@/_ui/Pagination';
 import Skeleton from 'react-loading-skeleton';
 
-const Footer = ({ darkMode, count, pageChanged, dataLoading, itemsPerPage = 9 }) => {
+const Footer = ({ darkMode, count, pageChanged, dataLoading, itemsPerPage = 9, appType }) => {
   const [pageCount, setPageCount] = useState(1);
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
@@ -60,7 +60,7 @@ const Footer = ({ darkMode, count, pageChanged, dataLoading, itemsPerPage = 9 })
               <Skeleton count={1} height={2} />
             ) : (
               <span className="animation-fade">
-                {pageRange} of {count} apps
+                {pageRange} of {count} {appType === 'module' ? 'modules' : 'apps'}
               </span>
             )}
           </div>

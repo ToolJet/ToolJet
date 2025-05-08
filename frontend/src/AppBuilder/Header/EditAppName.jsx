@@ -8,10 +8,17 @@ import { InfoOrErrorBox } from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 function EditAppName() {
+  const { moduleId } = useModuleContext();
   const [appId, appName, setAppName, appCreationMode] = useStore(
-    (state) => [state.app.appId, state.app.appName, state.setAppName, state.app.creationMode],
+    (state) => [
+      state.appStore.modules[moduleId].app.appId,
+      state.appStore.modules[moduleId].app.appName,
+      state.setAppName,
+      state.appStore.modules[moduleId].app.creationMode,
+    ],
     shallow
   );
 
