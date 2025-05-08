@@ -16,7 +16,7 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') || 
       contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') || 
       contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       matrix:
