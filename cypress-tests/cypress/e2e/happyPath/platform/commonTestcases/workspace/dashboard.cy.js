@@ -236,7 +236,8 @@ describe("dashboard", () => {
     cy.get(dashboardSelector.addToFolderButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      commonText.AddedToFolderToast
+      commonText.AddedToFolderToast,
+      false
     );
 
     cy.get(dashboardSelector.folderName(data.folderName)).verifyVisibleElement(
@@ -265,7 +266,8 @@ describe("dashboard", () => {
     cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      commonText.appRemovedFromFolderTaost
+      commonText.appRemovedFromFolderTaost,
+      false
     );
     cy.get(commonSelectors.modalComponent).should("not.exist");
     cy.get(commonSelectors.empytyFolderImage).should("be.visible");
@@ -326,7 +328,8 @@ describe("dashboard", () => {
     cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      commonText.appDeletedToast
+      commonText.appDeletedToast,
+      false
     );
     verifyAppDelete(data.cloneAppName);
     cy.wait("@appLibrary");
