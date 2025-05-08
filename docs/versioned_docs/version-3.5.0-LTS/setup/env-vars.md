@@ -48,6 +48,13 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 - `TOOLJET_DB_PASS`: Database password
 - `TOOLJET_DB_PORT`: Database port
 
+#### Why ToolJet Requires Two Databases
+
+| **Environment Variable** | **Description** |
+|---------------------------|-----------------|
+| **TOOLJET_DB** | Stores ToolJet's internal metadata, including tables created within the platform. |
+| **PG_DB** | The primary database for storing application data, used by the apps built on ToolJet to manage end-user data. |
+
 **Automatic Database Creation:** The database name specified in `TOOLJET_DB` will be automatically created during the server boot process in all production deployment setups.
 
 #### PostgREST
