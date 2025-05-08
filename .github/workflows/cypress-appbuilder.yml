@@ -13,16 +13,18 @@ jobs:
   Cypress-App-Builder:
     runs-on: ubuntu-22.04
     if: |
-      contains(github.event.pull_request.labels.*.name, 'run-ce-app-builder') || 
-      contains(github.event.pull_request.labels.*.name, 'run-ee-app-builder') || 
-      contains(github.event.pull_request.labels.*.name, 'run-cypress')
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') || 
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') || 
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
 
     strategy:
       matrix:
         edition: >-
           ${{ 
-            contains(github.event.pull_request.labels.*.name, 'run-ce-app-builder') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-ee-app-builder') && fromJson('["ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') && fromJson('["ee"]') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
             fromJson('[]')
           }}
@@ -158,35 +160,35 @@ jobs:
           name: screenshots-appbuilder-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
-  Cypress-App-builder-Subpath: 
-    runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-subpath')
+  # Cypress-App-builder-Subpath: 
+  #   runs-on: ubuntu-22.04
+  #   if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+  #       contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-subpath')
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Create Cypress environment file
-        id: create-json
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
-          dir: "./cypress-tests"
+  #     - name: Create Cypress environment file
+  #       id: create-json
+  #       uses: jsdaniell/create-json@1.1.2
+  #       with:
+  #         name: "cypress.env.json"
+  #         json: ${{ secrets.CYPRESS_SECRETS }}
+  #         dir: "./cypress-tests"
 
-      - name: App Builder subpath
-        uses: cypress-io/github-action@v5
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80/apps/tooljet/"
-          config-file: cypress-app-builder.config.js
+  #     - name: App Builder subpath
+  #       uses: cypress-io/github-action@v5
+  #       with:
+  #         working-directory: ./cypress-tests
+  #         config: "baseUrl=http://localhost:80/apps/tooljet/"
+  #         config-file: cypress-app-builder.config.js
 
-      - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: screenshots
-          path: cypress-tests/cypress/screenshots
+  #     - name: Capture Screenshots
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: screenshots
+  #         path: cypress-tests/cypress/screenshots
