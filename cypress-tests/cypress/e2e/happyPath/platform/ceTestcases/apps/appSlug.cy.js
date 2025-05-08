@@ -30,12 +30,18 @@ describe("App Slug", () => {
     cy.apiLogin();
     const workspaceId = Cypress.env("workspaceId");
     const appId = Cypress.env("appId");
+    const appUrl = `/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`;
 
     cy.visit("/my-workspace");
     cy.wait(1000);
 
-    cy.skipWalkthrough()
-    cy.visit(`/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`);
+    cy.skipWalkthrough();
+    cy.visit(appUrl);
+    cy.url((url) => {
+      if (url !== appUrl) {
+        cy.visit(appUrl);
+      }
+    });
     cy.wait(1000);
 
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
