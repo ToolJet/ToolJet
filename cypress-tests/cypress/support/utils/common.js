@@ -16,9 +16,7 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.logoutLink).click();
-  cy.intercept("GET", "/api/metadata").as("publicConfig");
-  cy.wait("@publicConfig");
-  cy.wait(500);
+  cy.wait(1000);
 };
 
 export const navigateToManageUsers = () => {
@@ -183,9 +181,8 @@ export const manageUsersPagination = (email) => {
 
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.inputUserSearch, email);
-  cy.wait(1000)
+  cy.wait(1000);
 };
-
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
@@ -221,7 +218,6 @@ export const pinInspector = () => {
     }
   });
   cy.hideTooltip();
-
 };
 
 export const navigateToworkspaceConstants = () => {
@@ -243,24 +239,3 @@ export const verifyTooltipDisabled = (selector, message) => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
-
-export const deleteAllGroupChips = () => {
-  cy.get('body').then(($body) => {
-    if ($body.find('[data-cy="group-chip"]').length > 0) {
-      cy.get('[data-cy="group-chip"]').then(($groupChip) => {
-        if ($groupChip.is(':visible')) {
-          cy.get('[data-cy="group-chip"]').first().click();
-          cy.get('[data-cy="delete-button"]').click();
-          cy.get('[data-cy="yes-button"]').click();
-
-          cy.wait(2000);
-          deleteAllGroupChips(); // Recursive call to delete next chip
-        } else {
-          cy.log("Group chip is present but not visible, skipping deletion");
-        }
-      });
-    } else {
-      cy.log("No group chips left to delete");
-    }
-  });
-}

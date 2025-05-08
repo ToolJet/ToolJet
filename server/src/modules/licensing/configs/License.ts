@@ -1,10 +1,11 @@
 import LicenseBase from './LicenseBase';
+import { BASIC_PLAN_TERMS } from '../constants/PlanTerms'; //ce TERMS
 
 export default class License extends LicenseBase {
   private static _instance: License;
 
   private constructor(key: string, updatedDate: Date) {
-    super();
+    super(BASIC_PLAN_TERMS);
   }
 
   public static Instance(): License {

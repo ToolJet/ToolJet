@@ -8280,6 +8280,10 @@ tbody {
   }
 }
 
+.query-manager-btn-shortcut {
+  color: var(--text-disabled) !important;
+}
+
 .font-weight-500 {
   font-weight: 500;
 }
@@ -11604,10 +11608,6 @@ tbody {
   cursor: pointer;
 }
 
-.user-csv-template-wrap {
-  margin-top: 24px;
-}
-
 
 .manage-users-drawer-content-bulk {
   margin: 24px 15px;
@@ -12342,6 +12342,17 @@ tbody {
   input.dynamic-form-encrypted-field[type="password"] {
     &:disabled {
       padding-right: 35px !important;
+    }
+  }
+
+  .design-component-inputs textarea {
+    
+    &.valid-textarea {
+      border: 1.5px solid #519b62 !important;
+    }
+    
+    &.invalid-textarea {
+      border: 1.5px solid #e26367 !important;
     }
   }
 
@@ -13138,6 +13149,10 @@ tbody {
   }
 
   input:disabled {
+    background-color: var(--slate3) !important;
+  }
+
+  textarea:disabled {
     background-color: var(--slate3) !important;
   }
 
