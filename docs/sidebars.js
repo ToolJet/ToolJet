@@ -163,7 +163,12 @@ const sidebars = {
           'type': 'category',
           'label': 'Writing Custom Code',
           'items': [
-            'app-builder/import-libraries/runjs',
+            'app-builder/custom-code/fx-dynamic-behaviour',
+            'app-builder/custom-code/control-components',
+            'app-builder/custom-code/transform-data',
+            'app-builder/custom-code/managing-variables',
+            'app-builder/custom-code/using-libraries',
+            'app-builder/custom-code/constants-secrets',
           ],
         },
         {
