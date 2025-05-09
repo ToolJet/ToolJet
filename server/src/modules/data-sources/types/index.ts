@@ -48,6 +48,7 @@ export { QueryError, OAuthUnauthorizedClientError };
 export interface GetQueryVariables {
   appVersionId?: string;
   environmentId?: string;
+  isGetStatic?: boolean;
   shouldIncludeWorkflows?: boolean;
 }
 
@@ -55,3 +56,5 @@ export interface UpdateOptions {
   dataSourceId: string;
   environmentId: string;
 }
+
+export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';

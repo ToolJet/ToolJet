@@ -19,7 +19,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
     organizationId: string,
     queryVars: GetQueryVariables
   ): Promise<DataSource[]> {
-    const { appVersionId, environmentId } = queryVars;
+    const { appVersionId, environmentId, isGetStatic } = queryVars;
     // Data source options are attached only if selectedEnvironmentId is passed
     // Returns global data sources + sample data sources
     // If version Id is passed, then data queries under each are also returned
@@ -67,6 +67,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
         .andWhere('data_source.organization_id = :organizationId', { organizationId })
         .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.GLOBAL });
 
+      if (isGetStatic) {
+        query.andWhere('data_source.type = :type', { type: DataSourceTypes.STATIC });
+      }
       if (environmentId) {
         query.andWhere('data_source_options.environmentId = :environmentId', { environmentId });
       }
@@ -140,11 +143,12 @@ export class DataSourcesRepository extends Repository<DataSource> {
     }, manager || this.manager);
   }
 
-  async createDefaultDataSource(kind: string, appVersionId: string, manager?: EntityManager): Promise<DataSource> {
+  async createDefaultDataSource(kind: string, organizationId: string, manager?: EntityManager): Promise<DataSource> {
     const newDataSource = manager.create(DataSource, {
       name: `${kind}default`,
       kind,
-      appVersionId,
+      scope: DataSourceScopes.GLOBAL,
+      organizationId,
       type: DataSourceTypes.STATIC,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -152,19 +156,17 @@ export class DataSourcesRepository extends Repository<DataSource> {
     return await manager.save(newDataSource);
   }
 
+  async getStaticDataSources(organizationId: string, manager?: EntityManager): Promise<DataSource[]> {
+    return await manager.find(DataSource, {
+      where: { organizationId, type: DataSourceTypes.STATIC },
+    });
+  }
+
   findByQuery(dataQueryId: string, organizationId: string, dataSourceId?: string, manager?: EntityManager) {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.findOne(DataSource, {
         where: { ...(dataSourceId ? { id: dataSourceId } : {}), dataQueries: { id: dataQueryId } },
         relations: ['dataQueries', 'plugin'],
-      });
-    }, manager || this.manager);
-  }
-
-  getAllStaticDataSources(versionId: string, manager?: EntityManager): Promise<DataSource[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(DataSource, {
-        where: { appVersionId: versionId, type: DataSourceTypes.STATIC },
       });
     }, manager || this.manager);
   }
