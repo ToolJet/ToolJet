@@ -500,7 +500,7 @@
     line-break: anywhere;
     text-align: center;
 
-    
+
 }
 
 .signup-password-wrap,
@@ -1603,12 +1603,13 @@
                 gap: 20px;
 
                 .body-row {
-                    .feature-title {
-                        width: 70%;
-                    }
 
                     display: grid;
                     grid-template-columns: 1fr 0.2fr 0.1fr;
+
+                    .feature-title {
+                        width: 70%;
+                    }
 
                     .form-check-input {
                         background-image: none !important;
