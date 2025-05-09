@@ -37,11 +37,13 @@ describe("App Slug", () => {
 
     cy.skipWalkthrough();
     cy.visit(appUrl);
-    cy.url((url) => {
+    cy.wait(3000);
+    cy.url().then((url) => {
       if (url !== appUrl) {
         cy.visit(appUrl);
       }
     });
+
     cy.wait(1000);
 
     cy.get(commonSelectors.leftSideBarSettingsButton).click();

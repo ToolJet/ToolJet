@@ -183,7 +183,7 @@ describe("dashboard", () => {
 
     cy.backToApps();
 
-    cy.wait(500);
+    cy.wait(1000);
     cy.get(commonSelectors.appCard(data.appName))
       .parent()
       .within(() => {
@@ -193,8 +193,6 @@ describe("dashboard", () => {
           data.appName
         );
         cy.get(commonSelectors.appCreationDetails).should("be.visible");
-
-        //Add the edited details
       });
 
     viewAppCardOptions(data.appName);
