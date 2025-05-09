@@ -115,8 +115,8 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
   cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
-    // appVersionText.versionNameAlreadyExists
-    "Already exists!"
+    appVersionText.versionNameAlreadyExists
+    // "Already exists!"
   );
 };
 
