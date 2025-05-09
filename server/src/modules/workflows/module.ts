@@ -71,7 +71,6 @@ export class WorkflowsModule {
           WorkflowExecutionNode,
           WorkflowExecutionNode,
           WorkflowExecutionEdge,
-          RolesRepository,
         ]),
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
