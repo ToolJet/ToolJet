@@ -3,11 +3,23 @@ id: "binding-data-to-components"
 title: Binding data to components
 ---
 
-In this section we will learn how to bind data to components in ToolJet. The data here can be from your datasource or can be from other components as well.
+In this section, you’ll learn how to connect and bind data to components within ToolJet, whether the data comes from a datasource or other components in your app.
 
-You can bind data to a component by using the `{{ }}` syntax. For example, you are working on a Employee Directory app where you want to show all employees in a table. If you have a query named *listEmployees*, that returns an array of employee objects, you can pass its data to a Table component by setting the table's data property to `{{queries.listEmployees.data}}`.
+Certain components have a data property which can be filled with static/hardcoded data like text, button, etc or dynamic data like table, statistics, etc. You can fetch the dynamic data by binding a query to a component. You can bind data to a component by using the `{{ }}` syntax. 
+
+If you want to fetch the data from a query, you can use the following syntax:  
+`{{queries.<query-name>.data}}`
+
+For example, you are working on a Employee Directory app where you want to show all employees in a table. If you have a query named *listEmployees*, that returns an array of employee objects, you can pass its data to a Table component by setting the table's data property to `{{queries.listEmployees.data}}`.
 
 <img className="screenshot-full img-full" style={{marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/binding.png" alt="App Builder: bininding data to components"/>
+
+Similarly, if you want to fetch the data from another component, you can use the following syntax:
+`{{components.<component-name>.<variable-name>}}` 
+
+For example, let's say you have a Dropdown component called *dropdown1* and you want to display the selected value in of the text component. You can set the value property of the Text component to 
+`{{components.dropdown1.value}}` 
+
 
 ToolJet also supports JavaScript expressions inside `{{ }}`, so you can manipulate the data on the fly. Here are a few examples:
 

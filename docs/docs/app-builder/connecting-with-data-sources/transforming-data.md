@@ -3,17 +3,16 @@ id: transforming-data
 title: Transforming Data
 ---
 
-In real-world applications, the raw data you fetch from an API or database often needs customization before displaying it in the components. You might need to:
--	Show only a few important fields
--	Format timestamps to be more readable
--	Rename fields for clarity
--	Convert nested objects into flat lists
+Transformations help you shape backend data into a frontend-friendly format, keeping your UI logic simple and your app easier to maintain. While buliding apps, the raw data you fetch from an API or database often needs customization before displaying it in the components. You might need to:
+-	 Convert raw ISO timestamps into DD/MM/YYYY.
+-	 Flatten deeply nested objects for use in tables or dropdowns.
+-	 Convert currency, distance, or temperature values before display.
+-	 Adjust field names to match component expectations.
 
 That’s where data transformations come in. You can use the it to reshape, clean, or filter your data before passing it to UI components. 
 
-You can write transformation code in JavaScript or Python directly within the Transformations tab of a query.
+You can write transformation code in JavaScript or Python. Let’s say you’re building an employee management dashboard, and your getEmployees API returns a lot of extra data:
 
-Let’s say you’re building an employee management dashboard, and your getEmployees API returns a lot of extra data:
 ```json
 [
   {
@@ -61,10 +60,4 @@ If you’re more comfortable with Python, just switch the language in the transf
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_python.png" alt="App Builder: query transformations"/>
 
 
-## Use Cases 
--	Date formatting: Convert raw ISO timestamps into DD/MM/YYYY.
--	Nested data: Flatten deeply nested objects for use in tables or dropdowns.
--	Unit conversion: Convert currency, distance, or temperature values before display.
--	Field renaming: Adjust field names to match component expectations.
-
-Transformations help you shape backend data into a frontend-friendly format, keeping your UI logic simple and your app easier to maintain.
+Instead of changing APIs or writing extra code in every component, you can transform the data once at the query level. This makes your app easier to build and maintain.
