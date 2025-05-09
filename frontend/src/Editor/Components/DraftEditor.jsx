@@ -1,7 +1,8 @@
 /* eslint-disable react/no-string-refs */
 import React from 'react';
-import { Editor, EditorState, RichUtils, getDefaultKeyBinding, ContentState, convertFromHTML } from 'draft-js';
+import { Editor, EditorState, RichUtils, getDefaultKeyBinding } from 'draft-js';
 import 'draft-js/dist/Draft.css';
+import { stateFromHTML } from 'draft-js-import-html';
 import { stateToHTML } from 'draft-js-export-html';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import DOMPurify from 'dompurify';
@@ -150,11 +151,8 @@ const InlineStyleControls = (props) => {
 class DraftEditor extends React.Component {
   constructor(props) {
     super(props);
-    const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(this.props.defaultValue));
     this.state = {
-      editorState: EditorState.createWithContent(
-        ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap)
-      ),
+      editorState: EditorState.createWithContent(stateFromHTML(DOMPurify.sanitize(this.props.defaultValue))),
     };
 
     this.editorContainerRef = React.createRef();
@@ -171,6 +169,18 @@ class DraftEditor extends React.Component {
     this.mapKeyToEditorCommand = this._mapKeyToEditorCommand.bind(this);
     this.toggleBlockType = this._toggleBlockType.bind(this);
     this.toggleInlineStyle = this._toggleInlineStyle.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.defaultValue !== this.props.defaultValue) {
+      const newContentState = stateFromHTML(DOMPurify.sanitize(this.props.defaultValue));
+      const newEditorState = EditorState.createWithContent(newContentState);
+      const html = stateToHTML(newContentState);
+
+      this.props.handleChange(html);
+
+      this.setState({ editorState: newEditorState });
+    }
   }
 
   componentDidMount() {
@@ -193,11 +203,7 @@ class DraftEditor extends React.Component {
       isVisible: this.props.isVisible,
       isLoading: this.props.isLoading,
       setValue: async (text) => {
-        const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(text));
-        const newContentState = ContentState.createFromBlockArray(
-          blocksFromHTML.contentBlocks,
-          blocksFromHTML.entityMap
-        );
+        const newContentState = stateFromHTML(DOMPurify.sanitize(text));
         const newEditorState = EditorState.createWithContent(newContentState);
         const html = stateToHTML(newContentState);
         this.props.handleChange(html);
@@ -223,19 +229,6 @@ class DraftEditor extends React.Component {
   componentWillUnmount() {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
-    }
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.defaultValue !== this.props.defaultValue) {
-      const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(this.props.defaultValue));
-      const newContentState = ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap);
-      const newEditorState = EditorState.createWithContent(newContentState);
-      const html = stateToHTML(newContentState);
-
-      this.props.handleChange(html);
-
-      this.setState({ editorState: newEditorState });
     }
   }
 
