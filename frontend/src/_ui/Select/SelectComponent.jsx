@@ -75,7 +75,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
-      classNamePrefix={`${isDarkMode && 'dark-theme'} ${'react-select'}${customClassPrefix}`}
+      classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
     />
   );
 };

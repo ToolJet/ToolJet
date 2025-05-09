@@ -144,7 +144,7 @@ class Restapi extends React.Component {
 
   setupIntersectionObserver() {
     const container = document.getElementsByClassName('query-details')[0];
-    const trigger = document.querySelector('.react-select-restapi-method__control');
+    const trigger = document.querySelector('.restapi-method-select.react-select__control');
 
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
@@ -152,7 +152,7 @@ class Restapi extends React.Component {
 
     this.intersectionObserver = new IntersectionObserver(
       ([entry]) => {
-        const popover = document.querySelector('.react-select-restapi-method__menu');
+        const popover = document.querySelector('.restapi-method-select.react-select__menu');
         if (entry.isIntersecting) {
           if (this.prevIsMenuOpenRef.current) {
             popover.style.display = 'block';
@@ -324,7 +324,7 @@ class Restapi extends React.Component {
                     height={32}
                     styles={this.customSelectStyles(this.props.darkMode, 91)}
                     useCustomStyles={true}
-                    customClassPrefix="-restapi-method"
+                    customClassPrefix="restapi-method-select"
                     onMenuOpen={() => {
                       this.isMenuOpenRef.current = true;
                     }}
