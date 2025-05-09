@@ -292,6 +292,7 @@ export default class LicenseBase {
     return this._isServerSideGlobal;
   }
   public get externalApis(): boolean {
+    return true;
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.externalApi;
     }
