@@ -46,7 +46,7 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
       WHERE id = (
       SELECT id 
       FROM organizations 
-      WHERE status = active
+      WHERE status = '${WORKSPACE_STATUS.ACTIVE}'
       ORDER BY created_at ASC 
       LIMIT 1
       );
