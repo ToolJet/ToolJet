@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getCustomEnvVars, getTooljetEdition } from '@helpers/utils.helper';
+import { Organization } from '@entities/organization.entity';
+import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 
 export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -17,6 +19,14 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
         const pathParts = url.pathname.split('/');
         const workspaceSlug = pathParts[pathParts.length - 1];
         if (workspaceSlug) {
+          const organization = await queryRunner.manager.findOne(Organization, {
+            where: { slug: workspaceSlug, status: WORKSPACE_STATUS.ACTIVE },
+            select: ['id'],
+          });
+          if (!organization) {
+            console.log(`Organization with slug ${workspaceSlug} is not active or does not exist`);
+            return;
+          }
           await queryRunner.query(`
             UPDATE organizations 
             SET is_default = true 
@@ -34,10 +44,11 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
       UPDATE organizations 
       SET is_default = true 
       WHERE id = (
-        SELECT id 
-        FROM organizations 
-        ORDER BY created_at ASC 
-        LIMIT 1
+      SELECT id 
+      FROM organizations 
+      WHERE status = active
+      ORDER BY created_at ASC 
+      LIMIT 1
       );
     `);
   }
