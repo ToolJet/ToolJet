@@ -5,6 +5,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { DataSource } from '@entities/data_source.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 type Subjects = InferSubjects<typeof DataSource> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -33,10 +34,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isAllViewable = !!resourcePermissions?.isAllUsable;
 
     const dataSourceId = request?.tj_resource_id;
-
+    const toolJetEdition = getTooljetEdition();
     // Oauth end points available to all
     can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
     can(FEATURE_KEY.AUTHORIZE, DataSource);
+    if ((toolJetEdition == 'ee' && superAdmin) || (toolJetEdition !== 'ee' && isAdmin)) {
+      can(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN, DataSource);
+    }
 
     if (isBuilder) {
       // Only builder can do scope change, Get call is there on app builder

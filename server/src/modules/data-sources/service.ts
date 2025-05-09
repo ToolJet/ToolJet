@@ -258,24 +258,15 @@ export class DataSourcesService implements IDataSourcesService {
     return { datasources: dataSourceDetails.length, dependent_queries: queries.length };
   }
 
-  async findDatasourcesAndQueriesOfMarketplacePlugin(user: User, dataSourceKind: string) {
-    const allWorkspace = await this.organizationsService.fetchOrganizations(user);
-    if (allWorkspace.totalCount == 0)
-      return { workspaces: allWorkspace.totalCount, datasources: 0, dependent_queries: 0 };
-    const workspaceIds = allWorkspace?.organizations?.map((workspace) => workspace.id);
-
-    const dataSourcesByWorkspace = await this.dataSourcesRepository.getDatasourceByKindAndOrg(
-      dataSourceKind,
-      workspaceIds
-    );
+  async findDatasourcesAndQueriesOfMarketplacePlugin(pluginId: string) {
+    const dataSourcesByMarketplacePlugin = await this.dataSourcesRepository.getDatasourceByPluginId(pluginId);
+    if (!dataSourcesByMarketplacePlugin.length) return { dependent_queries: 0 };
 
     const queries = [];
-    dataSourcesByWorkspace?.forEach((datasource) => {
+    dataSourcesByMarketplacePlugin?.forEach((datasource) => {
       if (datasource.dataQueries.length) queries.push(...datasource.dataQueries);
     });
     return {
-      workspaces: allWorkspace.totalCount,
-      datasources: dataSourcesByWorkspace.length,
       dependent_queries: queries.length,
     };
   }

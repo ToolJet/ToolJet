@@ -1,6 +1,6 @@
 import { DataSource } from '@entities/data_source.entity';
 import { Injectable } from '@nestjs/common';
-import { Brackets, DataSource as typeOrmDS, EntityManager, Repository, In } from 'typeorm';
+import { Brackets, DataSource as typeOrmDS, EntityManager, Repository } from 'typeorm';
 import { UserPermissions } from '@modules/ability/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -169,12 +169,11 @@ export class DataSourcesRepository extends Repository<DataSource> {
     }, manager || this.manager);
   }
 
-  getDatasourceByKindAndOrg(kind: string, organisationId: string | string[]) {
+  getDatasourceByPluginId(pluginId: string) {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.find(DataSource, {
         where: {
-          kind: kind,
-          organizationId: typeof organisationId === 'string' ? organisationId : In(organisationId),
+          pluginId: pluginId,
         },
         relations: ['dataQueries'],
       });

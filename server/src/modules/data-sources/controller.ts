@@ -129,6 +129,13 @@ export class DataSourcesController implements IDataSourcesController {
     return;
   }
 
+  @InitFeature(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN)
+  @UseGuards(FeatureAbilityGuard)
+  @Get('dependent-queries/marketplace-plugin/:plugin_id')
+  async findDatasourcesAndQueriesOfMarketplacePlugin(@User() user: UserEntity, @Param('plugin_id') pluginId) {
+    return await this.dataSourcesService.findDatasourcesAndQueriesOfMarketplacePlugin(pluginId);
+  }
+
   @InitFeature(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE)
   @UseGuards(FeatureAbilityGuard)
   @Get('dependent-queries/:datasource_id')
