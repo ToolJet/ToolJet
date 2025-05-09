@@ -31,6 +31,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'VerticalDivider',
   'ModalV2',
   'Link',
+  'FilePicker',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -147,6 +148,7 @@ export const baseComponentProperties = (
       'Divider',
       'VerticalDivider',
       'Link',
+      'FilePicker',
     ],
     Layout: [],
   };
