@@ -29,6 +29,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class SessionUtilService {
@@ -44,6 +45,21 @@ export class SessionUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
   ) {}
+
+  async setAuditLogForUser(userId: string, manager: EntityManager): Promise<void> {
+    const user = await manager.findOneOrFail(User, {
+      where: { id: userId },
+    });
+
+    const auditLogEntry = {
+      userId: user.id,
+      organizationId: user.defaultOrganizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
+  }
+
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(UserSessions, { userId });

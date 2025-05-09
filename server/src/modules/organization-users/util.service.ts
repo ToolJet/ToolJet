@@ -30,8 +30,6 @@ import { UserDetailsService } from './services/user-details.service';
 import { FetchUserResponse, InvitedUserType, RoleUpdate, UserFilterOptions } from './types';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@modules/organizations/constants';
-import { MODULE_INFO } from '@modules/app/constants/module-info';
-import { MODULES } from '@modules/app/constants/modules';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import * as uuid from 'uuid';
@@ -510,12 +508,21 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
-
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: currentUser.id,
         organizationId: currentOrganization.id,
-        resourceId: currentOrganization.id,
+        resourceId: updatedUser.id,
         resourceName: updatedUser.email,
+        resourceData: {
+          invited_user: {
+            id: updatedUser.id,
+            email: updatedUser.email,
+            first_name: updatedUser.firstName,
+            last_name: updatedUser.lastName,
+            role: inviteNewUserDto.role,
+            group: inviteNewUserDto.groups,
+          },
+        },
       });
 
       return organizationUser;
