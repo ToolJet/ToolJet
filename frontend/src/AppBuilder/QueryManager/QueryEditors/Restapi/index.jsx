@@ -31,6 +31,9 @@ class Restapi extends React.Component {
       codeHinterHeight: 32, // Default height
     };
     this.codeHinterRef = React.createRef();
+    this.isMenuOpenRef = React.createRef();
+    this.prevIsMenuOpenRef = React.createRef(false);
+    this.intersectionObserver = null;
     this.resizeObserver = null;
   }
 
@@ -46,6 +49,9 @@ class Restapi extends React.Component {
     // Setup resize observer if it's not already set up
     if (this.codeHinterRef.current && !this.resizeObserver) {
       this.setupResizeObserver();
+    }
+    if (!this.intersectionObserver) {
+      this.setupIntersectionObserver();
     }
   }
 
@@ -75,6 +81,7 @@ class Restapi extends React.Component {
       }, 1000);
 
       this.setupResizeObserver();
+      this.setupIntersectionObserver();
     } catch (error) {
       console.log(error);
     }
@@ -83,6 +90,9 @@ class Restapi extends React.Component {
   componentWillUnmount() {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
+    }
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
     }
   }
 
@@ -130,6 +140,33 @@ class Restapi extends React.Component {
     });
 
     this.resizeObserver.observe(element);
+  }
+
+  setupIntersectionObserver() {
+    const container = document.getElementsByClassName('query-details')[0];
+    const trigger = document.querySelector('.react-select-restapi-method__control');
+
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+    }
+
+    this.intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        const popover = document.querySelector('.react-select-restapi-method__menu');
+        if (entry.isIntersecting) {
+          if (this.prevIsMenuOpenRef.current) {
+            popover.style.display = 'block';
+            this.prevIsMenuOpenRef.current = false;
+          }
+        } else if (this.isMenuOpenRef.current) {
+          popover.style.display = 'none';
+          this.prevIsMenuOpenRef.current = true;
+        }
+      },
+      { root: container, threshold: [0.5] }
+    );
+
+    this.intersectionObserver.observe(trigger);
   }
 
   initizalizeRetryNetworkErrorsToggle = () => {
@@ -287,6 +324,13 @@ class Restapi extends React.Component {
                     height={32}
                     styles={this.customSelectStyles(this.props.darkMode, 91)}
                     useCustomStyles={true}
+                    customClassPrefix="-restapi-method"
+                    onMenuOpen={() => {
+                      this.isMenuOpenRef.current = true;
+                    }}
+                    onMenuClose={() => {
+                      this.isMenuOpenRef.current = false;
+                    }}
                   />
                 </div>
                 <div
