@@ -32,7 +32,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const EventManager = ({
   sourceId,
@@ -102,8 +101,23 @@ export const EventManager = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents)]);
 
-  let actionOptions = ActionTypes.map((action) => {
-    return { label: action.name, value: action.id, icon: action.icon };
+  let groupedOptions = ActionTypes.reduce((acc, action) => {
+    const groupName = action.group;
+
+    if (!acc[groupName]) {
+      acc[groupName] = [];
+    }
+
+    acc[groupName].push({
+      label: action.name,
+      value: action.id,
+    });
+
+    return acc;
+  }, {});
+
+  let actionOptions = Object.keys(groupedOptions).map((groupName) => {
+    return { label: groupName, options: groupedOptions[groupName] };
   });
 
   let checkIfClicksAreInsideOf = document.querySelector('.cm-completionListIncompleteBottom');
@@ -122,6 +136,15 @@ export const EventManager = ({
     menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
     menuList: (base) => ({
       ...base,
+    }),
+    group: (base) => ({
+      ...base,
+      padding: 0,
+    }),
+    groupHeading: (base) => ({
+      ...base,
+      margin: 0,
+      padding: '0 10px',
     }),
   };
 
@@ -395,12 +418,15 @@ export const EventManager = ({
     return defaultValue;
   };
 
-  const renderActionOption = (option) => (
-    <div className="d-flex align-items-center justify-content-start tw-gap-[8px]">
-      <SolidIcon name={option.icon} width="16px" height="16px" />
-      <span>{option.label}</span>
-    </div>
-  );
+  const formatGroupLabel = (data) => {
+    if (data.label === 'run-action') return;
+    return (
+      <div
+        className="tw-border-x-0 tw-border-t-0 tw-border-b-px tw-border-solid tw-my-[4px]"
+        style={{ borderColor: 'var(--border-weak)' }}
+      ></div>
+    );
+  };
 
   function eventPopover(event, index) {
     return (
@@ -448,7 +474,7 @@ export const EventManager = ({
                 styles={styles}
                 useMenuPortal={false}
                 useCustomStyles={true}
-                customOption={renderActionOption}
+                formatGroupLabel={formatGroupLabel}
               />
             </div>
           </div>
