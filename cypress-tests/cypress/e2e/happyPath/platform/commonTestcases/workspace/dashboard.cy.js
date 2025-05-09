@@ -178,12 +178,9 @@ describe("dashboard", () => {
     };
 
     cy.apiCreateApp(data.appName);
-    cy.openApp();
-    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
+    cy.visit(`${data.workspaceSlug}`);
 
-    cy.backToApps();
-
-    cy.wait(1000);
+    cy.wait(2000);
     cy.get(commonSelectors.appCard(data.appName))
       .parent()
       .within(() => {
