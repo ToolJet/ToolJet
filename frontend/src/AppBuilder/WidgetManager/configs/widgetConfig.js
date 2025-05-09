@@ -3,6 +3,7 @@ import {
   tableConfig,
   chartConfig,
   modalConfig,
+  modalV2Config,
   formConfig,
   textinputConfig,
   numberinputConfig,
@@ -57,6 +58,9 @@ import {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  emailinputConfig,
+  phoneinputConfig,
+  currencyinputConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -64,10 +68,14 @@ export const widgets = [
   buttonConfig,
   chartConfig,
   modalConfig,
+  modalV2Config,
   formConfig,
   textinputConfig,
   numberinputConfig,
   passinputConfig,
+  emailinputConfig,
+  phoneinputConfig,
+  currencyinputConfig,
   datepickerConfig,
   datetimePickerV2Config,
   datePickerV2Config,

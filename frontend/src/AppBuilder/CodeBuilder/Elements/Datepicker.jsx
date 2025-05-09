@@ -15,11 +15,20 @@ export const Datepicker = ({ value, onChange, meta }) => {
     >
       <label className="form-label">{meta.label}</label>
       <ReactDatePicker
+<<<<<<< HEAD
         selected={getDate(value, 'MM/DD/YYYY')}
         onChange={(date) => {
           const val = moment(date).format('MM/DD/YYYY');
           onChange(val === 'Invalid date' ? '' : val);
         }}
+=======
+        selected={getDate(value, 'DD/MM/YYYY')}
+        onChange={(date) => {
+          const val = moment(date).format('DD/MM/YYYY');
+          onChange(val === 'Invalid date' ? '' : val);
+        }}
+        dateFormat="dd/MM/yyyy"
+>>>>>>> main
         showTimeSelectOnly={meta.showOnlyTime}
         className={cx({ 'theme-dark dark-theme': darkMode })}
         placeholderText={meta?.placeholder ?? ''}

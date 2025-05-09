@@ -419,10 +419,7 @@ const Table = ({ collapseSidebar }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditRowDrawerOpen]);
 
-  const tableData = React.useMemo(
-    () => (loading ? Array(10).fill({}) : selectedTableData),
-    [loading, selectedTableData]
-  );
+  const [tableColumnTypes, setTableColumnTypes] = React.useState({});
 
   const tableColumns = React.useMemo(() => {
     if (loading) {
@@ -433,16 +430,38 @@ const Table = ({ collapseSidebar }) => {
     } else {
       const primaryKeyArray = [];
       const nonPrimaryKeyArray = [];
+      const updatedColumnTypes = {};
+
       columns.forEach((column) => {
         if (column.constraints_type.is_primary_key) {
           primaryKeyArray.push({ ...column });
         } else {
           nonPrimaryKeyArray.push({ ...column });
         }
+        updatedColumnTypes[column.accessor] = column.dataType;
       });
+      setTableColumnTypes(updatedColumnTypes);
+
       return [...primaryKeyArray, ...nonPrimaryKeyArray];
     }
   }, [loading, columns]);
+
+  const tableData = React.useMemo(
+    () =>
+      loading
+        ? Array(10).fill({})
+        : selectedTableData.map((data) => {
+            return Object.entries(data).reduce((accumulator, [key, value]) => {
+              if (tableColumnTypes?.[key] === 'jsonb' && value !== null) {
+                accumulator[key] = JSON.stringify(value);
+              } else {
+                accumulator[key] = value;
+              }
+              return accumulator;
+            }, {});
+          }),
+    [loading, selectedTableData]
+  );
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
@@ -906,7 +925,7 @@ const Table = ({ collapseSidebar }) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
     setCellVal(previousValue);
-    document.getElementById('edit-input-blur').blur();
+    document.getElementById('edit-input-blur')?.blur();
   };
 
   function shouldOpenCellEditMenu(cellColumnIndex) {
@@ -939,7 +958,9 @@ const Table = ({ collapseSidebar }) => {
   }
 
   function isMatchingForeignKeyColumnDetails(columnHeader) {
-    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    const matchingColumn = Array.isArray(foreignKeys)
+      ? foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader)
+      : undefined;
     return matchingColumn;
   }
 
@@ -1365,7 +1386,11 @@ const Table = ({ collapseSidebar }) => {
                                       cell.value,
                                       getConfigurationProperty(cell.column.Header, 'timezone', getLocalTimeZone())
                                     )
-                                  : cell.value,
+                                  : cell.column.dataType === 'jsonb' &&
+                                    typeof cell?.value !== 'string' &&
+                                    cell?.value !== null
+                                  ? JSON.stringify(cell?.value)
+                                  : cell?.value,
                                 index
                               )}
                               placement="bottom"
@@ -1403,10 +1428,16 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.cellIndex === index ? (
                                     <CellEditMenu
                                       show={shouldOpenCellEditMenu(index) ? editPopover : false}
-                                      close={() => closeEditPopover(cell.value, index)}
+                                      close={() => {
+                                        closeEditPopover(cell.value, index);
+                                      }}
                                       columnDetails={headerGroups[0].headers[index]}
                                       saveFunction={(newValue) => {
                                         handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
+                                        // if (cell.column?.dataType === 'jsonb') {
+                                        //   const event = new Event('click', { bubbles: true, cancelable: true });
+                                        //   document.body.dispatchEvent(event);
+                                        // }
                                       }}
                                       setCellValue={setCellVal}
                                       cellValue={cellVal}
@@ -1498,6 +1529,16 @@ const Table = ({ collapseSidebar }) => {
                                             </ToolTip> */}
                                           </div>
                                         ) : (
+                                          //  : cell.column?.dataType === 'jsonb' ? (
+                                          //   <CodehinterWrapper
+                                          //     cellVal={cellVal}
+                                          //     shouldOpenCellEditMenu={shouldOpenCellEditMenu}
+                                          //     setCellVal={setCellVal}
+                                          //     headerGroups={headerGroups}
+                                          //     index={index}
+                                          //     setDefaultValue={setDefaultValue}
+                                          //   />
+                                          // )
                                           <div className="d-flex align-items-center justify-content-between">
                                             <input
                                               autoComplete="off"
@@ -1539,6 +1580,8 @@ const Table = ({ collapseSidebar }) => {
                                     <>
                                       {cell.value === null ? (
                                         <span className="cell-text-null">Null</span>
+                                      ) : cell.column.dataType === 'jsonb' ? (
+                                        `{...}`
                                       ) : cell.column.dataType === 'boolean' ? (
                                         // <div className="d-flex align-items-center justify-content-between">
                                         <div className="row" style={{ width: '33px' }}>

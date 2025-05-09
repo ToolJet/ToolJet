@@ -118,7 +118,10 @@ export const ComponentsManagerTab = ({ darkMode }) => {
         'TextInput',
         'NumberInput',
         'PasswordInput',
-        'Textarea',
+        'TextArea',
+        'EmailInput',
+        'PhoneInput',
+        'CurrencyInput',
         'ToggleSwitchV2',
         'DropdownV2',
         'MultiselectV2',
@@ -133,7 +136,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
         'StarRating',
       ];
       const integrationItems = ['Map'];
-      const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
+      const layoutItems = ['Container', 'Listview', 'Tabs', 'ModalV2'];
 
       filteredComponents.forEach((f) => {
         if (commonItems.includes(f)) commonSection.items.push(f);

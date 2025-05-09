@@ -11,13 +11,46 @@ permissions:
   issues: write
 
 jobs:
-  create-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' }}
+
+# Community Edition CE
+  create-ce-review-app:
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create deployment
-        id: create-deployment
+      - name: Sync repo
+        uses: actions/checkout@v3
+
+      - name: Check if Forked Repository
+        id: check_repo
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "is_fork=true" >> $GITHUB_ENV
+            echo "FORKED_OWNER=${{ github.event.pull_request.head.repo.owner.login }}" >> $GITHUB_ENV
+          else
+            echo "is_fork=false" >> $GITHUB_ENV
+          fi
+
+      - name: Set Repository URL
+        run: |
+          if [[ "$is_fork" == "true" ]]; then
+            echo "REPO_URL=https://github.com/${FORKED_OWNER}/ToolJet" >> $GITHUB_ENV
+          else
+            echo "REPO_URL=https://github.com/ToolJet/ToolJet" >> $GITHUB_ENV
+          fi
+
+      - name: Fetch and Checkout Forked Branch
+        if: env.is_fork == 'true'
+        run: |
+          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
+          git checkout ${{ env.BRANCH_NAME }}
+
+      - name: Checkout Default Branch
+        if: env.is_fork == 'false'
+        uses: actions/checkout@v3
+
+      - name: Creating deployment for CE
+        id: create-ce-deployment
         run: |
           export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
@@ -28,18 +61,18 @@ jobs:
           {
             "autoDeploy": "yes",
             "branch": "${{ env.BRANCH_NAME }}",
-            "name": "ToolJet PR #${{ env.PR_NUMBER }}",
+            "name": "ToolJet CE PR #${{ env.PR_NUMBER }}",
             "notifyOnFail": "default",
             "ownerId": "tea-caeo4bj19n072h3dddc0",
-            "repo": "${{ github.event.pull_request.head.repo.git_url }}",
-            "slug": "tooljet-pr-${{ env.PR_NUMBER }}",
+            "repo": "'"$REPO_URL"'",
+            "slug": "tooljet-ce-pr-${{ env.PR_NUMBER }}",
             "suspended": "not_suspended",
             "suspenders": [],
             "type": "web_service",
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -47,31 +80,31 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_DB",
-                "value": "${{ env.PR_NUMBER }}"
+                "value": "${{ env.PR_NUMBER }}-ce"
               },
               {
                 "key": "TOOLJET_DB",
-                "value": "${{ env.PR_NUMBER }}-tjdb"
+                "value": "${{ env.PR_NUMBER }}-ce-tjdb"
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
-              },              
+                "value": "postgres"
+              },
               {
                 "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
@@ -83,7 +116,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-tjdb"
+                "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -103,7 +136,7 @@ jobs:
               },
               {
                 "key": "TOOLJET_HOST",
-                "value": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+                "value": "https://tooljet-ce-pr-${{ env.PR_NUMBER }}.onrender.com"
               },
               {
                 "key": "DISABLE_TOOLJET_TELEMETRY",
@@ -135,12 +168,16 @@ jobs:
               }
             ],
             "serviceDetails": {
-              "disk": null,
+              "disk": {
+                "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
+                "mountPath": "/data",
+                "sizeGB": 10
+              },
               "env": "docker",
               "envSpecificDetails": {
                 "dockerCommand": "",
                 "dockerContext": "./",
-                "dockerfilePath": "./docker/preview.Dockerfile"
+                "dockerfilePath": "./docker/ce-preview.Dockerfile"
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -151,7 +188,7 @@ jobs:
                 "plan": "starter",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
-                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+                "url": "https://tooljet-ce-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
 
@@ -168,7 +205,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+              body: 'Community Edition:- \n Deployment: https://tooljet-ce-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
       - uses: actions/github-script@v6
@@ -179,7 +216,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-review-app'
+                name: 'create-ce-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -189,18 +226,18 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: ['active-ce-review-app']
             })
 
-  destroy-review-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-app') || github.event.action == 'closed' }}
+  destroy-ce-review-app:
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Delete service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
@@ -218,7 +255,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'destroy-review-app'
+                name: 'destroy-ce-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -229,7 +266,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-app'
+                name: 'suspend-ce-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -240,7 +277,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-app'
+                name: 'active-ce-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -259,8 +296,8 @@ jobs:
           PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
           PGPORT: 5432
           PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
-          PGDATABASE: ${{ env.PR_NUMBER }}
-          PGTJBDATABASE: ${{ env.PR_NUMBER }}-tjdb
+          PGDATABASE: ${{ env.PR_NUMBER }}-ce
+          PGTJBDATABASE: ${{ env.PR_NUMBER }}-ce-tjdb
         run: |
           if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
             echo "Database $PGDATABASE exists, deleting..."
@@ -276,8 +313,8 @@ jobs:
             echo "Database $PGTJBDATABASE does not exist."
           fi
 
-  suspend-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}
+  suspend-ce-review-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ce-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -302,14 +339,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-app'
+                name: 'active-ce-review-app'
               })
             } catch (e) {
               console.log(e)
             }
 
-  resume-review-app:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-app' }}
+  resume-ce-review-app:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-ce-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -333,7 +370,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: ['active-ce-review-app']
             })
 
             try {
@@ -341,98 +378,23 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-app'
+                name: 'suspend-ce-review-app'
               })
             } catch (e) {
               console.log(e)
             }
 
-  recreate-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'recreate-review-app' }}
+
+
+# Enterprise Edition
+
+  create-ee-review-app:
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ee-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Delete service
-        run: |
-          export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
-           jq -r '.[0].service.id')
-
-          curl --request DELETE \
-          --url https://api.render.com/v1/services/$SERVICE_ID \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
-
-      - uses: actions/github-script@v6
-        with:
-          script: |
-            try {
-              await github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'destroy-review-app'
-              })
-            } catch (e) {
-              console.log(e)
-            }
-
-            try {
-              await github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'suspend-review-app'
-              })
-            } catch (e) {
-              console.log(e)
-            }
-
-            try {
-              await github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'active-review-app'
-              })
-            } catch (e) {
-              console.log(e)
-            }
-
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt update
-          sudo apt install postgresql-client -y
-
-      - name: Wait after installing PostgreSQL
-        run: sleep 25
-
-      - name: Drop PostgreSQL PR databases
-        env:
-          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
-          PGPORT: 5432
-          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
-          PGDATABASE: ${{ env.PR_NUMBER }}
-          PGTJBDATABASE: ${{ env.PR_NUMBER }}-tjdb
-        run: |
-          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
-            echo "Database $PGDATABASE exists, deleting..."
-            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
-          else
-            echo "Database $PGDATABASE does not exist."
-          fi
-
-          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGTJBDATABASE; then
-            echo "Database $PGTJBDATABASE exists, deleting..."
-            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
-          else
-            echo "Database $PGTJBDATABASE does not exist."
-          fi
-
-      - name: Create deployment
-        id: create-deployment
+      - name: Creating deployment for Enterprise Edition
+        id: create-ee-deployment
         run: |
           export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
@@ -443,18 +405,18 @@ jobs:
           {
             "autoDeploy": "yes",
             "branch": "${{ env.BRANCH_NAME }}",
-            "name": "ToolJet PR #${{ env.PR_NUMBER }}",
+            "name": "ToolJet EE PR #${{ env.PR_NUMBER }}",
             "notifyOnFail": "default",
             "ownerId": "tea-caeo4bj19n072h3dddc0",
-            "repo": "https://${{ secrets.RENDER_GITHUB_PAT }}@github.com/ToolJet/tj-ee",
-            "slug": "tooljet-pr-${{ env.PR_NUMBER }}",
+            "repo": "https://github.com/ToolJet/ToolJet",
+            "slug": "tooljet-ee-pr-${{ env.PR_NUMBER }}",
             "suspended": "not_suspended",
             "suspenders": [],
             "type": "web_service",
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "PG_PORT",
@@ -462,31 +424,31 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "PG_DB",
-                "value": "${{ env.PR_NUMBER }}"
+                "value": "${{ env.PR_NUMBER }}-ee"
               },
               {
                 "key": "TOOLJET_DB",
-                "value": "${{ env.PR_NUMBER }}-tjdb"
+                "value": "${{ env.PR_NUMBER }}-ee-tjdb"
               },
               {
                 "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
+                "value": "postgres"
               },
               {
                 "key": "TOOLJET_DB_PORT",
@@ -498,7 +460,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-tjdb"
+                "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-tjdb"
               },
               {
                 "key": "PGRST_HOST",
@@ -518,7 +480,7 @@ jobs:
               },
               {
                 "key": "TOOLJET_HOST",
-                "value": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+                "value": "https://tooljet-ee-pr-${{ env.PR_NUMBER }}.onrender.com"
               },
               {
                 "key": "DISABLE_TOOLJET_TELEMETRY",
@@ -553,21 +515,41 @@ jobs:
                 "value": "${{ secrets.RENDER_REDIS_PORT }}"
               },
               {
-                "key": "LICENSE_KEY",
-                "value": "${{ secrets.RENDER_LICENSE_KEY }}"
+                "key": "TEMPORAL_SERVER_ADDRESS",
+                "value": "https://auto-setup-1-25-1.onrender.com"
+              },
+              {
+                "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
+                "value": "tooljet-ee-pr-${{ env.PR_NUMBER }}"
+              },
+              {
+                "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
+                "value": "default"
               },
               {
                 "key": "TOOLJET_MARKETPLACE_URL",
                 "value": "${{ secrets.MARKETPLACE_BUCKET }}"
+              },
+              {
+                "key": "BRANCH_NAME",
+                "value": "${{ env.BRANCH_NAME }}"
+              },
+              {
+                "key": "CUSTOM_GITHUB_TOKEN",
+                "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
               }
             ],
             "serviceDetails": {
-              "disk": null,
+              "disk": {
+                "name": "tooljet-ee-pr-${{ env.PR_NUMBER }}-postgresql",
+                "mountPath": "/data",
+                "sizeGB": 10
+              },
               "env": "docker",
               "envSpecificDetails": {
                 "dockerCommand": "",
                 "dockerContext": "./",
-                "dockerfilePath": "./docker/preview.Dockerfile"
+                "dockerfilePath": "./docker/ee/ee-preview.Dockerfile"
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -575,10 +557,10 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "starter",
+                "plan": "standard",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
-                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+                "url": "https://tooljet-ee-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
 
@@ -595,7 +577,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+              body: 'Enterpise Edition: \n Deployment: https://tooljet-ee-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
       - uses: actions/github-script@v6
@@ -606,7 +588,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-review-app'
+                name: 'create-ee-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -616,5 +598,525 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: ['active-ee-review-app']
             })
+
+  destroy-ee-review-app:
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-review-app') || github.event.action == 'closed' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request DELETE \
+          --url https://api.render.com/v1/services/$SERVICE_ID \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'destroy-ee-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-ee-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt update
+          sudo apt install postgresql-client -y
+
+      - name: Wait after installing PostgreSQL
+        run: sleep 25
+
+      - name: Drop PostgreSQL PR databases
+        env:
+          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
+          PGPORT: 5432
+          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+          PGDATABASE: ${{ env.PR_NUMBER }}-ee
+          PGTJBDATABASE: ${{ env.PR_NUMBER }}-ee-tjdb
+        run: |
+          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
+            echo "Database $PGDATABASE exists, deleting..."
+            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
+          else
+            echo "Database $PGDATABASE does not exist."
+          fi
+
+          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGTJBDATABASE; then
+            echo "Database $PGTJBDATABASE exists, deleting..."
+            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
+          else
+            echo "Database $PGTJBDATABASE does not exist."
+          fi
+
+  suspend-ee-review-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ee-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/suspend \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+  resume-ee-review-app:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-ee-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resume service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/resume \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-review-app']
+            })
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-ee-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+
+
+
+# Cloud Edition
+
+  # create-cloud-review-app:
+  #   if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-cloud-review-app' || github.event.label.name == 'review-app') }}
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Creating deployment for Cloud Edition
+  #       id: create-cloud-deployment
+  #       run: |
+  #         export RESPONSE=$(curl --request POST \
+  #         --url https://api.render.com/v1/services \
+  #         --header 'accept: application/json' \
+  #         --header 'content-type: application/json' \
+  #         --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+  #         --data '
+  #         {
+  #           "autoDeploy": "yes",
+  #           "branch": "${{ env.BRANCH_NAME }}",
+  #           "name": "ToolJet Cloud PR #${{ env.PR_NUMBER }}",
+  #           "notifyOnFail": "default",
+  #           "ownerId": "tea-caeo4bj19n072h3dddc0",
+  #           "repo": "https://github.com/ToolJet/ToolJet",
+  #           "slug": "tooljet-cloud-pr-${{ env.PR_NUMBER }}",
+  #           "suspended": "not_suspended",
+  #           "suspenders": [],
+  #           "type": "web_service",
+  #           "envVars": [
+  #             {
+  #               "key": "PG_HOST",
+  #               "value": "${{ secrets.RENDER_PG_HOST }}"
+  #             },
+  #             {
+  #               "key": "PG_PORT",
+  #               "value": "5432"
+  #             },
+  #             {
+  #               "key": "PG_USER",
+  #               "value": "${{ secrets.RENDER_PG_USER }}"
+  #             },
+  #             {
+  #               "key": "PG_PASS",
+  #               "value": "${{ secrets.RENDER_PG_PASS }}"
+  #             },
+  #             {
+  #               "key": "PG_DB",
+  #               "value": "${{ env.PR_NUMBER }}-cloud"
+  #             },
+  #             {
+  #               "key": "TOOLJET_DB",
+  #               "value": "${{ env.PR_NUMBER }}-cloud-tjdb"
+  #             },
+  #             {
+  #               "key": "TOOLJET_DB_HOST",
+  #               "value": "${{ secrets.RENDER_PG_HOST }}"
+  #             },
+  #             {
+  #               "key": "TOOLJET_DB_USER",
+  #               "value": "${{ secrets.RENDER_PG_USER }}"
+  #             },
+  #             {
+  #               "key": "TOOLJET_DB_PASS",
+  #               "value": "${{ secrets.RENDER_PG_PASS }}"
+  #             },
+  #             {
+  #               "key": "TOOLJET_DB_PORT",
+  #               "value": "5432"
+  #             },
+  #             {
+  #               "key": "PGRST_DB_PRE_CONFIG",
+  #               "value": "postgrest.pre_config"
+  #             },
+  #             {
+  #               "key": "PGRST_DB_URI",
+  #               "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-cloud-tjdb"
+  #             },
+  #             {
+  #               "key": "PGRST_HOST",
+  #               "value": "127.0.0.1:3000"
+  #             },
+  #             {
+  #               "key": "PGRST_JWT_SECRET",
+  #               "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"
+  #             },
+  #             {
+  #               "key": "PGRST_LOG_LEVEL",
+  #               "value": "info"
+  #             },
+  #             {
+  #               "key": "PORT",
+  #               "value": "80"
+  #             },
+  #             {
+  #               "key": "TOOLJET_HOST",
+  #               "value": "https://tooljet-cloud-pr-${{ env.PR_NUMBER }}.onrender.com"
+  #             },
+  #             {
+  #               "key": "DISABLE_TOOLJET_TELEMETRY",
+  #               "value": "true"
+  #             },
+  #             {
+  #               "key": "SMTP_ADDRESS",
+  #               "value": "smtp.mailtrap.io"
+  #             },
+  #             {
+  #               "key": "SMTP_DOMAIN",
+  #               "value": "smtp.mailtrap.io"
+  #             },
+  #             {
+  #               "key": "SMTP_PORT",
+  #               "value": "2525"
+  #             },
+  #             {
+  #               "key": "SMTP_USERNAME",
+  #               "value": "${{ secrets.RENDER_SMTP_USERNAME }}"
+  #             },
+  #             {
+  #               "key": "SMTP_PASSWORD",
+  #               "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
+  #             },
+  #             {
+  #               "key": "REDIS_HOST",
+  #               "value": "${{ secrets.RENDER_REDIS_HOST }}"
+  #             },
+  #             {
+  #               "key": "REDIS_PORT",
+  #               "value": "${{ secrets.RENDER_REDIS_PORT }}"
+  #             },
+  #             {
+  #               "key": "TEMPORAL_SERVER_ADDRESS",
+  #               "value": "https://auto-setup-1-25-1.onrender.com"
+  #             },
+  #             {
+  #               "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
+  #               "value": "tooljet-cloud-pr-${{ env.PR_NUMBER }}"
+  #             },
+  #             {
+  #               "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
+  #               "value": "default"
+  #             },
+  #             {
+  #               "key": "TOOLJET_MARKETPLACE_URL",
+  #               "value": "${{ secrets.MARKETPLACE_BUCKET }}"
+  #             },
+  #             {
+  #               "key": "CUSTOM_GITHUB_TOKEN",
+  #               "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+  #             }
+  #           ],
+  #           "serviceDetails": {
+  #             "disk": null,
+  #             "env": "docker",
+  #             "envSpecificDetails": {
+  #               "dockerCommand": "",
+  #               "dockerContext": "./",
+  #               "dockerfilePath": "./docker/cloud/cloud-preview.Dockerfile"
+  #               },
+  #               "healthCheckPath": "/api/health",
+  #               "numInstances": 1,
+  #               "openPorts": [{
+  #               "port": 80,
+  #               "protocol": "TCP"
+  #               }],
+  #               "plan": "starter",
+  #               "pullRequestPreviewsEnabled": "no",
+  #               "region": "oregon",
+  #               "url": "https://tooljet-cloud-pr-${{ env.PR_NUMBER }}.onrender.com"
+  #           }
+  #         }')
+
+  #         echo "response: $RESPONSE"
+  #         export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
+  #         echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+
+  #     - name: Comment deployment URL
+  #       uses: actions/github-script@v5
+  #       with:
+  #         github-token: ${{secrets.GITHUB_TOKEN}}
+  #         script: |
+  #           github.rest.issues.createComment({
+  #             issue_number: context.issue.number,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             body: 'Cloud Edition: \n Deployment: https://tooljet-cloud-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+  #           })
+
+  #     - uses: actions/github-script@v6
+  #       with:
+  #         script: |
+  #           try {
+  #             await github.rest.issues.removeLabel({
+  #               issue_number: context.issue.number,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               name: 'create-cloud-review-app'
+  #             })
+  #           } catch (e) {
+  #             console.log(e)
+  #           }
+
+  #           await github.rest.issues.addLabels({
+  #             issue_number: context.issue.number,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             labels: ['active-cloud-review-app']
+  #           })
+
+  # destroy-cloud-review-app:
+  #   if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-cloud-review-app') || github.event.action == 'closed' }}
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Delete service
+  #       run: |
+  #         export SERVICE_ID=$(curl --request GET \
+  #         --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+  #         --header 'accept: application/json' \
+  #         --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+  #          jq -r '.[0].service.id')
+
+  #         curl --request DELETE \
+  #         --url https://api.render.com/v1/services/$SERVICE_ID \
+  #         --header 'accept: application/json' \
+  #         --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+  #     - uses: actions/github-script@v6
+  #       with:
+  #         script: |
+  #           try {
+  #             await github.rest.issues.removeLabel({
+  #               issue_number: context.issue.number,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               name: 'destroy-cloud-review-app'
+  #             })
+  #           } catch (e) {
+  #             console.log(e)
+  #           }
+
+  #           try {
+  #             await github.rest.issues.removeLabel({
+  #               issue_number: context.issue.number,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               name: 'suspend-cloud-review-app'
+  #             })
+  #           } catch (e) {
+  #             console.log(e)
+  #           }
+
+  #           try {
+  #             await github.rest.issues.removeLabel({
+  #               issue_number: context.issue.number,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               name: 'active-cloud-review-app'
+  #             })
+  #           } catch (e) {
+  #             console.log(e)
+  #           }
+
+  #     - name: Install PostgreSQL client
+  #       run: |
+  #         sudo apt update
+  #         sudo apt install postgresql-client -y
+
+  #     - name: Wait after installing PostgreSQL
+  #       run: sleep 25
+
+  #     - name: Drop PostgreSQL PR databases
+  #       env:
+  #         PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
+  #         PGPORT: 5432
+  #         PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+  #         PGDATABASE: ${{ env.PR_NUMBER }}-cloud
+  #         PGTJBDATABASE: ${{ env.PR_NUMBER }}-cloud-tjdb
+  #       run: |
+  #         if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
+  #           echo "Database $PGDATABASE exists, deleting..."
+  #           PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
+  #         else
+  #           echo "Database $PGDATABASE does not exist."
+  #         fi
+
+  #         if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGTJBDATABASE; then
+  #           echo "Database $PGTJBDATABASE exists, deleting..."
+  #           PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
+  #         else
+  #           echo "Database $PGTJBDATABASE does not exist."
+  #         fi
+
+  # suspend-cloud-review-app:
+  #   if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-cloud-review-app' }}
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Suspend service
+  #       run: |
+  #         export SERVICE_ID=$(curl --request GET \
+  #         --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+  #         --header 'accept: application/json' \
+  #         --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+  #          jq -r '.[0].service.id')
+
+  #         curl --request POST \
+  #         --url https://api.render.com/v1/services/$SERVICE_ID/suspend \
+  #         --header 'accept: application/json' \
+  #         --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+  #     - uses: actions/github-script@v6
+  #       with:
+  #         script: |
+  #           try {
+  #             await github.rest.issues.removeLabel({
+  #               issue_number: context.issue.number,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               name: 'active-cloud-review-app'
+  #             })
+  #           } catch (e) {
+  #             console.log(e)
+  #           }
+
+  # resume-cloud-review-app:
+  #   if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-cloud-review-app' }}
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Resume service
+  #       run: |
+  #         export SERVICE_ID=$(curl --request GET \
+  #         --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+  #         --header 'accept: application/json' \
+  #         --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+  #          jq -r '.[0].service.id')
+
+  #         curl --request POST \
+  #         --url https://api.render.com/v1/services/$SERVICE_ID/resume \
+  #         --header 'accept: application/json' \
+  #         --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+  #     - uses: actions/github-script@v6
+  #       with:
+  #         script: |
+  #           await github.rest.issues.addLabels({
+  #             issue_number: context.issue.number,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             labels: ['active-cloud-review-app']
+  #           })
+
+  #           try {
+  #             await github.rest.issues.removeLabel({
+  #               issue_number: context.issue.number,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               name: 'suspend-cloud-review-app'
+  #             })
+  #           } catch (e) {
+  #             console.log(e)
+  #           }

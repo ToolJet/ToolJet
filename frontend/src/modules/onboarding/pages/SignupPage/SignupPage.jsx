@@ -5,7 +5,6 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
-import { checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
 
@@ -19,7 +18,6 @@ const SignupPage = ({ configs, organizationId }) => {
     email: '',
     name: '',
   });
-  const [defaultState, setDefaultState] = useState(false);
 
   const routeState = location.state;
   const organizationToken = routeState?.organizationToken;
@@ -27,26 +25,20 @@ const SignupPage = ({ configs, organizationId }) => {
   const inviteOrganizationId = organizationId;
   const paramInviteOrganizationSlug = params.organizationId;
   const redirectTo = location?.search?.split('redirectTo=')[1];
-
   useEffect(() => {
     const errorMessage = location?.state?.errorMessage;
     if (errorMessage) {
       toast.error(errorMessage);
     }
-    checkWhiteLabelsDefaultState(inviteOrganizationId).then((res) => {
-      setDefaultState(res);
-    });
   }, []);
 
-  const handleSignup = (formData, onSuccess = () => {}, onFailure = () => {}) => {
+  const handleSignup = (formData, onSuccess = () => {}, onFaluire = () => {}) => {
     const { email, name, password } = formData;
+
     if (organizationToken) {
       authenticationService
         .activateAccountWithToken(email, password, organizationToken)
-        .then((response) => {
-          onInvitedUserSignUpSuccess(response, navigate);
-          onSuccess();
-        })
+        .then((response) => onInvitedUserSignUpSuccess(response, navigate))
         .catch((errorObj) => {
           let errorMessage;
           const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
@@ -56,7 +48,6 @@ const SignupPage = ({ configs, organizationId }) => {
             errorMessage = errorObj?.error?.error;
           }
           errorMessage && toast.error(errorMessage);
-          onFailure();
         });
     } else {
       authenticationService
@@ -72,7 +63,7 @@ const SignupPage = ({ configs, organizationId }) => {
           toast.error(e?.error || 'Something went wrong!', {
             position: 'top-center',
           });
-          onFailure();
+          onFaluire();
         });
     }
   };
@@ -113,7 +104,6 @@ const SignupPage = ({ configs, organizationId }) => {
           onSubmit={handleSignup}
           setSignupOrganizationDetails={setSignupOrganizationDetails}
           initialData={signingUserInfo}
-          defaultState={defaultState}
         />
       )}
       RightSideComponent={GeneralFeatureImage}

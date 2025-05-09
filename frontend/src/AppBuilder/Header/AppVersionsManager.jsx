@@ -81,12 +81,9 @@ export const AppVersionsManager = function ({ darkMode }) {
   }, [currentVersionId, appId, appVersionsLazyLoaded]);
 
   useEffect(() => {
-    console.log('initializedEnvironmentDropdown', initializedEnvironmentDropdown);
-
     if (initializedEnvironmentDropdown) {
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setGetAppVersionStatus(appVersionLoadingStatus.loaded);
   }, [initializedEnvironmentDropdown]);
 
   const selectVersion = (id) => {

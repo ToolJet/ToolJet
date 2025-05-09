@@ -40,6 +40,7 @@
         "requestBody": "Request Body",
         "page": "Page",
         "searchItem": "Search apps in this workspace",
+        "workflowsSearchItem": "Search workflows in this workspace",
         "searchComponents": "Search components"
     },
     "errorBoundary": "Something went wrong.",
@@ -58,18 +59,23 @@
     },
     "slack": {
         "authorize": "Authorize",
-        "connectToolJetToSlack": "ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
+        "connectToolJetToSlack": "{{whiteLabelText}} can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
         "chatWrite": "chat:write",
-        "listUsersAndSendMessage": "Your ToolJet app will be able to list users and send messages to users & channels.",
+        "listUsersAndSendMessage": "Your {{whiteLabelText}} app will be able to list users and send messages to users & channels.",
         "connectSlack": "Connect to Slack"
     },
     "googleSheets": {
         "readOnly": "Read only",
-        "enableReadAndWrite": "If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access",
-        "readDataFromSheets": "Your ToolJet apps can only read data from Google sheets",
+        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Google sheets, make sure to select read and write access",
+        "readDataFromSheets": "Your {{whiteLabelText}} apps can only read data from Google sheets",
         "readWrite": "Read and write",
-        "readModifySheets": "Your ToolJet apps can read data from sheets, modify sheets, and more.",
+        "readModifySheets": "Your {{whiteLabelText}} apps can read data from sheets, modify sheets, and more.",
         "toGoogleSheets": "to Google Sheets"
+    },
+    "zendesk": {
+        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Zendesk resources, make sure to select read and write access",
+        "readDataFromResources": "Your {{whiteLabelText}} apps can only read data from resources",
+        "readModifySheets": "Your {{whiteLabelText}} apps can read data from resources, modify resources, and more."
     },
     "profile": {
         "profileSettings": "Profile Settings"
@@ -82,7 +88,7 @@
         "password": "Password",
         "acceptInvite": "Accept invite",
         "successfullyVerifiedEmail": "Successfully verified email",
-        "setupTooljet": "Set up ToolJet"
+        "setupTooljet": "Set up {{whiteLabelText}}"
     },
     "loginSignupPage": {
         "forgotPassword": "Forgot Password",
@@ -103,13 +109,13 @@
         "emailConfirmLink": "Please check your email for confirmation link",
         "newPassword": "New Password",
         "passwordConfirmation": "Password Confirmation",
-        "newToTooljet": "New to ToolJet?",
+        "newToTooljet": "New to {{whiteLabelText}}?",
         "newToWorkspace": "New to this workspace?",
         "enterWorkEmail": "Enter your work email",
         "enterPassword": "Enter password",
         "forgot": "Forgot?",
         "workEmail": "Email",
-        "joinTooljet": "Join ToolJet",
+        "joinTooljet": "Join {{whiteLabelText}}",
         "getStartedForFree": "Get started for free",
         "passwordCharacter": "Password must be at least 5 characters",
         "enterFullName": "Enter your full name",
@@ -129,7 +135,7 @@
             "version": "Version",
             "currentlyReleased": "Currently Released",
             "createVersion": "Create new version",
-            "versionName": "Version Name",
+            "versionName": "Version name",
             "createVersionFrom": "Create version from",
             "save": "Save",
             "create": "Create Version",
@@ -242,6 +248,13 @@
             "editWorkspace": "Edit workspace",
             "menus": {
                 "addWorkspace": "Add workspace",
+                "instanceLogout": {
+                    "title": "Instance logout",
+                    "customLogoutUrl": {
+                        "label": "Custom logout URL",
+                        "helperText": "Set a personalized logout URL for users logging out of this instance."
+                    }
+                },
                 "menusList": {
                     "manageUsers": "Users",
                     "manageGroups": "Groups",
@@ -271,7 +284,7 @@
                         "userGroups": "User Groups",
                         "createNewGroup": "Create new group",
                         "updateGroup": "Update group",
-                        "addNewGroup": "Create new group",
+                        "addNewGroup": "Add new group",
                         "enterName": "Enter group name",
                         "createGroup": "Create Group",
                         "name": "Name"
@@ -279,15 +292,18 @@
                     "permissionResources": {
                         "userGroup": "User group",
                         "apps": "Apps",
+                        "workflows": "Workflows",
                         "users": "Users",
                         "permissions": "Permissions",
                         "addAppsToGroup": "Select apps to add to the group",
+                        "addWorkflowsToGroup": "Select workflows to add to the group",
                         "name": "name",
                         "addUsersToGroup": "Select users to add to the group",
                         "email": "email",
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
-                        "folder": "Folder"
+                        "folder": "Folder",
+                        "dataSource": "Data sources"
                     },
                     "groupOptions": {
                         "deleteGroup": "Delete Group",
@@ -306,7 +322,8 @@
                         "loginUrl": "Login URL",
                         "workspaceLogin": "Use this URL to login directly to this workspace",
                         "allowDefaultSso": "Allow default SSO",
-                        "ssoAuth": "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by \n workspace level SSO."
+                        "ssoAuth": "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by \n workspace level SSO.",
+                        "customLogoutUrl": "Custom logout URL"
                     },
                     "google": {
                         "title": "Google",
@@ -397,7 +414,7 @@
             "importApplication": "Import an app"
         },
         "foldersSection": {
-            "allApplications": "All apps",
+            "allApplications": "All applications",
             "folders": "Folders",
             "createNewFolder": "+ Create new",
             "noFolders": "You haven't created any folders. Use folders to organize your apps",
@@ -422,6 +439,54 @@
         "thisFolderIsEmpty": "This folder is empty",
         "nonAccessibleFolderApps": "You do not have access to any applications in this folder.",
         "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
+        "deleteWorkflowAndData": "Are you sure you want to delete the workflow {{appName}}? This action will not only remove it from the system but also from all the apps where it is currently in use. Please confirm to proceed.",
+        "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
+        "change": "Change",
+        "templateCard": {
+            "use": "Use",
+            "preview": "Preview",
+            "leadGeneretion": "Lead generetion"
+        },
+        "templateLibraryModal": {
+            "select": "Select template",
+            "createAppfromTemplate": "Create application from template"
+        }
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "Run",
+            "openInWorkflowEditor": "Open in workflow editor"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "Welcome to your new ToolJet workspace",
+            "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "importApplication": "Import an application"
+        },
+        "foldersSection": {
+            "allApplications": "All workflows",
+            "folders": "Folders",
+            "createNewFolder": "+ Create new",
+            "noFolders": "You haven't created any folders. Use folders to organize your apps",
+            "createFolder": "Create folder",
+            "updateFolder": "Update folder",
+            "editFolder": "Edit folder",
+            "deleteFolder": "Delete folder",
+            "folderName": "Folder name",
+            "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+        },
+        "header": {
+            "createNewApplication": "Create new workflow",
+            "import": "Import",
+            "chooseFromTemplate": "Choose from template"
+        },
+        "pagination": {
+            "showing": "Showing",
+            "of": "of",
+            "to": "to"
+        },
+        "noApplicationFound": "No Applications found",
+        "thisFolderIsEmpty": "This folder is empty",
+        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
         "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
         "change": "Change",
         "templateCard": {
@@ -438,6 +503,7 @@
         "setupAccount": "Set up your account",
         "signupWithGoogle": "Sign up with Google",
         "signupWithGitHub": "Sign up with GitHub",
+        "signupWithOpenid": "Sign up with",
         "or": "OR",
         "firstName": "First name",
         "lastName": "Last name",

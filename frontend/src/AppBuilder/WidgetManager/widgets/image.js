@@ -143,8 +143,22 @@ export const imageConfig = {
       },
       accordian: 'Image',
     },
+<<<<<<< HEAD
     backgroundColor: {
       type: 'color',
+=======
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'Image',
+    },
+    backgroundColor: {
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -153,7 +167,11 @@ export const imageConfig = {
       accordian: 'Container',
     },
     borderColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
@@ -179,11 +197,18 @@ export const imageConfig = {
     padding: {
       type: 'switch',
       displayName: 'Padding',
+<<<<<<< HEAD
       validation: { schema: { type: 'string' }, defaultValue: 'default' },
+=======
+>>>>>>> main
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'Custom', value: 'custom' },
       ],
+<<<<<<< HEAD
+=======
+      validation: { schema: { type: 'string' }, defaultValue: 'default' },
+>>>>>>> main
       accordian: 'Container',
       isFxNotRequired: true,
     },
@@ -244,7 +269,10 @@ export const imageConfig = {
       loadingState: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+<<<<<<< HEAD
       visible: { value: '{{true}}' },
+=======
+>>>>>>> main
     },
     events: [],
     styles: {
@@ -256,6 +284,10 @@ export const imageConfig = {
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       padding: { value: 'default' },
       customPadding: { value: '{{0}}' },
+<<<<<<< HEAD
+=======
+      alignment: { value: 'center' },
+>>>>>>> main
     },
   },
 };

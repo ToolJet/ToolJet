@@ -193,6 +193,7 @@ export default class RestapiQueryService implements QueryService {
     let result = {};
     let requestObject = {};
     let responseObject = {};
+    let metadata = {};
 
     try {
       const response = await got(url, requestOptions);
@@ -217,24 +218,39 @@ export default class RestapiQueryService implements QueryService {
       if (error instanceof HTTPError) {
         const requestUrl = error?.request?.options?.url?.origin + error?.request?.options?.url?.pathname;
         const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, ['authorization']);
-        result = {
-          requestObject: {
-            requestUrl,
-            requestHeaders,
+
+        requestObject = {
+            requestUrl: requestUrl,
+            requestHeaders: requestHeaders,
             requestParams: urrl.parse(error.request.requestUrl, true).query,
-          },
-          responseObject: {
-            statusCode: error.response.statusCode,
-            responseBody: error.response.body,
-          },
+        };
+
+        responseObject = {
+          statusCode: error.response.statusCode,
+          responseBody: error.response.body,
+          headers: redactHeaders(error.response.headers),
+        }
+
+        metadata = {
+          request: requestObject,
+          response: responseObject,
+        };
+
+        // TODO: Need to remove the request/response related information in result in next MAJOR release. 
+        // This is now shared in `metadata` key. Keeping this here for backward compatibility.
+
+        result = {
+          requestObject: requestObject,
+          responseObject: responseObject,
           responseHeaders: error.response.headers,
         };
+
       }
 
       if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode == 401) {
         throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
-      throw new QueryError('Query could not be completed', error.message, result);
+      throw new QueryError('Query could not be completed', error.message, result, metadata);
     }
 
     return {
@@ -287,17 +303,31 @@ export default class RestapiQueryService implements QueryService {
   }
 
   private getResponse(response) {
+    const contentType: string = response.headers?.['content-type'] ?? '';
     try {
       if (this.isJson(response.body)) {
         return JSON.parse(response.body);
       }
-      if (response.rawBody && response.headers?.['content-type']?.startsWith('image/')) {
+      if (response.rawBody && this.isBinary(contentType)) {
         return Buffer.from(response.rawBody, 'binary').toString('base64');
       }
     } catch (error) {
       console.error('Error while parsing response', error);
     }
     return response.body;
+  }
+
+  private isBinary(contentType: string) {
+    const binaryPrefixes = ['application/', 'image/'];
+    const binaryApplicationTypes = ['application/pdf', 'application/zip'];
+
+    for (const binaryPrefix of binaryPrefixes) {
+      if (contentType?.startsWith(binaryPrefix)) {
+        if (binaryPrefix === 'application/') return binaryApplicationTypes.includes(contentType);
+        return true;
+      }
+    }
+    return false;
   }
 
   authUrl(sourceOptions: SourceOptions): string {

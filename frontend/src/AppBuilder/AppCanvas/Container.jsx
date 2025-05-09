@@ -5,13 +5,27 @@ import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop } from 'react-dnd';
-import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
+import {
+  addChildrenWidgetsToParent,
+  addNewWidgetToTheEditor,
+  computeViewerBackgroundColor,
+  getSubContainerWidthAfterPadding,
+} from './appCanvasUtils';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  GRID_HEIGHT,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
+import useSortedComponents from '../_hooks/useSortedComponents';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -35,12 +49,13 @@ export const Container = React.memo(
     canvasMaxWidth,
     isViewerSidebarPinned,
     pageSidebarStyle,
+    componentType,
   }) => {
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
-    const componentType = useStore((state) => state.getComponentTypeFromId(id), shallow);
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+    const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
@@ -55,6 +70,11 @@ export const Container = React.memo(
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
+      hover: (item) => {
+        item.canvasRef = realCanvasRef?.current;
+        item.canvasId = id;
+        item.canvasWidth = getContainerCanvasWidth();
+      },
       drop: async ({ componentType }, monitor) => {
         const didDrop = monitor.didDrop();
         if (didDrop) return;
@@ -88,14 +108,14 @@ export const Container = React.memo(
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        return canvasWidth;
+        if (id === 'canvas') return canvasWidth;
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id);
       }
       return realCanvasRef?.current?.offsetWidth;
     }
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
-      useGridStore.getState().actions.setSubContainerWidths(id, (getContainerCanvasWidth() - 2) / NO_OF_GRIDS);
+      useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
 
@@ -112,10 +132,30 @@ export const Container = React.memo(
       return '100%';
     }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 
+<<<<<<< HEAD
     const handleCanvasClick = (e) => {
       const canvasId = e.target.closest('.real-canvas')?.getAttribute('id')?.split('canvas-')[1];
       setFocusedParentId(canvasId);
     };
+=======
+    const handleCanvasClick = useCallback(
+      (e) => {
+        const realCanvas = e.target.closest('.real-canvas');
+        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        setFocusedParentId(canvasId);
+        if (realCanvas) {
+          const rect = realCanvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          setLastCanvasClickPosition({ x, y });
+        }
+      },
+      [setLastCanvasClickPosition]
+    );
+
+    const sortedComponents = useSortedComponents(components, currentLayout, id);
+
+>>>>>>> main
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -125,8 +165,7 @@ export const Container = React.memo(
         }}
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : '100%',
-          // backgroundSize: '25.3953px 10px',
-          backgroundSize: `${gridWidth}px 10px`,
+          backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
@@ -157,6 +196,10 @@ export const Container = React.memo(
         data-parentId={id}
         canvas-height={canvasHeight}
         onClick={handleCanvasClick}
+<<<<<<< HEAD
+=======
+        component-type={componentType}
+>>>>>>> main
       >
         <div
           className={cx('container-fluid rm-container p-0', {
@@ -167,7 +210,7 @@ export const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {components.map((id) => (
+          {sortedComponents.map((id) => (
             <WidgetWrapper
               id={id}
               key={id}

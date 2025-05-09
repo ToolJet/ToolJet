@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+import React, { useMemo } from 'react';
+>>>>>>> main
 import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 import { EventManager } from '../EventManager';
@@ -8,6 +12,10 @@ import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import styles from '@/_ui/Select/styles';
+<<<<<<< HEAD
+=======
+import moment from 'moment-timezone';
+>>>>>>> main
 
 export const DATE_FORMAT_OPTIONS = [
   {
@@ -108,12 +116,81 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
   const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
   const isDateFormatFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
   const isTimeFormatFxOn = componentMeta?.definition?.properties?.timeFormat?.fxActive || false;
+<<<<<<< HEAD
   const dateFormat = resolvedProperties?.dateFormat;
+=======
+  const dateFormat = resolvedProperties?.dateFormat ?? resolvedProperties?.format;
+>>>>>>> main
   const timeFormat = resolvedProperties?.timeFormat;
   const isTimezoneEnabled = resolvedProperties?.isTimezoneEnabled;
   const displayTimezone = resolvedProperties?.displayTimezone;
   const storeTimezone = resolvedProperties?.storeTimezone;
 
+<<<<<<< HEAD
+=======
+  const dateValidator = useMemo(() => {
+    return (date) => {
+      if (typeof date !== 'string')
+        return [false, [`Expected a value of type string, but received ${typeof date}`], date];
+      if (!date) return [true, null, date];
+
+      const isValid = moment(date, dateFormat, true).isValid();
+      console.log('date', date, isValid);
+
+      return [isValid, isValid ? null : [`Invalid date. Expected date format: ${dateFormat}`], date];
+    };
+  }, [dateFormat]);
+
+  const timeValidator = useMemo(() => {
+    return (time) => {
+      if (typeof time !== 'string')
+        return [false, [`Expected a value of type string, but received ${typeof time}`], time];
+      if (!time) return [true, null, time];
+      const isValid = moment(time, timeFormat, true).isValid();
+      return [isValid, isValid ? null : [`Invalid time. Expected time format: ${timeFormat}`], time];
+    };
+  }, [timeFormat]);
+
+  const dateArrayValidator = useMemo(() => {
+    return (date) => {
+      if (!Array.isArray(date)) return [false, [`Expected a value of type array, but received ${typeof date}`], date];
+      else if (!date) return [true, null, date];
+      const isValid = date.every((d) => moment(d, dateFormat, true).isValid());
+      return [isValid, isValid ? null : [`Invalid format. Expected date format: ${dateFormat}`], date];
+    };
+  }, [dateFormat]);
+
+  const getDynamicPlaceholder = (property) => {
+    const dynamicType = componentMeta.validation?.[property]?.dynamicType;
+    switch (dynamicType) {
+      case 'date':
+        return dateFormat;
+      case 'time':
+        return timeFormat;
+      case 'arrayDate':
+        return ``;
+      default:
+        return componentMeta.validation?.[property]?.placeholder;
+    }
+  };
+
+  const getDynamicDateValidator = (property) => {
+    const dynamicType = componentMeta.validation?.[property]?.dynamicType;
+    switch (dynamicType) {
+      case 'date':
+        return dateValidator;
+      case 'time':
+        return timeValidator;
+      case 'arrayDate':
+        return dateArrayValidator;
+      default:
+        return () => {
+          return [true, null, null];
+        };
+    }
+  };
+
+>>>>>>> main
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
@@ -129,8 +206,169 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     isOpen: true,
     children: (
       <>
+<<<<<<< HEAD
         {properties?.map((property) =>
           renderElement(
+=======
+        {properties?.map((property) => {
+          if (['isTimezoneEnabled', 'customDateFormat'].includes(property)) {
+            return (
+              <>
+                {!['TimePicker'].includes(componentName) && (
+                  <div
+                    data-cy={`input-date-display-format`}
+                    className="field mb-2 w-100 input-date-display-format"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="d-flex justify-content-between mb-1">
+                        <label className="form-label"> Date Format</label>
+                        <div
+                          className={cx({
+                            'hide-fx': !isDateFormatFxOn,
+                          })}
+                        >
+                          <FxButton
+                            active={isDateFormatFxOn}
+                            onPress={() => {
+                              paramUpdated({ name: 'dateFormat' }, 'fxActive', !isDateFormatFxOn, 'properties');
+                            }}
+                          />
+                        </div>
+                      </div>
+                      {isDateFormatFxOn ? (
+                        <CodeHinter
+                          initialValue={dateFormat}
+                          theme={darkMode ? 'monokai' : 'default'}
+                          mode="javascript"
+                          lineNumbers={false}
+                          onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+                        />
+                      ) : (
+                        <Select
+                          options={DATE_FORMAT_OPTIONS}
+                          value={dateFormat ?? 'DD/MM/YYYY'}
+                          search={true}
+                          closeOnSelect={true}
+                          onChange={(value) => {
+                            paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties');
+                          }}
+                          fuzzySearch
+                          placeholder="Select.."
+                          useCustomStyles={true}
+                          styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!['DatePickerV2'].includes(componentName) && (
+                  <>
+                    <div className="field mb-2 input-date-time-format" onClick={(e) => e.stopPropagation()}>
+                      <div className="d-flex justify-content-between mb-1">
+                        <label className="form-label"> Time Format</label>
+                        <div className={cx({ 'hide-fx': !isTimeFormatFxOn })}>
+                          <FxButton
+                            active={isTimeFormatFxOn}
+                            onPress={() => {
+                              paramUpdated({ name: 'timeFormat' }, 'fxActive', !isTimeFormatFxOn, 'properties');
+                            }}
+                          />
+                        </div>
+                      </div>
+                      {isTimeFormatFxOn ? (
+                        <CodeHinter
+                          initialValue={timeFormat}
+                          theme={darkMode ? 'monokai' : 'default'}
+                          mode="javascript"
+                          lineNumbers={false}
+                          onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+                        />
+                      ) : (
+                        <Select
+                          options={TIME_FORMAT_OPTIONS}
+                          value={timeFormat ?? 'HH:mm'}
+                          search={true}
+                          closeOnSelect={true}
+                          onChange={(value) => {
+                            paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties');
+                          }}
+                          fuzzySearch
+                          placeholder="Select.."
+                          useCustomStyles={true}
+                          styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                        />
+                      )}
+                    </div>
+
+                    {renderElement(
+                      component,
+                      componentMeta,
+                      paramUpdated,
+                      dataQueries,
+                      'isTimezoneEnabled',
+                      'properties',
+                      currentState,
+                      allComponents,
+                      darkMode
+                    )}
+
+                    {isTimezoneEnabled && (
+                      <div style={{ paddingLeft: '16px', borderLeft: '1px solid #E4E7EB' }}>
+                        <div
+                          data-cy={`input-display-time-zone`}
+                          className="field mb-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <label data-cy={`label-display-time-zone`} className="form-label">
+                            Display in
+                          </label>
+                          <Select
+                            options={TIMEZONE_OPTIONS}
+                            value={displayTimezone || 'UTC'}
+                            search={true}
+                            closeOnSelect={true}
+                            onChange={(value) => {
+                              paramUpdated({ name: 'displayTimezone' }, 'value', value, 'properties');
+                            }}
+                            fuzzySearch
+                            placeholder="Select.."
+                            useCustomStyles={true}
+                            styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                          />
+                        </div>
+                        <div
+                          data-cy={`input-display-time-zone`}
+                          className="field mb-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <label data-cy={`label-display-time-zone`} className="form-label">
+                            Store in
+                          </label>
+                          <Select
+                            options={TIMEZONE_OPTIONS}
+                            value={storeTimezone || 'UTC'}
+                            search={true}
+                            closeOnSelect={true}
+                            onChange={(value) => {
+                              paramUpdated({ name: 'storeTimezone' }, 'value', value, 'properties');
+                            }}
+                            fuzzySearch
+                            placeholder="Select.."
+                            useCustomStyles={true}
+                            styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            );
+          }
+
+          return renderElement(
+>>>>>>> main
             component,
             componentMeta,
             paramUpdated,
@@ -140,12 +378,18 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
             currentState,
             allComponents,
             darkMode
+<<<<<<< HEAD
           )
         )}
+=======
+          );
+        })}
+>>>>>>> main
       </>
     ),
   });
 
+<<<<<<< HEAD
   if (componentName !== 'DaterangePicker') {
     items.push({
       title: 'Formatting',
@@ -297,6 +541,17 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
       ),
     });
   }
+=======
+  // if (componentName !== 'DaterangePicker') {
+  //   items.push({
+  //     title: 'Formatting',
+  //     isOpen: true,
+  //     children: (
+
+  //     ),
+  //   });
+  // }
+>>>>>>> main
 
   items.push({
     title: 'Events',
@@ -334,7 +589,12 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
               currentState,
               allComponents,
               darkMode,
+<<<<<<< HEAD
               componentMeta.validation?.[property]?.placeholder
+=======
+              getDynamicPlaceholder(property),
+              getDynamicDateValidator(property)
+>>>>>>> main
             )}
           </div>
         ))}

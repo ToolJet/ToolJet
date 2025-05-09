@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tab, ListGroup, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -9,6 +9,8 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import useStore from '@/AppBuilder/_stores/store';
+import { v4 as uuidv4 } from 'uuid';
+import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
 const noop = () => {};
 
@@ -98,14 +100,16 @@ const EducativeLabel = ({ darkMode }) => {
   );
 };
 
-export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
+export const Transformation = ({ changeOption, options, darkMode, queryId, renderCopilot }) => {
   const [lang, setLang] = useState(options?.transformationLanguage ?? 'javascript');
   const [enableTransformation, setEnableTransformation] = useState(options.enableTransformation);
+  const prevQueryId = useRef(queryId);
   const selectedQueryId = useStore((state) => state.selectedQuery?.id);
-
+  const [codeEditorKey, setCodeEditorKey] = useState(uuidv4());
   const [state, setState] = useState({
     ...defaultValue,
-    [options.transformationLanguage ?? 'javascript']: options?.transformation,
+    ...(options?.transformation ? { [options.transformationLanguage ?? 'javascript']: options?.transformation } : {}),
+    ...options?.transformations,
   });
   const { t } = useTranslation();
 
@@ -116,25 +120,31 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
   useEffect(() => {
     if (lang !== (options.transformationLanguage ?? 'javascript')) {
       changeOption('transformationLanguage', lang);
-      changeOption('transformation', state[lang]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
   useEffect(() => {
-    lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
-    setState({ ...state, [lang]: options.transformation ?? state[lang] ?? defaultValue[lang] });
+    if (prevQueryId.current === queryId) {
+      lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
+      setState((prevState) => {
+        return {
+          ...prevState,
+          ...(options?.transformation
+            ? { [options.transformationLanguage ?? 'javascript']: options?.transformation }
+            : {}),
+          ...options?.transformations,
+        };
+      });
+    }
+    prevQueryId.current = queryId;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(options.transformation)]);
+  }, [JSON.stringify(options?.transformation || {}), JSON.stringify(options.transformations)]);
 
   useEffect(() => {
     if (selectedQueryId !== queryId) {
-      const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
-      const finalState = _.merge(
-        {},
-        { [options?.transformationLanguage ?? lang]: options.transformation ?? defaultValue[lang] },
-        nonLangdefaultCode
-      );
+      const olderTransformation = options?.transformation ? { [lang]: options?.transformation } : {};
+      const finalState = _.merge({}, defaultValue, olderTransformation, options?.transformations);
 
       setState(finalState);
     }
@@ -151,6 +161,10 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
   useEffect(() => {
     setEnableTransformation(options.enableTransformation);
   }, [options.enableTransformation]);
+
+  useEffect(() => {
+    setCodeEditorKey(uuidv4());
+  }, [lang, queryId]);
 
   return (
     <div className="field transformation-editor">
@@ -190,14 +204,12 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
       <br />
       <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
         <div className="col flex-grow-1">
-          <div style={{ borderRadius: '6px', marginBottom: '20px', background: darkMode ? '#272822' : '#F8F9FA' }}>
+          <div style={{ borderRadius: '6px', background: darkMode ? '#272822' : '#F8F9FA' }}>
             <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
               <Tab.Container
                 activeKey={lang}
                 onSelect={(value) => {
                   setLang(value);
-                  changeOption('transformationLanguage', value);
-                  changeOption('transformation', state[value]);
                 }}
                 defaultActiveKey="javascript"
               >
@@ -236,11 +248,13 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
               initialValue={state[lang] ?? ''}
               lang={lang}
               lineNumbers={true}
+              key={codeEditorKey}
               height={400}
               className="query-hinter"
               onChange={(value) => {
-                changeOption('transformation', value);
+                changeOption('transformations', { ...state, [lang]: value });
               }}
+              renderCopilot={renderCopilot}
               componentName={`transformation`}
               cyLabel={'transformation-input'}
               // callgpt={handleCallToGPT}

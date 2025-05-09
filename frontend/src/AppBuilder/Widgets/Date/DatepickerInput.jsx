@@ -14,7 +14,11 @@ export const DatepickerInput = forwardRef(
     loading,
     disable,
     onInputChange,
+<<<<<<< HEAD
     datepickerMode,
+=======
+    datepickerSelectionType = 'single',
+>>>>>>> main
     displayFormat,
     setDisplayTimestamp,
     setTextInputFocus,
@@ -45,7 +49,11 @@ export const DatepickerInput = forwardRef(
           onChange={(e) => {
             const inputVal = e.target.value;
             setDisplayTimestamp(inputVal);
+<<<<<<< HEAD
             if (datepickerMode === 'range') {
+=======
+            if (datepickerSelectionType === 'range') {
+>>>>>>> main
               const [start, end] = inputVal.split('-');
               const parsedStartDate = moment(start, displayFormat);
               const parsedEndDate = moment(end, displayFormat);

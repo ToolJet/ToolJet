@@ -10,21 +10,24 @@ const initialState = {
   environments: [],
   shouldRenderPromoteButton: false, // TODO: need to check if this is needed
   shouldRenderReleaseButton: false, // TODO: need to check if this is needed
-  initializedEnvironmentDropdown: false,
+  initializedEnvironmentDropdown: true,
   environmentsLazyLoaded: false,
   appVersionsLazyLoaded: false,
   previewInitialEnvironmentId: null,
   developmentVersions: [],
   environmentLoadingState: 'completed',
+  isPublicAccess: false,
 };
 
 export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   ...initialState,
 
-  init: async (editingVersionId) => {
+  init: async (editingVersionId, envFromQueryParams) => {
     try {
       const response = await appEnvironmentService.init(editingVersionId);
-      const previewInitialEnvironmentId = get().previewInitialEnvironmentId;
+      const previewInitialEnvironmentId = !envFromQueryParams
+        ? null
+        : response.environments.find((environment) => environment.name === envFromQueryParams)?.id;
       let selectedEnvironment = response.editorEnvironment;
       if (previewInitialEnvironmentId) {
         selectedEnvironment = response.environments.find(
@@ -54,7 +57,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   setEnvironmentDropdownStatus: (status) => set({ initializedEnvironmentDropdown: status }),
 
   fetchDevelopmentVersions: async (appId) => {
-    const developmentEnvironmentId = get().environments.find((environment) => environment.name === 'production').id;
+    const developmentEnvironmentId = get().environments.find((environment) => environment.name === 'development').id;
 
     try {
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, developmentEnvironmentId);
@@ -148,23 +151,36 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
       onSuccess();
     } catch (error) {
+      console.log({ error });
       onFailure(error);
     }
   },
 
   deleteVersionAction: async (appId, versionId, onSuccess, onFailure) => {
     try {
+      // Delete versions
       await appVersionService.del(appId, versionId);
 
+      // Delete version from every environment
+      const response = await appEnvironmentService.postVersionDeleteAction({
+        appId,
+        editorVersionId: versionId,
+        deletedVersionId: versionId,
+        editorEnvironmentId: get().selectedEnvironment.id,
+      });
+      const editorVersion = response.editorVersion;
+
       set((state) => {
-        const newVersions = state.versionsPromotedToEnvironment.filter((v) => v.id !== versionId);
         const newState = {
-          versionsPromotedToEnvironment: newVersions,
+          versionsPromotedToEnvironment: [editorVersion],
           appVersionsLazyLoaded: false,
+          selectedEnvironment: response.editorEnvironment,
+          appVersionEnvironment: response.appVersionEnvironment,
+          environments: response?.environments?.length ? response.environments : get().environments,
         };
 
         if (state.selectedVersion?.id === versionId) {
-          const newSelectedVersion = newVersions[0]; // last version can't be deleted
+          const newSelectedVersion = editorVersion; // last version can't be deleted
           newState.selectedVersion = newSelectedVersion;
           newState.currentVersionId = newSelectedVersion.id;
         }
@@ -178,7 +194,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       onFailure(error);
     }
   },
-
   changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure) => {
     try {
       const data = await appVersionService.getAppVersionData(appId, versionId);
@@ -226,7 +241,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           ),
         };
 
-        const versionIsAvailableInEnvironment = environment.priority <= get().appVersionEnvironment.priority;
+        const versionIsAvailableInEnvironment = environment?.priority <= get().currentAppVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
           const appId = useStore.getState().app.appId;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
@@ -235,7 +250,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           });
           selectedVersion = response.editorVersion;
           const appVersionEnvironment = get().environments.find(
-            (environment) => environment.id === selectedVersion.current_environment_id
+            (environment) => environment.id === selectedVersion.currentEnvironmentId
           );
 
           //TODO: need to check if this is needed
@@ -263,6 +278,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       };
       // onSuccess(callBackResponse);
     } catch (error) {
+      console.log({ error });
       toast.error('Failed to switch theme: ' + error?.message);
     }
   },
@@ -308,6 +324,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
     };
   },
+
+  setIsPublicAccess: (isPublicAccess) => set({ isPublicAccess }),
+  getIsPublicAccess: () => get().isPublicAccess,
 });
 
 // Helper functions

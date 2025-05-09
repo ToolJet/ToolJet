@@ -16,9 +16,7 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.logoutLink).click();
-  cy.intercept("GET", "/api/metadata").as("publicConfig");
-  cy.wait("@publicConfig");
-  cy.wait(500);
+  cy.wait(1000);
 };
 
 export const navigateToManageUsers = () => {
@@ -31,28 +29,6 @@ export const navigateToManageGroups = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageGroupsOption).click();
-  // navigateToAllUserGroup();
-};
-
-export const navigateToAllUserGroup = () => {
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(1000);
-  cy.get("body").then(($title) => {
-    if (
-      $title
-        .text()
-        .includes("Admin has edit access to all apps. These are not editable")
-    ) {
-      cy.get(groupsSelector.groupLink("Admin")).click();
-      cy.get(groupsSelector.groupLink("All users")).click();
-      cy.get(groupsSelector.groupLink("Admin")).click();
-      cy.get(groupsSelector.groupLink("All users")).click();
-      cy.wait(2000);
-    }
-  });
 };
 
 export const navigateToWorkspaceVariable = () => {
@@ -113,7 +89,7 @@ export const navigateToAppEditor = (appName) => {
     .find(commonSelectors.editButton)
     .click({ force: true });
   if (Cypress.env("environment") === "Community") {
-    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+    cy.intercept("GET", "/api/data-sources").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
   } else {
@@ -205,18 +181,7 @@ export const manageUsersPagination = (email) => {
 
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.inputUserSearch, email);
-  cy.wait(1000)
-};
-
-export const createWorkspace = (workspaceName) => {
-  cy.get(commonSelectors.workspaceName).click();
-  cy.get(commonSelectors.addWorkspaceButton).click();
-  cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
-  cy.clearAndType('[data-cy="workspace-slug-input-field"]', workspaceName);
   cy.wait(1000);
-  cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
-  cy.get(commonSelectors.createWorkspaceButton).click();
-  cy.wait("@homePage");
 };
 
 export const selectAppCardOption = (appName, appCardOption) => {
@@ -252,16 +217,7 @@ export const pinInspector = () => {
       cy.get(commonSelectors.inspectorPinIcon).click();
     }
   });
-};
-
-export const createGroup = (groupName) => {
-  cy.get(groupsSelector.createNewGroupButton).click();
-  cy.clearAndType(groupsSelector.groupNameInput, groupName);
-  cy.get(groupsSelector.createGroupButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    groupsText.groupCreatedToast
-  );
+  cy.hideTooltip();
 };
 
 export const navigateToworkspaceConstants = () => {

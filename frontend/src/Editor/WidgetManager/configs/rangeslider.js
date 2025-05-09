@@ -32,7 +32,10 @@ export const rangeSliderConfig = {
       type: 'code',
       displayName: 'Value',
       validation: {
-        schema: { type: 'number' },
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'array', element: { type: 'number' } }, { type: 'number' }],
+        },
         defaultValue: 50,
       },
     },
@@ -81,6 +84,19 @@ export const rangeSliderConfig = {
         defaultValue: true,
       },
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+    },
   },
   exposedVariables: {
     value: null,
@@ -108,6 +124,7 @@ export const rangeSliderConfig = {
       handleColor: { value: '' },
       trackColor: { value: '' },
       visibility: { value: '{{true}}' },
+      padding: { value: 'default' },
     },
   },
 };

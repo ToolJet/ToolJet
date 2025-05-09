@@ -82,7 +82,8 @@ function SourceKeyRelation({
             isDisabled:
               item?.data_type === 'serial' ||
               item?.data_type === 'boolean' ||
-              item?.data_type === 'timestamp with time zone'
+              item?.data_type === 'timestamp with time zone' ||
+              item?.data_type === 'jsonb'
                 ? true
                 : false,
           };
@@ -256,7 +257,7 @@ function SourceKeyRelation({
           firstColumnName={'Table'}
           secondColumnName={'Column'}
           tableList={sourceTable}
-          tableColumns={sourceColumns.filter((column) => !isEmpty(column.value.trim()))}
+          tableColumns={sourceColumns.filter((column) => !isEmpty(column?.value?.trim()))}
           source={true}
           isEditColumn={isEditColumn}
           isCreateColumn={isCreateColumn}

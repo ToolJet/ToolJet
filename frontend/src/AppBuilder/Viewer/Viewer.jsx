@@ -14,14 +14,13 @@ import MobileHeader from './MobileHeader';
 import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
-import TooljetBanner from './TooljetBanner';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, environmentId, versionId } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
-  useAppData(appId, moduleId, 'view', { environmentId, versionId });
+  useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId });
 
   const {
     isEditorLoading,
@@ -65,6 +64,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   );
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
+  const changeDarkMode = useStore((state) => state.changeDarkMode);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
@@ -96,6 +96,12 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
+  const isLicenseValid = useStore((state) => state.isLicenseValid);
+  const licenseValid = isLicenseValid();
+  // ---remove
+  const handleAppEnvironmentChanged = useCallback((environment) => {
+    console.log('setAppVersionCurrentEnvironment', environment);
+  }, []);
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents);
@@ -148,6 +154,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       pages={pages}
                       currentPageId={currentPageId ?? homePageId}
                       showViewerNavigation={!isPagesSidebarHidden}
+                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
                     />
                   )}
@@ -159,6 +166,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       pages={pages}
                       currentPageId={currentPageId ?? homePageId}
                       showViewerNavigation={!isPagesSidebarHidden}
+                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
                     />
                   )}
@@ -212,13 +220,14 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                   pages={pages}
                                   currentPageId={currentPageId ?? homePageId}
                                   showViewerNavigation={!isPagesSidebarHidden}
+                                  handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                 />
                               )}
                               <AppCanvas moduleId={moduleId} isViewerSidebarPinned={isSidebarPinned} />
                             </div>
-                            <TooljetBanner isDarkMode={darkMode} />
+                            {/* {!licenseValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />} */}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

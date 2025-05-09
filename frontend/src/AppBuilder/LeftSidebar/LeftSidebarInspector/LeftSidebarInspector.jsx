@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { HeaderSection } from '@/_ui/LeftSidebar';
@@ -26,6 +26,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
   const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
   const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
   const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
+  const pathToBeInspected = useStore((state) => state.pathToBeInspected);
   const iconsList = useIconList({
     exposedComponentsVariables,
     componentIdNameMapping,
@@ -87,6 +88,22 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables]);
 
+  const handleNodeExpansion = (path, data, currentNode) => {
+    if (pathToBeInspected && path?.length > 0) {
+      const shouldExpand = pathToBeInspected.includes(path[path.length - 1]);
+
+      // Scroll to the component in the inspector
+      if (path?.length === 2 && path?.[0] === 'components' && shouldExpand) {
+        const target = document.getElementById(`inspector-node-${String(currentNode).toLowerCase()}`);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      return shouldExpand;
+    } else return false;
+  };
+
   return (
     <div
       className={`left-sidebar-inspector ${darkMode && 'dark-theme'}`}
@@ -121,6 +138,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
           actionsList={callbackActions}
           actionIdentifier="id"
           expandWithLabels={true}
+          shouldExpandNode={handleNodeExpansion}
           // selectedComponent={selectedComponent}
           treeType="inspector"
           darkMode={darkMode}

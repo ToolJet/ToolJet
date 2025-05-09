@@ -19,7 +19,12 @@ const CustomDatePickerHeader = (props) => {
     nextMonthButtonDisabled,
     prevYearButtonDisabled,
     nextYearButtonDisabled,
+<<<<<<< HEAD
     datepickerMode,
+=======
+    datepickerMode = 'date',
+    datepickerSelectionType = 'single',
+>>>>>>> main
     monthDate,
     customHeaderCount,
     setDatePickerMode,
@@ -134,7 +139,11 @@ const CustomDatePickerHeader = (props) => {
           justifyContent: 'center',
         }}
       >
+<<<<<<< HEAD
         {!(datepickerMode === 'range' && customHeaderCount === 1) && (
+=======
+        {!(datepickerSelectionType === 'range' && customHeaderCount === 1) && (
+>>>>>>> main
           <button
             className="tj-datepicker-widget-arrows tj-datepicker-widget-left"
             onClick={(e) => {
@@ -148,7 +157,11 @@ const CustomDatePickerHeader = (props) => {
           </button>
         )}
         <div style={{ marginRight: '8px' }}>
+<<<<<<< HEAD
           {datepickerMode != 'range' && (
+=======
+          {datepickerSelectionType != 'range' && (
+>>>>>>> main
             <div className="d-flex gap-2">
               {!(datepickerMode === 'month') && (
                 <span className={'tj-datepicker-widget-month-selector'} onClick={() => setDatePickerMode('month')}>
@@ -162,6 +175,7 @@ const CustomDatePickerHeader = (props) => {
               )}
             </div>
           )}
+<<<<<<< HEAD
           {datepickerMode === 'range' && (
             <div className="daterangepicker-header">
               <Select
@@ -192,6 +206,43 @@ const CustomDatePickerHeader = (props) => {
           )}
         </div>
         {!(datepickerMode === 'range' && customHeaderCount === 0) && (
+=======
+          {datepickerSelectionType === 'range' && (
+            <div className="daterangepicker-header">
+              {!['month', 'year'].includes(datepickerMode) && (
+                <Select
+                  options={months.map((option) => ({ name: option, value: option }))}
+                  value={months[moment(monthDate).month()]}
+                  onChange={(value) => changeMonth(months.indexOf(value))}
+                  width={'100%'}
+                  styles={customSelectStyles}
+                  useCustomStyles={true}
+                  useMenuPortal={false}
+                  components={{ Option: CustomOption }}
+                  menuPlacement="bottom"
+                  menuPosition="absolute"
+                />
+              )}
+              {!['year'].includes(datepickerMode) && (
+                <Select
+                  options={years.map((option) => ({ name: option, value: option }))}
+                  value={moment(monthDate).year()}
+                  onChange={(value) => changeYear(value)}
+                  width={'100%'}
+                  styles={customSelectStyles}
+                  useCustomStyles={true}
+                  useMenuPortal={false}
+                  components={{ Option: CustomOption }}
+                  menuPlacement="bottom"
+                  menuPosition="absolute"
+                />
+              )}
+            </div>
+          )}
+        </div>
+        {(!(datepickerSelectionType === 'range' && customHeaderCount === 0) ||
+          (datepickerSelectionType === 'range' && datepickerMode === 'year')) && (
+>>>>>>> main
           <button
             className="tj-datepicker-widget-arrows tj-datepicker-widget-right "
             onClick={(e) => {

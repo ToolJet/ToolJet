@@ -2,9 +2,18 @@ export const dataSourceText = {
   labelDataSources: "Datasources",
   labelAddDataSource: "+ add data source",
 
-  allDataSources: "All data sources (42)",
-  allDatabase: "Databases (18)",
-  allApis: "APIs (20)",
+  allDataSources: () => {
+    return Cypress.env("marketplace_action")
+      ? "All data sources (44)"
+      : "All data sources (42)";
+  },
+  commonlyUsed: "Commonly used (5)",
+  allDatabase: () => {
+    return Cypress.env("marketplace_action")
+      ? "Databases (20)"
+      : "Databases (18)";
+  },
+  allApis: "APIs (21)",
   allCloudStorage: "Cloud Storages (4)",
   pluginsLabelAndCount: "Plugins (0)",
 
@@ -12,11 +21,11 @@ export const dataSourceText = {
   labelHost: "Host",
   labelPort: "Port",
   labelSSL: "SSL",
-  labelDbName: "Database Name",
+  labelDbName: "Database name",
   labelUserName: "Username",
   labelPassword: "Password",
   label: "Encrypted",
-  sslCertificate: "SSL Certificate",
+  sslCertificate: "SSL certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",
   textCopy: "Copy",
@@ -71,4 +80,11 @@ export const dataSourceText = {
   labelNoEventhandler: "No event handlers",
   toastDSSaved: "Data Source Saved",
   unSavedModalTitle: "Unsaved Changes",
+
+  sslCertificateLabel: "SSL Certificate",
+  caCertificateOption: "CA certificate",
+  clientCertificateOption: "Client certificate",
+  clientKeyLabel: "Client Key",
+  clientCertLabel: "Client Cert",
+  caCertLabel: "CA Cert",
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
-import { authenticationService } from '@/_services';
+import { authenticationService, loginConfigsService } from '@/_services';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
@@ -14,7 +14,6 @@ import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery } from '@/_helpers/utils';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
-import { redirectToDashboard } from '@/_helpers/routes';
 import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
@@ -29,7 +28,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
   const { t } = useTranslation();
-  const [defaultState, setDefaultState] = useState(false);
+  const defaultState = checkWhiteLabelsDefaultState();
 
   const location = useLocation();
   const params = useParams();
@@ -80,11 +79,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     if (organizationId) {
       authenticationService.saveLoginOrganizationId(organizationId);
       organizationId &&
-        authenticationService.getOrganizationConfigs(organizationId).then(
+        loginConfigsService.getOrganizationConfigs(organizationId).then(
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
-            setFaviconAndTitle(null, null, location);
+            setFaviconAndTitle(location);
           },
           () => {
             setIsGettingConfigs(false);
@@ -93,9 +92,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     } else {
       setIsGettingConfigs(false);
     }
-    checkWhiteLabelsDefaultState(organizationId).then((res) => {
-      setDefaultState(res);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -377,6 +373,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           organizationToken={organizationToken}
           password={password}
           darkMode={darkMode}
+          source={source}
         />
       )}
 

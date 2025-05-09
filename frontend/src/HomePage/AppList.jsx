@@ -41,6 +41,8 @@ const AppList = (props) => {
                     deleteApp={props.deleteApp}
                     exportApp={props.exportApp}
                     appActionModal={props.appActionModal}
+                    appType={props.appType}
+                    basicPlan={props?.basicPlan || false}
                   />
                 </div>
               );

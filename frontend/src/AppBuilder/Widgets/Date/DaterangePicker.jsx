@@ -3,7 +3,11 @@ import { useDateInput, useDatetimeInput } from './hooks';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
+<<<<<<< HEAD
 import { isDateValid } from './utils';
+=======
+import { isDateRangeValid, isDateValid } from './utils';
+>>>>>>> main
 
 export const DaterangePicker = ({
   height,
@@ -21,7 +25,12 @@ export const DaterangePicker = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
+<<<<<<< HEAD
 
+=======
+  const [datepickerMode, setDatePickerMode] = useState('date');
+  const { defaultStartDate, defaultEndDate, format, label } = properties;
+>>>>>>> main
   const inputProps = {
     properties,
     setExposedVariable,
@@ -30,11 +39,18 @@ export const DaterangePicker = ({
     fireEvent,
     dateInputRef,
     datePickerRef,
+<<<<<<< HEAD
+=======
+    dateFormat: format,
+>>>>>>> main
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
 
+<<<<<<< HEAD
   const { defaultStartDate, defaultEndDate, format, label } = properties;
+=======
+>>>>>>> main
   const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
     dateTimeLogic;
   const { minDate, maxDate, excludedDates } = dateLogic;
@@ -191,19 +207,63 @@ export const DaterangePicker = ({
   }, [endDate, format]);
 
   useEffect(() => {
+<<<<<<< HEAD
     let validationStatus = isDateValid(startDate, { minDate, maxDate, customRule, isMandatory, excludedDates });
+=======
+    let validationStatus = isDateValid(startDate, {
+      minDate,
+      maxDate,
+      customRule,
+      isMandatory,
+      dateFormat: format,
+    });
+>>>>>>> main
     if (!validationStatus.isValid) {
       setValidationStatus(validationStatus);
       return;
     }
+<<<<<<< HEAD
     validationStatus = isDateValid(endDate, { minDate, maxDate, customRule, isMandatory, excludedDates });
     setValidationStatus(validationStatus);
   }, [minDate, maxDate, customRule, isMandatory, startDate, endDate, excludedDates]);
+=======
+    validationStatus = isDateValid(endDate, {
+      minDate,
+      maxDate,
+      customRule,
+      isMandatory,
+      dateFormat: format,
+    });
+    if (!validationStatus.isValid) {
+      setValidationStatus(validationStatus);
+      return;
+    }
+    validationStatus = isDateRangeValid(startDate, endDate, excludedDates, format);
+    console.log('validationStatus', validationStatus);
+    setValidationStatus(validationStatus);
+  }, [minDate, maxDate, customRule, isMandatory, startDate, endDate, excludedDates, format]);
+
+  useEffect(() => {
+    const transformedFormat = format.toLowerCase();
+    if (transformedFormat.includes('y') && !transformedFormat.includes('m') && !transformedFormat.includes('d')) {
+      setDatePickerMode('year');
+    } else if (transformedFormat.includes('m') && !transformedFormat.includes('d')) {
+      setDatePickerMode('month');
+    } else {
+      setDatePickerMode('date');
+    }
+  }, [format]);
+>>>>>>> main
 
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
     popperClassName: cx('tj-daterange-widget', {
       'theme-dark dark-theme': darkMode,
+<<<<<<< HEAD
+=======
+      'react-datepicker-month-component': datepickerMode === 'month',
+      'react-datepicker-year-component': datepickerMode === 'year',
+>>>>>>> main
     }),
     onChange,
     onSelect: (start) => {
@@ -221,8 +281,16 @@ export const DaterangePicker = ({
     endDate: endDate,
     selectsRange: true,
     monthsShown: 2,
+<<<<<<< HEAD
     showMonthDropdown: true,
     showYearDropdown: true,
+=======
+    excludeDates: excludedDates,
+    showMonthDropdown: datepickerMode === 'date',
+    showYearDropdown: datepickerMode === 'date',
+    showMonthYearPicker: datepickerMode === 'month',
+    showYearPicker: datepickerMode === 'year',
+>>>>>>> main
     minDate: moment(minDate).isValid() ? minDate : null,
     maxDate: moment(maxDate).isValid() ? maxDate : null,
     onCalendarClose: () => {
@@ -236,7 +304,12 @@ export const DaterangePicker = ({
   const customDateInputProps = {
     dateInputRef,
     onInputChange: onChange,
+<<<<<<< HEAD
     datepickerMode: 'range',
+=======
+    datepickerSelectionType: 'range',
+    datepickerMode,
+>>>>>>> main
     setDisplayTimestamp: setDisplayRange,
     displayFormat: format,
     setTextInputFocus,
@@ -247,7 +320,12 @@ export const DaterangePicker = ({
   };
 
   const customHeaderProps = {
+<<<<<<< HEAD
     datepickerMode: 'range',
+=======
+    datepickerSelectionType: 'range',
+    datepickerMode,
+>>>>>>> main
     setDatePickerMode: () => {},
   };
 

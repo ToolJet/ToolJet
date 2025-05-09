@@ -1,4 +1,5 @@
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { ToolTip } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import React from 'react';
@@ -18,6 +19,9 @@ const RenderFilterSectionUI = ({
   handleValueChange,
   removeFilterConditionPair,
   id,
+  isSelectedColumnJsonbType = false,
+  handleJsonPathChange,
+  jsonpath = '',
 }) => {
   column = typeof column === 'object' && column !== null ? column : { label: column, value: column };
   operator = typeof operator === 'object' && operator !== null ? operator : { label: operator, value: operator };
@@ -34,11 +38,40 @@ const RenderFilterSectionUI = ({
               options={displayColumns}
               onChange={handleColumnChange}
               // width={'auto'}
-              buttonClasses="border border-end-0 rounded-start overflow-hidden"
+              buttonClasses={`border  ${
+                isSelectedColumnJsonbType ? 'border-top-left-rounded' : 'rounded-start'
+              } overflow-hidden`}
               showPlaceHolder
               darkMode={darkMode}
               isMulti={false}
             />
+            {isSelectedColumnJsonbType && (
+              <div className="tjdb-codehinter-jsonpath">
+                <ToolTip
+                  message={
+                    jsonpath ? jsonpath : 'Access nested JSON fields by using -> for JSON object and ->> for text'
+                  }
+                  tooltipClassName="tjdb-table-tooltip"
+                  placement="top"
+                  trigger={['hover', 'focus']}
+                  width="160px"
+                >
+                  <span>
+                    <CodeHinter
+                      type="basic"
+                      initialValue={jsonpath}
+                      lang="javascript"
+                      onChange={(value) => {
+                        handleJsonPathChange(value);
+                      }}
+                      enablePreview={false}
+                      height="30"
+                      placeholder="->>key"
+                    />
+                  </span>
+                </ToolTip>
+              </div>
+            )}
           </Col>
 
           <Col sm="4" className="p-0">
@@ -49,7 +82,7 @@ const RenderFilterSectionUI = ({
               options={operators}
               onChange={handleOperatorChange}
               // width={'auto'}
-              buttonClasses="border border-end-0 overflow-hidden"
+              buttonClasses="border border-start-0 border-end-0 overflow-hidden"
               showPlaceHolder
               darkMode={darkMode}
             />
@@ -84,10 +117,7 @@ const RenderFilterSectionUI = ({
             <ButtonSolid
               size="sm"
               variant="ghostBlack"
-              className="px-1 rounded-0 border rounded-end"
-              customStyles={{
-                height: '30px',
-              }}
+              className="px-1 rounded-0 border rounded-end qm-delete-btn"
               onClick={() => removeFilterConditionPair(id)}
             >
               <Trash fill="var(--slate9)" style={{ height: '16px' }} />

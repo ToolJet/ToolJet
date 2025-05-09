@@ -82,20 +82,6 @@ const DynamicForm = ({
 
         setCurrentOrgEnvironmentConstants(constants);
       });
-
-      orgEnvironmentVariableService.getVariables().then((data) => {
-        const client_variables = {};
-        const server_variables = {};
-        data.variables.map((variable) => {
-          if (variable.variable_type === 'server') {
-            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
-          } else {
-            client_variables[variable.variable_name] = variable.value;
-          }
-        });
-
-        setWorkspaceVariables({ client: client_variables, server: server_variables });
-      });
     }
 
     return () => {
@@ -586,6 +572,7 @@ const DynamicForm = ({
                 'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,
               })}
+              data-cy={`${key.replace(/_/g, '-')}-section`}
               key={key}
             >
               {!isSpecificComponent && (
@@ -642,6 +629,7 @@ const DynamicForm = ({
                   {...getElementProps(obj[key])}
                   {...computedProps[propertyKey]}
                   data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                  dataCy={obj[key].key.replace(/_/g, '-')}
                   //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}
                 />
@@ -683,7 +671,7 @@ const DynamicForm = ({
                 </label>
               )}
 
-              <div data-cy={'query-select-dropdown'} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+              <div data-cy={`${String(flipComponentDropdown.label).toLocaleLowerCase().replace(/\s+/g, '-')}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}

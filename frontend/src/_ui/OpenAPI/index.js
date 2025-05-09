@@ -28,6 +28,7 @@ const OpenApi = ({
   access_token_custom_headers,
   spec,
   workspaceConstants,
+  isDisabled,
 }) => {
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
@@ -188,6 +189,7 @@ const OpenApi = ({
         onChange={(value) => optionchanged('format', value)}
         width={'100%'}
         useMenuPortal={false}
+        isDisabled={isDisabled}
       />
       <div className="col-md-12">
         <label className="form-label text-muted mt-3">Definition</label>
@@ -198,6 +200,7 @@ const OpenApi = ({
           value={definition}
           onChange={(e) => optionchanged('definition', e.target.value)}
           workspaceConstants={workspaceConstants}
+          disabled={isDisabled}
         />
       </div>
 
@@ -224,6 +227,7 @@ const OpenApi = ({
               onChange={(value) => optionchanged('auth_key', value)}
               width={'100%'}
               useMenuPortal={false}
+              isDisabled={isDisabled}
             />
           </div>
 

@@ -27,7 +27,6 @@ import _, { isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-import toast from 'react-hot-toast';
 import GhostWidget from './GhostWidget';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -36,6 +35,7 @@ import { useSampleDataSource } from '@/_stores/dataSourcesStore';
 import './editor.theme.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
+import toast from 'react-hot-toast';
 import { getSubpath } from '@/_helpers/routes';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
@@ -96,10 +96,11 @@ export const Container = ({
 
   const { appId } = useAppInfo();
 
-  const { appVersionsId, isVersionReleased } = useAppVersionStore(
+  const { appVersionsId, isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -157,7 +158,7 @@ export const Container = ({
   useHotkeys(
     'meta+v, control+v',
     async () => {
-      if (isContainerFocused && !isVersionReleased) {
+      if (isContainerFocused && !(isVersionReleased || isEditorFreezed)) {
         // Check if the clipboard API is available
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
@@ -481,7 +482,6 @@ export const Container = ({
           },
           ...childrenBoxes,
         };
-
         setBoxes(newBoxes);
 
         setSelectedComponent(newComponent.id, newComponent.component);
@@ -686,6 +686,7 @@ export const Container = ({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxes, setBoxes]
   );
 
@@ -794,6 +795,22 @@ export const Container = ({
     return componentWithChildren;
   }, [components]);
 
+  const openAddUserWorkspaceSetting = () => {
+    const workspaceId = getWorkspaceId();
+    const subPath = getSubpath();
+    const path = subPath
+      ? `${subPath}/${workspaceId}/workspace-settings?adduser=true`
+      : `/${workspaceId}/workspace-settings?adduser=true`;
+    window.open(path, '_blank');
+  };
+
+  const handleConnectSampleDB = () => {
+    const source = sampleDataSource;
+    const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
+    createDataQuery(source, true, { query });
+    setPreviewData(null);
+  };
+
   const getContainerProps = React.useCallback(() => {
     return {
       mode,
@@ -815,22 +832,6 @@ export const Container = ({
       draggedSubContainer,
     };
   }, [childComponents, selectedComponents, draggedSubContainer, darkMode, currentLayout, currentPageId, gridWidth]);
-
-  const openAddUserWorkspaceSetting = () => {
-    const workspaceId = getWorkspaceId();
-    const subPath = getSubpath();
-    const path = subPath
-      ? `${subPath}/${workspaceId}/workspace-settings?adduser=true`
-      : `/${workspaceId}/workspace-settings?adduser=true`;
-    window.open(path, '_blank');
-  };
-
-  const handleConnectSampleDB = () => {
-    const source = sampleDataSource;
-    const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
-    createDataQuery(source, true, { query });
-    setPreviewData(null);
-  };
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
@@ -1026,13 +1027,13 @@ const WidgetWrapper = ({
   } = widget;
   const { isSelected, isHovered, shouldRerender } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
-    const isHovered = state?.hoveredComponent == id;
+    // const isHovered = state?.hoveredComponent == id;
     /*
      `shouldRerender` is added only for re-rendering the component when visibility/showOnMobile/showOnDesktop 
      updates since these attributes need update or WidgetWrapper rather than actual Widget itself
      */
     const shouldRerender = state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id);
-    return { isSelected, isHovered, shouldRerender };
+    return { isSelected, shouldRerender };
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
@@ -1055,12 +1056,11 @@ const WidgetWrapper = ({
   }
   // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
   const width = gridWidth * layoutData.width;
-
-  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
-
   const { label = { value: null } } = propertiesDefinition ?? {};
   const visibility = propertiesDefinition?.visibility?.value ?? stylesDefinition?.visibility?.value ?? null;
   const resolvedVisibility = resolveWidgetFieldValue(visibility);
+
+  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   const styles = {
     width: width + 'px',
@@ -1079,7 +1079,7 @@ const WidgetWrapper = ({
             ? `ghost-target`
             : `target widget-target target1 ele-${id} moveable-box ${isResizing ? 'resizing-target' : ''} ${
                 isWidgetActive ? 'active-target' : ''
-              } ${isHovered ? 'hovered-target' : ''} ${isDragging ? 'opacity-0' : ''}`
+              } ${isDragging ? 'opacity-0' : ''}`
         }
         data-id={`${parent}`}
         id={id}

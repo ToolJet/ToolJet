@@ -13,6 +13,7 @@ const initialState = {
   creatingQueryInProcessId: null,
   queryConfirmationList: [],
   queuedActions: {},
+  queryUpdates: {},
   queries: {
     modules: {
       canvas: [],
@@ -25,14 +26,15 @@ export const createDataQuerySlice = (set, get) => ({
     ...initialState,
     checkExistingQueryName: (newName) => get().dataQuery.queries.modules.canvas.some((query) => query.name === newName),
     getCurrentModuleQueries: (moduleId) => get().dataQuery.queries.modules[moduleId],
-    setQueries: (queries, moduleId = 'canvas') =>
+    setQueries: (queries, moduleId = 'canvas') => {
       set(
         (state) => {
           state.dataQuery.queries.modules[moduleId] = queries;
         },
         false,
         'setQueries'
-      ),
+      );
+    },
     sortDataQueries: (sortBy, sortOrder, moduleId = 'canvas') => {
       set((state) => {
         const newSortOrder = sortOrder ? sortOrder : state.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -157,8 +159,9 @@ export const createDataQuerySlice = (set, get) => ({
           query.id === id ? { ...query, name: newName } : query
         );
       });
+      const versionId = get().currentVersionId;
       dataqueryService
-        .update(id, newName)
+        .update(id, versionId, newName)
         .then((data) => {
           set((state) => {
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) =>
@@ -183,10 +186,11 @@ export const createDataQuerySlice = (set, get) => ({
       set((state) => {
         state.dataQuery.isDeletingQueryInProcess = true;
       });
+      const versionId = get().currentVersionId;
       const setIsAppSaving = get().setIsAppSaving;
       setIsAppSaving(true);
       dataqueryService
-        .del(queryId)
+        .del(queryId, versionId)
         .then(() => {
           const dataQueries = get().dataQuery.queries.modules[moduleId];
           // const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
@@ -293,6 +297,7 @@ export const createDataQuerySlice = (set, get) => ({
         .finally(() => setIsAppSaving(false));
     },
     changeDataQuery: (newDataSource, moduleId = 'canvas') => {
+      const appVersionId = get().currentVersionId;
       const { queryPanel, setIsAppSaving } = get();
       const { selectedQuery, setSelectedQuery, setSelectedDataSource } = queryPanel;
       set((state) => {
@@ -300,7 +305,7 @@ export const createDataQuerySlice = (set, get) => ({
       });
       setIsAppSaving(true);
       dataqueryService
-        .changeQueryDataSource(selectedQuery?.id, newDataSource.id)
+        .changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId)
         .then(() => {
           set((state) => {
             state.dataQuery.isUpdatingQueryInProcess = false;
@@ -376,8 +381,12 @@ export const createDataQuerySlice = (set, get) => ({
         });
         return;
       }
-      dataqueryService
-        .update(newValues?.id, newValues?.name, newValues?.options)
+      const versionId = get().currentVersionId;
+      const updatePromise = dataqueryService.update(newValues?.id, versionId, newValues?.name, newValues?.options);
+      set((state) => {
+        state.dataQuery.queryUpdates[newValues?.id] = updatePromise;
+      });
+      updatePromise
         .then((data) => {
           localStorage.removeItem('transformation');
           set((state) => {
@@ -396,7 +405,12 @@ export const createDataQuerySlice = (set, get) => ({
             state.dataQuery.isUpdatingQueryInProcess = false;
           });
         })
-        .finally(() => setIsAppSaving(false));
+        .finally(() => {
+          setIsAppSaving(false);
+          set((state) => {
+            delete state.dataQuery.queryUpdates[newValues?.id];
+          });
+        });
     }, 500),
     runOnLoadQueries: async () => {
       const queries = get().dataQuery.queries.modules.canvas;

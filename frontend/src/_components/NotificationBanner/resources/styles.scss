@@ -1,4 +1,5 @@
 .notification-banner {
+<<<<<<< HEAD
   display: flex;
   padding: var(--3, 6px) var(--6, 12px);
   flex-direction: column;
@@ -11,6 +12,19 @@
   border: none !important;
   outline: none !important;
   opacity: 1;
+=======
+    display: flex;
+    padding: var(--3, 6px) var(--6, 12px);
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 32px;
+    flex: 1 0 0;
+    border-radius: var(--3, 6px);
+    background: var(--background-warning-weak, #FAEFE7);
+    border: none !important;
+    outline: none !important;
+>>>>>>> main
 
   img {
     margin-top: -5px !important;
@@ -18,10 +32,23 @@
 }
 
 @media screen and (min-width: 1200px) {
+<<<<<<< HEAD
   .notification-banner {
     justify-content: center !important;
     align-items: center !important;
   }
+=======
+    .notification-banner {
+        justify-content: center !important;
+        align-items: center !important;
+
+
+    /* Webpack is showing error for this: please fix it */
+        &>div {
+            justify-content: center !important;
+        }
+    }
+>>>>>>> main
 
   > div {
     justify-content: center !important;
@@ -48,7 +75,13 @@
 }
 
 .documentation-link {
+<<<<<<< HEAD
   font-weight: 400 !important;
   color: var(--primary, #3e63dd) !important;
   text-decoration-line: underline !important;
+=======
+    font-weight: 400 !important;
+    color: var(--primary, #3E63DD) !important;
+    text-decoration-line: underline !important;
+>>>>>>> main
 }

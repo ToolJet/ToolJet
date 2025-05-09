@@ -28,7 +28,11 @@ export const DatePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
+<<<<<<< HEAD
 
+=======
+  const { label, defaultValue, dateFormat } = properties;
+>>>>>>> main
   const inputProps = {
     properties,
     setExposedVariable,
@@ -37,10 +41,17 @@ export const DatePickerV2 = ({
     fireEvent,
     dateInputRef,
     datePickerRef,
+<<<<<<< HEAD
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
   const { label, defaultValue, dateFormat } = properties;
+=======
+    dateFormat,
+  };
+  const dateTimeLogic = useDatetimeInput(inputProps);
+  const dateLogic = useDateInput(inputProps);
+>>>>>>> main
   const { customRule } = validation;
 
   const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
@@ -152,8 +163,15 @@ export const DatePickerV2 = ({
   }, [selectedTimestamp, unixTimestamp, dateFormat]);
 
   useEffect(() => {
+<<<<<<< HEAD
     setValidationStatus(isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates }));
   }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates]);
+=======
+    setValidationStatus(
+      isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
+    );
+  }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat]);
+>>>>>>> main
 
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',

@@ -5,24 +5,32 @@ export const libraryAppService = {
   deploy,
   templateManifests,
   createSampleApp,
+  findDependentPluginsInTemplate,
 };
 
-function deploy(identifier, appName) {
+function deploy(identifier, appName, dependentPlugins = [], shouldAutoImportPlugin = false) {
   const body = {
     identifier,
     appName,
+    dependentPlugins,
+    shouldAutoImportPlugin,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/library_apps/`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/library_apps`, requestOptions).then(handleResponse);
 }
 
 function templateManifests() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/library_apps/`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/library_apps`, requestOptions).then(handleResponse);
 }
 
 function createSampleApp() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/library_apps/sample-app`, requestOptions).then(handleResponse);
+}
+
+function findDependentPluginsInTemplate(identifier) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/library_apps/${identifier}/plugins`, requestOptions).then(handleResponse);
 }

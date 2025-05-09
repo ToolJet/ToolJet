@@ -19,7 +19,7 @@ export class AppsGroupPermissions extends BaseEntity {
   id: string;
 
   @Index()
-  @Column({ name: 'granular_permission_id' })
+  @Column({ name: 'granular_permission_id', unique: true })
   granularPermissionId: string;
 
   @Column({ name: 'can_edit', nullable: false, default: false })

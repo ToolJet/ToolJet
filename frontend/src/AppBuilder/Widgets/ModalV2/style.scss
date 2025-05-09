@@ -1,0 +1,66 @@
+.modal-open .modal.show {
+  /* To fix the padding issue */
+  scrollbar-gutter: auto;
+  //  padding-right: 0 !important;
+}
+
+.modal-content.modal-component.tj-modal-widget-content {
+  border: 0;
+
+  .tj-modal-close-button {
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    &.is-disabled {
+      position: absolute;
+      top: 8px;
+      bottom: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      left: 0;
+      z-index: 1;
+    }
+  }
+
+  .tj-modal-disabled-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1;
+    margin: 0;
+  }
+
+  .modal-header {
+    padding: 0;
+    position: relative;
+  }
+
+  .modal-body {
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .modal-footer {
+    position: relative;
+    padding: 0;
+    border-top: 1px solid var(--border-weak);
+    overflow-x: hidden;
+    width: 100%;
+  }
+}

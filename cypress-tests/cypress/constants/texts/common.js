@@ -27,6 +27,7 @@ export const commonText = {
   folderCreatedToast: "Folder created.",
   createFolder: "Create folder",
   AddedToFolderToast: "Added to folder.",
+  appCreatedToast: "App created successfully!",
   appRemovedFromFolderMessage:
     "The app will be removed from this folder, do you want to continue?",
   appRemovedFromFolderTaost: "Removed from folder.",
@@ -51,6 +52,7 @@ export const commonText = {
     `Are you sure you want to delete the folder ${folderName}? Apps within the folder will not be deleted.`;
   },
   closeButton: "modal close",
+  cloneAppErrorToast: "You do not have create datasource permissions to perform this action",
   workEmailLabel: "Email",
   emailInputError: "Email is invalid",
   passwordLabel: "Password *",
@@ -171,7 +173,7 @@ export const commonText = {
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
   },
-  groupInputFieldLabel: "Select Group",
+  groupInputFieldLabel: "Select groups",
   documentationLink: "Read Documentation",
   constantsNameError:
     "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
@@ -179,7 +181,7 @@ export const commonText = {
     "Value should be less than 10000 characters and cannot be empty",
 
   createApp: "Create app",
-  appName: "App Name",
+  appName: "App name",
   enterAppName: "Enter app name",
   appNameInfoLabel: "App name must be unique and max 50 characters",
   renameApp: "Rename app",

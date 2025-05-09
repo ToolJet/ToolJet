@@ -220,7 +220,9 @@ function DataSourceSelect({
     if (isFirstPageLoaded && offset >= totalRecords) return;
     if (foreignKeys.length < 1) return;
     setIsLoadingFKDetails(true);
-    const referencedColumns = foreignKeys.find((item) => item.column_names[0] === cellColumnName);
+    const referencedColumns = Array.isArray(foreignKeys)
+      ? foreignKeys.find((item) => item.column_names[0] === cellColumnName)
+      : undefined;
     if (!referencedColumns?.referenced_column_names?.length) return;
 
     const selectQuery = new PostgrestQueryBuilder();
@@ -447,7 +449,8 @@ function DataSourceSelect({
                   show={
                     (foreignKeyAccess && props.data.dataType === 'serial') ||
                     props.data.dataType === 'boolean' ||
-                    props.data.dataType === 'timestamp with time zone'
+                    props.data.dataType === 'timestamp with time zone' ||
+                    props.data.dataType === 'jsonb'
                   }
                 >
                   <div
@@ -714,7 +717,8 @@ const MenuList = ({
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
-  const referencedColumnDetails = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+  const referencedColumnDetails =
+    Array.isArray(foreignKeys) && foreignKeys.find((item) => item?.column_names[0] === cellColumnName);
 
   const handleNavigateToReferencedTable = () => {
     const data = {

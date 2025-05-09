@@ -17,7 +17,11 @@ export const Icon = ({
 }) => {
   const isInitialRender = useRef(true);
   const { icon, loadingState, disabledState } = properties;
+<<<<<<< HEAD
   const { iconAlign, iconColor } = styles;
+=======
+  const { iconAlign, iconColor, boxShadow } = styles;
+>>>>>>> main
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon];
 
@@ -84,10 +88,17 @@ export const Icon = ({
     </div>
   ) : (
     <div
+<<<<<<< HEAD
       className={cx('icon-widget', { 'd-none': !visibility }, { 'cursor-pointer': false })}
       data-cy={dataCy}
       data-disabled={isDisabled}
       style={{ textAlign: iconAlign }}
+=======
+      className={cx('icon-widget h-100', { 'd-none': !visibility }, { 'cursor-pointer': false })}
+      data-cy={dataCy}
+      data-disabled={isDisabled}
+      style={{ textAlign: iconAlign, boxShadow }}
+>>>>>>> main
       onMouseEnter={(event) => {
         event.stopPropagation();
         fireEvent('onHover');
@@ -97,7 +108,11 @@ export const Icon = ({
         color={color}
         style={{
           width: height < width ? 'auto' : width,
+<<<<<<< HEAD
           height: height < width ? height : 'auto',
+=======
+          height: height < width ? '100%' : 'auto',
+>>>>>>> main
           color: iconColor,
         }}
         onClick={(event) => {

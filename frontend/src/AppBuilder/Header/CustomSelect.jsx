@@ -3,11 +3,11 @@ import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditVersionModal } from './EditVersionModal';
-import { CreateVersion } from './CreateVersionModal';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
+import { CreateVersionModal } from '@/modules/Appbuilder/components';
 
 // TODO: edit version modal and add version modal
 const Menu = (props) => {
@@ -130,7 +130,7 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
   return (
     <>
       {isEditable && showCreateAppVersion && (
-        <CreateVersion
+        <CreateVersionModal
           {...props}
           showCreateAppVersion={showCreateAppVersion}
           setShowCreateAppVersion={setShowCreateAppVersion}
@@ -150,11 +150,7 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
       {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
         show={deleteVersion.showModal}
-        message={`${
-          defaultAppEnvironments.length > 1
-            ? 'Deleting a version will permanently remove it from all environments.'
-            : ''
-        }Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
+        message={`Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />

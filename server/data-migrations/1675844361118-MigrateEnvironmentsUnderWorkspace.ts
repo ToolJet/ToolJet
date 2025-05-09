@@ -1,6 +1,6 @@
-import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { Organization } from '@entities/organization.entity';
+import { defaultAppEnvironments } from '@helpers/utils.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class MigrateEnvironmentsUnderWorkspace1675844361118 implements MigrationInterface {

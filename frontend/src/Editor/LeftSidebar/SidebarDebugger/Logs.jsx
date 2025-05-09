@@ -4,13 +4,14 @@ import moment from 'moment';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import useStore from '@/AppBuilder/_stores/store';
+import { toast } from 'react-hot-toast';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
   let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
   if (titleLogType === 'transformations') {
-    titleLogType = 'query';
+    titleLogType = 'Transformation';
   }
   const title = logProps?.key;
   const message =
@@ -26,7 +27,7 @@ function Logs({ logProps, idx }) {
           logProps?.description ||
           (isString(logProps?.message) && logProps?.message) ||
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
-          logProps?.error?.message.trim()
+          logProps?.error?.message
         }`;
 
   const defaultStyles = {
@@ -38,41 +39,43 @@ function Logs({ logProps, idx }) {
     pointerEvents: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'default',
   };
 
-  const { setSelectedComponents } = useEditorActions();
+  const setSelectedComponents = useStore.getState().setSelectedComponents;
 
   const handleSelectComponentOnEditor = (componentId) => {
-    const isAlreadySelected = useEditorStore
-      .getState()
-      ?.selectedComponents.find((component) => component.id === componentId);
+    const selectedComponents = useStore.getState()?.selectedComponents;
+    const isAlreadySelected = selectedComponents.find((component) => component.id === componentId);
 
     if (!isAlreadySelected) {
-      const currentPageId = useEditorStore.getState()?.currentPageId;
-      const currentPageComponents = useEditorStore.getState()?.appDefinition[currentPageId]?.components;
-      const component = currentPageComponents?.find((comp) => comp.id === componentId);
+      const currentPageComponents = useStore.getState()?.getCurrentPageComponents();
+      const component = currentPageComponents[componentId];
 
-      setSelectedComponents([{ id: componentId, component }], false);
+      component && setSelectedComponents([{ id: componentId, component }], false);
     }
+  };
+
+  const copyToClipboard = (data) => {
+    const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
+    navigator.clipboard.writeText(stringified);
+    return toast.success('Value copied to clipboard', { position: 'top-center' });
   };
 
   const callbackActions = [
     {
       for: 'all',
-      actions: [{ name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true }],
+      actions: [
+        { name: 'Copy value', dispatchAction: copyToClipboard, icon: false },
+        { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
+      ],
       enableForAllChildren: true,
       enableFor1stLevelChildren: true,
     },
   ];
 
   const renderNavToDisabledPageMessage = () => {
-    const text = message.split(logProps.page);
     return (
       <div className="d-flex">
-        <span className={cx('mx-1 text-tomato-9')}>
-          {text[0]}
-          <small className="text-slate-12" style={{ fontSize: '14px' }}>{`'${logProps.page}'`}</small>
-          {text[1]}
-        </span>
-        <small className="text-slate-10 text-right px-1 " style={{ width: '115px' }}>
+        <span className={cx('text-tomato-9')}>{message}</span>
+        <small className="text-slate-10 text-right  " style={{ width: '115px' }}>
           {moment(logProps?.timestamp).fromNow()}
         </small>
       </div>
@@ -84,12 +87,12 @@ function Logs({ logProps, idx }) {
       <p
         className="m-0 d-flex"
         onClick={(e) => {
-          setOpen((prev) => !prev);
+          logProps?.type !== 'Custom Log' && setOpen((prev) => !prev);
         }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />
+          {logProps?.type !== 'Custom Log' && <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />}
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
@@ -100,18 +103,32 @@ function Logs({ logProps, idx }) {
                 <div className="error-target cursor-pointer">{logProps?.errorTarget}</div>
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
-              <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
-                <span className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
+              {logProps?.type === 'Custom Log' && (
+                <div className="error-target-custom-log cursor-pointer">
+                  <SolidIcon name="code" fill={`var(--purple11)`} width="15" /> Custom Log
+                </div>
+              )}
+              <div
+                className={`d-flex justify-content-between align-items-center ${
+                  !open && logProps?.type !== 'Custom Log' && 'text-truncate'
+                }`}
+              >
+                <span
+                  className={` cursor-pointer debugger-error-title font-weight-500 ${
+                    !open && logProps?.type !== 'Custom Log' && 'text-truncate'
+                  } ${logProps?.type == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'}`}
+                >
                   <HighlightSecondWord text={title} />
                 </span>
               </div>
+              {logProps?.type == 'Custom Log' && <div className="font-weight-500">{message}</div>}
               <span
-                className={cx('mx-1', {
+                className={cx('font-weight-500', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
                   'color-light-green': logProps?.isQuerySuccessLog,
                 })}
               >
-                {message}
+                {logProps?.type !== 'Custom Log' && message}
               </span>
             </>
           )}

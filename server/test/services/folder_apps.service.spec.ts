@@ -1,4 +1,4 @@
-import { FolderAppsService } from '@services/folder_apps.service';
+import { FolderAppsService } from '@modules/folder-apps/service';
 import { clearDB, createNestAppInstance, setupOrganization } from '../test.helper';
 import { INestApplication } from '@nestjs/common';
 import { getManager } from 'typeorm';
@@ -24,7 +24,8 @@ describe('FolderAppsService', () => {
     it('should create app folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
       // create a new folder
-      const folder = await foldersService.create(adminUser, 'folder');
+      const type = 'front-end';
+      const folder = await foldersService.create(adminUser, 'folder', type);
       const manager = getManager();
 
       // add app to folder

@@ -1,14 +1,13 @@
-import { toast } from 'react-hot-toast';
 import _, { isEmpty } from 'lodash';
 import { resolveReferences, loadPyodide, hasCircularDependency } from '@/_helpers/utils';
 import { fetchOAuthToken, fetchOauthTokenForSlackAndGSheet } from '@/AppBuilder/_utils/auth';
-import { dataqueryService } from '@/_services';
+import { dataqueryService, workflowExecutionsService } from '@/_services';
 import moment from 'moment';
 import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-
+import toast from 'react-hot-toast';
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
 const initialState = {
@@ -185,7 +184,7 @@ export const createQueryPanelSlice = (set, get) => ({
           queryConfirmationData.queryName,
           true,
           mode,
-          undefined,
+          queryConfirmationData.parameters,
           queryConfirmationData.shouldSetPreviewData
         );
 
@@ -207,8 +206,16 @@ export const createQueryPanelSlice = (set, get) => ({
       isOnLoad = false,
       moduleId = 'canvas'
     ) => {
-      //! TODO get this using get() when migrated into slice
-      const { eventsSlice, dataQuery: dataQuerySlice, queryPanel, setResolvedQuery, app, selectedEnvironment } = get();
+      const {
+        eventsSlice,
+        dataQuery: dataQuerySlice,
+        queryPanel,
+        setResolvedQuery,
+        app,
+        selectedEnvironment,
+        isPublicAccess,
+        currentVersionId,
+      } = get();
       const {
         queryPreviewData,
         setPreviewLoading,
@@ -216,8 +223,31 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
+        executeWorkflow,
         executeMultilineJS,
       } = queryPanel;
+      const queryUpdatePromise = dataQuerySlice.queryUpdates[queryId];
+      if (queryUpdatePromise) {
+        setResolvedQuery(queryId, {
+          isLoading: true,
+        });
+        return queryUpdatePromise.then(() =>
+          get().queryPanel.runQuery(
+            queryId,
+            queryName,
+            confirmed,
+            mode,
+            userSuppliedParameters,
+            component,
+            eventId,
+            shouldSetPreviewData,
+            isOnLoad,
+            moduleId
+          )
+        );
+      }
+      //! TODO get this using get() when migrated into slice
+
       const { onEvent } = eventsSlice;
       const { queryConfirmationList } = dataQuerySlice;
 
@@ -273,6 +303,7 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           queryName,
           shouldSetPreviewData,
+          parameters,
         };
 
         if (!queryConfirmationList.some((query) => queryId === query.queryId) && confirmed === undefined) {
@@ -307,12 +338,21 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState);
+        } else if (query.kind === 'workflows') {
+          queryExecutionPromise = executeWorkflow(
+            moduleId,
+            query.options.workflowId,
+            query.options.blocking,
+            query.options?.params,
+            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+          );
         } else {
           queryExecutionPromise = dataqueryService.run(
             queryId,
             options,
             query?.options,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+            currentVersionId,
+            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
         }
 
@@ -385,6 +425,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 isLoading: false,
                 ...(query.kind === 'restapi'
                   ? {
+                      metadata: data.metadata,
                       request: data.data.requestObject,
                       response: data.data.responseObject,
                       responseHeaders: data.data.responseHeaders,
@@ -406,7 +447,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   query,
                   'edit'
                 );
-                if (finalData.status === 'failed') {
+                if (finalData?.status === 'failed') {
                   setResolvedQuery(queryId, {
                     isLoading: false,
                   });
@@ -471,9 +512,18 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
+        executeWorkflow,
         executeMultilineJS,
         setIsPreviewQueryLoading,
       } = queryPanel;
+      const queryUpdatePromise = get().dataQuery.queryUpdates[query?.id];
+      if (queryUpdatePromise) {
+        setPreviewLoading(true);
+        setIsPreviewQueryLoading(true);
+        return queryUpdatePromise.then(() =>
+          get().queryPanel.previewQuery(query, calledFromQuery, userSuppliedParameters, moduleId)
+        );
+      }
       const { onEvent } = eventsSlice;
 
       let parameters = userSuppliedParameters;
@@ -519,6 +569,14 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
+        } else if (query.kind === 'workflows') {
+          queryExecutionPromise = executeWorkflow(
+            moduleId,
+            query.options.workflowId,
+            query.options.blocking,
+            query.options?.params,
+            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+          );
         } else {
           queryExecutionPromise = dataqueryService.preview(query, options, currentVersionId, currentAppEnvironmentId);
         }
@@ -593,7 +651,7 @@ export const createQueryPanelSlice = (set, get) => ({
                     query,
                     'edit'
                   );
-                  if (finalData.status === 'failed') {
+                  if (finalData?.status === 'failed') {
                     onEvent('onDataQueryFailure', queryEvents);
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
@@ -721,18 +779,30 @@ export const createQueryPanelSlice = (set, get) => ({
     runTransformation: async (rawData, transformation, transformationLanguage = 'javascript', query, mode = 'edit') => {
       const data = rawData;
       const {
-        queryPanel: { runPythonTransformation },
+        queryPanel: { runPythonTransformation, createProxy },
         getResolvedState,
       } = get();
-      let result = [];
+      let result = {};
       const currentState = getResolvedState();
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
       } else if (transformationLanguage === 'javascript') {
         try {
+          const { eventsSlice } = get();
+          const { generateAppActions } = eventsSlice;
+          const queriesInResolvedState = deepClone(currentState.queries);
+          const actions = generateAppActions(query?.id, mode);
+
+          const proxiedComponents = createProxy(currentState?.components, 'components');
+          const proxiedGlobals = createProxy(currentState?.globals, 'globals');
+          const proxiedConstants = createProxy(currentState?.constants, 'constants');
+          const proxiedVariables = createProxy(currentState?.variables, 'variables');
+          const proxiedPage = createProxy(deepClone(currentState?.page, 'page'));
+          const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState, 'queries');
+
           const evalFunction = Function(
-            ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants'],
+            ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants', 'actions'],
             transformation
           );
 
@@ -740,32 +810,51 @@ export const createQueryPanelSlice = (set, get) => ({
             data,
             moment,
             _,
-            currentState.components,
-            currentState.queries,
-            currentState.globals,
-            currentState.variables,
-            currentState.page,
-            currentState.constants
+            proxiedComponents,
+            proxiedQueriesInResolvedState,
+            proxiedGlobals,
+            proxiedVariables,
+            proxiedPage,
+            proxiedConstants,
+            {
+              logError: function (log) {
+                return actions.logError.call(actions, log, true);
+              },
+              logInfo: function (log) {
+                return actions.logInfo.call(actions, log, true);
+              },
+              log: function (log) {
+                return actions.log.call(actions, log, true);
+              },
+            }
           );
         } catch (err) {
-          result = {
-            message: err.stack.split('\n')[0],
-            status: 'failed',
-            data: data,
-          };
+          const stackLines = err.stack.split('\n');
+          const errorLocation =
+            stackLines[2]?.match(/<anonymous>:(\d+):(\d+)/) ?? stackLines[1]?.match(/<anonymous>:(\d+):(\d+)/);
+
+          let lineNumber = null;
+
+          if (errorLocation) {
+            lineNumber = errorLocation[1] - 2;
+          }
+
+          console.log('JS execution failed: ', err);
+          let error = err.message || err.stack.split('\n')[0] || 'JS execution failed';
+          result = { status: 'failed', data: { message: error, description: error, lineNumber } };
+          get().debugger.log({
+            logLevel: result?.status === 'failed' ? 'error' : 'success',
+            type: 'transformation',
+            kind: query.kind,
+            key: `${query.name}, transformation, line ${result?.data?.lineNumber}`,
+            message: result?.message,
+            error: result?.data,
+            isTransformation: true,
+            isQuerySuccessLog: result?.status === 'failed' ? false : true,
+            errorTarget: 'Queries',
+          });
         }
       }
-      get().debugger.log({
-        logLevel: result?.status === 'failed' ? 'error' : 'success',
-        type: 'transformation',
-        kind: query.kind,
-        key: query.name,
-        message: result?.message,
-        error: result,
-        isTransformation: true,
-        isQuerySuccessLog: result?.status === 'failed' ? false : true,
-        errorTarget: 'Queries',
-      });
       return result;
     },
 
@@ -814,10 +903,43 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
+    executeWorkflow: async (moduleId, workflowId, _blocking = false, params = {}, appEnvId) => {
+      const {
+        app: { appId },
+        getAllExposedValues,
+      } = get();
+      const currentState = getAllExposedValues();
+      const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      try {
+        const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
+        return { data: response.result, status: 'ok' };
+      } catch (e) {
+        return { data: undefined, status: 'failed' };
+      }
+    },
+
+    createProxy: (obj, path = '') => {
+      const { queryPanel } = get();
+      const { createProxy } = queryPanel;
+
+      return new Proxy(obj, {
+        get(target, prop) {
+          const fullPath = path ? `${path}.${prop}` : prop;
+
+          if (!(prop in target)) {
+            throw new Error(`ReferenceError: ${fullPath} is not defined`);
+          }
+
+          const value = target[prop];
+          return typeof value === 'object' && value !== null ? createProxy(value, fullPath) : value;
+        },
+      });
+    },
 
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
       const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
-      const { runQuery } = queryPanel;
+      const { createProxy } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
 
@@ -892,6 +1014,20 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
+
+        //Proxy Func required to get current execution line number from stack to log in debugger
+
+        const proxiedComponents = createProxy(deepClone(resolvedState?.components), 'components');
+        const proxiedGlobals = createProxy(deepClone(resolvedState?.globals), 'globals');
+        const proxiedConstants = createProxy(deepClone(resolvedState?.constants), 'constants');
+        const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
+        const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
+        const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
+        const proxiedFormattedParams = createProxy(
+          !_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : [],
+          'params'
+        );
+
         const fnParams = [
           'moment',
           '_',
@@ -903,32 +1039,43 @@ export const createQueryPanelSlice = (set, get) => ({
           'variables',
           'actions',
           'constants',
-          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []),
           code,
         ];
-        var evalFn = new AsyncFunction(...fnParams);
+        const evalFn = new AsyncFunction(...fnParams);
 
         const fnArgs = [
           moment,
           _,
-          resolvedState.components,
-          queriesInResolvedState,
-          resolvedState.globals,
-          deepClone(resolvedState.page),
+          proxiedComponents,
+          proxiedQueriesInResolvedState,
+          proxiedGlobals,
+          proxiedPage,
           axios,
-          deepClone(resolvedState.variables),
+          proxiedVariables,
           actions,
-          resolvedState?.constants,
-          ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          proxiedConstants,
+          ...proxiedFormattedParams,
         ];
+
         result = {
           status: 'ok',
           data: await evalFn(...fnArgs),
         };
       } catch (err) {
+        const stackLines = err.stack.split('\n');
+        const errorLocation =
+          stackLines[2]?.match(/<anonymous>:(\d+):(\d+)/) ?? stackLines[1]?.match(/<anonymous>:(\d+):(\d+)/);
+
+        let lineNumber = null;
+
+        if (errorLocation) {
+          lineNumber = errorLocation[1] - 2;
+        }
+
         console.log('JS execution failed: ', err);
-        error = err.stack.split('\n')[0];
-        result = { status: 'failed', data: { message: error, description: error } };
+        error = err.message || err.stack.split('\n')[0] || 'JS execution failed';
+        result = { status: 'failed', data: { message: error, description: error, lineNumber } };
       }
 
       if (hasCircularDependency(result)) {
@@ -945,6 +1092,24 @@ export const createQueryPanelSlice = (set, get) => ({
     },
     isQuerySelected: (queryId) => {
       return get().queryPanel.selectedQuery?.id === queryId;
+    },
+    runQueryOnShortcut: () => {
+      const { queryPanel } = get();
+      const { runQuery, selectedQuery } = queryPanel;
+      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true);
+    },
+    previewQueryOnShortcut: (moduleId = 'canvas') => {
+      const { queryPanel } = get();
+      const { previewQuery, selectedQuery, selectedDataSource } = queryPanel;
+      const query = {
+        data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+        pluginId: selectedDataSource.pluginId,
+        options: { ...selectedQuery?.options },
+        kind: selectedDataSource.kind,
+        name: selectedQuery?.name ?? '',
+        id: selectedQuery?.id,
+      };
+      previewQuery(query, false, undefined, moduleId);
     },
   },
 });

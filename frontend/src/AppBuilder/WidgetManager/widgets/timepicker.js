@@ -9,6 +9,7 @@ export const timePickerConfig = {
   },
   validation: {
     minTime: {
+<<<<<<< HEAD
       type: 'timepicker',
       placeholder: 'HH:mm',
       displayName: 'Min Time',
@@ -17,6 +18,18 @@ export const timePickerConfig = {
       type: 'timepicker',
       placeholder: 'HH:mm',
       displayName: 'Max Time',
+=======
+      type: 'code',
+      placeholder: 'HH:mm',
+      displayName: 'Min Time',
+      dynamicType: 'time',
+    },
+    maxTime: {
+      type: 'code',
+      placeholder: 'HH:mm',
+      displayName: 'Max Time',
+      dynamicType: 'time',
+>>>>>>> main
     },
     customRule: {
       type: 'code',
@@ -41,6 +54,15 @@ export const timePickerConfig = {
       },
       accordian: 'Data',
     },
+<<<<<<< HEAD
+=======
+    isTimezoneEnabled: {
+      type: 'toggle',
+      displayName: 'Manage time zones',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'Date',
+    },
+>>>>>>> main
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -49,12 +71,15 @@ export const timePickerConfig = {
         defaultValue: '00:00',
       },
     },
+<<<<<<< HEAD
     isTimezoneEnabled: {
       type: 'toggle',
       displayName: 'Manage time zones',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'formatting',
     },
+=======
+>>>>>>> main
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -162,7 +187,11 @@ export const timePickerConfig = {
   ],
   styles: {
     labelColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -213,31 +242,51 @@ export const timePickerConfig = {
       isFxNotRequired: true,
     },
     fieldBackgroundColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     fieldBorderColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Accent',
       validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Error text',
       validation: { schema: { type: 'string' }, defaultValue: '#E54D2E' },
       accordian: 'field',
@@ -250,7 +299,11 @@ export const timePickerConfig = {
       visibility: false,
     },
     iconColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: '',
       showLabel: false,
       validation: {

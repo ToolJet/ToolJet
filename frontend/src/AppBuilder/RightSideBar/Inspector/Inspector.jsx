@@ -8,7 +8,10 @@ import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_hel
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
+import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
+import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
@@ -29,16 +32,26 @@ import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import Inspect from '@/_ui/Icon/solidIcons/Inspect';
 import classNames from 'classnames';
 import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
+<<<<<<< HEAD
+=======
+// import { componentTypes } from '@/Editor/WidgetManager/components';
+>>>>>>> main
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
+  {
+    label: 'Inspect',
+    value: 'inspect',
+    icon: <Inspect width={16} />,
+  },
   {
     label: 'Rename',
     value: 'rename',
@@ -59,7 +72,11 @@ const INSPECTOR_HEADER_OPTIONS = [
 const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
+  'TextArea',
   'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
   'NumberInput',
   'Table',
   'ToggleSwitchV2',
@@ -71,6 +88,14 @@ const NEW_REVAMPED_COMPONENTS = [
   'Button',
   'Icon',
   'Image',
+<<<<<<< HEAD
+=======
+  'Container',
+  'Divider',
+  'VerticalDivider',
+  'ModalV2',
+  'Link',
+>>>>>>> main
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -81,6 +106,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
+  const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -344,6 +370,9 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
   }
 
   const handleInspectorHeaderActions = (value) => {
+    if (value === 'inspect') {
+      setComponentToInspect(component.component.name);
+    }
     if (value === 'rename') {
       setTimeout(() => setInputFocus(), 0);
     }
@@ -692,6 +721,9 @@ const GetAccordion = React.memo(
       case 'FilePicker':
         return <FilePicker {...restProps} />;
 
+      case 'ModalV2':
+        return <ModalV2 {...restProps} />;
+
       case 'Modal':
         return <Modal {...restProps} />;
 
@@ -714,6 +746,13 @@ const GetAccordion = React.memo(
       case 'DatePickerV2':
       case 'TimePicker':
         return <DatetimePickerV2 {...restProps} componentName={componentName} />;
+<<<<<<< HEAD
+=======
+      case 'PhoneInput':
+        return <PhoneInput {...restProps} />;
+      case 'CurrencyInput':
+        return <CurrencyInput {...restProps} componentName={componentName} />;
+>>>>>>> main
 
       default: {
         return <DefaultComponent {...restProps} />;

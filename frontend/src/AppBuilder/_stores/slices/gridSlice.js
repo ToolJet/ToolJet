@@ -3,8 +3,18 @@ import { debounce } from 'lodash';
 
 const initialState = {
   hoveredComponentForGrid: '',
+  hoveredComponentBoundaryId: '',
   triggerCanvasUpdater: false,
   lastCanvasIdClick: '',
+<<<<<<< HEAD
+=======
+  lastCanvasClickPosition: null,
+  draggingComponentId: null,
+  reorderContainerChildren: {
+    containerId: null,
+    triggerUpdate: 0,
+  },
+>>>>>>> main
 };
 
 export const createGridSlice = (set, get) => ({
@@ -12,11 +22,14 @@ export const createGridSlice = (set, get) => ({
   setHoveredComponentForGrid: (id) =>
     set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
   getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
+  setHoveredComponentBoundaryId: (id) =>
+    set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
   toggleCanvasUpdater: () =>
     set((state) => ({ triggerCanvasUpdater: !state.triggerCanvasUpdater }), false, { type: 'toggleCanvasUpdater' }),
   debouncedToggleCanvasUpdater: debounce(() => {
     get().toggleCanvasUpdater();
   }, 200),
+  setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
@@ -64,4 +77,32 @@ export const createGridSlice = (set, get) => ({
     debouncedToggleCanvasUpdater();
   },
   setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
+<<<<<<< HEAD
+=======
+  setLastCanvasClickPosition: (position) => {
+    set({ lastCanvasClickPosition: position });
+  },
+  checkIfAnyWidgetVisibilityChanged: () => {
+    // This is required to reload the grid if visibility is turned off using CSA
+    const { getExposedValueOfComponent, getCurrentPageComponents } = get();
+    const currentPageComponents = getCurrentPageComponents();
+
+    const visibilityState = {};
+
+    Object.keys(currentPageComponents).forEach((componentId) => {
+      const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
+
+      // Determine if component is visible
+      visibilityState[componentId] = !(componentExposedVisibility === false);
+    });
+
+    return visibilityState;
+  },
+  setReorderContainerChildren: (containerId) => {
+    // Function to trigger reordering of specific container for tab navigation
+    set((state) => ({
+      reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
+    }));
+  },
+>>>>>>> main
 });

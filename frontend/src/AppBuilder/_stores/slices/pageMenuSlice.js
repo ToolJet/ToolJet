@@ -34,7 +34,6 @@ export const savePageChanges = async (appId, versionId, pageId, diff, operation 
       updateObj.pageId,
       updateObj.operation
     );
-    console.log('res', res);
   } catch (error) {
     toast.error('App could not be saved.');
     console.error('Error updating page:', error);
@@ -42,7 +41,7 @@ export const savePageChanges = async (appId, versionId, pageId, diff, operation 
 };
 
 const createPageUpdateCommand =
-  (updatePaths, afterUpdateFn = () => {}) =>
+  (updatePaths, afterUpdateFn = () => {}, enableSave = true) =>
   (pageId, values) => {
     return (set, get) => {
       set((state) => {
@@ -58,7 +57,7 @@ const createPageUpdateCommand =
 
       const { app, currentVersionId } = get();
       const diff = _.zipObject(updatePaths, values);
-      savePageChanges(app.appId, currentVersionId, pageId, diff);
+      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
     };
   };
 
@@ -83,6 +82,8 @@ export const createPageMenuSlice = (set, get) => {
     state.editingPage = null;
   });
 
+  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => {}, false);
+
   return {
     editingPage: null,
     showEditingPopover: false,
@@ -97,6 +98,11 @@ export const createPageMenuSlice = (set, get) => {
     isPageGroup: false,
     pageSettingSelected: false,
     pageSettings: {},
+    showPagePermissionModal: false,
+    permissionPage: null,
+    selectedUserGroups: [],
+    selectedUsers: [],
+    pagePermission: null,
 
     toggleSearch: (show) =>
       set((state) => {
@@ -118,7 +124,6 @@ export const createPageMenuSlice = (set, get) => {
 
     closePageEditPopover: () =>
       set((state) => {
-        state.editingPage = null;
         state.showEditingPopover = false;
         state.showEditPageEventsModal = false;
         state.showRenamePageHandleModal = false;
@@ -191,6 +196,7 @@ export const createPageMenuSlice = (set, get) => {
       updatePageHandle(pageId, [value])(set, get);
     },
     updatePageGroupName: (pageId, value) => updatePageGroupName(pageId, [value])(set, get),
+    updatePageWithPermissions: (pageId, value) => updatePageWithPermissions(pageId, [value])(set, get),
     // unsure about this one
     clonePage: async (pageId) => {
       const {
@@ -238,6 +244,12 @@ export const createPageMenuSlice = (set, get) => {
       await savePageChanges(app.appId, currentVersionId, pageId, diff, 'delete');
       toast.success('Page deleted successfully');
     },
+    /*
+     * @param {string} pageGroupId - id of the page group to be deleted
+     * @param {boolean} deleteAssociatedPages - if true, all pages in the group will be deleted
+     *  If home page is in the group, the group cannot be deleted
+     * If current page is in the group, the page will be switched to home page
+     */
     deletePageGroup: async (pageGroupId, deleteAssociatedPages = false) => {
       const { app, currentVersionId } = get();
       const pages = get().modules.canvas.pages;
@@ -248,12 +260,15 @@ export const createPageMenuSlice = (set, get) => {
         deleteAssociatedPages,
       };
       if (deleteAssociatedPages) {
-        // check if homepage is in the group
+        // check if homepage is in the group or current page is in the group
         let isHomePageInGroup = false;
+        let isCurrentPageInGroup = false;
         for (let i = 0; i < pages.length; i++) {
           if (pages[i].id === homePageId && pages[i].pageGroupId === pageGroupId) {
             isHomePageInGroup = true;
-            break;
+          }
+          if (pages[i].id === get().currentPageId && pages[i].pageGroupId === pageGroupId) {
+            isCurrentPageInGroup = true;
           }
         }
         if (isHomePageInGroup) return toast.error('You cannot delete the page group as it contains the home page');
@@ -267,6 +282,11 @@ export const createPageMenuSlice = (set, get) => {
           state.modules.canvas.pages = newPages;
           state.showDeleteConfirmationModal = false;
         });
+        // switch page to home page if current page is in the group
+        if (isCurrentPageInGroup) {
+          const homePage = pages.find((p) => p.id === app.homePageId);
+          get().switchPage(homePage.id, homePage.handle);
+        }
         await savePageChanges(app.appId, currentVersionId, pageGroupId, diff, 'delete');
       } else {
         set((state) => {
@@ -350,13 +370,18 @@ export const createPageMenuSlice = (set, get) => {
         components: {},
         index: pages.length + 1,
         isPageGroup,
+        ...(isPageGroup
+          ? {
+              icon: `IconFolder`,
+            }
+          : {}),
       };
       set((state) => {
         state.modules.canvas.pages.push(pageObject);
       });
       const { app, currentVersionId } = get();
       await savePageChanges(app.appId, currentVersionId, '', pageObject, 'create', 'pages');
-      get().switchPage(newPageId, newHandle);
+      if (!isPageGroup) get().switchPage(newPageId, newHandle);
     },
 
     handleSearch: (value) => {
@@ -401,5 +426,30 @@ export const createPageMenuSlice = (set, get) => {
         console.error('Error updating page:', error);
       }
     },
+
+    setPagePermission: (pagePermission) =>
+      set((state) => {
+        state.pagePermission = pagePermission;
+      }),
+
+    togglePagePermissionModal: (show) => {
+      set((state) => {
+        state.showPagePermissionModal = show;
+      });
+    },
+
+    setSelectedUserGroups: (groups) =>
+      set((state) => {
+        state.selectedUserGroups = groups;
+      }),
+
+    setSelectedUsers: (users) =>
+      set((state) => {
+        state.selectedUsers = users;
+      }),
+    setEditingPage: (page) =>
+      set((state) => {
+        state.editingPage = page;
+      }),
   };
 };

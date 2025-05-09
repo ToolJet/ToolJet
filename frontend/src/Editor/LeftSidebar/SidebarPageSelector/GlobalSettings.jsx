@@ -5,16 +5,17 @@ import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, isViewerNavigationDisabled }) => {
-  const { isVersionReleased, enableReleasedVersionPopupState } = useAppVersionStore(
+  const { isVersionReleased, enableReleasedVersionPopupState, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
     }),
     shallow
   );
 
   const onChange = () => {
-    if (isVersionReleased) {
+    if (isVersionReleased || isEditorFreezed) {
       enableReleasedVersionPopupState();
       return;
     }

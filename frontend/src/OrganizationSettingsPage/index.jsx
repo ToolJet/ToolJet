@@ -6,28 +6,26 @@ import Layout from '@/_ui/Layout';
 import { authenticationService } from '@/_services';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
-import { OrganizationList } from '../_components/OrganizationManager/List';
+import { OrganizationList } from '@/modules/dashboard/components';
 import { workspaceSettingsLinks } from './constant';
-
+import { checkConditionsForRoute } from '../_helpers/utils';
+import { redirectToErrorPage } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 export function OrganizationSettings(props) {
   const admin = authenticationService.currentSessionValue?.admin;
   const [selectedTab, setSelectedTab] = useState(admin ? workspaceSettingsLinks[0].id : 'workspacevariables');
-  const navigate = useNavigate();
   const location = useLocation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  const [conditionObj, setConditionObj] = useState({ admin: authenticationService.currentSessionValue?.admin });
-
-  const checkConditions = (conditions, conditionsObj) => {
-    if (!conditions || conditions.length === 0) {
-      return true;
-    }
-    return conditions.every((condition) => conditionsObj?.[condition] === true);
-  };
+  const navigate = useNavigate();
+  const [conditionObj, setConditionObj] = useState({
+    admin: authenticationService.currentSessionValue?.admin,
+    wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+  });
 
   //Filtered Links from the workspace settings links array
   const filteredLinks = () =>
     workspaceSettingsLinks.filter((item) => {
-      return checkConditions(item.conditions, conditionObj);
+      return checkConditionsForRoute(item.conditions, conditionObj);
     });
 
   const getMenuFromRoute = (route) => {
@@ -36,14 +34,21 @@ export function OrganizationSettings(props) {
 
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
-      setConditionObj({ admin: newOrd?.admin });
+      setConditionObj({
+        admin: newOrd?.admin,
+        wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+      });
     });
     const selectedTabFromRoute = location.pathname.split('/').pop();
     if (selectedTabFromRoute === 'workspace-settings') {
       // No Sub routes added loading first one
-      setSelectedTab(admin ? workspaceSettingsLinks[0].id : 'workspacevariables');
+      setSelectedTab(admin ? workspaceSettingsLinks[0].id : 'workspace-variables');
       navigate(admin ? workspaceSettingsLinks[0].route : 'workspace-variables');
     } else {
+      const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
+      if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
+        redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
+      }
       const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
       updateSidebarNAV(selectedWorkspaceSetting?.name || '');
       setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
@@ -56,6 +61,7 @@ export function OrganizationSettings(props) {
     setSelectedTab(data.id);
     updateSidebarNAV(data?.name || '');
   };
+
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">

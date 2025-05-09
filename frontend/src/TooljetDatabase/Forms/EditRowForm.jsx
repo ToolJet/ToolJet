@@ -20,6 +20,33 @@ import ArrowRight from '../Icons/ArrowRight.svg';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { getLocalTimeZone, getUTCOffset } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+
+const compareValueInObject = (currentValue, defaultValue) => {
+  try {
+    let cv = currentValue;
+    let defaultVal = defaultValue;
+
+    // Step 1: Parse cv until it's fully converted to an object
+    while (typeof cv === 'string') {
+      cv = JSON.parse(cv);
+    }
+
+    // Step 2: Use Lodash's isEqual for a deep comparison
+    return _.isEqual(cv, defaultVal);
+  } catch (error) {
+    return false;
+  }
+};
+
+const transformJSONValue = (value) => {
+  if (typeof value === 'string') {
+    return JSON.stringify(JSON.parse(value));
+  } else {
+    return JSON.stringify(value);
+  }
+};
 
 const EditRowForm = ({
   onEdit,
@@ -39,6 +66,12 @@ const EditRowForm = ({
   const [inputValues, setInputValues] = useState([]);
   const [errorMap, setErrorMap] = useState({});
 
+  const [disabledSaveButton, setDisabledSaveButton] = useState(false);
+
+  const handleInputError = (bool = false) => {
+    setDisabledSaveButton(bool);
+  };
+
   useEffect(() => {
     toast.dismiss();
   }, []);
@@ -46,9 +79,17 @@ const EditRowForm = ({
   useEffect(() => {
     if (currentValue) {
       const keysWithNullValues = Object.keys(currentValue).filter((key) => currentValue[key] === null);
-      const keysWithDefaultValues = Object.keys(currentValue).filter(
-        (key, index) => currentValue[key]?.toString() === columns[index].column_default
-      );
+      const keysWithDefaultValues = Object.keys(currentValue).filter((key, index) => {
+        if (columns[index].dataType === 'jsonb') {
+          try {
+            return compareValueInObject(currentValue[key], columns[index].column_default);
+          } catch (error) {
+            return false;
+          }
+        }
+        return currentValue[key]?.toString() === columns[index].column_default;
+      });
+
       setActiveTab((prevActiveTabs) => {
         const newActiveTabs = [...prevActiveTabs];
         keysWithNullValues.forEach((key) => {
@@ -57,20 +98,36 @@ const EditRowForm = ({
             newActiveTabs[index] = 'Null';
           }
         });
+
         keysWithDefaultValues.forEach((key) => {
           const index = Object.keys(currentValue).indexOf(key);
-          if (currentValue[key]?.toString() === columns[index].column_default) {
+          const compareCondition =
+            columns[index].dataType === 'jsonb'
+              ? compareValueInObject(currentValue[key], columns[index].column_default)
+              : currentValue[key]?.toString() === columns[index].column_default;
+          if (compareCondition) {
             newActiveTabs[index] = 'Default';
           }
         });
         return newActiveTabs;
       });
+
       const initialInputValues = currentValue
         ? Object.keys(currentValue).map((key, index) => {
-            const value =
-              currentValue[key] === null ? null : currentValue[key] === currentValue[key] ? currentValue[key] : '';
+            const isJsonDataType = columns[index].dataType === 'jsonb';
+            let isJsonbCurrentAndDefaultValueEqual = false;
+            if (isJsonDataType) {
+              isJsonbCurrentAndDefaultValueEqual = compareValueInObject(
+                currentValue[key],
+                columns[index].column_default
+              );
+            }
+            const value = currentValue[key] === null ? null : currentValue[key] ? currentValue[key] : '';
             const disabledValue =
-              currentValue[key] === null || currentValue[key]?.toString() === columns[index].column_default
+              currentValue[key] === null ||
+              (isJsonDataType
+                ? isJsonbCurrentAndDefaultValueEqual
+                : currentValue[key]?.toString() === columns[index].column_default)
                 ? true
                 : false;
             return { value: value, disabled: disabledValue, label: value };
@@ -120,7 +177,9 @@ const EditRowForm = ({
   }
 
   function isMatchingForeignKeyColumnDetails(columnHeader) {
-    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    const matchingColumn = Array.isArray(foreignKeys)
+      ? foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader)
+      : undefined;
     return matchingColumn;
   }
 
@@ -136,12 +195,18 @@ const EditRowForm = ({
       newInputValues[index] = { value: defaultValue, disabled: true, label: defaultValue };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
       newInputValues[index] = { value: actualDefaultVal, disabled: true, label: actualDefaultVal };
+    } else if (defaultValue && tabData === 'Default' && dataType === 'jsonb') {
+      const [_, __, resolvedValue] = resolveReferences(`{{${defaultValue}}}`);
+      newInputValues[index] = { value: resolvedValue, disabled: false, label: resolvedValue };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
       newInputValues[index] = { value: null, disabled: true, label: null };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: null, disabled: true, label: null };
-    } else if (tabData === 'Custom' && customVal.length > 0) {
+    } else if (tabData === 'Custom' && customVal?.length > 0 && dataType !== 'jsonb') {
       newInputValues[index] = { value: customVal, disabled: false, label: customVal };
+    } else if (tabData === 'Custom' && customVal?.length > 0 && dataType === 'jsonb') {
+      const [_, __, resolvedValue] = resolveReferences(`{{${customVal}}}`);
+      newInputValues[index] = { value: resolvedValue, disabled: false, label: resolvedValue };
     } else if (tabData === 'Custom' && customVal.length <= 0) {
       newInputValues[index] = { value: '', disabled: false, label: '' };
     } else {
@@ -163,6 +228,20 @@ const EditRowForm = ({
             ? currentValue
             : currentValue === null && customBooleanVal === false
             ? null
+            : null,
+      });
+    } else if (dataType === 'jsonb') {
+      setRowData({
+        ...rowData,
+        [columnName]:
+          newInputValues[index].value === null
+            ? null
+            : compareValueInObject(newInputValues[index].value, defaultValue)
+            ? defaultValue
+            : _.isEqual(newInputValues[index].value, currentValue)
+            ? currentValue
+            : currentValue === null && customVal === ''
+            ? ''
             : null,
       });
     } else {
@@ -218,7 +297,7 @@ const EditRowForm = ({
 
     const { hasEmptyValue, newErrorMap } = editRowColumns.reduce(
       (acc, { accessor, dataType }) => {
-        if (['double precision', 'bigint', 'integer'].includes(dataType) && rowData[accessor] === '') {
+        if (['double precision', 'bigint', 'integer', 'jsonb'].includes(dataType) && rowData[accessor] === '') {
           acc.hasEmptyValue = true;
           acc.newErrorMap[accessor] = 'Cannot be empty';
 
@@ -437,6 +516,109 @@ const EditRowForm = ({
                     currentValue[columnName]
                   )
                 }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 4,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
+          </div>
+        );
+      case 'jsonb':
+        return (
+          <div style={{ position: 'relative' }} onKeyDown={(e) => e.stopPropagation()}>
+            {inputValues[index]?.value === null ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                  backgroundColor: 'transparent',
+                  width: '100%',
+                  border: '1px solid var(--slate7)',
+                  padding: '5px 5px',
+                  borderRadius: '6px',
+                }}
+                className={'null-container'}
+                tabindex="0"
+              >
+                <span
+                  style={{
+                    position: 'static',
+                    backgroundColor: 'transparent',
+                  }}
+                  className={'null-tag'}
+                >
+                  Null
+                </span>
+              </div>
+            ) : activeTab[index] === 'Default' ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                  backgroundColor: 'transparent',
+                  width: '100%',
+                  border: '1px solid var(--slate7)',
+                  padding: '5px 5px',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  height: '36px',
+                  maxHeight: '36px',
+                  fontSize: '12px',
+                }}
+                tabindex="0"
+                className="truncate"
+              >
+                {transformJSONValue(column_default)}
+              </div>
+            ) : (
+              <div className="tjdb-codehinter-wrapper-drawer" onKeyDown={(e) => e.stopPropagation()}>
+                <CodeHinter
+                  type="tjdbHinter"
+                  inEditor={false}
+                  initialValue={inputValues[index]?.value ? transformJSONValue(inputValues[index]?.value) : ''}
+                  lang="javascript"
+                  onChange={(value) => {
+                    if (value === 'Null') {
+                      handleInputChange(index, value, columnName);
+                    } else {
+                      const [_, __, resolvedValue] = resolveReferences(`{{${value}}}`);
+                      handleInputChange(index, resolvedValue, columnName);
+                    }
+                  }}
+                  componentName={`{} ${columnName}`}
+                  errorCallback={handleInputError}
+                  lineNumbers={false}
+                  placeholder="{}"
+                  columnName={columnName}
+                  showErrorMessage={true}
+                  className={cx(errorMap[columnName] ? 'has-empty-error' : '')}
+                />
+              </div>
+            )}
+
+            {(inputValues[index]?.disabled || shouldInputBeDisabled) && (
+              <div
+                onClick={() => {
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    currentValue[columnName]
+                  );
+                  handleTabClick(index, 'Custom', column_default, isNullable, columnName, dataType);
+                }}
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -724,7 +906,9 @@ const EditRowForm = ({
           fetching={fetching}
           onClose={onClose}
           onEdit={handleSubmit}
-          shouldDisableCreateBtn={Object.values(matchingObject).includes('') || (isSubset && isSubsetForCharacter)}
+          shouldDisableCreateBtn={
+            Object.values(matchingObject).includes('') || (isSubset && isSubsetForCharacter) || disabledSaveButton
+          }
           initiator={initiator}
         />
       )}

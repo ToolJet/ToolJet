@@ -15,6 +15,8 @@ import DropDownSelect from './DropDownSelect';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { BulkUploadPrimaryKey } from './BulkUploadPrimaryKey';
+import BulkUpsertPrimaryKey from './BulkUpsertPrimaryKey';
 
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -43,6 +45,9 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   );
   const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
   const [tableForeignKeyInfo, setTableForeignKeyInfo] = useState({});
+
+  const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_with_primary_key'] || {});
+  const [bulkUpsertPrimaryKey, setBulkUpsertPrimaryKey] = useState(() => options['bulk_upsert_with_primary_key'] || {});
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
@@ -189,6 +194,16 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   }, [deleteRowsOptions]);
 
   useEffect(() => {
+    mounted && optionchanged('bulk_update_with_primary_key', bulkUpdatePrimaryKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bulkUpdatePrimaryKey]);
+
+  useEffect(() => {
+    mounted && optionchanged('bulk_upsert_with_primary_key', bulkUpsertPrimaryKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bulkUpsertPrimaryKey]);
+
+  useEffect(() => {
     mounted && optionchanged('update_rows', updateRowsOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateRowsOptions]);
@@ -220,6 +235,22 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
   const deleteOperationLimitOptionChanged = (limit) => {
     setDeleteRowsOptions((prev) => ({ ...prev, limit: limit }));
+  };
+
+  const handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged = (value) => {
+    setBulkUpdatePrimaryKey((prev) => ({ ...prev, rows_update: value }));
+  };
+
+  const handleBulkUpsertRowsOptionChanged = (value) => {
+    setBulkUpsertPrimaryKey((prev) => ({ ...prev, rows: value }));
+  };
+
+  const handlePrimaryKeyOptionChangedForBulkUpdate = (value) => {
+    setBulkUpdatePrimaryKey((prev) => ({ ...prev, primary_key: value }));
+  };
+
+  const handlePrimaryKeyOptionChangedForBulkUpsert = (value) => {
+    setBulkUpsertPrimaryKey((prev) => ({ ...prev, primary_key: value }));
   };
 
   const loadTableInformation = async (tableId, isNewTableAdded) => {
@@ -323,6 +354,12 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       findTableDetailsByName,
       tableForeignKeyInfo,
       setTableForeignKeyInfo,
+      bulkUpdatePrimaryKey,
+      bulkUpsertPrimaryKey,
+      handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged,
+      handleBulkUpsertRowsOptionChanged,
+      handlePrimaryKeyOptionChangedForBulkUpdate,
+      handlePrimaryKeyOptionChangedForBulkUpsert,
     }),
     [
       organizationId,
@@ -337,6 +374,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       joinOptions,
       joinOrderByOptions,
       selectedTableId,
+      bulkUpdatePrimaryKey,
+      bulkUpsertPrimaryKey,
     ]
   );
 
@@ -495,6 +534,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         return DeleteRows;
       case 'join_tables':
         return JoinTable;
+      case 'bulk_update_with_primary_key':
+        return BulkUploadPrimaryKey;
+      case 'bulk_upsert_with_primary_key':
+        return BulkUpsertPrimaryKey;
     }
   };
 
@@ -504,6 +547,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     { label: 'Update rows', value: 'update_rows' },
     { label: 'Delete rows', value: 'delete_rows' },
     { label: 'Join tables', value: 'join_tables' },
+    { label: 'Bulk update with primary key', value: 'bulk_update_with_primary_key' },
+    { label: 'Bulk upsert with primary key', value: 'bulk_upsert_with_primary_key' },
   ];
 
   const ComponentToRender = getComponent(operation);
@@ -654,6 +699,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
             }}
             componentName="TooljetDatabase"
             delayOnChange={false}
+            className="w-100"
           />
         </div>
       )}

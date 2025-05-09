@@ -90,7 +90,42 @@ export default class Awsredshift implements QueryService {
         };
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.message, {});
+      let errorMessage = 'An unknown error occurred';
+      let errorDetails = {};
+
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+
+        if (errorMessage.includes('error:')) {
+          const detailLines = errorMessage.split('\n').map((line) => line.trim());
+          errorDetails = {
+            name: error.name,
+            code:
+              detailLines
+                .find((line) => line.startsWith('code:'))
+                ?.split('code:')[1]
+                ?.trim() || null,
+            context:
+              detailLines
+                .find((line) => line.startsWith('context:'))
+                ?.split('context:')[1]
+                ?.trim() || null,
+            location:
+              detailLines
+                .find((line) => line.startsWith('location:'))
+                ?.split('location:')[1]
+                ?.trim() || null,
+            process:
+              detailLines
+                .find((line) => line.startsWith('process:'))
+                ?.split('process:')[1]
+                ?.trim() || null,
+          };
+          errorMessage = detailLines[0];
+        }
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 }

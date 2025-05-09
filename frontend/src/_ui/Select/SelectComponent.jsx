@@ -3,15 +3,8 @@ import _ from 'lodash';
 import Select from 'react-select';
 import defaultStyles from './styles';
 
-export const SelectComponent = ({
-  options = [],
-  value,
-  onChange,
-  closeMenuOnSelect,
-  classNamePrefix,
-  darkMode,
-  ...restProps
-}) => {
+export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
+  const selectRef = React.useRef(null);
   const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
   const {
     isMulti = false,
@@ -30,6 +23,10 @@ export const SelectComponent = ({
     useCustomStyles = false,
     isDisabled = false,
     borderRadius,
+<<<<<<< HEAD
+=======
+    openMenuOnFocus = false,
+>>>>>>> main
   } = restProps;
 
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
@@ -64,6 +61,8 @@ export const SelectComponent = ({
   return (
     <Select
       {...restProps}
+      ref={selectRef}
+      selectRef={selectRef} // Exposed ref for custom components if needed
       isLoading={isLoading}
       isDisabled={isDisabled || isLoading}
       options={selectOptions}
@@ -72,6 +71,7 @@ export const SelectComponent = ({
       onChange={handleOnChange}
       placeholder={placeholder}
       styles={customStyles}
+      openMenuOnFocus={openMenuOnFocus}
       formatOptionLabel={(option) => renderCustomOption(option)}
       menuPlacement={menuPlacement}
       maxMenuHeight={maxMenuHeight}

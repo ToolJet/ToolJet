@@ -10,15 +10,20 @@ import {
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet } from 'lodash';
-import { computeComponentName, getAllChildComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils';
+import {
+  computeComponentName,
+  getAllChildComponents,
+  getParentWidgetFromId,
+} from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
 import { savePageChanges } from './pageMenuSlice';
 import { toast } from 'react-hot-toast';
-import { restrictedWidgetsObj } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
+import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
@@ -39,6 +44,10 @@ const initialState = {
   currentPageHandle: null,
   showWidgetDeleteConfirmation: false,
   focusedParentId: null,
+<<<<<<< HEAD
+=======
+  modalsOpenOnCanvas: [],
+>>>>>>> main
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -433,7 +442,7 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  validateWidget: ({ validationObject, widgetValue, customResolveObjects }) => {
+  validateWidget: ({ validationObject, widgetValue, customResolveObjects, componentType }) => {
     const { getResolvedValue } = get();
     let isValid = true;
     let validationError = null;
@@ -448,6 +457,17 @@ export const createComponentsSlice = (set, get) => ({
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
     const re = new RegExp(validationRegex, 'g');
+
+    if (componentType === 'EmailInput' && widgetValue) {
+      const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
+      const emailRegex = new RegExp(validationRegex, 'g');
+      if (!emailRegex.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'Input should be a valid email',
+        };
+      }
+    }
 
     if (!re.test(widgetValue)) {
       return {
@@ -501,7 +521,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
 
-    if (resolvedMandatory == true && !widgetValue) {
+    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,
@@ -727,7 +747,7 @@ export const createComponentsSlice = (set, get) => ({
   getOtherFieldsToBeResolved: (moduleId) => {
     return {
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
-      isPagesSidebarHidden: get().pageSettings?.properties?.disableMenu?.value,
+      isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
     };
   },
 
@@ -760,8 +780,8 @@ export const createComponentsSlice = (set, get) => ({
     const { getComponentTypeFromId } = get();
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
-    const parentWidget = parentType === 'Kanban' ? 'Kanban_card' : parentType;
-    const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
+    const parentWidget = getParentWidgetFromId(parentType, parentId);
+    const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
     if (!isParentChangeAllowed)
       toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
@@ -848,17 +868,15 @@ export const createComponentsSlice = (set, get) => ({
             if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
               state.containerChildrenMapping[parentId].push(newComponent.id);
             }
-            const page = state.modules[moduleId].pages[state.currentPageIndex];
+            const page = state.modules[moduleId].pages.find((page) => page.id === state.currentPageId);
             page.components[newComponent.id] = newComponent;
           }, skipUndoRedo),
           false,
           'addComponentToCurrentPage'
         );
-        if (index === 0) {
-          //incase of multiple components, only first one will be selected since it will be the parent component
-          get().setSelectedComponents([newComponent.id]);
-        }
       });
+      const selectedComponents = findHighestLevelofSelection(newComponents);
+      get().setSelectedComponents(selectedComponents.map((component) => component.id));
 
       if (saveAfterAction) {
         saveComponentChanges(diff, 'components', 'create')
@@ -916,7 +934,7 @@ export const createComponentsSlice = (set, get) => ({
           findAllChildComponents(componentId);
         });
 
-        const page = state.modules.canvas.pages[state.currentPageIndex];
+        const page = state.modules?.canvas?.pages.find((page) => page.id === state.currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
 
@@ -1657,22 +1675,16 @@ export const createComponentsSlice = (set, get) => ({
       });
     }
   },
-  computePageSettings: (moduleId, cb) => {
+  computePageSettings: (currentPageSettings) => {
     try {
-      const { pageSettings: currentPageSettings } = get();
       const pageSettingMeta = cloneDeep(pageConfig);
       const mergedSettings = merge({}, pageSettingMeta.definition, currentPageSettings);
-      set((state) => {
-        state.pageSettings = {
-          ...pageConfig,
-          definition: {
-            ...mergedSettings,
-          },
-        };
-      });
-      if (cb) {
-        cb(mergedSettings.properties.disableMenu.value);
-      }
+      return {
+        ...pageConfig,
+        definition: {
+          ...mergedSettings,
+        },
+      };
     } catch (error) {
       console.log(error);
       return Promise.reject(error);
@@ -1749,7 +1761,10 @@ export const createComponentsSlice = (set, get) => ({
   getCustomResolvableReference: (value, parentId, moduleId) => {
     const { getParentComponentType } = get();
     const parentComponentType = getParentComponentType(parentId, moduleId);
-    if (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) {
+    if (
+      (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
+      value === '{{listItem}}'
+    ) {
       return { entityType: 'components', entityNameOrId: parentId, entityKey: 'listItem' };
     } else if (
       parentComponentType === 'Kanban' &&
@@ -1778,7 +1793,7 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|]+)/g;
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|}}]+)/g;
 
     return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
       if (mappings[category] && mappings[category][id]) {
@@ -1832,6 +1847,12 @@ export const createComponentsSlice = (set, get) => ({
       ![
         'TextInput',
         'PasswordInput',
+<<<<<<< HEAD
+=======
+        'EmailInput',
+        'PhoneInput',
+        'CurrencyInput',
+>>>>>>> main
         'NumberInput',
         'DropdownV2',
         'MultiselectV2',
@@ -1840,6 +1861,10 @@ export const createComponentsSlice = (set, get) => ({
         'DaterangePicker',
         'DatePickerV2',
         'TimePicker',
+<<<<<<< HEAD
+=======
+        'TextArea',
+>>>>>>> main
       ].includes(componentType)
     ) {
       return layoutData?.height;
@@ -1866,5 +1891,42 @@ export const createComponentsSlice = (set, get) => ({
     const { getCurrentPage } = get();
     const currentPage = getCurrentPage(moduleId);
     return currentPage?.autoComputeLayout;
+  },
+  setModalOpenOnCanvas: (modalId, isOpen) => {
+    const { modalsOpenOnCanvas } = get();
+    let newModalOpenOnCanvas = [];
+
+    if (isOpen) {
+      newModalOpenOnCanvas = [...modalsOpenOnCanvas, modalId];
+    } else {
+      newModalOpenOnCanvas = modalsOpenOnCanvas.filter((id) => id !== modalId);
+    }
+    set((state) => {
+      state.modalsOpenOnCanvas = newModalOpenOnCanvas;
+    });
+  },
+  updateContainerAutoHeight: (componentId) => {
+    if (
+      !componentId ||
+      componentId === 'canvas' ||
+      componentId.includes('-header') ||
+      componentId.includes('-footer')
+    ) {
+      return;
+    }
+    const { currentLayout, getCurrentPageComponents, setComponentProperty } = get();
+    const allComponents = getCurrentPageComponents();
+
+    const childComponents = getAllChildComponents(allComponents, componentId);
+    const maxHeight = Object.values(childComponents).reduce((max, component) => {
+      const layout = component?.layouts?.[currentLayout];
+      if (!layout) {
+        return max;
+      }
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
   },
 });

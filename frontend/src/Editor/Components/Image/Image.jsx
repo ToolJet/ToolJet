@@ -23,8 +23,22 @@ export const Image = function Image({
 }) {
   const { imageFormat, source, jsSchema, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } =
     properties;
+<<<<<<< HEAD
   const { imageFit, imageShape, backgroundColor, padding, customPadding, boxShadow, borderRadius, borderColor } =
     styles;
+=======
+  const {
+    imageFit,
+    imageShape,
+    backgroundColor,
+    padding,
+    customPadding,
+    boxShadow,
+    borderRadius,
+    borderColor,
+    alignment,
+  } = styles;
+>>>>>>> main
 
   const isInitialRender = useRef(true);
 
@@ -168,6 +182,10 @@ export const Image = function Image({
         border: '1px solid',
         borderRadius: imageShape === 'circle' ? '50%' : `${borderRadius}px`,
         borderColor: borderColor ? borderColor : 'transparent',
+<<<<<<< HEAD
+=======
+        objectPosition: alignment,
+>>>>>>> main
       }}
       height={height}
       onClick={() => fireEvent('onClick')}

@@ -1,5 +1,9 @@
 import { Component } from 'src/entities/component.entity';
+<<<<<<< HEAD
 import { processDataInBatches } from 'src/helpers/utils.helper';
+=======
+import { processDataInBatches } from '@helpers/migration.helper';
+>>>>>>> main
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class MoveVisibilityDisabledStatesToPropertiesDaterangePicker1733771653728 implements MigrationInterface {

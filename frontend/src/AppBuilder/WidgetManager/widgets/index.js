@@ -2,6 +2,7 @@ import { buttonConfig } from './button';
 import { tableConfig } from './table';
 import { chartConfig } from './chart';
 import { modalConfig } from './modal';
+import { modalV2Config } from './modalV2';
 import { formConfig } from './form';
 import { textinputConfig } from './textinput';
 import { numberinputConfig } from './numberinput';
@@ -57,12 +58,19 @@ import { kanbanBoardConfig } from './kanbanBoard';
 import { datetimePickerV2Config } from './datetimepickerV2';
 import { datePickerV2Config } from './datepickerV2';
 import { timePickerConfig } from './timepicker';
+<<<<<<< HEAD
+=======
+import { emailinputConfig } from './emailinput';
+import { phoneinputConfig } from './phoneinput';
+import { currencyinputConfig } from './currencyinput';
+>>>>>>> main
 
 export {
   buttonConfig,
   tableConfig,
   chartConfig,
-  modalConfig,
+  modalConfig, //Deprecated
+  modalV2Config,
   formConfig,
   textinputConfig,
   numberinputConfig,
@@ -71,6 +79,12 @@ export {
   datetimePickerV2Config,
   datePickerV2Config,
   timePickerConfig,
+<<<<<<< HEAD
+=======
+  emailinputConfig,
+  phoneinputConfig,
+  currencyinputConfig,
+>>>>>>> main
   checkboxConfig,
   radiobuttonConfig, //!Depreciated
   radiobuttonV2Config,

@@ -42,8 +42,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     pages,
   } = restProps;
 
-  const events = Object.keys(componentMeta.events);
-  const validations = Object.keys(componentMeta.validation || {});
+  const events = Object.keys(componentMeta?.events);
+  const validations = Object.keys(componentMeta?.validation || {});
   let properties = [];
   let additionalActions = [];
   for (const [key] of Object.entries(componentMeta?.properties)) {

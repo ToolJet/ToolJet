@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { Component } from './component.entity';
+import { PagePermission } from './page_permissions.entity';
 
 @Entity({ name: 'pages' })
 export class Page {
@@ -46,10 +47,22 @@ export class Page {
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
+  @Column({ name: 'page_group_index' })
+  pageGroupIndex: number;
+
+  @Column({ name: 'page_group_id' })
+  pageGroupId: string;
+
+  @Column({ name: 'is_page_group', default: false })
+  isPageGroup: boolean;
+
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 
   @OneToMany(() => Component, (component) => component.page)
   components: Component[];
+
+  @OneToMany(() => PagePermission, (permission) => permission.page)
+  permissions: PagePermission[];
 }

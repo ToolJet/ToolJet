@@ -163,7 +163,7 @@ export const DateTimePicker = ({
             <div className={`fw-400 tjdbCellMenuShortcutsText`}>Save Changes</div>
           </div>
           <div className="d-flex align-items-center gap-1">
-            <div className={`fw-500 tjdbCellMenuShortcutsInfo`} id="escbutton">
+            <div className={`fw-500 tjdbCellMenuShortcutsInfo esc-btn-datepicker`} id="escbutton">
               Esc
             </div>
             <div className={`fw-400 tjdbCellMenuShortcutsText`}>Discard Changes</div>
@@ -300,7 +300,7 @@ export const DateTimePicker = ({
   return (
     <div
       data-disabled={styles.disabledState}
-      className={cx('datepicker-widget', {
+      className={cx('datepicker-widget position-relative', {
         'theme-tjdb': !darkMode,
         'theme-dark': darkMode,
       })}
@@ -324,7 +324,7 @@ export const DateTimePicker = ({
         })}
         popperPlacement={'bottom-start'}
         popperClassName={cx({
-          'tjdb-datepicker-reset': !isEditCell,
+          // 'tjdb-datepicker-reset': !isEditCell,
           'tjdb-datepicker-celledit-reset': isEditCell,
         })}
         onInputClick={() => {

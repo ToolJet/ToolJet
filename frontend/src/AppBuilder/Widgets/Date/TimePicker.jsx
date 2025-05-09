@@ -30,7 +30,11 @@ export const TimePicker = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
+<<<<<<< HEAD
 
+=======
+  const { label, defaultValue, timeFormat, isTimezoneEnabled } = properties;
+>>>>>>> main
   const inputProps = {
     properties,
     setExposedVariable,
@@ -39,6 +43,10 @@ export const TimePicker = ({
     fireEvent,
     dateInputRef,
     datePickerRef,
+<<<<<<< HEAD
+=======
+    timeFormat,
+>>>>>>> main
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const timeLogic = useTimeInput(inputProps);
@@ -46,7 +54,10 @@ export const TimePicker = ({
   const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
     dateTimeLogic;
   const { minTime, maxTime } = timeLogic;
+<<<<<<< HEAD
   const { label, defaultValue, timeFormat, isTimezoneEnabled } = properties;
+=======
+>>>>>>> main
   const { customRule } = validation;
 
   const [displayTimezone, setDisplayTimezone] = useState(
@@ -233,8 +244,13 @@ export const TimePicker = ({
   }, [isTimezoneEnabled]);
 
   useEffect(() => {
+<<<<<<< HEAD
     setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory }));
   }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp]);
+=======
+    setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory, timeFormat }));
+  }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat]);
+>>>>>>> main
 
   const isTwentyFourHourMode = is24HourFormat(timeFormat);
 

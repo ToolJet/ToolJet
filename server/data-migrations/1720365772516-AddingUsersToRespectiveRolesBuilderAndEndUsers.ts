@@ -1,14 +1,11 @@
-import { MigrationProgress } from 'src/helpers/utils.helper';
-import {
-  GROUP_PERMISSIONS_TYPE,
-  USER_ROLE,
-} from '@modules/user_resource_permissions/constants/group-permissions.constant';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { User } from 'src/entities/user.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { MigrationProgress } from '@helpers/migration.helper';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { Organization } from '@entities/organization.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { User } from '@entities/user.entity';
+import { UserGroupPermission } from '@entities/user_group_permission.entity';
 import { Brackets, EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { GROUP_PERMISSIONS_TYPE, USER_ROLE } from '@modules/group-permissions/constants';
 
 export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -44,11 +41,15 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
             'organization_users.organizationId = group_permissions.organizationId'
           )
           .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
+          .leftJoin('group_permissions.dataSourceGroupPermission', 'dataSourceGroupPermission')
           .andWhere(
             new Brackets((qb) => {
               qb.orWhere('app_group_permissions.read = true AND app_group_permissions.update = true')
+                .orWhere('dataSourceGroupPermission.update = true')
                 .orWhere('group_permissions.appCreate = true')
                 .orWhere('group_permissions.appDelete = true')
+                .orWhere('group_permissions.dataSourceCreate = true')
+                .orWhere('group_permissions.dataSourceDelete = true')
                 .orWhere('group_permissions.folderCreate = true')
                 .orWhere('group_permissions.orgEnvironmentConstantCreate = true');
             })

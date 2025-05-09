@@ -6,55 +6,63 @@ function getDragDepth(offset, indentationWidth) {
   return Math.round(offset / indentationWidth);
 }
 
-export function getProjection(items, activeId, overId, dragOffset, indentationWidth) {
-  const overItemIndex = items.findIndex(({ id }) => id === overId);
-  const activeItemIndex = items.findIndex(({ id }) => id === activeId);
-  const activeItem = items[activeItemIndex];
-  const newItems = arrayMove(items, activeItemIndex, overItemIndex);
-  const previousItem = newItems[overItemIndex - 1];
-  const nextItem = newItems[overItemIndex + 1];
-  const dragDepth = getDragDepth(dragOffset, indentationWidth);
-  const projectedDepth = Math.min(activeItem.depth + dragDepth, 1); // Ensure max depth is 1
-  const maxDepth = 1; // Set max depth to 1
-  const minDepth = getMinDepth({ nextItem });
-  const overItem = items[overItemIndex];
-  let depth = projectedDepth;
+export function getProjection(items, activeId, overId, dragOffset, indentationWidth, intersections) {
+  try {
+    const overItemIndex = items.findIndex(({ id }) => id === overId);
+    const activeItemIndex = items.findIndex(({ id }) => id === activeId);
+    const activeItem = items[activeItemIndex];
+    const newItems = arrayMove(items, activeItemIndex, overItemIndex);
+    const nextItem = newItems[overItemIndex + 1];
+    const dragDepth = getDragDepth(dragOffset, indentationWidth);
+    const projectedDepth = Math.min(activeItem.depth + dragDepth, 1); // Ensure max depth is 1
+    const maxDepth = 1; // Set max depth to 1
+    const minDepth = getMinDepth({ nextItem });
 
-  // Prevent nesting of an element if it is a parent (isParent)
-  if (activeItem.isPageGroup) {
-    depth = 0; // Reset depth to 0 (root level)
-  } else {
+    if (activeItem.isPageGroup) {
+      return { depth: 0, maxDepth, minDepth, pageGroupId: null };
+    }
     if (projectedDepth > maxDepth) {
       depth = maxDepth;
     } else if (projectedDepth < minDepth) {
       depth = minDepth;
     }
+    let depth = projectedDepth;
+
+    if (depth < 1 && !activeItem.isPageGroup) {
+      // check if it is intersecting with a page group item
+      const highestIntersection = intersections?.[0];
+      const highestIntersectionId = highestIntersection?.[0];
+      const highestIntersectionItem = items.find(({ id }) => id === highestIntersectionId);
+      if (highestIntersectionItem?.pageGroupId) {
+        return { depth: 1, maxDepth: 1, minDepth: 1, pageGroupId: highestIntersectionItem.pageGroupId };
+      }
+    }
+
+    const pageGroupId = getParentId(intersections, depth, items);
+    const parentItem = items.find(({ id }) => id === pageGroupId);
+    if (!parentItem?.isPageGroup) return { depth: 0, maxDepth, minDepth, pageGroupId: null };
+
+    return { depth, maxDepth, minDepth, pageGroupId };
+  } catch (error) {
+    console.log('error', error);
+    return { depth: 0, maxDepth: 1, minDepth: 0, pageGroupId: null };
   }
-  const pageGroupId = getParentId();
-  const parentItem = items.find(({ id }) => id === pageGroupId);
-  if (!parentItem?.isPageGroup) return { depth: 0, maxDepth, minDepth, pageGroupId: null };
-  return { depth, maxDepth, minDepth, pageGroupId };
+}
+function getParentId(intersections, depth, items) {
+  if (depth < 1) return null;
+  // if over item is a page group or a part of page group and intersection with overItem is the highest, the set parent as the pageGROup
+  const highestIntersection = intersections?.[0];
+  const highestIntersectionId = highestIntersection?.[0];
 
-  function getParentId() {
-    if (depth === 0 || !previousItem) {
-      return null;
-    }
-
-    if (depth === previousItem.depth) {
-      return previousItem.pageGroupId;
-    }
-
-    if (depth > previousItem.depth) {
-      return previousItem.id;
-    }
-
-    const newParent = newItems
-      .slice(0, overItemIndex)
-      .reverse()
-      .find((item) => item.depth === depth)?.pageGroupId;
-
-    return newParent ?? null;
+  const highestIntersectionItem = items.find(({ id }) => id === highestIntersectionId);
+  if (highestIntersectionItem?.isPageGroup) {
+    return highestIntersectionItem.id;
   }
+  if (highestIntersectionItem?.pageGroupId) {
+    return highestIntersectionItem.pageGroupId;
+  }
+
+  return null;
 }
 
 function getMinDepth({ nextItem }) {
@@ -75,7 +83,7 @@ export function flattenTree(items) {
   return flatten(items);
 }
 
-export function buildTree(flattenedItems) {
+export function buildTree(flattenedItems, ignoreEmptyFolders = false) {
   const root = { id: 'root', children: [] };
   const nodes = { [root.id]: root };
   const items = flattenedItems.map((item) => ({ ...item, children: [] }));
@@ -88,7 +96,11 @@ export function buildTree(flattenedItems) {
     nodes[id] = { id, children };
     parent?.children?.push(item);
   }
-
+  if (ignoreEmptyFolders) {
+    root.children = root.children.filter(
+      (child) => (child.isPageGroup && child?.children?.length > 0) || !child.isPageGroup
+    );
+  }
   return root.children;
 }
 

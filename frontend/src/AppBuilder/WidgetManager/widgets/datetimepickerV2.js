@@ -10,6 +10,7 @@ export const datetimePickerV2Config = {
   },
   validation: {
     minDate: {
+<<<<<<< HEAD
       type: 'datepicker',
       placeholder: 'DD/MM/YYYY',
       displayName: 'Min Date',
@@ -28,14 +29,46 @@ export const datetimePickerV2Config = {
       type: 'timepicker',
       placeholder: 'HH:mm',
       displayName: 'Max Time',
+=======
+      type: 'code',
+      placeholder: 'DD/MM/YYYY',
+      displayName: 'Min Date',
+      dynamicType: 'date',
+    },
+    maxDate: {
+      type: 'code',
+      placeholder: 'DD/MM/YYYY',
+      displayName: 'Max Date',
+      dynamicType: 'date',
+    },
+    minTime: {
+      type: 'code',
+      placeholder: 'HH:mm',
+      displayName: 'Min Time',
+      dynamicType: 'time',
+    },
+    maxTime: {
+      type: 'code',
+      placeholder: 'HH:mm',
+      displayName: 'Max Time',
+      dynamicType: 'time',
+>>>>>>> main
     },
     disabledDates: {
       type: 'code',
       displayName: 'Disabled dates',
+<<<<<<< HEAD
       validation: {
         schema: { type: 'array', element: { type: 'string' } },
         defaultValue: "['01/01/2022']",
       },
+=======
+      // validation: {
+      //   schema: { type: 'array', element: { type: 'string' } },
+      //   defaultValue: "['01/01/2022']",
+      // },
+      dynamicType: 'arrayDate',
+>>>>>>> main
     },
     customRule: {
       type: 'code',
@@ -60,6 +93,15 @@ export const datetimePickerV2Config = {
       },
       accordian: 'Data',
     },
+<<<<<<< HEAD
+=======
+    isTimezoneEnabled: {
+      type: 'toggle',
+      displayName: 'Manage time zones',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'Data',
+    },
+>>>>>>> main
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -68,12 +110,16 @@ export const datetimePickerV2Config = {
         defaultValue: '01/01/2022',
       },
     },
+<<<<<<< HEAD
     isTimezoneEnabled: {
       type: 'toggle',
       displayName: 'Manage time zones',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'formatting',
     },
+=======
+
+>>>>>>> main
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -208,8 +254,13 @@ export const datetimePickerV2Config = {
   ],
   styles: {
     labelColor: {
+<<<<<<< HEAD
       type: 'color',
       displayName: 'Color',
+=======
+      type: 'colorSwatches',
+      displayName: 'colorSwatches',
+>>>>>>> main
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
@@ -259,31 +310,51 @@ export const datetimePickerV2Config = {
       isFxNotRequired: true,
     },
     fieldBackgroundColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     fieldBorderColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Accent',
       validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Error text',
       validation: { schema: { type: 'string' }, defaultValue: '#E54D2E' },
       accordian: 'field',
@@ -296,7 +367,11 @@ export const datetimePickerV2Config = {
       visibility: false,
     },
     iconColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: '',
       showLabel: false,
       validation: {

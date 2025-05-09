@@ -5,7 +5,6 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 import _, { isEmpty } from 'lodash';
 import { handleCircularStructureToJSON, hasCircularDependency, verifyConstant } from '@/_helpers/utils';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
@@ -13,6 +12,7 @@ import { JsonViewer } from '@textea/json-viewer';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { Overlay } from 'react-bootstrap';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -88,6 +88,7 @@ export const PreviewBox = ({
   setErrorMessage,
   customVariables,
   isWorkspaceVariable,
+  validationFn,
 }) => {
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
@@ -95,6 +96,7 @@ export const PreviewBox = ({
   const [largeDataset, setLargeDataset] = useState(false);
   const globals = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
+  const globalServerConstantsRegex = /^\{\{.*globals\.server.*\}\}$/;
 
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;
@@ -117,11 +119,11 @@ export const PreviewBox = ({
   let previewContent = resolvedValue;
   let isGlobalConstant = currentValue && currentValue.includes('{{constants.');
   let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
+  const isServerConstant = currentValue && currentValue.match(globalServerConstantsRegex);
   let invalidConstants = null;
   let undefinedError = null;
   if (isGlobalConstant || isSecretConstant) {
     invalidConstants = verifyConstant(currentValue, globals, secrets);
-    console.log('invalidConstants', invalidConstants);
   }
   if (invalidConstants?.length) {
     undefinedError = { type: 'Invalid constants' };
@@ -151,7 +153,8 @@ export const PreviewBox = ({
     const [valid, _error, rawNewValue, rawResolvedValue] = resolveReferences(
       currentValue,
       validationSchema,
-      customVariables
+      customVariables,
+      validationFn
     );
 
     const resolvedValue = typeof rawResolvedValue === 'function' ? undefined : rawResolvedValue;
@@ -160,7 +163,7 @@ export const PreviewBox = ({
     const isSecretError =
       currentValue?.includes('secrets.') || _error?.includes('ReferenceError: secrets is not defined');
 
-    if (isWorkspaceVariable || !validationSchema || isEmpty(validationSchema)) {
+    if ((isWorkspaceVariable || !validationSchema || isEmpty(validationSchema)) && !validationFn) {
       return setResolvedValue(newValue);
     }
 
@@ -195,7 +198,11 @@ export const PreviewBox = ({
       const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
       setError({
-        message: isSecretError ? 'secrets cannot be used in apps' : _error,
+        message: isServerConstant
+          ? 'Server variables cannot be used in apps'
+          : isSecretError
+          ? 'secrets cannot be used in apps'
+          : _error,
         value: isSecretError
           ? 'Undefined'
           : jsErrorType === 'Invalid'
@@ -220,6 +227,7 @@ export const PreviewBox = ({
         isWorkspaceVariable={isWorkspaceVariable}
         isSecretConstant={isSecretConstant || false}
         isLargeDataset={largeDataset}
+        isServerConstant={isServerConstant}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -238,8 +246,11 @@ const RenderResolvedValue = ({
   withValidation,
   isWorkspaceVariable,
   isSecretConstant = false,
+  isServerConstant = false,
   isLargeDataset,
 }) => {
+  const isServerSideGlobalEnabled = useStore((state) => !!state?.license?.featureAccess?.serverSideGlobal, shallow);
+
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
 
@@ -262,7 +273,11 @@ const RenderResolvedValue = ({
       }`
     : previewType;
 
-  const previewContent = isSecretConstant
+  const previewContent = isServerConstant
+    ? isServerSideGlobalEnabled
+      ? 'Server variables would be resolved at runtime'
+      : 'Server variables are only available in paid plans'
+    : isSecretConstant
     ? 'Values of secret constants are hidden'
     : !withValidation
     ? resolvedValue
@@ -287,27 +302,21 @@ const PreviewContainer = ({
   enablePreview,
   setCursorInsidePreview,
   isPortalOpen,
+  previewRef,
+  showPreview,
   ...restProps
 }) => {
-  const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement } = restProps;
-
+  const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement, validationFn } = restProps;
   const [errorMessage, setErrorMessage] = useState('');
-
   const typeofError = getCurrentNodeType(errorMessage);
-
   const errorMsg = typeofError === 'Array' ? errorMessage[0] : errorMessage;
-
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
   const popover = (
     <Popover
       bsPrefix="codehinter-preview-popover"
       id="popover-basic"
       className={`${darkMode && 'dark-theme'}`}
       style={{
-        width: '250px',
-        maxWidth: '350px',
-        marginRight: 2,
         zIndex: 1400,
       }}
       onMouseEnter={() => setCursorInsidePreview(true)}
@@ -316,8 +325,10 @@ const PreviewContainer = ({
       <Popover.Body
         style={{
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
-          padding: isEmpty(validationSchema) && '0px',
+          padding: isEmpty(validationSchema) && !validationFn && '0px',
           boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
+          width: '250px',
+          maxWidth: '350px',
         }}
       >
         <div>
@@ -418,14 +429,57 @@ const PreviewContainer = ({
   );
 
   return (
-    <OverlayTrigger
-      trigger="click"
-      show={enablePreview && isFocused && !isPortalOpen}
-      placement={previewPlacement}
-      overlay={popover}
-    >
+    <>
+      {!isPortalOpen && (
+        <Overlay
+          placement={previewPlacement || 'left'}
+          {...(previewRef?.current ? { target: previewRef.current } : {})}
+          show={showPreview}
+          rootClose
+          shouldUpdatePosition={true}
+          container={document.body}
+          popperConfig={{
+            modifiers: [
+              {
+                name: 'flip',
+                options: {
+                  fallbackPlacements: ['top', 'bottom', 'left', 'right'],
+                  flipVariations: true,
+                  allowedAutoPlacements: ['top', 'bottom'],
+                  boundary: 'viewport',
+                },
+              },
+              {
+                name: 'preventOverflow',
+                options: {
+                  enabled: true,
+                  boundary: 'viewport',
+                  altAxis: true,
+                  tether: false,
+                },
+              },
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 3],
+                },
+              },
+            ],
+            onFirstUpdate: (state) => {
+              // Force position update on first render
+              // This is done to avoid scroll issue
+              if (state.elements.popper) {
+                state.elements.popper.style.position = 'fixed';
+              }
+            },
+          }}
+        >
+          {(props) => React.cloneElement(popover, props)}
+        </Overlay>
+      )}
+
       {children}
-    </OverlayTrigger>
+    </>
   );
 };
 

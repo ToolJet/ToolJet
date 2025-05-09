@@ -9,6 +9,7 @@ export const daterangepickerConfig = {
   },
   validation: {
     minDate: {
+<<<<<<< HEAD
       type: 'datepicker',
       placeholder: 'DD/MM/YYYY',
       displayName: 'Min Date',
@@ -17,14 +18,34 @@ export const daterangepickerConfig = {
       type: 'datepicker',
       placeholder: 'DD/MM/YYYY',
       displayName: 'Max Date',
+=======
+      type: 'code',
+      placeholder: 'DD/MM/YYYY',
+      displayName: 'Min Date',
+      dynamicType: 'date',
+    },
+    maxDate: {
+      type: 'code',
+      placeholder: 'DD/MM/YYYY',
+      displayName: 'Max Date',
+      dynamicType: 'date',
+>>>>>>> main
     },
     disabledDates: {
       type: 'code',
       displayName: 'Disabled dates',
+<<<<<<< HEAD
       validation: {
         schema: { type: 'array', element: { type: 'string' } },
         defaultValue: "['01/01/2022']",
       },
+=======
+      // validation: {
+      //   schema: { type: 'array', element: { type: 'string' } },
+      //   defaultValue: "['01/01/2022']",
+      // },
+      dynamicType: 'arrayDate',
+>>>>>>> main
     },
     customRule: {
       type: 'code',
@@ -196,8 +217,13 @@ export const daterangepickerConfig = {
   ],
   styles: {
     labelColor: {
+<<<<<<< HEAD
       type: 'color',
       displayName: 'Color',
+=======
+      type: 'colorSwatches',
+      displayName: 'colorSwatches',
+>>>>>>> main
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
@@ -247,31 +273,51 @@ export const daterangepickerConfig = {
       isFxNotRequired: true,
     },
     fieldBackgroundColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     fieldBorderColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Accent',
       validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: 'Error text',
       validation: { schema: { type: 'string' }, defaultValue: '#E54D2E' },
       accordian: 'field',
@@ -284,7 +330,11 @@ export const daterangepickerConfig = {
       visibility: false,
     },
     iconColor: {
+<<<<<<< HEAD
       type: 'color',
+=======
+      type: 'colorSwatches',
+>>>>>>> main
       displayName: '',
       showLabel: false,
       validation: {

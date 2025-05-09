@@ -10,6 +10,7 @@ const FreezeVersionInfo = ({
   hide = false,
 }) => {
   const isViewOnly = useStore((state) => state.getShouldFreeze());
+  const isAiOperationInProgress = useStore((state) => state?.ai?.isLoading);
 
   // const { isUserEditingTheVersion, disableReleasedVersionPopupState } = useAppVersionStore(
   //   (state) => ({
@@ -27,7 +28,7 @@ const FreezeVersionInfo = ({
   //   return () => intervalId && clearInterval(intervalId);
   // }, [isUserEditingTheVersion, changeBackTheState]);
 
-  if (!isViewOnly || hide) return null;
+  if (!isViewOnly || hide || isAiOperationInProgress) return null;
 
   return (
     <div className="released-version-popup-container">

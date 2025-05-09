@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
-import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
@@ -11,6 +10,7 @@ import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 import MobileNavigationMenu from './MobileNavigationMenu';
+import AppLogo from '@/_components/AppLogo';
 import { useEditorStore } from '@/_stores/editorStore';
 
 const MobileHeader = ({
@@ -23,6 +23,7 @@ const MobileHeader = ({
   switchPage,
   setAppDefinitionFromVersion,
   showViewerNavigation,
+  handleAppEnvironmentChanged,
 }) => {
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
@@ -54,7 +55,7 @@ const MobileHeader = ({
             redirectToDashboard();
           }}
         >
-          <LogoIcon />
+          <AppLogo isLoadingFromHeader={false} />
         </Link>
       </h1>
       <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>
@@ -84,6 +85,7 @@ const MobileHeader = ({
       showHeader={showHeader}
       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
       darkMode={darkMode}
+      onAppEnvironmentChanged={handleAppEnvironmentChanged}
     />
   );
 

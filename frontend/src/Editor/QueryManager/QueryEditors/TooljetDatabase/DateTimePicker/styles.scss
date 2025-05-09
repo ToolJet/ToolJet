@@ -117,6 +117,9 @@
   margin-top: 4px;
   box-shadow: 0px 8px 16px 0px #3032331A;
 }
+.react-datepicker-popper {
+  z-index: 10001 !important;
+}
 
 .react-datepicker-time__caption{
   margin-left:20px
@@ -214,4 +217,31 @@
 .input-value-padding {
   box-sizing: border-box;
   padding-right: 30px !important;
+}
+
+.datepicker-widget.theme-tjdb{
+  .react-datepicker__navigation{
+    overflow: visible !important;
+    height: inherit !important;
+  }
+}
+
+.esc-btn-datepicker{
+  height: 18px ;
+  align-items: center;
+}
+
+.tjdb-td-wrapper{
+  .react-datepicker-time__input{
+    input{
+      line-height: normal !important;
+    }
+  }
+}
+.table-schema-row{
+  .react-datepicker-time__input-container{
+      input{
+        line-height: normal !important;
+      }
+  }
 }

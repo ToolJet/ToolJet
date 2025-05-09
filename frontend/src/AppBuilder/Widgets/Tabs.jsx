@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
-
+import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 export const Tabs = function Tabs({
   id,
   component,
@@ -117,7 +117,11 @@ export const Tabs = function Tabs({
           position: 'absolute',
           top: parsedHideTabs ? '0px' : '41px',
           width: '100%',
+<<<<<<< HEAD
           overflowY: 'auto',
+=======
+          padding: TAB_CANVAS_PADDING,
+>>>>>>> main
         }}
       >
         <SubContainer
@@ -127,6 +131,7 @@ export const Tabs = function Tabs({
           allowContainerSelect={true}
           styles={{ backgroundColor: bgColor }}
           darkMode={darkMode}
+          componentType="Tabs"
         />
       </div>
     );
@@ -144,7 +149,12 @@ export const Tabs = function Tabs({
     <div
       data-disabled={parsedDisabledState}
       className="card tabs-component"
-      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
+      style={{
+        height,
+        display: parsedWidgetVisibility ? 'flex' : 'none',
+        backgroundColor: bgColor,
+        boxShadow,
+      }}
       data-cy={dataCy}
     >
       <ul

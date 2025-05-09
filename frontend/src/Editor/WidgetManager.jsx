@@ -12,9 +12,10 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -146,7 +147,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className={`components-container ${(isVersionReleased || disabled) && 'disabled'}`}>
+    <div className={`components-container ${(isVersionReleased || isEditorFreezed || disabled) && 'disabled'}`}>
       <p className="widgets-manager-header">Components</p>
       <div className="input-icon tj-app-input">
         <SearchBox

@@ -34,12 +34,11 @@ export const verifyValue = (node, type, children, index = 0) => {
 };
 export const deleteComponentFromInspector = (node) => {
   cy.get('[data-cy="inspector-node-components"] > .node-key').click();
-  cy.get(`[data-cy="inspector-node-${node}"] > .node-key`).click();
-  cy.get('[style="height: 13px; width: 13px;"] > img').click();
+  cy.get(`[data-cy="inspector-node-${node}"] > .node-key`).realHover().parent().find('[style="height: 13px; width: 13px;"] > img').last().click();
 };
 
 export const verifyfunctions = (node, type, index = 0) => {
-  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`)
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .fs-10`)
     .eq(index)
     .realHover()
     .verifyVisibleElement("contain.text", `${type}`);
@@ -49,4 +48,13 @@ export const verifyfunctions = (node, type, index = 0) => {
   // cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`)
   //   .eq(index)
   //   .verifyVisibleElement("contain.text", type);
+};
+
+export const verifyNodes = (nodes, verificationFunction) => {
+  nodes.forEach(node => verificationFunction(node.key, node.type, node.value));
+};
+
+export const openAndVerifyNode = (nodeName, nodes, verificationFunction) => {
+  openNode(nodeName);
+  verifyNodes(nodes, verificationFunction);
 };

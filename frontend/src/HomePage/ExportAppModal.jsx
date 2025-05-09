@@ -4,8 +4,11 @@ import moment from 'moment';
 import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_components/AppButton';
+import useStore from '@/AppBuilder/_stores/store';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
+  const { user } = useStore((state) => state.user);
+
   const [versions, setVersions] = useState(undefined);
   const [tables, setTables] = useState(undefined);
   const [allTables, setAllTables] = useState(undefined);
@@ -19,8 +22,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     async function fetchAppVersions() {
       setLoading(true);
       try {
-        const fetchVersions = await appsService.getVersions(app.id);
-        const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
+        const fetchVersions = await appsService.getVersions(app.appId || app.id);
+        const fetchTables = await appsService.getTables(app.appId || app.id); // this is used to get all tables
         const { versions } = fetchVersions;
         const { tables } = fetchTables;
         setVersions(versions);
@@ -46,8 +49,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       setVersionSelectLoading(true);
       try {
         if (!versionId) return;
-        const tbl = await appsService.getAppByVersion(app.id, versionId); // this is used to get particular App by version
-        const { dataQueries } = tbl;
+        const tbl = await appsService.getAppByVersion(app.appId || app.id, versionId); // this is used to get particular App by version
+        const { dataQueries = [] } = tbl?.editing_version || {};
         const extractedIdData = [];
         dataQueries.forEach((item) => {
           if (item.kind === 'tooljetdb' && item.options?.operation === 'join_tables') {
@@ -67,7 +70,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             });
           }
 
-          if (item.kind === 'tooljetdb' && item.options.table_id) extractedIdData.push(item.options.table_id);
+          if (item.kind === 'tooljetdb' && item.options.tableId) extractedIdData.push(item.options.tableId);
         });
         const uniqueSet = new Set(extractedIdData);
         const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));
@@ -88,7 +91,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     const appOpts = {
       app: [
         {
-          id: app.id,
+          id: app.appId || app.id,
           ...(versionId && { search_params: { version_id: versionId } }),
         },
       ],
@@ -103,7 +106,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     appsService
       .exportResource(requestBody)
       .then((data) => {
-        const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+        const appName = (app.appName || app.name).replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
         const json = JSON.stringify(data, null, 2);

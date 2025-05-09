@@ -1,4 +1,4 @@
-import { EncryptionService } from '@services/encryption.service';
+import { EncryptionService } from '@modules/encryption/service';
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 import { EntityManager, DataSource } from 'typeorm';
@@ -217,4 +217,37 @@ export async function revokeAccessToPublicSchema(dbName: string) {
 export function modifyTjdbErrorObject(error) {
   if (error.detail) error['details'] = error.detail;
   return error;
+}
+
+/**
+ * Validates the JSONB column value. We only allow valid JSON values to be added in the JSONB column.
+ * @param jsonbColumnList - jsonb column list
+ * @param inputValues - Values to be created or updated ( Object )
+ * @returns - Column names with invalid JSON data.
+ */
+export function validateTjdbJSONBColumnInputs(jsonbColumnList: Array<string>, inputValues) {
+  const body = { ...inputValues };
+  const inValidValueColumnsList = [];
+
+  Object.entries(inputValues).forEach(([key, value]) => {
+    if (jsonbColumnList.includes(key)) {
+      try {
+        const parsedValue = typeof value === 'string' ? JSON.parse(value) : value;
+        const isJson =
+          typeof parsedValue === 'object' &&
+          parsedValue !== null &&
+          !Array.isArray(parsedValue) &&
+          Object.prototype.toString.call(parsedValue) === '[object Object]';
+
+        if (isJson || Array.isArray(parsedValue) || value === null) {
+          body[key] = parsedValue;
+        } else {
+          inValidValueColumnsList.push(key);
+        }
+      } catch (error) {
+        inValidValueColumnsList.push(key);
+      }
+    }
+  });
+  return { inValidValueColumnsList, updatedRequestBody: body };
 }

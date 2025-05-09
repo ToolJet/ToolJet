@@ -3,7 +3,6 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { dashboardSelector } from "Selectors/dashboard";
 
 export const generalSettings = () => {
   cy.get(ssoSelector.enableSignUpToggle).check();
@@ -19,7 +18,7 @@ export const generalSettings = () => {
 
   cy.get(ssoSelector.workspaceLoginPage.defaultSSO).click();
   cy.get(ssoSelector.defaultGoogle).verifyVisibleElement("have.text", "Google");
-  cy.get(ssoSelector.defaultGithub).verifyVisibleElement("have.text", "Github");
+  cy.get(ssoSelector.defaultGithub).verifyVisibleElement("have.text", "Git");
 
   cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
   cy.get(ssoSelector.saveButton).click();
@@ -194,87 +193,12 @@ export const visitWorkspaceLoginPage = () => {
   });
 };
 
-export const enableDefaultSSO = () => {
-  common.navigateToManageSSO();
-  cy.get("body").then(($el) => {
-    if (!$el.text().includes("Allowed domains")) {
-      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
-    }
-  });
-  cy.get(ssoSelector.allowDefaultSSOToggle).then(($el) => {
-    if (!$el.is(":checked")) {
-      cy.get(ssoSelector.allowDefaultSSOToggle).uncheck();
-      cy.get(ssoSelector.saveButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
-    }
-  });
-};
-
-export const disableDefaultSSO = () => {
-  common.navigateToManageSSO();
-  cy.get("body").then(($el) => {
-    if (!$el.text().includes("Allowed domains")) {
-      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
-    }
-  });
-  cy.get(ssoSelector.allowDefaultSSOToggle).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(ssoSelector.allowDefaultSSOToggle).uncheck();
-      cy.get(ssoSelector.saveButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
-    }
-  });
-};
-
 export const workspaceLoginPageElements = (workspaceName) => {
   signInPageElements();
   cy.get(ssoSelector.workspaceSubHeader).verifyVisibleElement(
     "have.text",
     ssoText.workspaceSubHeader(workspaceName)
   );
-};
-
-export const passwordLoginVisible = () => {
-  cy.get(onboardingSelectors.emailInput).should("be.visible");
-  cy.get(onboardingSelectors.passwordInput).should("be.visible");
-  cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
-    "have.text",
-    commonText.loginButton
-  );
-};
-
-export const workspaceLogin = (workspaceName) => {
-  cy.clearAndType(onboardingSelectors.emailInput, "dev@tooljet.io");
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
-  cy.get(onboardingSelectors.signInButton).click();
-  cy.wait(2000);
-  cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-    "have.text",
-    workspaceName
-  );
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip")) {
-      cy.get(commonSelectors.skipInstallationModal).click();
-    } else {
-      cy.log("Installation is Finished");
-    }
-  });
-};
-
-export const generalSettingsSW = () => {
-  cy.get(ssoSelector.enableSignUpToggle).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(ssoSelector.enableSignUpToggle).uncheck();
-      cy.get(ssoSelector.cancelButton).click();
-      cy.get(ssoSelector.enableSignUpToggle).should("be.checked");
-    } else {
-      cy.get(ssoSelector.enableSignUpToggle).check();
-      cy.get(ssoSelector.cancelButton).click();
-      cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
-      cy.get(ssoSelector.enableSignUpToggle).check();
-    }
-  });
 };
 
 export const signInPageElements = () => {
@@ -300,8 +224,8 @@ export const signInPageElements = () => {
     commonText.loginButton
   );
 
-  cy.get(onboardingSelectors.emailInput).should("be.visible");
-  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+  cy.get(onboardingSelectors.loginEmailInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
 
   cy.get("body").then(($el) => {
     if ($el.text().includes("Google")) {
@@ -315,111 +239,6 @@ export const signInPageElements = () => {
       );
     }
   });
-};
-
-export const loginbyGoogle = (email, password) => {
-  cy.session([email, password], () => {
-    cy.visit("/");
-    cy.wait(3000);
-    cy.get(ssoSelector.googleSSOText).click();
-    cy.origin(
-      "https://accounts.google.com/",
-      { args: [email, password] },
-      ([email, password]) => {
-        const resizeObserverLoopErrRe =
-          /^[^(ResizeObserver loop limit exceeded)]/;
-        Cypress.on("uncaught:exception", (err) => {
-          if (resizeObserverLoopErrRe.test(err.message)) {
-            return false;
-          }
-        });
-        cy.wait(1000);
-        cy.get('input[name="identifier"]').type(email);
-        cy.get(".VfPpkd-LgbsSe").contains("Next").click();
-        cy.get('input[name="password"]', { timeout: 5000 }).type(password);
-        cy.get(".VfPpkd-LgbsSe").contains("Next").click();
-        cy.wait(5000);
-        cy.visit("/");
-      }
-    );
-  });
-};
-
-export const googleSSO = (email, password) => {
-  Cypress.session.clearAllSavedSessions();
-  cy.wait(3000);
-  cy.get(ssoSelector.googleSSOText).click();
-  loginbyGoogle(email, password);
-  cy.visit("http://localhost:8082");
-  cy.wait(4000);
-  cy.get(ssoSelector.googleSSOText).click();
-  cy.origin("https://accounts.google.com/", () => {
-    cy.get(".d2laFc").first().click();
-    cy.wait(3000);
-  });
-};
-
-export const loginbyGitHub = (email, password) => {
-  Cypress.session.clearAllSavedSessions();
-  cy.session([email, password], () => {
-    cy.visit("/");
-    cy.get(ssoSelector.gitSSOText).click();
-    cy.origin(
-      "https://github.com/",
-      { args: [email, password] },
-      ([email, password]) => {
-        cy.wait(1000);
-        cy.get('input[name="login"]').type(email);
-        cy.get('input[name="password"]').type(password);
-        cy.get('input[name="commit"]').click();
-        cy.get("body").then(($el) => {
-          if ($el.text().includes("Authorize")) {
-            cy.wait(1000);
-            cy.get("#js-oauth-authorize-btn").click();
-          }
-        });
-        cy.wait(3000);
-      }
-    );
-  });
-};
-
-export const gitHubSSO = (email, password) => {
-  loginbyGitHub(email, password);
-  cy.visit("http://localhost:8082");
-  cy.get(ssoSelector.gitSSOText).click();
-};
-
-export const enableGitHubSSO = () => {
-  common.navigateToManageSSO();
-  cy.get(ssoSelector.git).click();
-  cy.get(ssoSelector.gitEnableToggle).then(($el) => {
-    if (!$el.is(":checked")) {
-      cy.get(ssoSelector.gitEnableToggle).check();
-    }
-  });
-  cy.clearAndType(ssoSelector.clientIdInput, "b6cb1e7989494205e705");
-  cy.clearAndType(
-    ssoSelector.clientSecretInput,
-    "fcee4873f6a48a80da399f7dc2e55a5f9f0fca17"
-  );
-  cy.get(ssoSelector.saveButton).click();
-};
-
-export const enableGoogleSSO = () => {
-  common.navigateToManageSSO();
-  cy.get(ssoSelector.google).click();
-  cy.get(ssoSelector.googleEnableToggle).then(($el) => {
-    if (!$el.is(":checked")) {
-      cy.get(ssoSelector.googleEnableToggle).check();
-    }
-  });
-  cy.clearAndType(
-    ssoSelector.clientIdInput,
-    "788411490229-dlonkl1pepnpqt5lvjoqotc5h7lgjqh0.apps.googleusercontent.com"
-  );
-  cy.get(ssoSelector.saveButton).click();
-  cy.get(ssoSelector.saveButton).click();
 };
 
 export const enableSignUp = () => {
@@ -477,7 +296,7 @@ export const invitePageElements = () => {
     "have.text",
     commonText.passwordLabel
   );
-  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
     commonText.acceptInviteButton
@@ -498,12 +317,12 @@ export const invitePageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
-export const updateId = () => {
-  cy.task("updateId", {
+export const dbConnection = () => {
+  cy.task("dbConnection", {
     dbconfig: Cypress.config("db"),
     sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';",
   });
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.config("db"),
     sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
   });
@@ -512,18 +331,18 @@ export const updateId = () => {
 export const setSSOStatus = (workspaceName, ssoType, enabled) => {
   let workspaceId;
 
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
   }).then((resp) => {
     workspaceId = resp.rows[0].id;
 
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `SELECT * FROM sso_configs WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
     }).then((ssoConfigResp) => {
       if (ssoConfigResp.rows.length > 0) {
-        cy.task("updateId", {
+        cy.task("dbConnection", {
           dbconfig: Cypress.env("app_db"),
           sql: `UPDATE sso_configs SET enabled = ${enabled ? "true" : "false"
             } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
@@ -538,7 +357,7 @@ export const defaultSSO = (enable) => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/organizations`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -553,7 +372,7 @@ export const defaultSSO = (enable) => {
 };
 
 export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
   }).then((resp) => {
@@ -562,7 +381,7 @@ export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
         headers: {
           "Tj-Workspace-Id": workspaceId,
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -577,13 +396,13 @@ export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
 
 export const deleteOrganisationSSO = (workspaceName, services) => {
   let workspaceId;
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select id from organizations where name='${workspaceName}';`,
   }).then((resp) => {
     workspaceId = resp.rows[0].id;
 
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `DELETE FROM sso_configs WHERE organization_id = '${workspaceId}' AND sso IN (${services
         .map((service) => `'${service}'`)
@@ -592,13 +411,12 @@ export const deleteOrganisationSSO = (workspaceName, services) => {
   });
 };
 
-
 export const resetDomain = () => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,

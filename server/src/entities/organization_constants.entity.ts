@@ -13,11 +13,7 @@ import {
 
 import { Organization } from './organization.entity';
 import { OrgEnvironmentConstantValue } from './org_environment_constant_values.entity';
-
-export enum OrganizationConstantType {
-  GLOBAL = 'Global',
-  SECRET = 'Secret',
-}
+import { OrganizationConstantType } from '@modules/organization-constants/constants';
 
 @Entity({ name: 'organization_constants' })
 @Unique(['constantName', 'organizationId', 'type'])

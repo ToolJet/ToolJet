@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { AppVersion } from '../src/entities/app_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { isEmpty } from 'lodash';
 
 export class UpdateDefinitionsForGlobalSettings1639038616546 implements MigrationInterface {

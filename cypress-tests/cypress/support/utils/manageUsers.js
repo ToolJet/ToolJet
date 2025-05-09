@@ -1,4 +1,3 @@
-import { path } from "Texts/common";
 import { commonSelectors } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
@@ -7,7 +6,7 @@ import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
-
+const envVar = Cypress.env("environment");
 
 export const manageUsersElements = () => {
   cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
@@ -116,18 +115,27 @@ export const manageUsersElements = () => {
   );
   cy.get(usersSelector.buttonUploadCsvFile).click();
 
-  cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
-    "have.text",
-    usersText.helperTextBulkUpload
-  );
+  if (envVar === "Enterprise") {
+    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
+      "have.text",
+      "Download the template to add user details or format your file in the same way as the template. Files in any other format may not be recognized. "
+    );
+  } else {
+    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
+      "have.text",
+      usersText.helperTextBulkUpload
+    );
+  }
   cy.get(usersSelector.buttonDownloadTemplate).verifyVisibleElement(
     "have.text",
     usersText.buttonDownloadTemplate
   );
+  cy.exec("mkdir -p ./cypress/downloads/");
+  cy.wait(3000);
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
-  cy.wait(3000)
+  cy.wait(3000);
   cy.get(usersSelector.buttonDownloadTemplate).click();
-  cy.wait(4000)
+  cy.wait(4000);
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
@@ -149,24 +157,30 @@ export const manageUsersElements = () => {
   );
 };
 
-export const inviteUser = (firstName, email) => {
-  cy.userInviteApi(firstName, email);
+export const inviteUserToWorkspace = (firstName, email) => {
+  cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(commonSelectors.continueButton).click();
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const confirmInviteElements = (email) => {
-
   cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
-    "have.text", "Sign up");
+    "have.text",
+    "Sign up"
+  );
   cy.get('[data-cy="signup-info"]').verifyVisibleElement(
-    "have.text", "Sign up to the workspace - My workspace. ");
+    "have.text",
+    "Sign up to the workspace - My workspace. "
+  );
 
   // cy.verifyLabel("Email")
   // cy.verifyLabel("Create a password")
   cy.get(commonSelectors.invitedUserEmail).verifyVisibleElement(
-    "have.text", email);
+    "have.text",
+    email
+  );
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -207,19 +221,30 @@ export const userStatus = (email) => {
     });
 };
 
-export const bulkUserUpload = (file, fileName, toastMessage) => {
+export const bulkUserUpload = (
+  file,
+  fileName,
+  toastMessage,
+  isDuplicate = false
+) => {
   cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
     force: true,
   });
   cy.get(usersSelector.uploadedFileData).should("contain", fileName);
   cy.get(usersSelector.buttonUploadUsers).click();
-  cy.get(commonSelectors.newToastMessage)
-    .should("be.visible")
-    .and("have.text", toastMessage);
-  cy.get(usersSelector.toastCloseButton).click();
-  cy.wait(200);
+  if (isDuplicate) {
+    cy.get(commonSelectors.modalMessage)
+      .should("be.visible")
+      .and("have.text", toastMessage);
+    cy.get(usersSelector.modalClose).click();
+  } else {
+    cy.get(commonSelectors.newToastMessage)
+      .should("be.visible")
+      .and("have.text", toastMessage);
+    cy.get(usersSelector.toastCloseButton).click();
+  }
+  cy.wait(1500);
 };
-
 
 export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {
@@ -257,7 +282,7 @@ export const selectUserGroup = (groupName) => {
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 };
 
@@ -279,11 +304,11 @@ export const inviteUserWithUserGroups = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
     cy.wait(1000);
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
@@ -303,53 +328,49 @@ export const inviteUserWithUserGroups = (
 };
 
 export const fetchAndVisitInviteLink = (email) => {
-  let invitationToken,
-    organizationToken,
-    workspaceId,
-    userId,
-    url = "";
+  let invitationToken, organizationToken, workspaceId, userId;
 
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
-  }).then((resp) => {
-    invitationToken = resp.rows[0].invitation_token;
+  })
+    .then((resp) => {
+      invitationToken = resp.rows[0]?.invitation_token;
 
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: "select id from organizations where name='My workspace';",
-    }).then((resp) => {
-      workspaceId = resp.rows[0].id;
+      cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: "select id from organizations where name='My workspace';",
+      });
+    })
+    .then((resp) => {
+      workspaceId = resp.rows[0]?.id;
 
-      cy.task("updateId", {
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
-      }).then((resp) => {
-        userId = resp.rows[0].id;
-
-        cy.task("updateId", {
-          dbconfig: Cypress.env("app_db"),
-          sql: `select invitation_token from organization_users where user_id='${userId}';`,
-        }).then((resp) => {
-          organizationToken = resp.rows[1].invitation_token;
-
-          url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          cy.logoutApi();
-          cy.wait(1000);
-          cy.visit(url);
-        });
       });
+    })
+    .then((resp) => {
+      userId = resp.rows[0]?.id;
+
+      cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select invitation_token from organization_users where user_id='${userId}';`,
+      });
+    })
+    .then((resp) => {
+      organizationToken =
+        resp.rows?.[1]?.invitation_token || resp.rows?.[0]?.invitation_token;
+
+      const url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
+
+      cy.apiLogout();
+      cy.wait(1000);
+      cy.visit(url);
     });
-  });
 };
 
-
-export const inviteUserWithUserRole = (
-  firstName,
-  email,
-  role,
-
-) => {
+export const inviteUserWithUserRole = (firstName, email, role) => {
   fillUserInviteForm(firstName, email);
 
   cy.wait(2000);
@@ -362,7 +383,7 @@ export const inviteUserWithUserRole = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
     cy.wait(1000);
   });
 
@@ -378,4 +399,5 @@ export const inviteUserWithUserRole = (
   cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
 };

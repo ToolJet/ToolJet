@@ -143,6 +143,18 @@ export const imageConfig = {
       },
       accordian: 'Image',
     },
+<<<<<<< HEAD
+=======
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'Image',
+    },
+>>>>>>> main
     backgroundColor: {
       type: 'color',
       displayName: 'Background',
@@ -255,6 +267,10 @@ export const imageConfig = {
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       padding: { value: 'default' },
       customPadding: { value: '{{0}}' },
+<<<<<<< HEAD
+=======
+      alignment: { value: 'center' },
+>>>>>>> main
     },
   },
 };

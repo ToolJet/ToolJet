@@ -18,9 +18,14 @@ import { NumberInput } from '../CodeBuilder/Elements/NumberInput';
 import { Datepicker } from '../CodeBuilder/Elements/Datepicker';
 import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
+<<<<<<< HEAD
+=======
+import { ColorSwatches } from '@/modules/Appbuilder/components';
+>>>>>>> main
 
 const AllElements = {
   Color,
+  ColorSwatches,
   Json,
   Toggle,
   Select,

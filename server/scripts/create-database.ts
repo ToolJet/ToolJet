@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { ExecFileSyncOptions, execFileSync } from 'child_process';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
 import { isEmpty } from 'lodash';
+import { populateSampleData } from './populate-sample-db';
 async function createDatabaseFromFile(envPath: string): Promise<void> {
   const result = dotenv.config({ path: envPath });
 
@@ -38,6 +39,8 @@ async function createDatabase(): Promise<void> {
   } else {
     await createDb(envVars, envVars.PG_DB);
     await createTooljetDb(envVars, envVars.TOOLJET_DB);
+    createSampleDb(envVars, envVars.SAMPLE_DB);
+    populateSampleData(envVars);
   }
 }
 

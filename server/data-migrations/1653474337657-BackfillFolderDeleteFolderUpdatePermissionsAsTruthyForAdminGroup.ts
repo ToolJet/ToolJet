@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { GroupPermission } from '../src/entities/group_permission.entity';
+import { GroupPermission } from '@entities/group_permission.entity';
 
 export class BackfillFolderDeleteFolderUpdatePermissionsAsTruthyForAdminGroup1653474337657
   implements MigrationInterface

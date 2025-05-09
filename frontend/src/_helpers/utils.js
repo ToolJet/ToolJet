@@ -6,11 +6,13 @@ import JSON5 from 'json5';
 import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
+import { workflowExecutionsService } from '@/_services';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -51,8 +53,7 @@ export const verifyConstant = (value, definedConstants = {}, definedSecrets = {}
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
-  console.log('prop', prop);
-  console.log('obj', obj);
+
   for (var i = 0; i < prop.length; i++) {
     if (prop[i].endsWith(']')) {
       const actual_prop = prop[i].split('[')[0];
@@ -131,6 +132,7 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
       );
     } catch (err) {
       error = err;
+      console.log('the erro is', { error, code });
     }
   }
   if (withError) return [result, error];
@@ -228,18 +230,20 @@ export function resolveReferences(
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
-          for (const dynamicVariable of dynamicVariables) {
-            const value = resolveString(
-              dynamicVariable,
-              state,
-              customObjects,
-              reservedKeyword,
-              withError,
-              forPreviewBox
-            );
+          if (dynamicVariables) {
+            for (const dynamicVariable of dynamicVariables) {
+              const value = resolveString(
+                dynamicVariable,
+                state,
+                customObjects,
+                reservedKeyword,
+                withError,
+                forPreviewBox
+              );
 
-            if (typeof value !== 'function') {
-              object = object.replace(dynamicVariable, value);
+              if (typeof value !== 'function') {
+                object = object.replace(dynamicVariable, value);
+              }
             }
           }
         }
@@ -582,6 +586,17 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
+export function constructSearchParams(params = {}) {
+  const searchParams = new URLSearchParams('');
+  if (!_.isEmpty(params)) {
+    Object.keys(params).map((key) => {
+      const value = params[key];
+      value && searchParams.append(key, value);
+    });
+  }
+  return searchParams;
+}
+
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
   const isValidCode = validateMultilineCode(code, true);
@@ -591,6 +606,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
   }
 
   const currentState = getCurrentState();
+
   let result = {},
     error = null;
 
@@ -1107,6 +1123,25 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
+export function getDateDifferenceInDays(date1, date2) {
+  const oneDay = 24 * 60 * 60 * 1000;
+  const utcDate1 = Date.UTC(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate());
+  const utcDate2 = Date.UTC(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate());
+  const timeDiff = Math.abs(utcDate2 - utcDate1);
+  const daysDiff = Math.round(timeDiff / oneDay);
+  return daysDiff;
+}
+
+export function convertDateFormat(dateString) {
+  const date = new Date(dateString);
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  options.timeZone = 'UTC';
+  const formattedDate = date.toLocaleDateString('en-IN', options).replace(/-/g, ' ');
+  return formattedDate;
+}
+
+export const returnDevelopmentEnv = (environments) => environments.find((env) => env.priority === 1);
+
 export const validateName = (
   name,
   nameType,
@@ -1178,6 +1213,7 @@ export const validateName = (
     const reservedPaths = [
       'forgot-password',
       'switch-workspace',
+      'switch-workspace-archived',
       'reset-password',
       'invitations',
       'organization-invitations',
@@ -1235,8 +1271,6 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
   }
 };
 
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
-
 export const deepEqual = (obj1, obj2, excludedKeys = []) => {
   if (obj1 === obj2) {
     return true;
@@ -1270,6 +1304,19 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
   return true;
 };
 
+export const defaultAppEnvironments = [
+  { name: 'development', isDefault: false, priority: 1 },
+  { name: 'staging', isDefault: false, priority: 2 },
+  { name: 'production', isDefault: true, priority: 3 },
+];
+
+export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}, appEnvId) => {
+  const { appId } = useAppDataStore.getState();
+  const currentState = getCurrentState();
+  const resolvedParams = resolveReferences(params, currentState, {}, {});
+  const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
+  return { data: executionResponse.result };
+};
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
@@ -1322,6 +1369,9 @@ export const humanizeifDefaultGroupName = (groupName) => {
       return 'Admin';
     case 'builder':
       return 'Builder';
+
+    case 'All data source':
+      return 'All data sources';
 
     default:
       return groupName;
@@ -1477,3 +1527,8 @@ export const hasBuilderRole = (roleObj) => {
   if (roleObj.name) return roleObj.name === 'builder';
   return false;
 };
+
+export function checkIfToolJetCloud(version) {
+  const parsed = version.split('-');
+  return parsed[1] === 'cloud';
+}

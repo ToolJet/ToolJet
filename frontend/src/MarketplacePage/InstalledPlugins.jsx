@@ -1,19 +1,51 @@
 import React from 'react';
 import cx from 'classnames';
-import { pluginsService } from '@/_services';
+import { pluginsService, marketplaceService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
 import { ConfirmDialog } from '@/_components';
 import Icon from '@/_ui/Icon/SolidIcons';
+<<<<<<< HEAD
+=======
+import config from 'config';
 
-export const InstalledPlugins = ({
-  allPlugins = [],
-  installedPlugins,
-  fetching,
-  fetchPlugins,
-  ENABLE_MARKETPLACE_DEV_MODE,
-}) => {
+export const InstalledPlugins = () => {
+  const [allPlugins, setAllPlugins] = React.useState([]);
+  const [installedPlugins, setInstalledPlugins] = React.useState([]);
+  const [fetching, setFetching] = React.useState(false);
+  const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
+
+  React.useEffect(() => {
+    marketplaceService
+      .findAll()
+      .then(({ data = [] }) => setAllPlugins(data))
+      .catch((error) => {
+        toast.error(error?.message || 'something went wrong');
+      });
+
+    fetchPlugins();
+
+    () => {
+      setAllPlugins([]);
+      setInstalledPlugins([]);
+    };
+  }, []);
+
+  const fetchPlugins = async () => {
+    setFetching(true);
+    const { data, error } = await pluginsService.findAll();
+    setFetching(false);
+
+    if (error) {
+      toast.error(error?.message || 'something went wrong');
+      return;
+    }
+
+    setInstalledPlugins(data);
+  };
+>>>>>>> main
+
   return (
     <div className="col-9 pb-3" style={{ marginLeft: 'auto' }}>
       {fetching && (
@@ -39,7 +71,7 @@ export const InstalledPlugins = ({
           })}
           {!fetching && installedPlugins?.length === 0 && (
             <div className="empty">
-              <p className="empty-title">No results found</p>
+              <p className="empty-title">No plugins added. Please add a plugin from the Marketplace.</p>
             </div>
           )}
         </div>

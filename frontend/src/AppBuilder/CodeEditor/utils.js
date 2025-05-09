@@ -3,12 +3,9 @@ import _, { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '@/AppBuilder/_utils/component-properties-validation';
-import {
-  hasCircularDependency,
-  resolveReferences as olderResolverMethod,
-  removeNestedDoubleCurlyBraces,
-} from '@/_helpers/utils';
+import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
+import { removeNestedDoubleCurlyBraces } from '../_stores/utils';
 
 const acorn = require('acorn');
 
@@ -32,6 +29,17 @@ function traverseAST(node, callback) {
     }
   }
 }
+
+export const isInsideParent = (element, className) => {
+  while (element) {
+    if (element.classList?.contains(className)) {
+      console.log('element.classList', element.classList);
+      return true;
+    }
+    element = element.parentElement;
+  }
+  return false;
+};
 
 function getMethods(type) {
   const arrayMethods = Object.getOwnPropertyNames(Array.prototype).filter(
@@ -230,7 +238,7 @@ const queryHasStringOtherThanVariable = (query) => {
   return false;
 };
 
-export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
+export const resolveReferences = (query, validationSchema, customResolvers = {}, validationFn = undefined) => {
   if (typeof query === 'number') {
     return [true, null, query];
   }
@@ -257,11 +265,15 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     }
   }
 
-  if ((!validationSchema || isEmpty(validationSchema)) && (!query?.includes('{{') || !query?.includes('}}'))) {
+  if (
+    (!validationSchema || isEmpty(validationSchema)) &&
+    (!query?.includes('{{') || !query?.includes('}}')) &&
+    !validationFn
+  ) {
     return [true, error, resolvedValue];
   }
 
-  if (validationSchema && !query?.includes('{{') && !query?.includes('}}')) {
+  if (validationSchema && !validationFn && !query?.includes('{{') && !query?.includes('}}')) {
     const [valid, errors, newValue] = validateComponentProperty(query, validationSchema);
     return [valid, errors, newValue, resolvedValue];
   }
@@ -280,6 +292,10 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
 
   // const lookupTable = { hints: new Map(), resolvedRefs: new Map() };
   // const { lookupTable } = useResolveStore.getState();
+  if (validationFn && !(query.includes('{{') && query.includes('}}'))) {
+    const [valid, errors] = validationFn(query);
+    return [valid, errors, query, query];
+  }
 
   if (useJSResolvers) {
     resolvedValue = resolveMultiDynamicReferences(query, {}, queryHasJSCode, customResolvers);
@@ -293,6 +309,12 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
 
     resolvedValue = resolvedCode;
     error = errorRef || null;
+  }
+
+  if (validationFn) {
+    const val = resolvedValue ? resolvedValue : query;
+    const [valid, errors] = validationFn(val);
+    return [valid, errors, val, val];
   }
 
   if (!validationSchema || isEmpty(validationSchema)) {
@@ -326,6 +348,7 @@ export const FxParamTypeMapping = Object.freeze({
   color: 'Color',
   json: 'Json',
   code: 'Code',
+  colorSwatches: 'ColorSwatches',
   toggle: 'Toggle',
   select: 'Select',
   alignButtons: 'AlignButtons',

@@ -6,6 +6,11 @@ import cx from 'classnames';
 import Label from '@/_ui/Label';
 import DatePickerComponent from 'react-datepicker';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
+<<<<<<< HEAD
+=======
+import { flip, offset } from '@floating-ui/dom';
+
+>>>>>>> main
 const tinycolor = require('tinycolor2');
 
 export const BaseDateComponent = ({
@@ -161,10 +166,15 @@ export const BaseDateComponent = ({
           shouldCloseOnSelect={false}
           popperPlacement="bottom-start"
           popperModifiers={[
+<<<<<<< HEAD
             {
               name: 'flip',
               enabled: false,
             },
+=======
+            flip({ flipAlignment: false, mainAxis: false, crossAxis: false }),
+            offset({ mainAxis: -7 }),
+>>>>>>> main
           ]}
           portalId="component-portal"
           {...componentProps}

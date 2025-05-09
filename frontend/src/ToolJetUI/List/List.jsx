@@ -9,7 +9,7 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 import SortableList from '@/_components/SortableList';
-import { DeprecatedColumnTooltip } from '@/Editor/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
+import { DeprecatedColumnTooltip } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
 import Icons from '@/_ui/Icon/solidIcons/index';
 
 function List({ children, ...restProps }) {

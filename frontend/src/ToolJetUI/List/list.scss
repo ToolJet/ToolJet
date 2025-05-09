@@ -28,6 +28,12 @@
   background-color: unset !important;
 }
 
+.page-group-wrapper{
+  button:focus:not(:focus-visible) {
+    outline: none !important;
+  }
+}
+
 button:focus:not(:focus-visible) {
   // outline: unset !important;
   outline: 1px solid rgba(255, 255, 255, 0.00) !important;
