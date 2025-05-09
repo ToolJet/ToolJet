@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import InputComponent from '@/components/ui/Input/Index';
 
 const InputV3 = ({ helpText, ...props }) => {
-  const { workspaceVariables, workspaceConstants, value, widget, disabled, encrypted } = props;
+  const { workspaceVariables, workspaceConstants, value, widget, disabled, encrypted, onBlur } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -37,6 +37,11 @@ const InputV3 = ({ helpText, ...props }) => {
           <InputComponent
             {...props}
             value={value}
+            onFocus={() => setIsFocused(true)}
+            onBlur={(event) => {
+              setIsFocused(false);
+              onBlur(event);
+            }}
             styles="tw-bg-transparent"
             label={props.label}
             placeholder={props.placeholder}
@@ -49,6 +54,11 @@ const InputV3 = ({ helpText, ...props }) => {
               {...props}
               type="password"
               value={value}
+              onFocus={() => setIsFocused(true)}
+              onBlur={(event) => {
+                setIsFocused(false);
+                onBlur(event);
+              }}
               styles="tw-bg-transparent"
               label={props.label}
               placeholder={props.placeholder}

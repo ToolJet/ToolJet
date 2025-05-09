@@ -320,10 +320,10 @@ const DynamicFormV2 = ({
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
           isGDS: true,
-          workspaceVariables: [],
-          workspaceConstants: [],
           encrypted: isEncrypted,
           onBlur,
+          workspaceVariables,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       }
       case 'password-v3':
@@ -342,8 +342,6 @@ const DynamicFormV2 = ({
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
-          workspaceVariables: [],
-          workspaceConstants: [],
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
@@ -355,6 +353,8 @@ const DynamicFormV2 = ({
             ? { valid: true, message: '' }
             : { valid: null, message: '' }, // handle optional && encrypted fields
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          workspaceVariables,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       }
       case 'react-component-headers': {
