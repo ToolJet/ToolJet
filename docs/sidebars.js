@@ -134,6 +134,53 @@ const sidebars = {
         'app-builder/overview',
         {
           'type': 'category',
+          'label': 'Building the UI',
+          'items': [
+            'app-builder/building-ui/canvas',
+            'app-builder/building-ui/component-library',
+            'app-builder/building-ui/component-properties',
+            'app-builder/building-ui/pages',
+            'app-builder/building-ui/component-state'
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Connecting with Data Sources',
+          'items': [
+            'app-builder/connecting-with-data-sources/creating-managing-queries',
+            'app-builder/connecting-with-data-sources/accessing-query-results',
+            'app-builder/connecting-with-data-sources/transforming-data',
+            'app-builder/connecting-with-data-sources/binding-data-to-components'
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Events and Logic',
+          'items': [
+            'app-builder/import-libraries/runjs',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Writing Custom Code',
+          'items': [
+            'app-builder/custom-code/fx-dynamic-behaviour',
+            'app-builder/custom-code/control-components',
+            'app-builder/custom-code/transform-data',
+            'app-builder/custom-code/managing-variables',
+            'app-builder/custom-code/using-libraries',
+            'app-builder/custom-code/constants-secrets',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Debugging',
+          'items': [
+            'app-builder/import-libraries/runjs',
+          ],
+        },
+        {
+          'type': 'category',
           'label': 'Build Apps',
           'items': [
             'app-builder/walkthrough/create-ui',
@@ -160,12 +207,10 @@ const sidebars = {
               'type': 'category',
               'label': 'Layout Guide',
               'items': [
-                'app-builder/components-library',
                 'app-builder/query-panel',
                 'tutorial/pages',
                 'app-builder/topbar',
                 'app-builder/left-sidebar',
-                'app-builder/canvas',
                 'app-builder/preview',
                 'app-builder/share',
                 'app-builder/customstyles',
