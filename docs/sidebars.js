@@ -139,7 +139,7 @@ const sidebars = {
             'app-builder/building-ui/component-library',
             'app-builder/building-ui/component-properties',
             'app-builder/building-ui/pages',
-            'app-builder/building-ui/component-data'
+            'app-builder/building-ui/component-state'
           ],
         },
         {

@@ -62,7 +62,8 @@ A page can be hidden from the page menu in a released application. Even when hid
 
 ## Event Handlers
 
-ToolJet allows you to run specific actions when a page loads. You can set these actions using event handlers. For example, you can run a query automatically when a page opens.
+Page Event Handler is used to trigger actions automatically when a page loads. It helps set up the page before any user interaction happens. This can include preparing data, setting initial values, or triggering any needed action. <br/>
+For example, it can run a query to fetch the latest data from the database and populate it in a table component. This ensures the page is ready with up-to-date information whenever it is loaded.
 
 ## Exposed Variables
 
