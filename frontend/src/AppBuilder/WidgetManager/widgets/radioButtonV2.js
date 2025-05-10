@@ -286,7 +286,7 @@ export const radiobuttonV2Config = {
       labelWidth: { value: '20' },
       borderColor: { value: '#FFFFFF' },
       switchOffBackgroundColor: { value: '#FFFFFF' },
-      switchOnBackgroundColor: { value: '#4368E3' },
+      switchOnBackgroundColor: { value: 'var(--primary-brand)' },
       handleColor: { value: '#FFFFFF' },
       optionsTextColor: { value: '#11181C' },
       padding: { value: 'default' },

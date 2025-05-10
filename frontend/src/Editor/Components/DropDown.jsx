@@ -4,6 +4,8 @@ import Select, { components } from 'react-select';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
+import { getModifiedColor } from './utils'
+
 export const DropDown = function DropDown({
   height,
   validate,
@@ -199,6 +201,9 @@ export const DropDown = function DropDown({
       height: height,
       boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
+      ':focus-within': {
+        borderColor: 'var(--primary-brand)'
+      }
     }),
     valueContainer: (provided, _state) => ({
       ...provided,
@@ -225,12 +230,14 @@ export const DropDown = function DropDown({
       height: height,
     }),
     option: (provided, state) => {
+       const hoverBgColorValue = getModifiedColor('var(--primary-brand)', 'hover');
+
       const styles = darkMode
         ? {
             color: state.isDisabled ? '#88909698' : 'white',
-            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
+            backgroundColor: state.value === currentValue ? 'var(--primary-brand)' : 'rgb(31,40,55)',
             ':hover': {
-              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#1F2E64' : '#323C4B',
+              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? hoverBgColorValue : '#323C4B',
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
@@ -239,7 +246,7 @@ export const DropDown = function DropDown({
             backgroundColor: state.value === currentValue ? 'var(--primary-brand)' : 'white',
             color: state.isDisabled ? '#88909694' : state.value === currentValue ? 'white' : 'black',
             ':hover': {
-              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#3650AF' : '#d8dce9',
+              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? hoverBgColorValue : '#d8dce9',
             },
             maxWidth: 'auto',
             minWidth: 'max-content',

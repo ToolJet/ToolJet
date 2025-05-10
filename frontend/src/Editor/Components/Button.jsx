@@ -4,6 +4,8 @@ const tinycolor = require('tinycolor2');
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
+import { getModifiedColor } from './utils';
+
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const {
@@ -70,8 +72,8 @@ export const Button = function Button(props) {
         ? 'var(--primary-brand)'
         : 'transparent'
       : type === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -79,8 +81,8 @@ export const Button = function Button(props) {
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
-    '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
-    '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
+    '--tblr-btn-color-darker': getModifiedColor(computedBgColor, 'hover'),
+    '--tblr-btn-color-clicked': getModifiedColor(computedBgColor, 'active'),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
     boxShadow: type == 'primary' && boxShadow,
@@ -164,11 +166,6 @@ export const Button = function Button(props) {
     }
   }, [hovered]);
 
-  const hasCustomBackground = computedBgColor?.charAt() === '#';
-  if (hasCustomBackground) {
-    computedStyles['--tblr-btn-color-darker'] = tinycolor(computedBgColor).darken(8).toString();
-    computedStyles['--tblr-btn-color-clicked'] = tinycolor(computedBgColor).darken(15).toString();
-  }
   const handleClick = () => {
     if (!disable && !loading) {
       const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
@@ -186,11 +183,7 @@ export const Button = function Button(props) {
       disabled={disable || loading}
     >
       <button
-        className={cx('overflow-hidden', {
-          'btn-custom': hasCustomBackground,
-          'jet-button ': type == 'primary',
-          'jet-outline-button ': type == 'outline',
-        })}
+        className={cx('overflow-hidden jet-btn')}
         style={computedStyles}
         onClick={handleClick}
         data-cy={dataCy}
