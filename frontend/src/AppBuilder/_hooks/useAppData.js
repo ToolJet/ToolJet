@@ -451,9 +451,8 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   }, [app.appName]);
 
   useEffect(() => {
-    if (!themeAccess) return;
     const root = document.documentElement;
-    const brandColors = selectedTheme?.definition?.brand?.colors || {};
+    const brandColors = !themeAccess ? baseTheme : selectedTheme?.definition?.brand?.colors || {};
     Object.keys(brandColors).forEach((colorType) => {
       const color = brandColors[colorType][darkMode ? 'dark' : 'light'];
       root.style.setProperty(`--${colorType}-brand`, `${color}`);
