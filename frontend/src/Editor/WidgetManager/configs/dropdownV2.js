@@ -75,6 +75,18 @@ export const dropdownV2Config = {
       accordian: 'Options',
       isFxNotRequired: true,
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear selection button',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    showSearchInput: {
+      type: 'toggle',
+      displayName: 'Show search in options',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -314,6 +326,8 @@ export const dropdownV2Config = {
       optionsLoadingState: { value: '{{false}}' },
       sort: { value: 'asc' },
       placeholder: { value: 'Select an option' },
+      showClearBtn: { value: '{{true}}' },
+      showSearchInput: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },

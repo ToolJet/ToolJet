@@ -1,12 +1,15 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
+import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import { FILTER_OPTIONS } from './filterConstants';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const FilterRow = memo(
-  ({ filter, index, columns, darkMode, onColumnChange, onOperationChange, onValueChange, onRemove }) => {
+  ({ id, filter, index, columns, darkMode, onColumnChange, onOperationChange, onValueChange, onRemove }) => {
     const { t } = useTranslation();
+    const isDragging = useStore((state) => state.draggingComponentId === id);
 
     const selectStyles = (width) => {
       return {
@@ -14,6 +17,10 @@ export const FilterRow = memo(
         menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
         menuList: (base) => ({
           ...base,
+        }),
+        menu: (base) => ({
+          ...base,
+          display: isDragging ? 'none' : 'block',
         }),
       };
     };
@@ -29,11 +36,13 @@ export const FilterRow = memo(
             value={filter.id}
             search={true}
             onChange={(value) => onColumnChange(index, value)}
+            components={{ ValueContainer: CustomValueContainer }}
             placeholder={t('globals.select', 'Select') + '...'}
             className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
             styles={selectStyles('100%')}
             useCustomStyles={true}
             darkMode={darkMode}
+            openMenuOnFocus={true}
           />
         </div>
         <div data-cy={`select-operation-dropdown-${index}`} className="col" style={{ maxWidth: '180px' }}>
@@ -42,11 +51,13 @@ export const FilterRow = memo(
             value={filter.value.condition}
             search={true}
             onChange={(value) => onOperationChange(index, value)}
+            components={{ ValueContainer: CustomValueContainer }}
             className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
             placeholder={t('globals.select', 'Select') + '...'}
             styles={selectStyles('100%')}
             useCustomStyles={true}
             darkMode={darkMode}
+            openMenuOnFocus={true}
           />
         </div>
         <div className="col">
@@ -74,3 +85,15 @@ export const FilterRow = memo(
     );
   }
 );
+
+const CustomValueContainer = (props) => {
+  const handleClick = (e) => {
+    if (props.selectProps?.selectRef?.current) {
+      props.selectProps.selectRef.current.focus();
+    }
+    if (props.innerProps?.onMouseDown) {
+      props.innerProps.onMouseDown(e);
+    }
+  };
+  return <components.ValueContainer {...props} innerProps={{ ...props.innerProps, onMouseDown: handleClick }} />;
+};

@@ -23,6 +23,7 @@ import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue } from '@/Editor/Components/utils';
+import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -202,6 +203,8 @@ const EditorInput = ({
   const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
 
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
+
   const isInsideQueryManager = useMemo(
     () => isInsideParent(wrapperRef?.current, 'query-manager'),
     [wrapperRef.current]
@@ -272,7 +275,10 @@ const EditorInput = ({
     maxRenderedOptions: 10,
   });
 
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
+  const customKeyMaps = [
+    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+    ...completionKeymap,
+  ];
   const customTabKeymap = keymap.of([
     {
       key: 'Tab',
@@ -294,6 +300,7 @@ const EditorInput = ({
         }
       },
     },
+    ...queryPanelKeybindings,
   ]);
 
   const handleOnChange = React.useCallback((val) => {
@@ -443,7 +450,8 @@ const EditorInput = ({
                 bracketMatching: true,
                 foldGutter: false,
                 highlightActiveLine: false,
-                autocompletion: showSuggestions,
+                autocompletion: true,
+                defaultKeymap: false,
                 completionKeymap: true,
                 searchKeymap: false,
               }}

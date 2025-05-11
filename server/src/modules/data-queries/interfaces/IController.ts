@@ -16,8 +16,9 @@ export interface IDataQueriesController {
     dataQueryDto: CreateDataQueryDto
   ): Promise<object>;
 
-  updateDataSource(
+  updateDataQuery(
     user: UserEntity,
+    app: App,
     dataQueryId: string,
     versionId: string,
     updateDataQueryDto: UpdateDataQueryDto
@@ -29,6 +30,7 @@ export interface IDataQueriesController {
 
   runQueryOnBuilder(
     user: UserEntity,
+    app: App,
     dataQueryId: string,
     environmentId: string,
     updateDataQueryDto: UpdateDataQueryDto,
@@ -39,6 +41,7 @@ export interface IDataQueriesController {
 
   runQuery(
     user: UserEntity,
+    app: App,
     dataQueryId: string,
     updateDataQueryDto: UpdateDataQueryDto,
     response: Response

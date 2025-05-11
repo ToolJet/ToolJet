@@ -333,7 +333,7 @@ export class SessionUtilService {
             })
         : null;
 
-      const noWorkspaceAttachedInTheSession = await this.checkUserWorkspaceStatus(user.id);
+      const noWorkspaceAttachedInTheSession = await this.checkUserWorkspaceStatus(user.id) && !isSuperAdmin(user);
       const isAllWorkspacesArchived = await this.#isAllWorkspacesArchivedBySuperAdmin(user.id);
       const onboardingFlags = await this.#onboardingFlags(user);
       const metadata = await this.metadataUtilService.fetchMetadata();

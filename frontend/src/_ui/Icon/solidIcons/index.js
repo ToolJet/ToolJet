@@ -87,6 +87,7 @@ import Pin from './Pin.jsx';
 import Unpin from './Unpin.jsx';
 import AlignRight from './AlignRight';
 import Play from './Play.jsx';
+import Play01 from './Play01.jsx';
 import Plus from './Plus.jsx';
 import Plus01 from './Plus01.jsx';
 import Reload from './Reload.jsx';
@@ -231,6 +232,9 @@ import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
 import Code from './Code.jsx';
+import WorkflowV3 from './WorkflowV3.jsx';
+import WorkspaceV3 from './WorkspaceV3.jsx';
+import Moon from './Moon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -578,6 +582,10 @@ const Icon = (props) => {
       return <Warning {...props} />;
     case 'warning-user-notfound':
       return <WarningUserNotFound {...props} />;
+    case 'workflowv3':
+      return <WorkflowV3 {...props} />;
+    case 'workspacev3':
+      return <WorkspaceV3 {...props} />;
     case 'workspaceconstants':
       return <WorkspaceConstants {...props} />;
     case 'zoomin':
@@ -698,6 +706,10 @@ const Icon = (props) => {
       return <StudentIcon {...props} />;
     case 'ai-crown':
       return <AICrown {...props} />;
+    case 'play01':
+      return <Play01 {...props} />;
+    case 'moon':
+      return <Moon {...props} />;
     default:
       return <Apps {...props} />;
   }

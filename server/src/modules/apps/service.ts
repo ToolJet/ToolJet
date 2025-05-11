@@ -17,15 +17,12 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { APP_TYPES, FEATURE_KEY } from './constants';
+import { FEATURE_KEY } from './constants';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
-import { MODULE_INFO } from '@modules/app/constants/module-info';
-import { MODULES } from '@modules/app/constants/modules';
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
@@ -42,11 +39,12 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class AppsService implements IAppsService {
   constructor(
-    protected readonly eventEmitter: EventEmitter2,
     protected readonly appsUtilService: AppsUtilService,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
@@ -58,7 +56,7 @@ export class AppsService implements IAppsService {
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
     protected readonly aiUtilService: AiUtilService
-  ) {}
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -70,13 +68,12 @@ export class AppsService implements IAppsService {
       appUpdateDto.icon = icon;
       await this.appsUtilService.update(app, appUpdateDto, null, manager);
 
-      this.eventEmitter.emit('auditLogEntry', {
+      // Setting data for audit logs
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
         resourceId: app.id,
-        resourceType: MODULES.APP,
         resourceName: app.name,
-        actionType: MODULE_INFO.APP.CREATE,
       });
 
       return decamelizeKeys(app);
@@ -104,8 +101,8 @@ export class AppsService implements IAppsService {
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
-        ? await this.versionRepository.findByName(versionName, app.id)
-        : // Handle version retrieval based on env
+          ? await this.versionRepository.findByName(versionName, app.id)
+          : // Handle version retrieval based on env
           await this.versionRepository.findLatestVersionForEnvironment(
             app.id,
             envId,
@@ -159,17 +156,15 @@ export class AppsService implements IAppsService {
       //this.appGitUtilService.renameAppOrVersion(user, app.id, prevName);
     }
 
-    this.eventEmitter.emit('auditLogEntry', {
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
       resourceId: app.id,
-      resourceType: MODULES.APP,
       resourceName: app.name,
-      actionType: MODULE_INFO.APP.UPDATE,
       metadata: { updateParams: { app: appUpdateDto } },
     });
-    const response = decamelizeKeys(result);
 
+    const response = decamelizeKeys(result);
     return response;
   }
 
@@ -179,13 +174,11 @@ export class AppsService implements IAppsService {
 
     await this.appRepository.delete({ id, organizationId });
 
-    this.eventEmitter.emit('auditLogEntry', {
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: id,
       organizationId: user.organizationId,
       resourceId: app.id,
-      resourceType: MODULES.APP,
       resourceName: app.name,
-      actionType: MODULE_INFO.APP.DELETE,
     });
   }
 
@@ -351,13 +344,11 @@ export class AppsService implements IAppsService {
     );
 
     if (app?.isPublic && user) {
-      this.eventEmitter.emit('auditLogEntry', {
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
         resourceId: app.id,
-        resourceType: MODULES.APP,
         resourceName: app.name,
-        actionType: MODULE_INFO.APP.GET_BY_SLUG,
       });
     }
 
@@ -405,15 +396,15 @@ export class AppsService implements IAppsService {
       }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
-      this.eventEmitter.emit('auditLogEntry', {
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
         resourceId: app.id,
-        resourceType: MODULES.APP,
         resourceName: app.name,
-        actionType: MODULE_INFO.APP.RELEASE,
         metadata: { data: { name: 'App Released', versionToBeReleased: versionReleaseDto.versionToBeReleased } },
       });
+      return;
     });
   }
 }

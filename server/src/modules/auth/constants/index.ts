@@ -5,38 +5,15 @@ export enum FEATURE_KEY {
   ORGANIZATION_LOGIN = 'organizationLogin', // POST 'authenticate/:organizationId'
 
   // Account Activation and Authorization
-  ACTIVATE_ACCOUNT = 'activateAccount', // POST 'activate-account-with-token'
   AUTHORIZE = 'authorize', // GET 'authorize'
   SWITCH_WORKSPACE = 'switchWorkspace', // GET 'switch/:organizationId'
 
   // Setup and Signup
   SETUP_ADMIN = 'setupAdmin', // POST 'setup-admin'
-  SETUP_SUPER_ADMIN = 'setupSuperAdmin', // POST 'setup-super-admin'
-  SIGNUP = 'signup', // POST 'signup'
-  ACCEPT_INVITE = 'acceptInvite', // POST 'accept-invite'
-  RESEND_INVITE = 'resendInvite', // POST 'resend-invite'
-  VERIFY_INVITE_TOKEN = 'verifyInviteToken', // GET 'verify-invite-token'
-  VERIFY_ORGANIZATION_TOKEN = 'verifyOrganizationToken', // GET 'verify-organization-token'
-  SETUP_ACCOUNT_FROM_TOKEN = 'setupAccountFromToken', // POST 'setup-account-from-token'
-
-  // Trial and Onboarding
-  REQUEST_TRIAL = 'requestTrial', // GET 'request-trial'
-  ACTIVATE_TRIAL = 'activateTrial', // POST 'activate-trial'
-  GET_ONBOARDING_SESSION = 'getOnboardingSession', // GET 'onboarding-session'
-  GET_SIGNUP_ONBOARDING_SESSION = 'getSignupOnboardingSession', // GET 'signup-onboarding-session'
-  FINISH_ONBOARDING = 'finishOnboarding', // POST 'finish-onboarding'
-  TRIAL_DECLINED = 'trialDeclined', // GET 'trial-declined'
 
   // Password Management
   FORGOT_PASSWORD = 'forgotPassword', // POST 'forgot-password'
   RESET_PASSWORD = 'resetPassword', // POST 'reset-password'
-
-  // Invitee Details
-  GET_INVITEE_DETAILS = 'getInviteeDetails', // GET 'invitee-details'
-
-  // Health Check
-  HEALTH_CHECK = 'healthCheck', // GET ['/health', '/api/health']
-  ROOT_PAGE = 'rootPage', // GET '/'
 
   // Oauth
   OAUTH_SIGN_IN = '/oauth/sign-in/:configId',
