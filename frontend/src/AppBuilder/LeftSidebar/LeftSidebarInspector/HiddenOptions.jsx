@@ -54,7 +54,7 @@ export const HiddenOptions = (props) => {
                   dispatchAction(data);
                 }}
               >
-                <img src={src ?? `assets/images/icons/${iconName}.svg`} width={width} height={height} />
+                <SolidIcon name={iconName} fill="var(--icon-strong)" width={width} height={height} />
               </span>
             </ToolTip>
           </div>
@@ -89,7 +89,7 @@ export const HiddenOptions = (props) => {
                   }}
                   className="option"
                 >
-                  <SolidIcon width="12" height="12" name="copy" />
+                  <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
                   <span> Copy path</span>
                 </div>
                 <div
@@ -100,7 +100,7 @@ export const HiddenOptions = (props) => {
                   }}
                   className="option"
                 >
-                  <DefaultCopyIcon />
+                  <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
                   <span> Copy value</span>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export const HiddenOptions = (props) => {
             ...(showMenu && { backgroundColor: 'var(--button-outline-pressed, rgba(136, 144, 153, 0.18)' }),
           }}
         >
-          <SolidIcon fill="#6A727C" width="12" height="12" name="copy" />
+          <SolidIcon fill="var(--icon-strong)" width="12" height="12" name="copy" />
         </div>
       </OverlayTrigger>
     </div>

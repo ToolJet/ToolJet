@@ -18938,7 +18938,7 @@ section.ai-message-prompt-input-wrapper {
 .node-expansion-icon {
   width:20px;
   height:20px;
-  margin-right: 2px;
+  margin-right: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18977,7 +18977,6 @@ section.ai-message-prompt-input-wrapper {
 .node-content {
   display: flex;
   align-items: center;
-  padding: 0px 0px 0px 8px;
   height: 100%;
   width: 100%;
 
@@ -19090,7 +19089,6 @@ section.ai-message-prompt-input-wrapper {
   height: 20px;
   width: 20px;
   border-radius: 4px;
-  margin-right:4px;
   flex-shrink: 0;
 
   &:hover {
@@ -19118,7 +19116,7 @@ section.ai-message-prompt-input-wrapper {
 .copy-menu-options{
     width: 144px;
     border: none;
-    background: transparent;
+    background-color: var(--background-surface-layer-01);
     border-radius: 10px;
     top: -5px !important;
     &.dark-theme {

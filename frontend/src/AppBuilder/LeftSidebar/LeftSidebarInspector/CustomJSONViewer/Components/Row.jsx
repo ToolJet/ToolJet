@@ -82,7 +82,7 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
                 }}
                 className="json-viewer-action-icon"
               >
-                <SolidIcon width="12" height="12" name="copy" />
+                <SolidIcon width="12" height="12" name="copy" fill="#6A727C" />
               </span>
             </ToolTip>
           </div>

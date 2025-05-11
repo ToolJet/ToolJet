@@ -55,7 +55,7 @@ export const TreeViewHeader = (props) => {
             }}
             className="option"
           >
-            <SolidIcon width="12" height="12" name="copy" />
+            <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
             <span> Copy path</span>
           </div>
           <div
@@ -66,13 +66,13 @@ export const TreeViewHeader = (props) => {
             }}
             className="option"
           >
-            <DefaultCopyIcon />
+            <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
             <span> Copy value</span>
           </div>
         </div>
 
         {nodeSpecificActions?.map((actionOption, index) => {
-          const { name, icon, src, iconName, dispatchAction, width = 12, height = 12 } = actionOption;
+          const { name, icon, src, iconName, dispatchAction, width = 16, height = 16 } = actionOption;
           if (icon) {
             return (
               <div className="menu-options mb-0" key={`${name}-${index}`}>
@@ -85,7 +85,7 @@ export const TreeViewHeader = (props) => {
                   }}
                   className="option"
                 >
-                  <img src={src ?? `assets/images/icons/${iconName}.svg`} width={width} height={height} />
+                  <SolidIcon name={iconName} fill="var(--icon-weak)" width={width} height={height} />
                   {name}
                 </span>
               </div>
@@ -141,7 +141,7 @@ export const TreeViewHeader = (props) => {
             boxShadow: 'none',
           }}
         >
-          <SolidIcon data-cy={'menu-icon'} name="morevertical" width="18" fill={'#6A727C'} />
+          <SolidIcon data-cy={'menu-icon'} name="morevertical" width="18" fill={'var(--icon-strong)'} />
         </div>
       </OverlayTrigger>
     </div>

@@ -100,6 +100,8 @@ export const Node = (props) => {
         alignItems: 'center',
         color: level === 1 ? 'var(--text-placeholder, #6A727C)' : 'var(--text-default, #1B1F24)',
         fontWeight: level === 1 ? 500 : 400,
+        marginTop: level === 1 ? 4 : 0,
+        marginBottom: level === 1 ? 4 : 0,
         // borderLeft: level > 1 ? '1px solid var(--slate6, #D7DBDF)' : 'none',
       }}
     >
@@ -136,12 +138,13 @@ export const Node = (props) => {
             />
           </OverflowTooltip>
         </div>
-        <div className="node-actions" style={{ marginRight: 12 + nodeSpecificFilteredActions.length * 12 }}>
+        <div className="node-actions" style={{ marginRight: 10 + nodeSpecificFilteredActions.length * 10 }}>
           <HiddenOptions
             nodeSpecificFilteredActions={nodeSpecificFilteredActions}
             generalActionsFiltered={generalActionsFiltered}
             setActionClicked={setActionClicked}
             data={data}
+            darkMode={darkMode}
           />
         </div>
       </div>
