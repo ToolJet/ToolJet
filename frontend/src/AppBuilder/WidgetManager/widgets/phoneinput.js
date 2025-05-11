@@ -151,7 +151,7 @@ export const phoneinputConfig = {
     accentColor: {
       type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--primary-brand)' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
     textColor: {
@@ -272,7 +272,7 @@ export const phoneinputConfig = {
     styles: {
       textColor: { value: '#1B1F24' },
       borderColor: { value: '#CCD1D5' },
-      accentColor: { value: 'var(--primary-brand)' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: '#D72D39' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: '#fff' },

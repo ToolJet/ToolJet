@@ -270,7 +270,7 @@ export const modalV2Config = {
       headerBackgroundColor: { value: '#ffffffff' },
       footerBackgroundColor: { value: '#ffffffff' },
       bodyBackgroundColor: { value: '#ffffffff' },
-      triggerButtonBackgroundColor: { value: 'var(--primary-brand)' },
+      triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
   },

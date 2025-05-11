@@ -129,7 +129,7 @@
 
     .react-datepicker__day--selected {
         border-radius: 8px;
-        background-color: var(--primary-brand) !important;
+        background-color: var(--cc-primary-brand) !important;
         color: var(--surfaces-surface-01) !important
     }
 
@@ -151,7 +151,7 @@
     }
 
     .react-datepicker__day--today {
-        border: 1px solid var(--primary-brand);
+        border: 1px solid var(--cc-primary-brand);
         border-radius: 8px;
         background-color: var(--surfaces-surface-01);
     }

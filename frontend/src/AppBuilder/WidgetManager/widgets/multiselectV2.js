@@ -399,7 +399,7 @@ export const multiselectV2Config = {
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       iconColor: { value: '#6A727C' },
-      accentColor: { value: 'var(--primary-brand)' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
     },
   },
 };

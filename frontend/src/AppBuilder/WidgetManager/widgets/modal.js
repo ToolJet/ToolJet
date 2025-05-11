@@ -175,7 +175,7 @@ export const modalConfig = {
       bodyBackgroundColor: { value: '#ffffffff' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
-      triggerButtonBackgroundColor: { value: 'var(--primary-brand)' },
+      triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
   },

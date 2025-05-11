@@ -197,7 +197,7 @@ export const checkboxConfig = {
     styles: {
       disabledState: { value: '{{false}}' },
       textColor: { value: '#1B1F24' },
-      checkboxColor: { value: 'var(--primary-brand)' },
+      checkboxColor: { value: 'var(--cc-primary-brand)' },
       uncheckedColor: { value: '#E4E7EB' },
       borderColor: { value: '#CCD1D5' },
       handleColor: { value: '#FFFFFF' },

@@ -117,7 +117,7 @@ const CustomDatePickerHeader = (props) => {
           }}
         >
           {isSelected && (
-            <CheckMark fill="transparent" fillIcon={'var(--primary-brand)'} className="datepicker-select-check" />
+            <CheckMark fill="transparent" fillIcon={'var(--cc-primary-brand)'} className="datepicker-select-check" />
           )}
           <span style={{ marginLeft: '10px', color: darkMode ? '#fff' : '#000' }}>{data.label}</span>
         </div>

@@ -202,7 +202,7 @@ export const DropDown = function DropDown({
       boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
       ':focus-within': {
-        borderColor: 'var(--primary-brand)'
+        borderColor: 'var(--cc-primary-brand)'
       }
     }),
     valueContainer: (provided, _state) => ({
@@ -230,12 +230,12 @@ export const DropDown = function DropDown({
       height: height,
     }),
     option: (provided, state) => {
-       const hoverBgColorValue = getModifiedColor('var(--primary-brand)', 'hover');
+       const hoverBgColorValue = getModifiedColor('var(--cc-primary-brand)', 'hover');
 
       const styles = darkMode
         ? {
             color: state.isDisabled ? '#88909698' : 'white',
-            backgroundColor: state.value === currentValue ? 'var(--primary-brand)' : 'rgb(31,40,55)',
+            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'rgb(31,40,55)',
             ':hover': {
               backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? hoverBgColorValue : '#323C4B',
             },
@@ -243,7 +243,7 @@ export const DropDown = function DropDown({
             minWidth: 'max-content',
           }
         : {
-            backgroundColor: state.value === currentValue ? 'var(--primary-brand)' : 'white',
+            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'white',
             color: state.isDisabled ? '#88909694' : state.value === currentValue ? 'white' : 'black',
             ':hover': {
               backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? hoverBgColorValue : '#d8dce9',

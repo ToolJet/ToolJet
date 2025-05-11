@@ -64,12 +64,12 @@ export const Button = function Button(props) {
   const computedTextColor =
     '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--text-primary)') : textColor;
   const computedLoaderColor =
-    '#FFFFFF' === loaderColor ? (type === 'primary' ? loaderColor : 'var(--primary-brand)') : loaderColor;
+    '#FFFFFF' === loaderColor ? (type === 'primary' ? loaderColor : 'var(--cc-primary-brand)') : loaderColor;
 
   const computedBgColor =
     '#4368E3' === backgroundColor
       ? type === 'primary'
-        ? 'var(--primary-brand)'
+        ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
         ? backgroundColor

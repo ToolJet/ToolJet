@@ -20,7 +20,7 @@ const CustomOption = (props) => {
       <div className="cursor-pointer">
         {props.isSelected && (
           <span style={{ maxHeight: '20px', marginRight: '8px', marginLeft: '-28px' }}>
-            <CheckMark width={'20'} fill={'var(--primary-brand)'} />
+            <CheckMark width={'20'} fill={'var(--cc-primary-brand)'} />
           </span>
         )}
         <span style={{ color: props.isDisabled ? '#889096' : 'unset', wordBreak: 'break-all' }}>

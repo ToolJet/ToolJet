@@ -478,10 +478,16 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
 
   useEffect(() => {
     const root = document.documentElement;
-    const brandColors = !themeAccess ? baseTheme : selectedTheme?.definition?.brand?.colors || {};
-    Object.keys(brandColors).forEach((colorType) => {
-      const color = brandColors[colorType][darkMode ? 'dark' : 'light'];
-      root.style.setProperty(`--${colorType}-brand`, `${color}`);
+    const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
+    Object.keys(themeObj).forEach((category) => {
+      const categoryObj = themeObj[category];
+      Object.keys(categoryObj).forEach((property) => {
+        const propertyObj = categoryObj[property];
+        Object.keys(propertyObj).forEach((type) => {
+          const color = propertyObj[type][darkMode ? 'dark' : 'light'];
+          root.style.setProperty(`--cc-${type}-${category}`, `${color}`);
+        });
+      });
     });
   }, [darkMode, selectedTheme, themeAccess]);
 

@@ -279,7 +279,7 @@ export const datetimePickerV2Config = {
     accentColor: {
       type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--primary-brand)' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
     selectedTextColor: {
@@ -392,7 +392,7 @@ export const datetimePickerV2Config = {
       auto: { value: '{{true}}' },
       fieldBackgroundColor: { value: '#fff' },
       fieldBorderColor: { value: '#CCD1D5' },
-      accentColor: { value: 'var(--primary-brand)' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
       selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
       icon: { value: 'IconCalendarTime' },

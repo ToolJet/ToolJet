@@ -71,7 +71,7 @@ export const treeSelectConfig = {
     events: [],
     styles: {
       textColor: { value: '' },
-      checkboxColor: { value: 'var(--primary-brand)' },
+      checkboxColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },

@@ -195,7 +195,7 @@ export const toggleSwitchV2Config = {
     events: [],
     styles: {
       textColor: { value: '#1B1F24' },
-      toggleSwitchColor: { value: 'var(--primary-brand)' }, //keeping same key for backward comopatibility
+      toggleSwitchColor: { value: 'var(--cc-primary-brand)' }, //keeping same key for backward comopatibility
       uncheckedColor: { value: '#E4E7EB' },
       borderColor: { value: '#E4E7EB' },
       handleColor: { value: '#FFFFFF' },

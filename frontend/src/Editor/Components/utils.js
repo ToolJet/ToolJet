@@ -1,7 +1,7 @@
 import tinycolor from 'tinycolor2';
 
 function extractCssVarName(cssVarExpression) {
-  // Ex: var(--primary-brand) -> --primary-brand
+  // Ex: var(--cc-primary-brand) -> --primary-brand
   const match = cssVarExpression.match(/var\(\s*(--[^,\s)]+)\s*(?:,[^)]+)?\)/);
   return match ? match[1] : null;
 }
@@ -21,7 +21,7 @@ const defaultModificationAmountMappingByState = {
 };
 
 export function getModifiedColor(color, stateOrModificationAmount, options = { element: document.documentElement }) {
-  // color: Can be value directly like #000000 or rgb or hsl or var(--primary-brand)
+  // color: Can be value directly like #000000 or rgb or hsl or var(--cc-primary-brand)
   // stateOrModificationAmount: Any value from defaultModificationAmountMappingByState or a number between 0 to 100 (defaultValue 0)
   // options: For now you can pass the element from which you will grab the CSS Variable Expression Value, you can extend as per need
 

@@ -1654,7 +1654,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: var(--primary-brand);
+      background-color: var(--cc-primary-brand);
     }
   }
 }
@@ -2475,32 +2475,32 @@ body {
 .CalendarDay__selected,
 .CalendarDay__selected:active,
 .CalendarDay__selected:hover {
-  background: var(--primary-brand);
-  border: 1px double var(--primary-brand);
+  background: var(--cc-primary-brand);
+  border: 1px double var(--cc-primary-brand);
 }
 
 .CalendarDay__selected_span {
-  background: var(--primary-brand);
-  border: var(--primary-brand);
+  background: var(--cc-primary-brand);
+  border: var(--cc-primary-brand);
 }
 
 .CalendarDay__selected_span:active,
 .CalendarDay__selected_span:hover {
-  background: var(--primary-brand);
-  border: 1px double var(--primary-brand);
+  background: var(--cc-primary-brand);
+  border: 1px double var(--cc-primary-brand);
   color: #ffffff;
 }
 
 .CalendarDay__hovered_span:active,
 .CalendarDay__hovered_span:hover {
-  background: var(--primary-brand);
-  border: 1px double var(--primary-brand);
+  background: var(--cc-primary-brand);
+  border: 1px double var(--cc-primary-brand);
   color: #ffffff;
 }
 
 .CalendarDay__hovered_span {
-  background: var(--primary-brand);
-  border: 1px double var(--primary-brand);
+  background: var(--cc-primary-brand);
+  border: 1px double var(--cc-primary-brand);
   color: #ffffff;
 }
 
@@ -3777,7 +3777,7 @@ input[type="text"] {
   }
 
   .rmsc {
-    --rmsc-main: var(--primary-brand);
+    --rmsc-main: var(--cc-primary-brand);
     height: 100%;
     border-radius: inherit;
   }
@@ -3856,7 +3856,7 @@ input[type="text"] {
   }
 
   .react-datepicker__day--selected {
-    background-color: var(--primary-brand);
+    background-color: var(--cc-primary-brand);
   }
 }
 
@@ -4109,7 +4109,7 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
-    background-color: var(--primary-brand) !important;
+    background-color: var(--cc-primary-brand) !important;
     border: transparent
   }
 
@@ -16252,7 +16252,7 @@ fieldset:disabled {
 }
 
 .pdf-retry-button {
-  background-color: var(--primary-brand);
+  background-color: var(--cc-primary-brand);
   color: var(--text-on-solid);
   width: 100px;
   border-radius: 6px;
@@ -16454,7 +16454,7 @@ fieldset:disabled {
     }
 
     .react-datepicker__year-text--selected {
-        background-color: var(--primary-brand) !important;
+        background-color: var(--cc-primary-brand) !important;
         height:24px;
         width:61.33px;
         border-radius: 8px;
@@ -16499,7 +16499,7 @@ fieldset:disabled {
     }
 
     .react-datepicker__month-text--selected {
-      background-color: var(--primary-brand) !important;
+      background-color: var(--cc-primary-brand) !important;
       height:24px;
       width:61.33px;
       border-radius: 8px;
@@ -16598,7 +16598,7 @@ fieldset:disabled {
   }
 
   .selected-time {
-    background-color: var(--primary-brand) !important;
+    background-color: var(--cc-primary-brand) !important;
     border-radius: 6px;
     color:#fff;
   }
@@ -17088,7 +17088,7 @@ section.ai-message-prompt-input-wrapper {
 
   .react-datepicker__day--selecting-range-start, .react-datepicker__day--selected, .react-datepicker__day--range-end {
     border-radius:8px !important;
-    background-color: var(--primary-brand) !important;
+    background-color: var(--cc-primary-brand) !important;
     color: #fff !important;
   }
 
@@ -17247,7 +17247,7 @@ section.ai-message-prompt-input-wrapper {
 
   .react-datepicker__month-text--selecting-range-start, .react-datepicker__month-text--selected, .react-datepicker__month-text--range-end {
     border-radius:8px !important;
-    background-color: var(--primary-brand) !important;
+    background-color: var(--cc-primary-brand) !important;
     color: #fff !important;
   }
 
@@ -17355,7 +17355,7 @@ section.ai-message-prompt-input-wrapper {
 
   .react-datepicker__year-text--selecting-range-start, .react-datepicker__year-text--selected, .react-datepicker__year-text--range-end {
     border-radius:8px !important;
-    background-color: var(--primary-brand) !important;
+    background-color: var(--cc-primary-brand) !important;
     color: #fff !important;
   }
 
@@ -18645,6 +18645,7 @@ section.ai-message-prompt-input-wrapper {
   width: 100%;
   height: 48px;
   padding: 8px;
+  border-bottom: 1px solid var(--border-weak, #E4E7EB);
 
 
   .codebuilder-color-swatches {
@@ -18716,32 +18717,32 @@ section.ai-message-prompt-input-wrapper {
 
 
 .textarea-widget:focus {
-  border-color: var(--primary-brand);
+  border-color: var(--cc-primary-brand);
 }
 
 .multiselct-widget-option{
   input:checked {
-    background-color: var(--primary-brand);
+    background-color: var(--cc-primary-brand);
   }
 }
 
 .multiselect-box {
   .options{
     input:checked {
-      background-color: var(--primary-brand);
+      background-color: var(--cc-primary-brand);
     }
   }
 }
 
 .timer-btn {
-  background-color: var(--primary-brand);
+  background-color: var(--cc-primary-brand);
   &:hover {
-    background-color: var(--primary-brand);
+    background-color: var(--cc-primary-brand);
   }
 }
 
 .timer-btn-hover:hover {
-  background-color: var(--primary-brand);
+  background-color: var(--cc-primary-brand);
 }
 
 .canvas-styles-header {
@@ -18887,5 +18888,11 @@ section.ai-message-prompt-input-wrapper {
 .single-line-codehinter-input {
   .cm-editor {
     max-height: 100px !important;
+  }
+}
+
+.table-cell {
+  input[type="checkbox"]{
+    accent-color: var(--cc-primary-brand);
   }
 }

@@ -36,7 +36,7 @@ export const circularProgressbarConfig = {
       displayName: 'colorSwatches',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     textColor: {
@@ -104,7 +104,7 @@ export const circularProgressbarConfig = {
     },
     events: [],
     styles: {
-      color: { value: 'var(--primary-brand)' },
+      color: { value: 'var(--cc-primary-brand)' },
       textColor: { value: '' },
       textSize: { value: '{{16}}' },
       strokeWidth: { value: '{{8}}' },

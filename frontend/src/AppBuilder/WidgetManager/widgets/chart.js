@@ -45,7 +45,7 @@ export const chartConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     showAxes: {
@@ -192,7 +192,7 @@ export const chartConfig = {
     },
     properties: {
       title: { value: 'This title can be changed' },
-      markerColor: { value: 'var(--primary-brand)' },
+      markerColor: { value: 'var(--cc-primary-brand)' },
       showAxes: { value: '{{true}}' },
       showGridLines: { value: '{{true}}' },
       plotFromJson: { value: '{{false}}' },
