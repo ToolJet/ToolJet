@@ -7,9 +7,11 @@ sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-u
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm install 18.18.2
+nvm install 22.15.0
 sudo ln -s "$(which node)" /usr/bin/node
 sudo ln -s "$(which npm)" /usr/bin/npm
+
+sudo npm i -g npm@10.9.2
 
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
@@ -56,10 +58,10 @@ envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx-substituted.conf
 sudo cp /tmp/nginx-substituted.conf /usr/local/openresty/nginx/conf/nginx.conf
 
 # Download and setup postgrest binary
-curl -OL https://github.com/PostgREST/postgrest/releases/download/v10.1.1/postgrest-v10.1.1-linux-static-x64.tar.xz
-tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
+curl -OL https://github.com/PostgREST/postgrest/releases/download/v12.2.0/postgrest-v12.2.0-linux-static-x64.tar.xz
+tar xJf postgrest-v12.2.0-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
-sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
+sudo rm postgrest-v12.2.0-linux-static-x64.tar.xz
 
 # Setup app and postgrest as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
@@ -74,7 +76,7 @@ mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
 sudo chmod +x ~/app/setup_app
 
-npm install -g npm@9.8.1
+npm install -g npm@10.9.2
 
 # Building ToolJet app
 npm install -g @nestjs/cli

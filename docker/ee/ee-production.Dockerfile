@@ -1,9 +1,9 @@
-FROM node:18.18.2-buster AS builder
+FROM node:22.15.0 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@9.8.1
+RUN npm i -g npm@10.9.2
 RUN mkdir -p /app
 # RUN npm cache clean --force
 
@@ -97,12 +97,12 @@ exec /bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"\n\
     chmod +x /bin/postgrest
 
 
-RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
-    && tar -xf node-v18.18.2-linux-x64.tar.xz \
-    && mv node-v18.18.2-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.15.0/node-v22.15.0-linux-x64.tar.xz \
+    && tar -xf node-v22.15.0-linux-x64.tar.xz \
+    && mv node-v22.15.0-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v18.18.2-linux-x64.tar.xz
+    && rm node-v22.15.0-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
@@ -205,6 +205,9 @@ RUN mkdir -p /var/lib/postgrest /var/log/postgrest /etc/postgrest \
     && chmod -R g=u /var/lib/postgrest /var/log/postgrest /etc/postgrest
 
 ENV HOME=/home/appuser
+
+# Installing git for simple git commands
+RUN apt-get update && apt-get install -y git && apt-get clean
 
 # Switch back to appuser
 USER appuser
