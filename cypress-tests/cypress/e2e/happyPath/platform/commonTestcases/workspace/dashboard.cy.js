@@ -54,16 +54,12 @@ describe("dashboard", () => {
     cy.visit(`${data.workspaceSlug}`);
 
     cy.wait(2000);
-    cy.get(commonSelectors.appCard(data.appName))
-      .parent()
-      .within(() => {
-        cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
-        cy.get(commonSelectors.appTitle(data.appName)).verifyVisibleElement(
-          "have.text",
-          data.appName
-        );
-        cy.get(commonSelectors.appCreationDetails).should("be.visible");
-      });
+    cy.get(commonSelectors.appCreationDetails).should("be.visible");
+    cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
+    cy.get(commonSelectors.appTitle(data.appName)).verifyVisibleElement(
+      "have.text",
+      data.appName
+    );
 
     viewAppCardOptions(data.appName);
     cy.get(
