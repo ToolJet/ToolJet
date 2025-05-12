@@ -9,7 +9,7 @@ WORKDIR /app
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
 
-# Clone and checkout the frontend repository
+# Clone and checkout the frontend repositorys
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
