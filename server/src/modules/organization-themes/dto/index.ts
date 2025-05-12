@@ -33,12 +33,12 @@ class TextColors {
   @IsOptional()
   @ValidateNested()
   @Type(() => Color)
-  secondary?: Color;
+  placeholder?: Color;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => Color)
-  tertiary?: Color;
+  disabled?: Color;
 }
 
 class Text {
@@ -64,17 +64,17 @@ class BorderRadius {
 class BorderColors {
   @ValidateNested()
   @Type(() => Color)
-  primary: Color;
+  default: Color;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => Color)
-  secondary?: Color;
+  weak?: Color;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => Color)
-  tertiary?: Color;
+  disabled?: Color;
 }
 
 class Border {
@@ -90,17 +90,17 @@ class Border {
 class SystemStatusColors {
   @ValidateNested()
   @Type(() => Color)
-  primary: Color;
+  success: Color;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => Color)
-  secondary?: Color;
+  error?: Color;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => Color)
-  tertiary?: Color;
+  warning?: Color;
 }
 
 class SystemStatus {
