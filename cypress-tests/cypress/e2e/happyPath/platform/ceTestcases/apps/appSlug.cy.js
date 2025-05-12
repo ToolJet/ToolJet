@@ -27,20 +27,21 @@ describe("App Slug", () => {
   });
 
   it("Verify app slug cases in global settings", () => {
-    cy.apiLogin();
     const workspaceId = Cypress.env("workspaceId");
     const appId = Cypress.env("appId");
-    const appUrl = `/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`;
+    const appUrl = `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`;
 
-    cy.visit("/my-workspace");
-    cy.wait(1000);
-
+    cy.apiLogin();
     cy.skipWalkthrough();
+
     cy.visit(appUrl);
     cy.wait(3000);
+    cy.url().should("eq", appUrl);
+
     cy.url().then((url) => {
       if (url !== appUrl) {
         cy.visit(appUrl);
+        cy.wait(3000);
       }
     });
 
