@@ -127,7 +127,7 @@ export const dropdownV2Config = {
     labelColor: {
       type: 'colorSwatches',
       displayName: 'Color',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
     alignment: {
@@ -179,13 +179,13 @@ export const dropdownV2Config = {
     fieldBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
     fieldBorderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
       accordian: 'field',
     },
     accentColor: {
@@ -197,13 +197,13 @@ export const dropdownV2Config = {
     selectedTextColor: {
       type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     icon: {
@@ -335,14 +335,14 @@ export const dropdownV2Config = {
     },
     events: [],
     styles: {
-      labelColor: { value: '#1B1F24' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       labelWidth: { value: '33' },
       auto: { value: '{{true}}' },
       fieldBorderRadius: { value: '6' },
-      selectedTextColor: { value: '#1B1F24' },
-      fieldBorderColor: { value: '#CCD1D5' },
-      errTextColor: { value: '#D72D39' },
-      fieldBackgroundColor: { value: '#fff' },
+      selectedTextColor: { value: 'var(--cc-primary-text)' },
+      fieldBorderColor: { value: 'var(--cc-default-border)' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
+      fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
       padding: { value: 'default' },

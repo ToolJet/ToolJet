@@ -2318,8 +2318,8 @@ body {
 }
 
 .RichEditor-root {
-  background: #ffffff;
-  border: 1px solid #ddd;
+  background: var(--cc-surface1-surface);
+  border: 1px solid var(--cc-default-border);
   font-family: "Georgia", serif;
   font-size: 14px;
   padding: 15px;
@@ -2339,9 +2339,25 @@ body {
   padding: 15px;
 }
 
+.RichEditor-controls {
+  .dropmenu {
+    .dropdownbtn {
+      color: var(--cc-placeholder-text);
+      &:hover {
+        color: var(--cc-primary-brand);
+      }
+    }
+
+    .dropdown-content {
+      color : var(--cc-placeholder-text);
+    }
+  }
+}
+
 .RichEditor-editor .public-DraftEditor-content {
   min-height: 100px;
   overflow-y: scroll;
+  color: var(--cc-primary-text);
 }
 
 .RichEditor-hidePlaceholder .public-DraftEditorPlaceholder-root {
@@ -2417,7 +2433,7 @@ body {
 
 .dropmenu:hover {
   .dropdownbtn {
-    color: #5890ff;
+    color: var(--cc-primary-brand);
     background-color: rgba(0, 0, 0, 0.05);
     border-radius: 4px;
   }
@@ -3415,7 +3431,7 @@ input:focus-visible {
 
   .RichEditor-root {
     background: #1f2936;
-    border: 1px solid #2f3c4c;
+    border: 1px solid var(--cc-default-border);
   }
 
   .app-description {
@@ -16211,7 +16227,7 @@ div.ds-svg-container img {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: var(--surfaces-surface-01) !important;
+  background-color: var(--cc-surface1-surface) !important;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 
@@ -16223,7 +16239,14 @@ div.ds-svg-container img {
     background: transparent;
     color: var(--slate12);
     gap: 16px;
+    color: var(--cc-primary-text);
+
+    input::placeholder {
+      color: var(--cc-placeholder-text);
+    }
+    
   }
+  
 }
 
 .mb-0 {

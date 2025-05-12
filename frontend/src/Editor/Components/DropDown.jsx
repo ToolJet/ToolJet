@@ -4,7 +4,7 @@ import Select, { components } from 'react-select';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
-import { getModifiedColor } from './utils'
+import { getModifiedColor } from './utils';
 
 export const DropDown = function DropDown({
   height,
@@ -196,20 +196,22 @@ export const DropDown = function DropDown({
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
-      background: darkMode ? 'rgb(31,40,55)' : 'white',
+      background: 'var(--cc-surface1-surface)',
       minHeight: height,
       height: height,
       boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
       ':focus-within': {
-        borderColor: 'var(--cc-primary-brand)'
-      }
+        borderColor: 'var(--cc-primary-brand)',
+      },
+      border: '1px solid var(--cc-default-border)',
     }),
     valueContainer: (provided, _state) => ({
       ...provided,
       height: height,
       padding: '0 6px',
       justifyContent,
+      color: 'var(--cc-primary-text)',
     }),
 
     singleValue: (provided, _state) => ({
@@ -230,23 +232,41 @@ export const DropDown = function DropDown({
       height: height,
     }),
     option: (provided, state) => {
-       const hoverBgColorValue = getModifiedColor('var(--cc-primary-brand)', 'hover');
+      const hoverBgColorValue = getModifiedColor('var(--cc-primary-brand)', 'hover');
 
       const styles = darkMode
         ? {
-            color: state.isDisabled ? '#88909698' : 'white',
-            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'rgb(31,40,55)',
+            color: state.isDisabled ? 'var(--cc-disabled-text)' : 'white',
+            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
             ':hover': {
-              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? hoverBgColorValue : '#323C4B',
+              backgroundColor: state.isDisabled
+                ? 'transparent'
+                : state.value === currentValue
+                ? hoverBgColorValue
+                : getModifiedColor(
+                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                    'hover'
+                  ),
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
           }
         : {
-            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'white',
-            color: state.isDisabled ? '#88909694' : state.value === currentValue ? 'white' : 'black',
+            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+            color: state.isDisabled
+              ? 'var(--cc-disabled-text)'
+              : state.value === currentValue
+              ? 'white'
+              : 'var(--cc-primary-text)',
             ':hover': {
-              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? hoverBgColorValue : '#d8dce9',
+              backgroundColor: state.isDisabled
+                ? 'transparent'
+                : state.value === currentValue
+                ? hoverBgColorValue
+                : getModifiedColor(
+                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                    'hover'
+                  ),
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
@@ -263,7 +283,7 @@ export const DropDown = function DropDown({
     },
     menu: (provided, _state) => ({
       ...provided,
-      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+      backgroundColor: 'var(--cc-surface1-surface)',
     }),
   };
 
@@ -279,7 +299,10 @@ export const DropDown = function DropDown({
         data-cy={dataCy}
       >
         <div className="col-auto my-auto">
-          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
+          <label
+            style={{ marginRight: label !== '' ? '1rem' : '0.001rem', color: 'var(--cc-primary-text)' }}
+            className="form-label py-0 my-0"
+          >
             {label}
           </label>
         </div>
