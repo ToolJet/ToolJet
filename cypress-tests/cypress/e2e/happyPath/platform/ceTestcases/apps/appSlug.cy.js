@@ -35,15 +35,12 @@ describe("App Slug", () => {
     cy.skipWalkthrough();
 
     cy.visit(appUrl);
-    cy.wait(3000);
-    cy.url().should("eq", appUrl);
-
     cy.url().then((url) => {
       if (url !== appUrl) {
         cy.visit(appUrl);
-        cy.wait(3000);
       }
     });
+    cy.url().should("eq", appUrl);
 
     cy.wait(1000);
 
