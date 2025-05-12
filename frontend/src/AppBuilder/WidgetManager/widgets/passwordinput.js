@@ -162,7 +162,7 @@ export const passinputConfig = {
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     icon: {
@@ -279,7 +279,7 @@ export const passinputConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
-      errTextColor: { value: '#D72D39' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
       textColor: { value: 'var(--cc-primary-text)' },
       iconColor: { value: '#CFD3D859' },
       direction: { value: 'left' },

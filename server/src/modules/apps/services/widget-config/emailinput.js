@@ -158,7 +158,7 @@ export const emailinputConfig = {
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     icon: {
@@ -274,7 +274,7 @@ export const emailinputConfig = {
       textColor: { value: 'var(--cc-primary-text)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
-      errTextColor: { value: '#D72D39' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       iconColor: { value: '#CCD1D5' },

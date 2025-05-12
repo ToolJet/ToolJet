@@ -15811,7 +15811,7 @@ textarea.tj-text-input-widget{
   }
 
   &.is-invalid {
-    border: 1px solid var(--status-error-strong) !important; // For example, a red border for invalid input
+    border: 1px solid var(--cc-error-systemStatus) !important; // For example, a red border for invalid input
   }
 
   &:focus {

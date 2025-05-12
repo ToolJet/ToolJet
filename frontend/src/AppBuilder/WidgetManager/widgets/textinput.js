@@ -158,7 +158,7 @@ export const textinputConfig = {
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     icon: {
@@ -284,10 +284,10 @@ export const textinputConfig = {
       textColor: { value: 'var(--cc-primary-text)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
-      errTextColor: { value: '#D72D39' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      iconColor: { value: '#CFD3D859' },
+      iconColor: { value: 'var(--cc-placeholder-text)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
