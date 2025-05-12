@@ -44,133 +44,6 @@ describe("dashboard", () => {
     cy.visit(`${data.workspaceSlug}`);
   });
 
-  it("should verify the elements on empty dashboard", () => {
-    cy.intercept("GET", "/api/metadata", {
-      body: {
-        installed_version: "2.9.2",
-        version_ignored: false,
-      },
-    }).as("version");
-
-    cy.get(commonSelectors.homePageLogo).should("be.visible");
-    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-      "have.text",
-      data.workspaceName
-    );
-    cy.get(commonSelectors.workspaceName).click();
-    // cy.get(commonSelectors.editRectangleIcon).should("be.visible");
-    cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
-      "have.text",
-      "Create an app"
-    );
-    cy.get(dashboardSelector.folderLabel).should("be.visible");
-    cy.get(dashboardSelector.folderLabel).should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq("Folders");
-    });
-    cy.get(commonSelectors.createNewFolderButton).should("be.visible");
-    cy.get(commonSelectors.allApplicationLink).verifyVisibleElement(
-      "have.text",
-      commonText.allApplicationsLink
-    );
-
-    cy.get(commonSelectors.notificationsIcon).should("be.visible").click();
-    cy.get(commonSelectors.notificationsCard).should("be.visible");
-    cy.get(commonSelectors.notificationsCardTitle).verifyVisibleElement(
-      "have.text",
-      commonText.notificationsCardTitle
-    );
-    cy.get(commonSelectors.emptyNotificationIcon).should("be.visible");
-    cy.get(commonSelectors.emptyNotificationTitle).verifyVisibleElement(
-      "have.text",
-      commonText.emptyNotificationTitle
-    );
-    cy.get(commonSelectors.emptyNotificationSubtitle)
-      .should("be.visible")
-      .and(($el) => {
-        expect($el.contents().first().text().trim()).to.eq(
-          commonText.emptyNotificationSubtitle
-        );
-      });
-    cy.get(commonSelectors.notificationsCardFooter).verifyVisibleElement(
-      "have.text",
-      commonText.viewReadNotifications
-    );
-
-    cy.get(dashboardSelector.modeToggle).should("be.visible").click();
-    cy.get(commonSelectors.mainWrapper)
-      .should("have.attr", "class")
-      .and("contain", "theme-dark");
-    cy.get(dashboardSelector.modeToggle).click();
-    cy.get(dashboardSelector.homePageContent)
-      .should("have.attr", "class")
-      .and("contain", "bg-light-gray");
-
-    cy.wait(500);
-    cy.get(commonSelectors.settingsIcon).click();
-    cy.get(commonSelectors.marketplaceOption).verifyVisibleElement(
-      "have.text",
-      "Marketplace"
-    );
-    cy.get(commonSelectors.workspaceSettings).verifyVisibleElement(
-      "have.text",
-      "Workspace settings"
-    );
-    cy.get(commonSelectors.profileSettings).verifyVisibleElement(
-      "have.text",
-      "Profile settings"
-    );
-    cy.get(commonSelectors.logoutLink).verifyVisibleElement(
-      "have.text",
-      commonText.logoutLink
-    );
-
-    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq(
-        commonText.breadcrumbApplications
-      );
-    });
-    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-      "have.text",
-      dashboardText.dashboardAppsHeaderLabel
-    );
-
-    cy.get(dashboardSelector.versionLabel).verifyVisibleElement(
-      "have.text",
-      "Version 2.9.2"
-    );
-    cy.get(dashboardSelector.emptyPageImage).should("be.visible");
-    cy.get(dashboardSelector.emptyPageHeader).verifyVisibleElement(
-      "have.text",
-      dashboardText.emptyPageHeader
-    );
-    cy.get(dashboardSelector.emptyPageDescription).verifyVisibleElement(
-      "have.text",
-      dashboardText.emptyPageDescription
-    );
-    cy.get(dashboardSelector.dashboardAppCreateButton).verifyVisibleElement(
-      "have.text",
-      dashboardText.createAppButton
-    );
-    cy.get(dashboardSelector.importAppButton).should("be.visible");
-    cy.get(dashboardSelector.importAppButton)
-      .invoke("text")
-      .then((text) => {
-        expect(text.trim()).equal(dashboardText.importAppButton);
-      });
-
-    cy.get(dashboardSelector.appTemplateRow).should("be.visible");
-    cy.reload();
-    verifyTooltip(commonSelectors.dashboardIcon, "Apps");
-    verifyTooltip(commonSelectors.databaseIcon, "ToolJet Database");
-    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
-    verifyTooltip(
-      commonSelectors.workspaceConstantsIcon,
-      "Workspace constants"
-    );
-    verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
-    verifyTooltip(dashboardSelector.modeToggle, "Mode");
-  });
-
   it("Should verify app card elements and app card operations", () => {
     const customLayout = {
       desktop: { top: 100, left: 20 },
@@ -331,6 +204,133 @@ describe("dashboard", () => {
 
     cy.deleteApp(data.appName);
     verifyAppDelete(data.appName);
+  });
+
+  it("should verify the elements on empty dashboard", () => {
+    cy.intercept("GET", "/api/metadata", {
+      body: {
+        installed_version: "2.9.2",
+        version_ignored: false,
+      },
+    }).as("version");
+
+    cy.get(commonSelectors.homePageLogo).should("be.visible");
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+      "have.text",
+      data.workspaceName
+    );
+    cy.get(commonSelectors.workspaceName).click();
+    // cy.get(commonSelectors.editRectangleIcon).should("be.visible");
+    cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
+      "have.text",
+      "Create an app"
+    );
+    cy.get(dashboardSelector.folderLabel).should("be.visible");
+    cy.get(dashboardSelector.folderLabel).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq("Folders");
+    });
+    cy.get(commonSelectors.createNewFolderButton).should("be.visible");
+    cy.get(commonSelectors.allApplicationLink).verifyVisibleElement(
+      "have.text",
+      commonText.allApplicationsLink
+    );
+
+    cy.get(commonSelectors.notificationsIcon).should("be.visible").click();
+    cy.get(commonSelectors.notificationsCard).should("be.visible");
+    cy.get(commonSelectors.notificationsCardTitle).verifyVisibleElement(
+      "have.text",
+      commonText.notificationsCardTitle
+    );
+    cy.get(commonSelectors.emptyNotificationIcon).should("be.visible");
+    cy.get(commonSelectors.emptyNotificationTitle).verifyVisibleElement(
+      "have.text",
+      commonText.emptyNotificationTitle
+    );
+    cy.get(commonSelectors.emptyNotificationSubtitle)
+      .should("be.visible")
+      .and(($el) => {
+        expect($el.contents().first().text().trim()).to.eq(
+          commonText.emptyNotificationSubtitle
+        );
+      });
+    cy.get(commonSelectors.notificationsCardFooter).verifyVisibleElement(
+      "have.text",
+      commonText.viewReadNotifications
+    );
+
+    cy.get(dashboardSelector.modeToggle).should("be.visible").click();
+    cy.get(commonSelectors.mainWrapper)
+      .should("have.attr", "class")
+      .and("contain", "theme-dark");
+    cy.get(dashboardSelector.modeToggle).click();
+    cy.get(dashboardSelector.homePageContent)
+      .should("have.attr", "class")
+      .and("contain", "bg-light-gray");
+
+    cy.wait(500);
+    cy.get(commonSelectors.settingsIcon).click();
+    cy.get(commonSelectors.marketplaceOption).verifyVisibleElement(
+      "have.text",
+      "Marketplace"
+    );
+    cy.get(commonSelectors.workspaceSettings).verifyVisibleElement(
+      "have.text",
+      "Workspace settings"
+    );
+    cy.get(commonSelectors.profileSettings).verifyVisibleElement(
+      "have.text",
+      "Profile settings"
+    );
+    cy.get(commonSelectors.logoutLink).verifyVisibleElement(
+      "have.text",
+      commonText.logoutLink
+    );
+
+    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq(
+        commonText.breadcrumbApplications
+      );
+    });
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+      "have.text",
+      dashboardText.dashboardAppsHeaderLabel
+    );
+
+    cy.get(dashboardSelector.versionLabel).verifyVisibleElement(
+      "have.text",
+      "Version 2.9.2"
+    );
+    cy.get(dashboardSelector.emptyPageImage).should("be.visible");
+    cy.get(dashboardSelector.emptyPageHeader).verifyVisibleElement(
+      "have.text",
+      dashboardText.emptyPageHeader
+    );
+    cy.get(dashboardSelector.emptyPageDescription).verifyVisibleElement(
+      "have.text",
+      dashboardText.emptyPageDescription
+    );
+    cy.get(dashboardSelector.dashboardAppCreateButton).verifyVisibleElement(
+      "have.text",
+      dashboardText.createAppButton
+    );
+    cy.get(dashboardSelector.importAppButton).should("be.visible");
+    cy.get(dashboardSelector.importAppButton)
+      .invoke("text")
+      .then((text) => {
+        expect(text.trim()).equal(dashboardText.importAppButton);
+      });
+
+    cy.get(dashboardSelector.appTemplateRow).should("be.visible");
+    cy.reload();
+    verifyTooltip(commonSelectors.dashboardIcon, "Apps");
+    verifyTooltip(commonSelectors.databaseIcon, "ToolJet Database");
+    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
+    verifyTooltip(
+      commonSelectors.workspaceConstantsIcon,
+      "Workspace constants"
+    );
+    verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
+    verifyTooltip(dashboardSelector.modeToggle, "Mode");
   });
 
   it("Should verify the app CRUD operation", () => {
