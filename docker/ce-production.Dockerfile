@@ -34,7 +34,7 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli 
 RUN npm --prefix server run build
 
-FROM debian:11
+FROM debian:12
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
