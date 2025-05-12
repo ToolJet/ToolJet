@@ -375,3 +375,7 @@
         min-height: 250px;
     }
 }
+
+.modal-base .modal-footer .action-btn-page-permission svg path {
+    fill: var(--indigo1) !important;
+}

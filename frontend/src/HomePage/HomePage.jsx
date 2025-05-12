@@ -116,6 +116,8 @@ class HomePageComponent extends React.Component {
       shouldAutoImportPlugin: false,
       dependentPlugins: [],
       dependentPluginsDetail: {},
+      showMissingGroupsModal: false,
+      missingGroups: [],
     };
   }
 
@@ -356,17 +358,24 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  importFile = async (importJSON, appName) => {
+  importFile = async (importJSON, appName, skipPagePermissionsGroupCheck = false) => {
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = this.state.currentUser?.organization_id;
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
-      importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
+      importJSON = {
+        app: [{ definition: importJSON, appName: appName }],
+        tooljet_version: importJSON.tooljetVersion,
+      };
     } else {
       importJSON.app[0].appName = appName;
     }
-    const requestBody = { organization_id, ...importJSON };
+    const requestBody = {
+      organization_id,
+      ...importJSON,
+      skip_page_permissions_group_check: skipPagePermissionsGroupCheck,
+    };
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
@@ -388,6 +397,10 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${getWorkspaceId()}/database`);
       }
     } catch (error) {
+      if (error?.error?.type === 'permission-check') {
+        this.setState({ showMissingGroupsModal: true, missingGroups: error?.error?.data });
+        return;
+      }
       if (installedPluginsInfo.length) {
         const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
         await pluginsService.uninstallPlugins(pluginsId);
@@ -888,6 +901,8 @@ class HomePageComponent extends React.Component {
       showGroupMigrationBanner,
       dependentPlugins,
       dependentPluginsDetail,
+      showMissingGroupsModal,
+      missingGroups,
     } = this.state;
     const modalConfigs = {
       create: {
@@ -953,6 +968,29 @@ class HomePageComponent extends React.Component {
             configs={modalConfigs}
             onCommitChange={this.handleCommitChange}
           />
+          <ModalBase
+            title={'Missing groups in workspace'}
+            handleConfirm={() => this.importFile(fileContent, fileName, true)}
+            show={showMissingGroupsModal}
+            isLoading={importingApp}
+            handleClose={() => this.setState({ showMissingGroupsModal: false })}
+            confirmBtnProps={{
+              title: 'Import',
+              tooltipMessage: '',
+            }}
+            darkMode={this.props.darkMode}
+          >
+            <p className="tj-text-sm">
+              The following group permissions are missing for page permissions. Are you sure you want to continue?
+            </p>
+            <div className="item-list">
+              {missingGroups.map((item, index) => (
+                <div key={index}>
+                  <span className="tj-text-sm">{`${index + 1}. ${item}`}</span>
+                </div>
+              ))}
+            </div>
+          </ModalBase>
           {showRenameAppModal && (
             <AppModal
               show={() => this.setState({ showRenameAppModal: true })}
