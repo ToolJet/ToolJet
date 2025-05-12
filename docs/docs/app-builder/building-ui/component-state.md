@@ -3,17 +3,19 @@ id: component-state
 title: Accessing Components State
 ---
 
-Each component holds some data, which can be used to build dynamic and interactive applications. For example, you can dynamically fetch data of a particular candidate from the database when a user enters the candidate name in the input field.
+Each component in ToolJet maintains a state — a collection of values that represent its current data and configuration. This state can be accessed through exposed variables, which allow components to interact with other parts of the application. For example, the value entered into a text input component can be passed to a query to dynamically fetch data from the database.
 
-This data is stored in the form of exposed variables. Each component has a different set of exposed variables based on its functionality — for example, an input field exposes a value, a table exposes a selectedRow, and so on. For detailed information on any specific component and its exposed variables, refer to the [individual component guide](#).
+Each component has a different set of exposed variables based on its functionality — for example, a table component exposes `selectedRow`, a checkbox exposes `isChecked`, and so on. For detailed information on any specific component and its exposed variables, refer to the [individual component](#) guide.
 
-The exposed variables from components can be used:
-- Inside queries — to send user inputs or values as parameters.
-- Inside other components — to dynamically display values, or interact with the component.
+Component state can be accessed and used across the app to build interactive and reactive experiences:
+- In queries — to send user inputs or component values as parameters.
+    <img style={{ marginTop:'15px' }} className="screenshot-full img-l" src="/img/app-builder/access-comp-data/query-eg.png" alt="App Builder: Properties Panel"/>
+- In other components — to conditionally display, update, or interact with components. <br/>
+    ***Add Screenshot***
 
 ## Available Component States
 
-In the App Builder, you can view all available component states (exposed variables and their current values) using the Inspector located in the left sidebar. For more details, refer to the [Inspector](#) guide.
+In the App Builder, you can view all available component states using the Inspector located in the left sidebar. For more details, refer to the [Inspector](#) guide.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/app-builder/access-comp-data/inspector.png" alt="App Builder: Properties Panel"/>
 
@@ -21,7 +23,7 @@ In the App Builder, you can view all available component states (exposed variabl
 - Select the component you want to inspect.
 - A secondary dropdown will appear showing all the available states.
 
-You can also copy the value or copy the path of the state, that can be used to access the value from other component or query. When you will hover over a state, you will be able to see two icons, which can be used to copy the path or the value.
+You can also copy the value or the path of a state, which can be used to access it from another component or query. When you hover over a state in the Inspector, two icons appear — one for copying the path and one for copying the value.
 
 <img className="screenshot-full img-s" style={{ marginBottom:'15px' }} src="/img/app-builder/access-comp-data/comp-inspect.png" alt="App Builder: Properties Panel"/>
 
