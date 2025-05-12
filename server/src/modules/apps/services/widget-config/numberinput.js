@@ -74,7 +74,7 @@ export const numberinputConfig = {
     color: {
       type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
     alignment: {
@@ -126,13 +126,13 @@ export const numberinputConfig = {
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
       accordian: 'field',
     },
     accentColor: {
@@ -144,7 +144,7 @@ export const numberinputConfig = {
     textColor: {
       type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
     errTextColor: {
@@ -277,12 +277,12 @@ export const numberinputConfig = {
     events: [],
     styles: {
       borderRadius: { value: '{{6}}' },
-      backgroundColor: { value: '#fff' },
-      borderColor: { value: '#CCD1D5' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: '#D72D39' },
-      textColor: { value: '#1B1F24' },
-      color: { value: '#1B1F24' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      color: { value: 'var(--cc-primary-text)' },
       iconColor: { value: '#CFD3D859' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },

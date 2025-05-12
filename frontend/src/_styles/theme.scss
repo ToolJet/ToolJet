@@ -18905,6 +18905,7 @@ section.ai-message-prompt-input-wrapper {
 
   input:disabled {
     background-color: var(--cc-surface3-surface) !important;
+    border-color: var(--cc-disabled-border) !important;
   }
 }
 
