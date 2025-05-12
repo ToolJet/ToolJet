@@ -18896,3 +18896,16 @@ section.ai-message-prompt-input-wrapper {
     accent-color: var(--cc-primary-brand);
   }
 }
+
+
+.canvas-component {
+  input::placeholder {
+    color: var(--cc-placeholder-text) !important;
+  }
+
+  input:disabled {
+    background-color: var(--cc-surface3-surface) !important;
+  }
+}
+
+
