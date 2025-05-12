@@ -3,6 +3,9 @@ id: create-queries
 title: Create Queries
 ---
 
+Dummy 1 PR
+
+
 The Query Panel at the bottom of the app-builder enables the creation and management of queries for interacting with connected data sources. This includes performing API requests, querying databases, and applying transformations or data manipulations using JavaScript and Python.
 
 The Query Panel consists of two sections:
