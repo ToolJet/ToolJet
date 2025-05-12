@@ -18899,14 +18899,16 @@ section.ai-message-prompt-input-wrapper {
 
 
 .canvas-component {
-  input::placeholder {
+  input::placeholder, textarea::placeholder {
     color: var(--cc-placeholder-text) !important;
   }
 
-  input:disabled {
+  input:disabled, textarea:disabled {
     background-color: var(--cc-surface3-surface) !important;
     border-color: var(--cc-disabled-border) !important;
   }
+
+ 
 }
 
 

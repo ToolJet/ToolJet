@@ -82,7 +82,7 @@ export const textareaConfig = {
     color: {
       type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
     alignment: {
@@ -134,13 +134,13 @@ export const textareaConfig = {
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
       accordian: 'field',
     },
     accentColor: {
@@ -152,7 +152,7 @@ export const textareaConfig = {
     textColor: {
       type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
     errTextColor: {
@@ -281,17 +281,17 @@ export const textareaConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#1B1F24' },
-      borderColor: { value: '#CCD1D5' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: '#D72D39' },
       borderRadius: { value: '{{6}}' },
-      backgroundColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       iconColor: { value: '#CFD3D859' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
-      color: { value: '#1B1F24' },
+      color: { value: 'var(--cc-primary-text)' },
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
