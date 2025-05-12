@@ -19,10 +19,14 @@ export class PagePermissionsRepository extends Repository<PagePermission> {
       });
 
       return pagePermissions.map((permission) => {
-        return {
-          ...permission,
-          users: permission.users,
-        };
+        if (permission.type === PAGE_PERMISSION_TYPE.GROUP) {
+          return {
+            ...permission,
+            groups: permission.users,
+            users: undefined,
+          };
+        }
+        return permission;
       });
     }, manager || this.manager);
   }
