@@ -1,30 +1,13 @@
 import { commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
-import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
-import {
-  manageUsersElements,
-  fillUserInviteForm,
-  confirmInviteElements,
-  selectUserGroup,
-  inviteUserWithUserGroups,
-  inviteUserWithUserRole,
-  fetchAndVisitInviteLink,
-  inviteUserWithUserRoleAndMetadata,
-} from "Support/utils/manageUsers";
-import { commonText } from "Texts/common";
-import { visitWorkspaceInvitation, addNewUser } from "Support/utils/onboarding";
-
+import { inviteUserWithUserRoleAndMetadata } from "Support/utils/manageUsers";
 import {
   navigateToManageUsers,
   logout,
-  searchUser,
-  navigateToManageGroups,
 } from "Support/utils/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
 import { onboardingSelectors } from "Selectors/onboarding";
+
 describe("User Metadata and Validation", () => {
   const name = "Test User";
   const email = `testuser+${Date.now()}@example.com`;
@@ -33,19 +16,10 @@ describe("User Metadata and Validation", () => {
     value: "QA",
   };
   const data = {};
+
   beforeEach(() => {
-    // data = {
-    //   workspaceName: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
-    //   workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
-    //   appName: `${fake.companyName}-IE-App`,
-    //   appReName: `${fake.companyName}-${fake.companyName}-IE-App`,
-    //   dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
-    // };
     cy.apiLogin();
     cy.visit("/");
-    cy.get(commonSelectors.settingsIcon).click();
-    cy.get(commonSelectors.workspaceSettings).click();
-
   });
 
   it("should invite user with metadata and validate values", () => {
@@ -53,46 +27,123 @@ describe("User Metadata and Validation", () => {
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     navigateToManageUsers();
     inviteUserWithUserRoleAndMetadata("test", email, "admin");
+
+    cy.createApp(`app-${Date.now()}`);
+    cy.reload();
+
+    cy.get(commonWidgetSelector.inspectorIcon).click();
+    cy.get(commonWidgetSelector.constantInspectorIcon).click({ force: true });
+    cy.wait(1000);
+    cy.get(commonWidgetSelector.inspectornodeglobals)
+      .scrollIntoView()
+      .find('.node-key')
+      .click({ force: true });
+
+    cy.get('[data-cy="inspector-node-currentuser"]')
+      .parents('.json-node-element')
+      .find('.json-tree-node-icon')
+      .click({ force: true });
+
+    cy.get(commonWidgetSelector.inspectorNodeMetadata)
+      .parents('.json-node-element')
+      .find('.json-tree-node-icon')
+      .click({ force: true });
+
+    cy.get(commonWidgetSelector.inspectorNodeMetadata).parent().invoke('text').then(console.log);
+
+    cy.skipEditorPopover();
+    cy.dragAndDropWidget("Text Input", 200, 200);
+
+    cy.get(
+      commonWidgetSelector.defaultValueInputField
+    ).clearAndTypeOnCodeMirror(
+      "{{globals.currentUser.metadata.test}}"
+    );
+    cy.forceClickOnCanvas();
+
+    cy.get(commonWidgetSelector.draggableWidgetTextInput).should(
+      "have.value",
+      "abcd"
+    );
+
+    // edit metadata and verify
+
+    cy.apiLogin();
+    cy.visit("/");
+    navigateToManageUsers();
+
+    cy.contains('td', email)
+      .parents('tr')
+      .within(() => {
+        cy.get(usersSelector.userActionButton).click();
+      });
+    cy.get(usersSelector.editUserDetailsButton).click();
+
+
+    cy.get(commonWidgetSelector.iconHidden).eq(0).click();
+    cy.get('[placeholder="Value"]')
+      .first()
+      .clear().type('test2');
+    cy.get(commonWidgetSelector.buttoninviteusers).click();
+
+    logout();
+
+    cy.get(commonWidgetSelector.emailInput).type(email)
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+    cy.get(commonWidgetSelector.signInButton).click();
+    cy.wait(2000);
+    cy.get(commonWidgetSelector.dashboardIcon).click();
+    cy.createApp(`app-${Date.now()}`);
+    cy.reload();
+
+    cy.get(commonWidgetSelector.inspectorIcon).click();
+    cy.get(commonWidgetSelector.constantInspectorIcon).click({ force: true });
+    cy.wait(500);
+    cy.get(commonWidgetSelector.inspectornodeglobals)
+      .scrollIntoView()
+      .find('.node-key')
+      .click({ force: true });
+
+    cy.get(commonWidgetSelector.inspectorNodeCurrentUser)
+      .parents('.json-node-element')
+      .find('.json-tree-node-icon')
+      .click({ force: true });
+
+    cy.get(commonWidgetSelector.inspectorNodeMetadata)
+      .parents('.json-node-element')
+      .find('.json-tree-node-icon')
+      .click({ force: true });
+
+    cy.get(commonWidgetSelector.inspectorNodeMetadata).parent().invoke('text').then(console.log);
+
+    cy.skipEditorPopover();
+    cy.dragAndDropWidget("Text Input", 200, 200);
+
+    cy.get(
+      commonWidgetSelector.defaultValueInputField
+    ).clearAndTypeOnCodeMirror(
+      "{{globals.currentUser.metadata.test}}"
+    );
+    cy.forceClickOnCanvas();
+    cy.get(commonWidgetSelector.draggableWidgetTextInput).should(
+      "have.value",
+      "test2"
+    );
+
+    // delete metadata and verify
+    cy.visit("/");
+
+    navigateToManageUsers();
+
+    cy.contains('td', email)
+      .parents('tr')
+      .within(() => {
+        cy.get(usersSelector.userActionButton).click();
+      });
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get('button.delete-field-option').eq(0).click();
+    cy.get(commonWidgetSelector.buttoninviteusers).click();
+
   });
-
-
-  // it.only("should invite user with metadata and validate values", () => {
-  //   cy.pause();
-  //   cy.addUserWithMetadata(name, email, metadata);
-  //   cy.searchUser(email);
-  //   cy.get(commonSelectors.userRow(email)).should("be.visible");
-
-  //   Object.entries(metadata).forEach(([key, value]) => {
-  //     const isSensitive = ["phone", "ssn"].includes(key);
-  //     if (isSensitive) {
-  //       cy.get(commonSelectors.userMetadataCell(email, key)).should("contain", "••••");
-  //       cy.pinInspector();
-  //       cy.get(commonSelectors.inspectorMetadataField(key)).should("contain", value);
-  //     } else {
-  //       cy.get(commonSelectors.userMetadataCell(email, key)).should("contain", value);
-  //     }
-  //   });
-  // });
-
-  //   it("should allow editing of user metadata", () => {
-  //     const updates = { department: "Product", role: "Developer" };
-  //     cy.editUserMetadata(email, updates);
-
-  //     Object.entries(updates).forEach(([key, value]) => {
-  //       cy.get(commonSelectors.userMetadataCell(email, key)).should("contain", value);
-  //     });
-  //   });
-
-  //   it("should validate tooltip masking for sensitive metadata", () => {
-  //     cy.get(commonSelectors.userMetadataCell(email, "ssn")).then(($el) => {
-  //       cy.verifyTooltip($el, "Sensitive data. Hover to view.");
-  //     });
-  //   });
-
-  //   it("should handle pagination and locate user", () => {
-  //     cy.navigateToManageUsers();
-  //     cy.manageUsersPagination(email);
-  //     cy.get(commonSelectors.userRow(email)).should("be.visible");
-  //   });
 });
 

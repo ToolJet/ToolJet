@@ -187,6 +187,10 @@ export const commonSelectors = {
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
   saveButton: '[data-cy="save-button"]',
   appEditButton: '[data-cy="edit-button"]',
+  globalsSection: '[data-cy="inspector-node-globals"] .node-key',
+  currentUserTab: '[data-cy="inspector-node-current-user"] .node-key',
+  metadataTab: '[data-cy="inspector-node-metadata"] .node-key',
+  defaultValueLabel: '[data-cy="default-value-widget-parameter-label"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },
@@ -413,4 +417,20 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+  iconHidden: '[data-cy="icon-hidden"]',
+  inspectornodeglobals: '[data-cy="inspector-node-globals"]',
+  inspectorNodeCurrentUser: '[data-cy="inspector-node-currentuser"]',
+  inspectorNodeMetadata: '[data-cy="inspector-node-metadata"]',
+  defaultValueInputField: '[data-cy="default-value-input-field"]',
+  draggableWidgetTextInput: '[data-cy="draggable-widget-textinput1"]',
+  buttoninviteusers: '[data-cy="button-invite-users"]',
+  emailInput: '[data-cy="email-input"]',
+  signInButton: '[data-cy="sign-in-button"]',
+  dashboardIcon: '[data-cy="icon-dashboard"]',
+  inspectorNodeCurrentuser: '[data-cy="inspector-node-currentuser"]',
+
+
+
+
+
 };
