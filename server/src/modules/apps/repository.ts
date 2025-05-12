@@ -63,4 +63,10 @@ export class AppsRepository extends Repository<App> {
       },
     });
   }
+
+  async findByAppId(appId: string): Promise<App> {
+    return this.findOne({
+      where: { id: appId },
+    });
+  }
 }

@@ -2,7 +2,7 @@ import { User as UserEntity } from '../../../entities/user.entity';
 import { OrganizationGitCreateDto, OrganizationGitStatusUpdateDto, OrganizationGitUpdateDto } from '../dto';
 
 export interface IGitSyncController {
-  getOrgGitByOrgId(user: UserEntity, organizationId: string, gitType: string): Promise<any>;
+  getOrgGitByOrgId(user: UserEntity, organizationId: string, gitType: string): any;
 
   getOrgGitStatusByOrgId(user: UserEntity, organizationId: string): Promise<any>;
 

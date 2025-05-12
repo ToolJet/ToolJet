@@ -44,6 +44,8 @@ import { CustomStylesModule } from '@modules/custom-styles/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
+import { GitSyncModule } from '@modules/git-sync/module';
+import { AppGitModule } from '@modules/app-git/module';
 
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -100,6 +102,8 @@ export class AppModule implements OnModuleInit {
       await AppPermissionsModule.register(configs),
       await EventsModule.register(configs),
       await ExternalApiModule.register(configs),
+      await GitSyncModule.register(configs),
+      await AppGitModule.register(configs),
     ];
 
     return {

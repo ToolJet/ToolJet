@@ -1,7 +1,7 @@
 import { OrganizationGitCreateDto, OrganizationGitUpdateDto, OrganizationGitStatusUpdateDto } from '../dto';
 
 export interface IGitSyncService {
-  deleteConfig(organizationId: string, organizationGit: string): Promise<void>;
+  deleteConfig(organizationId: string, organizationGit: string, gitType: string): Promise<void>;
 
   createOrganizationGit(organizationGitCreateDto: OrganizationGitCreateDto, userOrganizationId: string): Promise<any>;
 
@@ -18,7 +18,7 @@ export interface IGitSyncService {
     updateOrgGitDto: OrganizationGitStatusUpdateDto
   ): Promise<void>;
 
-  setFinalizeConfig(userId: string, organizationId: string, organizationGitId: string): Promise<void>;
+  setFinalizeConfig(userId: string, organizationId: string, organizationGitId: string, gitType: string): Promise<void>;
 
   getOrganizationById(userOrganizationId: string, organizationId: string, gitType: string): Promise<any>;
 

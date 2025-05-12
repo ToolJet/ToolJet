@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, ForbiddenException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { VersionRepository } from './repository';
 import { AppVersion } from '@entities/app_version.entity';
 import { PromoteVersionDto, VersionCreateDto } from './dto';
@@ -89,22 +89,7 @@ export class VersionService implements IVersionService {
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const numVersions = await this.versionRepository.getCount(app.id);
-
-      if (numVersions <= 1) {
-        throw new ForbiddenException('Cannot delete only version of app');
-      }
-
-      if (app.currentVersionId === app.appVersions[0].id) {
-        throw new BadRequestException('You cannot delete a released version');
-      }
-
-      await this.versionRepository.deleteById(app.appVersions[0].id, manager);
-
-      // TODO: Add audit logs
-      return;
-    }, manager);
+    return await this.versionsUtilService.deleteVersion(app, user, manager);
   }
 
   async getVersion(app: App, user: User): Promise<any> {

@@ -522,4 +522,12 @@ export class AppsUtilService implements IAppsUtilService {
 
     return components;
   }
+
+  async findByAppName(name: string, organizationId: string): Promise<App> {
+    return this.appRepository.findByAppName(name, organizationId);
+  }
+
+  async findByAppId(appId: string): Promise<App> {
+    return this.appRepository.findByAppId(appId);
+  }
 }
