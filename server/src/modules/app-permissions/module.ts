@@ -9,18 +9,13 @@ import { PageUsersRepository } from './repositories/page-users.repository';
 import { PagePermissionsRepository } from './repositories/page-permissions.repository';
 import { PageUser } from '@entities/page_users.entity';
 import { PagePermission } from '@entities/page_permissions.entity';
-import { AppPermissionsController } from './controller';
-import { AppPermissionsService } from './service';
-import { AppPermissionsUtilService } from './util.service';
 
 export class AppPermissionsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs.IS_GET_CONTEXT);
-    // const { AppPermissionsController } = await import(`${importPath}/app-permissions/controller`);
-    // const { AppPermissionsService } = await import(`${importPath}/app-permissions/service`);
-    // const { AppPermissionsUtilService } = await import(`${importPath}/app-permissions/util.service`);
-
-    //Please create EE Files for the above imports and remove static imports
+    const { AppPermissionsController } = await import(`${importPath}/app-permissions/controller`);
+    const { AppPermissionsService } = await import(`${importPath}/app-permissions/service`);
+    const { AppPermissionsUtilService } = await import(`${importPath}/app-permissions/util.service`);
 
     return {
       module: AppPermissionsModule,
