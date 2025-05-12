@@ -470,10 +470,10 @@ export class OnboardingService implements IOnboardingService {
       onboarding_details: {
         status: user.onboardingStatus,
         password: isPasswordMandatory(user.source), // Should accept password if user is setting up first time
-        questions:
-          (this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true' &&
-            !organizationUser) || // Should ask onboarding questions if first user of the instance. If ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true, then will ask questions to all signup users
-          (await this.userRepository.count({ where: { status: USER_STATUS.ACTIVE } })) === 0,
+        // questions:
+        //   (this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true' &&
+        //     !organizationUser) || // Should ask onboarding questions if first user of the instance. If ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true, then will ask questions to all signup users
+        //   (await this.userRepository.count({ where: { status: USER_STATUS.ACTIVE } })) === 0,
       },
     };
   }
