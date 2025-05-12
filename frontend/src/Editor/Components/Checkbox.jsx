@@ -248,7 +248,9 @@ export const Checkbox = ({
               width={width - 20}
             >
               {label}
-              {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
+              {isMandatory && !checked && (
+                <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
+              )}
             </OverflowTooltip>
           </>
         )}
@@ -257,7 +259,7 @@ export const Checkbox = ({
         <div
           data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
-            color: 'var(--status-error-strong)',
+            color: 'var(--cc-error-systemStatus)',
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',
