@@ -8,7 +8,7 @@ import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import './resources/styles/forgot-password-form.styles.scss';
 import { Alert } from '@/_ui/Alert';
 import SepratorComponent from '@/modules/common/components/SepratorComponent';
-const ForgotPasswordForm = ({ onSubmit }) => {
+const ForgotPasswordForm = ({ onSubmit, contactAdmin }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -72,18 +72,24 @@ const ForgotPasswordForm = ({ onSubmit }) => {
               isLoading={isLoading}
             />
           </form>
-          <SepratorComponent />
-          <Alert
-            svg="tj-info"
-            cls="reset-password-info-banner justify-content-center"
-            useDarkMode={false}
-            imgHeight={'25px'}
-            imgWidth={'25px'}
-          >
-            <div className="reset-password-info-text" data-cy="reset-password-info-banner">
-              {t('forgotPasswordPage.contactSuperAdmin', 'Contact super admin to reset your password')}
-            </div>
-          </Alert>
+          {contactAdmin ? (
+            <>
+              <SepratorComponent />
+              <Alert
+                svg="tj-info"
+                cls="reset-password-info-banner justify-content-center"
+                useDarkMode={false}
+                imgHeight={'25px'}
+                imgWidth={'25px'}
+              >
+                <div className="reset-password-info-text" data-cy="reset-password-info-banner">
+                  {t('forgotPasswordPage.contactSuperAdmin', 'Contact super admin to reset your password')}
+                </div>
+              </Alert>
+            </>
+          ) : (
+            <></>
+          )}
         </div>
       </OnboardingFormInsideWrapper>
     </OnboardingUIWrapper>
