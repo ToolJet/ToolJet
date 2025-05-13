@@ -95,26 +95,30 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         status: WORKSPACE_USER_STATUS.ARCHIVED,
         invitationToken: null,
       });
-      await this.setAuditLog(organizationUser, manager);
-    });
-  }
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+        resourceData: {
+          archived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          archived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
 
-  async setAuditLog(organizationUser: OrganizationUser, manager: EntityManager) {
-    const organization = await manager.findOne(Organization, {
-      where: { id: organizationUser.organizationId },
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
-    const auditLogEntry = {
-      userId: organizationUser.userId,
-      organizationId: organizationUser.organizationId,
-      resourceId: organizationUser.user.id,
-      resourceName: organizationUser.user.email,
-      resourceData: {
-        workspace_name: organization.name,
-        workspace_id: organization.id,
-      },
-    };
-
-    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
   }
 
   async archiveFromAll(userId: string): Promise<void> {
@@ -168,7 +172,29 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);
-      await this.setAuditLog(organizationUser, manager);
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+        resourceData: {
+          unarchived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          unarchived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
 
     if (organizationUser.user.invitationToken) {

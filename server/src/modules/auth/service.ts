@@ -187,6 +187,13 @@ export class AuthService implements IAuthService {
         forgotPasswordToken: null,
         passwordRetryCount: 0,
       });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     }
   }
 

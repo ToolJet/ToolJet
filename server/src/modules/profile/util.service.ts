@@ -51,7 +51,7 @@ export class ProfileUtilService implements IProfileUtilService {
       previous_user_details: {
         avatar_id: currentAvatarId,
       },
-      updatedUserDetails: {
+      updated_user_details: {
         avatar_id: avatar.id,
       },
     };
@@ -71,7 +71,7 @@ export class ProfileUtilService implements IProfileUtilService {
         first_name: user.firstName,
         last_name: user.lastName,
       },
-      updatedUserDetails: {
+      updated_user_details: {
         first_name: firstName,
         last_name: lastName,
       },

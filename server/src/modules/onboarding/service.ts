@@ -408,9 +408,6 @@ export class OnboardingService implements IOnboardingService {
         organizationId: organization.id,
         resourceId: user.id,
         resourceName: user.email,
-        resourceData: {
-          signup_method: 'invite-redemption',
-        },
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
       return this.sessionUtilService.generateLoginResultPayload(

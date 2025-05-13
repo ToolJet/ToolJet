@@ -1,7 +1,7 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { fullName, generateNextNameAndSlug } from '@helpers/utils.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import {
   getUserStatusAndSource,
   lifecycleEvents,
@@ -508,6 +508,19 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
+
+      const groupsArray = [];
+      if (inviteNewUserDto.groups && inviteNewUserDto.groups.length > 0) {
+        const groupQuery = {
+          organizationId: currentOrganization.id,
+          id: In(inviteNewUserDto.groups),
+        };
+        const orgGroupPermissions = await this.groupPermissionsRepository.find({
+          where: groupQuery,
+          select: ['id', 'name'],
+        });
+        groupsArray.push(...orgGroupPermissions.map((group) => group.name));
+      }
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: currentUser.id,
         organizationId: currentOrganization.id,
@@ -520,7 +533,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
             first_name: updatedUser.firstName,
             last_name: updatedUser.lastName,
             role: inviteNewUserDto.role,
-            group: inviteNewUserDto.groups,
+            group: groupsArray,
           },
         },
       });
