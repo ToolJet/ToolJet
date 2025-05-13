@@ -554,6 +554,22 @@ export const createEventsSlice = (set, get) => ({
               if (!queryId && !queryName) {
                 throw new Error('No query selected');
               }
+              // Check and replace the module input dummy queries with the linked query id
+              /* Logic starts here */
+              const moduleInputDummyQueries = get()?.getModuleInputDummyQueries() || {};
+              let updatedQueryId = queryId,
+                updatedQueryName = queryName,
+                updatedModuleId = moduleId;
+              if (moduleInputDummyQueries[queryId]) {
+                updatedQueryId =
+                  get().resolvedStore.modules[moduleId].exposedValues.input[moduleInputDummyQueries[queryId]]?.id;
+                updatedModuleId = 'canvas'; // Updating the moduleId to canvas as the query is a module input query which will be present on canvas
+              }
+              /* Logic ends here */
+
+              if (!updatedQueryId) {
+                throw new Error('No query selected');
+              }
               const resolvedParams = {};
               if (params) {
                 Object.keys(params).map(
@@ -562,8 +578,8 @@ export const createEventsSlice = (set, get) => ({
               }
               // !Todo tackle confirm query part once done
               return get().queryPanel.runQuery(
-                queryId,
-                queryName,
+                updatedQueryId,
+                updatedQueryName,
                 undefined,
                 undefined,
                 resolvedParams,
@@ -571,7 +587,7 @@ export const createEventsSlice = (set, get) => ({
                 eventId,
                 false,
                 false,
-                moduleId
+                updatedModuleId
               );
             } catch (error) {
               get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {

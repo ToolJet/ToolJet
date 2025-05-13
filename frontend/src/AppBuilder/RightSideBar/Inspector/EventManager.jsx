@@ -46,11 +46,13 @@ export const EventManager = ({
   customEventRefs = undefined,
   component,
 }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const components = useStore((state) => state.getCurrentPageComponents());
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
+  const moduleInputDummyQueries = useStore((state) => state.getModuleInputDummyQueries(), shallow);
+
   const dataQueries = useStore((state) => {
     const queries = state.dataQuery?.queries?.modules?.canvas || [];
     if (callerQueryId) {
@@ -396,6 +398,12 @@ export const EventManager = ({
     return defaultValue;
   };
 
+  const constructDataQueryOptions = () => {
+    const queries = dataQueries.filter((qry) => isQueryRunnable(qry)).map((qry) => ({ name: qry.name, value: qry.id }));
+    const moduleInputs = Object.entries(moduleInputDummyQueries).map(([key, value]) => ({ name: value, value: key }));
+    return [...queries, ...moduleInputs];
+  };
+
   function eventPopover(event, index) {
     return (
       <Popover
@@ -602,27 +610,34 @@ export const EventManager = ({
                   <div className="col-9" data-cy="query-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={dataQueries
-                        .filter((qry) => isQueryRunnable(qry))
-                        .map((qry) => ({ name: qry.name, value: qry.id }))}
+                      options={constructDataQueryOptions()}
                       value={event?.queryId}
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
 
-                        const parameters = (query?.options?.parameters ?? []).reduce(
-                          (paramObj, param) => ({
-                            ...paramObj,
-                            [param.name]: param.defaultValue,
-                          }),
-                          {}
-                        );
+                        // If it is a module editor and the query is not found in the data queries, then it is a module input dummy query
+                        if (isModuleEditor && query === undefined) {
+                          handleQueryChange(index, {
+                            queryId: value,
+                            queryName: moduleInputDummyQueries[value],
+                            parameters: {},
+                          });
+                        } else {
+                          const parameters = (query?.options?.parameters ?? []).reduce(
+                            (paramObj, param) => ({
+                              ...paramObj,
+                              [param.name]: param.defaultValue,
+                            }),
+                            {}
+                          );
 
-                        handleQueryChange(index, {
-                          queryId: query.id,
-                          queryName: query.name,
-                          parameters: parameters,
-                        });
+                          handleQueryChange(index, {
+                            queryId: query.id,
+                            queryName: query.name,
+                            parameters: parameters,
+                          });
+                        }
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}

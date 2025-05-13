@@ -813,6 +813,12 @@ button {
     .canvas-container {
       top: 0;
       right: 0;
+      scrollbar-width: thin;
+      scrollbar-color: #6a727c4d transparent;
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #6a727c4d !important;
+      }
     }
   }
 
@@ -12395,11 +12401,11 @@ tbody {
   }
 
   .design-component-inputs textarea {
-    
+
     &.valid-textarea {
       border: 1.5px solid #519b62 !important;
     }
-    
+
     &.invalid-textarea {
       border: 1.5px solid #e26367 !important;
     }
