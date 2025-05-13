@@ -32,6 +32,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { components as selectComponents } from 'react-select';
 
 export const EventManager = ({
   sourceId,
@@ -137,6 +139,37 @@ export const EventManager = ({
     menuList: (base) => ({
       ...base,
     }),
+  };
+
+  const actionStyles = {
+    ...styles,
+    menuList: (base) => ({
+      ...base,
+      padding: '8px 0 8px 8px',
+      '&::-webkit-scrollbar': {
+        width: '10px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#E4E7EB',
+        border: '1px solid transparent',
+        backgroundClip: 'content-box',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        background: '#E4E7EB !important',
+        border: '1px solid transparent !important',
+        backgroundClip: 'content-box !important',
+      },
+      '&:hover': {
+        '&::-webkit-scrollbar-thumb': {
+          background: '#E4E7EB !important',
+          border: '1px solid transparent !important',
+          backgroundClip: 'content-box !important',
+        },
+      },
+    }),
     group: (base) => ({
       ...base,
       padding: 0,
@@ -144,7 +177,7 @@ export const EventManager = ({
     groupHeading: (base) => ({
       ...base,
       margin: 0,
-      padding: '0 10px',
+      padding: '0',
     }),
   };
 
@@ -422,9 +455,22 @@ export const EventManager = ({
     if (data.label === 'run-action') return;
     return (
       <div
-        className="tw-border-x-0 tw-border-t-0 tw-border-b-px tw-border-solid tw-my-[4px]"
+        className="tw-border-x-0 tw-border-t-0 tw-border-b-[0.5px] tw-border-solid tw-my-[4px]"
         style={{ borderColor: 'var(--border-weak)' }}
       ></div>
+    );
+  };
+
+  const CustomOption = (props) => {
+    return (
+      <selectComponents.Option {...props}>
+        <div className="d-flex align-items-center">
+          <div style={{ width: '16px', marginRight: '6px' }}>
+            {props.isSelected && <SolidIcon name="tickv3" width="16px" height="16px" />}
+          </div>
+          <span>{props.label}</span>
+        </div>
+      </selectComponents.Option>
     );
   };
 
@@ -467,11 +513,14 @@ export const EventManager = ({
               <Select
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                 options={actionOptions}
-                value={event.actionId}
+                value={actionOptions
+                  .flatMap((group) => group.options)
+                  .find((option) => option.value === event.actionId)}
+                components={{ Option: CustomOption }}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
                 placeholder={t('globals.select', 'Select') + '...'}
-                styles={styles}
+                styles={actionStyles}
                 useMenuPortal={false}
                 useCustomStyles={true}
                 formatGroupLabel={formatGroupLabel}
