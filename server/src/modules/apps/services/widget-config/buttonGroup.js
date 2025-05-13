@@ -155,7 +155,6 @@ export const buttonGroupConfig = {
       params: [{ handle: 'selected', displayName: 'Value' }],
     },
   ],
-
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -170,14 +169,14 @@ export const buttonGroupConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '' },
-      textColor: { value: '' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      textColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },
       selectedTextColor: { value: '#FFFFFF' },
-      selectedBackgroundColor: { value: 'var(--cc-primary-brand)' },
       padding: { value: 'default' },
+      selectedBackgroundColor: { value: 'var(--cc-primary-brand)' },
       alignment: { value: 'left' },
     },
   },

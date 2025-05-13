@@ -136,7 +136,7 @@ export const chartConfig = {
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background color',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
     },
     padding: {
       type: 'code',
@@ -228,7 +228,7 @@ export const chartConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
       borderRadius: { value: '{{4}}' },
       visibility: { value: '{{true}}' },

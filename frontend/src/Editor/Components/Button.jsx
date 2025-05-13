@@ -62,7 +62,7 @@ export const Button = function Button(props) {
     borderColor === '#4368E3' ? (type === 'primary' ? '#4368E3' : 'var(--borders-strong)') : borderColor;
 
   const computedTextColor =
-    '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--text-primary)') : textColor;
+    '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--cc-primary-text)') : textColor;
   const computedLoaderColor =
     '#FFFFFF' === loaderColor ? (type === 'primary' ? loaderColor : 'var(--cc-primary-brand)') : loaderColor;
 
@@ -72,8 +72,8 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-        ? backgroundColor
-        : 'transparent';
+      ? backgroundColor
+      : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,

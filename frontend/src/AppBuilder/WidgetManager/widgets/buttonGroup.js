@@ -169,8 +169,8 @@ export const buttonGroupConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '' },
-      textColor: { value: '' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      textColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },

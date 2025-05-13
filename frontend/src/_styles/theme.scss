@@ -18931,7 +18931,68 @@ section.ai-message-prompt-input-wrapper {
     border-color: var(--cc-disabled-border) !important;
   }
 
- 
+  .sketch-picker {
+    background-color: var(--cc-surface1-surface) !important;
+
+    input {
+      background-color: var(--cc-surface1-surface) !important;
+    }
+  }
+
+  .codehinter-multi-line-input {
+    .cm-content {
+      background-color: var(--cc-surface1-surface) ;
+    }
+
+    .cm-gutters {
+      background-color: var(--cc-surface3-surface) !important;
+    }
+
+    .cm-gutterElement {
+      color: var(--cc-placeholder-text) !important;
+    }
+  }
+
+}
+
+.pagination {
+
+  .page-item:not(.active){
+    .page-link:not(.arrow-icon) {
+      color: var(--cc-primary-text);
+    }
+  }
+  
+}
+
+.timer-wrapper {
+  background-color: var(--cc-surface1-surface);
+  .counter-container {
+    color: var(--cc-primary-text);
+  }
+}
+
+.pdf-page-controls {
+  background-color: var(--cc-surface1-surface);
+  span{
+    color: var(--cc-primary-text);
+  }
+
 }
 
 
+.list-timeline-content {
+
+  .list-timeline-title {
+    color: var(--cc-primary-text);
+  }
+
+  .text-muted {
+    color: var(--cc-placeholder-text) !important;
+  }
+
+  .list-timeline-time {
+    color: var(--cc-placeholder-text);
+  }
+
+}

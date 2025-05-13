@@ -1,6 +1,6 @@
 export const dividerConfig = {
   name: 'HorizontalDivider',
-  displayName: 'Horizontal Divider',
+  displayName: 'Horizontal divider',
   description: 'Separator between components',
   component: 'Divider',
   defaultSize: {
@@ -69,7 +69,7 @@ export const dividerConfig = {
       displayName: 'Divider color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-default-border)',
       },
       accordian: 'Divider',
     },
@@ -89,8 +89,8 @@ export const dividerConfig = {
       type: 'switch',
       displayName: 'Label alignment',
       validation: { schema: { type: 'string' }, defaultValue: 'left' },
-      isIcon: true,
       showLabel: true,
+      isIcon: true,
       options: [
         { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
         { displayName: 'alignhorizontalcenter', value: 'center', iconName: 'alignhorizontalcenter' },
@@ -146,10 +146,10 @@ export const dividerConfig = {
     },
     events: [],
     styles: {
-      dividerColor: { value: '#CCD1D5' },
+      dividerColor: { value: 'var(--cc-default-border)' },
       labelAlignment: { value: 'center' },
       dividerStyle: { value: 'solid' },
-      labelColor: { value: '#6A727C' },
+      labelColor: { value: 'var(--cc-placeholder-text)' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

@@ -94,7 +94,7 @@
 
         &:focus-visible {
           border-radius: 6px;
-          border: 2px solid var(--primary-accent-strong) !important;
+          border: 2px solid var(--cc-primary-brand) !important;
           // background: var(--base-base, #FFF) !important;
           /* Focus rings/Gray/light */
           // box-shadow: 0px 0px 0px 4px var(--slate6) !important;
@@ -102,7 +102,7 @@
 
         &:focus-within {
           border-radius: 6px;
-          border: 2px solid var(--primary-accent-strong) !important;
+          border: 2px solid var(--cc-primary-brand) !important;
           /* Selected ring/Indigo/light */
           // box-shadow: 0px 0px 0px 1px var(--indigo6) !important;
         }

@@ -275,7 +275,7 @@ export const textConfig = {
     events: [],
     styles: {
       backgroundColor: { value: '#fff00000' },
-      textColor: { value: '#000000' },
+      textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{14}}' },
       textAlign: { value: 'left' },
       fontWeight: { value: 'normal' },

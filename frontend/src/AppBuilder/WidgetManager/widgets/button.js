@@ -220,7 +220,7 @@ export const buttonConfig = {
     styles: {
       textColor: { value: '#FFFFFF' },
       borderColor: { value: 'var(--cc-primary-brand)' },
-      loaderColor: { value: '#FFFFFF' },
+      loaderColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
       iconColor: { value: '#FFFFFF' },

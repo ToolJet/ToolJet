@@ -219,10 +219,10 @@ export const buttonConfig = {
     events: [],
     styles: {
       textColor: { value: '#FFFFFF' },
-      borderColor: { value: 'var(--cc-primary-brand)' },
+      borderColor: { value: 'var(--primary-brand)' },
       loaderColor: { value: '#FFFFFF' },
       borderRadius: { value: '{{6}}' },
-      backgroundColor: { value: 'var(--cc-primary-brand)' },
+      backgroundColor: { value: 'var(--primary-brand)' },
       iconColor: { value: '#FFFFFF' },
       direction: { value: 'left' },
       padding: { value: 'default' },

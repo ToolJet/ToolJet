@@ -155,14 +155,12 @@ export const ColorPicker = function ({
     positin: 'relative',
   };
   const baseStyle = visibility
-    ? darkMode
-      ? { ...style, color: '#ffffff', backgroundColor: '#1F2936' }
-      : { ...style, color: 'inherit' }
+    ? { ...style, color: 'var(--cc-primary-text)', backgroundColor: 'var(--cc-surface1-surface)' }
     : { display: 'none' };
 
   return (
     <div className="h-100">
-      <div style={{ baseStyle, boxShadow, height: '100%' }} className="form-control" data-cy={dataCy}>
+      <div style={{ ...baseStyle, boxShadow, height: '100%' }} className="form-control" data-cy={dataCy}>
         <div
           className="d-flex h-100 justify-content-between align-items-center"
           onClick={() => setShowColorPicker(true)}

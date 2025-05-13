@@ -57,22 +57,22 @@ export const statisticsConfig = {
     primaryLabelColour: {
       type: 'colorSwatches',
       displayName: 'Primary label colour',
-      validation: { schema: { type: 'string' }, defaultValue: '#8092AB' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
     },
     primaryTextColour: {
       type: 'colorSwatches',
       displayName: 'Primary text  colour',
-      validation: { schema: { type: 'string' }, defaultValue: '#000000' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
     },
     secondaryLabelColour: {
       type: 'colorSwatches',
       displayName: 'Secondary label colour',
-      validation: { schema: { type: 'string' }, defaultValue: '#8092AB' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
     },
     secondaryTextColour: {
       type: 'colorSwatches',
       displayName: 'Secondary text colour',
-      validation: { schema: { type: 'string' }, defaultValue: '#36AF8B' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-success-systemStatus)' },
     },
     visibility: {
       type: 'toggle',
@@ -95,10 +95,10 @@ export const statisticsConfig = {
     },
     events: [],
     styles: {
-      primaryLabelColour: { value: '#8092AB' },
-      primaryTextColour: { value: '#000000' },
-      secondaryLabelColour: { value: '#8092AB' },
-      secondaryTextColour: { value: '#36AF8B' },
+      primaryLabelColour: { value: 'var(--cc-primary-text)' },
+      primaryTextColour: { value: 'var(--cc-primary-text)' },
+      secondaryLabelColour: { value: 'var(--cc-placeholder-text)' },
+      secondaryTextColour: { value: 'var(--cc-success-systemStatus)' },
       visibility: { value: '{{true}}' },
     },
   },
