@@ -43,11 +43,11 @@ RUN apt-get update -yq \
 
 
 RUN curl -O https://nodejs.org/dist/v22.15.0/node-v22.15.0-linux-x64.tar.xz \
-    && tar -xf node-22.15.0-linux-x64.tar.xz \
-    && mv node-22.15.0-linux-x64 /usr/local/lib/nodejs \
+    && tar -xf node-v22.15.0-linux-x64.tar.xz \
+    && mv node-v22.15.0-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-22.15.0-linux-x64.tar.xz
+    && rm node-v22.15.0-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
