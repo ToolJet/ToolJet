@@ -8,6 +8,7 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { VersionModule } from '@modules/versions/module';
+import { UsersModule } from '@modules/users/module';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -18,6 +19,7 @@ export class ExternalApiModule {
     return {
       module: ExternalApiModule,
       imports: [
+        await UsersModule.register(configs),
         await RolesModule.register(configs),
         await GroupPermissionsModule.register(configs),
         await TooljetDbModule.register(configs),
