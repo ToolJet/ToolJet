@@ -2,25 +2,8 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
 import { formatFileSize } from '@/_helpers/utils';
-import { processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
+import { processFileContent, DEPRECATED_processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
-
-// Define mapping from PRD File Type categories to accept patterns
-const fileTypeCategoryMap = {
-  'Any Files': null, // null or undefined means accept all
-  'Image files': 'image/*, .jpeg, .png, .gif, .svg',
-  'Document files': 'application/pdf, .doc, .docx, .ppt, .pptx',
-  'Spreadsheet files': `
-    .xls, .xlsx,
-    application/vnd.ms-excel,
-    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-  `,
-  'Text files': 'text/plain, application/json, application/xml, text/csv',
-  'Audio files': 'audio/*, .mp3, .wav, .flac',
-  'Video files': 'video/*, .mp4, .mov, .avi',
-  'Archive/Compressed files': '.zip, .rar, .7z, .tar',
-  // Add other custom categories if necessary
-};
 
 export const useFilePicker = ({
   validation,
@@ -50,7 +33,7 @@ export const useFilePicker = ({
   const initialDisabled = properties.disabledState ?? false;
 
   const maxFileCount = validation?.maxFileCount ?? 2;
-  const fileTypeCategory = validation?.fileType ?? 'Any Files';
+  const fileTypeCategory = validation?.fileType ?? '*/*';
   const maxSize = validation?.maxSize ?? 51200000;
   const minSize = validation?.minSize ?? 50;
   const minFileCount = validation?.minFileCount ?? 0;
@@ -78,6 +61,8 @@ export const useFilePicker = ({
   const [isMinCountMet, setIsMinCountMet] = useState(true);
   const [isMandatoryMet, setIsMandatoryMet] = useState(!isMandatory);
   const [isValid, setIsValid] = useState(!isMandatory);
+  const [dropzoneRejections, setDropzoneRejections] = useState([]);
+  const [uiErrorMessage, setUiErrorMessage] = useState('');
 
   // Calculate total file size
   const totalFileSize = useMemo(() => {
@@ -115,12 +100,14 @@ export const useFilePicker = ({
           parseContent && parseFileContentEnabled(file, fileTypeFromExtension === 'auto-detect', fileTypeFromExtension);
 
         let parsedValue = null;
+        let parsedData = null;
         if (shouldProcessFileParsing) {
           const contentForParsing = {
             readFileAsText: readFileAsText,
             readFileAsDataURL: base64Data,
           };
           parsedValue = processFileContent(file.type, contentForParsing);
+          parsedData = DEPRECATED_processFileContent(file.type, contentForParsing);
         }
 
         return {
@@ -133,6 +120,7 @@ export const useFilePicker = ({
           content: readFileAsText,
           base64Data: base64Data,
           parsedValue: parsedValue,
+          parsedData: parsedData,
         };
       } catch (error) {
         console.error(`Error reading file ${file.name}:`, error);
@@ -165,39 +153,82 @@ export const useFilePicker = ({
   // --- Dropzone Setup ---
   const onDropRejected = useCallback(
     (rejectedFiles) => {
-      const newErrors = { ...fileErrors };
-      rejectedFiles.forEach(({ file, errors }) => {
-        const errorMsg = handleFileSizeErrors(file.size, errors[0]);
-        newErrors[file.name] = errorMsg || errors[0].message;
-        toast.error(errorMsg || `File rejected: ${errors[0].message}`);
-      });
-      setFileErrors(newErrors);
+      // For UI display, decide on one message
+      if (rejectedFiles.length === 1) {
+        const { file, errors } = rejectedFiles[0];
+        const error = errors[0];
+        let specificMessage = error.message;
+        // Generate specific message (similar to existing logic but for a single error)
+        switch (error.code) {
+          case 'file-invalid-type':
+            specificMessage = `The file "${file.name}" has an unsupported file type.`;
+            if (fileTypeCategory && fileTypeCategory !== '*/*') {
+              specificMessage += ` Please upload files of type: ${fileTypeCategory}.`;
+            }
+            break;
+          case 'file-too-small':
+            specificMessage = `The file "${file.name}" (${formatFileSize(file.size)}) is smaller than the minimum allowed size of ${formatFileSize(minSize)}.`;
+            break;
+          case 'file-too-large':
+            specificMessage = `The file "${file.name}" (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}.`;
+            break;
+          case 'too-many-files':
+            specificMessage = `You can select a maximum of ${maxFileCount} files.`;
+            break;
+          case 'duplicate-file':
+            specificMessage = `The file "${file.name}" has already been selected.`;
+            break;
+          default:
+            specificMessage = error.message && typeof error.message === 'string' && error.message.trim() !== ''
+              ? error.message
+              : `An issue occurred with file "${file.name}".`;
+            break;
+        }
+        setUiErrorMessage(specificMessage);
+        toast.error(specificMessage); // Toast the specific error
+      } else if (rejectedFiles.length > 1) {
+        const genericMessage = 'Multiple files have errors. Please check the requirements.';
+        setUiErrorMessage(genericMessage);
+        // Toast individual errors if desired, or one generic toast
+        rejectedFiles.forEach(({ file, errors }) => {
+          // Simplified toast for multiple errors, could be more detailed
+          toast.error(`Error with ${file.name}: ${errors[0].message}`);
+        });
+      }
+      // dropzoneRejections state can be kept raw for other potential uses or removed if only for this UI message
+      setDropzoneRejections(rejectedFiles); // Keep raw rejections for potential debugging or detailed listing elsewhere
     },
-    [fileErrors, handleFileSizeErrors]
+    [fileTypeCategory, minSize, maxSize, maxFileCount, setExposedVariable]
   );
 
   // Custom validator
   const validateFile = useCallback(
     (file) => {
+      // Check 1: Duplicate file
       if (selectedFiles.some((existingFile) => existingFile.name === file.name && existingFile.size === file.size)) {
         return {
           code: 'duplicate-file',
-          message: `File "${file.name}" is already selected.`,
+          message: `The file "${file.name}" has already been selected.`,
         };
       }
+
+      // Check 2: If single file mode and a file is already selected
       if (!enableMultiple && selectedFiles.length >= 1) {
         return {
           code: 'max-files-exceeded',
-          message: `Only one file is allowed.`,
+          message: `Only one file can be uploaded.`,
         };
       }
+
+      // Check 3: If multiple file mode and max file count is already reached
       if (enableMultiple && selectedFiles.length >= maxFileCount) {
         return {
           code: 'max-files-exceeded',
           message: `You can only upload up to ${maxFileCount} files.`,
         };
       }
-      return null;
+
+      return null; // File passes custom validation
     },
     [selectedFiles, enableMultiple, maxFileCount]
   );
@@ -259,6 +290,11 @@ export const useFilePicker = ({
       if (fireEvent && successfullyProcessedFiles.length > 0) {
         fireEvent?.('onFileLoaded', { files: successfullyProcessedFiles });
       }
+
+      // Clear dropzone rejections when new files are accepted
+      if (acceptedDropFiles.length > 0) {
+        setDropzoneRejections([]);
+      }
     },
     [
       selectedFiles,
@@ -270,12 +306,13 @@ export const useFilePicker = ({
       maxFileCount,
       fileErrors,
       uploadingStatus,
+      dropzoneRejections,
     ]
   );
 
   // Calculate the accept prop based on the category
   const acceptProp = useMemo(() => {
-    const pattern = fileTypeCategoryMap[fileTypeCategory];
+    const pattern = fileTypeCategory;
     if (!pattern) {
       return null; // Accept all if pattern is null/undefined or category not found
     }
@@ -390,10 +427,12 @@ export const useFilePicker = ({
         setFileName: setFileName,
       });
       setExposedVariable?.('files', selectedFiles); // Contains parsedValue
+      setExposedVariable?.('file', selectedFiles); // Contains parsedValue
       setExposedVariable?.('isParsing', isParsing);
       setExposedVariable?.('isMandatory', isMandatory);
       setExposedVariable?.('isValid', currentIsValid);
       setExposedVariable?.('fileSize', totalFileSize);
+      setExposedVariable?.('uiErrorMessage', uiErrorMessage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -406,6 +445,8 @@ export const useFilePicker = ({
     setFileName,
     setExposedVariables,
     setExposedVariable,
+    uiErrorMessage,
+    dropzoneRejections,
   ]); // Multi-line dependencies
 
   useEffect(() => {
@@ -418,10 +459,12 @@ export const useFilePicker = ({
       setFileName: setFileName,
     });
     setExposedVariable?.('files', []);
+    setExposedVariable?.('file', []);
     setExposedVariable?.('isParsing', false);
     setExposedVariable?.('isMandatory', isMandatory);
     setExposedVariable?.('isValid', initialIsValid);
     setExposedVariable?.('fileSize', 0);
+    setExposedVariable?.('uiErrorMessage', '');
 
     setIsMandatoryMet(!isMandatory);
     setIsValid(initialIsValid); // Set initial state using the calculated value
@@ -455,6 +498,7 @@ export const useFilePicker = ({
     selectedFiles,
     fileErrors,
     uploadingStatus,
+    dropzoneRejections,
     isParsing,
     // Actions
     handleRemoveFile,
@@ -475,5 +519,6 @@ export const useFilePicker = ({
     isMandatoryMet,
     clearFiles, // Return actions if needed internally (currently not)
     setFileName, // Return actions if needed internally (currently not)
+    uiErrorMessage, // Return new state
   };
 };
