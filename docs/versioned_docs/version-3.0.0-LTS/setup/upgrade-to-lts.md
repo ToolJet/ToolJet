@@ -21,7 +21,7 @@ The upgrade process depends on your deployment method. You can follow the upgrad
 
 - [Upgrade ToolJet on DigitalOcean](/docs/setup/digitalocean#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Docker](/docs/setup/docker#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on AWS EC2](/docs/setup/ami#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on AWS AMI](/docs/setup/ami#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on AWS ECS](/docs/setup/ecs#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on OpenShift](/docs/setup/openshift#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Helm](/docs/setup/helm#upgrading-to-the-latest-lts-version)

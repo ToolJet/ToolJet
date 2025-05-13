@@ -9,14 +9,15 @@ title: AWS AMI
 You should setup a PostgreSQL database manually to be used by the ToolJet server.
 :::
 
-You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS EC2 instances. 
+You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
 To deploy all the services at once, simply employ the following template:
+
 ```
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/EC2-cloudfomration.yml
 ```
 
-Follow the steps below to deploy ToolJet on AWS EC2 instances.
+Follow the steps below to deploy ToolJet on AWS AMI instances.
 
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
@@ -25,18 +26,18 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
    Creating a new security group is recommended. For example, if the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
-   protocol| port     | allowed_cidr|
-   ----| -----------  | ----------- |
-   tcp | 22           | your IP |
-   tcp | 80           | 0.0.0.0/0 |
-   tcp | 443          | 0.0.0.0/0   |
-
+   | protocol | port | allowed_cidr |
+   | -------- | ---- | ------------ |
+   | tcp      | 22   | your IP      |
+   | tcp      | 80   | 0.0.0.0/0    |
+   | tcp      | 443  | 0.0.0.0/0    |
 
 6. Once the instance boots up, SSH into the instance by running `ssh -i <path_to_pem_file> ubuntu@<public_ip_of_the_instance>`.
 
 7. Switch to the app directory by running `cd ~/app`. <br/> Modify the contents of the `.env` file. ( Eg: `vim .env` )
 
    The default `.env` file looks like this:
+
    ```bash
    LOCKBOX_MASTER_KEY=
    SECRET_KEY_BASE=
@@ -49,6 +50,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    TOOLJET_DB_USER=
    TOOLJET_DB_PASS=
    ```
+
    Read **[environment variables reference](/docs/setup/env-vars)**
 
    :::info
@@ -72,7 +74,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 
 9. Once you've configured the `.env` file, run `./setup_app`. This script will install all the dependencies of ToolJet and then will start the required services.
 10. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the EC2 instance.
-12. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
+11. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
 
 #### Deploying ToolJet Database
 
@@ -82,7 +84,7 @@ You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 ## Workflows
 
-ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 ### Enabling Scheduling
 
@@ -92,14 +94,14 @@ To activate workflows scheduling, set the following environment variables:
 WORKFLOW_WORKER=true
 ENABLE_WORKFLOW_SCHEDULING=true
 TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
-TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>  
+TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
 ```
 
 **Note**: Workflows scheduling requires a Temporal server to be deployed. Restarting the server using `./setup_app`.
 
 ### Deploying Temporal with Docker Compose
 
-Below is a `docker-compose` template to set up Temporal. 
+Below is a `docker-compose` template to set up Temporal.
 
 ```
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/ec2-temporal/docker-compose.yml
@@ -121,4 +123,4 @@ New LTS versions are released every 3-5 months with an end-of-life of atleast 18
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com._

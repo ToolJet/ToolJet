@@ -29,7 +29,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - **Multiplayer editing:** Allows simultaneous app building by multiple developers.
 - **50+ data sources:** Integrate with external databases, cloud storage, and APIs.
 - **Desktop & mobile:** Customize layout widths to fit various screen sizes.
-- **Self-host:** Supports Docker, Kubernetes, AWS EC2, Google Cloud Run, and more.
+- **Self-host:** Supports Docker, Kubernetes, AWS AMI, Google Cloud Run, and more.
 - **Collaborate:** Add comments anywhere on the canvas and tag your team members.
 - **Extend with plugins:** Use our [command-line tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
 - **Version control:** Manage multiple application versions with a structured release cycle.
@@ -81,13 +81,13 @@ Documentation is available at https://docs.tooljet.ai.
 
 ## Self-hosted
 
-You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, and more.
+You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS AMI, Docker, and more.
 
 | Provider                       | Documentation                                               |
 | :----------------------------- | :---------------------------------------------------------- |
 | Digital Ocean                  | [Link](https://docs.tooljet.ai/docs/setup/digitalocean)     |
 | Docker                         | [Link](https://docs.tooljet.ai/docs/setup/docker)           |
-| AWS EC2                        | [Link](https://docs.tooljet.ai/docs/setup/ami)              |
+| AWS AMI                        | [Link](https://docs.tooljet.ai/docs/setup/ami)              |
 | AWS ECS                        | [Link](https://docs.tooljet.ai/docs/setup/ecs)              |
 | OpenShift                      | [Link](https://docs.tooljet.ai/docs/setup/openshift)        |
 | Helm                           | [Link](https://docs.tooljet.ai/docs/setup/helm)             |
