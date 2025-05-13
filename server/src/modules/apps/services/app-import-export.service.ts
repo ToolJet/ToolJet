@@ -51,7 +51,17 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table' | 'Button' | 'Checkbox' | 'Divider' | 'VerticalDivider' | 'Link';
+type NewRevampedComponent =
+  | 'Text'
+  | 'TextInput'
+  | 'PasswordInput'
+  | 'NumberInput'
+  | 'Table'
+  | 'Button'
+  | 'Checkbox'
+  | 'Divider'
+  | 'VerticalDivider'
+  | 'Link';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -79,9 +89,8 @@ export class AppImportExportService {
     protected dataSourcesUtilService: DataSourcesUtilService,
     protected dataSourcesRepository: DataSourcesRepository,
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
-    protected readonly entityManager: EntityManager,
     protected componentsService: ComponentsService
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -183,13 +192,13 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const events = await manager
@@ -225,54 +234,58 @@ export class AppImportExportService {
     externalResourceMappings = {},
     isGitApp = false,
     tooljetVersion = '',
-    cloning = false
+    cloning = false,
+    manager?: EntityManager
   ): Promise<App> {
-    if (typeof appParamsObj !== 'object') {
-      throw new BadRequestException('Invalid params for app import');
-    }
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (typeof appParamsObj !== 'object') {
+        throw new BadRequestException('Invalid params for app import');
+      }
 
-    let appParams = appParamsObj;
+      let appParams = appParamsObj;
 
-    if (appParams?.appV2) {
-      appParams = { ...appParams.appV2 };
-    }
+      if (appParams?.appV2) {
+        appParams = { ...appParams.appV2 };
+      }
 
-    if (!appParams?.name) {
-      throw new BadRequestException('Invalid params for app import');
-    }
+      if (!appParams?.name) {
+        throw new BadRequestException('Invalid params for app import');
+      }
 
-    const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
-      ? appParams
-      : convertSinglePageSchemaToMultiPageSchema(appParams);
-    schemaUnifiedAppParams.name = appName;
+      const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
+        ? appParams
+        : convertSinglePageSchemaToMultiPageSchema(appParams);
+      schemaUnifiedAppParams.name = appName;
 
-    const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
-    const isNormalizedAppDefinitionSchema = cloning
-      ? true
-      : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
+      const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
+      const isNormalizedAppDefinitionSchema = cloning
+        ? true
+        : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const currentTooljetVersion = !cloning ? tooljetVersion : null;
+      const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
+      const importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user, isGitApp);
 
-    const resourceMapping = await this.setupImportedAppAssociations(
-      this.entityManager,
-      importedApp,
-      schemaUnifiedAppParams,
-      user,
-      externalResourceMappings,
-      isNormalizedAppDefinitionSchema,
-      currentTooljetVersion
-    );
-    await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
+      const resourceMapping = await this.setupImportedAppAssociations(
+        manager,
+        importedApp,
+        schemaUnifiedAppParams,
+        user,
+        externalResourceMappings,
+        isNormalizedAppDefinitionSchema,
+        currentTooljetVersion
+      );
+      await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
 
-    // NOTE: App slug updation callback doesn't work while wrapped in transaction
-    // hence updating slug explicitly
-    await importedApp.reload();
-    importedApp.slug = importedApp.id;
-    await this.entityManager.save(importedApp);
+      // NOTE: App slug updation callback doesn't work while wrapped in transaction
+      // hence updating slug explicitly
+      //await importedApp.reload(); -> this will not work as we are using transaction
+      const newApp = await manager.findOne(App, { where: { id: importedApp.id } });
+      newApp.slug = importedApp.id;
+      await manager.save(newApp);
 
-    return importedApp;
+      return newApp;
+    }, manager);
   }
 
   async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
@@ -712,7 +725,6 @@ export class AppImportExportService {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
           manager,
           importingDataSource,
-          appResourceMappings.appVersionMapping[importingAppVersion.id],
           user
         );
 
@@ -1058,10 +1070,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1160,7 +1172,6 @@ export class AppImportExportService {
   async findOrCreateDataSourceForAppVersion(
     manager: EntityManager,
     dataSource: DataSource,
-    appVersionId: string,
     user: User
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
@@ -1169,10 +1180,10 @@ export class AppImportExportService {
     if (isDefaultDatasource) {
       const createdDefaultDatasource = await manager.findOne(DataSource, {
         where: {
-          appVersionId,
+          organizationId: user.organizationId,
           kind: dataSource.kind,
           type: DataSourceTypes.STATIC,
-          scope: 'local',
+          scope: DataSourceScopes.GLOBAL,
         },
       });
 
@@ -1185,7 +1196,7 @@ export class AppImportExportService {
           id: dataSource.id,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: 'global',
+          scope: DataSourceScopes.GLOBAL,
           organizationId: user.organizationId,
         },
       });
@@ -1196,7 +1207,7 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
-          scope: 'global',
+          scope: DataSourceScopes.GLOBAL,
           organizationId: user.organizationId,
         },
       });
@@ -1219,7 +1230,7 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: 'global', // No appVersionId for global data sources
+          scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
           pluginId: plugin.id,
         });
         await manager.save(newDataSource);
@@ -1234,7 +1245,7 @@ export class AppImportExportService {
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
-        scope: 'global', // No appVersionId for global data sources
+        scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
         pluginId: null,
       });
       await manager.save(newDataSource);
@@ -1609,10 +1620,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-              query.options,
-              externalResourceMappings['tooljet_database'],
-              user.organizationId
-            )
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
