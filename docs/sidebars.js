@@ -140,9 +140,9 @@ const sidebars = {
             'app-builder/walkthrough/create-queries',
             'app-builder/walkthrough/using-code',
             'app-builder/walkthrough/accessing-values',
+            'app-builder/walkthrough/row-level-security',
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
-            'app-builder/walkthrough/row-level-security',
             {
               'type': 'category',
               'label': 'Import Libraries',
