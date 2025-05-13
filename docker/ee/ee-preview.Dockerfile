@@ -9,7 +9,7 @@ WORKDIR /app
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
 
-# Clone and checkout the frontend repository
+# Clone and checkout the frontend repositorys
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
@@ -108,6 +108,14 @@ USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
+
+
+# Explicitly create PG main directory with correct ownership
+RUN mkdir -p /var/lib/postgresql/13/main && \
+    chown -R postgres:postgres /var/lib/postgresql
+
+RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
+    chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
 
 # Remove existing data and create directory with proper ownership
 RUN rm -rf /var/lib/postgresql/13/main && \
