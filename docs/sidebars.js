@@ -142,6 +142,7 @@ const sidebars = {
             'app-builder/walkthrough/accessing-values',
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
+            'app-builder/walkthrough/row-level-security',
             {
               'type': 'category',
               'label': 'Import Libraries',
