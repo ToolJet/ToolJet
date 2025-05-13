@@ -252,6 +252,7 @@ const DynamicForm = ({
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
+    const workspaceConstant = options?.[key]?.workspace_constant;
 
     if (!options) return;
 
@@ -263,7 +264,7 @@ const DynamicForm = ({
           (options?.[key]?.encrypted !== undefined ? options?.[key].encrypted : encrypted) || type === 'password';
         return {
           type,
-          placeholder: useEncrypted ? '**************' : description,
+          placeholder: workspaceConstant ? workspaceConstant : useEncrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)} ${useEncrypted && 'dynamic-form-encrypted-field'}`,
           style: { marginBottom: '0px !important' },
           value: options?.[key]?.value || '',

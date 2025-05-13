@@ -294,6 +294,7 @@ const DynamicFormV2 = ({
     const currentValue = options?.[key]?.value;
     const skipValidation =
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
+    const workspaceConstant = options?.[key]?.workspace_constant;
 
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
@@ -311,7 +312,7 @@ const DynamicFormV2 = ({
           key,
           widget,
           label,
-          placeholder: isEncrypted ? '**************' : description,
+          placeholder: workspaceConstant ? workspaceConstant : isEncrypted ? '**************' : description,
           className: cx('form-control', {
             'dynamic-form-encrypted-field': isEncrypted,
           }),
@@ -333,7 +334,7 @@ const DynamicFormV2 = ({
           key,
           widget,
           label,
-          placeholder: isEncrypted ? '**************' : description,
+          placeholder: workspaceConstant ? workspaceConstant : isEncrypted ? '**************' : description,
           className: cx('form-control', {
             'dynamic-form-encrypted-field': isEncrypted,
           }),
