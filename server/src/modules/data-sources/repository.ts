@@ -19,7 +19,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
     organizationId: string,
     queryVars: GetQueryVariables
   ): Promise<DataSource[]> {
-    const { appVersionId, environmentId, isGetStatic } = queryVars;
+    const { appVersionId, environmentId, types } = queryVars;
     // Data source options are attached only if selectedEnvironmentId is passed
     // Returns global data sources + sample data sources
     // If version Id is passed, then data queries under each are also returned
@@ -67,8 +67,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
         .andWhere('data_source.organization_id = :organizationId', { organizationId })
         .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.GLOBAL });
 
-      if (isGetStatic) {
-        query.andWhere('data_source.type = :type', { type: DataSourceTypes.STATIC });
+      if (types && types.length > 0) {
+        query.andWhere('data_source.type IN (:...types)', { types });
       }
       if (environmentId) {
         query.andWhere('data_source_options.environmentId = :environmentId', { environmentId });

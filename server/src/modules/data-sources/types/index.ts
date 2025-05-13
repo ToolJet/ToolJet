@@ -1,4 +1,4 @@
-import { FEATURE_KEY } from '../constants';
+import { DataSourceTypes, FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { QueryError, OAuthUnauthorizedClientError } from '@tooljet/plugins/dist/server';
@@ -48,7 +48,7 @@ export { QueryError, OAuthUnauthorizedClientError };
 export interface GetQueryVariables {
   appVersionId?: string;
   environmentId?: string;
-  isGetStatic?: boolean;
+  types?: DataSourceTypes[];
   shouldIncludeWorkflows?: boolean;
 }
 

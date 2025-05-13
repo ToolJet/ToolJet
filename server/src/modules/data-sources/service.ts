@@ -62,6 +62,7 @@ export class DataSourcesService implements IDataSourcesService {
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, {
       appVersionId: query.appVersionId,
       environmentId: selectedEnvironmentId,
+      types: [DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
     });
     for (const dataSource of dataSources) {
       const parseIfNeeded = (data: any) => {
