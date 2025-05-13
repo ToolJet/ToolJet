@@ -18939,6 +18939,28 @@ section.ai-message-prompt-input-wrapper {
     }
   }
 
+  .multiselect-box {
+    .search {
+      input {
+        background-color: var(--cc-surface1-surface) !important;
+      }
+      
+    }
+    
+    .dropdown-container {
+      background-color: var(--cc-surface1-surface) !important;
+    }
+
+    
+    .select-item.selected {
+      background-color: var(--cc-surface1-surface) !important;
+    }
+    .options {
+      background-color: var(--cc-surface1-surface) !important;
+      
+    }
+  }
+
   .codehinter-multi-line-input {
     .cm-content {
       background-color: var(--cc-surface1-surface) ;

@@ -164,14 +164,22 @@ export const Multiselect = function Multiselect({
     >
       <div className="col-auto my-auto d-flex align-items-center">
         <label
-          style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
-          className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
+          style={{ marginRight: label ? '1rem' : '', marginBottom: 0, color: 'var(--cc-primary-text)' }}
+          className={`form-label py-1`}
           data-cy={`multiselect-label-${componentName?.toLowerCase()}`}
         >
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
+      <div
+        className="col px-0 h-100"
+        style={{
+          borderRadius: parseInt(borderRadius),
+          boxShadow,
+          backgroundColor: 'var(--cc-surface1-surface)',
+          color: 'var(--cc-primary-text)',
+        }}
+      >
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}
