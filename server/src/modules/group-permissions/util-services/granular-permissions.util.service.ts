@@ -23,6 +23,7 @@ import * as _ from 'lodash';
 import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '../constants/granular_permissions';
 import { RolesRepository } from '@modules/roles/repository';
 import { IGranularPermissionsUtilService } from '../interfaces/IUtilService';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class GranularPermissionsUtilService implements IGranularPermissionsUtilService {
@@ -52,7 +53,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
 
   protected validateAppResourcePermissionUpdateOperation(
     group: GroupPermissions,
-    actions: ResourceGroupActions<ResourceType.APP>
+    actions: ResourceGroupActions<ResourceType.APP | ResourceType.WORKFLOWS>
   ) {
     if (group.name === USER_ROLE.END_USER && actions.canEdit) {
       throw new BadRequestException(ERROR_HANDLER.EDITOR_LEVEL_PERMISSION_NOT_ALLOWED_END_USER);
@@ -120,7 +121,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
   protected async createAppGroupPermission(
     organizationId: string,
     granularPermissions: GranularPermissions,
-    createAppPermissionsObj?: CreateResourcePermissionObject<ResourceType.APP>,
+    createAppPermissionsObj?: CreateResourcePermissionObject<ResourceType.APP | ResourceType.WORKFLOWS>,
     manager?: EntityManager
   ): Promise<void> {
     const { resourcesToAdd, canEdit } = createAppPermissionsObj;
@@ -133,8 +134,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         },
         manager
       );
-
-      const appGRoupPermissions = await manager.save(
+      createAppPermissionsObj.appType = this.getAppTypeFromResourceType(granularPermissions.type);
+      const appGroupPermissions = await manager.save(
         manager.create(AppsGroupPermissions, {
           ...createAppPermissionsObj,
           granularPermissionId: granularPermissions.id,
@@ -143,10 +144,21 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       if (resourcesToAdd?.length) {
         await manager.insert(
           GroupApps,
-          resourcesToAdd.map((app) => ({ appId: app.appId, appsGroupPermissionsId: appGRoupPermissions.id }))
+          resourcesToAdd.map((app) => ({ appId: app.appId, appsGroupPermissionsId: appGroupPermissions.id }))
         );
       }
     }, manager);
+  }
+
+  private getAppTypeFromResourceType(type: ResourceType) {
+    switch (type) {
+      case ResourceType.APP:
+        return APP_TYPES.FRONT_END;
+      case ResourceType.WORKFLOWS:
+        return APP_TYPES.WORKFLOW;
+      default:
+        throw new BadRequestException('Invalid resource type');
+    }
   }
 
   async validateResourceCreation(params: ResourceCreateValidation, manager: EntityManager) {
@@ -188,6 +200,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         appGranularPermission.isAll = true;
         appGranularPermission.type = ResourceType.APP;
         appGroupPermissions.canEdit = true;
+        appGroupPermissions.appType = APP_TYPES.FRONT_END;
+
         return [appGranularPermission];
 
       case USER_ROLE.END_USER:
@@ -195,6 +209,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         appGranularPermission.isAll = true;
         appGranularPermission.type = ResourceType.APP;
         appGroupPermissions.canView = true;
+
         return [appGranularPermission];
 
       default:
@@ -251,7 +266,9 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
   }
 
   protected async updateAppsGroupPermission(
-    UpdateResourceGroupPermissionsObject: UpdateResourceGroupPermissionsObject<ResourceType.APP>,
+    UpdateResourceGroupPermissionsObject: UpdateResourceGroupPermissionsObject<
+      ResourceType.APP | ResourceType.WORKFLOWS
+    >,
     organizationId: string,
     manager?: EntityManager
   ) {
@@ -259,7 +276,10 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       const { granularPermissions, actions, resourcesToDelete, resourcesToAdd, group, allowRoleChange } =
         UpdateResourceGroupPermissionsObject;
 
-      this.validateAppResourcePermissionUpdateOperation(group, actions);
+      this.validateAppResourcePermissionUpdateOperation(
+        group,
+        actions as ResourceGroupActions<ResourceType.APP | ResourceType.WORKFLOWS>
+      );
       const { canEdit } = actions;
       await this.validateResourceAction(
         {

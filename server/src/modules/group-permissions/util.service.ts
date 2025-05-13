@@ -30,6 +30,9 @@ import { UserRepository } from '@modules/users/repository';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { IGroupPermissionsUtilService } from './interfaces/IUtilService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
+
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
   constructor(
@@ -159,6 +162,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
           CreateResourcePermissionObject<any>
         > = DEFAULT_RESOURCE_PERMISSIONS[group.name];
         for (const resource of Object.keys(groupGranularPermissions)) {
+          if (getTooljetEdition() === TOOLJET_EDITIONS.EE && resource == ResourceType.WORKFLOWS) continue;
           const createResourcePermissionObj: CreateResourcePermissionObject<any> = groupGranularPermissions[resource];
 
           const dtoObject = {

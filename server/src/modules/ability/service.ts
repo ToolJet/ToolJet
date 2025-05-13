@@ -53,12 +53,14 @@ export class AbilityService extends IAbilityService {
           folderCRUD: acc.folderCRUD || group.folderCRUD,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
+          workflowCreate: acc.workflowCreate || group.workflowCreate,
+          workflowDelete: acc.workflowDelete || group.workflowDelete,
         };
       }, DEFAULT_USER_PERMISSIONS);
 
       userPermissions.isAdmin = adminGroup;
       userPermissions.isSuperAdmin = false;
-      
+
       if (!adminGroup) {
         const isBuilder = await this.abilityUtilService.isBuilder(user);
         if (isBuilder) {
@@ -84,8 +86,8 @@ export class AbilityService extends IAbilityService {
             dsGranularPermissions
           );
 
-          if(userPermissions.isBuilder) {
-              /* in community edition. builder can use the datasources */
+          if (userPermissions.isBuilder) {
+            /* in community edition. builder can use the datasources */
             userPermissions[MODULES.GLOBAL_DATA_SOURCE].isAllUsable = true;
           }
         }

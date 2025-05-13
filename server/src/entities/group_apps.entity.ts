@@ -34,7 +34,7 @@ export class GroupApps extends BaseEntity {
   @JoinColumn({ name: 'app_id' })
   app: App;
 
-  @ManyToOne(() => AppsGroupPermissions, (appsPermissions) => appsPermissions.id)
+  @ManyToOne(() => AppsGroupPermissions, (appsPermissions) => appsPermissions.groupApps)
   @JoinColumn({ name: 'apps_group_permissions_id' })
   appsPermissions: AppsGroupPermissions;
 }

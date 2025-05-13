@@ -155,7 +155,11 @@ export class SessionUtilService {
       user,
       {
         organizationId: user.organizationId,
-        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }],
+        resources: [
+          { resource: MODULES.APP },
+          { resource: MODULES.GLOBAL_DATA_SOURCE },
+          { resource: MODULES.WORKFLOWS },
+        ],
       },
       manager
     );
@@ -333,7 +337,7 @@ export class SessionUtilService {
             })
         : null;
 
-      const noWorkspaceAttachedInTheSession = await this.checkUserWorkspaceStatus(user.id) && !isSuperAdmin(user);
+      const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);
       const isAllWorkspacesArchived = await this.#isAllWorkspacesArchivedBySuperAdmin(user.id);
       const onboardingFlags = await this.#onboardingFlags(user);
       const metadata = await this.metadataUtilService.fetchMetadata();

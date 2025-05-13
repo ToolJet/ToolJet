@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { LicenseTermsService } from '../interfaces/IService';
 import { LICENSE_FIELD, LICENSE_LIMIT } from '../constants';
 import { AppsRepository } from '@modules/apps/repository';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class WebhookGuard implements CanActivate {
@@ -21,7 +22,7 @@ export class WebhookGuard implements CanActivate {
     const workflowApp = await this.appsRepository.findOne({
       where: {
         id: request?.params?.id,
-        type: 'workflow',
+        type: APP_TYPES.WORKFLOW,
       },
     });
 

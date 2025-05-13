@@ -22,6 +22,13 @@ export abstract class AbilityGuard implements CanActivate {
   protected forwardAbility(): boolean {
     return false;
   }
+  protected resource: any;
+  protected getResourceObject(): any {
+    return this.resource;
+  }
+  protected setResourceObject(resource: any): void {
+    this.resource = resource;
+  }
   protected getResource(): ResourceDetails | ResourceDetails[] {
     return;
   }
@@ -37,6 +44,7 @@ export abstract class AbilityGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const app: App = request.tj_app;
+    this.setResourceObject(app);
 
     if (!features?.length) {
       return false;

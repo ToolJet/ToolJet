@@ -20,14 +20,20 @@ import { GroupApps } from './group_apps.entity';
 import { AppGroupPermission } from './app_group_permission.entity';
 import { AiConversation } from './ai_conversation.entity';
 import { Organization } from './organization.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'type' })
-  type: string = 'front-end';
+  @Column({
+    name: 'type',
+    type: 'enum',
+    enum: APP_TYPES,
+    default: APP_TYPES.FRONT_END,
+  })
+  type: APP_TYPES;
 
   @Column({ name: 'name' })
   name: string;
