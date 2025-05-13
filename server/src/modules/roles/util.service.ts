@@ -57,18 +57,8 @@ export class RolesUtilService implements IRolesUtilService {
     editRoleDto: EditUserRoleDto,
     manager?: EntityManager
   ): Promise<void> {
-    const { newRole, userId, updatingUserId: updatedAdmin } = editRoleDto;
+    const { newRole, userId, updatingUserId: updatedAdmin, currentRole: userRole } = editRoleDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const userRole = await this.roleRepository.getUserRole(userId, organizationId, manager);
-      if (_.isEmpty(userRole)) {
-        throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
-      }
-
-      if (userRole.name == newRole) {
-        throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
-      }
-      editRoleDto.currentRole = userRole;
-
       // Removing an admin
       if (userRole.name == USER_ROLE.ADMIN) {
         const groupUsers = await this.groupPermissionsRepository.getUsersInGroup(
