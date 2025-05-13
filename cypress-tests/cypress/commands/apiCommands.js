@@ -689,7 +689,7 @@ Cypress.Commands.add(
             name: dataSourceName,
             options: [
               { key: "connection_type", value: "manual", encrypted: false },
-              { key: "host", value: "35.238.9.114" },
+              { key: "host", value: "9.234.17.31" },
               { key: "port", value: 5432 },
               { key: "database", value: "student" },
               { key: "username", value: "postgres" },

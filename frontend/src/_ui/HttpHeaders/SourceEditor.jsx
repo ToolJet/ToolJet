@@ -21,8 +21,7 @@ export default ({
   return (
     <div className="table-content-wrapper">
       {options.length === 0 && (
-        <div className="empty-key-value"  
-        data-cy="label-empty-key-value">
+        <div className="empty-key-value" data-cy="label-empty-key-value">
           <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
           <span>There are no key value pairs added</span>
         </div>
@@ -86,7 +85,7 @@ export default ({
 
       <div className="d-flex mb-2" style={{ height: '16px' }}>
         <ButtonSolid
-          data-cy={`${dataCy}-add-more-button`}
+          data-cy={`${dataCy}-add-button`}
           variant="ghostBlue"
           size="sm"
           onClick={() => addNewKeyValuePair(options)}
