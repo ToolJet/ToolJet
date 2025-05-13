@@ -96,7 +96,7 @@ export class AppImportExportService {
     protected componentsService: ComponentsService
   ) {}
 
-  async export(user: User, id: string, searchParams: any = {}, organizationId?: string): Promise<{ appV2: App }> {
+  async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     // filter by search params
@@ -106,7 +106,7 @@ export class AppImportExportService {
         .createQueryBuilder(App, 'apps')
         .where('apps.id = :id AND apps.organization_id = :organizationId', {
           id,
-          organizationId: user?.organizationId || organizationId,
+          organizationId: user?.organizationId,
         });
       const appToExport = await queryForAppToExport.getOne();
 
@@ -135,7 +135,7 @@ export class AppImportExportService {
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
         .where('app_environments.organizationId = :organizationId', {
-          organizationId: user?.organizationId || organizationId,
+          organizationId: user?.organizationId,
         })
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();
@@ -238,8 +238,7 @@ export class AppImportExportService {
     externalResourceMappings = {},
     isGitApp = false,
     tooljetVersion = '',
-    cloning = false,
-    organizationId?: string
+    cloning = false
   ): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
@@ -271,8 +270,7 @@ export class AppImportExportService {
       this.entityManager, //create new BC
       schemaUnifiedAppParams,
       user,
-      isGitApp,
-      organizationId
+      isGitApp
     );
 
     const resourceMapping = await this.setupImportedAppAssociations(
@@ -282,8 +280,7 @@ export class AppImportExportService {
       user,
       externalResourceMappings,
       isNormalizedAppDefinitionSchema,
-      currentTooljetVersion,
-      organizationId
+      currentTooljetVersion
     );
     await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
 
