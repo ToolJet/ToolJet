@@ -17,6 +17,7 @@ export const HUMANIZED_USER_LIST = ['End-user', 'Builder', 'Admin'];
 export enum ResourceType {
   APP = 'app',
   DATA_SOURCE = 'data_source',
+  WORKFLOWS = 'workflow',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -68,12 +69,20 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
+    [ResourceType.WORKFLOWS]: {
+      canEdit: false,
+      canView: true,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
       canEdit: false,
       canView: true,
       hideFromDashboard: false,
+    },
+    [ResourceType.WORKFLOWS]: {
+      canEdit: false,
+      canView: true,
     },
   },
   [USER_ROLE.BUILDER]: {

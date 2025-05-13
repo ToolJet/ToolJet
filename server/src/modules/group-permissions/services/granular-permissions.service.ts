@@ -11,6 +11,7 @@ import { GranularPermissionQuerySearchParam } from '../types';
 import { IGranularPermissionsService } from '../interfaces/IService';
 import { GroupPermissionLicenseUtilService } from '../util-services/license.util.service';
 import { USER_ROLE } from '../constants';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
@@ -45,7 +46,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const apps = await manager.find(AppBase, {
         where: {
-          type: 'front-end',
+          type: APP_TYPES.FRONT_END,
           organizationId,
         },
       });
@@ -53,6 +54,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         return {
           name: app.name,
           id: app.id,
+          type: app.type,
         };
       });
     });

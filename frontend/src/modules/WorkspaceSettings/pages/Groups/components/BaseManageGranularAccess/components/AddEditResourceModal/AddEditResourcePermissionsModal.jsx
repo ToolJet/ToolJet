@@ -5,6 +5,8 @@ import { AppsSelect } from '@/_ui/Modal/AppsSelect';
 import AppPermissionsActions from './AppPermissionActionContainer';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DsPermissionsActions from './DataSourcPermissionActionContainer';
+import WorkflowPermissionsActions from './WorkflowPermissionActionContainer';
+import { RESOURCE_TYPE } from '../../../../index';
 
 function AddEditResourcePermissionsModal({
   handleClose,
@@ -28,11 +30,139 @@ function AddEditResourcePermissionsModal({
   const initialPermissionStateDs = currentState?.initialPermissionStateDs;
   const errors = currentState?.errors;
   const isAll = currentState?.isAll;
-  const allResourceText =
-    resourceType === 'Apps'
-      ? 'This will select all apps in the workspace including any new apps created'
-      : 'This will select all data sources in the workspace including any new connections created';
-  const allResourceTitle = resourceType === 'Apps' ? 'All apps' : 'All data sources';
+  const getAllResourceText = (resourceType) => {
+    switch (resourceType) {
+      case RESOURCE_TYPE.APPS:
+        return 'This will select all apps in the workspace including any new apps created';
+      case RESOURCE_TYPE.WORKFLOWS:
+        return 'This will select all workflows in the workspace including any new workflows created';
+      case RESOURCE_TYPE.DATA_SOURCES:
+        return 'This will select all data sources in the workspace including any new connections created';
+    }
+  };
+
+  const RESOURCE_NAME_MAPPING = {
+    [RESOURCE_TYPE.APPS]: 'apps',
+    [RESOURCE_TYPE.WORKFLOWS]: 'workflows',
+    [RESOURCE_TYPE.DATA_SOURCES]: 'data sources',
+  };
+
+  const getAllResourceLabel = (resourceType) => {
+    switch (resourceType) {
+      case RESOURCE_TYPE.APPS:
+        return 'All apps';
+      case RESOURCE_TYPE.WORKFLOWS:
+        return 'All workflows';
+      case RESOURCE_TYPE.DATA_SOURCES:
+        return 'All data sources';
+      default:
+        return 'All resources';
+    }
+  };
+
+  const renderPermissionActions = (resourceType) => {
+    switch (resourceType) {
+      case RESOURCE_TYPE.APPS:
+        console.log('App permissions for resource type', resourceType);
+        return (
+          <AppPermissionsActions
+            handleClickEdit={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  canEdit: !prevState.initialPermissionState.canEdit,
+                  canView: prevState.initialPermissionState.canEdit,
+                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                },
+              }));
+            }}
+            handleClickView={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  canView: !prevState.initialPermissionState.canView,
+                  canEdit: prevState.initialPermissionState.canView,
+                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                },
+              }));
+            }}
+            handleHideFromDashboard={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  hideFromDashboard: !prevState.initialPermissionState.hideFromDashboard,
+                },
+              }));
+            }}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionState={initialPermissionState}
+          />
+        );
+
+      case RESOURCE_TYPE.WORKFLOWS:
+        return (
+          <WorkflowPermissionsActions
+            handleClickEdit={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  canEdit: !prevState.initialPermissionState.canEdit,
+                  canView: prevState.initialPermissionState.canEdit,
+                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                },
+              }));
+            }}
+            handleClickView={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  canView: !prevState.initialPermissionState.canView,
+                  canEdit: prevState.initialPermissionState.canView,
+                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                },
+              }));
+            }}
+            handleHideFromDashboard={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  hideFromDashboard: !prevState.initialPermissionState.hideFromDashboard,
+                },
+              }));
+            }}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionState={initialPermissionState}
+          />
+        );
+
+      case RESOURCE_TYPE.DATA_SOURCES:
+      default:
+        return (
+          <DsPermissionsActions
+            handleClickConfigure={() => {
+              updateParentState((prevState) => ({
+                initialPermissionStateDs: {
+                  ...prevState.initialPermissionStateDs,
+                  canConfigure: !prevState.initialPermissionStateDs.canConfigure,
+                  canUse: !!prevState.initialPermissionStateDs.canConfigure,
+                },
+              }));
+            }}
+            handleClickUse={() => {
+              updateParentState((prevState) => ({
+                initialPermissionStateDs: {
+                  ...prevState.initialPermissionStateDs,
+                  canUse: !prevState.initialPermissionStateDs.canUse,
+                  canConfigure: !!prevState.initialPermissionStateDs.canUse,
+                },
+              }));
+            }}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionStateDs={initialPermissionStateDs}
+          />
+        );
+    }
+  };
   return (
     <ModalBase
       size="md"
@@ -79,46 +209,7 @@ function AddEditResourcePermissionsModal({
         <label className="form-label bold-text" data-cy="permission-label">
           Permission
         </label>
-        {resourceType === 'Apps' ? (
-          <AppPermissionsActions
-            handleClickEdit={() => {
-              updateParentState((prevState) => ({
-                initialPermissionState: {
-                  ...prevState.initialPermissionState,
-                  canEdit: !prevState.initialPermissionState.canEdit,
-                  canView: prevState.initialPermissionState.canEdit,
-                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
-                },
-              }));
-            }}
-            handleClickView={() => {
-              updateParentState((prevState) => ({
-                initialPermissionState: {
-                  ...prevState.initialPermissionState,
-                  canView: !prevState.initialPermissionState.canView,
-                  canEdit: prevState.initialPermissionState.canView,
-                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
-                },
-              }));
-            }}
-            handleHideFromDashboard={() => {
-              updateParentState((prevState) => ({
-                initialPermissionState: {
-                  ...initialPermissionState,
-                  hideFromDashboard: !prevState.initialPermissionState.hideFromDashboard,
-                },
-              }));
-            }}
-            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
-            initialPermissionState={initialPermissionState}
-          />
-        ) : (
-          <DsPermissionsActions
-            updateParentState={updateParentState}
-            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
-            initialPermissionStateDs={initialPermissionStateDs}
-          />
-        )}
+        {renderPermissionActions(resourceType)}
       </div>
 
       <div className="form-group mb-3">
@@ -139,15 +230,15 @@ function AddEditResourcePermissionsModal({
             <div>
               <span
                 className="form-check-label"
-                data-cy={`${allResourceTitle.toLowerCase().replace(/\s+/g, '-')}-label`}
+                data-cy={`${getAllResourceLabel(resourceType).toLowerCase().replace(/\s+/g, '-')}-label`}
               >
-                {allResourceTitle}
+                {getAllResourceLabel(resourceType)}
               </span>
               <span
                 className="tj-text-xsm"
-                data-cy={`${allResourceTitle.toLowerCase().replace(/\s+/g, '-')}-info-text`}
+                data-cy={`${getAllResourceText(resourceType).toLowerCase().replace(/\s+/g, '-')}-info-text`}
               >
-                {allResourceText}
+                {getAllResourceText(resourceType)}
               </span>
             </div>
           </label>
@@ -188,8 +279,7 @@ function AddEditResourcePermissionsModal({
                   style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
                   data-cy="custom-info-text"
                 >
-                  Select specific {resourceType === 'Apps' ? 'applications' : 'data sources'} you want to add to the
-                  group
+                  Select specific ${RESOURCE_NAME_MAPPING[resourceType]} you want to add to the group
                 </span>
               </div>
             </label>

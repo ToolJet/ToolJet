@@ -15,6 +15,7 @@ import { User } from './user.entity';
 import { AppVersion } from './app_version.entity';
 import { GroupPermission } from './group_permission.entity';
 import { AppGroupPermission } from './app_group_permission.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Entity({ name: 'apps' })
 export class AppBase extends BaseEntity {
@@ -24,8 +25,13 @@ export class AppBase extends BaseEntity {
   @Column({ name: 'name' })
   name: string;
 
-  @Column({ name: 'type' })
-  type: string = 'front-end';
+  @Column({
+    name: 'type',
+    type: 'enum',
+    enum: APP_TYPES,
+    default: APP_TYPES.FRONT_END,
+  })
+  type: APP_TYPES;
 
   @Column({ name: 'slug', unique: true })
   slug: string;

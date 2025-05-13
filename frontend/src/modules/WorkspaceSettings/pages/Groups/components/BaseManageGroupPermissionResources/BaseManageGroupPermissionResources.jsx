@@ -958,6 +958,77 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                   {/* //App till here */}
                                 </div>
+                                {/* Worklfow Permission */}
+                                {this.props.workflowEnabled && (
+                                  <div className="manage-groups-permission-apps">
+                                    <div data-cy="resource-apps">
+                                      {this.props.t(
+                                        'header.organization.menus.manageGroups.permissionResources.workflows',
+                                        'Workflows'
+                                      )}
+                                    </div>
+                                    <div className="text-muted">
+                                      <div className="d-flex apps-permission-wrap flex-column">
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              console.log('permissions is');
+
+                                              console.log(groupPermission);
+
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                workflowCreate: !groupPermission.workflowCreate,
+                                              });
+                                              this.setState({
+                                                updateParam: { workflowCreate: !groupPermission.workflowCreate },
+                                              });
+                                            }}
+                                            checked={groupPermission.workflowCreate}
+                                            disabled={disablePermissionUpdate}
+                                            data-cy="app-create-checkbox"
+                                          />
+                                          <span className="form-check-label" data-cy="app-create-label">
+                                            {this.props.t('globals.build', 'Build')}
+                                          </span>
+                                          <span
+                                            class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                            data-cy="app-create-helper-text"
+                                          >
+                                            Build workflow in this workspace
+                                          </span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                workflowDelete: !groupPermission.workflowDelete,
+                                              });
+                                              this.setState({
+                                                workflowDelete: { workflowDelete: !groupPermission.workflowDelete },
+                                              });
+                                            }}
+                                            checked={groupPermission.workflowDelete}
+                                            disabled={disablePermissionUpdate}
+                                            data-cy="app-delete-checkbox"
+                                          />
+                                          <span className="form-check-label" data-cy="app-delete-label">
+                                            {this.props.t('globals.delete', 'Delete')}
+                                          </span>
+                                          <span
+                                            class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                            data-cy="app-delete-helper-text"
+                                          >
+                                            Delete any workflow in this workspace
+                                          </span>
+                                        </label>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
 
                                 {/* Data source */}
                                 <DataSourcePermissionsUI
