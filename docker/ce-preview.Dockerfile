@@ -83,7 +83,7 @@ RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
     chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
 
-# Explicitly create PG main directory with correct ownership
+# Explicitly create PG main directory with correct ownerships
 RUN mkdir -p /var/lib/postgresql/13/main && \
     chown -R postgres:postgres /var/lib/postgresql
 
