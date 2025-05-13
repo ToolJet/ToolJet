@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import { formatFileSize } from '@/_helpers/utils';
 
 import FileList from './Components/FileList';
 import UploadArea from './Components/UploadArea';
 import ValidationBar from './Components/ValidationBar';
+import ErrorMessage from './Components/ErrorMessage';
 import './style.scss';
 import { useFilePicker } from './hooks/useFilePicker';
 
@@ -24,6 +26,9 @@ const FilePicker = (props) => {
     setExposedVariables,
     dataCy,
   } = props;
+
+  const numericWidgetHeight = parseFloat(String(height).replace('px', '')) || 0; // Default to 0 if parsing fails
+  const isSmallWidget = numericWidgetHeight < 200;
 
   const {
     getRootProps,
@@ -45,6 +50,10 @@ const FilePicker = (props) => {
     isVisible,
     isLoading,
     isMandatory,
+    minFileCount,
+    maxFileCount,
+    dropzoneRejections,
+    uiErrorMessage,
   } = useFilePicker({ ...props, setExposedVariable, setExposedVariables });
 
   const [isFocused, setIsFocused] = useState(false);
@@ -53,12 +62,13 @@ const FilePicker = (props) => {
     () => ({
       display: isVisible ? 'flex' : 'none',
       borderRadius: `${borderRadius}px`,
-      backgroundColor: darkMode ? '#2b3541' : '#fcfcfd',
+      backgroundColor: darkMode ? '#2b3541' : 'var(--surfaces-surface-01)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
       boxShadow: boxShadow,
-      height: `${height}px`,
+      height: `${numericWidgetHeight}px`,
+      overflowY: isSmallWidget ? 'auto' : 'visible',
     }),
-    [borderRadius, darkMode, boxShadow, height, isVisible]
+    [borderRadius, darkMode, boxShadow, numericWidgetHeight, isVisible, isSmallWidget]
   );
 
   const dropzoneClasses = clsx('file-picker-dropzone', {
@@ -86,6 +96,7 @@ const FilePicker = (props) => {
 
   const rootProps = getRootProps({ className: dropzoneClasses });
   const inputProps = getInputProps();
+
   const augmentedInputProps = {
     ...inputProps,
     onFocus: handleFocus,
@@ -93,7 +104,21 @@ const FilePicker = (props) => {
   };
 
   const { enableMultiple } = properties;
-  const { minSize, maxSize, minFileCount, maxFileCount } = validation;
+  const { minSize, maxSize, fileType } = validation;
+
+  const filePaneClasses = clsx(
+    'file-picker-files-pane',
+    isSmallWidget
+      ? 'h-auto overflow-y-visible'
+      : selectedFiles.length > 4
+      ? 'overflow-y-auto max-h-[38.2%] min-h-[180px]'
+      : 'h-auto overflow-y-auto'
+  );
+
+  const topSectionClasses = clsx('tw-flex tw-flex-col tw-gap-3 tw-shrink-0 tw-grow', {
+    'tw-flex-grow': selectedFiles.length === 0,
+  });
+
   return (
     <div className="file-picker-widget-wrapper" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
       {isLoading ? (
@@ -102,38 +127,42 @@ const FilePicker = (props) => {
         </div>
       ) : (
         <>
-          <div className="tw-shrink-0 tw-flex tw-flex-col tw-gap-3 tw-h-full">
-            <h3 className="file-picker-title">{labelText}</h3>
+          <div className={topSectionClasses}>
+            <h3 className="file-picker-title">{labelText || 'Upload files'}</h3>
 
             <UploadArea
-              getRootProps={() => rootProps}
-              getInputProps={() => augmentedInputProps}
-              augmentedInputProps={augmentedInputProps}
-              maxFileCount={maxFileCount}
+              getRootProps={getRootProps}
+              getInputProps={getInputProps}
               isDragActive={isDragActive}
               isDragAccept={isDragAccept}
               isDragReject={isDragReject}
-              isParsing={isParsing}
-              selectedFilesCount={selectedFiles.length}
+              isDisabled={disabledState || disablePicker}
               instructionText={instructionText}
-              handleFocus={handleFocus}
-              handleBlur={handleBlur}
-              disabledState={disabledState || disablePicker}
+              isFocused={isFocused}
+              dropzoneRejections={dropzoneRejections}
+              minSize={minSize}
+              maxSize={maxSize}
+              maxCount={maxFileCount}
+              fileTypeCategory={fileType}
+              uiErrorMessage={uiErrorMessage}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              borderRadius={borderRadius}
+              boxShadow={boxShadow}
+              height={height}
             />
 
-            {isMandatory && (
-              <ValidationBar
-                minSize={minSize}
-                maxSize={maxSize}
-                selectedFileCount={selectedFiles.length}
-                minFileCount={minFileCount}
-                maxFileCount={maxFileCount}
-                enableMultiple={enableMultiple}
-              />
-            )}
+            <ValidationBar
+              minSize={minSize}
+              maxSize={maxSize}
+              selectedFileCount={selectedFiles.length}
+              minFileCount={minFileCount}
+              maxFileCount={maxFileCount}
+              enableMultiple={enableMultiple}
+            />
           </div>
           {selectedFiles.length > 0 && (
-            <div className="file-picker-files-pane">
+            <div className={filePaneClasses}>
               <FileList
                 files={selectedFiles}
                 onRemoveFile={handleRemoveFile}
