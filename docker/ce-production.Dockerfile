@@ -1,4 +1,4 @@
-FROM node:22.15.0-buster AS builder
+FROM node:22.15.0 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=8096"
