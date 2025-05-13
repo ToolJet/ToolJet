@@ -71,6 +71,59 @@ export const processFileContent = (fileType, fileContent) => {
   }
 };
 
+//? handle bad data in csv parser (e.g. empty cells) OR errors
+const DEPRECATED_handleErrors = (data) => {
+  const badData = data.filter((row) => {
+    return Object.values(row).some((value) => value === '');
+  });
+
+  const errors = data.filter((row) => {
+    return Object.values(row).some((value) => value === 'ERROR');
+  });
+
+  return [badData, errors];
+};
+
+const DEPRECATED_processCSV = (str, delimiter = ',') => {
+  try {
+    const wb = XLSX.read(str, { type: 'string', raw: true });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });
+    return data;
+  } catch (error) {
+    console.log(error);
+    DEPRECATED_handleErrors(error);
+  }
+};
+
+const DEPRECATED_processXls = (str) => {
+  try {
+    const wb = XLSX.read(str, { type: 'base64' });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    /* Convert array of arrays */
+    const data = XLSX.utils.sheet_to_json(ws);
+    return data;
+  } catch (error) {
+    console.log(error);
+    DEPRECATED_handleErrors(error);
+  }
+};
+
+export const DEPRECATED_processFileContent = (fileType, fileContent) => {
+  switch (fileType) {
+    case 'text/csv':
+      return DEPRECATED_processCSV(fileContent.readFileAsText);
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      return DEPRECATED_processXls(fileContent.readFileAsDataURL);
+
+    default:
+      break;
+  }
+};
+
 export const detectParserFile = (file) => {
   return Object.values(PARSE_FILE_TYPES).includes(file.type);
 };

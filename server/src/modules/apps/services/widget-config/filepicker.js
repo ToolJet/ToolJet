@@ -195,7 +195,7 @@ export const filepickerConfig = {
     },
     minFileCount: {
       type: 'code',
-      displayName: 'Max file count',
+      displayName: 'Min file count',
       validation: {
         schema: {
           type: 'union',
