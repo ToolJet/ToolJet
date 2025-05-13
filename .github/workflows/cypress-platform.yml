@@ -2,7 +2,7 @@ name: Cypress Platform
 
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled]
   workflow_dispatch:
 
 env:
@@ -12,21 +12,19 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
-    if: |
-      github.event.action == 'labeled' &&
-      (
-        github.event.label.name == 'run-cypress' || 
-        github.event.label.name == 'run-ce-cypress-platform' || 
-        github.event.label.name == 'run-ee-cypress-platform'
-      )
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') || 
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       matrix:
         edition: >-
           ${{ 
             contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-platform') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-platform') && fromJson('["ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && fromJson('["ee"]') ||
             fromJson('[]')
           }}
 

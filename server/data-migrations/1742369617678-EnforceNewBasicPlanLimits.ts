@@ -1,12 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppModule } from '@modules/app/module';
 import { NestFactory } from '@nestjs/core';
-import { LicenseCountsService } from '@ee/licensing/services/count.service';
 import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class EnforceNewBasicPlanLimits1742369617678 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -17,6 +16,9 @@ export class EnforceNewBasicPlanLimits1742369617678 implements MigrationInterfac
     }
     const manager = queryRunner.manager;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const { LicenseCountsService } = await import(
+      `${await getImportPath(true, edition)}/licensing/services/count.service`
+    );
     const licenseInitService = nestApp.get(LicenseInitService);
 
     const { isValid } = await licenseInitService.initForMigration(manager);
@@ -168,6 +170,32 @@ export class EnforceNewBasicPlanLimits1742369617678 implements MigrationInterfac
             WHERE id IN (${viewersToArchive.map((id) => `'${id}'`).join(',')})
           `;
           await manager.query(archiveViewersInstanceQuery);
+        }
+      }
+
+      const superAdminCountQuery = `
+        SELECT COUNT(*) FROM users
+        WHERE status = '${USER_STATUS.ACTIVE}' AND user_type = '${USER_TYPE.INSTANCE}'
+      `;
+      const superAdminCount = await manager.query(superAdminCountQuery);
+
+      if (superAdminCount === 0) {
+        const superAdminsQuery = `
+          SELECT * FROM users
+          WHERE user_type = '${USER_TYPE.INSTANCE}'
+          ORDER BY id ASC
+        `;
+        const superAdmins = await manager.query(superAdminsQuery);
+
+        if (superAdmins.length > 0) {
+          const oneInstanceUser = superAdmins[0];
+          console.log('Activating one instance user:', oneInstanceUser.id, oneInstanceUser.email);
+          const activateUserQuery = `
+            UPDATE users
+            SET status = '${USER_STATUS.ACTIVE}'
+            WHERE id = '${oneInstanceUser.id}'
+          `;
+          await manager.query(activateUserQuery);
         }
       }
     }

@@ -162,6 +162,10 @@ export class DataSourcesService implements IDataSourcesService {
     return;
   }
 
+  async decryptOptions(options: Record<string, any>) {
+    return await this.dataSourcesUtilService.decrypt(options);
+  }
+
   async delete(dataSourceId: string, user: User) {
     const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
     if (!dataSource) {

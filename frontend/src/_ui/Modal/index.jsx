@@ -17,6 +17,7 @@ export default function ModalBase({
   cancelDisabled,
   className = '',
   size = 'sm',
+  headerAction,
 }) {
   return (
     <Modal
@@ -30,7 +31,8 @@ export default function ModalBase({
         <Modal.Title className="font-weight-500" data-cy="modal-title">
           {title}
         </Modal.Title>
-        <div onClick={handleClose} className="cursor-pointer" data-cy="modal-close-button">
+        <div onClick={handleClose} id="header-actions" className="cursor-pointer" data-cy="modal-close-button">
+          {headerAction && headerAction()}
           <SolidIcon name="remove" width="20" />
         </div>
       </Modal.Header>

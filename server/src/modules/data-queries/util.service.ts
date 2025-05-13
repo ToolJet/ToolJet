@@ -90,7 +90,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         dataQuery,
         queryOptions,
         organizationId,
-        environmentId
+        environmentId,
+        user
       );
 
       queryStatus.setOptions(parsedQueryOptions);
@@ -218,7 +219,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataQuery,
               queryOptions,
               organizationId,
-              environmentId
+              environmentId,
+              user
             ));
             queryStatus.setOptions(parsedQueryOptions);
             result = await service.run(
@@ -290,18 +292,27 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
+  async fetchServiceAndParsedParams(
+    dataSource,
+    dataQuery,
+    queryOptions,
+    organization_id,
+    environmentId = undefined,
+    user = undefined
+  ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
       organization_id,
-      environmentId
+      environmentId,
+      user
     );
 
     const parsedQueryOptions = await this.parseQueryOptions(
       dataQuery.options,
       queryOptions,
       organization_id,
-      environmentId
+      environmentId,
+      user
     );
 
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
@@ -367,7 +378,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     object: any,
     options: object,
     organization_id: string,
-    environmentId?: string
+    environmentId?: string,
+    user?: User
   ): Promise<object> {
     const stack: any[] = [{ obj: object, key: null, parent: null }];
 
@@ -405,12 +417,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // b: Handle {{constants.}} or {{secrets.}}
         if (
           (typeof resolvedValue === 'string' && resolvedValue.includes('{{constants.')) ||
-          resolvedValue.includes('{{secrets.')
+          resolvedValue.includes('{{secrets.') ||
+          resolvedValue.includes('{{globals.server.')
         ) {
           const resolvingConstant = await this.dataSourceUtilService.resolveConstants(
             resolvedValue,
             organization_id,
-            environmentId
+            environmentId,
+            user
           );
           resolvedValue = resolvingConstant;
           if (parent && key !== null) {
