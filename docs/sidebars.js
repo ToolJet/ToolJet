@@ -90,7 +90,7 @@ const sidebars = {
             'setup/system-requirements',
             'setup/digitalocean',
             'setup/docker',
-            'setup/ec2',
+            'setup/ami',
             'setup/ecs',
             'setup/openshift',
             'setup/helm',

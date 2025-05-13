@@ -1,7 +1,6 @@
 ---
 id: upgrade-to-lts
 title: Upgrading ToolJet to the LTS Version
-
 ---
 
 ToolJet has released its first Long Term Support (LTS) version, which provides extended support and stability for your environments. Upgrading to this LTS version ensures you benefit from the latest features and security updates while maintaining a stable and supported environment.
@@ -22,7 +21,7 @@ The upgrade process depends on your deployment method. You can follow the upgrad
 
 - [Upgrade ToolJet on DigitalOcean](/docs/2.50.0-lts/setup/digitalocean#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Docker](/docs/2.50.0-lts/setup/docker#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on AWS EC2](/docs/2.50.0-lts/setup/ec2#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on AWS EC2](/docs/2.50.0-lts/setup/ami#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on AWS ECS](/docs/2.50.0-lts/setup/ecs#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on OpenShift](/docs/2.50.0-lts/setup/openshift#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Helm](/docs/2.50.0-lts/setup/helm#upgrading-to-the-latest-lts-version)

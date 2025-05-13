@@ -63,7 +63,7 @@ export const setupCards = [
 export const deployOptions = [
     { icon: Cloud, title: "DigitalOcean",  href: "/docs/3.0.0-LTS/setup/digitalocean" },
     { icon: Container, title: "Docker",  href: "/docs/3.0.0-LTS/setup/docker" },
-    { icon: Server, title: "AWS EC2",  href: "/docs/3.0.0-LTS/setup/ec2" },
+    { icon: Server, title: "AWS EC2",  href: "/docs/3.0.0-LTS/setup/ami" },
     { icon: Server, title: "AWS ECS",  href: "/docs/3.0.0-LTS/setup/ecs" },
     { icon: Server, title: "Openshift",  href: "/docs/3.0.0-LTS/setup/openshift" },
     { icon: Telescope, title: "Helm",  href: "/docs/3.0.0-LTS/setup/helm" },

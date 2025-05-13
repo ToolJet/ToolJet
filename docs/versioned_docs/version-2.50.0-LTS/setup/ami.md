@@ -1,9 +1,9 @@
 ---
-id: ec2
-title: AWS EC2
+id: ami
+title: AWS AMI
 ---
 
-# Deploying ToolJet on Amazon EC2
+# Deploying ToolJet on Amazon AMI
 
 :::info
 You should setup a PostgreSQL database manually to be used by the ToolJet server.
@@ -21,7 +21,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
 3. Under the **Images** section, click on the **AMIs** button.
-4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
+4. Find the [ToolJet version](https://github.com/ToolJet/ToolJet/releases) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_EE-LTS-x.xx.ubuntu_focal` in the search bar.
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
   Creating a new security group is recommended. For example, if the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
@@ -82,7 +82,7 @@ You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 ## Upgrading to the Latest LTS Version
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:EE-LTS-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
