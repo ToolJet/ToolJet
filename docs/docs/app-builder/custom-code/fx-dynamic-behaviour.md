@@ -37,6 +37,6 @@ Example: In an app where you are using forms, you can enable the “Submit” bu
 **Conditional Visibility**: Show or hide components based on specific conditions.
 
 Example: In an employee directory app, you can display the “Add Employee” button only if the user has an admin role.
-<img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/visiblity.png" alt=" button disable "/>
+<img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/visibility.png" alt=" button disable "/>
 
 Using FX expressions it is easy to add dynamic behavior to your applications without writing any boilerplate code. Whether it’s showing or hiding components, validating forms, applying styles, or managing loading states with fx you can build more responsive and interactive interfaces.
