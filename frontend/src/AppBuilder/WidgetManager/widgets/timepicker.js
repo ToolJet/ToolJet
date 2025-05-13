@@ -166,7 +166,7 @@ export const timePickerConfig = {
     labelColor: {
       type: 'colorSwatches',
       displayName: 'Color',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
     alignment: {
@@ -217,13 +217,13 @@ export const timePickerConfig = {
     fieldBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
     fieldBorderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
       accordian: 'field',
     },
     accentColor: {
@@ -235,13 +235,13 @@ export const timePickerConfig = {
     selectedTextColor: {
       type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#E54D2E' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     icon: {
@@ -331,16 +331,16 @@ export const timePickerConfig = {
     },
     events: [],
     styles: {
-      labelColor: { value: '#1B1F24' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
       labelWidth: { value: '20' },
       auto: { value: '{{true}}' },
-      fieldBackgroundColor: { value: '#fff' },
-      fieldBorderColor: { value: '#CCD1D5' },
+      fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      fieldBorderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
-      selectedTextColor: { value: '#1B1F24' },
-      errTextColor: { value: '#E54D2E' },
+      selectedTextColor: { value: 'var(--cc-primary-text)' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
       icon: { value: 'IconClock' },
       iconVisibility: { value: true },
       iconDirection: { value: 'left' },

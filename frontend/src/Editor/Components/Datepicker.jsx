@@ -97,7 +97,7 @@ export const Datepicker = function Datepicker({
   return (
     <div
       data-disabled={disabledState}
-      className={`datepicker-widget ${darkMode && 'theme-dark'}`}
+      className={`legacy-datepicker-widget datepicker-widget ${darkMode && 'theme-dark'}`}
       data-cy={dataCy}
       style={{
         height,
