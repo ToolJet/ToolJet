@@ -156,7 +156,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Events and Logic',
           'items': [
-            'app-builder/import-libraries/runjs',
+            'app-builder/events/overview',
           ],
         },
         {
