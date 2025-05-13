@@ -105,15 +105,25 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
       for (const option of optionsWithOauth) {
         if (option['encrypted']) {
-          const credential = await this.credentialService.create(
-            resetSecureData ? '' : option['value'] || '',
-            entityManager
-          );
+          if (option['workspace_constant']) {
+            const credential = await this.credentialService.create(option['workspace_constant'], entityManager);
 
-          parsedOptions[option['key']] = {
-            credential_id: credential.id,
-            encrypted: option['encrypted'],
-          };
+            parsedOptions[option['key']] = {
+              credential_id: credential.id,
+              workspace_constant: option['workspace_constant'],
+              encrypted: option['encrypted'],
+            };
+          } else {
+            const credential = await this.credentialService.create(
+              resetSecureData ? '' : option['value'] || '',
+              entityManager
+            );
+
+            parsedOptions[option['key']] = {
+              credential_id: credential.id,
+              encrypted: option['encrypted'],
+            };
+          }
         } else {
           parsedOptions[option['key']] = {
             value: option['value'],
@@ -251,31 +261,40 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const parsedOptions = {};
     return await dbTransactionWrap(async (entityManager: EntityManager) => {
       for (const option of optionsWithOauth) {
+        const key = option['key'];
+        const credentialValue = option['value'];
+
         if (option['encrypted']) {
           const existingCredentialId =
-            dataSource?.options &&
-            dataSource.options[option['key']] &&
-            dataSource.options[option['key']]['credential_id'];
+            dataSource?.options && dataSource.options[key] && dataSource.options[key]['credential_id'];
+
+          if (credentialValue && (credentialValue.includes('{{constants') || credentialValue.includes('{{secrets'))) {
+            parsedOptions[key] = {
+              workspace_constant: credentialValue,
+            };
+          }
 
           if (existingCredentialId) {
-            (option['value'] || option['value'] === '') &&
-              (await this.credentialService.update(existingCredentialId, option['value'] || ''));
+            (credentialValue || credentialValue === '') &&
+              (await this.credentialService.update(existingCredentialId, credentialValue || ''));
 
-            parsedOptions[option['key']] = {
+            parsedOptions[key] = {
+              ...parsedOptions[key],
               credential_id: existingCredentialId,
               encrypted: option['encrypted'],
             };
           } else {
-            const credential = await this.credentialService.create(option['value'] || '', entityManager);
+            const credential = await this.credentialService.create(credentialValue || '', entityManager);
 
-            parsedOptions[option['key']] = {
+            parsedOptions[key] = {
+              ...parsedOptions[key],
               credential_id: credential.id,
               encrypted: option['encrypted'],
             };
           }
         } else {
-          parsedOptions[option['key']] = {
-            value: option['value'],
+          parsedOptions[key] = {
+            value: credentialValue,
             encrypted: false,
           };
         }
@@ -428,6 +447,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const credentialId = parsedOptions[key]?.['credential_id'];
         if (credentialId) {
           const encryptedKeyValue = await this.credentialService.getValue(credentialId);
+          constantMatcher.lastIndex = 0;
 
           //check if encrypted key value is a constant
           if (constantMatcher.test(encryptedKeyValue)) {
