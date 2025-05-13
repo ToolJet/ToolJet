@@ -122,7 +122,7 @@ export const rangeSliderConfig = {
     styles: {
       lineColor: { value: '' },
       handleColor: { value: '' },
-      trackColor: { value: 'var(--primary-brand)' },
+      trackColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       padding: { value: 'default' },
     },

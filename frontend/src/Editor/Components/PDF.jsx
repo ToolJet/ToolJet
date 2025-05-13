@@ -79,7 +79,7 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
 
   // styles for download icon
   const downloadIconOuterWrapperStyles = {
-    backgroundColor: 'white',
+    backgroundColor: 'var(--cc-surface1-surface)',
     borderRadius: '4px',
     height: '36px',
     padding: '0.5rem',
@@ -193,7 +193,8 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
           <div
             className={`d-flex ${
               pageControls ? 'justify-content-between' : 'justify-content-end'
-            } py-3 px-3 align-items-baseline bg-white border-top border-light`}
+            } py-3 px-3 align-items-baseline border-top border-light`}
+            style={{ backgroundColor: 'var(--cc-surface1-surface)', color: 'var(--cc-primary-text)' }}
           >
             {pageControls && (
               <>
@@ -203,6 +204,7 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
                     onClick={() => updatePage(-1)}
                     type="button"
                     aria-label="Previous page"
+                    style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
                   >
                     ‹
                   </button>
@@ -214,6 +216,7 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
                     onClick={() => updatePage(1)}
                     type="button"
                     aria-label="Next page"
+                    style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
                   >
                     ›
                   </button>
@@ -232,7 +235,9 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
                   style={downloadIconImgStyle}
                   className="mx-1"
                 />
-                <span className="mx-1">Download PDF</span>
+                <span className="mx-1" style={{ color: 'var(--cc-primary-text)' }}>
+                  Download PDF
+                </span>
               </div>
             )}
           </div>

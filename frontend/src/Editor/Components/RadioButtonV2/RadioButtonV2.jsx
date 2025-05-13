@@ -191,7 +191,7 @@ export const RadioButtonV2 = ({
         data-cy={`label-${String(componentName).toLowerCase()} `}
         data-disabled={isDisabled}
         id={String(componentName)}
-        className={cx('radio-button,', 'd-flex', {
+        className={cx('radio-button', 'd-flex', {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) ||
             (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
@@ -279,9 +279,9 @@ export const RadioButtonV2 = ({
         </div>
       </div>
       <div
-        className={`${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
+        className={`${isValid ? 'd-none' : visibility ? 'd-flex' : 'd-none'}`}
         style={{
-          color: 'var(--status-error-strong)',
+          color: 'var(--cc-error-systemStatus)',
           justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
           fontSize: '11px',
           fontWeight: '400',

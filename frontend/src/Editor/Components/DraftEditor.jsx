@@ -87,7 +87,7 @@ const BlockStyleControls = (props) => {
         <button className="dropdownbtn px-2" type="button">
           Heading
         </button>
-        <div className="dropdown-content bg-white">
+        <div className="dropdown-content" style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
           {HEADINGS.map((type) => (
             <a className="dropitem m-0 p-0" key={type.label}>
               <StyleButton

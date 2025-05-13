@@ -173,7 +173,7 @@ export const formConfig = {
   },
   styles: {
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
@@ -181,7 +181,7 @@ export const formConfig = {
       },
     },
     footerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
@@ -268,6 +268,8 @@ export const formConfig = {
     },
     events: [],
     styles: {
+      headerBackgroundColor: { value: '#ffffffff' },
+      footerBackgroundColor: { value: '#ffffffff' },
       backgroundColor: { value: '#fff' },
       borderRadius: { value: '0' },
       borderColor: { value: '#fff' },

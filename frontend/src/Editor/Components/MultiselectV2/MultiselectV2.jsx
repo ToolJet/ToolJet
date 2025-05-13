@@ -394,8 +394,8 @@ export const MultiselectV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isMultiSelectLoading || isMultiSelectDisabled
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+          ? 'var(--cc-disabled-text)'
+          : 'var(--cc-primary-text)',
     }),
 
     input: (provided, _state) => ({
@@ -426,14 +426,14 @@ export const MultiselectV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
+      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--cc-surface1-surface)',
       color: _state.isDisabled
-        ? 'var(_--text-disbled)'
+        ? 'var(--cc-disabled-text)'
         : selectedTextColor !== '#1B1F24'
         ? selectedTextColor
         : isMultiSelectDisabled || isMultiSelectLoading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+        ? 'var(--cc-disabled-text)'
+        : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
       '&:hover': {
@@ -450,7 +450,7 @@ export const MultiselectV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: 'var(--cc-surface1-surface)',
     }),
     menu: (provided) => ({
       ...provided,

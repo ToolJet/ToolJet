@@ -46,10 +46,10 @@ export const stepsConfig = {
   styles: {
     color: {
       type: 'colorSwatches',
-      displayName: 'colorSwatches',
+      displayName: 'Color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     textColor: {
@@ -101,7 +101,7 @@ export const stepsConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       theme: { value: 'titles' },
-      color: { value: 'var(--primary-brand)' },
+      color: { value: 'var(--cc-primary-brand)' },
       textColor: { value: '' },
     },
   },

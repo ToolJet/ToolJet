@@ -157,7 +157,7 @@ export const imageConfig = {
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
       accordian: 'Container',
     },
@@ -258,7 +258,7 @@ export const imageConfig = {
     styles: {
       imageFit: { value: 'contain' },
       imageShape: { value: 'none' },
-      backgroundColor: { value: '#FFFFFF' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: '' },
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
