@@ -14,14 +14,12 @@ import { ERROR_HANDLER } from '@modules/group-permissions/constants/error';
 import { RolesRepository } from './repository';
 import { AddUserRoleObject } from '@modules/group-permissions/types';
 import { IRolesUtilService } from './interfaces/IUtilService';
-import { LicenseUserService } from '@modules/licensing/services/user.service';
 
 @Injectable()
 export class RolesUtilService implements IRolesUtilService {
   constructor(
     protected groupPermissionsRepository: GroupPermissionsRepository,
-    protected roleRepository: RolesRepository,
-    protected licenseUserService: LicenseUserService
+    protected roleRepository: RolesRepository
   ) {}
 
   async changeEndUserToEditor(
