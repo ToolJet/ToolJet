@@ -8,7 +8,7 @@ export class AppGitService {
     throw new Error('Method not implemented.');
   }
 
-  async syncApp(appGitPushBody: AppGitPushDto, user: User, appGitId: string): Promise<any> {
+  async gitPushApp(appGitPushBody: AppGitPushDto, user: User, appGitId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
