@@ -1,9 +1,9 @@
 ---
-id: ec2
-title: AWS EC2
+id: ami
+title: AWS AMI
 ---
 
-# Deploying ToolJet on Amazon EC2
+# Deploying ToolJet on Amazon AMI
 
 :::warning
 To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
