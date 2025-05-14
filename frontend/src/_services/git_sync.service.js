@@ -133,7 +133,7 @@ function gitPush(body, appGitId, versionId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpush/${appGitId}/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpush/${appGitId}/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function getAppConfig(organizationId, versionId) {
@@ -146,7 +146,7 @@ function getAppConfig(organizationId, versionId) {
     credentials: 'include',
     signal: controller.signal,
   };
-  const response = fetch(`${config.apiUrl}/git-sync/${organizationId}/app/${versionId}`, requestOptions).then(
+  const response = fetch(`${config.apiUrl}/app-git/${organizationId}/app/${versionId}`, requestOptions).then(
     handleResponse
   );
   clearTimeout(id);
@@ -159,7 +159,7 @@ function checkForUpdates(appId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull/app/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}`, requestOptions).then(handleResponse);
 }
 
 function gitPull() {
@@ -168,7 +168,7 @@ function gitPull() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull`, requestOptions).then(handleResponse);
 }
 
 function confirmPullChanges(body, appId) {
@@ -178,7 +178,7 @@ function confirmPullChanges(body, appId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull/app/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}`, requestOptions).then(handleResponse);
 }
 
 function importGitApp(body) {
@@ -188,7 +188,7 @@ function importGitApp(body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull/app`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app`, requestOptions).then(handleResponse);
 }
 function saveProviderConfigs(body) {
   // TO DO Later : Review if we need to use abort controller for this api request
