@@ -158,6 +158,10 @@ const sidebars = {
           'label': 'Events and Logic',
           'items': [
             'app-builder/events/overview',
+            'app-builder/events/event-triggers',
+            'app-builder/events/csa',
+            'app-builder/events/actions',
+            'app-builder/events/variables'
           ],
         },
         {
