@@ -21,7 +21,7 @@ import config from 'config';
 import { capitalize, isEmpty } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
-import { camelizeKeys, decamelizeKeys } from 'humps';
+import { camelizeKeys, decamelizeKeys, decamelize } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -36,6 +36,7 @@ import './dataSourceManager.theme.scss';
 import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
+import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -248,14 +249,26 @@ class DataSourceManagerComponent extends React.Component {
     const scope = this.state?.scope || selectedDataSource?.scope;
 
     const parsedOptions = Object?.keys(options)?.map((key) => {
-      const keyMeta = dataSourceMeta.options[key];
+      let keyMeta = dataSourceMeta.options[key];
+      let isEncrypted = false;
+      if (keyMeta) {
+        isEncrypted = keyMeta.encrypted;
+      }
+
+      // to resolve any casing mis-match
+      if (decamelize(key) !== key) {
+        const newKey = decamelize(key);
+        isEncrypted = dataSourceMeta.options[newKey].encrypted;
+      }
+
       return {
         key: key,
         value: options[key].value,
-        encrypted: keyMeta ? keyMeta.encrypted : false,
+        encrypted: isEncrypted,
         ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
+
     if (OAuthDs.includes(kind)) {
       const value = localStorage.getItem('OAuthCode');
       parsedOptions.push({ key: 'code', value, encrypted: false });
@@ -1127,7 +1140,11 @@ class DataSourceManagerComponent extends React.Component {
                       <div className="row w-100">
                         <div className="alert alert-danger" role="alert">
                           {validationError.map((error, index) => (
-                            <div key={index} className="text-muted" data-cy="connection-alert-text">
+                            <div
+                              key={index}
+                              className="text-muted"
+                              data-cy={`${generateCypressDataCy(error)}-field-alert-text`}
+                            >
                               {error}
                             </div>
                           ))}
