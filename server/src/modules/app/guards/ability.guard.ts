@@ -44,7 +44,9 @@ export abstract class AbilityGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const app: App = request.tj_app;
-    this.setResourceObject(app);
+    if (app) {
+      this.setResourceObject(app);
+    }
 
     if (!features?.length) {
       return false;

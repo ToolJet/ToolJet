@@ -25,6 +25,7 @@ import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
     super(props);
+    console.log('props', props);
 
     this.state = {
       isLoadingGroup: true,
@@ -974,10 +975,6 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             className="form-check-input"
                                             type="checkbox"
                                             onChange={() => {
-                                              console.log('permissions is');
-
-                                              console.log(groupPermission);
-
                                               this.updateGroupPermission(groupPermission.id, {
                                                 workflowCreate: !groupPermission.workflowCreate,
                                               });

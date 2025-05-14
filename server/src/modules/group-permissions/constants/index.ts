@@ -27,6 +27,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appCreate: true,
     appDelete: true,
     folderCRUD: true,
+    workflowCreate: true,
+    workflowDelete: true,
     orgConstantCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
@@ -38,6 +40,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appCreate: true,
     appDelete: true,
     folderCRUD: true,
+    workflowCreate: true,
+    workflowDelete: true,
     orgConstantCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
@@ -48,6 +52,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
     appCreate: false,
     appDelete: false,
+    workflowCreate: false,
+    workflowDelete: false,
     folderCRUD: false,
     orgConstantCRUD: false,
     dataSourceCreate: false,
@@ -70,8 +76,8 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       },
     },
     [ResourceType.WORKFLOWS]: {
-      canEdit: false,
-      canView: true,
+      canEdit: true,
+      canView: false,
     },
   },
   [USER_ROLE.END_USER]: {
@@ -96,6 +102,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canConfigure: true,
         canUse: false,
       },
+    },
+    [ResourceType.WORKFLOWS]: {
+      canEdit: true,
+      canView: false,
     },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;

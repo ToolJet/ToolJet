@@ -239,6 +239,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         resourcesToAdd,
         allowRoleChange,
       };
+      console.log('Update data', updateResource);
+
       await catchDbException(async () => {
         if (Object.keys(updateGranularPermission).length > 0)
           await manager.update(GranularPermissions, id, updateGranularPermission);

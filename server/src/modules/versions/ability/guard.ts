@@ -18,7 +18,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
 
   protected getResource(): ResourceDetails {
     const resource: App = this.getResourceObject();
-    switch (resource.type) {
+    switch (resource?.type) {
       case APP_TYPES.FRONT_END:
         return {
           resourceType: MODULES.APP,
@@ -28,9 +28,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
           resourceType: MODULES.WORKFLOWS,
         };
       default:
-        return {
-          resourceType: MODULES.APP,
-        };
+        return null;
     }
   }
 }

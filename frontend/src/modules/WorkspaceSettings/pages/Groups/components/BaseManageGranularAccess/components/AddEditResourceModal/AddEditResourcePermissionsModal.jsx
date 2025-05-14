@@ -56,6 +56,9 @@ function AddEditResourcePermissionsModal({
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'All data sources';
       default:
+        console.log(resourceType);
+
+        console.log('All resources', resourceType);
         return 'All resources';
     }
   };
@@ -258,7 +261,9 @@ function AddEditResourcePermissionsModal({
               <input
                 className="form-check-input"
                 type="radio"
-                disabled={addableApps.length === 0 || disableBuilderLevelUpdate || groupName === 'builder'}
+                disabled={
+                  !addableApps || addableApps?.length === 0 || disableBuilderLevelUpdate || groupName === 'builder'
+                }
                 checked={isCustom}
                 onClick={() => {
                   !isCustom &&

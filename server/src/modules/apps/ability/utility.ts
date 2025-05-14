@@ -10,7 +10,9 @@ export function createAbility(
   UserAllPermissions: UserAllPermissions,
   resourceId?: string
 ): void {
-  const resourceType = UserAllPermissions.resource[0].resourceType;
+  const resourceType = UserAllPermissions?.resource[0]?.resourceType
+    ? UserAllPermissions.resource[0].resourceType
+    : MODULES.APP;
 
   switch (resourceType) {
     case MODULES.APP:

@@ -149,6 +149,8 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   getSelectedResources = () => {
+    console.log('Selected resources', this.state.selectedResources);
+
     return this.state.selectedResources;
   };
 
@@ -267,6 +269,17 @@ class BaseManageGranularAccess extends React.Component {
     } else if (granularPermission.type === RESOURCE_TYPE.APPS || granularPermission.type === RESOURCE_TYPE.WORKFLOWS) {
       const currentApps = granularPermission?.appsGroupPermissions?.groupApps;
       const appsGroupPermission = granularPermission?.appsGroupPermissions;
+      const selectedResources =
+        currentApps?.length > 0
+          ? currentApps?.map(({ app }) => {
+              return {
+                name: app.name,
+                value: app.id,
+                label: app.name,
+              };
+            })
+          : [];
+
       this.setState({
         ...fixedState,
         modalTitle: `Edit ${granularPermission.type} permissions`,
@@ -276,18 +289,9 @@ class BaseManageGranularAccess extends React.Component {
           canView: appsGroupPermission.canView,
           hideFromDashboard: appsGroupPermission.hideFromDashboard,
         },
-        selectedResource:
-          currentApps?.length > 0
-            ? currentApps?.map(({ app }) => {
-                return {
-                  name: app.name,
-                  value: app.id,
-                  label: app.name,
-                };
-              })
-            : [],
+        selectedResources: selectedResources,
         initialState: {
-          type: 'app',
+          type: granularPermission.type,
           initialPermissionState: {
             canEdit: appsGroupPermission?.canEdit,
             canView: appsGroupPermission?.canView,
@@ -295,16 +299,7 @@ class BaseManageGranularAccess extends React.Component {
           },
           isAll: !!granularPermission.isAll,
           newPermissionName: granularPermission?.name,
-          selectedResources:
-            currentApps?.length > 0
-              ? currentApps?.map(({ app }) => {
-                  return {
-                    name: app.name,
-                    value: app.id,
-                    label: app.name,
-                  };
-                })
-              : [],
+          selectedResources: selectedResources,
         },
       });
     }
@@ -678,71 +673,73 @@ class BaseManageGranularAccess extends React.Component {
           darkMode={this.props.darkMode}
           isLoading={isLoading}
         />
-        <AddEditResourcePermissionsModal
-          handleClose={this.closeAddPermissionModal}
-          handleConfirm={
-            modalType === 'add'
-              ? this.createGranularPermissions
-              : () => {
-                  this.updateGranularPermissions();
-                }
-          }
-          updateParentState={this.updateState}
-          resourceType={resourceType}
-          currentState={this.state}
-          show={showAddPermissionModal}
-          title={
-            <div className="my-3 permission-manager-title" data-cy="modal-title">
-              <span className="font-weight-500">
-                <SolidIcon
-                  name={
-                    resourceType === RESOURCE_TYPE.APPS
-                      ? 'apps'
-                      : resourceType === RESOURCE_TYPE.WORKFLOWS
-                      ? 'workflows'
-                      : 'datasource'
+        {showAddPermissionModal && (
+          <AddEditResourcePermissionsModal
+            handleClose={this.closeAddPermissionModal}
+            handleConfirm={
+              modalType === 'add'
+                ? this.createGranularPermissions
+                : () => {
+                    this.updateGranularPermissions();
                   }
-                  fill="var(--slate8)"
-                />
-              </span>
-              <div className="tj-text-md font-weight-500 modal-name" data-cy="modal-title">
-                {modalTitle}
-              </div>
-              {modalType === 'edit' && !isRoleGroup && (
-                <div className="delete-icon-cont">
-                  <ButtonSolid
-                    leftIcon="delete"
-                    iconWidth="15px"
-                    className="icon-class"
-                    variant="tertiary"
-                    onClick={() => {
-                      this.setState({
-                        deleteConfirmationModal: true,
-                        showAddPermissionModal: false,
-                      });
-                    }}
-                    data-cy="delete-button"
+            }
+            updateParentState={this.updateState}
+            resourceType={resourceType}
+            currentState={this.state}
+            show={showAddPermissionModal}
+            title={
+              <div className="my-3 permission-manager-title" data-cy="modal-title">
+                <span className="font-weight-500">
+                  <SolidIcon
+                    name={
+                      resourceType === RESOURCE_TYPE.APPS
+                        ? 'apps'
+                        : resourceType === RESOURCE_TYPE.WORKFLOWS
+                        ? 'workflows'
+                        : 'datasource'
+                    }
+                    fill="var(--slate8)"
                   />
+                </span>
+                <div className="tj-text-md font-weight-500 modal-name" data-cy="modal-title">
+                  {modalTitle}
                 </div>
-              )}
-            </div>
-          }
-          confirmBtnProps={{
-            title: `${modalType === 'edit' ? 'Update' : 'Add'}`,
-            iconLeft: 'plus',
-            disabled:
-              (modalType === 'add' && !newPermissionName) ||
-              (modalType === 'edit' && !hasChanges) ||
-              (isCustom && this.getSelectedResources().length === 0),
-            tooltipMessage: addPermissionTooltipMessage,
-          }}
-          disableBuilderLevelUpdate={disableEditUpdate}
-          selectedApps={this.getSelectedResources()}
-          setSelectedApps={(values) => this.setSelectedResources(values)}
-          addableApps={this.getAddableResources(resourceType)}
-          darkMode={this.props.darkMode}
-          groupName={currentGroupPermission.name}
-        />
+                {modalType === 'edit' && !isRoleGroup && (
+                  <div className="delete-icon-cont">
+                    <ButtonSolid
+                      leftIcon="delete"
+                      iconWidth="15px"
+                      className="icon-class"
+                      variant="tertiary"
+                      onClick={() => {
+                        this.setState({
+                          deleteConfirmationModal: true,
+                          showAddPermissionModal: false,
+                        });
+                      }}
+                      data-cy="delete-button"
+                    />
+                  </div>
+                )}
+              </div>
+            }
+            confirmBtnProps={{
+              title: `${modalType === 'edit' ? 'Update' : 'Add'}`,
+              iconLeft: 'plus',
+              disabled:
+                (modalType === 'add' && !newPermissionName) ||
+                (modalType === 'edit' && !hasChanges) ||
+                (isCustom && this.getSelectedResources().length === 0),
+              tooltipMessage: addPermissionTooltipMessage,
+            }}
+            disableBuilderLevelUpdate={disableEditUpdate}
+            selectedApps={this.getSelectedResources()}
+            setSelectedApps={(values) => this.setSelectedResources(values)}
+            addableApps={this.getAddableResources(resourceType)}
+            darkMode={this.props.darkMode}
+            groupName={currentGroupPermission.name}
+          />
+        )}
         {!granularPermissions.length && !isLoading ? (
           <div className="empty-container">
             <div className="icon-container" data-cy="empty-page-svg">

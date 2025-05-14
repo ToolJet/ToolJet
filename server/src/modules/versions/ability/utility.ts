@@ -10,7 +10,7 @@ export function createVersionAbility(
   UserAllPermissions: UserAllPermissions,
   resourceId?: string
 ): void {
-  const resourceType = UserAllPermissions.resource[0].resourceType;
+  const resourceType = UserAllPermissions.resource[0].resourceType ? UserAllPermissions.resource[0].resourceType : null;
 
   switch (resourceType) {
     case MODULES.APP:
