@@ -1,6 +1,6 @@
 export const modalConfig = {
-  name: 'Modal',
-  displayName: 'Modal',
+  name: 'ModalLegacy',
+  displayName: 'Modal (Legacy)',
   description: 'Show pop-up windows',
   component: 'Modal',
   defaultSize: {
@@ -18,6 +18,19 @@ export const modalConfig = {
       validation: {
         schema: { type: 'string' },
         defaultValue: 'This title can be changed',
+      },
+    },
+    titleAlignment: {
+      type: 'select',
+      displayName: 'Title alignment',
+      options: [
+        { name: 'left', value: 'left' },
+        { name: 'center', value: 'center' },
+        { name: 'right', value: 'right' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
       },
     },
     loadingState: {
@@ -157,6 +170,7 @@ export const modalConfig = {
     },
     properties: {
       title: { value: 'This title can be changed' },
+      titleAlignment: { value: 'left' },
       loadingState: { value: `{{false}}` },
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },

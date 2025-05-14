@@ -4,8 +4,8 @@ export const postgreSqlText = {
 
   allDataSources: () => {
     return Cypress.env("marketplace_action")
-      ? "All data sources (44)"
-      : "All data sources (42)";
+      ? "All data sources (45)"
+      : "All data sources (43)";
   },
   commonlyUsed: "Commonly used (5)",
   allDatabase: () => {
@@ -13,18 +13,18 @@ export const postgreSqlText = {
       ? "Databases (20)"
       : "Databases (18)";
   },
-  allApis: "APIs (20)",
+  allApis: "APIs (21)",
   allCloudStorage: "Cloud Storages (4)",
 
   postgreSQL: "PostgreSQL",
   labelHost: "Host",
   labelPort: "Port",
   labelSSL: "SSL",
-  labelDbName: "Database Name",
+  labelDbName: "Database name",
   labelUserName: "Username",
   labelPassword: "Password",
   label: "Encrypted",
-  sslCertificate: "SSL Certificate",
+  sslCertificate: "SSL certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",
   textCopy: "Copy",

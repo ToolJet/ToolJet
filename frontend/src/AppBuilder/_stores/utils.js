@@ -248,7 +248,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = 0;
   let shouldRemoveSpace = true;
   while (iter < str.length) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'le') {
       shouldRemoveSpace = true;
@@ -262,7 +262,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = str.length - 1;
   shouldRemoveSpace = true;
   while (iter >= 0) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'ri') {
       shouldRemoveSpace = true;
@@ -366,12 +366,14 @@ export const normalizePattern = (pattern) => {
 
 export function findAllEntityReferences(node, allRefs) {
   const extractReferencesFromString = (str) => {
-    const regex = /{{(components|queries)\.[^{}]*}}/g;
+    const regex = /{{.*?(components|queries)\.[^{}]*}}/g;
     const matches = str.match(regex);
     if (matches) {
       matches.forEach((match) => {
         const ref = match.replace('{{', '').replace('}}', '');
-        const entityName = ref.split('.')[1];
+        const extractionRegex = /(components|queries)\.[^{}]*/g;
+        const extractedRef = ref.match(extractionRegex)?.[0] || ref;
+        const entityName = extractedRef.split('.')[1];
         allRefs.push(entityName);
       });
     }
@@ -471,6 +473,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
   const actions = [
     'runQuery',
     'setVariable',
+    'unsetAllVariables',
     'unSetVariable',
     'showAlert',
     'logout',
@@ -481,8 +484,12 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
     'goToApp',
     'generateFile',
     'setPageVariable',
+    'unsetAllPageVariables',
     'unsetPageVariable',
     'switchPage',
+    'logInfo',
+    'log',
+    'logError',
   ];
 
   const suggestionList = [];
@@ -702,4 +709,16 @@ export const parsePropertyPath = (property) => {
   }
 
   return result;
+};
+
+export const baseTheme = {
+  definition: {
+    brand: {
+      colors: {
+        primary: { light: '#4368E3', dark: '#4A6DD9' },
+        secondary: { light: '#6A727C', dark: '#CFD3D8' },
+        tertiary: { light: '#1E823B', dark: '#318344' },
+      },
+    },
+  },
 };

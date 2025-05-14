@@ -5,12 +5,136 @@ import { slide as MobileMenu } from 'react-burger-menu';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
+import useStore from '@/AppBuilder/_stores/store';
+import { buildTree } from '../LeftSidebar/PageMenu/Tree/utilities';
+import * as Icons from '@tabler/icons-react';
+
+const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const groupActive = currentPage.pageGroupId === pageGroup?.id;
+  const homePageId = useStore((state) => state.app.homePageId);
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons?.[pageGroup?.icon] ?? Icons?.['IconFileDescription'];
+  return (
+    <>
+      <div style={{ border: 'none' }} className={`accordion-item  ${darkMode ? 'dark-mode' : ''} `}>
+        <div
+          onClick={handleToggle}
+          key={pageGroup.id}
+          className={`viewer-page-handler mb-2 cursor-pointer page-group-wrapper ${
+            groupActive ? 'page-group-active' : ''
+          } ${darkMode && 'dark'}`}
+        >
+          <div className={`card mb-1`}>
+            <div className="card-body">
+              <IconElement />
+              <span style={{ color: 'var(--slate12)' }}>{_.truncate(pageGroup?.name, { length: 22 })}</span>
+              <svg
+                className={`page-group-collapse ${isExpanded ? 'expanded' : 'collapsed'}`}
+                width={17}
+                height={16}
+                viewBox="0 0 17 16"
+                fill="black"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11.1257 4L5.27446 4C4.50266 4 4.02179 4.83721 4.41068 5.50387L7.33631 10.5192C7.72218 11.1807 8.67798 11.1807 9.06386 10.5192L11.9895 5.50387C12.3784 4.83721 11.8975 4 11.1257 4Z"
+                  fill="#ACB2B9"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+        {isExpanded && (
+          <div style={{ paddingLeft: '16px' }}>
+            {pages.map((page) => {
+              const isHomePage = page.id === homePageId;
+              const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+              // eslint-disable-next-line import/namespace
+              const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+              return page?.hidden || page?.disabled ? null : (
+                <div
+                  key={page.handle}
+                  onClick={() => handlepageSwitch(page?.id)}
+                  className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                >
+                  <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
+                    <div className="card-body">
+                      <IconElement />
+                      <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, currentPage }) => {
+  const tree = buildTree(pages);
+  const homePageId = useStore((state) => state.app.homePageId);
+  return (
+    <div className="w-100">
+      <div className={`pages-container ${darkMode && 'dark'}`}>
+        {tree.map((page) => {
+          if (page.isPageGroup) {
+            return (
+              <RenderGroup
+                currentPage={currentPage}
+                key={page.id}
+                pages={page.children}
+                pageGroup={page}
+                currentPageId={currentPageId}
+                darkMode={darkMode}
+                handlepageSwitch={handlepageSwitch}
+              />
+            );
+          } else {
+            const isHomePage = page.id === homePageId;
+            const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+            // eslint-disable-next-line import/namespace
+            const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+            return page?.hidden || page?.disabled ? null : (
+              <div
+                key={page.handle}
+                onClick={() => handlepageSwitch(page?.id)}
+                className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+              >
+                <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
+                  <div className="card-body">
+                    <IconElement />
+                    <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+        })}
+      </div>
+    </div>
+  );
+};
 
 const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeToDarkMode, showDarkModeToggle }) => {
+  const selectedVersionName = useStore((state) => state.selectedVersion?.name);
+  const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
+  const license = useStore((state) => state.license);
+
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
-    switchPage(pageId);
+    const queryParams = {
+      version: selectedVersionName,
+      env: selectedEnvironmentName,
+    };
+    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams));
   };
   var styles = {
     bmBurgerButton: {
@@ -60,6 +184,13 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
     },
   };
 
+  const currentPage = pages.find((page) => page.id === currentPageId);
+
+  const isLicensed =
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const homePageId = useStore((state) => state.app.homePageId);
+
   return (
     <>
       <MobileMenu
@@ -84,20 +215,35 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
 
           <div className="w-100">
             <div className={`pages-container ${darkMode && 'dark'}`}>
-              {pages.map((page) =>
-                page?.hidden || page?.disabled ? null : (
-                  <div
-                    key={page.handle}
-                    onClick={() => handlepageSwitch(page?.id)}
-                    className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
-                  >
-                    <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
-                      <div className="card-body">
-                        <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+              {isLicensed ? (
+                <RenderPageGroups
+                  pages={pages}
+                  currentPageId={currentPageId}
+                  darkMode={darkMode}
+                  handlepageSwitch={handlepageSwitch}
+                  currentPage={currentPage}
+                />
+              ) : (
+                pages.map((page) => {
+                  const isHomePage = page.id === homePageId;
+                  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+                  // eslint-disable-next-line import/namespace
+                  const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+                  return page?.hidden || page?.disabled ? null : (
+                    <div
+                      key={page.handle}
+                      onClick={() => handlepageSwitch(page?.id)}
+                      className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                    >
+                      <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
+                        <div className="card-body">
+                          <IconElement />
+                          <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
+                  );
+                })
               )}
             </div>
           </div>

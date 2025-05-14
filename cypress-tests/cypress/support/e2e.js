@@ -24,3 +24,10 @@ import "@cypress/code-coverage/support";
 Cypress.on("uncaught:exception", (err, runnable) => {
   return false;
 });
+
+beforeEach(() => {
+  if (Cypress.env("deployment") === "proxy") {
+    cy.visit("/");
+    cy.get("button").contains("Visit Site").click();
+  }
+});

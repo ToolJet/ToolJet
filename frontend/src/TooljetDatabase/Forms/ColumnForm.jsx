@@ -21,6 +21,8 @@ import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 import defaultStyles from '@/_ui/Select/styles';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 
 const ColumnForm = ({
   onCreate,
@@ -57,6 +59,7 @@ const ColumnForm = ({
     label: '',
   });
   const isTimestamp = dataType?.value === 'timestamp with time zone';
+  const isJsonbColumnType = dataType?.value === 'jsonb';
 
   const tzOptions = useMemo(() => timeZonesWithOffsets(), []);
 
@@ -240,6 +243,37 @@ const ColumnForm = ({
     setOnDeletePopup(true);
   };
 
+  const [disabledSaveButton, setDisabledSaveButton] = useState(true);
+
+  useEffect(() => {
+    setDisabledSaveButton(columnName === '');
+  }, [columnName]);
+
+  const handleInputError = (bool = false) => {
+    setDisabledSaveButton(bool);
+  };
+
+  const codehinterCallback = React.useCallback(() => {
+    return (
+      <CodeHinter
+        type="tjdbHinter"
+        inEditor={false}
+        initialValue={defaultValue ? JSON.stringify(defaultValue) : ''}
+        lang="javascript"
+        onChange={(value) => {
+          const [_, __, resolvedValue] = resolveReferences(`{{${value}}}`);
+          setDefaultValue(resolvedValue);
+        }}
+        componentName={`{} ${columnName}`}
+        errorCallback={handleInputError}
+        lineNumbers={false}
+        placeholder="{}"
+        columnName={columnName}
+        showErrorMessage={true}
+      />
+    );
+  }, [defaultValue]);
+
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title ">
@@ -308,8 +342,39 @@ const ColumnForm = ({
           </div>
         )}
         <div className="mb-3 tj-app-input">
-          <div className="form-label" data-cy="default-value-input-field-label">
-            Default value
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="form-label" data-cy="default-value-input-field-label">
+              Default value
+            </div>
+            {foreignKeyDetails?.length > 0 && isForeignKey && (
+              <ToolTip
+                message={'Set the default value for the column to Null'}
+                placement="top"
+                tooltipClassName="tootip-table"
+                show={foreignKeyDetails?.length > 0 && isForeignKey}
+              >
+                <div className="d-flex align-items-center custom-gap-4">
+                  <span className="form-label">Set default value to Null</span>
+                  <label className={`form-switch`}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={defaultValue === null}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setForeignKeyDefaultValue({ label: null, value: null });
+                          setDefaultValue(null);
+                        } else {
+                          setForeignKeyDefaultValue({ label: '', value: '' });
+                          setDefaultValue('');
+                        }
+                      }}
+                      disabled={isNotNull}
+                    />
+                  </label>
+                </div>
+              </ToolTip>
+            )}
           </div>
           <ToolTip
             message={dataType === 'serial' ? 'Serial data type values cannot be modified' : null}
@@ -317,7 +382,7 @@ const ColumnForm = ({
             tooltipClassName="tootip-table"
             show={dataType === 'serial'}
           >
-            <div>
+            <div style={{ position: 'relative' }}>
               {isTimestamp ? (
                 <DateTimePicker
                   timestamp={defaultValue}
@@ -326,6 +391,10 @@ const ColumnForm = ({
                   isClearable={true}
                   isPlaceholderEnabled={true}
                 />
+              ) : isJsonbColumnType ? (
+                <div className="tjdb-codehinter-wrapper-drawer" onKeyDown={(e) => e.stopPropagation()}>
+                  {codehinterCallback()}
+                </div>
               ) : !foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input
                   value={defaultValue}
@@ -342,52 +411,70 @@ const ColumnForm = ({
                   disabled={dataType?.value === 'serial'}
                 />
               ) : (
-                <DropDownSelect
-                  buttonClasses="border border-end-1 foreignKeyAcces-container-drawer mb-2"
-                  showPlaceHolder={true}
-                  options={referenceTableDetails}
-                  darkMode={darkMode}
-                  emptyError={
-                    <div className="dd-select-alert-error m-2 d-flex align-items-center">
-                      <Information />
-                      No data found
-                    </div>
-                  }
-                  loader={
-                    <>
-                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
-                      <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
-                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-                    </>
-                  }
-                  isLoading={true}
-                  value={foreignKeyDefaultValue}
-                  foreignKeyAccessInRowForm={true}
-                  disabled={dataType === 'serial'}
-                  topPlaceHolder={dataType === 'serial' ? 'Auto-generated' : 'Enter a value'}
-                  onChange={(value) => {
-                    setForeignKeyDefaultValue(value);
-                    setDefaultValue(value?.value);
-                  }}
-                  onAdd={true}
-                  addBtnLabel={'Open referenced table'}
-                  foreignKeys={foreignKeyDetails}
-                  setReferencedColumnDetails={setReferencedColumnDetails}
-                  scrollEventForColumnValues={true}
-                  cellColumnName={columnName}
-                  columnDataType={dataType?.value}
-                  isCreateColumn={true}
-                />
+                <>
+                  <DropDownSelect
+                    buttonClasses="border border-end-1 foreignKeyAcces-container-drawer mb-2"
+                    showPlaceHolder={true}
+                    options={referenceTableDetails}
+                    darkMode={darkMode}
+                    emptyError={
+                      <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                        <Information />
+                        No data found
+                      </div>
+                    }
+                    loader={
+                      <>
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '15px 50px 7px 7px' }}
+                        />
+                        <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '7px 50px 15px 7px' }}
+                        />
+                      </>
+                    }
+                    isLoading={true}
+                    value={foreignKeyDefaultValue}
+                    foreignKeyAccessInRowForm={true}
+                    disabled={dataType === 'serial'}
+                    topPlaceHolder={
+                      dataType === 'serial'
+                        ? 'Auto-generated'
+                        : foreignKeyDefaultValue?.value === null
+                        ? 'Null'
+                        : 'Enter a value'
+                    }
+                    onChange={(value) => {
+                      setForeignKeyDefaultValue(value);
+                      setDefaultValue(value?.value);
+                    }}
+                    onAdd={true}
+                    addBtnLabel={'Open referenced table'}
+                    foreignKeys={foreignKeyDetails}
+                    setReferencedColumnDetails={setReferencedColumnDetails}
+                    scrollEventForColumnValues={true}
+                    cellColumnName={columnName}
+                    columnDataType={dataType?.value}
+                    isCreateColumn={true}
+                  />
+                  {defaultValue === null && <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>}
+                </>
               )}
             </div>
           </ToolTip>
-          {isNotNull === true && dataType?.value !== 'serial' && rows.length > 0 && defaultValue.length <= 0 ? (
+          {isNotNull === true && dataType?.value !== 'serial' && defaultValue?.length <= 0 ? (
             <span className="form-error-message">
               Default value is required to populate this field in existing rows as NOT NULL constraint is added
             </span>
           ) : null}
         </div>
-
         <div className="row mb-3">
           <ToolTip
             message={
@@ -397,6 +484,8 @@ const ColumnForm = ({
                 ? 'Foreign key relation cannot be created for boolean type column'
                 : dataType?.value === 'timestamp with time zone'
                 ? 'Foreign key relation cannot be created with this data type'
+                : isJsonbColumnType
+                ? 'Foreign key relation cannot be created for jsonb type column'
                 : 'Fill in column details to create a foreign key relation'
             }
             placement="top"
@@ -404,7 +493,7 @@ const ColumnForm = ({
             show={
               isEmpty(dataType) ||
               isEmpty(columnName) ||
-              ['boolean', 'serial', 'timestamp with time zone'].includes(dataType?.value)
+              ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)
             }
           >
             <div className="col-1">
@@ -425,7 +514,7 @@ const ColumnForm = ({
                   disabled={
                     isEmpty(dataType) ||
                     isEmpty(columnName) ||
-                    ['serial', 'boolean', 'timestamp with time zone'].includes(dataType?.value)
+                    ['serial', 'boolean', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)
                   }
                 />
               </label>
@@ -460,7 +549,6 @@ const ColumnForm = ({
             )} */}
           </div>
         </div>
-
         <Drawer
           isOpen={isForeignKeyDraweOpen}
           position="right"
@@ -499,7 +587,6 @@ const ColumnForm = ({
             initiator="ForeignKeyTableForm"
           />
         </Drawer>
-
         <div className="row mb-3">
           <div className="col-1">
             <label className={`form-switch`}>
@@ -509,6 +596,10 @@ const ColumnForm = ({
                 checked={isNotNull}
                 onChange={(e) => {
                   setIsNotNull(e.target.checked);
+                  if (e.target.checked && defaultValue === null) {
+                    setForeignKeyDefaultValue({ label: '', value: '' });
+                    setDefaultValue('');
+                  }
                 }}
                 disabled={dataType?.value === 'serial'}
               />
@@ -521,8 +612,21 @@ const ColumnForm = ({
             </p>
           </div>
         </div>
-        {!['boolean', 'timestamp with time zone'].includes(dataType?.value) && (
-          <div className="row mb-3">
+        <div className="row mb-3">
+          <ToolTip
+            message={
+              dataType?.value === 'boolean'
+                ? 'Unique constraint cannot be added for boolean type column'
+                : dataType?.value === 'timestamp with time zone'
+                ? 'Unique constraint cannot be added for this type column'
+                : isJsonbColumnType
+                ? 'Unique constraint cannot be added for JSON type column'
+                : ''
+            }
+            placement="top"
+            tooltipClassName="tootip-table"
+            show={['boolean', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)}
+          >
             <div className="col-1">
               <label className={`form-switch`}>
                 <input
@@ -532,18 +636,18 @@ const ColumnForm = ({
                   onChange={(e) => {
                     setIsUniqueConstraint(e.target.checked);
                   }}
-                  disabled={dataType?.value === 'serial'}
+                  disabled={['serial', 'boolean', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)}
                 />
               </label>
             </div>
-            <div className="col d-flex flex-column">
-              <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
-              <p className="fw-400 secondary-text tj-text-xsm">
-                This constraint restricts entry of duplicate values in this column.
-              </p>
-            </div>
+          </ToolTip>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
+            <p className="fw-400 secondary-text tj-text-xsm">
+              This constraint restricts entry of duplicate values in this column.
+            </p>
           </div>
-        )}
+        </div>
       </div>
       <DrawerFooter
         fetching={fetching}
@@ -552,7 +656,8 @@ const ColumnForm = ({
         shouldDisableCreateBtn={
           isEmpty(columnName) ||
           isEmpty(dataType) ||
-          (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
+          (dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue)) ||
+          disabledSaveButton
         }
         showToolTipForFkOnReadDocsSection={true}
         initiator={initiator}

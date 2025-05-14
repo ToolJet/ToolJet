@@ -9,6 +9,8 @@ export type QueryOptions = {
   repo?: string;
   owner?: string;
   state?: 'open' | 'closed' | 'all';
+  page_size?: string;
+  page?: string;
 };
 
 export enum Operation {

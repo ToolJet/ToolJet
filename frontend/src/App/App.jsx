@@ -1,25 +1,24 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
+import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
+import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
-import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { MarketplacePage } from '@/MarketplacePage';
+import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
+import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
-import { GlobalDatasources } from '@/GlobalDatasources';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
-import { AppLoader } from '@/AppLoader';
+import AppLoader from '@/AppLoader';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
@@ -28,14 +27,22 @@ import WorkspaceConstants from '@/WorkspaceConstants';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import { ManageOrgUsers } from '@/ManageOrgUsers';
-import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
-import { ManageOrgVars } from '@/ManageOrgVars';
-import { ManageGroupPermissionsV2 } from '@/ManageGroupPermissionsV2/ManageGroupPermissionsV2';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
-import { onboarding, auth } from '@/modules';
+import {
+  onboarding,
+  auth,
+  WorkspaceSettings,
+  InstanceSettings,
+  Settings,
+  Workflows,
+  getDataSourcesRoutes,
+  getAuditLogsRoutes,
+} from '@/modules';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
+import { licenseService } from '@/_services';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -45,6 +52,7 @@ const AppWrapper = (props) => {
     }),
     shallow
   );
+
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
@@ -62,27 +70,48 @@ class AppComponent extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       darkMode: localStorage.getItem('darkMode') === 'true',
-      isEditorOrViewer: '',
+      showBanner: false,
+      // isEditorOrViewer: '',
     };
   }
   updateSidebarNAV = (val) => {
     this.setState({ sidebarNav: val });
   };
+  updateMargin() {
+    const isAdmin = authenticationService?.currentSessionValue?.admin;
+    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
+    const showBannerCondition =
+      (isAdmin || isBuilder) && setupDate && this.isExistingPlanUser(setupDate) && this.state.showBanner;
+    const marginValue = showBannerCondition ? '25' : '0';
+    const marginValueLayout = showBannerCondition ? '35' : '0';
+    document.documentElement.style.setProperty('--dynamic-margin', `${marginValue}px`);
+    document.documentElement.style.setProperty('--dynamic-margin-2', `${marginValueLayout}px`);
+  }
+
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
+      updateCurrentSession({
+        instance_id: data?.instance_id,
+      });
       useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
+      this.setState({ tooljetVersion: data.installed_version });
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
       }
     });
   };
 
-  componentDidMount() {
+  async componentDidMount() {
+    setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
-    setFaviconAndTitle(null, null, this.props.location);
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+    this.updateMargin(); // Set initial margin
+    const featureAccess = await licenseService.getFeatureAccess();
+    const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
+    this.setState({ showBanner: isBasicPlan });
   }
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {
@@ -103,6 +132,8 @@ class AppComponent extends React.Component {
       // Reload the page for clearing already set intervals
       window.location.reload();
     }
+    // Update margin when showBanner changes
+    this.updateMargin();
   }
 
   switchDarkMode = (newMode) => {
@@ -110,7 +141,6 @@ class AppComponent extends React.Component {
     this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
   };
-
   isEditorOrViewerFromPath = () => {
     const pathname = this.props.location.pathname;
     if (pathname.includes('/apps/')) {
@@ -120,9 +150,19 @@ class AppComponent extends React.Component {
     }
     return '';
   };
-
+  closeBasicPlanMigrationBanner = () => {
+    this.setState({ showBanner: false });
+  };
+  isExistingPlanUser = (date) => {
+    return new Date(date) < new Date('2025-04-24'); //show banner if user created before 2 april (24 for testing)
+  };
   render() {
-    const { updateAvailable, darkMode, isEditorOrViewer } = this.state;
+    const { updateAvailable, darkMode, isEditorOrViewer, showBanner } = this.state;
+    const mergedProps = {
+      ...this.props,
+      switchDarkMode: this.switchDarkMode,
+      darkMode: darkMode,
+    };
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
@@ -142,213 +182,236 @@ class AppComponent extends React.Component {
     }
     const { sidebarNav } = this.state;
     const { updateSidebarNAV } = this;
+    const isApplicationsPath = window.location.pathname.includes('/applications/');
+    const isAdmin = authenticationService?.currentSessionValue?.admin;
+    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
     return (
       <>
-        <div
-          className={cx('main-wrapper', {
-            'theme-dark dark-theme': !this.isEditorOrViewerFromPath() && darkMode,
-          })}
-          data-cy="main-wrapper"
-        >
-          {updateAvailable && (
-            <div className="alert alert-info alert-dismissible" role="alert">
-              <h3 className="mb-1">Update available</h3>
-              <p>A new version of ToolJet has been released.</p>
-              <div className="btn-list">
-                <a
-                  href="https://docs.tooljet.io/docs/setup/updating"
-                  target="_blank"
-                  className="btn btn-info"
-                  rel="noreferrer"
-                >
-                  Read release notes & update
-                </a>
-                <a
-                  onClick={() => {
-                    tooljetService.skipVersion();
-                    this.setState({ updateAvailable: false });
-                  }}
-                  className="btn"
-                >
-                  Skip this version
-                </a>
+        <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
+          {!isApplicationsPath &&
+            (isAdmin || isBuilder) &&
+            showBanner &&
+            setupDate &&
+            this.isExistingPlanUser(setupDate) && (
+              <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
+            )}
+          <div
+            className={cx('main-wrapper', {
+              'theme-dark dark-theme': !this.isEditorOrViewerFromPath() && darkMode,
+            })}
+            data-cy="main-wrapper"
+          >
+            {updateAvailable && (
+              <div className="alert alert-info alert-dismissible" role="alert">
+                <h3 className="mb-1">Update available</h3>
+                <p>A new version of ToolJet has been released.</p>
+                <div className="btn-list">
+                  <a
+                    href="https://docs.tooljet.io/docs/setup/updating"
+                    target="_blank"
+                    className="btn btn-info"
+                    rel="noreferrer"
+                  >
+                    Read release notes & update
+                  </a>
+                  <a
+                    onClick={() => {
+                      tooljetService.skipVersion();
+                      this.setState({ updateAvailable: false });
+                    }}
+                    className="btn"
+                  >
+                    Skip this version
+                  </a>
+                </div>
               </div>
-            </div>
-          )}
-          <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
-            <Routes>
-              {onboarding(this.props)}
-              {auth(this.props)}
-              <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
-              <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
-              <Route
-                path="/invitations/:token/workspaces/:organizationToken"
-                element={
-                  <OrganizationInviteRoute {...this.props}>
-                    <VerificationSuccessInfoScreen />
-                  </OrganizationInviteRoute>
-                }
-              />
-              <Route
-                exact
-                path="/:workspaceId/apps/:slug/:pageHandle?/*"
-                element={
-                  <AppsRoute componentType="editor">
-                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </AppsRoute>
-                }
-              />
-              <Route
-                exact
-                path="/:workspaceId/workspace-constants"
-                element={
-                  <PrivateRoute>
-                    <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                exact
-                path="/applications/:slug/:pageHandle?"
-                element={
-                  <AppsRoute componentType="viewer">
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
-                  </AppsRoute>
-                }
-              />
-              <Route
-                exact
-                path="/applications/:slug/versions/:versionId/:pageHandle?"
-                element={
-                  <AppsRoute componentType="viewer">
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
-                  </AppsRoute>
-                }
-              />
-              <Route
-                exact
-                path="/oauth2/authorize"
-                element={
-                  <PrivateRoute>
-                    <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                exact
-                path="/:workspaceId/workspace-settings"
-                element={
-                  <AdminRoute {...this.props}>
-                    <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </AdminRoute>
-                }
-              >
+            )}
+            <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
+              <Routes>
+                {onboarding(this.props)}
+                {auth(this.props)}
+                <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
+                <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
                 <Route
-                  path="users"
+                  exact
+                  path="/:workspaceId/apps/:slug/:pageHandle?/*"
                   element={
-                    <AdminRoute>
-                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
+                    <AppsRoute componentType="editor">
+                      <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AppsRoute>
                   }
                 />
                 <Route
-                  path="workspace-login"
+                  exact
+                  path="/:workspaceId/workspace-constants"
                   element={
-                    <AdminRoute>
-                      <OrganizationLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
+                    <PrivateRoute>
+                      <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
                   }
                 />
                 <Route
-                  path="groups"
+                  exact
+                  path="/applications/:slug/:pageHandle?"
                   element={
-                    <AdminRoute>
-                      <ManageGroupPermissionsV2 switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
+                    <AppsRoute componentType="viewer">
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
+                    </AppsRoute>
                   }
                 />
                 <Route
-                  path="workspace-variables"
-                  element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
-                />
-              </Route>
-              <Route
-                exact
-                path="/:workspaceId/settings"
-                element={
-                  <PrivateRoute>
-                    <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                exact
-                path="/:workspaceId/data-sources"
-                element={
-                  <PrivateRoute>
-                    <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-
-              <Route
-                exact
-                path="/:workspaceId/database"
-                element={
-                  <PrivateRoute>
-                    <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-
-              <Route
-                exact
-                path="/integrations"
-                element={
-                  <AdminRoute {...this.props}>
-                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </AdminRoute>
-                }
-              />
-
-              <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
-              <Route
-                exact
-                path="/error/:errorType"
-                element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
-              />
-              <Route
-                exact
-                path="/switch-workspace"
-                element={
-                  <SwitchWorkspaceRoute>
-                    <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </SwitchWorkspaceRoute>
-                }
-              />
-              <Route
-                exact
-                path="/:workspaceId"
-                element={
-                  <PrivateRoute>
-                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="*"
-                render={() => {
-                  if (authenticationService?.currentSessionValue?.current_organization_id) {
-                    return <Navigate to="/:workspaceId" />;
+                  exact
+                  path="/applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
+                  element={
+                    <AppsRoute componentType="viewer">
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
+                    </AppsRoute>
                   }
-                  return <Navigate to="/login" />;
-                }}
-              />
-            </Routes>
-          </BreadCrumbContext.Provider>
+                />
+                <Route
+                  exact
+                  path="/oauth2/authorize"
+                  element={
+                    <PrivateRoute>
+                      <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+                {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                  <Route
+                    exact
+                    path="/:workspaceId/workflows/*"
+                    element={
+                      <AdminRoute {...this.props}>
+                        <Workflows switchDarkMode={this.switchDarkMode} darkMode={this.darkMode} />
+                      </AdminRoute>
+                    }
+                  />
+                )}
+                <Route
+                  path="/:workspaceId/workspace-settings/*"
+                  element={<WorkspaceSettings {...mergedProps} />}
+                ></Route>
+                <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
+                <Route path="/:workspaceId/settings/*" element={<Settings {...this.props} />}></Route>
+
+                {getAuditLogsRoutes(this.props)}
+                <Route
+                  exact
+                  path="/:workspaceId/profile-settings"
+                  element={
+                    <PrivateRoute>
+                      <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+                {getDataSourcesRoutes(mergedProps)}
+                <Route
+                  exact
+                  path="/applications/:id/versions/:versionId/:pageHandle?"
+                  element={
+                    <PrivateRoute>
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/applications/:slug/:pageHandle?"
+                  element={
+                    <PrivateRoute>
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+
+                <Route
+                  exact
+                  path="/:workspaceId/database"
+                  element={
+                    <PrivateRoute>
+                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+
+                {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
+                  <Route
+                    exact
+                    path="/integrations"
+                    element={
+                      <AdminRoute {...this.props}>
+                        <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      </AdminRoute>
+                    }
+                  >
+                    <Route path="installed" element={<InstalledPlugins />} />
+                    <Route path="marketplace" element={<MarketplacePlugins />} />/
+                  </Route>
+                )}
+
+                <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+                <Route
+                  exact
+                  path="/error/:errorType"
+                  element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  exact
+                  path="/app-url-archived"
+                  element={
+                    <SwitchWorkspacePage
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                      archived={true}
+                      isAppUrl={true}
+                    />
+                  }
+                />
+                <Route
+                  exact
+                  path="/switch-workspace"
+                  element={
+                    <SwitchWorkspaceRoute>
+                      <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </SwitchWorkspaceRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/switch-workspace-archived"
+                  element={
+                    <SwitchWorkspaceRoute>
+                      <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} archived={true} />
+                    </SwitchWorkspaceRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId"
+                  element={
+                    <PrivateRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="*"
+                  render={() => {
+                    if (authenticationService?.currentSessionValue?.current_organization_id) {
+                      return <Navigate to="/:workspaceId" />;
+                    }
+                    return <Navigate to="/login" />;
+                  }}
+                />
+              </Routes>
+            </BreadCrumbContext.Provider>
+            <div id="modal-div"></div>
+          </div>
+
+          <Toast toastOptions={toastOptions} />
         </div>
-
-        <Toast toastOptions={toastOptions} />
       </>
     );
   }

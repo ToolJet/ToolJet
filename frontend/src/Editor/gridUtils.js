@@ -1,4 +1,5 @@
 import { useGridStore } from '@/_stores/gridStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);

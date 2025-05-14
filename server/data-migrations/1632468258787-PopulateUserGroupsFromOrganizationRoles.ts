@@ -1,10 +1,10 @@
 import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
-import { Organization } from '../src/entities/organization.entity';
-import { GroupPermission } from '../src/entities/group_permission.entity';
-import { AppGroupPermission } from '../src/entities/app_group_permission.entity';
-import { UserGroupPermission } from '../src/entities/user_group_permission.entity';
-import { App } from '../src/entities/app.entity';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { Organization } from '@entities/organization.entity';
+import { GroupPermission } from '@entities/group_permission.entity';
+import { AppGroupPermission } from '@entities/app_group_permission.entity';
+import { UserGroupPermission } from '@entities/user_group_permission.entity';
+import { App } from '@entities/app.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
 
 export class PopulateUserGroupsFromOrganizationRoles1632468258787 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

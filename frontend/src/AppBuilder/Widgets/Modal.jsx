@@ -5,6 +5,7 @@ import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -48,6 +49,7 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
+  const setModalOpenOnCanvas = useStore((state) => state.setModalOpenOnCanvas);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -62,8 +64,57 @@ export const Modal = function Modal({
         useGridStore.getState().actions.setOpenModalWidgetId(null);
       }
     }
+    setModalOpenOnCanvas(id, showModal);
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
+
+  // Side effects for modal, which include dom manipulation to hide overflow when opening
+  // And cleaning up dom when modal is closed
+
+  const onShowSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const allModalContainers = realCanvasEl.querySelectorAll('.modal');
+    const modalContainer = allModalContainers[allModalContainers.length - 1];
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      const currentScroll = canvasElement.scrollTop;
+      canvasElement.style.overflowY = 'hidden';
+
+      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+      modalContainer.style.top = `${currentScroll}px`;
+      fireEvent('onOpen');
+    }
+  };
+
+  const onHideSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const allModalContainers = realCanvasEl?.querySelectorAll('.modal');
+    const modalContainer = allModalContainers?.[allModalContainers.length - 1];
+    const hasManyModalsOpen = allModalContainers?.length > 1;
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      modalContainer.style.height = ``;
+      modalContainer.style.top = ``;
+      fireEvent('onClose');
+    }
+    if (canvasElement && !hasManyModalsOpen) {
+      canvasElement.style.overflow = 'auto';
+    }
+  };
+
+  // useEventListener('resize', onShowSideEffects, window);
+
+  const onShowModal = () => {
+    openModal();
+    onShowSideEffects();
+  };
+
+  const onHideModal = () => {
+    onHideSideEffects();
+    hideModal();
+  };
 
   useEffect(() => {
     const exposedVariables = {
@@ -90,53 +141,48 @@ export const Modal = function Modal({
     setShowModal(true);
   }
 
+  // Add debounced version of handleModalOpen
+  const debouncedModalOpen = debounce(() => {
+    onShowSideEffects();
+  }, 10);
+
   useEffect(() => {
-    const handleModalOpen = () => {
-      openModal();
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const modalCanvasEl = document.getElementById(`canvas-${id}`);
-      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
-        realCanvasEl.style.height = '100vh';
-        realCanvasEl.style.position = 'absolute';
-        realCanvasEl.style.overflow = 'hidden';
+    // Select the DOM element
+    const canvasElement = document.querySelector('.page-container.canvas-container');
 
-        modalBackdropEl.style.height = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalCanvasEl.style.height = modalHeight;
-      }
+    if (!canvasElement) return; // Ensure the element exists
+
+    // Create a ResizeObserver
+    const resizeObserver = new ResizeObserver(() => {
+      debouncedModalOpen();
+    });
+
+    // Observe the canvas element
+    resizeObserver.observe(canvasElement);
+
+    return () => {
+      // Cleanup observer on component unmount
+      resizeObserver.disconnect();
     };
+  }, []);
 
-    const handleModalClose = () => {
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const canvasHeight = realCanvasEl?.getAttribute('canvas-height');
-
-      if (canvasElement && realCanvasEl && canvasHeight) {
-        realCanvasEl.style.height = canvasHeight;
-        realCanvasEl.style.position = '';
-
-        realCanvasEl.style.overflow = 'auto';
-      }
-    };
+  useEffect(() => {
     if (showModal) {
-      handleModalOpen();
+      debouncedModalOpen();
     } else {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
+        onHideModal();
       }
     }
 
     // Cleanup the effect
     return () => {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
+        onHideModal();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, modalHeight]);
+  }, [modalHeight, size]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -172,6 +218,7 @@ export const Modal = function Modal({
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
+      borderColor: 'var(--primary-brand)',
     },
   };
 
@@ -230,13 +277,15 @@ export const Modal = function Modal({
 
       <Modal.Component
         show={showModal}
-        contentClassName="modal-component"
+        contentClassName="modal-component tj-modal--container"
         container={document.getElementsByClassName('real-canvas')[0]}
         size={size}
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => hideOnEsc && hideModal()}
+        onShow={() => onShowModal()}
+        onHide={() => onHideModal()}
+        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
@@ -249,7 +298,7 @@ export const Modal = function Modal({
           titleAlignment,
           hideTitleBar,
           hideCloseButton,
-          hideModal,
+          hideModal: onHideModal,
           component,
           showConfigHandler: mode === 'edit',
         }}

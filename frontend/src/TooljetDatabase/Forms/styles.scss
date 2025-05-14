@@ -193,7 +193,7 @@
     padding: 7px 12px !important;
 
     &:hover {
-      background: #F1F3F5 !important;
+      background: #F1F3F5;
       border: 1px solid var(--slate7) !important;
       -webkit-box-shadow: none !important;
       box-shadow: none !important;
@@ -778,6 +778,57 @@
   max-width: 100%;
 }
 
+.tjdb-codehinter-wrapper-drawer{
+  .cm-editor{
+    max-height: 36px !important;
+    height: 36px !important;
+    &.cm-focused{
+      outline: none !important;
+      background: var(--indigo2) !important;
+      border: 1px solid var(--indigo9) !important;
+    }
+    .cm-content{
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+    }
+  }
+  .tjdb-hinter-error{
+    .cm-editor{
+      outline: none !important;
+      border:1px solid red !important;
+    }
+  }
+}
+// added this to border when codehinter is open in the portal, if any error is there
+.tjdb-hinter-error{
+  .cm-focused{
+    outline: none !important;
+    border:1px solid red !important;
+  }
+}
+.tjdb-codehinter-wrapper-drawer-tableSchema{
+  .cm-editor{
+    max-height: 36px !important;
+    min-height: 36px !important;
+    &.cm-focused{
+      outline: none !important;
+      border: 1px solid !important;
+      border-color: #90b5e2 !important;
+    }
+    .cm-content{
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+    }
+  }
+  .tjdb-hinter-error{
+    .cm-editor{
+      outline: none !important;
+      border:1px solid red !important;
+    }
+  }
+}
 .width-lg{
   width: 181.5px;
 }

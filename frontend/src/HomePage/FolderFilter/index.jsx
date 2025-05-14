@@ -16,8 +16,10 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
   };
 
   const updateFolderQuery = (name, id) => {
-    const path = `${id ? `?folder=${name}` : ''}`;
-    navigate({ pathname: `/${getWorkspaceId()}`, search: path }, { replace: true });
+    const isWorkflow = window.location.pathname.includes('/workflows');
+    const basePath = `/${getWorkspaceId()}${isWorkflow ? '/workflows' : ''}`;
+    const queryParams = id ? `?folder=${name}` : '';
+    navigate({ pathname: basePath, search: queryParams }, { replace: true });
   };
 
   useEffect(() => {

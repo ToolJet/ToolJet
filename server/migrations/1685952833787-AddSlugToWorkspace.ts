@@ -1,4 +1,4 @@
-import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { MigrationInterface, QueryRunner, TableColumn, TableUnique } from 'typeorm';
 
 export class AddSlugToWorkspace1685952833787 implements MigrationInterface {

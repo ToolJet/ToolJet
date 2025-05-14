@@ -17,6 +17,21 @@ export const deleteVersionText = {
   },
 };
 
+export const onlydeleteVersionText = {
+  deleteModalText: (text) => {
+    return `Deleting a version will permanently remove it from all environments.Are you sure you want to delete this version - ${cyParamName(
+      text
+    )}?`;
+
+    // `Are you sure you want to delete this version - ${cyParamName(
+    //   text
+    // )}?`;
+  },
+  deleteToastMessage: (version) => {
+    return `Cannot delete only version of app`;
+  },
+};
+
 export const releasedVersionText = {
   cannotUpdateReleasedVersionToastMessage:
     "You cannot update a released version",
@@ -28,7 +43,7 @@ export const releasedVersionText = {
   cannotDeleteReleasedVersionToastMessage:
     "You cannot delete a released version",
   releasedAppText:
-    "This is a released app. Create a new version to make changes.",
+    "App cannot be edited after promotion. Please create a new version from Development to make any changes.",
   releasedVersionConfirmText:
     "Are you sure you want to release this version of the app?",
   buttonReleaseApp: "Release App",

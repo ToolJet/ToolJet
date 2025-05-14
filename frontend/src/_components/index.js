@@ -7,6 +7,5 @@ export * from './AppModal';
 export * from './ImageWithSpinner';
 export * from './Menu';
 export * from './LoginLoader';
-export * from './RedirectLoader';
 export * from './FilterPreview';
 export * from './MultiSelectUser';

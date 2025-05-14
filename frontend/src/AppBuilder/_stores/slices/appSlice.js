@@ -6,13 +6,16 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { replaceEntityReferencesWithIds } from '../utils';
+import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import _ from 'lodash';
 
 const initialState = {
   app: {},
   canvasHeight: null,
   isSaving: false,
-  globalSettings: {},
+  globalSettings: {
+    theme: baseTheme,
+  },
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
@@ -93,7 +96,7 @@ export const createAppSlice = (set, get) => ({
       console.error('Error updating page:', error);
     }
   },
-  switchPage: (pageId, handle, queryParams = []) => {
+  switchPage: (pageId, handle, queryParams = [], isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
     // reset stores
     if (get().pageSwitchInProgress) {
@@ -112,7 +115,7 @@ export const createAppSlice = (set, get) => ({
       setResolvedPageConstants,
       setPageSwitchInProgress,
       currentMode,
-      isLicenseValid,
+      license,
       modules: {
         canvas: { pages },
       },
@@ -124,23 +127,33 @@ export const createAppSlice = (set, get) => ({
     setComponentNameIdMapping('canvas');
     setQueryMapping('canvas');
 
+    const isLicenseValid =
+      !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+      _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
     const appId = get().app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
+      if (key === 'env' && isLicenseValid) return false;
       return true;
     });
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().app.slug;
 
-    navigate(
-      `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
-      {
-        state: {
-          isSwitchingPage: true,
-        },
-      }
-    );
+    if (!isBackOrForward) {
+      navigate(
+        `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
+        {
+          state: {
+            isSwitchingPage: true,
+            id: pageId,
+            handle: handle,
+          },
+        }
+      );
+    }
+
     const newPage = pages.find((p) => p.id === pageId);
     setResolvedPageConstants({
       id: newPage?.id,

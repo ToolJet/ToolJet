@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Azurerepos datasource",
+  "description": "A schema defining Azurerepos datasource",
+  "type": "api",
+  "source": {
+    "name": "Azure Repos",
+    "kind": "azurerepos",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {
+    "organization": {
+      "label": "Organization Name",
+      "key": "organization_name",
+      "type": "text",
+      "description": "Enter your organization name"
+    },
+    "personal_access_token": {
+      "label": "Personal Access Token",
+      "key": "personal_access_token",
+      "type": "password",
+      "description": "Enter your personal access token",
+      "hint": "You can generate a personal access token from your Azure account settings."
+    }
+  },
+  "required": [
+    "organization",
+    "personal_access_token"
+  ]
+}

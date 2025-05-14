@@ -1,4 +1,4 @@
 import onboardingStore from './onboardingStore';
-import invitationStore from './invitationsStore';
+import invitationsStore from './invitationsStore';
 
-export { onboardingStore, invitationStore };
+export { onboardingStore, invitationsStore };

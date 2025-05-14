@@ -2,12 +2,14 @@ import React, { useEffect } from 'react';
 import { WidgetBox } from '../WidgetBox';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
+import { snapToGrid } from '@/AppBuilder/AppCanvas/appCanvasUtils';
+import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const DragLayer = ({ index, component }) => {
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
-      item: { componentType: component.component },
+      item: { componentType: component.component, component },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
     }),
     [component.component]
@@ -18,7 +20,6 @@ export const DragLayer = ({ index, component }) => {
   }, []);
 
   const size = component.defaultSize || { width: 30, height: 40 };
-
   return (
     <>
       {isDragging && <CustomDragLayer size={size} />}
@@ -30,32 +31,45 @@ export const DragLayer = ({ index, component }) => {
 };
 
 const CustomDragLayer = ({ size }) => {
-  const { currentOffset } = useDragLayer((monitor) => ({
+  const { currentOffset, item } = useDragLayer((monitor) => ({
     currentOffset: monitor.getSourceClientOffset(),
+    item: monitor.getItem(),
   }));
 
   if (!currentOffset) return null;
 
-  const canvasWidth = document.getElementsByClassName('real-canvas')[0]?.getBoundingClientRect()?.width;
-
+  const canvasWidth = item?.canvasWidth;
+  const canvasBounds = item?.canvasRef?.getBoundingClientRect();
   const height = size.height;
-  const width = (canvasWidth * size.width) / 43;
 
+  const mainCanvasWidth = document.getElementById('real-canvas')?.offsetWidth || 0;
+
+  let width = (mainCanvasWidth * size.width) / NO_OF_GRIDS;
+  // Calculate position relative to the current canvas (parent or child)
+  const left = currentOffset.x - (canvasBounds?.left || 0);
+  const top = currentOffset.y - (canvasBounds?.top || 0);
+
+  // Adjust position and width if exceeding grid bounds
+  if (width >= canvasWidth) {
+    width = canvasWidth;
+  }
+
+  const [x, y] = snapToGrid(canvasWidth, left, top);
   return (
     <div
       style={{
         position: 'fixed',
         pointerEvents: 'none',
-        zIndex: -1,
-        left: 0,
-        top: 0,
+        zIndex: 1000,
+        left: canvasBounds?.left || 0,
+        top: canvasBounds?.top || 0,
         height: `${height}px`,
         width: `${width}px`,
       }}
     >
       <div
         style={{
-          transform: `translate(${currentOffset.x}px, ${currentOffset.y}px)`,
+          transform: `translate(${x}px, ${y}px)`,
           background: '#D9E2FC',
           opacity: '0.7',
           height: '100%',

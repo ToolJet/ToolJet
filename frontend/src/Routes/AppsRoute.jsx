@@ -8,6 +8,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
 import { getQueryParams } from '@/_helpers/routes';
 import queryString from 'query-string';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const AppsRoute = ({ children, componentType }) => {
   const params = useParams();
@@ -15,11 +16,12 @@ export const AppsRoute = ({ children, componentType }) => {
   const [extraProps, setExtraProps] = useState({});
   const { isLoading, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
     disableValidSessionCallback: true,
-    /* Only for preivew / released apps */
+    /* Only for preiview / released apps */
     disableInValidSessionCallback: componentType !== 'editor',
   });
   const clonedElement = React.cloneElement(children, extraProps);
   const navigate = useNavigate();
+  const switchPage = useStore((state) => state.switchPage);
 
   /* 
    any extra logic specifc to the route can be done 
@@ -29,6 +31,10 @@ export const AppsRoute = ({ children, componentType }) => {
     if (isValidSession) {
       onValidSession();
     }
+
+    // handle back and forward navigation
+    window.addEventListener('popstate', handleBrowserNavigation);
+    return () => window.removeEventListener('popstate', handleBrowserNavigation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValidSession]);
 
@@ -47,13 +53,14 @@ export const AppsRoute = ({ children, componentType }) => {
     const isSwitchingPages = location.state?.isSwitchingPage;
 
     if (!isSwitchingPages) {
-      const { slug, versionId, pageHandle } = params;
+      const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
-      let accessDetails = await handleAppAccess(componentType, slug, versionId);
-      const { versionName, ...restDetails } = accessDetails;
+      let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
+      const { versionName, environmentName, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
         const search = queryString.stringify({
+          env: environmentName,
           version: versionName,
           ...restQueryParams,
         });
@@ -66,6 +73,11 @@ export const AppsRoute = ({ children, componentType }) => {
       setExtraProps(restDetails);
       setLoading(false);
     }
+  };
+
+  const handleBrowserNavigation = (e) => {
+    const { id, handle } = e.state;
+    switchPage(id, handle, [], true);
   };
 
   return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;

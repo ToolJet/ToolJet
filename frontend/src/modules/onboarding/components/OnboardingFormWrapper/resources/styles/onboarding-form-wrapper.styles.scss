@@ -1,13 +1,13 @@
 /* Default styles */
 .onboarding-form-wrapper {
-    margin-top: 120px;
-    /* Default margin-top */
+    margin-top: 95px;
+    // /* Default margin-top */
 }
 
 /* Media query for 1366x768 resolution */
-@media screen and (min-width: 1366px) and (max-height: 768px) {
+@media screen and (min-width: 1366px) and (min-height: 768px) {
     .onboarding-form-wrapper {
-        margin-top: 120px;
+        margin-top: 95px;
     }
 }
 

@@ -1,35 +1,45 @@
-export enum ActionTypes {
-  USER_LOGIN = 'USER_LOGIN',
-  USER_SIGNUP = 'USER_SIGNUP',
-  USER_INVITE = 'USER_INVITE',
-  USER_INVITE_REDEEM = 'USER_INVITE_REDEEM',
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from './user.entity';
+import { Organization } from './organization.entity';
+import { MODULES } from '@modules/app/constants/modules';
 
-  APP_CREATE = 'APP_CREATE',
-  APP_UPDATE = 'APP_UPDATE',
-  APP_VIEW = 'APP_VIEW',
-  APP_DELETE = 'APP_DELETE',
-  APP_IMPORT = 'APP_IMPORT',
-  APP_EXPORT = 'APP_EXPORT',
-  APP_CLONE = 'APP_CLONE',
+@Entity({ name: 'audit_logs' })
+export class AuditLog extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  DATA_QUERY_RUN = 'DATA_QUERY_RUN',
-  DATA_SOURCE_CREATE = 'DATA_SOURCE_CREATE',
-  DATA_SOURCE_DELETE = 'DATA_SOURCE_DELETE',
-  DATA_SOURCE_UPDATE = 'DATA_SOURCE_UPDATE',
+  @Column({ name: 'user_id' })
+  userId: string;
 
-  GROUP_PERMISSION_CREATE = 'GROUP_PERMISSION_CREATE',
-  GROUP_PERMISSION_UPDATE = 'GROUP_PERMISSION_UPDATE',
-  GROUP_PERMISSION_DELETE = 'GROUP_PERMISSION_DELETE',
-  APP_GROUP_PERMISSION_UPDATE = 'APP_GROUP_PERMISSION_UPDATE',
+  @Column({ name: 'organization_id' })
+  organizationId: string;
+
+  @Column({ name: 'resource_id' })
+  resourceId: string;
+
+  @Column({ name: 'resource_name' })
+  resourceName: string;
+
+  @Column({ name: 'resource_type', type: 'enum', enum: MODULES })
+  resourceType: MODULES;
+
+  @Column({ name: 'action_type' })
+  actionType: string;
+
+  @Column({ name: 'ip_address' })
+  ipAddress: string;
+
+  @Column('simple-json', { name: 'metadata' })
+  metadata;
+
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @ManyToOne(() => User, (user) => user.id)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @ManyToOne(() => Organization, (organization) => organization.id)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
 }
-
-export enum ResourceTypes {
-  USER = 'USER',
-  APP = 'APP',
-  DATA_QUERY = 'DATA_QUERY',
-  DATA_SOURCE = 'DATA_SOURCE',
-  GROUP_PERMISSION = 'GROUP_PERMISSION',
-  APP_GROUP_PERMISSION = 'APP_GROUP_PERMISSION',
-}
-
-export class AuditLog {}

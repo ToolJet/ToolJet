@@ -1,13 +1,15 @@
 import { NestFactory } from '@nestjs/core';
-import { DataSourcesService } from 'src/services/data_sources.service';
-import { App } from 'src/entities/app.entity';
-import { AppVersion } from 'src/entities/app_version.entity';
-import { DataSource } from 'src/entities/data_source.entity';
-import { Organization } from 'src/entities/organization.entity';
+import { App } from '@entities/app.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { DataSource } from '@entities/data_source.entity';
+import { Organization } from '@entities/organization.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
-import { AppModule } from 'src/app.module';
-import { Credential } from 'src/entities/credential.entity';
+import { Credential } from '@entities/credential.entity';
 import { cloneDeep } from 'lodash';
+import { AppModule } from '@modules/app/module';
+import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
+import { IDataSourcesUtilService } from '@modules/data-sources/interfaces/IUtilService';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -15,8 +17,12 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
     const organizations = await entityManager.find(Organization, {
       select: ['id', 'name'],
     });
-    const nestApp = await NestFactory.createApplicationContext(AppModule);
-    const dataSourcesService = nestApp.get(DataSourcesService);
+
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const { DataSourcesUtilService } = await import(`${await getImportPath(true, edition)}/data-sources/util.service`);
+
+    const dataSourcesService = nestApp.get(DataSourcesUtilService);
 
     for (const org of organizations) {
       console.log(`Backfilling for organization ${org.name} : ${org.id}`);
@@ -30,12 +36,13 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
     }
 
     console.log(`Backfill done for ${organizations.length} organization/s`);
+    await nestApp.close();
   }
 
   async associateDataSourcesAndQueriesToAppVersions(
     app: App,
     entityManager: EntityManager,
-    dataSourcesService: DataSourcesService
+    dataSourcesService: IDataSourcesUtilService
   ) {
     const appVersions = await entityManager.find(AppVersion, {
       where: { appId: app.id },
@@ -92,7 +99,7 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
     dataSources,
     dataQueries,
     entityManager: EntityManager,
-    dataSourcesService: DataSourcesService
+    dataSourcesService: IDataSourcesUtilService
   ) {
     if (restAppVersions.length == 0) return;
 

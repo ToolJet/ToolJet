@@ -2,7 +2,6 @@ import config from 'config';
 import { handleResponse } from '@/_helpers';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import queryString from 'query-string';
-import { getCountryByTimeZone } from '@/modules/common/helpers/timeUtils';
 
 function setupFirstUser({ companyName, buildPurpose, name, workspaceName, password, email }) {
   const requestOptions = {
@@ -16,10 +15,9 @@ function setupFirstUser({ companyName, buildPurpose, name, workspaceName, passwo
       workspaceName,
       email,
       password,
-      region: getCountryByTimeZone(),
     }),
   };
-  return fetch(`${config.apiUrl}/onboarding/setup-first-user`, requestOptions)
+  return fetch(`${config.apiUrl}/onboarding/setup-super-admin`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       onFirstUserAccountSetupSuccess(response);
@@ -64,7 +62,7 @@ function onboarding({ companyName, buildPurpose, workspaceName, token, organizat
       ...payload,
     }),
   };
-  return fetch(`${config.apiUrl}/setup-account-from-token`, requestOptions)
+  return fetch(`${config.apiUrl}/onboarding/setup-account-from-token`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       onFirstUserAccountSetupSuccess(response);
@@ -78,7 +76,7 @@ function verifyToken(token, organizationToken) {
     headers: { 'Content-Type': 'application/json' },
   };
   return fetch(
-    `${config.apiUrl}/verify-invite-token?token=${token}${
+    `${config.apiUrl}/onboarding/verify-invite-token?token=${token}${
       organizationToken ? `&organizationToken=${organizationToken}` : ''
     }`,
     requestOptions
@@ -92,7 +90,7 @@ function verifyToken(token, organizationToken) {
 function checkWorkspaceNameUniqueness(name) {
   const requestOptions = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
   const query = queryString.stringify({ name });
-  return fetch(`${config.apiUrl}/organizations/workspace-name/unique?${query}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/onboarding/workspace-name/unique?${query}`, requestOptions).then(handleResponse);
 }
 
 export { setupFirstUser, verifyToken, onboarding, checkWorkspaceNameUniqueness };

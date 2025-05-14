@@ -13,6 +13,7 @@ export const tabsConfig = {
         top: 60,
         left: 17,
         height: 100,
+        width: 7,
       },
       tab: 0,
       properties: ['source'],

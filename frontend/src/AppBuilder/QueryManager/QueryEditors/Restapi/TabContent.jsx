@@ -1,12 +1,7 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import InfoIcon from '@assets/images/icons/info.svg';
-import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
-import Warning from '@/_ui/Icon/solidIcons/Warning';
+import EmptyTabContent from './EmptyTabContent';
 
 export default ({
   options = [],
@@ -21,40 +16,28 @@ export default ({
   tabType,
   bodyToggle,
   addNewKeyValuePair,
+  onInputChange,
 }) => {
-  const { t } = useTranslation();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <div className="tab-content-wrapper">
-      {options.length === 0 && (
-        <div
-          className="empty-paramlist w-100"
-          style={{
-            background: darkMode && 'var(--interactive-default)',
-            height: '69px',
-            position: 'relative',
-            top: '-8px',
-          }}
-        >
-          <span style={{ marginBottom: '3px' }}>
-            <Warning fill="#6A727C" width={'20px'} />
-          </span>
-          <span style={{ fontSize: '12px' }}>No key value pairs added</span>
-        </div>
+      {options.length === 0 && !bodyToggle && (
+        <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />
       )}
       {!bodyToggle &&
         options.map((option, index) => {
           return (
             <>
               <div className="row-container query-manager-border-color" key={index}>
-                <div className="fields-container mb-1">
+                <div className="fields-container mb-1 restapi-key-value">
                   <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter
                       type="basic"
                       initialValue={option[0]}
                       placeholder="Key"
                       onChange={onChange(paramType, 0, index)}
+                      onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
@@ -64,11 +47,12 @@ export default ({
                       initialValue={option[1]}
                       placeholder="Value"
                       onChange={onChange(paramType, 1, index)}
+                      onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::value::${index}`}
                     />
                   </div>
                   <button
-                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end ${
+                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${
                       darkMode ? 'delete-field-option-dark' : ''
                     }`}
                     role="button"
@@ -83,8 +67,8 @@ export default ({
             </>
           );
         })}
-      {bodyToggle ? (
-        <div>
+      {bodyToggle && (
+        <div className="rest-api-body-codehinter">
           <CodeHinter
             type="extendedSingleLine"
             initialValue={(rawBody || jsonBody) ?? ''} // If raw_body is not set, set initial value to legacy json_body if present
@@ -94,19 +78,6 @@ export default ({
             componentName={`${componentName}/${tabType}`}
           />
         </div>
-      ) : (
-        <button
-          onClick={() => addNewKeyValuePair(paramType)}
-          className="add-params-btn"
-          id="runjs-param-add-btn"
-          data-cy={`runjs-add-param-button`}
-          style={{ background: 'none', border: 'none', width: '100px' }}
-        >
-          <p className="m-0 text-default">
-            <PlusRectangle fill={'var(--icons-default)'} width={15} />
-            <span style={{ marginLeft: '6px' }}>{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}</span>
-          </p>
-        </button>
       )}
     </div>
   );

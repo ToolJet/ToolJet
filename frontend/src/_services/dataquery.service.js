@@ -15,8 +15,7 @@ export const dataqueryService = {
 
 function getAll(appVersionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  let searchParams = new URLSearchParams(`app_version_id=${appVersionId}`);
-  return fetch(`${config.apiUrl}/data_queries?` + searchParams, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${appVersionId}`, requestOptions).then(handleResponse);
 }
 
 function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
@@ -26,22 +25,26 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     name,
     kind,
     options,
-    data_source_id: kind === 'runjs' || kind === 'runpy' ? null : data_source_id,
+    data_source_id,
     plugin_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries`, requestOptions).then(handleResponse);
+  return fetch(
+    `${config.apiUrl}/data-queries/data-sources/${data_source_id}/versions/${app_version_id}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
-function update(id, name, options) {
+function update(id, versionId, name, options, dataSourceId) {
   const body = {
     options,
     name,
+    data_source_id: dataSourceId,
   };
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function bulkUpdateQueryOptions(queryOptions, appVersionId) {
@@ -52,7 +55,7 @@ function bulkUpdateQueryOptions(queryOptions, appVersionId) {
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
 
-  return fetch(`${config.apiUrl}/data_queries/`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/`, requestOptions).then(handleResponse);
 }
 
 function updateStatus(id, status) {
@@ -61,25 +64,34 @@ function updateStatus(id, status) {
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/${id}/status`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${id}/status`, requestOptions).then(handleResponse);
 }
 
-function del(id) {
+function del(id, versionId) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options) {
+function run(queryId, resolvedOptions, options, versionId, environmentId) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
   };
 
+  let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
+    environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+  }`;
+
+  //For public/released apps
+  if (!environmentId || !versionId) {
+    url = `${config.apiUrl}/data-queries/${queryId}/run`;
+  }
+
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/${queryId}/run`, requestOptions).then(handleResponse);
+  return fetch(url, requestOptions).then(handleResponse);
 }
 
-function preview(query, options, versionId) {
+function preview(query, options, versionId, environmentId) {
   const body = {
     query,
     options: options,
@@ -87,13 +99,22 @@ function preview(query, options, versionId) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/preview`, requestOptions).then(handleResponse);
+  return fetch(
+    `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${
+      environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+    }`,
+    requestOptions
+  ).then(handleResponse);
 }
 
-function changeQueryDataSource(id, dataSourceId) {
+function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {
   const body = {
     data_source_id: dataSourceId,
+    type,
+    kind,
   };
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data_queries/${id}/data_source`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}/data-source`, requestOptions).then(
+    handleResponse
+  );
 }

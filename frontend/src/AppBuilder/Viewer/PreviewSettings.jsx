@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 import HeaderActions from '@/AppBuilder/Header/HeaderActions';
+import { AppEnvironments } from '@/modules/Appbuilder/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
@@ -28,11 +29,14 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const renderOverlay = () => (
     <div className={classNames({ 'dark-theme theme-dark': darkMode })} style={{ borderRadius: '6px' }}>
       <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
-        <span className="preview-settings-text">Preview settings</span>
+        <span className="preview-settings-text" data-cy="preview-settings-text">
+          Preview settings
+        </span>
         {editingVersion && (
           <>
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
+            <AppEnvironments darkMode={darkMode} />
           </>
         )}
         <span>
@@ -57,10 +61,14 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               className="released-version-no-header-mbl-preview"
               style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '61%' : '41%' }}
             >
-              <span className="preview-chip" style={{ color: 'var(--slate12)' }}>
+              <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
                 Preview
               </span>
-              <span style={{ marginLeft: '12px', cursor: 'pointer' }} onClick={props.onClick}>
+              <span
+                style={{ marginLeft: '12px', cursor: 'pointer' }}
+                onClick={props.onClick}
+                data-cy="preview-settings"
+              >
                 <Icon name="settings" height={12} width={12} fill="#889099" />
               </span>
             </div>
@@ -77,6 +85,10 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
+              <span style={{ marginTop: '4px' }}>
+                <AppEnvironments darkMode={darkMode} />
+              </span>
+              <hr className="m-0" />
               <span>
                 <AppVersionsManager darkMode={darkMode} />
               </span>
@@ -102,11 +114,11 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       className="released-version-no-header-mbl-preview"
       style={{ backgroundColor: 'var(--slate5)', top: showHeader ? '' : '14px' }}
     >
-      <span className="preview-chip" style={{ color: 'var(--slate12)' }}>
+      <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
         Preview
       </span>
       <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
-        <span style={{ marginLeft: '12px', cursor: 'pointer' }}>
+        <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
           <Icon name="settings" height={12} width={12} fill="#889099" />
         </span>
       </OverlayTrigger>

@@ -24,7 +24,14 @@ import { AppVersion } from '@entities/app_version.entity';
 import { GroupPermission } from '@entities/group_permission.entity';
 import { UserGroupPermission } from '@entities/user_group_permission.entity';
 import { App } from '@entities/app.entity';
+import { LicenseService } from '@services/license.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
+/**
+ * Tests TooljetDbOperationsService
+ *
+ * @group database
+ */
 describe('TooljetDbOperationsService', () => {
   let app: INestApplication;
   let appManager: EntityManager;
@@ -62,6 +69,15 @@ describe('TooljetDbOperationsService', () => {
   });
 
   beforeAll(async () => {
+    const mockLicenseService = {
+      getLicenseTerms: jest.fn(),
+    };
+
+    const mockEventEmitter = {
+      emit: jest.fn(),
+      on: jest.fn(),
+    };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
@@ -82,8 +98,13 @@ describe('TooljetDbOperationsService', () => {
           InternalTable,
         ]),
       ],
-      providers: [TooljetDbOperationsService, TooljetDbService, PostgrestProxyService],
-    }).compile();
+      providers: [TooljetDbOperationsService, TooljetDbService, PostgrestProxyService, LicenseService, EventEmitter2],
+    })
+      .overrideProvider(LicenseService)
+      .useValue(mockLicenseService)
+      .overrideProvider(EventEmitter2)
+      .useValue(mockEventEmitter)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();

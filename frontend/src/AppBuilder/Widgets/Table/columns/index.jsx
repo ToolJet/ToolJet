@@ -14,6 +14,7 @@ import { CustomSelect } from '../CustomSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Text from '../Text';
 import StringColumn from '../String';
+import Json from '../Json';
 
 export default function generateColumnsData({
   columnProperties,
@@ -129,6 +130,8 @@ export default function generateColumnsData({
           return 1;
         }
       };
+    } else if (columnType === 'number') {
+      sortType = 'basic';
     }
     const width = columnSize || defaultColumn.width;
     return {
@@ -712,6 +715,27 @@ export default function generateColumnsData({
                   toggleOffBg={column?.toggleOffBg}
                 />
               </div>
+            );
+          }
+          case 'json': {
+            const jsonIndentation = getResolvedValue(column?.jsonIndentation) ?? true;
+            return (
+              <Json
+                isEditable={isEditable}
+                jsonIndentation={jsonIndentation}
+                darkMode={darkMode}
+                handleCellValueChange={handleCellValueChange}
+                cellTextColor={cellTextColor}
+                horizontalAlignment={horizontalAlignment}
+                cellValue={cellValue}
+                column={column}
+                currentState={currentState}
+                containerWidth={width}
+                cell={cell}
+                isMaxRowHeightAuto={isMaxRowHeightAuto}
+                cellSize={cellSize}
+                maxRowHeightValue={maxRowHeightValue}
+              />
             );
           }
         }

@@ -11,7 +11,8 @@ export class AddGroupAppsTable1714015615904 implements MigrationInterface {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_app_id FOREIGN KEY (app_id) REFERENCES apps(id) ON DELETE CASCADE,
-        CONSTRAINT fk_apps_group_permissions_id FOREIGN KEY (apps_group_permissions_id) REFERENCES apps_group_permissions(id) ON DELETE CASCADE
+        CONSTRAINT fk_apps_group_permissions_id FOREIGN KEY (apps_group_permissions_id) REFERENCES apps_group_permissions(id) ON DELETE CASCADE,
+        CONSTRAINT unique_app_and_permission UNIQUE (app_id, apps_group_permissions_id)
 );
             `
     );

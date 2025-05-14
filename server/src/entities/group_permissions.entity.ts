@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -11,14 +12,16 @@ import {
 } from 'typeorm';
 import { Organization } from './organization.entity';
 import { GroupUsers } from './group_users.entity';
-import { GROUP_PERMISSIONS_TYPE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { GranularPermissions } from './granular_permissions.entity';
+import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { PageUser } from './page_users.entity';
 
 @Entity({ name: 'permission_groups' })
 export class GroupPermissions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ name: 'organization_id', nullable: false })
   organizationId: string;
 
@@ -40,7 +43,6 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'org_constant_crud', default: false })
   orgConstantCRUD: boolean;
 
-  //This should not be part of CE
   @Column({ name: 'data_source_create', default: false })
   dataSourceCreate: boolean;
 
@@ -62,4 +64,9 @@ export class GroupPermissions extends BaseEntity {
 
   @OneToMany(() => GranularPermissions, (granularPermissions) => granularPermissions.group, { onDelete: 'CASCADE' })
   groupGranularPermissions: GranularPermissions[];
+
+  @OneToMany(() => PageUser, (pageUser) => pageUser.permissionGroup)
+  pageUsers: PageUser[];
+
+  disabled?: boolean;
 }

@@ -1,17 +1,23 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
 import _, { debounce, omit } from 'lodash';
-import { Box } from '@/Editor/Box';
-import { generateUIComponents } from './FormUtils';
+import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
-import { useAppInfo } from '@/_stores/appDataStore';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { shallow } from 'zustand/shallow';
+import {
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { HorizontalSlot } from './Components/HorizontalSlot';
+import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+
+import './form.scss';
 
 export const Form = function Form(props) {
   const {
@@ -27,21 +33,53 @@ export const Form = function Form(props) {
     properties,
     resetComponent = () => {},
     dataCy,
+    onComponentClick,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
-  const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
-  const { buttonToSubmit, loadingState, advanced, JSONSchema } = properties;
+  const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
+  const {
+    buttonToSubmit,
+    advanced,
+    JSONSchema,
+    showHeader = false,
+    showFooter = false,
+    headerHeight = 80,
+    footerHeight = 80,
+    canvasHeight,
+  } = properties;
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
+    properties.visibility,
+    properties.disabledState,
+    setExposedVariables,
+    setExposedVariable
+  );
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
+
+  const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
+  const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
+
   const computedStyles = {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    border: `1px solid ${borderColor}`,
+    border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     height,
-    display: visibility ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     position: 'relative',
-    overflow: 'hidden auto',
     boxShadow,
+    flexDirection: 'column',
+    clipPath: `inset(0 round ${computedBorderRadius})`,
+  };
+
+  const formContent = {
+    overflow: 'hidden auto',
+    display: 'flex',
+    height: '100%',
+    paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingBottom: showFooter ? '3px' : '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
   };
 
   const parentRef = useRef(null);
@@ -226,9 +264,61 @@ export const Form = function Form(props) {
     setChildrenData(childDataRef.current);
   };
 
+  const mode = useStore((state) => state.currentMode, shallow);
+  const isEditing = mode === 'edit';
+
+  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  // const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight);
+
+  const updateHeaderSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
+  };
+
+  const updateFooterSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
+  };
+
+  const [canHeight, setCanHeight] = useState('100%');
+  useEffect(() => {
+    // const newHeight = parseInt(height, 10) - 14;
+
+    // const autoCanvasHeight = document.querySelector(`#canvas-${id}`)?.scrollHeight;
+    const wrapHeight = parseInt(computedFormBodyHeight, 10);
+    // Set height to the larger value between computed body height and canvas scroll height
+    const maxHeight = Math.max(wrapHeight, canvasHeight || 10);
+
+    const roundedHeight = Math.round(maxHeight / 10) * 10;
+    setCanHeight(`${roundedHeight}px`);
+  }, [computedFormBodyHeight, canvasHeight]);
+  const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
+  const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
+  const formFooter = {
+    flexShrink: 0,
+    paddingTop: '3px',
+    paddingBottom: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${footerMaxHeight}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
+  };
+  const formHeader = {
+    flexShrink: 0,
+    paddingBottom: '3px',
+    paddingTop: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${headerMaxHeight}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+  };
+
   return (
     <form
-      className={`jet-container ${advanced && 'jet-container-json-form'}`}
+      className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
       id={id}
       data-cy={dataCy}
       ref={parentRef}
@@ -238,105 +328,94 @@ export const Form = function Form(props) {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
-      {loadingState ? (
-        <div className="p-2" style={{ margin: '0px auto' }}>
-          <center>
-            <div className="spinner-border mt-5" role="status"></div>
-          </center>
-        </div>
-      ) : (
-        <fieldset disabled={disabledState} style={{ width: '100%' }}>
-          {!advanced && (
-            <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
-              <SubContainer
-                id={id}
-                canvasHeight={computedStyles.height}
-                canvasWidth={width}
-                onOptionChange={onOptionChange}
-                onOptionsChange={onOptionsChange}
-                styles={{ backgroundColor: computedStyles.backgroundColor }}
-                darkMode={darkMode}
-              />
-              {/* <SubContainer
-                parentComponent={component}
-                containerCanvasWidth={width}
-                parent={id}
-                parentRef={parentRef}
-                removeComponent={removeComponent}
-                onOptionChange={function ({ component, optionName, value, componentId }) {
-                  if (componentId) {
-                    onOptionChange({ component, optionName, value, componentId });
-                  }
-                }}
-                currentPageId={props.currentPageId}
-                {...props}
-                {...containerProps}
-                height={'100%'} // This height is required since Subcontainer has a issue if height is provided, it stores it in the ref and never updates that ref
-              />
-              <SubCustomDragLayer
-                containerCanvasWidth={width}
-                parent={id}
-                parentRef={parentRef}
-                currentLayout={currentLayout}
-              /> */}
-            </div>
-          )}
-          {advanced &&
-            uiComponents?.map((item, index) => {
-              return (
-                <div
-                  //check to avoid labels for these widgets as label is already present for them
-                  className={
-                    ![
-                      'Checkbox',
-                      'StarRating',
-                      'Multiselect',
-                      'DropDown',
-                      'RadioButton',
-                      'ToggleSwitch',
-                      'ToggleSwitchV2',
-                    ].includes(uiComponents?.[index + 1]?.component)
-                      ? `json-form-wrapper json-form-wrapper-disabled`
-                      : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
-                  }
-                  key={index}
-                >
-                  <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
-                    <RenderSchema
-                      component={item}
-                      parent={id}
-                      id={index}
-                      darkMode={darkMode}
-                      onOptionChange={onComponentOptionChangedForSubcontainer}
-                      onOptionsChange={onComponentOptionsChangedForSubcontainer}
-                    />
+      {!advanced && showHeader && (
+        <HorizontalSlot
+          slotName="header"
+          slotStyle={formHeader}
+          isEditing={isEditing}
+          id={`${id}-header`}
+          height={headerHeight}
+          width={width}
+          darkMode={darkMode}
+          isDisabled={isDisabled}
+          isActive={activeSlot === `${id}-header`}
+          onResize={updateHeaderSizeInStore}
+        />
+      )}
+
+      <div className="jet-form-body sub-container-overflow-wrap" style={formContent}>
+        {isLoading ? (
+          <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
+            <div className="spinner-border" role="status"></div>
+          </div>
+        ) : (
+          <fieldset disabled={isDisabled} style={{ width: '100%' }}>
+            {!advanced && (
+              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: canHeight || '100%' }}>
+                <SubContainer
+                  id={id}
+                  canvasHeight={parseInt(computedFormBodyHeight, 10)}
+                  canvasWidth={width}
+                  onOptionChange={onOptionChange}
+                  onOptionsChange={onOptionsChange}
+                  styles={{
+                    backgroundColor: computedStyles.backgroundColor,
+                    height: canHeight,
+                  }}
+                  darkMode={darkMode}
+                  componentType="Form"
+                />
+              </div>
+            )}
+            {advanced &&
+              uiComponents?.map((item, index) => {
+                return (
+                  <div
+                    //check to avoid labels for these widgets as label is already present for them
+                    className={
+                      ![
+                        'Checkbox',
+                        'StarRating',
+                        'Multiselect',
+                        'DropDown',
+                        'RadioButton',
+                        'ToggleSwitch',
+                        'ToggleSwitchV2',
+                      ].includes(uiComponents?.[index + 1]?.component)
+                        ? `json-form-wrapper json-form-wrapper-disabled`
+                        : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
+                    }
+                    key={index}
+                  >
+                    <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
+                      <RenderSchema
+                        component={item}
+                        parent={id}
+                        id={index}
+                        darkMode={darkMode}
+                        onOptionChange={onComponentOptionChangedForSubcontainer}
+                        onOptionsChange={onComponentOptionsChangedForSubcontainer}
+                      />
+                    </div>
                   </div>
-                  {/* <Box
-                    {...props}
-                    component={item}
-                    id={index}
-                    width={width}
-                    height={item.defaultSize.height}
-                    mode={mode}
-                    inCanvas={true}
-                    paramUpdated={paramUpdated}
-                    onEvent={onEvent}
-                    onComponentClick={onComponentClick}
-                    darkMode={darkMode}
-                    removeComponent={removeComponent}
-                    // canvasWidth={width}
-                    // readOnly={readOnly}
-                    // customResolvables={customResolvables}
-                    parentId={id}
-                    getContainerProps={getContainerProps}
-                    onOptionChanged={onComponentOptionChangedForSubcontainer}
-                    onOptionsChanged={onComponentOptionsChanged}
-                    isFromSubContainer={true}
-                  /> */}
-                </div>
-              );
-            })}
-        </fieldset>
+                );
+              })}
+          </fieldset>
+        )}
+      </div>
+      {!advanced && showFooter && (
+        <HorizontalSlot
+          slotName="footer"
+          slotStyle={formFooter}
+          isEditing={isEditing}
+          id={`${id}-footer`}
+          height={footerHeight}
+          width={width}
+          darkMode={darkMode}
+          isDisabled={isDisabled}
+          onResize={updateFooterSizeInStore}
+          isActive={activeSlot === `${id}-footer`}
+        />
       )}
     </form>
   );

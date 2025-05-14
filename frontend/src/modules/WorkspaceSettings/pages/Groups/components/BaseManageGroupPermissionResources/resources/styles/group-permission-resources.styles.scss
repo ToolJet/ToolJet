@@ -1,0 +1,148 @@
+@import '@/_styles/colors.scss';
+
+
+.check-label-disable {
+  color: var(--slate10) !important;
+}
+
+.info-container {
+  display: flex;
+  width: auto;
+  height: auto;
+  padding: 10px 12px 8px 12px;
+  border: 1px solid var(--slate5);
+  background: var(--slate2);
+  border-radius: 6px 6px 6px 6px;
+  margin-top: 13px;
+
+
+  .info-btn {
+    padding: 6px 0px 0px 0px;
+    margin-right: 5px;
+    flex: 0 0 24px;
+  }
+
+  .message {
+    margin-left: 5px;
+    display: inline-block;
+    word-wrap: break-word;
+    width: auto;
+    height: auto;
+    font-size: 12px;
+    line-height: 13px;
+    color: var(--slate11);
+
+    p {
+      padding: 0;
+      margin: 0;
+    }
+
+    .open-git-btn {
+      margin-top: 5px;
+      color: var(--indigo9);
+      font-size: 10px;
+      font-weight: 500;
+      display: inline-block;
+
+      .open-icn {
+        margin-right: 2px;
+      }
+    }
+  }
+}
+
+.search-user-group-btn {
+  width: 20px;
+  margin-left: 2px;
+  margin-right: 7px;
+  height: 20px;
+  padding: 0 0;
+  background: none !important;
+  background-color: none !important;
+  box-shadow: none;
+
+}
+
+
+.searchbox-custom {
+  .tj-common-search-input-user {
+    width: 600px;
+
+    .input-icon-addon {
+      padding-right: 8px;
+      padding-left: 8px;
+
+    }
+
+    input {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 4px 8px !important;
+      gap: 16px;
+      width: 600px !important;
+      height: 28px !important;
+      background: var(--base);
+      border: 1px solid var(--slate7);
+      border-radius: 6px;
+      color: var(--slate12);
+      padding-left: 33px !important;
+
+
+      ::placeholder {
+        color: var(--slate9);
+        margin-left: 5px !important;
+        padding-left: 5px !important;
+        background-color: red !important;
+      }
+
+      &:hover {
+        background: var(--slate2);
+        border: 1px solid var(--slate8);
+      }
+
+      &:active {
+        background: var(--indigo2);
+        border: 2px solid var(--indigo11);
+        box-shadow: 0px 0px 0px 2px #C6D4F9;
+        outline: none;
+      }
+
+      &:focus-visible {
+        background: var(--slate2);
+        border: 1px solid var(--slate8);
+        border-radius: 6px;
+        outline: none;
+        padding-left: 12px !important;
+      }
+
+      &:disabled {
+        background: var(--slate3);
+        border: 1px solid var(--slate7);
+      }
+    }
+  }
+
+}
+
+
+.edit-role-confirm {
+  width: 350px;
+
+  .modal-footer {
+    border-top: 1px solid var(--slate6);
+    ;
+  }
+
+  .form-label {
+    color: var(--slate11);
+  }
+}
+
+
+.permission-body {
+  .tj-text-xxsm {
+    color: var(--slate11)
+  }
+}

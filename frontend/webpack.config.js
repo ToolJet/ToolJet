@@ -1,4 +1,4 @@
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 const CompressionPlugin = require('compression-webpack-plugin');
@@ -11,6 +11,10 @@ const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+const edition = process.env.TOOLJET_EDITION;
+
+// Create path to empty module
+const emptyModulePath = path.resolve(__dirname, 'src/modules/emptyModule');
 
 const API_URL = {
   production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
@@ -24,6 +28,10 @@ function stripTrailingSlash(str) {
 }
 
 const plugins = [
+  new webpack.ProvidePlugin({
+    process: 'process/browser.js',
+    Buffer: ['buffer', 'Buffer'],
+  }),
   new HtmlWebpackPlugin({
     template: './src/index.ejs',
     favicon: './assets/images/logo.svg',
@@ -37,6 +45,19 @@ const plugins = [
   new webpack.DefinePlugin({
     'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
     'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
+    'process.env.TOOLJET_EDITION': JSON.stringify(edition || 'ce'),
+  }),
+  // Module replacement for restricted imports
+  new webpack.NormalModuleReplacementPlugin(/^(@ee\/|@cloud\/)/, (resource) => {
+    const edition = process.env.TOOLJET_EDITION || 'ce';
+
+    // Only replace if the current edition shouldn't have access
+    if (edition === 'ce' && resource.request.startsWith('@ee/')) {
+      resource.request = emptyModulePath;
+    } else if (['ce', 'ee'].includes(edition) && resource.request.startsWith('@cloud/')) {
+      resource.request = emptyModulePath;
+    }
+    // Otherwise, leave the original import intact
   }),
 ];
 
@@ -63,9 +84,13 @@ module.exports = {
     runtimeChunk: 'single',
     minimizer: [
       new TerserPlugin({
-        minify: TerserPlugin.esbuildMinify,
         terserOptions: {
-          ...(environment === 'production' && { drop: ['debugger', 'console'] }),
+          keep_classnames: true,
+          keep_fnames: true,
+          compress: {
+            drop_debugger: true,
+            drop_console: true,
+          },
         },
         parallel: environment === 'production',
       }),
@@ -86,11 +111,18 @@ module.exports = {
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
+      '@cloud': path.resolve(__dirname, 'cloud/'),
       '@assets': path.resolve(__dirname, 'assets/'),
-      '@white-label': path.resolve(__dirname, 'ce/white-label'),
+      '@white-label': path.resolve(__dirname, 'src/_helpers/white-label'),
+    },
+    fallback: {
+      process: require.resolve('process/browser.js'),
+      path: require.resolve('path-browserify'),
+      '@ee/modules': emptyModulePath,
+      '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: environment === 'development' ? 'eval-cheap-source-map' : 'hidden-source-map',
+  devtool: environment === 'development' ? 'source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
@@ -192,12 +224,17 @@ module.exports = {
     // global app config object
     config: JSON.stringify({
       apiUrl: `${stripTrailingSlash(API_URL[environment]) || ''}/api`,
+      ENVIRONMENT: process.env.NODE_ENV,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
+      TOOLJET_SERVER_URL: process.env.TOOLJET_SERVER_URL,
       ENABLE_MULTIPLAYER_EDITING: true,
       ENABLE_MARKETPLACE_DEV_MODE: process.env.ENABLE_MARKETPLACE_DEV_MODE,
+      TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB: process.env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB || 5,
       TOOLJET_MARKETPLACE_URL:
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
+      TOOLJET_EDITION: process.env.TOOLJET_EDITION,
+      ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
     }),
   },
 };

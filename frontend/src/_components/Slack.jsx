@@ -5,7 +5,15 @@ import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
-const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDataSource }) => {
+const Slack = ({
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  isDisabled,
+}) => {
   const [authStatus, setAuthStatus] = useState(null);
   const whiteLabelText = retrieveWhiteLabelText();
   const { t } = useTranslation();
@@ -26,6 +34,8 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
         const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
 
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+        localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+
         optionchanged('provider', provider).then(() => {
           optionchanged('oauth2', true);
         });
@@ -64,7 +74,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
                   type="radio"
                   onClick={() => optionchanged('access_type', 'chat:write')}
                   checked={options?.access_type?.value === 'chat:write'}
-                  disabled={authStatus === 'waiting_for_token'}
+                  disabled={authStatus === 'waiting_for_token' || isDisabled}
                 />
                 <span className="form-check-label">
                   {t('slack.chatWrite', 'chat:write')} <br />
@@ -87,7 +97,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
             <div>
               <Button
                 className={`m2 ${isSaving ? ' loading' : ''}`}
-                disabled={isSaving}
+                disabled={isSaving || isDisabled}
                 onClick={() => saveDataSource()}
               >
                 {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
@@ -98,7 +108,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
           {(!authStatus || authStatus === 'waiting_for_url') && (
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || isDisabled}
               onClick={() => authGoogle()}
             >
               {t('slack.connectSlack', 'Connect to Slack')}

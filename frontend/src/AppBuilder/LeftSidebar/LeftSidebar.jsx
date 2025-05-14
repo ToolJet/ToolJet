@@ -10,13 +10,19 @@ import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
+import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
 // TODO: add dark/light mode toggle
 // TODO: move popover and component selection to separate component
 // TODO: create usable header component that can accept page specific buttton as props/children
-export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
+export const BaseLeftSidebar = ({
+  darkMode = false,
+  switchDarkMode,
+  renderAISideBarTrigger = () => null,
+  renderAIChat = () => null,
+}) => {
   const [
     pinned,
     selectedSidebarItem,
@@ -28,6 +34,7 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
     resetUnreadErrorCount,
     toggleLeftSidebar,
     isSidebarOpen,
+    isDraggingQueryPane,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -40,6 +47,7 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
       state.debugger.resetUnreadErrorCount,
       state.toggleLeftSidebar,
       state.isSidebarOpen,
+      state.queryPanel.isDraggingQueryPane,
     ],
     shallow
   );
@@ -62,10 +70,15 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
   };
 
   useEffect(() => {
-    setPopoverContentHeight(
-      ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
-    ); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPanelHeight]);
+    if (!isDraggingQueryPane) {
+      setPopoverContentHeight(
+        ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
+      );
+    } else {
+      setPopoverContentHeight(100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryPanelHeight, isDraggingQueryPane]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
@@ -93,6 +106,8 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
             pinned={pinned}
           />
         );
+      case 'tooljetai':
+        return renderAIChat({ darkMode });
       //   case 'datasource':
       //     return (
       //       <LeftSidebarDataSources
@@ -149,6 +164,15 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
 
   return (
     <div className={cx('left-sidebar', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
+      {renderAISideBarTrigger({
+        selectedSidebarItem: selectedSidebarItem,
+        onClick: () => handleSelectedSidebarItem('tooljetai'),
+        darkMode: darkMode,
+        icon: 'tooljetai',
+        className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
+        tip: 'Build with AI',
+        ref: setSideBarBtnRefs('tooljetai'),
+      })}
       <SidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('page')}
@@ -206,8 +230,11 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
 
       <Popover
         onInteractOutside={(e) => {
+          // if tooljetai is open don't close
+          if (selectedSidebarItem === 'tooljetai') return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
-          if (pinned || isWithinSidebar) return;
+          const isClickOnInspect = e.target.closest('.config-handle-inspect');
+          if (pinned || isWithinSidebar || isClickOnInspect) return;
           toggleLeftSidebar(false);
         }}
         open={isSidebarOpen}
@@ -233,3 +260,5 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
     </div>
   );
 };
+
+export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');

@@ -15,7 +15,34 @@ import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { getLocalTimeZone, getUTCOffset } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+import _ from 'lodash';
 
+const compareValueInObject = (currentValue, defaultValue) => {
+  try {
+    let cv = currentValue;
+    let defaultVal = defaultValue;
+
+    // Step 1: Parse cv until it's fully converted to an object
+    while (typeof cv === 'string') {
+      cv = JSON.parse(cv);
+    }
+
+    // Step 2: Use Lodash's isEqual for a deep comparison
+    return _.isEqual(cv, defaultVal);
+  } catch (error) {
+    return false;
+  }
+};
+
+const transformJSONValue = (value) => {
+  if (typeof value === 'string') {
+    return JSON.stringify(JSON.parse(value));
+  } else {
+    return JSON.stringify(value);
+  }
+};
 const RowForm = ({
   onCreate,
   onClose,
@@ -30,6 +57,13 @@ const RowForm = ({
   const inputRefs = useRef({});
   const primaryKeyColumns = [];
   const nonPrimaryKeyColumns = [];
+
+  const [disabledSaveButton, setDisabledSaveButton] = useState(false);
+
+  const handleInputError = (bool = false) => {
+    setDisabledSaveButton(bool);
+  };
+
   columns.forEach((column) => {
     if (column?.constraints_type?.is_primary_key) {
       primaryKeyColumns.push({ ...column });
@@ -117,11 +151,14 @@ const RowForm = ({
   }
 
   function isMatchingForeignKeyColumnDetails(columnHeader) {
-    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    const matchingColumn = Array.isArray(foreignKeys)
+      ? foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader)
+      : undefined;
     return matchingColumn;
   }
 
-  const handleDisabledInputClick = (index, columnName) => {
+  const handleDisabledInputClick = (index, columnName, defaultValue = '', nullValue = '', dataType = '') => {
+    //index, columnName, 'Custom', defaultValue, null, dataType
     if (inputRefs.current[columnName]) {
       setTimeout(() => {
         inputRefs.current[columnName].focus();
@@ -137,6 +174,7 @@ const RowForm = ({
     if (isCurrentlyDisabled) {
       setData((prevData) => ({ ...prevData, [columnName]: newInputValues[index].value }));
     }
+    handleTabClick(index, 'Custom', defaultValue, nullValue, columnName, dataType);
   };
 
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType) => {
@@ -155,6 +193,9 @@ const RowForm = ({
         disabled: true,
         label: defaultValue,
       };
+    } else if (defaultValue && tabData === 'Default' && dataType === 'jsonb') {
+      const [_, __, resolvedValue] = resolveReferences(`{{${defaultValue}}}`);
+      newInputValues[index] = { value: resolvedValue, disabled: false, label: resolvedValue };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
       newInputValues[index] = { value: null, checkboxValue: false, disabled: true, label: null };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
@@ -164,6 +205,8 @@ const RowForm = ({
     } else if (tabData === 'Custom' && dataType === 'timestamp with time zone') {
       if (oldActiveTab[index] === 'Custom') return;
       newInputValues[index] = { value: new Date().toISOString(), checkboxValue: false, disabled: false, label: '' };
+    } else if (tabData === 'Custom' && dataType === 'jsonb') {
+      newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     }
@@ -176,6 +219,16 @@ const RowForm = ({
       setData({
         ...data,
         [accessor]: inputValuesArr[index].checkboxValue === null ? null : inputValuesArr[index].checkboxValue,
+      });
+    } else if (dataType === 'jsonb') {
+      setData({
+        ...data,
+        [accessor]:
+          inputValuesArr[index].value === null
+            ? null
+            : compareValueInObject(inputValuesArr[index].value, defaultVal)
+            ? defaultVal
+            : inputValuesArr[index].value,
       });
     } else {
       setData({
@@ -194,13 +247,13 @@ const RowForm = ({
     const newInputValues = [...inputValues];
     const isNull = value === null || value === 'Null';
     newInputValues[index] = {
-      value: value === 'Null' ? null : value,
+      value: isNull ? null : value,
       checkboxValue: inputValues[index].checkboxValue,
       disabled: isNull,
-      label: value === 'Null' ? null : value,
+      label: isNull ? null : value,
     };
     setInputValues(newInputValues);
-    setData({ ...data, [columnName]: value === 'Null' ? null : value });
+    setData({ ...data, [columnName]: isNull ? null : value });
     if (isNull) {
       const newActiveTabs = [...activeTab];
       newActiveTabs[index] = 'Null';
@@ -272,7 +325,7 @@ const RowForm = ({
     setFetching(true);
     let flag = 0;
     rowColumns.forEach(({ accessor, dataType }) => {
-      if (['double precision', 'bigint', 'integer'].includes(dataType) && data[accessor] === '') {
+      if (['double precision', 'bigint', 'integer', 'jsonb'].includes(dataType) && data[accessor] === '') {
         flag = 1;
         setErrorMap((prev) => {
           return { ...prev, [accessor]: 'Cannot be empty' };
@@ -416,7 +469,7 @@ const RowForm = ({
             )}
             {inputValues[index]?.disabled && (
               <div
-                onClick={() => handleDisabledInputClick(index, columnName)}
+                onClick={() => handleDisabledInputClick(index, columnName, defaultValue, isNullable, dataType)}
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -479,7 +532,7 @@ const RowForm = ({
             />
             {inputValues[index]?.disabled && (
               <div
-                onClick={() => handleDisabledInputClick(index, columnName)}
+                onClick={() => handleDisabledInputClick(index, columnName, defaultValue, isNullable, dataType)}
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -495,6 +548,101 @@ const RowForm = ({
           </div>
         );
 
+      case 'jsonb': {
+        return (
+          <div style={{ position: 'relative' }}>
+            {inputValues[index]?.value === null ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                  backgroundColor: 'transparent',
+                  width: '100%',
+                  border: '1px solid var(--slate7)',
+                  padding: '5px 5px',
+                  borderRadius: '6px',
+                }}
+                className={'null-container'}
+                tabindex="0"
+              >
+                <span
+                  style={{
+                    position: 'static',
+                    backgroundColor: 'transparent',
+                  }}
+                  className={'null-tag'}
+                >
+                  Null
+                </span>
+              </div>
+            ) : activeTab[index] === 'Default' ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                  backgroundColor: 'transparent',
+                  width: '100%',
+                  border: '1px solid var(--slate7)',
+                  padding: '5px 5px',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  height: '36px',
+                  maxHeight: '36px',
+                  fontSize: '12px',
+                }}
+                tabindex="0"
+                className="truncate"
+              >
+                {transformJSONValue(defaultValue)}
+              </div>
+            ) : (
+              <div className="tjdb-codehinter-wrapper-drawer" onKeyDown={(e) => e.stopPropagation()}>
+                <CodeHinter
+                  type="tjdbHinter"
+                  inEditor={false}
+                  initialValue={inputValues[index]?.value ? transformJSONValue(inputValues[index]?.value) : ''}
+                  lang="javascript"
+                  onChange={(value) => {
+                    if (value === 'Null') {
+                      handleInputChange(index, value, columnName);
+                    } else {
+                      const [_, __, resolvedValue] = resolveReferences(`{{${value}}}`);
+                      handleInputChange(index, resolvedValue, columnName);
+                    }
+                  }}
+                  componentName={`{} ${columnName}`}
+                  errorCallback={handleInputError}
+                  lineNumbers={false}
+                  placeholder="{}"
+                  columnName={columnName}
+                  showErrorMessage={true}
+                  className={cx(errorMap[columnName] ? 'has-empty-error' : '')}
+                />
+              </div>
+            )}
+
+            {inputValues[index]?.disabled && (
+              <div
+                onClick={() => {
+                  handleDisabledInputClick(index, columnName, defaultValue, isNullable, dataType);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 1,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
+          </div>
+        );
+      }
       default:
         break;
     }
@@ -686,7 +834,7 @@ const RowForm = ({
         fetching={fetching}
         onClose={onClose}
         onCreate={handleSubmit}
-        shouldDisableCreateBtn={Object.values(matchingObject).includes('')}
+        shouldDisableCreateBtn={Object.values(matchingObject).includes('') || disabledSaveButton}
         initiator={initiator}
       />
     </div>

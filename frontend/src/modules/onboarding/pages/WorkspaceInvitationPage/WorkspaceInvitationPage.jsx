@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import {
   FormTextInput,
   SubmitButton,
   FormHeader,
   FormDescription,
-  EmailComponent,
   GeneralFeatureImage,
+  TermsAndPrivacyInfo,
 } from '@/modules/common/components';
 import { appService, authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
@@ -14,36 +14,24 @@ import './resources/styles/workspace_invitation_page.scss';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { toast } from 'react-hot-toast';
-import {
-  retrieveWhiteLabelText,
-  setFaviconAndTitle,
-  retrieveWhiteLabelFavicon,
-  checkWhiteLabelsDefaultState,
-} from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 import { useEnterKeyPress } from '@/modules/common/hooks';
 
 const WorkspaceInvitationPage = (props) => {
   const [isLoading, setisLoading] = React.useState(false);
-  const [defaultState, setdefaultState] = React.useState(false);
-  const [whiteLabelText, setWhiteLabelText] = React.useState(retrieveWhiteLabelText());
-  const [whiteLabelFavicon, setWhiteLabelFavicon] = React.useState(retrieveWhiteLabelFavicon());
+  const defaultState = checkWhiteLabelsDefaultState();
+  const whiteLabelText = retrieveWhiteLabelText();
   const userName = props.name || '';
   const userEmail = props.email || 'abc@gmail.com';
   const invitedOrganizationName = props.invitedOrganizationName || `Tooljet's workspace`;
 
+  // TODO: handle from the cloud
   const organizationId = new URLSearchParams(props?.location?.search).get('oid');
-  const organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
-  const source = new URLSearchParams(props?.location?.search).get('source');
   useEnterKeyPress(() => acceptInvite());
 
   useEffect(() => {
     authenticationService.deleteLoginOrganizationId();
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, props?.location);
-    checkWhiteLabelsDefaultState(organizationId).then((res) => {
-      setdefaultState(res);
-      setWhiteLabelText(retrieveWhiteLabelText());
-      setWhiteLabelFavicon(retrieveWhiteLabelFavicon());
-    });
+    setFaviconAndTitle(props?.location);
   }, []);
 
   const formAreaStyles = {
@@ -89,7 +77,6 @@ const WorkspaceInvitationPage = (props) => {
               name="name"
               dataCy="name-input"
               readOnly="true"
-              disableStartAdornment={true}
             />
             <FormTextInput
               label="Email"
@@ -103,24 +90,10 @@ const WorkspaceInvitationPage = (props) => {
               onClick={(e) => acceptInvite(e)}
               className="accept-invite-button"
               buttonText="Accept Invite"
+              isLoading={isLoading}
             />
           </form>
-          {defaultState && (
-            <p className="onboard d-block" data-cy="signup-terms-helper">
-              By signing up you are agreeing to the
-              <br />
-              <span>
-                <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                  Terms of Service{' '}
-                </a>
-                &
-                <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                  {' '}
-                  Privacy Policy
-                </a>
-              </span>
-            </p>
-          )}
+          {defaultState && <TermsAndPrivacyInfo />}
         </div>
       </OnboardingUIWrapper>
     );

@@ -35,7 +35,7 @@ export const addInputOnQueryField = (field, data) => {
     .click()
     .clearAndTypeOnCodeMirror(`{backSpace}`);
   cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data);
-  cy.forceClickOnCanvas();
+  // cy.forceClickOnCanvas();
 };
 
 export const waitForQueryAction = (action) => {
@@ -47,6 +47,8 @@ export const waitForQueryAction = (action) => {
 
 export const chainQuery = (currentQuery, trigger) => {
   cy.get(`[data-cy="list-query-${currentQuery}"]`).click();
+  cy.wait(1000);
+  cy.get('[data-cy="query-tab-settings"]').click();
   selectEvent("Query Success", "Run Query");
   cy.get('[data-cy="query-selection-field"]')
     .click()
@@ -55,8 +57,16 @@ export const chainQuery = (currentQuery, trigger) => {
 };
 
 export const addSuccessNotification = (notification) => {
-  changeQueryToggles("notification-on-success");
-  cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
-    notification
-  );
+  cy.get('[data-cy="query-tab-settings"]').click();
+  cy.get('body').then(($body) => {
+    if (!$body.find('[data-cy="success-message-input-field"]').is(':visible')) {
+      changeQueryToggles("notification-on-success");
+      // cy.get('[data-cy="success-message-input-field"]').then(($input) => {
+      //   cy.wrap($input).clearAndTypeOnCodeMirror(notification);
+      // });
+    }
+  });
+  cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(notification);
+  cy.get('[data-cy="query-tab-setup"]').click();
+  cy.wait(300);
 };

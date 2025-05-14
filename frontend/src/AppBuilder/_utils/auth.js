@@ -1,5 +1,6 @@
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
+import { sessionService } from '@/_services';
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
@@ -11,7 +12,7 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
 
 export function logoutAction() {
   localStorage.clear();
-  authenticationService.logout(true);
+  sessionService.logout(true);
 
   return Promise.resolve();
 }

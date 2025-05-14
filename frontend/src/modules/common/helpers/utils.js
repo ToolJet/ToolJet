@@ -1,5 +1,6 @@
-import { isString } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
+import { isString } from 'lodash';
+import config from 'config';
 
 const processErrorMessage = (error) => {
   if (isString(error)) {
@@ -13,4 +14,8 @@ function clearPageHistory() {
   history.replaceState(null, null, `${subpath}/`);
 }
 
-export { processErrorMessage, clearPageHistory };
+const fetchEdition = () => {
+  return config.TOOLJET_EDITION?.toLowerCase() || 'ce';
+};
+
+export { processErrorMessage, clearPageHistory, fetchEdition };

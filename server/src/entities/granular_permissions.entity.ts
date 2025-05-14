@@ -9,9 +9,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ResourceType } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
 import { GroupPermissions } from './group_permissions.entity';
 import { AppsGroupPermissions } from './apps_group_permissions.entity';
+import { DataSourcesGroupPermissions } from './data_sources_group_permissions.entity';
+import { ResourceType } from '@modules/group-permissions/constants';
 
 @Entity({ name: 'granular_permissions' })
 export class GranularPermissions extends BaseEntity {
@@ -44,4 +45,13 @@ export class GranularPermissions extends BaseEntity {
     onDelete: 'CASCADE',
   })
   appsGroupPermissions: AppsGroupPermissions;
+
+  @OneToOne(
+    () => DataSourcesGroupPermissions,
+    (dataSourcesGroupPermission) => dataSourcesGroupPermission.granularPermissions,
+    {
+      onDelete: 'CASCADE',
+    }
+  )
+  dataSourcesGroupPermission: DataSourcesGroupPermissions;
 }

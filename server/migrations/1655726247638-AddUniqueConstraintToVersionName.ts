@@ -1,4 +1,4 @@
-import { AppVersion } from 'src/entities/app_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
 export class AddUniqueConstraintToVersionName1655726247638 implements MigrationInterface {

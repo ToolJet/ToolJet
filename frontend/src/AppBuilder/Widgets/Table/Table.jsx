@@ -12,8 +12,6 @@ import {
   useRowSelect,
   useColumnOrder,
 } from 'react-table';
-import cx from 'classnames';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { set, get, merge, isArray, isEmpty, isEqual, toString } from 'lodash';
@@ -389,8 +387,8 @@ export const Table = React.memo(
 
     const removeNullValues = (arr) => arr.filter((element) => element !== null);
 
-    const useDynamicColumn = resolveWidgetFieldValue(properties?.useDynamicColumn);
-    const dynamicColumn = useDynamicColumn ? resolveWidgetFieldValue(properties?.columnData) ?? [] : [];
+    const useDynamicColumn = getResolvedValue(properties?.useDynamicColumn);
+    const dynamicColumn = useDynamicColumn ? getResolvedValue(properties?.columnData) ?? [] : [];
 
     const columnProperties = useMemo(() => {
       return useDynamicColumn ? generatedColumn : removeNullValues(deepClone(properties.columns));
@@ -406,7 +404,7 @@ export const Table = React.memo(
     }, [JSON.stringify(columnProperties)]);
 
     const tableData = useMemo(() => {
-      const resolvedData = resolveWidgetFieldValue(properties.data);
+      const resolvedData = getResolvedValue(properties.data);
       if (!Array.isArray(resolvedData) && !isArray(resolvedData)) {
         return [];
       } else {
@@ -442,11 +440,6 @@ export const Table = React.memo(
               }
             });
 
-            setExposedVariables({
-              currentData: tableData,
-              updatedData: tableData,
-            });
-
             return {
               ...row,
               ...transformedObject,
@@ -454,6 +447,13 @@ export const Table = React.memo(
           });
       }
     }, [properties.data, transformations]);
+
+    useEffect(() => {
+      setExposedVariables({
+        currentData: tableData,
+        updatedData: tableData,
+      });
+    }, [tableData]);
 
     const tableRef = useRef();
 
@@ -1114,10 +1114,9 @@ export const Table = React.memo(
                 <div
                   style={{
                     position: 'absolute',
-                    top: 0,
+                    top: `${items[0]?.start ?? 0}px`,
                     left: 0,
                     width: '100%',
-                    transform: `translateY(${items[0]?.start ?? 0}px)`,
                   }}
                 >
                   {items.map((virtualRow) => {

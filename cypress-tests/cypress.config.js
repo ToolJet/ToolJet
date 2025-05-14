@@ -10,9 +10,9 @@ const pdf = require("pdf-parse");
 module.exports = defineConfig({
   execTimeout: 1800000,
   defaultCommandTimeout: 30000,
-  requestTimeout: 10000,
-  pageLoadTimeout: 20000,
-  responseTimeout: 10000,
+  requestTimeout: 30000,
+  pageLoadTimeout: 30000,
+  responseTimeout: 30000,
   viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
@@ -66,12 +66,22 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        updateId ({ dbconfig, sql }) {
+        dbConnection ({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
       });
-
+      on('before:browser:launch', (browser = {}, launchOptions) => {
+        if (browser.name === 'chrome' && browser.isHeadless === false) {
+          launchOptions.args.push(
+            '--disable-features=AutofillAccountStorage,PasswordManager',
+            '--disable-save-password-bubble',
+            '--disable-password-generation',
+            '--disable-password-manager-reauthentication'
+          );
+        }
+        return launchOptions;
+      });
       require("@cypress/code-coverage/task")(on, config);
       // return config;
 
@@ -82,7 +92,7 @@ module.exports = defineConfig({
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
-    specPattern: "cypress/e2e/happyPath/platform/**/**/*.cy.js",
+    specPattern: "cypress/e2e/happyPath/**/*.cy.js",
     downloadsFolder: "cypress/downloads",
     numTestsKeptInMemory: 0,
     redirectionLimit: 10,

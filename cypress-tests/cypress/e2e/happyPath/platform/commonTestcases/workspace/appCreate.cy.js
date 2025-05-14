@@ -8,7 +8,7 @@ import { importText } from "Texts/exportImport";
 
 describe("App creation", () => {
     const data = {};
-    const appFile = "cypress/fixtures/templates/test-app.json";
+    const appFile = "cypress/fixtures/templates/one_version.json";
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
@@ -200,7 +200,7 @@ describe("App creation", () => {
             force: true,
         });
 
-        cy.get(commonSelectors.importAppTitle).verifyVisibleElement(
+        cy.get(importSelectors.importAppTitle).verifyVisibleElement(
             "have.text",
             "Import app"
         );
@@ -210,7 +210,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "test-app"
+            "one_version"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",
@@ -236,7 +236,7 @@ describe("App creation", () => {
         });
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "test-app"
+            "one_version"
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.cancelButton).click();
@@ -247,7 +247,7 @@ describe("App creation", () => {
         });
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "test-app"
+            "one_version"
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.importAppButton).should("be.enabled").click();
@@ -262,8 +262,11 @@ describe("App creation", () => {
 
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(commonSelectors.chooseFromTemplateButton).click();
-        cy.get(".d-flex > .tj-primary-btn").click();
+        cy.clearAndType('[data-cy="search-input-field"]', "Admin panel");
+        cy.get('[data-cy="admin-panel-tooljet-db-list-item"]').click();
+        cy.get('[data-cy="create-application-from-template-button"]').click()
 
+        cy.wait(1000);
         cy.get(commonSelectors.CreateAppFromTemplateButton).verifyVisibleElement(
             "have.text",
             "Create new app from template"
@@ -280,7 +283,7 @@ describe("App creation", () => {
             "have.text",
             commonText.appNameInfoLabel
         );
-        cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+        cy.get(commonSelectors.cancelButton, { timoeut: 2000 }).verifyVisibleElement(
             "have.text",
             commonText.cancelButton
         );

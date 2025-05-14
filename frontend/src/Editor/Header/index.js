@@ -1,40 +1,51 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
 import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
+import { ToolTip } from '@/_components/ToolTip';
 import cx from 'classnames';
-import config from 'config';
-// eslint-disable-next-line import/no-unresolved
-import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import queryString from 'query-string';
-import { isEmpty } from 'lodash';
+import { LicenseTooltip } from '@/LicenseTooltip';
+import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
+import UpdatePresence from './UpdatePresence';
+import { useEditorState } from '@/_stores/editorStore';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
 import RightTopHeaderButtons from './RightTopHeaderButtons';
 import EnvironmentManager from './EnvironmentManager';
+import { useEnvironmentsAndVersionsStore } from '../../_stores/environmentsAndVersionsStore';
 
 export default function EditorHeader({
-  M,
   canUndo,
   canRedo,
   handleUndo,
   handleRedo,
   saveError,
   onNameChanged,
+  appEnvironmentChanged,
   setAppDefinitionFromVersion,
   onVersionRelease,
-  slug,
+  toggleGitSyncModal,
   darkMode,
+  setCurrentAppVersionPromoted,
+  isEditorFreezed,
 }) {
   const currentUser = useCurrentUser();
+  const { isSaving, appId, appName, isPublic, creationMode } = useAppInfo();
+  const { featureAccess } = useEditorState();
+  const { selectedEnvironment } = useEnvironmentsAndVersionsStore(
+    (state) => ({
+      appVersionEnvironment: state?.appVersionEnvironment,
+      selectedEnvironment: state?.selectedEnvironment,
+    }),
+    shallow
+  );
 
-  const { isSaving, appId, appName, isPublic, currentVersionId } = useAppInfo();
-  const { setAppPreviewLink } = useAppDataActions();
+  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -42,38 +53,6 @@ export default function EditorHeader({
     }),
     shallow
   );
-  const { pageHandle } = useCurrentStateStore(
-    (state) => ({
-      pageHandle: state?.page?.handle,
-    }),
-    shallow
-  );
-
-  const updatePresence = useUpdatePresence();
-
-  useEffect(() => {
-    const initialPresence = {
-      firstName: currentUser?.first_name ?? '',
-      lastName: currentUser?.last_name ?? '',
-      email: currentUser?.email ?? '',
-      image: '',
-      editingVersionId: '',
-      x: 0,
-      y: 0,
-      color: '',
-    };
-    updatePresence(initialPresence);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
-
-  useEffect(() => {
-    const previewQuery = queryString.stringify({ version: editingVersion.name });
-    const appVersionPreviewLink = editingVersion.id
-      ? `/applications/${slug || appId}/${pageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
-      : '';
-    setAppPreviewLink(appVersionPreviewLink);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, currentVersionId, editingVersion, pageHandle]);
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -102,7 +81,12 @@ export default function EditorHeader({
                 }}
               >
                 <div className="global-settings-app-wrapper p-0 m-0 ">
-                  <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
+                  <EditAppName
+                    appId={appId}
+                    appName={appName}
+                    onNameChanged={onNameChanged}
+                    appCreationMode={creationMode}
+                  />
                 </div>
                 <HeaderActions
                   canUndo={canUndo}
@@ -138,23 +122,69 @@ export default function EditorHeader({
                       )}
                     </span>
                   </div>
-                  {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
+                  {shouldEnableMultiplayer && (
+                    <div className="mx-2 p-2">
+                      <RealtimeAvatars />
+                    </div>
+                  )}
+                  {shouldEnableMultiplayer && <UpdatePresence currentUser={currentUser} />}
                 </div>
               </div>
               <div className="navbar-seperator"></div>
+              <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
+                <div className="d-flex version-manager-container p-0  align-items-center ">
+                  {editingVersion && (
+                    <EnvironmentManager
+                      appEnvironmentChanged={appEnvironmentChanged}
+                      multiEnvironmentEnabled={featureAccess?.multiEnvironment}
+                      setCurrentAppVersionPromoted={setCurrentAppVersionPromoted}
+                      licenseValid={licenseValid}
+                      licenseType={featureAccess?.licenseStatus?.licenseType}
+                    />
+                  )}
+                  <div className="navbar-seperator"></div>
 
-              <EnvironmentManager />
-
-              {editingVersion && (
-                <AppVersionsManager
-                  appId={appId}
-                  setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                  isPublic={isPublic ?? false}
-                  darkMode={darkMode}
-                />
-              )}
+                  {editingVersion && (
+                    <AppVersionsManager
+                      appId={appId}
+                      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+                      isPublic={isPublic ?? false}
+                      appCreationMode={creationMode}
+                      darkMode={darkMode}
+                    />
+                  )}
+                </div>
+                <div
+                  onClick={
+                    featureAccess?.gitSync &&
+                    selectedEnvironment?.priority === 1 &&
+                    (creationMode === 'GIT' || !isEditorFreezed) &&
+                    toggleGitSyncModal
+                  }
+                  className={
+                    featureAccess?.gitSync &&
+                    selectedEnvironment?.priority === 1 &&
+                    (creationMode === 'GIT' || !isEditorFreezed)
+                      ? 'git-sync-btn'
+                      : 'git-sync-btn disabled-action-tooltip'
+                  }
+                >
+                  <LicenseTooltip feature={'GitSync'} limits={featureAccess} placement="bottom">
+                    <ToolTip
+                      message={`${
+                        selectedEnvironment?.priority !== 1 &&
+                        'GitSync can only be performed in development environment'
+                      }`}
+                      show={featureAccess?.gitSync}
+                      placement="bottom"
+                    >
+                      <SolidIcon name="gitsync" />
+                    </ToolTip>
+                  </LicenseTooltip>
+                </div>
+              </div>
             </div>
-            <RightTopHeaderButtons onVersionRelease={onVersionRelease} />
+            <RightTopHeaderButtons onVersionRelease={onVersionRelease} appEnvironmentChanged={appEnvironmentChanged} />
           </div>
         </div>
       </header>

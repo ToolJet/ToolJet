@@ -58,6 +58,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     [preview, error] = [value, `Undefined constants: ${invalidConstants}`];
   } else {
     [preview, error] = resolveReferences(value, state, null, {}, true, true);
+    console.log(preview, isSecret, 'p');
 
     if (isSecret && !error) {
       preview = hiddenSecretText;

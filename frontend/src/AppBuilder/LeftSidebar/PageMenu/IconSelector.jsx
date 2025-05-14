@@ -1,11 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import cx from 'classnames';
 import { VirtuosoGrid } from 'react-virtuoso';
 import * as Icons from '@tabler/icons-react';
 import { SearchBox } from '@/_components';
 import useStore from '@/AppBuilder/_stores/store';
 
-export default function IconSelector({ iconName, iconColor, pageId }) {
+export default function IconSelector({ iconName, iconColor, pageId, disabled = false }) {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
   const updatePageIcon = useStore((state) => state.updatePageIcon);
@@ -75,17 +76,17 @@ export default function IconSelector({ iconName, iconColor, pageId }) {
   return (
     <OverlayTrigger
       trigger="click"
-      placement={'right'}
+      placement={'bottom'}
       show={showPopOver}
-      onToggle={(showing) => setPopOverVisibility(showing)}
       rootClose={true}
       overlay={eventPopover()}
+      {...(!disabled && { onToggle: (showing) => setPopOverVisibility(showing) })}
     >
-      <div className="d-flex align-items-center icon-selector" role="button">
+      <div className={cx('d-flex align-items-center icon-selector', { 'selector-open': showPopOver })} role="button">
         <div className="">
           <IconElement
             color={`${iconColor}`}
-            style={{ width: '18px', height: '18px', color: iconColor, stroke: iconColor }}
+            style={{ width: '19px', height: '19px', color: iconColor, stroke: iconColor }}
           />
         </div>
       </div>

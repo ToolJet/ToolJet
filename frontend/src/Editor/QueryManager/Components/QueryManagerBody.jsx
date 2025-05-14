@@ -26,18 +26,11 @@ import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 
-export const QueryManagerBody = ({
-  darkMode,
-  options,
-  currentState,
-  allComponents,
-  apps,
-  appDefinition,
-  setOptions,
-  activeTab,
-}) => {
+export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDefinition, setOptions, activeTab }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
@@ -47,6 +40,8 @@ export const QueryManagerBody = ({
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
+
+  const currentState = useCurrentStateStore();
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -67,9 +62,10 @@ export const QueryManagerBody = ({
 
   const defaultOptions = useRef({});
 
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -176,7 +172,7 @@ export const QueryManagerBody = ({
     return (
       <div
         className={cx(`datasource-picker p-0`, {
-          'disabled ': isVersionReleased,
+          'disabled ': isVersionReleased || isEditorFreezed,
         })}
       >
         <DataSourcePicker
@@ -216,7 +212,7 @@ export const QueryManagerBody = ({
     return (
       <div
         className={cx({
-          'disabled ': isVersionReleased,
+          'disabled ': isVersionReleased || isEditorFreezed,
         })}
       >
         <div ref={paramListContainerRef} style={{ marginBottom: '16px' }}>
@@ -256,7 +252,11 @@ export const QueryManagerBody = ({
   const renderEventManager = () => {
     const queryComponent = mockDataQueryAsComponent(options?.events || []);
     return (
-      <div className="d-flex">
+      <div
+        className={cx('d-flex', {
+          'disabled ': isVersionReleased || isEditorFreezed,
+        })}
+      >
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4">
           <EventManager
@@ -287,7 +287,7 @@ export const QueryManagerBody = ({
       <div>
         <div
           className={cx(`d-flex pb-1`, {
-            'disabled ': isVersionReleased,
+            'disabled ': isVersionReleased || isEditorFreezed,
           })}
         >
           <div className="form-label">{t('editor.queryManager.settings', 'Triggers')}</div>
@@ -396,10 +396,18 @@ export const QueryManagerBody = ({
   };
 
   if (selectedQueryId !== selectedQuery?.id) return;
+  const hasPermissions =
+    selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
+        !hasPermissions ? 'disabled' : ''
+      }`}
       style={{ height: `calc(100% - ${previewHeight + 40}px)`, overflowY: 'auto' }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (

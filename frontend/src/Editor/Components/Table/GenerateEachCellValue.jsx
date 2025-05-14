@@ -117,7 +117,7 @@ export default function GenerateEachCellValue({
     }
   }
   useEffect(() => {
-    if (mounted && _.isEmpty(rowChangeSet)) {
+    if (_.isEmpty(rowChangeSet)) {
       setHighlighterCells(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

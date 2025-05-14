@@ -5,15 +5,21 @@ export const cyParamName = (paramName = "") => {
 export const commonSelectors = {
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
-  newToastMessage: '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
+  appSlugAccept: '[data-cy="app-slug-accepted-label"]',
+  newToastMessage:
+    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
+  workspaceConstantNameInput: '[data-cy="name-input-field"]',
+  workspaceConstantValueInput: '[data-cy="value-input-field"]',
   fileSelector: "[data-cy=uploaded-file-data]",
   searchField: "[data-cy='widget-search-box-search-bar']",
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
+  nameInputFieldd: "[data-cy=name-input-field]",
+  valueInputFieldd: "[data-cy=value-input-field]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
@@ -132,6 +138,7 @@ export const commonSelectors = {
   userAccountNameAvatar: '[data-cy="user-account-name-avatar"]',
   workspaceNameInputLabel: '[data-cy="onboarding-workspace-name-label"]',
   workspaceNameInputField: '[data-cy="onboarding-workspace-name-input"]',
+  workspaceNameinput: '[data-cy="workspace-name-input-field"]',
   backArrow: '[data-cy="back-arrow"]',
   backArrowText: '[data-cy="back-arrow-text"]',
   onboardingPorgressBubble: '[data-cy="onboarding-progress-bubbles"]',
@@ -166,8 +173,11 @@ export const commonSelectors = {
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
   breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
+  duplicateOption: '[data-cy="duplicate-group-card-option"]',
+  confirmDuplicateButton: '[data-cy="confim-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
   labelEmailInput: '[data-cy="email-label"]',
   inputFieldEmailAddress: '[data-cy="email-input"]',
@@ -176,7 +186,7 @@ export const commonSelectors = {
   globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
   saveButton: '[data-cy="save-button"]',
-
+  appEditButton: '[data-cy="edit-button"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },
@@ -250,7 +260,7 @@ export const commonSelectors = {
   cloneAppTitle: '[data-cy="clone-app-title"]',
   cloneAppButton: '[data-cy="clone-app"]',
   appNameErrorLabel: '[data-cy="app-name-error-label"]',
-  importAppTitle: '[data-cy="import-app-title"]',
+  importAppTitle: '[data-cy="import-an-app"]',
   importAppButton: '[data-cy="import-app"]',
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
@@ -272,7 +282,7 @@ export const commonSelectors = {
 
 export const commonWidgetSelector = {
   widgetBox: (widgetName) => {
-    return `[data-cy=widget-list-box-${cyParamName(widgetName)}]`;
+    return `[data-cy=widget-list-box-${cyParamName(widgetName)}]:eq(0)`;
   },
 
   draggableWidget: (widgetName) => {
@@ -333,9 +343,11 @@ export const commonWidgetSelector = {
   buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
   buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
-
+  constantInspectorIcon: '[data-cy="inspector-node-constants"]  > .node-key',
+  inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
+  homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",
   addEventHandlerLink: "[data-cy='add-event-handler']",
@@ -357,7 +369,7 @@ export const commonWidgetSelector = {
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
-
+  slugAccept: '[data-cy="app-slug-accepted-label"]',
   widgetDocumentationLink: "[data-cy='widget-documentation-link']",
 
   boxShadowDefaultParam: ["x", "y", "blur", "spread"],
@@ -366,7 +378,8 @@ export const commonWidgetSelector = {
   boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
   previewButton: `[data-cy="preview-link-button"]`,
-
+  defaultValueInputField: '[data-cy="default-value-input-field"]',
+  alertInfoText: '[data-cy="alert-info-text"]',
   shareAppButton: '[data-cy="share-button-link"]',
   shareModalElements: {
     modalHeader: '[data-cy="modal-header"]',
@@ -383,7 +396,7 @@ export const commonWidgetSelector = {
   modalCloseButton: '[data-cy="modal-close-button"]',
   iframeLinkLabel: '[data-cy="iframe-link-label"]',
   ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
-  appSlugLabel: '[data-cy="input-field-label"]',
+  appSlugLabel: '[data-cy="unique-app-slug-field-label"]',
   appSlugInput: '[data-cy="app-slug-input-field"]',
   appSlugInfoLabel: '[data-cy="helper-text"]',
   appLinkLabel: '[data-cy="app-link-label"]',
