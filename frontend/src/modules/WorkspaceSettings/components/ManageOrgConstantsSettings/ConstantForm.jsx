@@ -249,7 +249,7 @@ const ConstantForm = ({
                 <label className="form-label" data-cy="value-label">
                   Value
                 </label>
-                <small className="text-green d-flex align-items-center" data-cy="form-encrypted-label">
+                <small className="text-green d-flex align-items-center" data-cy="encrypted-label">
                   <img
                     className="encrypted-icon me-1"
                     src="assets/images/icons/padlock.svg"
