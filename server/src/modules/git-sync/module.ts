@@ -1,68 +1,63 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
-import { AppGitSync } from '@entities/app_git_sync.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_ssh.entity';
-import { AppsRepository } from '@modules/apps/repository';
-import { VersionRepository } from '@modules/versions/repository';
-import { GitSyncModule } from '@modules/git-sync/module';
-import { AppsModule } from '@modules/apps/module';
-import { TooljetDbModule } from '@modules/tooljet-db/module';
-import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
-import { VersionModule } from '@modules/versions/module';
-import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
-import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory';
+import { Organization } from '@entities/organization.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_ssh.entity';
+import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { AppVersion } from '@entities/app_version.entity';
-export class AppGitModule {
+import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
+import { TooljetDbModule } from '@modules/tooljet-db/module';
+import { AppsModule } from '@modules/apps/module';
+import { VersionModule } from '@modules/versions/module';
+import { AppGitSync } from '@entities/app_git_sync.entity';
+
+export class GitSyncModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const { AppGitController } = await import(`${await getImportPath()}/app-git/controller`);
-    const { AppGitService } = await import(`${await getImportPath()}/app-git/service`);
-    const { AppGitUtilService } = await import(`${await getImportPath()}/app-git/util.service`);
+    const { GitSyncController } = await import(`${await getImportPath()}/git-sync/controller`);
+    const { GitSyncService } = await import(`${await getImportPath()}/git-sync/service`);
+    const { GitSyncUtilService } = await import(`${await getImportPath()}/git-sync/util.service`);
     const { SourceControlProviderService } = await import(`${await getImportPath()}/git-sync/source-control-provider`);
     const { SSHGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-ssh/service`);
     const { HTTPSGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-https/service`);
-    const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
-    const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
     const { HTTPSGitSyncUtilityService } = await import(
       `${await getImportPath()}/git-sync/providers/github-https/util.service`
     );
     const { SSHGitSyncUtilityService } = await import(
       `${await getImportPath()}/git-sync/providers/github-ssh/util.service`
     );
+    const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
+    const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
+
     return {
-      module: AppGitModule,
+      module: GitSyncModule,
       imports: [
         TypeOrmModule.forFeature([
           AppGitSync,
-          VersionRepository,
-          OrganizationGitSsh,
           OrganizationGitSync,
+          Organization,
+          OrganizationGitSsh,
           OrganizationGitHttps,
-          AppsRepository,
           AppVersion,
         ]),
-        await AppsModule.register(configs),
-        await GitSyncModule.register(configs),
-        await TooljetDbModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await TooljetDbModule.register(configs),
+        await AppsModule.register(configs),
         await VersionModule.register(configs),
       ],
-      controllers: [AppGitController],
+      controllers: [GitSyncController],
       providers: [
-        AppGitService,
-        AppGitUtilService,
-        AppsAbilityFactory,
+        GitSyncService,
+        GitSyncUtilService,
         SourceControlProviderService,
         SSHGitSyncService,
         HTTPSGitSyncService,
-        SSHGitSyncUtilityService,
         HTTPSGitSyncUtilityService,
-        VersionRepository,
+        SSHGitSyncUtilityService,
         BaseGitUtilService,
         BaseGitSyncService,
       ],
-      exports: [AppGitUtilService],
+      exports: [GitSyncUtilService],
     };
   }
 }

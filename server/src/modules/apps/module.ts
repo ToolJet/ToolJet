@@ -21,6 +21,7 @@ import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { RolesRepository } from '@modules/roles/repository';
+import { AppGitModule } from '@modules/app-git/module';
 @Module({})
 export class AppsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -74,7 +75,7 @@ export class AppsModule {
         AppImportExportService,
         RolesRepository,
       ],
-      exports: [AppsUtilService],
+      exports: [AppsService, AppsUtilService, AppImportExportService],
     };
   }
 }

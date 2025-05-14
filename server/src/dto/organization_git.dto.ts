@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsIn } from 'class-validator';
-
+import { GITConnectionType } from '@entities/organization_git_sync.entity';
 export class OrganizationGitCreateDto {
   @IsOptional()
   organizationId: string;
@@ -7,6 +7,10 @@ export class OrganizationGitCreateDto {
   @IsString()
   @IsNotEmpty()
   gitUrl: string;
+
+  @IsString()
+  @IsNotEmpty()
+  gitType: string;
 }
 
 export class OrganizationGitUpdateDto {
@@ -28,4 +32,8 @@ export class OrganizationGitStatusUpdateDto {
   @IsOptional()
   @IsBoolean()
   isEnabled: boolean;
+
+  @IsString()
+  @IsNotEmpty()
+  gitType: GITConnectionType;
 }

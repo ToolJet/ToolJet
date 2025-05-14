@@ -119,6 +119,7 @@
     "rxjs": "^7.2.0",
     "sanitize-html": "^2.7.0",
     "semver": "^7.5.4",
+    "simple-git": "^3.27.0",
     "sshpk": "^1.17.0",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
@@ -126,7 +127,8 @@
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^8.17.1",
-    "y-websocket": "^1.4.0"
+    "y-websocket": "^1.4.0",
+    "@octokit/rest": "^18.12.0"
   },
   "peerDependencies": {
     "@nestjs/cli": "^9.0.0"
