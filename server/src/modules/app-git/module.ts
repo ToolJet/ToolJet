@@ -18,18 +18,17 @@ export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { AppGitController } = await import(`${await getImportPath()}/app-git/controller`);
     const { AppGitService } = await import(`${await getImportPath()}/app-git/service`);
-    const { AppGitUtilService } = await import(`${await getImportPath()}/app-git/util.service`);
     const { SourceControlProviderService } = await import(`${await getImportPath()}/git-sync/source-control-provider`);
     const { SSHGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-ssh/service`);
     const { HTTPSGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-https/service`);
-    const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
-    const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
     const { HTTPSGitSyncUtilityService } = await import(
       `${await getImportPath()}/git-sync/providers/github-https/util.service`
     );
     const { SSHGitSyncUtilityService } = await import(
       `${await getImportPath()}/git-sync/providers/github-ssh/util.service`
     );
+    const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
+    const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
     return {
       module: AppGitModule,
       imports: [
@@ -51,7 +50,6 @@ export class AppGitModule {
       controllers: [AppGitController],
       providers: [
         AppGitService,
-        AppGitUtilService,
         AppsAbilityFactory,
         SourceControlProviderService,
         SSHGitSyncService,
@@ -62,7 +60,7 @@ export class AppGitModule {
         BaseGitUtilService,
         BaseGitSyncService,
       ],
-      exports: [AppGitUtilService],
+      exports: [SSHGitSyncUtilityService, HTTPSGitSyncUtilityService],
     };
   }
 }

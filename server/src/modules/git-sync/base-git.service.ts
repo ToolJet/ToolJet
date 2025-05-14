@@ -16,10 +16,10 @@ import { OrganizationGitStatusUpdateDto } from '@dto/organization_git.dto';
 import { IBaseGitSyncInterface } from './base-git.interface';
 import { AppGitPushDto } from '@modules/app-git/dto';
 import { AppVersion } from '@entities/app_version.entity';
-import { GitSyncUtilService } from './util.service';
+// import { GitSyncUtilService } from './util.service';
 
 export abstract class BaseGitSyncService implements IBaseGitSyncInterface {
-  protected readonly gitSyncUtilService: GitSyncUtilService;
+  // protected readonly gitSyncUtilService: GitSyncUtilService;
 
   constructor() {}
 

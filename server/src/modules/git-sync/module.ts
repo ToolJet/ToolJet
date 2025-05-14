@@ -16,7 +16,6 @@ export class GitSyncModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { GitSyncController } = await import(`${await getImportPath()}/git-sync/controller`);
     const { GitSyncService } = await import(`${await getImportPath()}/git-sync/service`);
-    const { GitSyncUtilService } = await import(`${await getImportPath()}/git-sync/util.service`);
     const { SourceControlProviderService } = await import(`${await getImportPath()}/git-sync/source-control-provider`);
     const { SSHGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-ssh/service`);
     const { HTTPSGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-https/service`);
@@ -48,7 +47,6 @@ export class GitSyncModule {
       controllers: [GitSyncController],
       providers: [
         GitSyncService,
-        GitSyncUtilService,
         SourceControlProviderService,
         SSHGitSyncService,
         HTTPSGitSyncService,
@@ -57,7 +55,7 @@ export class GitSyncModule {
         BaseGitUtilService,
         BaseGitSyncService,
       ],
-      exports: [GitSyncUtilService],
+      exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService],
     };
   }
 }
