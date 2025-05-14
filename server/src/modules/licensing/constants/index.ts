@@ -104,6 +104,7 @@ export enum LICENSE_FIELD {
   CUSTOM_STYLE = 'customStylingEnabled',
   WHITE_LABEL = 'whitelabellingEnabled',
   CUSTOM_THEMES = 'customThemeEnabled',
+  SERVER_SIDE_GLOBAL = 'serverSideGlobalEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',
   MAX_DURATION_FOR_AUDIT_LOGS = 'maxDaysForAuditLogs',
   MULTI_ENVIRONMENT = 'multiEnvironmentEnabled',
@@ -120,6 +121,7 @@ export enum LICENSE_FIELD {
   GIT_SYNC = 'gitSyncEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
+  EXTERNAL_API = 'externalApiEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

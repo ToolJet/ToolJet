@@ -45,7 +45,7 @@ export class DataSourcesController implements IDataSourcesController {
     @Param('versionId') appVersionId,
     @Param('environmentId') environmentId
   ) {
-    return this.dataSourcesService.getForApp({ appVersionId, environmentId }, user);
+    return this.dataSourcesService.getForApp({ appVersionId, environmentId, shouldIncludeWorkflows: false }, user);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -111,7 +111,7 @@ export class DataSourcesController implements IDataSourcesController {
 
   @InitFeature(FEATURE_KEY.GET_OAUTH2_BASE_URL)
   @UseGuards(FeatureAbilityGuard)
-  @Get('fetch-oauth2-base-url')
+  @Post('fetch-oauth2-base-url')
   getAuthUrl(@Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
     return this.dataSourcesService.getAuthUrl(getDataSourceOauthUrlDto);
   }
@@ -127,5 +127,12 @@ export class DataSourcesController implements IDataSourcesController {
   ) {
     await this.dataSourcesService.authorizeOauth2(id, environmentId, authorizeDataSourceOauthDto, user);
     return;
+  }
+
+  @InitFeature(FEATURE_KEY.AUTHORIZE)
+  @UseGuards(FeatureAbilityGuard)
+  @Post('decrypt')
+  async decryptOptions(@Body() options: Record<string, any>) {
+    return await this.dataSourcesService.decryptOptions(options);
   }
 }

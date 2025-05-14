@@ -9,12 +9,16 @@ export const Color = ({
   value,
   onChange,
   pickerStyle = {},
+  colorMap = {},
   cyLabel,
   asBoxShadowPopover = true,
   meta,
   outerWidth = '142px',
   component,
   styleDefinition,
+  componentType = 'color',
+  CustomOptionList = () => {},
+  SwatchesToggle = () => {},
 }) => {
   value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
   const [showPicker, setShowPicker] = useState(false);
@@ -68,9 +72,11 @@ export const Color = ({
   const ColorPicker = () => {
     return (
       <>
-        {showPicker && (
+        {SwatchesToggle()}
+        {showPicker && componentType === 'swatches' && CustomOptionList()}
+        {showPicker && componentType === 'color' && (
           <div>
-            <div style={coverStyles} onClick={() => setShowPicker(false)} />
+            {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
             <div style={pickerStyle}>
               <SketchPicker
                 onFocus={() => setShowPicker(true)}
@@ -107,7 +113,9 @@ export const Color = ({
         ></div>
 
         <div className="col tj-text-xsm p-0 color-slate12" data-cy={`${String(cyLabel)}-value`}>
-          {value}
+          {colorMap?.[value]
+            ? 'Brand/' + colorMap?.[value]?.charAt(0).toUpperCase() + colorMap?.[value]?.slice(1)
+            : value}
         </div>
       </div>
     );

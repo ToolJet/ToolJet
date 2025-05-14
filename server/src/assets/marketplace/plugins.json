@@ -1,6 +1,6 @@
 [
   {
-    "name": "plivo",
+    "name": "Plivo",
     "description": "Plugin for Plivo APIs",
     "version": "1.0.0",
     "id": "plivo",
@@ -37,7 +37,7 @@
   {
     "name": "HarperDB",
     "repo": "",
-    "description": "Plugin for HarperDB data source",
+    "description": "Plugin to store and query data from HarperDB",
     "version": "1.0.0",
     "id": "harperdb",
     "author": "Tooljet",
@@ -84,7 +84,7 @@
     "timestamp": "Thu, 29 Feb 2024 09:46:21 GMT"
   },
   {
-    "name": "salesforce",
+    "name": "Salesforce",
     "description": "API plugin from salesforce",
     "version": "1.0.0",
     "id": "salesforce",
@@ -93,7 +93,7 @@
   },
   {
     "name": "Presto",
-    "description": "Plugin for PrestoDB data source",
+    "description": "Plugin for open source SQL query engine",
     "version": "1.0.0",
     "id": "presto",
     "author": "Tooljet",
@@ -109,7 +109,7 @@
   },
   {
     "name": "Jira",
-    "description": "Plugin for Jira data source",
+    "description": "Integrate with Jira for projects management",
     "version": "1.0.0",
     "id": "jira",
     "author": "Tooljet",
@@ -128,7 +128,7 @@
   },
   {
     "name": "Pinecone",
-    "description": "Plugin for Pinecone Vector DB",
+    "description": "Plugin to store and manage data in Vector DB",
     "version": "1.0.0",
     "id": "pinecone",
     "author": "Tooljet",
@@ -194,7 +194,7 @@
   },
   {
     "name": "Qdrant",
-    "description": "Plugin for Qdrant APIs",
+    "description": "Plugin to store and manage data in Vector DB",
     "version": "1.0.0",
     "id": "qdrant",
     "author": "Tooljet",
@@ -215,8 +215,8 @@
     ]
   },
   {
-    "name": "azurerepos",
-    "description": "api plugin from azurerepos",
+    "name": "Azure Repos",
+    "description": "Plugin for managing Azure repositories",
     "version": "1.0.0",
     "id": "azurerepos",
     "author": "Tooljet",
