@@ -21,7 +21,7 @@ export const formConfig = {
       defaultValue: {
         text: 'Form title',
         textSize: 16,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
         fontWeight: 'bold',
       },
     },
@@ -58,6 +58,12 @@ export const formConfig = {
         alignment: 'side',
         auto: '{{false}}',
         padding: 'default',
+        textColor: 'var(--cc-primary-text)',
+        borderColor: 'var(--cc-default-border)',
+        accentColor: 'var(--cc-primary-brand)',
+        errTextColor: 'var(--cc-error-systemStatus)',
+        borderRadius: '{{6}}',
+        backgroundColor: 'var(--cc-surface1-surface)',
       },
     },
     {
@@ -177,7 +183,7 @@ export const formConfig = {
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     footerBackgroundColor: {
@@ -185,7 +191,7 @@ export const formConfig = {
       displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     backgroundColor: {
@@ -268,13 +274,11 @@ export const formConfig = {
     },
     events: [],
     styles: {
-      headerBackgroundColor: { value: '#ffffffff' },
-      footerBackgroundColor: { value: '#ffffffff' },
-      backgroundColor: { value: '#fff' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '0' },
       borderColor: { value: '#fff' },
-      headerBackgroundColor: { value: '#fff' },
-      footerBackgroundColor: { value: '#fff' },
     },
   },
 };

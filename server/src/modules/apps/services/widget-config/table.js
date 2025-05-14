@@ -297,7 +297,7 @@ export const tableConfig = {
       displayName: 'Text Color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000',
+        defaultValue: 'var(--cc-primary-text)',
       },
       accordian: 'Data',
     },
@@ -666,7 +666,7 @@ export const tableConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#000' },
+      textColor: { value: 'var(--cc-primary-text)' },
       columnHeaderWrap: { value: 'fixed' },
       headerCasing: { value: 'uppercase' },
       actionButtonRadius: { value: '0' },

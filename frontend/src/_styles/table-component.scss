@@ -38,6 +38,7 @@
 
   .card-footer {
     padding: 0.75rem;
+    background-color: var(--cc-surface1-surface) !important;
   }
 
   .card-header {
@@ -61,7 +62,7 @@
 
   .table-row {
     border-top: 0 !important;
-    border-bottom: 1px solid inherit;
+    border-bottom: 1px solid var(--cc-default-border);
   }
 
   .table-bordered> :not(caption)>*>* {
@@ -70,7 +71,7 @@
 
 
   &.jet-table {
-    background-color: var(--surfaces-surface-01);
+    background-color: var(--cc-surface1-surface);
     box-shadow: var(--elevation-200-box-shadow);
     border: 1px solid var(--borders-weak-disabled);
 
@@ -801,7 +802,7 @@
 .jet-table {
   .tr {
     .th {
-      background: var(--surfaces-surface-02);
+      background: var(--cc-surface2-surface);
       border-bottom: 1px solid var(--slate5, #E6E8EB) !important;
       border-top: 0 !important;
       padding: 6px 12px;

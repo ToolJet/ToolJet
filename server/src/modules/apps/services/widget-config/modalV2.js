@@ -128,7 +128,7 @@ export const modalV2Config = {
       defaultValue: {
         text: 'Modal title',
         textSize: 20,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
       },
     },
     {
@@ -170,7 +170,7 @@ export const modalV2Config = {
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     footerBackgroundColor: {
@@ -178,7 +178,7 @@ export const modalV2Config = {
       displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     bodyBackgroundColor: {
@@ -186,7 +186,7 @@ export const modalV2Config = {
       displayName: 'Body background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     triggerButtonBackgroundColor: {
@@ -267,9 +267,9 @@ export const modalV2Config = {
     },
     events: [],
     styles: {
-      headerBackgroundColor: { value: '#ffffffff' },
-      footerBackgroundColor: { value: '#ffffffff' },
-      bodyBackgroundColor: { value: '#ffffffff' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
