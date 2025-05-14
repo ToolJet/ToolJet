@@ -12,7 +12,7 @@ permissions:
 
 jobs:
 
-# Community Edition CE
+# Community Edition CEws
   create-ce-review-app:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
