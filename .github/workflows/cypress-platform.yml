@@ -115,7 +115,7 @@ jobs:
           echo "REDIS_HOST=${{ matrix.edition == 'ee' && 'redis'}}" >> .env
           echo "REDIS_USER= ${{ matrix.edition == 'ee' && 'default'}}" >> .env
           echo "REDIS_PASSWORD=${{ matrix.edition == 'ee' && ''}}" >> .env
-          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && 'tj-oidc-'simulator'}}" >> .env
+          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && 'tj-oidc-simulator'}}" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ matrix.edition == 'ee' && 'secrets.SSO_OPENID_CLIENT_ID' }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ matrix.edition == 'ee' && 'secrets.SSO_OPENID_CLIENT_SECRET' }}" >> .env
           echo "SSO_OPENID_WELL_KNOWN_URL=${{ matrix.edition == 'ee' && 'http://34.66.166.236:8080/.well-known/openid-configuration'}}" >> .env
