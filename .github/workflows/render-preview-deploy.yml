@@ -170,7 +170,7 @@ jobs:
             "serviceDetails": {
               "disk": {
                 "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
-                "mountPath": "/data",
+                "mountPath": "/var/lib/postgresql/13/main",
                 "sizeGB": 10
               },
               "env": "docker",
@@ -283,35 +283,35 @@ jobs:
               console.log(e)
             }
 
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt update
-          sudo apt install postgresql-client -y
+      # - name: Install PostgreSQL client
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install postgresql-client -y
 
-      - name: Wait after installing PostgreSQL
-        run: sleep 25
+      # - name: Wait after installing PostgreSQL
+      #   run: sleep 25
 
-      - name: Drop PostgreSQL PR databases
-        env:
-          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
-          PGPORT: 5432
-          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
-          PGDATABASE: ${{ env.PR_NUMBER }}-ce
-          PGTJBDATABASE: ${{ env.PR_NUMBER }}-ce-tjdb
-        run: |
-          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
-            echo "Database $PGDATABASE exists, deleting..."
-            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
-          else
-            echo "Database $PGDATABASE does not exist."
-          fi
+      # - name: Drop PostgreSQL PR databases
+      #   env:
+      #     PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
+      #     PGPORT: 5432
+      #     PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+      #     PGDATABASE: ${{ env.PR_NUMBER }}-ce
+      #     PGTJBDATABASE: ${{ env.PR_NUMBER }}-ce-tjdb
+      #   run: |
+      #     if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
+      #       echo "Database $PGDATABASE exists, deleting..."
+      #       PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
+      #     else
+      #       echo "Database $PGDATABASE does not exist."
+      #     fi
 
-          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGTJBDATABASE; then
-            echo "Database $PGTJBDATABASE exists, deleting..."
-            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
-          else
-            echo "Database $PGTJBDATABASE does not exist."
-          fi
+      #     if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGTJBDATABASE; then
+      #       echo "Database $PGTJBDATABASE exists, deleting..."
+      #       PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
+      #     else
+      #       echo "Database $PGTJBDATABASE does not exist."
+      #     fi
 
   suspend-ce-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ce-review-app' }}
@@ -321,7 +321,7 @@ jobs:
       - name: Suspend service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
@@ -353,7 +353,7 @@ jobs:
       - name: Resume service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
@@ -542,7 +542,7 @@ jobs:
             "serviceDetails": {
               "disk": {
                 "name": "tooljet-ee-pr-${{ env.PR_NUMBER }}-postgresql",
-                "mountPath": "/data",
+                "mountPath": "/var/lib/postgresql/13/main",
                 "sizeGB": 10
               },
               "env": "docker",
@@ -655,35 +655,35 @@ jobs:
               console.log(e)
             }
 
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt update
-          sudo apt install postgresql-client -y
+      # - name: Install PostgreSQL client
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install postgresql-client -y
 
-      - name: Wait after installing PostgreSQL
-        run: sleep 25
+      # - name: Wait after installing PostgreSQL
+      #   run: sleep 25
 
-      - name: Drop PostgreSQL PR databases
-        env:
-          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
-          PGPORT: 5432
-          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
-          PGDATABASE: ${{ env.PR_NUMBER }}-ee
-          PGTJBDATABASE: ${{ env.PR_NUMBER }}-ee-tjdb
-        run: |
-          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
-            echo "Database $PGDATABASE exists, deleting..."
-            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
-          else
-            echo "Database $PGDATABASE does not exist."
-          fi
+      # - name: Drop PostgreSQL PR databases
+      #   env:
+      #     PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
+      #     PGPORT: 5432
+      #     PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+      #     PGDATABASE: ${{ env.PR_NUMBER }}-ee
+      #     PGTJBDATABASE: ${{ env.PR_NUMBER }}-ee-tjdb
+      #   run: |
+      #     if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
+      #       echo "Database $PGDATABASE exists, deleting..."
+      #       PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
+      #     else
+      #       echo "Database $PGDATABASE does not exist."
+      #     fi
 
-          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGTJBDATABASE; then
-            echo "Database $PGTJBDATABASE exists, deleting..."
-            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
-          else
-            echo "Database $PGTJBDATABASE does not exist."
-          fi
+      #     if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGTJBDATABASE; then
+      #       echo "Database $PGTJBDATABASE exists, deleting..."
+      #       PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
+      #     else
+      #       echo "Database $PGTJBDATABASE does not exist."
+      #     fi
 
   suspend-ee-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ee-review-app' }}
@@ -693,7 +693,7 @@ jobs:
       - name: Suspend service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
@@ -725,7 +725,7 @@ jobs:
       - name: Resume service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
