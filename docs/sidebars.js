@@ -90,7 +90,7 @@ const sidebars = {
             'setup/system-requirements',
             'setup/digitalocean',
             'setup/docker',
-            'setup/ec2',
+            'setup/ami',
             'setup/ecs',
             'setup/openshift',
             'setup/helm',
@@ -120,7 +120,8 @@ const sidebars = {
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
-        "build-with-ai/ai-docs-assistant"
+        "build-with-ai/ai-docs-assistant",
+        "build-with-ai/tooljet-mcp",
       ]
     },
     {
@@ -186,6 +187,7 @@ const sidebars = {
             'app-builder/walkthrough/create-queries',
             'app-builder/walkthrough/using-code',
             'app-builder/walkthrough/accessing-values',
+            'app-builder/walkthrough/row-level-security',
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
             {
@@ -395,6 +397,7 @@ const sidebars = {
             'data-sources/mssql',
             'data-sources/mysql',
             'data-sources/n8n',
+            'data-sources/nocodb',
             'data-sources/notion',
             'data-sources/openapi',
             'data-sources/oracledb',
@@ -460,7 +463,8 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-hugging_face',
                 'marketplace/plugins/marketplace-plugin-cohere',
                 'marketplace/plugins/marketplace-plugin-weaviate',
-                'marketplace/plugins/marketplace-plugin-qdrant'
+                'marketplace/plugins/marketplace-plugin-qdrant',
+                'marketplace/plugins/marketplace-plugin-azurerepos'
               ],
             },
           ],

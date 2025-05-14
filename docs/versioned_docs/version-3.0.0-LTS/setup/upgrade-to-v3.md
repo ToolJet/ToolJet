@@ -21,7 +21,14 @@ Before attempting to upgrade to the ToolJet 3.0:
 - **Application Review**: Check your apps for breaking and deprecated features listed in this guide.
 - **Test Environment**: Only attempt upgrade in a testing environment first.
 
-To upgrade, checkout the latest docker image **[here](/docs/setup/choose-your-tooljet)**.
+To upgrade, update your Docker image to:
+
+```bash
+tooljet/tooljet:v3.0.0-ee-lts
+```
+:::warning
+This is a beta release. Test thoroughly in a non-production environment first.
+:::
 
 ## Breaking Changes
 
@@ -191,7 +198,7 @@ If you haven't migrated your local data sources to global data sources, you will
 
 Workspace Constants are designed to be resolved on the server-side only, ensuring a high level of security. You can assign users to a specific role and provide create, update, and delete access to Workspace Constants.
 
-For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](/docs/security/constants/variables).
+For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](/docs/org-management/workspaces/workspace-variables-migration).
 
 
 ## Response Headers and Metadata
@@ -222,8 +229,8 @@ The `metadata` object will contain detailed information about the request and re
 ToolJet Database is now a core requirement for the ToolJet 3.0. 
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.  <br/>
 Please check the environment variables that you need to configure to set up:
-- [PostgREST](/docs/setup/env-vars#postgrest-server-required)
-- [ToolJet Database](/docs/setup/env-vars#enable-tooljet-database-required)
+- [PostgREST](/docs/setup/env-vars#postgrest)
+- [ToolJet Database](/docs/setup/env-vars#tooljet-database)
 
 ## Help and Support
 

@@ -13,11 +13,11 @@ The official Docker tag for the Enterprise Edition is tooljet/tooljet:ee-lts-lat
 
 ### Supported Linux distribution
 
-[ToolJet images](https://hub.docker.com/r/tooljet/tooljet/tags) can run on any Linux machine with **x86 architecture (64-bit)**. Ensure that your system meets the minimum requirements specified below before installing ToolJet.
+[ToolJet images](https://hub.docker.com/r/tooljet/tooljet/tags) can run on any Linux machine with x86 architecture (64-bit). Ensure that your system meets the minimum requirements specified below before installing ToolJet.
 
 ### Microsoft Windows
 
-ToolJet is developed for Linux-based operating systems. Please consider using a virtual machine or **Windows Subsystem for Linux 2 (WSL2)** to run ToolJet on Windows.
+ToolJet is developed for Linux-based operating systems. Please consider using a virtual machine or Windows Subsystem for Linux 2 (WSL2) to run ToolJet on Windows.
 
 ## VM deployments:
 
@@ -25,7 +25,7 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 - **Processor Architecture:** x86 (arm64 is not supported)
 - **RAM:** 2GB
 - **CPU:** 1 vCPU
-- **Storage:** At least 10GiB, but can increase according to your requirements.
+- **Storage:** At least 8GiB, but can increase according to your requirements.
 
 ## Orchestrated Deployments:
 
@@ -33,10 +33,10 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 
 Note: Adjustments can be made based on specific needs and the expected load on the server.
 
-## Redis
+:::info
+To enable multiplayer editing and background jobs in ToolJet, you need to configure Redis. It is recommended to use Redis version 6.x.
+:::
 
-Redis required for **multiplayer editing and background jobs**. ToolJet includes a **built-in Redis setup**, but for **multi pod/services** deployment, an **external Redis instance** is recommended. Use **Redis version 6.x** for optimal performance.
+## Database software:
 
-## PostgreSQL 
-
-ToolJet requires PostgreSQL for data storage. It is recommended to use **PostgreSQL version 13.x** for optimal compatibility and performance.
+- It is recommended that your PostgreSQL database is of version 13.x.

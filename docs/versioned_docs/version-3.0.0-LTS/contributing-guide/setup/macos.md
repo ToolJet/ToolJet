@@ -36,11 +36,11 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     brew install postgresql@13
     ```
     
-    1.4 Install PostgREST
+    1.4 Install PostgREST(optional)
 
-    :::info
-    Please use PostgREST version 12.2.0
-    :::
+    :::info 
+    Required only if ToolJet Database is being used. 
+    :::       
 
     ```bash
     brew install postgrest
@@ -85,10 +85,6 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     PG_USER=postgres
     PG_PASS=postgres
     PG_DB=tooljet_development
-    TOOLJET_DB=tooljet_db
-    TOOLJET_DB_USER=postgres
-    TOOLJET_DB_HOST=localhost
-    TOOLJET_DB_PASS=postgres
     ORM_LOGGING=all
    ```
 

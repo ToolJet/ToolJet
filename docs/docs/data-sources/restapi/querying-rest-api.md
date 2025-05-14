@@ -25,6 +25,11 @@ ToolJet supports the following REST HTTP methods:
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/restquery.png" alt="ToolJet - Data source - REST API" />
 
+:::info
+To receive the string `"undefined"` instead of an actual `undefined` value, it must be explicitly handled in the query manager. <br/>
+Example: `"address": "{{components.table1.selectedRow?.address ?? 'undefined'}}"`
+:::
+
 <div style={{paddingTop:'24px'}}>
 
 ### Additional header

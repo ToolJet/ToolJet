@@ -320,7 +320,7 @@ This operation provides a compact, column-aligned view of indices in a cluster. 
     <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/cat-indices.png" alt="Elastic cat indices" />
 </div>
 
-  <details id="tj-dropdown">
+  <details>
   <summary>**Response Example**</summary>
 ```json
 {
@@ -414,7 +414,7 @@ This operation retrieves the status of the cluster’s health. For more details,
     <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/cluster-health.png" alt="Elastic cluster health" />
 </div>
 
-  <details id="tj-dropdown">
+  <details>
   <summary>**Response Example**</summary>
 ```json
 {

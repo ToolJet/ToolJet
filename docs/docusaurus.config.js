@@ -53,86 +53,92 @@ module.exports = {
       items: [
         {
           type: 'docsVersionDropdown',
-          position: 'right',
-        },
-        {
-          type: 'search',
           position: 'left',
         },
         {
-          href: 'https://github.com/ToolJet/ToolJet',
+          type: 'search',
           position: 'right',
-          className: 'navbar-social-link navbar-github-logo',
-          'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://tooljet.ai/slack',
+          href: 'https://www.tooljet.ai/',
           position: 'right',
-          className: 'navbar-social-link navbar-slack-logo',
-          'aria-label': 'Slack workspace',
+          label: 'Website',
+          className: 'navbar-signin',
+          'aria-label': 'Visit ToolJet Website',
         },
         {
-          href: 'https://twitter.com/ToolJet',
-          position: 'right',
-          className: 'navbar-social-link navbar-twitter-logo',
-          'aria-label': 'Twitter account',
-        },
-        {
-          href: 'https://app.tooljet.ai',
+          href: 'https://www.tooljet.ai/login',
           position: 'right',
           label: 'Sign in',
           className: 'navbar-signin',
           'aria-label': 'Signin to ToolJet',
         },
         {
-          href: 'https://tooljet.ai',
+          href: 'https://www.tooljet.ai/create-account',
           position: 'right',
-          label: 'Website',
+          label: 'Try for free',
           className: 'navbar-website',
-          'aria-label': 'ToolJet website',
+          'aria-label': 'Try ToolJet for free',
         },
       ],
     },
     footer: {
-      style: 'dark',
+      style: 'light', 
+      logo: {
+        alt: 'ToolJet Logo',
+        src: '/img/docs_logo.svg',
+        srcDark: '/img/docs_logo_dark.svg',
+      },
       links: [
         {
-          title: 'Docs',
-        },
-        {
-          title: 'Community',
+          title: 'Platform',
           items: [
-            {
-              label: 'Slack',
-              href: 'https://tooljet.ai/slack',
-            },
+            { label: 'App builder', to: 'https://www.tooljet.ai/visual-app-builder' },
+            { label: 'AI Agent builder', to: 'https://www.tooljet.ai/ai-agent-builder' },
+            { label: 'ToolJet Database', to: 'https://www.tooljet.ai/database' },
           ],
         },
         {
-          title: 'More',
+          title: 'Solutions',
           items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/ToolJet/ToolJet',
-            },
-            {
-              label: 'YouTube',
-              href: 'https://www.youtube.com/channel/UCf1p2G5Z7fPpvlBPf4l2I1w',
-            },
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/ToolJet',
-            },
+            { label: 'Back office tools', to: 'https://www.tooljet.ai/building-back-office-apps' },
+            { label: 'Business applications', to: 'https://www.tooljet.ai/business-applications' },
+          ],
+        },
+        {
+          title: 'Developers',
+          items: [
+            { label: 'Blogs', to: 'https://blog.tooljet.ai/' },
+            { label: 'Events', to: 'https://www.tooljet.ai/events' },
+            { label: 'GitHub', href: 'https://github.com/ToolJet/ToolJet' },
+            { label: 'Slack', href: 'https://tooljet.ai/slack' },
+          ],
+        },
+        {
+          title: 'Templates',
+          items: [
+            { label: 'Lead management', to: 'https://www.tooljet.ai/templates/lead-management-system' },
+            { label: 'KPI management', to: 'https://www.tooljet.ai/templates/kpi-management-dashboard' },
+            { label: 'Inventory management', to: 'https://www.tooljet.ai/templates/inventory-management-system' },
+            { label: 'Leave management', to: 'https://www.tooljet.ai/templates/leave-management-portal' },
+            { label: 'Applicant tracking', to: 'https://www.tooljet.ai/templates/applicant-tracking-system' },
+          ],
+        },
+        {
+          title: 'Contact us',
+          items: [
+            { label: 'hello@tooljet.com', href: 'mailto:hello@tooljet.com' },
+            { label: 'support@tooljet.com', href: 'mailto:support@tooljet.com' },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.
+      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc. All rights reserved.
       <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />
       <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("c4rgfujgx6jef4722rcjfhj7dlmcipih",{host:"https://api.factors.ai"}),this}(),function(){var t=document.createElement("script");t.type="text/javascript",t.src="https://app.factors.ai/assets/factors.js",t.async=!0,(d=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,d)}();</script>
       <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5L8R522S" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       `,
-    },
+    },    
     algolia: {
       appId: 'O8HQRLI0WA',
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
@@ -150,10 +156,10 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: true,
-          lastVersion: '3.0.0-LTS',
+          lastVersion: '3.5.0-LTS',
           versions: {
             current: {
-              label: '3.1.0-Beta 🚧',
+              label: '3.11.0-Beta 🚧',
               path: 'beta',
               banner: 'none',
               badge: false
@@ -163,6 +169,10 @@ module.exports = {
               badge: false
             },
             "3.0.0-LTS": {
+              banner: 'none',
+              badge: false
+            },
+            "3.5.0-LTS": {
               banner: 'none',
               badge: false
             }

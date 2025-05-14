@@ -61,7 +61,7 @@ If you want to serve ToolJet client from services such as Firebase or Netlify, p
 
 ## ToolJet Database
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required) for additional environment variables configuration to be done.
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
 
 1. Setup PostgREST server
 

@@ -5,14 +5,8 @@ title: Azure container apps
 
 # Deploying ToolJet on Azure container apps
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
-:::
-
 :::info
-Please note that you need to set up a **PostgreSQL database** manually to be used by ToolJet. 
-
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
+Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis.
 :::
 
 ## Deploying ToolJet application
@@ -41,101 +35,40 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
   - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
- 
-4. Under environmental variables, please add the below ToolJet application variables:
+  **Note**: ToolJet requires: 
+   - **TOOLJET_DB** 
+   - **TOOLJET_DB_HOST**
+   - **TOOLJET_DB_USER**
+   - **TOOLJET_DB_PASS**
+   - **PG_HOST**
+   - **PG_DB**
+   - **PG_USER**
+   - **PG_PASS**
+   - **SECRET_KEY_BASE** 
+   - **LOCKBOX_KEY**
 
-  You can use these variables for: tooljet-app:
+   For redis connection ensure below environment variables are added:
+   - **REDIS_HOST**
+   - **REDIS_PORT**
+   - **REDIS_USER**
 
-  ```env
-   TOOLJET_HOST=<Endpoint url>
-   LOCKBOX_MASTER_KEY=<generate using 'openssl rand -hex 32'>
-   SECRET_KEY_BASE=<generate using 'openssl rand -hex 64'>
-
-   PG_USER=<username>
-   PG_HOST=<postgresql-instance-ip>
-   PG_PASS=<password>
-   PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-  ```
-
-Update the `TOOLJET_HOST` environment variable to reflect the default host assigned by Azure Container Apps, if you're not using a custom domain.
-
-If using Azure Database for Postgresql-Flexible server, also add:
-   
-  ```env
-   PGSSLMODE = require
-  ```
-
-
-## ToolJet Database
-
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
-
-#### Setting Up ToolJet Database
-
-To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
-
-```env
-TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
-TOOLJET_DB_HOST=<postgresql-database-host>
-TOOLJET_DB_USER=<username>
-TOOLJET_DB_PASS=<password>
-```
-
-:::note 
-Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
-:::
-
-
-Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
-
-   :::tip
-    If you have openssl installed, you can run the 
-    command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
-
-If this parameter is not specified, PostgREST will refuse authentication requests.
-:::
-
-```env
- PGRST_HOST=localhost:3001
- PGRST_LOG_LEVEL=info
- PGRST_DB_PRE_CONFIG=postgrest.pre_config
- PGRST_SERVER_PORT=3001
- PGRST_DB_URI=
- PGRST_JWT_SECRET=
-```
-
-The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
-
-#### Format:
-
-```env
- PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
-```
-
-**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
-
-
-**Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
-
-
+   If using Azure Database for Postgresql-Flexible server, add:
+   - **PGSSLMODE = require**
+  
    <div style={{textAlign: 'center'}}>
  
    <img className="screenshot-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
    </div>
 
-5. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
+4. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
  <div style={{textAlign: 'center'}}>
  
  <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 
  </div>
 
-6. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
+5. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
@@ -143,7 +76,7 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
  </div>
 
 
-7. Once the container is deployed, you can verify its status under revision management.
+6. Once the container is deployed, you can verify its status under revision management.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
@@ -151,6 +84,44 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
  </div>
 
 You can access ToolJet via the application URL provided in the overview tab.
+
+## Redis Setup
+
+[ToolJet](https://hub.docker.com/repository/docker/tooljet/tooljet/general) requires Redis for multiplayer editing and background jobs.
+
+If you already have Redis configured, you can use your existing setup. Otherwise, you can create a new Redis service by following these instructions.
+
+**Create a Redis Instance**
+
+- Create a Redis instance with the minimum required specifications.
+
+<div style={{textAlign: 'center'}}>
+ <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/1.png" alt="Step one of redis setup" />
+</div>
+ 
+ **Choose Network Settings**
+
+- Select your preferred network settings based on your setup. 
+
+<div style={{textAlign: 'center'}}>
+ <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/2.png" alt="Step two of redis setup" />
+</div>
+
+**Configure TLS Port**
+
+- Choose your preferred settings for the TLS port.
+
+<div style={{textAlign: 'center'}}>
+ <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/3.png" alt="Step three of redis setup" />
+</div>
+
+**Review and Create**
+
+- Click on "Review + create" and wait for the template to be verified and passed.
+
+<div style={{textAlign: 'center'}}>
+ <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/4.png" alt="Step four of redis setup" />
+</div>
 
 ## Upgrading to the Latest LTS Version
 
