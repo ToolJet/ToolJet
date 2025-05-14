@@ -170,7 +170,7 @@ jobs:
             "serviceDetails": {
               "disk": {
                 "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
-                "mountPath": "/data",
+                "mountPath": "/var/lib/postgresql/13/main",
                 "sizeGB": 10
               },
               "env": "docker",
@@ -393,6 +393,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Sync repo
+        uses: actions/checkout@v3
+
+      - name: Check if Forked Repository
+        id: check_repo
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "is_fork=true" >> $GITHUB_ENV
+            echo "FORKED_OWNER=${{ github.event.pull_request.head.repo.owner.login }}" >> $GITHUB_ENV
+          else
+            echo "is_fork=false" >> $GITHUB_ENV
+          fi
+
+      - name: Set Repository URL
+        run: |
+          if [[ "$is_fork" == "true" ]]; then
+            echo "REPO_URL=https://github.com/${FORKED_OWNER}/ToolJet" >> $GITHUB_ENV
+          else
+            echo "REPO_URL=https://github.com/ToolJet/ToolJet" >> $GITHUB_ENV
+          fi
+
+      - name: Fetch and Checkout Forked Branch
+        if: env.is_fork == 'true'
+        run: |
+          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
+          git checkout ${{ env.BRANCH_NAME }}
+
+      - name: Checkout Default Branch
+        if: env.is_fork == 'false'
+        uses: actions/checkout@v3
+
+
       - name: Creating deployment for Enterprise Edition
         id: create-ee-deployment
         run: |
@@ -408,7 +441,7 @@ jobs:
             "name": "ToolJet EE PR #${{ env.PR_NUMBER }}",
             "notifyOnFail": "default",
             "ownerId": "tea-caeo4bj19n072h3dddc0",
-            "repo": "https://github.com/ToolJet/ToolJet",
+            "repo": "'"$REPO_URL"'",
             "slug": "tooljet-ee-pr-${{ env.PR_NUMBER }}",
             "suspended": "not_suspended",
             "suspenders": [],
