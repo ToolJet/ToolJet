@@ -204,36 +204,25 @@ jobs:
           }}
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.18.2
-
-      - name: Set up Git authentication for private submodules
-        run: |
-          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-
-      - name: Checkout with Submodules
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Checking out the correct branch for submodules EE
-        if: matrix.edition == 'ee'
-        run: |
-          git submodule update --init --recursive
-          git submodule foreach --recursive '
-            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
-
-      - name: Set up Docker configuration
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
         run: |
           mkdir -p ~/.docker/cli-plugins
           curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
           chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
           docker buildx use mybuilder
-          echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-          echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: use mybuilder buildx
+        run: docker buildx use mybuilder
 
       - name: Docker Login
         uses: docker/login-action@v2
@@ -241,7 +230,33 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build CE Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/ce-production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/ee/ee-production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -281,6 +296,15 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "REDIS_HOST=${{ matrix.edition == 'ee' && 'redis'}}" >> .env
+          echo "REDIS_USER= ${{ matrix.edition == 'ee' && 'default'}}" >> .env
+          echo "REDIS_PASSWORD=${{ matrix.edition == 'ee' && ''}}" >> .env
+          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && tj-oidc-simulator}}" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=${{ matrix.edition == 'ee' && http://34.66.166.236:8080/.well-known/openid-configuration}}" >> .env
+          echo "LICENSE_KEY=${{ matrix.edition == 'ee' &&  secrets.RENDER_LICENSE_KEY }}" >> .env
+
 
       - name: Deploy with Docker Compose
         run: |
@@ -340,36 +364,25 @@ jobs:
           }}
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.18.2
-
-      - name: Set up Git authentication for private submodules
-        run: |
-          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-
-      - name: Checkout with Submodules
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Checking out the correct branch for submodules EE
-        if: matrix.edition == 'ee'
-        run: |
-          git submodule update --init --recursive
-          git submodule foreach --recursive '
-            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
-
-      - name: Set up Docker configuration
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
         run: |
           mkdir -p ~/.docker/cli-plugins
           curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
           chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
           docker buildx use mybuilder
-          echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-          echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: use mybuilder buildx
+        run: docker buildx use mybuilder
 
       - name: Docker Login
         uses: docker/login-action@v2
@@ -377,15 +390,33 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build CE Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
+          file: docker/ce-production.Dockerfile
           push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
           platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/ee/ee-production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - name: Set up environment variables
         run: |
           echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
@@ -416,6 +447,15 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "REDIS_HOST=${{ matrix.edition == 'ee' && 'redis'}}" >> .env
+          echo "REDIS_USER= ${{ matrix.edition == 'ee' && 'default'}}" >> .env
+          echo "REDIS_PASSWORD=${{ matrix.edition == 'ee' && ''}}" >> .env
+          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && tj-oidc-simulator}}" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=${{ matrix.edition == 'ee' && http://34.66.166.236:8080/.well-known/openid-configuration}}" >> .env
+          echo "LICENSE_KEY=${{ matrix.edition == 'ee' &&  secrets.RENDER_LICENSE_KEY }}" >> .env
+
 
       - name: Deploy with Docker Compose
         run: |
@@ -488,36 +528,25 @@ jobs:
           }}
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.18.2
-
-      - name: Set up Git authentication for private submodules
-        run: |
-          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-
-      - name: Checkout with Submodules
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Checking out the correct branch for submodules EE
-        if: matrix.edition == 'ee'
-        run: |
-          git submodule update --init --recursive
-          git submodule foreach --recursive '
-            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
-
-      - name: Set up Docker configuration
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
         run: |
           mkdir -p ~/.docker/cli-plugins
           curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
           chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
           docker buildx use mybuilder
-          echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-          echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: use mybuilder buildx
+        run: docker buildx use mybuilder
 
       - name: Docker Login
         uses: docker/login-action@v2
@@ -525,15 +554,33 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build CE Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
+          file: docker/ce-production.Dockerfile
           push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
           platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/ee/ee-production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - name: Set up environment variables
         run: |
           echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
@@ -565,6 +612,14 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "REDIS_HOST=${{ matrix.edition == 'ee' && 'redis'}}" >> .env
+          echo "REDIS_USER= ${{ matrix.edition == 'ee' && 'default'}}" >> .env
+          echo "REDIS_PASSWORD=${{ matrix.edition == 'ee' && ''}}" >> .env
+          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && tj-oidc-simulator}}" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=${{ matrix.edition == 'ee' && http://34.66.166.236:8080/.well-known/openid-configuration}}" >> .env
+          echo "LICENSE_KEY=${{ matrix.edition == 'ee' &&  secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Deploy with Docker Compose
         run: |
