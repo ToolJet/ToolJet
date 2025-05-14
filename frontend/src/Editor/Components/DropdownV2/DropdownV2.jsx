@@ -13,7 +13,7 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 
 const { DropdownIndicator, ClearIndicator } = components;
@@ -39,7 +39,7 @@ export const CustomDropdownIndicator = (props) => {
 export const CustomClearIndicator = (props) => {
   return (
     <ClearIndicator {...props}>
-      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer" />
+      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
     </ClearIndicator>
   );
 };
@@ -67,6 +67,9 @@ export const DropdownV2 = ({
     loadingState: dropdownLoadingState,
     disabledState,
     optionsLoadingState,
+    sort,
+    showClearBtn,
+    showSearchInput,
   } = properties;
   const {
     selectedTextColor,
@@ -88,6 +91,7 @@ export const DropdownV2 = ({
     padding,
   } = styles;
   const isInitialRender = useRef(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentValue, setCurrentValue] = useState(() => findDefaultItem(schema));
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
@@ -95,6 +99,7 @@ export const DropdownV2 = ({
   const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
   const dropdownRef = React.useRef(null);
+  const selectRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
@@ -111,6 +116,7 @@ export const DropdownV2 = ({
     const foundItem = _schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
+
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
@@ -123,11 +129,11 @@ export const DropdownV2 = ({
           isDisabled: data?.disable ?? false,
         }));
 
-      return _selectOptions;
+      return sortArray(_selectOptions, sort);
     } else {
       return [];
     }
-  }, [advanced, schema, options]);
+  }, [advanced, schema, options, sort]);
 
   function selectOption(value) {
     const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
@@ -165,6 +171,43 @@ export const DropdownV2 = ({
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
+
+  const handleClickInsideSelect = () => {
+    if (isDropdownDisabled || isDropdownLoading) return;
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+      fireEvent('onBlur');
+      setSearchInputValue('');
+    } else {
+      setIsMenuOpen(true);
+      fireEvent('onFocus');
+      if (!showSearchInput) {
+        selectRef.current.focus();
+      }
+    }
+  };
+
+  const handleClickOutsideSelect = (event) => {
+    const menu = document.querySelector(`._tooljet-${componentName}`);
+    if (
+      isMenuOpen &&
+      menu &&
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target) &&
+      !menu.contains(event.target)
+    ) {
+      setIsMenuOpen(false);
+      fireEvent('onBlur');
+      setSearchInputValue('');
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutsideSelect);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideSelect);
+    };
+  }, [isMenuOpen, componentName]);
 
   useEffect(() => {
     setInputValue(findDefaultItem(advanced ? schema : options));
@@ -223,6 +266,11 @@ export const DropdownV2 = ({
     if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
   }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('value', currentValue);
+  }, [currentValue]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -318,8 +366,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -353,15 +401,16 @@ export const DropdownV2 = ({
       ...provided,
       padding: '0px',
     }),
-    option: (provided) => ({
+    option: (provided, _state) => ({
       ...provided,
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
       color:
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
+      borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -372,7 +421,7 @@ export const DropdownV2 = ({
     }),
     menuList: (provided) => ({
       ...provided,
-      padding: '8px',
+      padding: '0 8px',
       borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required
       display: 'flex',
@@ -396,8 +445,8 @@ export const DropdownV2 = ({
         data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) ||
-            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) ||
+              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -429,24 +478,35 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100 dropdownV2-widget" ref={ref}>
+        <div
+          className="w-100 px-0 h-100 dropdownV2-widget"
+          ref={ref}
+          onClick={handleClickInsideSelect}
+          onTouchEnd={handleClickInsideSelect}
+        >
           <Select
+            ref={selectRef}
+            menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
-                fireEvent('onSelect');
               }
               if (actionProps.action === 'select-option') {
-                setInputValue(selectedOption.value);
-                fireEvent('onSelect');
+                if (currentValue === selectedOption.value) {
+                  setInputValue(null);
+                } else setInputValue(selectedOption.value);
               }
+              fireEvent('onSelect');
+              setSearchInputValue('');
+              setIsMenuOpen(false);
               setUserInteracted(true);
             }}
             options={selectOptions}
             styles={customStyles}
             isLoading={isDropdownLoading}
+            showSearchInput={showSearchInput}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             placeholder={placeholder}
@@ -457,9 +517,10 @@ export const DropdownV2 = ({
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
               DropdownIndicator: isDropdownLoading ? () => null : CustomDropdownIndicator,
-              ClearIndicator: CustomClearIndicator,
+              ClearIndicator: showClearBtn ? CustomClearIndicator : () => null,
             }}
             isClearable
+            tabSelectsValue={false}
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
@@ -467,8 +528,20 @@ export const DropdownV2 = ({
             darkMode={darkMode}
             optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
-            onMenuOpen={() => fireEvent('onFocus')}
-            onMenuClose={() => fireEvent('onBlur')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !isMenuOpen && !isDropdownLoading) {
+                setIsMenuOpen(true);
+                fireEvent('onFocus');
+                e.preventDefault();
+              }
+              if (e.key === 'Escape' && isMenuOpen) {
+                setIsMenuOpen(false);
+                fireEvent('onBlur');
+                e.preventDefault();
+              }
+            }}
+            // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)
+            minMenuHeight={300}
           />
         </div>
       </div>

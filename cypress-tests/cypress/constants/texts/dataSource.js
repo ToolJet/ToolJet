@@ -13,7 +13,7 @@ export const dataSourceText = {
       ? "Databases (20)"
       : "Databases (18)";
   },
-  allApis: "APIs (20)",
+  allApis: "APIs (21)",
   allCloudStorage: "Cloud Storages (4)",
   pluginsLabelAndCount: "Plugins (0)",
 

@@ -44,4 +44,6 @@ export interface IDataSourcesController {
     environmentId: string,
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
   ): Promise<void>;
+
+  decryptOptions(options: Record<string, any>): Promise<any>;
 }

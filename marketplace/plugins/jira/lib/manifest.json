@@ -15,6 +15,9 @@
     "options": {
       "url": {
         "type": "string"
+      },
+      "personal_token": {
+        "encrypted": true
       }
     }
   },
@@ -57,7 +60,8 @@
         "key": "personal_token",
         "type": "password",
         "description": "Enter your api token",
-        "hint": "You can generate a personal access token from your Jira account 'Manage account'."
+        "hint": "You can generate a personal access token from your Jira account 'Manage account'.",
+        "encrypted": true
       }
     }
   },

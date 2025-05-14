@@ -1,17 +1,34 @@
 export const verticalDividerConfig = {
   name: 'VerticalDivider',
-  displayName: 'Vertical Divider',
+  displayName: 'Vertical divider',
   description: 'Vertical line separator',
   component: 'VerticalDivider',
   defaultSize: {
-    width: 2,
+    width: 1,
     height: 100,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {},
+  properties: {
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
+  },
   events: {},
   styles: {
     dividerColor: {
@@ -21,14 +38,42 @@ export const verticalDividerConfig = {
         schema: { type: 'string' },
         defaultValue: '#000000',
       },
+      accordian: 'Divider',
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
+    dividerStyle: {
+      type: 'switch',
+      displayName: 'Style',
       validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
+        schema: { type: 'string' },
       },
+      options: [
+        { displayName: 'Solid', value: 'solid' },
+        { displayName: 'Dashed', value: 'dashed' },
+      ],
+      accordian: 'Divider',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box Shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Divider',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -39,11 +84,16 @@ export const verticalDividerConfig = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
-    properties: {},
+    properties: {
+      visibility: { value: '{{true}}' },
+      tooltip: { value: '' },
+    },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      dividerColor: { value: '#000000' },
+      dividerColor: { value: '#CCD1D5' },
+      dividerStyle: { value: 'solid' },
+      padding: { value: 'default' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

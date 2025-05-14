@@ -38,11 +38,12 @@ export class WorkflowGuard implements CanActivate {
     if (!workflowId) throw new HttpException(`WorkflowId is missing`, 400);
 
     const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS);
-    if (!workflowsLimit?.workspace || !workflowsLimit?.instance)
+    if (!workflowsLimit?.workspace && !workflowsLimit?.instance)
       throw new HttpException('Workflow is not enabled in the license, contact admin', 451);
     // Workspace Level -
     // Daily Limit
     if (
+      workflowsLimit?.workspace &&
       workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
       (
         await this.manager.query(
@@ -63,6 +64,7 @@ export class WorkflowGuard implements CanActivate {
 
     // Monthly Limit
     if (
+      workflowsLimit?.workspace &&
       workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
       (
         await this.manager.query(

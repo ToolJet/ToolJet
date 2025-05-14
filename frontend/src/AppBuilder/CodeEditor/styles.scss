@@ -220,6 +220,9 @@
         .query-hinter{
             flex-grow: 1;
         }
+        .cm-editor {
+            min-height: 150px !important;
+        }
     }
     .code-editor-query-panel{
         &.show-line-numbers{
@@ -395,6 +398,12 @@
                 box-shadow: none !important;
             }
         }
+    }
+}
+
+.rest-api-body-codehinter {
+    .cm-editor {
+        min-height: 150px !important;
     }
 }
 
@@ -653,6 +662,11 @@
 
 .cm-searchMatch.cm-searchMatch-selected {
     background-color: #F28F2D !important;
+}
+
+
+.cm-custom-singleline-completion-info {
+    display: none;
 }
 
 .tjdb-hinter-portal{

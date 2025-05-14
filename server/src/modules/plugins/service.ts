@@ -53,7 +53,7 @@ export class PluginsService implements IPluginsService {
 
   async findOne(id: string) {
     return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(Plugin, { where: { id } });
+      return manager.findOne(Plugin, { where: { id } });
     });
   }
 

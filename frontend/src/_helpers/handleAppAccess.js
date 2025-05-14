@@ -47,7 +47,7 @@ const switchOrganization = (componentType, orgId, redirectPath) => {
   );
 };
 
-const handleError = (componentType, error, redirectPath, editPermission, appSlug = null) => {
+export const handleError = (componentType, error, redirectPath, editPermission, appSlug = null) => {
   try {
     if (error?.data) {
       const statusCode = error.data?.statusCode;
@@ -61,6 +61,10 @@ const handleError = (componentType, error, redirectPath, editPermission, appSlug
             currentSessionValue.current_organization_id !== errorObj?.organizationId
           ) {
             switchOrganization(componentType, errorObj?.organizationId, redirectPath);
+            return;
+          }
+          if (errorObj?.type === ERROR_TYPES.NO_ACCESSIBLE_PAGES) {
+            redirectToErrorPage(ERROR_TYPES.NO_ACCESSIBLE_PAGES);
             return;
           }
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);

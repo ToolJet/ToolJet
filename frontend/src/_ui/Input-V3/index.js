@@ -43,7 +43,7 @@ const InputV3 = ({ helpText, ...props }) => {
             required={props.isRequired}
           />
         )}
-        {(widget === 'password-v3' || encrypted) && (
+        {(widget === 'password-v3' || widget === 'password-v3-textarea' || encrypted) && (
           <div style={{ flex: '1' }}>
             <InputComponent
               {...props}
@@ -53,6 +53,7 @@ const InputV3 = ({ helpText, ...props }) => {
               label={props.label}
               placeholder={props.placeholder}
               required={props.isRequired}
+              multiline={widget === 'password-v3-textarea'}
             />
           </div>
         )}

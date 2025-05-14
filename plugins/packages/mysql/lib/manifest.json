@@ -2,87 +2,175 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Mysql datasource",
   "description": "A schema defining mysql datasource",
-  "type": "database",
-  "source": {
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
     "name": "MySQL",
     "kind": "mysql",
-    "exposedVariables": {
-      "isLoading": false,
-      "data": {},
-      "rawData": {}
-    },
-    "options": {
-      "connection_type": {
-        "type": "string"
-      },
-      "host": {
-        "type": "string"
-      },
-      "port": {
-        "type": "string"
-      },
-      "database": {
-        "type": "string"
-      },
-      "socket_path": {
-        "type": "string"
-      },
-      "username": {
-        "type": "string"
-      },
-      "password": {
-        "type": "string",
-        "encrypted": true
-      },
-      "ca_cert": {
-        "encrypted": true
-      },
-      "client_key": {
-        "encrypted": true
-      },
-      "client_cert": {
-        "encrypted": true
-      },
-      "root_cert": {
-        "encrypted": true
-      }
-    }
-  },
-  "defaults": {
-    "connection_type": {
-      "value": "hostname"
-    },
-    "host": {
-      "value": "localhost"
-    },
-    "port": {
-      "value": 3306
-    },
-    "database": {
-      "value": ""
-    },
-    "socket": {
-      "value": ""
-    },
-    "username": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    },
-    "ssl_enabled": {
-      "value": false
-    },
-    "ssl_certificate": {
-      "value": "none"
-    }
+    "type": "database"
   },
   "properties": {
+    "connection_type": {
+      "type": "string",
+      "title": "Connection type",
+      "description": "Single select dropdown for connection type",
+      "enum": [
+        "hostname",
+        "socket_path"
+      ],
+      "default": "hostname"
+    },
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "Enter host",
+      "default": "localhost"
+    },
+    "port": {
+      "type": "number",
+      "title": "Port",
+      "description": "Enter port",
+      "default": 3306
+    },
+    "database": {
+      "type": "string",
+      "title": "Database name",
+      "description": "Name of the database"
+    },
+    "socket_path": {
+      "type": "string",
+      "title": "Socket path",
+      "description": "Enter the socket path"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Enter username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Enter password"
+    },
+    "ssl_enabled": {
+      "type": "boolean",
+      "title": "SSL",
+      "description": "Toggle for ssl_enabled",
+      "default": false
+    },
     "ssl_certificate": {
-      "label": "SSL certificate",
-      "key": "ssl_certificate",
-      "type": "dropdown-component-flip",
+      "type": "string",
+      "title": "SSL certificate",
       "description": "Single select dropdown for choosing certificates",
+      "enum": [
+        "ca_certificate",
+        "self_signed",
+        "none"
+      ],
+      "default": "none"
+    },
+    "ca_cert": {
+      "type": "string",
+      "title": "CA cert",
+      "description": "Enter ca certificate"
+    },
+    "client_key": {
+      "type": "string",
+      "title": "Client key",
+      "description": "Enter client key"
+    },
+    "client_cert": {
+      "type": "string",
+      "title": "Client cert",
+      "description": "Enter client certificate"
+    },
+    "root_cert": {
+      "type": "string",
+      "title": "Root cert",
+      "description": "Enter root certificate"
+    }
+  },
+  "tj:encrypted": [
+    "password",
+    "ca_cert",
+    "client_key",
+    "client_cert",
+    "root_cert"
+  ],
+  "required": [
+    "connection_type",
+    "username",
+    "password",
+    "database"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "connection_type": {
+            "const": "hostname"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "host",
+          "port"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "connection_type": {
+            "const": "socket_path"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "socket_path"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ssl_certificate": {
+            "const": "ca_certificate"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ca_cert"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ssl_certificate": {
+            "const": "self_signed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "client_key",
+          "client_cert",
+          "root_cert"
+        ]
+      }
+    }
+  ],
+  "tj:ui:properties": {
+    "ssl_certificate": {
+      "$ref": "#/properties/ssl_certificate",
+      "key": "ssl_certificate",
+      "label": "SSL certificate",
+      "description": "Single select dropdown for choosing certificates",
+      "widget": "dropdown-component-flip",
       "list": [
         {
           "value": "ca_certificate",
@@ -99,10 +187,11 @@
       ],
       "commonFields": {
         "connection_type": {
-          "label": "Connection type",
+          "$ref": "#/properties/connection_type",
           "key": "connection_type",
-          "type": "dropdown-component-flip",
+          "label": "Connection type",
           "description": "Single select dropdown for connection type",
+          "widget": "dropdown-component-flip",
           "list": [
             {
               "value": "hostname",
@@ -115,92 +204,99 @@
           ],
           "commonFields": {
             "username": {
-              "label": "Username",
+              "$ref": "#/properties/username",
               "key": "username",
-              "type": "text",
-              "description": "Enter username"
+              "label": "Username",
+              "description": "Enter username",
+              "widget": "text-v3",
+              "required": true
             },
             "password": {
-              "label": "Password",
+              "$ref": "#/properties/password",
               "key": "password",
-              "type": "password",
-              "description": "Enter password"
+              "label": "Password",
+              "description": "Enter password",
+              "widget": "password-v3",
+              "required": true
             },
             "database": {
-              "label": "Database name",
+              "$ref": "#/properties/database",
               "key": "database",
-              "type": "text",
-              "description": "Name of the database"
+              "label": "Database name",
+              "description": "Name of the database",
+              "widget": "text-v3",
+              "required": true
             }
           }
         },
         "hostname": {
           "host": {
-            "label": "Host",
+            "$ref": "#/properties/host",
             "key": "host",
-            "type": "text",
-            "description": "Enter host"
+            "label": "Host",
+            "description": "Enter host",
+            "widget": "text-v3",
+            "required": true
           },
           "port": {
-            "label": "Port",
+            "$ref": "#/properties/port",
             "key": "port",
-            "type": "text",
-            "description": "Enter port"
+            "label": "Port",
+            "description": "Enter port",
+            "widget": "text-v3",
+            "required": true
           },
           "ssl_enabled": {
-            "label": "SSL",
+            "$ref": "#/properties/ssl_enabled",
             "key": "ssl_enabled",
-            "type": "toggle",
-            "description": "Toggle for ssl_enabled"
+            "label": "SSL",
+            "description": "Toggle for ssl_enabled",
+            "widget": "toggle"
           }
         },
         "socket_path": {
-          "socket": {
+          "socket_path": {
+            "$ref": "#/properties/socket_path",
+            "key": "socket_path",
             "label": "Socket path",
-            "type": "text",
-            "name": "socket_path",
-            "description": "Enter the socket path"
+            "description": "Enter the socket path",
+            "widget": "text-v3",
+            "required": true
           }
         }
       }
     },
     "ca_certificate": {
       "ca_cert": {
-        "label": "CA cert",
+        "$ref": "#/properties/ca_cert",
         "key": "ca_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter ca certificate"
+        "label": "CA cert",
+        "description": "Enter ca certificate",
+        "widget": "password-v3-textarea"
       }
     },
     "self_signed": {
       "client_key": {
-        "label": "Client key",
+        "$ref": "#/properties/client_key",
         "key": "client_key",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter client key"
+        "label": "Client key",
+        "description": "Enter client key",
+        "widget": "password-v3-textarea"
       },
       "client_cert": {
-        "label": "Client cert",
+        "$ref": "#/properties/client_cert",
         "key": "client_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter client certificate"
+        "label": "Client cert",
+        "description": "Enter client certificate",
+        "widget": "password-v3-textarea"
       },
       "root_cert": {
-        "label": "Root cert",
+        "$ref": "#/properties/root_cert",
         "key": "root_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter root certificate"
+        "label": "Root cert",
+        "description": "Enter root certificate",
+        "widget": "password-v3-textarea"
       }
     }
-  },
-  "required": [
-    "connection_type",
-    "port",
-    "username",
-    "password"
-  ]
+  }
 }

@@ -33,3 +33,4 @@ export * from './workflow_schedules.service';
 export * from './session.service';
 export * from './login_configs.service';
 export * from './ai.service';
+export * from './appPermission.service';

@@ -1,4 +1,4 @@
-import { widgets } from './widgetConfig';
+import { widgets } from '../../AppBuilder/WidgetManager/configs/widgetConfig';
 
 const universalProps = {
   properties: {},

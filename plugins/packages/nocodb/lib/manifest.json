@@ -1,11 +1,10 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Nocodb datasource",
   "description": "A schema defining Nocodb datasource",
   "type": "api",
   "source": {
-    "name": "Nocodb",
+    "name": "NocoDB",
     "kind": "nocodb",
     "exposedVariables": {
       "isLoading": false,
@@ -15,14 +14,14 @@
     "options": {
       "api_token": {
         "encrypted": true
-      } 
+      }
     },
     "customTesting": true
   },
   "defaults": {
     "api_token": {
       "value": ""
-   }
+    }
   },
   "properties": {
     "host": {
