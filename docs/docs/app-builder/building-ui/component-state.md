@@ -7,7 +7,7 @@ Each component in ToolJet maintains a state — a collection of values that repr
 
 Each component has a different set of exposed variables based on its functionality — for example, a table component exposes `selectedRow`, a checkbox exposes `isChecked`, and so on. For detailed information on any specific component and its exposed variables, refer to the [individual component](#) guide.
 
-Component states in ToolJet are dynamic and can be modified at runtime using built-in functions such as `reset()`, `setValue()`, and `setVisibility()`. Additionally, Component-Specific Actions (CSAs) like `onClick` and `onChange` allow you to trigger logic based on user interactions. To learn more about how to use these functions and CSAs to control component behavior, refer to the [Controlling Visibility and Interactivity of Components](#) guide.
+Component states in ToolJet are dynamic and can be modified at runtime using built-in functions called Component-Specific Actions (CSAs), such as `reset()`, `setValue()`, and `setVisibility()`. They allow you to trigger logic based on user interactions. To learn more about how to use CSAs to control component behavior, refer to the [Controlling Visibility and Interactivity of Components](#) guide.
 
 Component state can be used across the app to build interactive and reactive experiences:
 - In queries — to send user inputs or component values as parameters.
