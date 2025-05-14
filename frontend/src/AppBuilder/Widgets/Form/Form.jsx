@@ -46,7 +46,10 @@ export const Form = function Form(props) {
     headerHeight = 80,
     footerHeight = 80,
     canvasHeight,
+    validateOnSubmit = true,
+    resetOnSubmit = true,
   } = properties;
+
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
@@ -96,17 +99,18 @@ export const Form = function Form(props) {
         resetComponent();
       },
       submitForm: async function () {
-        if (isValid) {
-          fireEvent('onSubmit').then(() => resetComponent());
-        } else {
-          fireEvent('onInvalid');
+        if (validateOnSubmit) {
+          if (!isValid) {
+            return fireEvent('onInvalid');
+          }
         }
+        fireEvent('onSubmit').then(() => resetOnSubmit && resetComponent());
       },
     };
 
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [resetOnSubmit, validateOnSubmit]);
 
   const extractData = (data) => {
     const result = {};
@@ -151,10 +155,13 @@ export const Form = function Form(props) {
   useEffect(() => {
     let formattedChildData = {};
     let childValidation = true;
+    let formData = {}; // New object to store form data
+
     if (!childComponents) {
       const exposedVariables = {
         data: formattedChildData,
         isValid: childValidation,
+        formData, // Expose formData
         ...(!advanced && { children: formattedChildData }),
       };
 
@@ -169,21 +176,39 @@ export const Form = function Form(props) {
       Object.keys(childComponents ?? {}).forEach((childId) => {
         if (childrenData?.[childId]?.name) {
           const componentName = childComponents?.[childId]?.component?.component?.name;
+          const componentValue = (() => {
+            const childData = childrenData[childId];
+            if (!childData) return null; // Default to null if childData is undefined
+
+            if (childData.hasOwnProperty('value')) return childData.value;
+            if (childData.hasOwnProperty('values')) return childData.values;
+            if (childData.hasOwnProperty('file')) return childData.file;
+            if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
+
+            return null; // Default to null if no matching key is found
+          })();
+
+          if (componentValue !== null) {
+            formData[componentName] = componentValue; // Populate formData
+          }
           formattedChildData[componentName] = { ...omit(childrenData[childId], 'name'), id: childId };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
     }
+
     formattedChildData = Object.fromEntries(
-      // eslint-disable-next-line no-unused-vars
-      Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
+      Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formKey from final exposed data
     );
+
     const formattedChildDataClone = deepClone(formattedChildData);
     const exposedVariables = {
       ...(!advanced && { children: formattedChildDataClone }),
       data: removeFunctionObjects(formattedChildData),
       isValid: childValidation,
+      formData, // Expose formData
     };
+
     setExposedVariables(exposedVariables);
     setValidation(childValidation);
   }, [childrenData, advanced]);
@@ -192,19 +217,22 @@ export const Form = function Form(props) {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents)]);
+  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
   };
   const fireSubmissionEvent = () => {
-    if (isValid) {
-      fireEvent('onSubmit').then(() => {
-        debounce(() => resetComponent(), 100)();
-      });
-    } else {
-      fireEvent('onInvalid');
+    if (validateOnSubmit) {
+      if (!isValid) {
+        return fireEvent('onInvalid');
+      }
     }
+    fireEvent('onSubmit').then(() => {
+      if (resetOnSubmit) {
+        debounce(() => resetComponent(), 100)();
+      }
+    });
   };
 
   const handleFormSubmission = ({ detail: { buttonComponentId } }) => {

@@ -100,6 +100,24 @@ export const formConfig = {
         value: false,
       },
     },
+    validateOnSubmit: {
+      type: 'toggle',
+      displayName: 'Validate all fields on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    resetOnSubmit: {
+      type: 'toggle',
+      displayName: 'Reset form on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -265,6 +283,8 @@ export const formConfig = {
       disabledState: { value: '{{false}}' },
       headerHeight: { value: 60 },
       footerHeight: { value: 60 },
+      validateOnSubmit: { value: '{{true}}' },
+      resetOnSubmit: { value: '{{true}}' },
     },
     events: [],
     styles: {
