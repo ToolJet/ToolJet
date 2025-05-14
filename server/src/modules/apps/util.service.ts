@@ -33,9 +33,7 @@ import { mergeWith } from 'lodash';
 import { isArray } from 'lodash';
 import { UserAppsPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
-import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
-import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 
 @Injectable()
@@ -46,9 +44,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly versionRepository: VersionRepository,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
-    protected readonly abilityService: AbilityService,
-    protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly dataSourceUtilService: DataSourcesUtilService
+    protected readonly abilityService: AbilityService
   ) {}
   async create(name: string, user: User, type: string, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -71,14 +67,6 @@ export class AppsUtilService implements IAppsUtilService {
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
       const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
 
-      for (const defaultSource of ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows']) {
-        const dataSource = await this.dataSourceRepository.createDefaultDataSource(
-          defaultSource,
-          appVersion.id,
-          manager
-        );
-        await this.dataSourceUtilService.createDataSourceInAllEnvironments(user.organizationId, dataSource.id, manager);
-      }
       const defaultHomePage = await manager.save(
         manager.create(Page, {
           name: 'Home',
