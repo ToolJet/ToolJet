@@ -7,8 +7,9 @@ import { AppBase } from '@entities/app_base.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
-import { UserAppsPermissions } from '@modules/ability/types';
+import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
+import { APP_TYPES } from '@modules/apps/constants';
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
   constructor(protected readonly abilityService: AbilityService) {}
@@ -86,7 +87,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     user: User,
     folder: Folder,
     page: number,
-    searchKey: string
+    searchKey: string,
+    type: APP_TYPES
   ): Promise<{
     viewableApps: AppBase[];
     totalCount: number;
@@ -100,11 +102,24 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         .where('LOWER(app.name) LIKE :name', { name: `%${(searchKey ?? '').toLowerCase()}%` })
         .getMany();
 
+      let resourceType: MODULES;
+
+      switch (type) {
+        case APP_TYPES.WORKFLOW:
+          resourceType = MODULES.WORKFLOWS;
+          break;
+        case APP_TYPES.FRONT_END:
+          resourceType = MODULES.APP;
+          break;
+        default:
+          resourceType = MODULES.APP;
+      }
+
       const userPermission = await this.abilityService.resourceActionsPermission(user, {
-        resources: [{ resource: MODULES.APP }],
+        resources: [{ resource: resourceType }],
         organizationId: user.organizationId,
       });
-      const userAppPermissions = userPermission?.[MODULES.APP];
+      const userAppPermissions = userPermission?.[resourceType];
 
       const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
       if (folderAppIds.length == 0) {
@@ -113,33 +128,26 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
           totalCount: 0,
         };
       }
-      const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-      const viewableAppsTotal = isAllEditable
-        ? [null, ...folderAppIds]
-        : hideAll
-        ? [null, ...userAppPermissions.editableAppsId]
-        : isAllViewable
-        ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
-        : [
-            null,
-            ...Array.from(
-              new Set([
-                ...userAppPermissions.editableAppsId,
-                ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-              ])
-            ),
-          ];
-
-      const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
 
       const viewableAppsInFolder = manager
         .createQueryBuilder(AppBase, 'apps')
         .innerJoin('apps.user', 'user')
         .addSelect(['user.firstName', 'user.lastName']);
 
-      viewableAppsInFolder.where('apps.id IN (:...viewableAppIds)', {
-        viewableAppIds: viewableAppIds,
-      });
+      switch (type) {
+        case APP_TYPES.WORKFLOW:
+          this.addViewableWorkflowFilter(
+            viewableAppsInFolder,
+            folderAppIds,
+            userAppPermissions as UserWorkflowPermissions
+          );
+          break;
+        case APP_TYPES.FRONT_END:
+          this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions as UserAppsPermissions);
+          break;
+        default:
+          this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions as UserAppsPermissions);
+      }
 
       const [viewableApps, totalCount] = await Promise.all([
         viewableAppsInFolder
@@ -155,5 +163,66 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         totalCount,
       };
     });
+  }
+
+  private addViewableWorkflowFilter(
+    query: SelectQueryBuilder<AppBase>,
+    folderAppIds: string[],
+    userWorkflowPermissions: UserWorkflowPermissions
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllExecutable } = userWorkflowPermissions;
+
+    const viewableAppsTotal =
+      isAllEditable || isAllExecutable
+        ? [null, ...folderAppIds]
+        : [
+            null,
+            ...Array.from(
+              new Set([
+                ...userWorkflowPermissions.editableWorkflowsId,
+                ...userWorkflowPermissions.executableWorkflowsId,
+              ])
+            ),
+          ];
+
+    const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
+
+    query.where('apps.id IN (:...viewableAppIds)', {
+      viewableAppIds,
+    });
+
+    return query;
+  }
+
+  private addViewableFrontendFilter(
+    query: SelectQueryBuilder<AppBase>,
+    folderAppIds: string[],
+    userAppPermissions: UserAppsPermissions
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+
+    const viewableAppsTotal = isAllEditable
+      ? [null, ...folderAppIds]
+      : hideAll
+      ? [null, ...userAppPermissions.editableAppsId]
+      : isAllViewable
+      ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
+      : [
+          null,
+          ...Array.from(
+            new Set([
+              ...userAppPermissions.editableAppsId,
+              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+            ])
+          ),
+        ];
+
+    const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
+
+    query.where('apps.id IN (:...viewableAppIds)', {
+      viewableAppIds,
+    });
+
+    return query;
   }
 }
