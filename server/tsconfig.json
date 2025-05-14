@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "types": [
-      "node",
-      "rxjs"
-    ],
+    "types": ["node", "rxjs"],
     "resolveJsonModule": true,
     "module": "commonjs",
     "declaration": true,
@@ -19,36 +16,16 @@
     "baseUrl": "./",
     "incremental": true,
     "paths": {
-      "@ee/*": [
-        "ee/*"
-      ],
-      "@apps/*": [
-        "ee/apps/*"
-      ],
-      "@entities/*": [
-        "src/entities/*"
-      ],
-      "@services/*": [
-        "src/services/*"
-      ],
-      "@controllers/*": [
-        "src/controllers/*"
-      ],
-      "@repositories/*": [
-        "src/repositories/*"
-      ],
-      "@dto/*": [
-        "src/dto/*"
-      ],
-      "@modules/*": [
-        "src/modules/*"
-      ],
-      "@helpers/*": [
-        "src/helpers/*"
-      ],
-      "@instance-settings/*": [
-        "ee/instance-settings/*"
-      ],
+      "@ee/*": ["ee/*"],
+      "@apps/*": ["ee/apps/*"],
+      "@entities/*": ["src/entities/*"],
+      "@services/*": ["src/services/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@dto/*": ["src/dto/*"],
+      "@modules/*": ["src/modules/*"],
+      "@helpers/*": ["src/helpers/*"],
+      "@instance-settings/*": ["ee/instance-settings/*"],
     },
   },
   "exclude": [
