@@ -62,6 +62,7 @@ class HomePageComponent extends React.Component {
         id: currentSession?.current_user.id,
         organization_id: currentSession?.current_organization_id,
       },
+      shouldRedirect: false,
       users: null,
       isLoading: true,
       creatingApp: false,
@@ -127,6 +128,13 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
+    if (this.props.appType === 'workflow') {
+      if (!this.canViewWorkflow()) {
+        toast.error('You do not have permission to view workflows');
+        this.setState({ shouldRedirect: true });
+        return;
+      }
+    }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
@@ -144,13 +152,17 @@ class HomePageComponent extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (prevProps.appType != this.props.appType) {
       this.fetchFolders();
       this.fetchApps(1);
     }
     if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
       this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
+    }
+    if (this.state.shouldRedirect && !prevState.shouldRedirect) {
+      const workspaceId = getWorkspaceId();
+      this.props.navigate(`/${workspaceId}`);
     }
   }
 
@@ -426,37 +438,71 @@ class HomePageComponent extends React.Component {
     }
   };
 
+  canViewWorkflow = () => {
+    return this.canUserPerform(this.state.currentUser, 'view');
+  };
+
   canUserPerform(user, action, app) {
-    if (authenticationService.currentSessionValue?.super_admin) return true;
     const currentSession = authenticationService.currentSessionValue;
-    const appPermission = currentSession.app_group_permissions;
-    const canUpdateApp =
-      appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.includes(app?.id));
-    const canReadApp =
-      (appPermission && canUpdateApp) ||
-      appPermission.is_all_viewable ||
-      appPermission.viewable_apps_id.includes(app?.id);
-    let permissionGrant;
+    const { user_permissions, app_group_permissions, workflow_group_permissions, super_admin, admin } = currentSession;
 
-    switch (action) {
-      case 'create':
-        permissionGrant = currentSession.user_permissions.app_create;
-        break;
-      case 'read':
-        permissionGrant = this.isUserOwnerOfApp(user, app) || canReadApp;
-        break;
-      case 'update':
-        permissionGrant = canUpdateApp || this.isUserOwnerOfApp(user, app);
-        break;
-      case 'delete':
-        permissionGrant = currentSession.user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
-        break;
-      default:
-        permissionGrant = false;
-        break;
+    if (super_admin) return true;
+
+    if (this.props.appType === 'workflow') {
+      const canCreateWorkflow = admin || user_permissions?.workflow_create;
+      const canUpdateWorkflow =
+        workflow_group_permissions?.is_all_editable ||
+        workflow_group_permissions?.editable_workflows_id?.includes(app?.id);
+      const canExecuteWorkflow =
+        canUpdateWorkflow ||
+        workflow_group_permissions?.is_all_executable ||
+        workflow_group_permissions?.executable_workflows_id?.includes(app?.id);
+      const canDeleteWorkflow = canCreateWorkflow || user_permissions?.workflow_delete || admin;
+
+      switch (action) {
+        case 'create':
+          return canCreateWorkflow;
+        case 'read':
+          return canCreateWorkflow || canUpdateWorkflow || canDeleteWorkflow || canExecuteWorkflow;
+        case 'update':
+          console.log('canUpdateWorkflow', canUpdateWorkflow);
+          return canUpdateWorkflow;
+        case 'delete':
+          return canDeleteWorkflow;
+        case 'view':
+          return (
+            canCreateWorkflow ||
+            canUpdateWorkflow ||
+            canDeleteWorkflow ||
+            canExecuteWorkflow ||
+            workflow_group_permissions?.editable_workflows_id?.length > 0 ||
+            workflow_group_permissions?.executable_workflows_id?.length > 0
+          );
+        default:
+          return false;
+      }
+    } else {
+      const canUpdateApp =
+        app_group_permissions &&
+        (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
+      const canReadApp =
+        (app_group_permissions && canUpdateApp) ||
+        app_group_permissions.is_all_viewable ||
+        app_group_permissions.viewable_apps_id.includes(app?.id);
+
+      switch (action) {
+        case 'create':
+          return user_permissions.app_create;
+        case 'read':
+          return this.isUserOwnerOfApp(user, app) || canReadApp;
+        case 'update':
+          return canUpdateApp || this.isUserOwnerOfApp(user, app);
+        case 'delete':
+          return user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
+        default:
+          return false;
+      }
     }
-
-    return permissionGrant;
   }
 
   isUserOwnerOfApp(user, app) {

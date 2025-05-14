@@ -46,7 +46,7 @@ export abstract class AbilityFactory<TActions extends string, TSubject> {
 
     await this.defineAbilityFor(
       can,
-      { userPermission, superAdmin, isAdmin, isBuilder, isEndUser, user },
+      { userPermission, superAdmin, isAdmin, isBuilder, isEndUser, user, resource },
       extractedMetadata,
       request
     );

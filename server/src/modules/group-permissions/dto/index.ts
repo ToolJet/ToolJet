@@ -33,6 +33,14 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
+  workflowCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  workflowDelete: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   dataSourceCreate: boolean;
 
   @IsBoolean()

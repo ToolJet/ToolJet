@@ -3,6 +3,7 @@ import { User } from '@entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { AppBase } from '@entities/app_base.entity';
 import { UserAppsPermissions } from '@modules/ability/types';
+import { APP_TYPES } from '@modules/apps/constants';
 
 export interface IFolderAppsUtilService {
   allFoldersWithAppCount(
@@ -16,6 +17,7 @@ export interface IFolderAppsUtilService {
     user: User,
     folder: Folder,
     page: number,
-    searchKey: string
+    searchKey: string,
+    type?: APP_TYPES
   ): Promise<{ viewableApps: AppBase[]; totalCount: number }>;
 }

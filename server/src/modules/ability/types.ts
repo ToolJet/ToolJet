@@ -17,6 +17,8 @@ export interface UserPermissions {
   isEndUser: boolean;
   appCreate: boolean;
   appDelete: boolean;
+  workflowCreate: boolean;
+  workflowDelete: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
   folderCRUD: boolean;
@@ -24,6 +26,13 @@ export interface UserPermissions {
   orgVariableCRUD: boolean;
   [MODULES.APP]?: UserAppsPermissions;
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;
+  [MODULES.WORKFLOWS]?: UserWorkflowPermissions;
+}
+export interface UserWorkflowPermissions {
+  editableWorkflowsId: string[];
+  isAllEditable: boolean;
+  executableWorkflowsId: string[];
+  isAllExecutable: boolean;
 }
 
 export interface UserAppsPermissions {

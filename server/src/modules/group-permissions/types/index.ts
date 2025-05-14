@@ -8,6 +8,8 @@ export interface CreateDefaultGroupObject {
   name: string;
   appCreate?: boolean;
   appDelete?: boolean;
+  workflowCreate?: boolean;
+  workflowDelete?: boolean;
   folderCRUD?: boolean;
   orgConstantCRUD?: boolean;
   dataSourceCreate?: boolean;

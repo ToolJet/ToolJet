@@ -6,10 +6,46 @@ import Select, { components } from 'react-select';
 import { FilterPreview } from '@/_components';
 import './appSelect.theme.scss';
 
+export const RESOURCE_TYPE = {
+  APPS: 'app',
+  DATA_SOURCES: 'data_source',
+  WORKFLOWS: 'workflow',
+};
+
+export const getResourceTypeConfig = (resourceType) => {
+  switch (resourceType) {
+    case RESOURCE_TYPE.APPS:
+      return {
+        placeholder: 'Select apps..',
+        noOptionsMessage: 'No apps found',
+        icon: 'apps',
+      };
+    case RESOURCE_TYPE.DATA_SOURCES:
+      return {
+        placeholder: 'Select data sources..',
+        noOptionsMessage: 'No data sources found',
+        icon: 'datasource',
+      };
+    case RESOURCE_TYPE.WORKFLOWS:
+      return {
+        placeholder: 'Select workflows..',
+        noOptionsMessage: 'No workflows found',
+        icon: 'workflows',
+      };
+    default:
+      return {
+        placeholder: 'Select resources..',
+        noOptionsMessage: 'No resources found',
+        icon: 'apps',
+      };
+  }
+};
+
 export function AppsSelect(props) {
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const resourceConfig = getResourceTypeConfig(props.resourceType);
 
   //Will be used when workspace routing settings have been merged
   const Menu = (props) => {
@@ -188,8 +224,8 @@ export function AppsSelect(props) {
       }}
       options={[props.allowSelectAll ? props.allOption : null, ...props.options]}
       styles={selectStyles}
-      placeholder={props.resourceType === 'Apps' ? 'Select apps..' : 'Select data sources..'}
-      noOptionsMessage={() => 'No apps found'}
+      placeholder={resourceConfig.placeholder}
+      noOptionsMessage={() => resourceConfig.noOptionsMessage}
     />
     // </div>
   );
@@ -201,4 +237,5 @@ AppsSelect.defaultProps = {
     value: '*',
     isAllField: true,
   },
+  resourceType: RESOURCE_TYPE.APPS,
 };
