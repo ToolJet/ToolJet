@@ -13,11 +13,12 @@ export const organizationService = {
   getWorkspacesLimit,
   checkWorkspaceUniqueness,
   updateOrganization,
+  setDefaultWorkspace,
 };
 
 function getUsersByValue(searchInput) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organizations/users/suggest?input=${searchInput}`, requestOptions).then(
+  return fetch(`${config.apiUrl}/organization-users/users/suggest?input=${searchInput}`, requestOptions).then(
     handleResponse
   );
 }
@@ -99,4 +100,9 @@ function checkWorkspaceUniqueness(name, slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = queryString.stringify({ name, slug });
   return fetch(`${config.apiUrl}/organizations/is-unique?${query}`, requestOptions).then(handleResponse);
+}
+
+function setDefaultWorkspace(workspaceId) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organizations/${workspaceId}/default`, requestOptions).then(handleResponse);
 }

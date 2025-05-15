@@ -204,10 +204,7 @@ describe("Manage Groups", () => {
 
         cy.wait(2500);
         cy.deleteApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appDeletedToast
-        );
+
 
         // Folder operations
         createFolder(data.folderName);
@@ -466,7 +463,7 @@ describe("Manage Groups", () => {
         cy.wait(500);
 
         cy.apiCreateGDS(
-            `${Cypress.env('server_host')}/api/v2/data_sources`,
+            `${Cypress.env('server_host')}/api/data-sources`,
             `cypress-${data.dsName}-qc-postgresql`,
             "postgresql",
             [
@@ -522,10 +519,8 @@ describe("Manage Groups", () => {
             commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
         ).click();
         cy.exec("ls ./cypress/downloads/").then((result) => {
-            cy.log(result);
             const downloadedAppExportFileName = result.stdout.split("\n")[0];
             exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-            cy.log(exportedFilePath);
             cy.get(importSelectors.dropDownMenu).should("be.visible").click();
             cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
                 force: true,

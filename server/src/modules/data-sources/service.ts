@@ -16,12 +16,12 @@ import {
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
 } from './dto';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
-import { FEATURE_KEY } from './constants';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -30,7 +30,6 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly abilityService: AbilityService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly eventEmitter: EventEmitter2,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
 
@@ -39,10 +38,16 @@ export class DataSourcesService implements IDataSourcesService {
       resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
       organizationId: user.organizationId,
     });
+    const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
-    const staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
+    let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
 
+
+    if (!shouldIncludeWorkflows) {
+      // remove workflowsdefault data source from static data sources
+      staticDataSources = staticDataSources.filter((dataSource) => dataSource.kind !== 'workflows');
+    }
     const decamelizedDatasources = decamelizeKeys([...staticDataSources, ...dataSources]);
     return { data_sources: decamelizedDatasources };
   }
@@ -130,13 +135,12 @@ export class DataSourcesService implements IDataSourcesService {
       user
     );
 
-    this.eventEmitter.emit('auditLogEntry', {
+    // Setting data for audit logs
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
       resourceId: dataSource?.id,
       resourceName: dataSource?.name,
-      resourceType: MODULES.GLOBAL_DATA_SOURCE,
-      actionType: FEATURE_KEY.CREATE,
       metadata: dataSource,
     });
 
@@ -149,16 +153,19 @@ export class DataSourcesService implements IDataSourcesService {
 
     await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, name, options, environmentId);
 
-    this.eventEmitter.emit('auditLogEntry', {
+    // Setting data for audit logs
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: name,
-      resourceType: MODULES.GLOBAL_DATA_SOURCE,
-      actionType: FEATURE_KEY.UPDATE,
       metadata: updateDataSourceDto,
     });
     return;
+  }
+
+  async decryptOptions(options: Record<string, any>) {
+    return await this.dataSourcesUtilService.decrypt(options);
   }
 
   async delete(dataSourceId: string, user: User) {
@@ -170,13 +177,13 @@ export class DataSourcesService implements IDataSourcesService {
       throw new BadRequestException('Cannot delete sample data source');
     }
     await this.dataSourcesRepository.delete(dataSourceId);
-    this.eventEmitter.emit('auditLogEntry', {
+
+    // Setting data for audit logs
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: dataSource.name,
-      resourceType: MODULES.GLOBAL_DATA_SOURCE,
-      actionType: FEATURE_KEY.DELETE,
       metadata: dataSource,
     });
     return;
@@ -206,7 +213,11 @@ export class DataSourcesService implements IDataSourcesService {
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
     const { environment_id, dataSourceId } = testDataSourceDto;
-    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId, environment_id);
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      user.defaultOrganizationId,
+      environment_id
+    );
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }

@@ -27,7 +27,7 @@ function Logs({ logProps, idx }) {
           logProps?.description ||
           (isString(logProps?.message) && logProps?.message) ||
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
-          logProps?.error?.message.trim()
+          logProps?.error?.message
         }`;
 
   const defaultStyles = {
@@ -87,12 +87,12 @@ function Logs({ logProps, idx }) {
       <p
         className="m-0 d-flex"
         onClick={(e) => {
-          setOpen((prev) => !prev);
+          logProps?.type !== 'Custom Log' && setOpen((prev) => !prev);
         }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />
+          {logProps?.type !== 'Custom Log' && <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />}
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
@@ -103,23 +103,32 @@ function Logs({ logProps, idx }) {
                 <div className="error-target cursor-pointer">{logProps?.errorTarget}</div>
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
-              <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
+              {logProps?.type === 'Custom Log' && (
+                <div className="error-target-custom-log cursor-pointer">
+                  <SolidIcon name="code" fill={`var(--purple11)`} width="15" /> Custom Log
+                </div>
+              )}
+              <div
+                className={`d-flex justify-content-between align-items-center ${
+                  !open && logProps?.type !== 'Custom Log' && 'text-truncate'
+                }`}
+              >
                 <span
-                  className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'} ${
-                    logProps?.errorTarget == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'
-                  }`}
+                  className={` cursor-pointer debugger-error-title font-weight-500 ${
+                    !open && logProps?.type !== 'Custom Log' && 'text-truncate'
+                  } ${logProps?.type == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'}`}
                 >
                   <HighlightSecondWord text={title} />
                 </span>
               </div>
+              {logProps?.type == 'Custom Log' && <div className="font-weight-500">{message}</div>}
               <span
-                className={cx('mx-1', {
+                className={cx('font-weight-500', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
                   'color-light-green': logProps?.isQuerySuccessLog,
                 })}
               >
-                {message}
-                {logProps?.error?.lineNumber ? `, Line ${logProps.error.lineNumber}` : ''}
+                {logProps?.type !== 'Custom Log' && message}
               </span>
             </>
           )}

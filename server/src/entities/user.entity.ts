@@ -28,6 +28,8 @@ import { OnboardingDetails } from './onboarding_details.entity';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { AiConversation } from './ai_conversation.entity';
 import { AiResponseVote } from './ai_response_vote.entity';
+import { USER_ROLE } from '@modules/group-permissions/constants';
+import { PageUser } from './page_users.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -183,10 +185,14 @@ export class User extends BaseEntity {
   @OneToMany(() => AiResponseVote, (aiResponseVote) => aiResponseVote.user, { onDelete: 'CASCADE' })
   aiResponseVotes: AiResponseVote[];
 
+  @OneToMany(() => PageUser, (pageUser) => pageUser.user)
+  pageUsers: PageUser[];
+
   organizationId: string;
   invitedOrganizationId: string;
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
   sessionId: string;
+  roleGroup: USER_ROLE;
 }

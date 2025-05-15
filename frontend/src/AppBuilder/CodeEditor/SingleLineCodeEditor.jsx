@@ -1,9 +1,9 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty, noop } from 'lodash';
+import { camelCase, isEmpty, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion, completionKeymap, completionStatus, acceptCompletion } from '@codemirror/autocomplete';
@@ -12,7 +12,7 @@ import { keymap } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
-import { resolveReferences } from './utils';
+import { isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
@@ -22,6 +22,7 @@ import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -31,12 +32,37 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const validationFn = restProps?.validationFn;
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow);
   const parentId = componentDefinition?.component?.parent;
   const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
 
   const customVariables = customResolvables?.[parentId]?.[0] || {};
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio < 1) {
+          setShowPreview(false);
+          setShowSuggestions(false);
+        } else {
+          setShowSuggestions(true);
+        }
+      },
+      { root: null, threshold: [1] } // Fires when any part of the element is out of view
+    );
+
+    if (wrapperRef.current) {
+      observer.observe(wrapperRef.current);
+    }
+
+    return () => {
+      if (wrapperRef.current) {
+        observer.unobserve(wrapperRef.current);
+      }
+    };
+  }, []);
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
@@ -136,6 +162,8 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               componentName={componentName}
               setShowPreview={setShowPreview}
               showPreview={showPreview}
+              wrapperRef={wrapperRef}
+              showSuggestions={showSuggestions}
               {...restProps}
             />
           </div>
@@ -168,10 +196,27 @@ const EditorInput = ({
   previewRef,
   setShowPreview,
   onInputChange,
+  wrapperRef,
+  showSuggestions,
 }) => {
+  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
+
+  const isInsideQueryManager = useMemo(
+    () => isInsideParent(wrapperRef?.current, 'query-manager'),
+    [wrapperRef.current]
+  );
   function autoCompleteExtensionConfig(context) {
     const hints = getSuggestions();
+    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
+
+    const allHints = {
+      ...hints,
+      appHints: [...hints.appHints, ...serverHints],
+    };
+
     let word = context.matchBefore(/\w*/);
 
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
@@ -202,7 +247,7 @@ const EditorInput = ({
       queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
+    let completions = getAutocompletion(queryInput, validationType, allHints, totalReferences, originalQueryInput);
 
     return {
       from: word.from,
@@ -212,7 +257,7 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [isInsideQueryManager]);
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
@@ -223,13 +268,16 @@ const EditorInput = ({
     defaultKeymap: true,
     positionInfo: () => {
       return {
-        class: 'cm-completionInfo-top cm-custom-completion-info',
+        class: 'cm-completionInfo-top cm-custom-completion-info cm-custom-singleline-completion-info',
       };
     },
     maxRenderedOptions: 10,
   });
 
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
+  const customKeyMaps = [
+    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+    ...completionKeymap,
+  ];
   const customTabKeymap = keymap.of([
     {
       key: 'Tab',
@@ -251,6 +299,7 @@ const EditorInput = ({
         }
       },
     },
+    ...queryPanelKeybindings,
   ]);
 
   const handleOnChange = React.useCallback((val) => {
@@ -286,7 +335,7 @@ const EditorInput = ({
   const isInsideQueryPane = !!currentEditorHeightRef?.current?.closest('.query-details');
   const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
 
-  const customClassNames = cx('codehinter-input', {
+  const customClassNames = cx('codehinter-input single-line-codehinter-input', {
     'border-danger': error,
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
@@ -336,18 +385,9 @@ const EditorInput = ({
     <div
       ref={currentEditorHeightRef}
       className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
-      data-cy={`${cyLabel}-input-field`}
+      data-cy={`${cyLabel.replace(/_/g, '-')}-input-field`}
     >
       {/* sticky element to position the preview box correctly on top without flowing out of container */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          left: 0,
-          zIndex: 1000,
-        }}
-        ref={previewRef}
-      ></div>
       {usePortalEditor && (
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
@@ -372,39 +412,56 @@ const EditorInput = ({
         callgpt={null}
       >
         <ErrorBoundary>
-          <CodeMirror
-            value={currentValue}
-            placeholder={placeholder}
-            height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
-            width="100%"
-            extensions={[
-              javascript({ jsx: lang === 'jsx' }),
-              autoCompleteConfig,
-              keymap.of([...customKeyMaps]),
-              customTabKeymap,
-            ]}
-            onChange={(val) => {
-              setFirstTimeFocus(false);
-              handleOnChange(val);
-              onInputChange && onInputChange(val);
+          <div
+            style={{
+              position: 'relative',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
             }}
-            basicSetup={{
-              lineNumbers: showLineNumbers,
-              syntaxHighlighting: true,
-              bracketMatching: true,
-              foldGutter: false,
-              highlightActiveLine: false,
-              autocompletion: true,
-              completionKeymap: true,
-              searchKeymap: false,
-            }}
-            onMouseDown={() => handleFocus()}
-            onBlur={() => handleOnBlur()}
-            className={customClassNames}
-            theme={theme}
-            indentWithTab={false}
-            readOnly={disabled}
-          />
+            className="check-here"
+            ref={previewRef}
+          >
+            <CodeMirror
+              value={currentValue}
+              placeholder={placeholder}
+              height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
+              width="100%"
+              extensions={
+                showSuggestions
+                  ? [
+                    javascript({ jsx: lang === 'jsx' }),
+                    autoCompleteConfig,
+                    keymap.of([...customKeyMaps]),
+                    customTabKeymap,
+                  ]
+                  : [javascript({ jsx: lang === 'jsx' })]
+              }
+              onChange={(val) => {
+                setFirstTimeFocus(false);
+                handleOnChange(val);
+                onInputChange && onInputChange(val);
+              }}
+              basicSetup={{
+                lineNumbers: showLineNumbers,
+                syntaxHighlighting: true,
+                bracketMatching: true,
+                foldGutter: false,
+                highlightActiveLine: false,
+                autocompletion: true,
+                defaultKeymap: false,
+                completionKeymap: true,
+                searchKeymap: false,
+              }}
+              onMouseDown={() => handleFocus()}
+              onBlur={() => handleOnBlur()}
+              className={customClassNames}
+              theme={theme}
+              indentWithTab={false}
+              readOnly={disabled}
+            />
+          </div>
         </ErrorBoundary>
       </CodeHinter.Portal>
     </div>
@@ -451,9 +508,8 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
-                darkMode && 'color-whitish-darkmode'
-              }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
+                }`}
             />
           </div>
         )}
@@ -461,9 +517,8 @@ const DynamicEditorBridge = (props) => {
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div
-                className={`col-auto pt-0 fx-common fx-button-container ${
-                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
-                }`}
+                className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
+                  }`}
               >
                 <FxButton
                   active={codeShow}

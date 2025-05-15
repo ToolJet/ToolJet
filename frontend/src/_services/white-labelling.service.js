@@ -6,9 +6,11 @@ export const whiteLabellingService = {
   update,
 };
 
-function get() {
+function get(organizationId = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/white-labelling`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/white-labelling?organizationId=${organizationId}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
 }
 
 function update(settings) {

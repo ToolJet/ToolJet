@@ -111,7 +111,10 @@ describe("App Version", () => {
       onlydeleteVersionText.deleteToastMessage("v3")
     );
     cy.get(appVersionSelectors.currentVersionField("v2")).should("be.visible");
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.wait(3000);
+
+    // cy.reload();
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", { timeout: 10000 });
 
     // Preview and release verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
@@ -132,7 +135,7 @@ describe("App Version", () => {
     cy.waitForAutoSave();
 
     cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/v2/data_sources`,
+      `${Cypress.env("server_host")}/api/data-sources`,
       data.datasourceName,
       "restapi",
       [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]

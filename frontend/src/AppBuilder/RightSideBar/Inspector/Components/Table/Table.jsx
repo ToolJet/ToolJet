@@ -177,7 +177,7 @@ class TableComponent extends React.Component {
         style={{
           width: '280px',
           maxHeight: resolveReferences(column.isEditable) ? '100vh' : 'inherit',
-          overflowY: 'auto',
+          // overflowY: 'auto',
           zIndex: '9999',
         }}
       >
@@ -327,7 +327,12 @@ class TableComponent extends React.Component {
         placement="left"
         rootClose={this.state.actionPopOverRootClose}
         overlay={this.actionPopOver(action, index)}
-        onToggle={(showing) => this.setState({ showPopOver: showing })}
+        onToggle={(showing) => {
+          if (!showing) {
+            document.activeElement?.blur(); // Manually trigger blur when popover closes
+          }
+          this.setState({ showPopOver: showing });
+        }}
       >
         <div>
           <List>
@@ -626,6 +631,8 @@ class TableComponent extends React.Component {
                               return 'Multiselect';
                             case 'json':
                               return 'JSON';
+                            case 'markdown':
+                              return 'Markdown';
                             default:
                               capitalize(text ?? '');
                           }
@@ -649,6 +656,7 @@ class TableComponent extends React.Component {
                                     if (show) {
                                       this.handleToggleColumnPopover(index);
                                     } else {
+                                      document.activeElement?.blur(); // Manually trigger blur when popover closes
                                       this.handleToggleColumnPopover(null);
                                     }
                                   }}

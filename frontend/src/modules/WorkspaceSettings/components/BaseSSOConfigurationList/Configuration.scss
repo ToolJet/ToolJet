@@ -297,10 +297,18 @@ input:checked+.slider:before {
   }
 }
 
+
+
+
 .theme-dark {
   .form-control {
     background-color: unset !important;
   }
+
+  .react-tel-input .form-control {
+    background-color: inherit !important; // Or any default value you prefer
+  }
+
 }
 
 .dark-theme {

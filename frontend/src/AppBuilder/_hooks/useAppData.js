@@ -20,13 +20,16 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList, navigate } from '../_utils/misc';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
+import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
-import { convertAllKeysToSnakeCase } from '../_stores/utils';
+import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
+import useThemeAccess from './useThemeAccess';
+import { handleError } from '@/_helpers/handleAppAccess';
+import toast from 'react-hot-toast';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -101,12 +104,14 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
   const appMode = useStore((state) => state.globalSettings.appMode);
+  const selectedTheme = useStore((state) => state.globalSettings.theme);
   const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
   const isComponentLayoutReady = useStore((state) => state.isComponentLayoutReady, shallow);
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const themeAccess = useThemeAccess();
 
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
@@ -297,10 +302,14 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         creationMode: appData.creation_mode,
       });
       setIsEditorFreezed(appData.should_freeze_editor);
-      setGlobalSettings(
-        mapKeys(appData.editing_version?.global_settings || appData.global_settings, (value, key) => camelCase(key))
+      const global_settings = mapKeys(
+        appData.editing_version?.global_settings || appData.global_settings,
+        (value, key) => camelCase(key)
       );
-
+      if (!global_settings?.theme) {
+        global_settings.theme = baseTheme;
+      }
+      setGlobalSettings(global_settings);
       setPages(pages, moduleId);
       setPageSettings(
         computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
@@ -309,16 +318,29 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
 
+      //no access to homepage, set to the next available page
+      if (startingPage?.restricted) {
+        startingPage = appData.pages.find((page) => !page?.restricted);
+      }
+
       if (initialLoadRef.current) {
         // if initial load, check if the path has a page handle and set that as the starting page
         const initialLoadPath = location.pathname.split('/').pop();
+
         const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
         if (page) {
           // if page is disabled, and not editing redirect to home page
-          if (mode !== 'edit' && page?.disabled) {
-            const currentUrl = window.location.href;
-            const replacedUrl = currentUrl.replace(initialLoadPath, startingPage.handle);
-            window.history.replaceState(null, null, replacedUrl);
+          const shouldRedirect = page?.restricted || (mode !== 'edit' && page?.disabled);
+
+          if (shouldRedirect) {
+            const newUrl = window.location.href.replace(initialLoadPath, startingPage.handle);
+            window.history.replaceState(null, null, newUrl);
+
+            if (page?.restricted) {
+              toast.error('Access to this page is restricted. Contact admin to know more.', {
+                className: 'text-nowrap w-auto mw-100',
+              });
+            }
           } else {
             startingPage = page;
           }
@@ -326,6 +348,16 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
 
         // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
       }
+
+      // Add page id and handle to the state on initial load
+      const currentState = window.history.state || {};
+      const pageInfo = {
+        id: startingPage.id,
+        handle: startingPage.handle,
+      };
+      const newState = { ...currentState, ...pageInfo };
+      window.history.replaceState(newState, '', window.location.href);
+
       setCurrentPageHandle(startingPage.handle);
       updateFeatureAccess();
       setCurrentPageId(startingPage.id, moduleId);
@@ -412,7 +444,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       if (showWalkthrough) initEditorWalkThrough();
       checkAndSetTrueBuildSuggestionsFlag();
       return () => {
-        document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+        document.title = retrieveWhiteLabelText();
       };
     });
   }, [setApp, setEditorLoading, currentSession]);
@@ -432,6 +464,16 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   useEffect(() => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: app.appName });
   }, [app.appName]);
+
+  useEffect(() => {
+    if (!themeAccess) return;
+    const root = document.documentElement;
+    const brandColors = selectedTheme?.definition?.brand?.colors || {};
+    Object.keys(brandColors).forEach((colorType) => {
+      const color = brandColors[colorType][darkMode ? 'dark' : 'light'];
+      root.style.setProperty(`--${colorType}-brand`, `${color}`);
+    });
+  }, [darkMode, selectedTheme, themeAccess]);
 
   useEffect(() => {
     const exposedTheme =
