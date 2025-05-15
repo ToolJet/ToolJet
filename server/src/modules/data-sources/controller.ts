@@ -128,4 +128,11 @@ export class DataSourcesController implements IDataSourcesController {
     await this.dataSourcesService.authorizeOauth2(id, environmentId, authorizeDataSourceOauthDto, user);
     return;
   }
+
+  @InitFeature(FEATURE_KEY.AUTHORIZE)
+  @UseGuards(FeatureAbilityGuard)
+  @Post('decrypt')
+  async decryptOptions(@Body() options: Record<string, any>) {
+    return await this.dataSourcesService.decryptOptions(options);
+  }
 }

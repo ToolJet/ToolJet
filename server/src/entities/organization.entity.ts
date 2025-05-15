@@ -35,6 +35,9 @@ export class Organization extends BaseEntity {
   @Column({ name: 'domain' })
   domain: string;
 
+  @Column({ name: 'is_default', default: false })
+  isDefault: boolean;
+
   @Column({ name: 'enable_sign_up' })
   enableSignUp: boolean;
 
