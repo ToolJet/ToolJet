@@ -41,3 +41,36 @@
 .show-module-border {
     outline: dotted 2px #CCD1D5 !important;
 }
+
+.module-container-canvas {
+    >div:first-child {
+        height: 100%;
+        overflow: hidden auto;
+
+        /* Hide scrollbar by default */
+        &::-webkit-scrollbar {
+            width: 6px;
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: transparent;
+        }
+
+        /* Show scrollbar only on hover */
+        &:hover {
+            &::-webkit-scrollbar-thumb {
+                background-color: #6a727c4d;
+                border-radius: 3px;
+            }
+        }
+
+        /* Firefox scrollbar support */
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+
+        &:hover {
+            scrollbar-color: #6a727c4d transparent;
+        }
+    }
+}
