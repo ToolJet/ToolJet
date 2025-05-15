@@ -271,5 +271,8 @@ export const createAppSlice = (set, get) => ({
   getAppId: (moduleId = 'canvas') => {
     return get().appStore.modules[moduleId].app.appId;
   },
+  getHomePageId: (moduleId = 'canvas') => {
+    return get().appStore.modules[moduleId].app.homePageId;
+  },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
 });
