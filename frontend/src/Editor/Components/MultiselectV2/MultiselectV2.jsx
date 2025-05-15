@@ -37,6 +37,7 @@ export const MultiselectV2 = ({
     loadingState: multiSelectLoadingState,
     optionsLoadingState,
     sort,
+    showAllSelectedLabel,
     showClearBtn,
     showSearchInput,
   } = properties;
@@ -145,7 +146,7 @@ export const MultiselectV2 = ({
     if (action.option?.value === SELECT_ALL) {
       // Case 1 - If select all is selected
       if (action.action === 'select-option') {
-        setInputValue(modifiedSelectOptions);
+        setInputValue(selectOptions);
       } else {
         setInputValue([]);
       }
@@ -154,7 +155,7 @@ export const MultiselectV2 = ({
       setInputValue(items.filter((item) => item.value !== SELECT_ALL));
     } else if (selectOptions?.length === items?.length) {
       // Case 3 - If all options are selected except select all
-      setInputValue(modifiedSelectOptions);
+      setInputValue(selectOptions);
     } else {
       // Case 4 - Normal selection
       setInputValue(items);
@@ -502,7 +503,7 @@ export const MultiselectV2 = ({
             ref={selectRef}
             menuId={id}
             isDisabled={isMultiSelectDisabled}
-            value={selected}
+            value={selectOptions?.length === selected?.length ? modifiedSelectOptions : selected}
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
             styles={customStyles}
@@ -544,11 +545,14 @@ export const MultiselectV2 = ({
             icon={icon}
             doShowIcon={iconVisibility}
             containerRef={valueContainerRef}
+            showAllSelectedLabel={showAllSelectedLabel}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
             menuPlacement="auto"
             menuPortalTarget={document.body}
+            // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)
+            minMenuHeight={300}
           />
         </div>
       </div>

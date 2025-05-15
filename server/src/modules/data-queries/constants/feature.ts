@@ -11,10 +11,14 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE_DATA_SOURCE]: {},
     [FEATURE_KEY.UPDATE_ONE]: {},
     [FEATURE_KEY.RUN_EDITOR]: {
+      auditLogsKey: 'DATA_QUERY_RUN',
       shouldNotSkipPublicApp: true,
     },
-    [FEATURE_KEY.RUN_VIEWER]: {},
+    [FEATURE_KEY.RUN_VIEWER]: {
+      auditLogsKey: 'DATA_QUERY_RUN',
+    },
     [FEATURE_KEY.PREVIEW]: {
+      auditLogsKey: 'DATA_QUERY_RUN',
       shouldNotSkipPublicApp: true,
     },
   },

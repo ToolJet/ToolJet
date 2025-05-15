@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import {
   DataSource,
   EntityManager,
+  Equal,
   FindManyOptions,
   FindOptionsWhere,
   ILike,
@@ -94,8 +95,19 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         },
       };
 
+      // Only apply the data source filter if filterDataSource is true
+      if (searchParam?.filterDataSource) {
+        findOptions.where = {
+          ...findOptions.where,
+          type: Not(Equal(ResourceType.DATA_SOURCE)),
+        };
+      }
+
       if (groupId) {
-        findOptions.where = { groupId };
+        findOptions.where = {
+          ...findOptions.where,
+          groupId,
+        };
       }
 
       if (name) {

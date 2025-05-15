@@ -7,24 +7,25 @@ import useStore from '@/AppBuilder/_stores/store';
 
 const PromoteVersionButton = () => {
   const [promoteModalData, setPromoteModalData] = useState(null);
-  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment } = useStore(
+  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } = useStore(
     (state) => ({
       isSaving: state.app.isSaving,
       editingVersion: state.currentVersionId,
       selectedEnvironment: state.selectedEnvironment,
       environments: state.environments,
       appVersionEnvironment: state.appVersionEnvironment,
+      currentEnvIndex: state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
     }),
     shallow
   );
 
-  const shouldDisablePromote = isSaving || selectedEnvironment?.priority < appVersionEnvironment?.priority;
+  // enable only after the environment details are loaded
+  const shouldDisablePromote = isSaving || selectedEnvironment?.priority < appVersionEnvironment?.priority || !appVersionEnvironment || !environments?.[currentEnvIndex + 1];
 
   const handlePromote = () => {
-    const curentEnvIndex = environments.findIndex((env) => env.id === appVersionEnvironment.id);
     setPromoteModalData({
       current: appVersionEnvironment,
-      target: environments[curentEnvIndex + 1],
+      target: environments[currentEnvIndex + 1],
     });
   };
 
@@ -54,7 +55,7 @@ const PromoteVersionButton = () => {
         data={promoteModalData}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
-        fetchEnvironments={() => {}}
+        fetchEnvironments={() => { }}
       />
     </>
   );

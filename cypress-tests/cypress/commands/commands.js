@@ -6,6 +6,7 @@ import { passwordInputText } from "Texts/passwordInput";
 import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
+import { selectAppCardOption } from "Support/utils/common";
 
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
@@ -15,15 +16,11 @@ const API_ENDPOINT =
 Cypress.Commands.add(
   "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
-    cy.visit("/");
-    cy.wait(1000);
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
-
-    cy.intercept("GET", API_ENDPOINT).as("library_apps");
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    cy.wait("@library_apps");
+    cy.wait(2000);
+    cy.get('[data-cy="main-wrapper"]', { timeout: 10000 }).should("be.visible");
   }
 );
 
@@ -164,13 +161,15 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.get(commonSelectors.appCard(appName))
-    .realHover()
-    .find(commonSelectors.appCardOptionsButton)
-    .realHover()
-    .click();
-  cy.get(commonSelectors.deleteAppOption).click();
+  selectAppCardOption(
+    appName,
+    commonSelectors.appCardOptions(commonText.deleteAppOption)
+  );
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    commonText.appDeletedToast
+  );
   cy.wait("@appDeleted");
 });
 
@@ -398,37 +397,38 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.apiLogin();
+  cy.task("dbConnection", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+      SELECT id FROM organizations WHERE name = 'My workspace';`,
+  }).then((resp) => {
+    const workspaceId = resp.rows[0].id;
 
-  cy.visit("/my-workspace");
-  cy.intercept("GET", API_ENDPOINT).as("library_apps");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-  cy.wait("@library_apps");
-  // });
+    cy.apiLogin(
+      "dev@tooljet.io",
+      "password",
+      workspaceId,
+      "/my-workspace"
+    ).then(() => {
+      cy.visit("/");
+      cy.wait(2000);
+      cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+    });
+  });
 });
 
-Cypress.Commands.add(
-  "visitSlug",
-  ({
-    actualUrl,
-    currentUrl = `${Cypress.config("baseUrl")}/error/unknown`,
-  }) => {
-    // Ensure actualUrl is provided
-    if (!actualUrl) {
-      throw new Error("actualUrl is required for visitSlug command.");
+Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
+  cy.visit(actualUrl);
+  cy.wait(1000);
+
+  cy.url().then((currentUrl) => {
+    if (currentUrl !== actualUrl) {
+      cy.visit(actualUrl);
+      cy.wait(1000);
     }
+  });
+});
 
-    cy.visit(actualUrl);
-
-    // Dynamically wait for the correct URL or handle navigation errors
-    cy.url().then((url) => {
-      if (url === currentUrl) {
-        cy.log(`Navigation resulted in unexpected URL: ${url}. Retrying...`);
-        cy.visit(actualUrl);
-      }
-    });
-  }
-);
 
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {
@@ -514,21 +514,56 @@ Cypress.Commands.overwrite(
   }
 );
 
+Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
+  const MARKETPLACE_URL = `${Cypress.config("baseUrl")}/integrations/marketplace`;
+
+  cy.visit(MARKETPLACE_URL);
+  cy.wait(1000);
+
+  cy.get('[data-cy="-list-item"]').eq(0).click();
+  cy.wait(1000);
+
+  cy.get("body").then(($body) => {
+    if ($body.find(".plugins-card").length === 0) {
+      cy.log("No plugins found, proceeding to install...");
+      installPlugin(pluginName);
+    } else {
+      cy.get(".plugins-card").then(($cards) => {
+        const isInstalled = $cards.toArray().some((card) => {
+          return (
+            Cypress.$(card)
+              .find(".font-weight-medium.text-capitalize")
+              .text()
+              .trim() === pluginName
+          );
+        });
+
+        if (isInstalled) {
+          cy.log(`${pluginName} is already installed. Skipping installation.`);
+          cy.get(commonSelectors.globalDataSourceIcon).click();
+        } else {
+          installPlugin(pluginName);
+          cy.get(commonSelectors.globalDataSourceIcon).click();
+        }
+      });
+    }
+  });
+
+  function installPlugin (pluginName) {
+    cy.get('[data-cy="-list-item"]').eq(1).click();
+    cy.wait(1000);
+
+    cy.contains(".plugins-card", pluginName).within(() => {
+      cy.get(".marketplace-install").click();
+      cy.wait(1000);
+    });
+  }
+});
+
 Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
   const element =
     eqValue !== undefined ? cy.get(selector).eq(eqValue) : cy.get(selector);
   element.should("be.visible").and("have.text", text);
-});
-
-Cypress.Commands.add("loginWithCredentials", (email, password) => {
-  cy.get(onboardingSelectors.loginEmailInput, { timeout: 20000 }).should(
-    "be.visible"
-  );
-  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
-  cy.get(onboardingSelectors.signInButton).click();
-  cy.wait(3000);
-  cy.get(commonSelectors.pageLogo).should("be.visible");
 });
 
 Cypress.Commands.add("getAppId", (appName) => {
@@ -538,5 +573,35 @@ Cypress.Commands.add("getAppId", (appName) => {
   }).then((resp) => {
     const appId = resp.rows[0]?.id;
     return appId;
+  });
+});
+
+Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
+  const MARKETPLACE_URL = `${Cypress.config("baseUrl")}/integrations/marketplace`;
+
+  cy.visit(MARKETPLACE_URL);
+  cy.wait(1000);
+
+  cy.get('[data-cy="-list-item"]').eq(0).click();
+  cy.wait(1000);
+
+  cy.get(".plugins-card").each(($card) => {
+    cy.wrap($card)
+      .find(".font-weight-medium.text-capitalize")
+      .invoke("text")
+      .then((text) => {
+        if (text.trim() === pluginName) {
+          cy.wrap($card).find(".link-primary").contains("Remove").click();
+          cy.wait(1000);
+
+          cy.get('[data-cy="delete-plugin-title"]').should("be.visible");
+          cy.get('[data-cy="yes-button"]').click();
+          cy.wait(2000);
+
+          cy.log(`${pluginName} has been successfully uninstalled.`);
+        } else {
+          cy.log(`${pluginName} is not installed. Skipping uninstallation.`);
+        }
+      });
   });
 });

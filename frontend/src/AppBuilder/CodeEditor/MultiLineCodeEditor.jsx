@@ -22,6 +22,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
 import { handleSearchPanel } from './SearchBox';
+import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
 
@@ -75,6 +76,7 @@ const MultiLineCodeEditor = (props) => {
   const [editorView, setEditorView] = React.useState(null);
 
   const [isSearchPanelOpen, setIsSearchPanelOpen] = React.useState(false);
+  const { queryPanelKeybindings } = useQueryPanelKeyHooks(onChange, currentValueRef, 'multiline');
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);
@@ -97,6 +99,7 @@ const MultiLineCodeEditor = (props) => {
     highlightActiveLine: false,
     autocompletion: hideSuggestion ?? true,
     highlightActiveLineGutter: false,
+    defaultKeymap: false,
     completionKeymap: true,
     searchKeymap: false,
   };
@@ -206,7 +209,12 @@ const MultiLineCodeEditor = (props) => {
     };
   }
 
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap, ...searchKeymap];
+  const customKeyMaps = [
+    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+    ...completionKeymap,
+    ...searchKeymap,
+  ];
+
   const customTabKeymap = keymap.of([
     {
       key: 'Tab',
@@ -227,6 +235,7 @@ const MultiLineCodeEditor = (props) => {
         return true;
       },
     },
+    ...queryPanelKeybindings,
   ]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -7,6 +7,7 @@ import {
   lifecycleEvents,
   USER_STATUS,
   USER_TYPE,
+  WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
@@ -40,6 +41,8 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { RequestContext } from '@modules/request-context/service';
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
   constructor(
@@ -136,6 +139,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     groups: string[],
     organizationId: string,
     userId: string,
+    areGroupIds: boolean = false,
     manager?: EntityManager
   ): Promise<void> {
     if (!groups) return;
@@ -146,13 +150,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       try {
         for (const addGroup of groups) {
-          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(
-            {
-              organizationId: organizationId,
-              name: addGroup,
-            },
-            manager
-          );
+          const groupQuery = areGroupIds
+            ? { organizationId: organizationId, id: addGroup }
+            : { organizationId: organizationId, name: addGroup };
+
+          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(groupQuery, manager);
           if (!orgGroupPermission) {
             throw new BadRequestException(`${addGroup} group does not exist for current organization`);
           }
@@ -211,7 +213,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async createDefaultOrganization(manager: EntityManager) {
     const { name, slug } = generateNextNameAndSlug('My workspace');
-    return await this.setupOrganizationsUtilService.create(name, slug, null, manager);
+    return await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
   }
 
   addUserAsAdmin(userId: string, organizationId: string, manager: EntityManager) {
@@ -254,14 +256,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   protected async mapOrganizationUserToResponse(
     orgUser: OrganizationUser,
-    isBasicPlan: boolean
+    isBasicPlan: boolean,
+    metadataFlag: boolean = false
   ): Promise<FetchUserResponse> {
     const userDetails = orgUser.user.userDetails.find((ud) => ud.organizationId === orgUser.organizationId);
-    const userMetadata = await this.sessionUtilsService.decryptUserMetadata(userDetails?.userMetadata);
-
-    const role = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT);
-    const groups = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP);
-    return {
+    let response: FetchUserResponse = {
       email: orgUser.user.email,
       firstName: orgUser.user.firstName ?? '',
       lastName: orgUser.user.lastName ?? '',
@@ -271,14 +270,27 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       role: orgUser.role,
       status: orgUser.status,
       avatarId: orgUser.user.avatarId,
-      groups: groups.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
-      roleGroup: role.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      groups: orgUser.user.userPermissions
+        .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
+        .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      roleGroup: orgUser.user.userPermissions
+        .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
+        .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
       ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
         ? { accountSetupToken: orgUser.user.invitationToken }
         : {}),
-      userMetadata,
     };
+
+    if (metadataFlag) {
+      const userMetadata = await this.sessionUtilsService.decryptUserMetadata(userDetails?.userMetadata);
+      response = {
+        ...response,
+        userMetadata,
+      };
+    }
+
+    return response;
   }
 
   async sendWelcomeEmail(
@@ -332,7 +344,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async personalWorkspaces(userId: string): Promise<OrganizationUser[]> {
     const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
-      select: ['organizationId', 'invitationToken'],
+      select: ['organizationId', 'invitationToken', 'id'],
       where: { userId },
     });
     const personalWorkspaceArray: OrganizationUser[] = [];
@@ -406,7 +418,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     );
 
     const result = await Promise.all(
-      organizationUsers.map(async (orgUser) => this.mapOrganizationUserToResponse(orgUser, isBasicPlan))
+      organizationUsers.map(async (orgUser) => this.mapOrganizationUserToResponse(orgUser, isBasicPlan, false))
     );
 
     return { organizationUsers: result, total: count };
@@ -485,7 +497,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         );
       }
 
-      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, manager);
+      await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, true, manager);
 
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);
@@ -500,18 +512,12 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         !user || !!user.invitationToken
       );
 
-      this.eventEmitter.emit(
-        'auditLogEntry',
-        {
-          userId: currentUser.id,
-          organizationId: currentOrganization.id,
-          resourceId: currentOrganization.id,
-          resourceName: updatedUser.email,
-          resourceType: MODULES.USER,
-          actionType: MODULE_INFO.USER_INVITE,
-        },
-        manager
-      );
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: currentUser.id,
+        organizationId: currentOrganization.id,
+        resourceId: currentOrganization.id,
+        resourceName: updatedUser.email,
+      });
 
       return organizationUser;
     }, manager);
@@ -573,4 +579,41 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     user.organizationUserSource = organizationUser.source;
     return user;
   }
+
+  addUserToWorkspace = async (
+    user: User,
+    workspace: Organization,
+    manager?: EntityManager
+  ) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Create organization user entry if not exists
+      let existingOrgUser = await this.organizationUsersRepository.findOne({
+        where: {
+          userId: user.id,
+          organizationId: workspace.id,
+        }
+      });
+
+      if(existingOrgUser){ 
+        return existingOrgUser;
+      }
+
+      const organizationUser = await this.organizationUsersRepository.createOne(
+        user,
+        workspace,
+        true,
+        manager,
+        WORKSPACE_USER_SOURCE.SIGNUP
+      );
+
+      // Add end-user role in default workspace if not already present
+      await this.rolesUtilService.addUserRole(
+        workspace.id,
+        { role: USER_ROLE.END_USER, userId: user.id },
+        manager
+      );
+
+      return organizationUser;
+    }, manager);
+  };
 }
