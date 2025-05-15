@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import _, { isEmpty } from 'lodash';
-import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { v4 as uuidv4 } from 'uuid';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import QuerySelect from './QuerySelect';
 
-export const ConditionFilter = ({ operators = [], value, onChange, placeholders }) => {
+export const ConditionFilter = ({ operators = [], value, onChange, placeholders, selectProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [listRowsOptions, setListRowOptions] = useState({ where_filters: value });
 
@@ -61,6 +61,7 @@ export const ConditionFilter = ({ operators = [], value, onChange, placeholders 
             removeFilterConditionPair={removeFilterConditionPair}
             operators={operators}
             placeholders={placeholders}
+            selectProps
           />
         ))}
 
@@ -85,7 +86,7 @@ export const ConditionFilter = ({ operators = [], value, onChange, placeholders 
   );
 };
 
-export const CondtionSort = ({ orders = [], value, onChange, placeholders }) => {
+export const CondtionSort = ({ orders = [], value, onChange, placeholders, selectProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [listRowsOptions, setListRowOptions] = useState({ order_filters: value });
 
@@ -141,6 +142,7 @@ export const CondtionSort = ({ orders = [], value, onChange, placeholders }) => 
             updateSortOptionsChanged={updateSortOptionsChanged}
             darkMode={darkMode}
             placeholders={placeholders}
+            selectProps
           />
         ))}
         <ButtonSolid
@@ -244,6 +246,7 @@ const RenderSortFields = ({
   removeSortConditionPair,
   listRowsOptions,
   updateSortOptionsChanged,
+  selectProps
 }) => {
   const handleColumnChange = (newValue) => {
     updateSortOptionsChanged({ ...listRowsOptions?.order_filters[id], ...{ column: newValue } });
@@ -267,7 +270,7 @@ const RenderSortFields = ({
           />
         </div>
         <div className="field col mx-1">
-          <Select
+          <QuerySelect
             useMenuPortal={true}
             placeholder={placeholders.order}
             value={order}
@@ -275,6 +278,7 @@ const RenderSortFields = ({
             height={'40px'}
             width={'auto'}
             onChange={handleDirectionChange}
+            {...selectProps}
           />
         </div>
         <div className="col cursor-pointer m-1 ms-1">
@@ -310,6 +314,7 @@ const RenderFilterFields = ({
   darkMode,
   operators,
   placeholders,
+  selectProps,
 }) => {
   const handleColumnChange = (newValue) => {
     updateFilterOptionsChanged({ ...listRowsOptions?.where_filters[id], ...{ column: newValue } });
@@ -337,7 +342,7 @@ const RenderFilterFields = ({
           />
         </div>
         <div className="field col mx-1">
-          <Select
+          <QuerySelect
             useMenuPortal={true}
             placeholder={placeholders.operator}
             value={operator}
@@ -345,6 +350,7 @@ const RenderFilterFields = ({
             height={'40px'}
             onChange={handleOperatorChange}
             width={'auto'}
+            {...selectProps}
           />
         </div>
         <div className="field col-4">

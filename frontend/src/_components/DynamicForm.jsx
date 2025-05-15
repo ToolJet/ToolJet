@@ -2,7 +2,6 @@ import React from 'react';
 import cx from 'classnames';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
-import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import Sort from '@/_ui/Sort';
 import OAuth from '@/_ui/OAuth';
@@ -26,6 +25,7 @@ import { Constants } from '@/_helpers/utils';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
+import QuerySelect from './QuerySelect';
 
 const DynamicForm = ({
   schema,
@@ -175,7 +175,7 @@ const DynamicForm = ({
       case 'textarea':
         return Textarea;
       case 'dropdown':
-        return Select;
+        return QuerySelect;
       case 'toggle':
         return Toggle;
       case 'checkbox':
@@ -252,6 +252,9 @@ const DynamicForm = ({
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
+    const selectProps = {
+      customClassPrefix: `${key}-dynamic-form-select`,
+    };
 
     if (!options) return;
 
@@ -297,6 +300,7 @@ const DynamicForm = ({
           useCustomStyles: computeSelectStyles ? true : false,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           encrypted: options?.[key]?.encrypted,
+          ...selectProps,
         };
       case 'checkbox-group':
         return {
@@ -347,6 +351,7 @@ const DynamicForm = ({
           encrypted: options?.[key]?.encrypted,
           buttonText,
           width: width,
+          selectProps,
         };
       }
       case 'react-component-oauth-authentication':
@@ -469,6 +474,7 @@ const DynamicForm = ({
           value: options?.[key] ?? {},
           onChange: (value) => optionchanged(key, value),
           placeholders,
+          selectProps,
         };
       case 'sorts':
         return {
@@ -476,6 +482,7 @@ const DynamicForm = ({
           value: options?.[key] ?? {},
           onChange: (value) => optionchanged(key, value),
           placeholders,
+          selectProps,
         };
       case 'columns':
         return {
@@ -489,6 +496,7 @@ const DynamicForm = ({
           optionsChanged,
           options,
           darkMode,
+          selectProps,
         };
       default:
         return {};
@@ -672,7 +680,7 @@ const DynamicForm = ({
               )}
 
               <div data-cy={`${String(flipComponentDropdown.label).toLocaleLowerCase().replace(/\s+/g, '-')}-select-dropdown`} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
-                <Select
+                <QuerySelect
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
                   useCustomStyles={computeSelectStyles ? true : false}

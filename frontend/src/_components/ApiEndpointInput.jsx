@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { openapiService } from '@/_services';
-import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import DOMPurify from 'dompurify';
 import { ToolTip } from '@/_components';
@@ -9,6 +8,7 @@ import { withTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import PropTypes from 'prop-types';
 import SolidIcons from '@/_ui/Icon/SolidIcons';
+import QuerySelect from './QuerySelect';
 
 const operationColorMapping = {
   get: 'azure',
@@ -145,7 +145,7 @@ const ApiEndpointInput = (props) => {
               <label className="form-label">{props.t('globals.operation', 'Operation')}</label>
             </div>
             <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
-              <Select
+              <QuerySelect
                 options={computeOperationSelectionOptions()}
                 value={{
                   operation: options?.operation,
@@ -157,6 +157,7 @@ const ApiEndpointInput = (props) => {
                 customOption={renderOperationOption}
                 styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
                 useCustomStyles={true}
+                {...props.selectProps}
               />
               {options?.selectedOperation && (
                 <small

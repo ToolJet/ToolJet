@@ -14,6 +14,7 @@ export default ({
   isDisabled,
   buttonText,
   width,
+  selectProps,
 }) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
@@ -39,6 +40,7 @@ export default ({
     keyValuePairValueChanged,
     isDisabled,
     buttonText,
+    selectProps,
   };
 
   return isRenderedAsQueryEditor ? (

@@ -4,11 +4,18 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import CodeHinter from '@/Editor/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import Select from '@/_ui/Select';
 import Input from '@/_ui/Input';
 import '@/_ui/Sort/sortStyles.scss';
+import QuerySelect from '@/_components/QuerySelect';
 
-export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, buttonText }) => {
+export default ({
+  options,
+  addNewKeyValuePair,
+  removeKeyValuePair,
+  keyValuePairValueChanged,
+  buttonText,
+  selectProps,
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const sortOptions = [
     { value: 'asc', label: 'Ascending' },
@@ -37,12 +44,13 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                 />
               </div>
               <div className="w-100 sort-input">
-                <Select
+                <QuerySelect
                   options={sortOptions}
                   value={sortOptions.find((opt) => opt.value === option[1])}
                   onChange={(value) => keyValuePairValueChanged(value, 1, index)}
                   width={'100%'}
                   placeholder="Select direction"
+                  {...selectProps}
                 />
               </div>
             </div>

@@ -5,7 +5,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import InfoIcon from '@assets/images/icons/info.svg';
 import '@/_ui/Sort/sortStyles.scss';
-import Select from '@/_ui/Select';
+import QuerySelect from '@/_components/QuerySelect';
 
 export default ({
   options,
@@ -15,6 +15,7 @@ export default ({
   workspaceConstants,
   isDisabled,
   width,
+  selectProps,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const sortOptions = [
@@ -40,13 +41,14 @@ export default ({
             style={{ width: width ? width : '300px', borderTopRightRadius: '0px', borderBottomRightRadius: '0px' }}
             onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
           />
-          <Select
+          <QuerySelect
             options={sortOptions}
             value={sortOptions.find((opt) => opt.value === option[1])}
             onChange={(value) => keyValuePairValueChanged(value, 1, index)}
             width={'316px'}
             height={'35px'}
             placeholder="Select direction"
+            {...selectProps}
           />
 
           <button
