@@ -43,6 +43,8 @@ const AllElements = {
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {
   const componentType = FxParamTypeMapping[paramType];
   const DynamicComponent = AllElements[componentType];
-
+  if (!DynamicComponent) {
+    return null;
+  }
   return <DynamicComponent {...restProps} />;
 };

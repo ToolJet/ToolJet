@@ -6,7 +6,7 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import { shallow } from 'zustand/shallow';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
 
-export const EditorSelecto = () => {
+export const EditorSelecto = ({ moveableRef }) => {
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
@@ -84,6 +84,7 @@ export const EditorSelecto = () => {
         }
       }
       canvasStartId.current = null;
+      // moveableRef.current.dragStart();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setSelectedComponents, setActiveRightSideBarTab, getSelectedComponents]
@@ -129,8 +130,8 @@ export const EditorSelecto = () => {
   return (
     <>
       <Selecto
-        dragContainer={'.canvas-container'}
-        selectableTargets={['.moveable-box']}
+        dragContainer={window}
+        selectableTargets={['.moveable-box', '.virtual-moveable-target', '.draggable-box']}
         selectByClick={true}
         toggleContinueSelect={['shift']}
         onSelect={onAreaSelection}

@@ -7,7 +7,7 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
-
+import { WidgetBox } from '@/AppBuilder/RightSideBar/WidgetBox';
 // TODO: Hardcode all the component-section mapping in a constant file and just loop over it
 // TODO: styling
 // TODO: scrolling
@@ -62,12 +62,39 @@ export const ComponentsManagerTab = ({ darkMode, moveableRef }) => {
   function renderComponentCard(component, index) {
     return (
       <div className="text-center align-items-center clearfix draggable-box-wrapper">
-        <DragLayer
+        {/* <DragLayer
           index={index}
           component={componentTypeDefinitionMap[component]}
           key={component}
           moveableRef={moveableRef}
-        />
+        /> */}
+        <div
+          id="virtual-moveable-target"
+          className="target virtual-moveable-target"
+          component-type={component}
+          default-width={componentTypeDefinitionMap[component].defaultSize.width}
+          default-height={componentTypeDefinitionMap[component].defaultSize.height}
+          style={{
+            position: 'static',
+          }}
+        >
+          {/* Target */}
+          <WidgetBox component={componentTypeDefinitionMap[component]} />
+
+          {/* <div
+            id="virtual-moveable-target"
+            className="target virtual-moveable-target"
+            component-type="Datepicker"
+            draggable={true}
+            style={{
+              width: '200px',
+              height: '150px',
+              transform: 'translate(0px, 0px)',
+            }}
+          >
+            Target
+          </div> */}
+        </div>
       </div>
     );
   }
@@ -179,7 +206,7 @@ export const ComponentsManagerTab = ({ darkMode, moveableRef }) => {
           width={266}
         />
       </div>
-      <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+      <div className="widgets-list col-sm-12 col-lg-12 row h-100">{segregateSections()}</div>
     </div>
   );
 };

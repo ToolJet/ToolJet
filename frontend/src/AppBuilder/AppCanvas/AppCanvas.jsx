@@ -78,7 +78,8 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned, moveableRef 
         style={{
           // transform: `scale(1)`,
           borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
-          height: currentMode === 'edit' ? canvasContainerHeight : '100%',
+          // height: currentMode === 'edit' ? canvasContainerHeight : '100%',
+          height: '100vh',
           background:
             currentMode === 'view'
               ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
@@ -126,7 +127,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned, moveableRef 
           </HotkeyProvider>
         </div>
       </div>
-      {currentMode === 'edit' && <EditorSelecto />}
+      {currentMode === 'edit' && <EditorSelecto moveableRef={moveableRef} />}
     </div>
   );
 };

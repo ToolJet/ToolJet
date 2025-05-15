@@ -10,15 +10,28 @@ export const RightSideBar = ({ darkMode, moveableRef }) => {
   const pageSettingSelected = useStore((state) => state.pageSettingSelected);
 
   return (
-    <div className="sub-section">
-      <div className={cx('editor-sidebar', { 'dark-theme theme-dark': darkMode })}>
-        <div className={cx({ 'dark-theme theme-dark': darkMode })} style={{ position: 'relative', height: '100%' }}>
+    <div className="sub-section" style={{ position: 'fixed', right: '-300px', top: 0, width: '300px', height: '100%' }}>
+      <div className={cx('editor-sidebar h-100', { 'dark-theme theme-dark': darkMode })}>
+        <div className={cx({ 'dark-theme theme-dark': darkMode })} style={{ height: '100%' }}>
           {pageSettingSelected && <PageSettings />}
-          {activeTab === 'components' ? (
+
+          <div
+            style={{
+              // visibility: activeTab === 'components' ? 'visible' : 'hidden',
+              height: '100%',
+              display: activeTab === 'components' ? 'block' : 'none',
+            }}
+          >
             <ComponentsManagerTab darkMode={darkMode} moveableRef={moveableRef} />
-          ) : (
+          </div>
+          <div
+            style={{
+              // visibility: activeTab !== 'components' ? 'visible' : 'hidden',
+              display: activeTab !== 'components' ? 'block' : 'none',
+            }}
+          >
             <ComponentConfigurationTab darkMode={darkMode} />
-          )}
+          </div>
         </div>
       </div>
     </div>

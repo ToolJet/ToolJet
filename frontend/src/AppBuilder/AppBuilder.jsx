@@ -55,7 +55,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           <ModuleProvider moduleId={moduleId}>
             <AppCanvas moduleId={moduleId} appId={appId} moveableRef={moveableRef} />
             <QueryPanel darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} moveableRef={moveableRef} />
+            {/* <RightSideBar darkMode={darkMode} moveableRef={moveableRef} /> */}
           </ModuleProvider>
         </DndProvider>
         <Popups darkMode={darkMode} />

@@ -185,7 +185,7 @@ export class DragContext {
 export function dragContextBuilder({ event, widgets }) {
   const draggedWidgetId = event.target.id;
   const draggedWidget = getWidgetById(widgets, draggedWidgetId);
-  const sourceSlotId = draggedWidget.parent;
+  const sourceSlotId = draggedWidget?.parent;
 
   // Initialize drag context
   const context = new DragContext({ widgets, draggedWidgetId, sourceSlotId, targetSlotId: sourceSlotId });

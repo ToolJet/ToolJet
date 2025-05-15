@@ -32,7 +32,9 @@ import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 import { useDndMoveableGuidelines } from './useDndMoveableGuidelines';
 import useDndMoveable from './useDndMoveable';
 import MoveableHelper from 'moveable-helper';
-
+import { RightSidebar } from './RightSidebar';
+import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from '../appCanvasUtils';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
   edge: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
@@ -69,9 +71,14 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
   const [isGroupDragging, setIsGroupDragging] = useState(false);
-
+  // const targets = useStore((state) => state.targets, shallow);
+  const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+  const setTargets = useStore((state) => state.setTargets, shallow);
+  const [snapContainer, setSnapContainer] = useState(null);
+  const [snapGridWidth, setSnapGridWidth] = useState(null);
   // useDndMoveable(moveableRef);
-  useDndMoveableGuidelines(moveableRef);
+  // useDndMoveableGuidelines(moveableRef);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -250,10 +257,6 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
       for (const element of controlBoxes) {
         element.classList.remove('moveable-control-box-d-block');
       }
-      moveableRef.current?.waitToChangeTarget().then(() => {
-        console.log('waitToChangeTarget');
-        moveableRef.current?.dragStart(e);
-      });
       e.props.target.classList.add('hovered');
       e.controlBox.classList.add('moveable-control-box-d-block');
     },
@@ -684,7 +687,8 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
           programmaticDrag: true,
         }}
         flushSync={flushSync}
-        target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
+        target={groupedTargets?.length > 1 ? groupedTargets : '.target, .virtual-moveable-target'}
+        // target={'.target, .virtual-moveable-target'}
         origin={false}
         individualGroupable={groupedTargets.length <= 1}
         draggable={!shouldFreeze && mode !== 'view'}
@@ -903,123 +907,184 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
         }}
         checkInput
         onDragStart={(e) => {
-          console.log('onDragStart', e);
+          // console.log('onDragStart', e);
           // This is to prevent parent component from being dragged and the stop the propagation of the event
           // if (getHoveredComponentForGrid() !== e.target.id) {
           //   return false;
           // }
-          newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
-          e?.moveable?.controlBox?.removeAttribute('data-off-screen');
-
-          const box = boxList.find((box) => box.id === e.target.id);
-          // Prevent drag if shift is pressed for SUBCONTAINER_WIDGETS
-          if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
-            return false;
-          }
-          //  This flag indicates whether the drag event originated on a child element within a component
-          //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
-          //  When true, it prevents the parent component from being dragged, allowing the inner elements
-          //  to handle their own interactions like column resizing or card dragging
-          let isDragOnInnerElement = false;
-
-          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works.
-            Also user dont need to drag an calender from using popup */
-          // if (hasParentWithClass(e.inputEvent?.target, 'react-datepicker-popper')) {
-          //   return false;
-          // }
-
-          /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
-          if (box?.component?.component === 'Table') {
-            const tableElem = e.target.querySelector('.jet-data-table');
-            isDragOnInnerElement = tableElem.contains(e.inputEvent.target);
-          }
-          if (box?.component?.component === 'Calendar') {
-            const calenderElem = e.target.querySelector('.rbc-month-view');
-            isDragOnInnerElement = calenderElem.contains(e.inputEvent.target);
-          }
-
-          if (box?.component?.component === 'Kanban') {
-            const handleContainers = e.target.querySelectorAll('.handle-container');
-            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
-              container.contains(e.inputEvent.target)
-            );
-          }
-          if (['RangeSlider', 'BoundedBox'].includes(box?.component?.component) || isDragOnInnerElement) {
-            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-            const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
-            if (!isHandle) {
+          if (e.target.id === 'virtual-moveable-target') {
+            // console.log('virtual-moveable-target', e);
+            const componentType = e.target.getAttribute('component-type');
+            // setTargets(componentType);
+            // Create a duplicate of the dragged element
+            const originalElement = e.target;
+            const duplicateElement = originalElement.cloneNode(true);
+            duplicateElement.id = 'virtual-moveable-target';
+            duplicateElement.setAttribute('component-type', componentType);
+            originalElement.parentNode.appendChild(duplicateElement);
+            e.target.style.width = `${e.target.getAttribute('default-width') * gridWidth}px`;
+            console.log(e.target.getAttribute('default-width'));
+            e.target.style.height = `${e.target.getAttribute('default-height')}px`;
+            e.target.style.backgroundColor = 'red' || '#D9E2FC';
+            e.target.style.zIndex = 100000000000000000;
+            // e.target.style.opacity = '0.7';
+            e.target.style.outline = '1px solid #4af';
+          } else {
+            newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
+            e?.moveable?.controlBox?.removeAttribute('data-off-screen');
+            console.log(e.target.closest('.real-canvas'));
+            const box = boxList.find((box) => box.id === e.target.id);
+            // Prevent drag if shift is pressed for SUBCONTAINER_WIDGETS
+            if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
               return false;
             }
+            //  This flag indicates whether the drag event originated on a child element within a component
+            //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
+            //  When true, it prevents the parent component from being dragged, allowing the inner elements
+            //  to handle their own interactions like column resizing or card dragging
+            let isDragOnInnerElement = false;
+
+            /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works.
+            Also user dont need to drag an calender from using popup */
+            // if (hasParentWithClass(e.inputEvent?.target, 'react-datepicker-popper')) {
+            //   return false;
+            // }
+
+            /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
+            if (box?.component?.component === 'Table') {
+              const tableElem = e.target.querySelector('.jet-data-table');
+              isDragOnInnerElement = tableElem.contains(e.inputEvent.target);
+            }
+            if (box?.component?.component === 'Calendar') {
+              const calenderElem = e.target.querySelector('.rbc-month-view');
+              isDragOnInnerElement = calenderElem.contains(e.inputEvent.target);
+            }
+
+            if (box?.component?.component === 'Kanban') {
+              const handleContainers = e.target.querySelectorAll('.handle-container');
+              isDragOnInnerElement = Array.from(handleContainers).some((container) =>
+                container.contains(e.inputEvent.target)
+              );
+            }
+            if (['RangeSlider', 'BoundedBox'].includes(box?.component?.component) || isDragOnInnerElement) {
+              const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+              const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
+              if (!isHandle) {
+                return false;
+              }
+            }
+            handleActivateNonDraggingComponents();
           }
-          handleActivateNonDraggingComponents();
         }}
         onDragEnd={(e) => {
+          // debugger;
           handleDeactivateTargets();
-          try {
-            if (isDraggingRef.current) {
-              useStore.getState().setDraggingComponentId(null);
-              isDraggingRef.current = false;
+          if (e.target.id === 'virtual-moveable-target') {
+            // console.log('virtual-moveable-target', e, e.translate);
+            console.log('onDragEnd', e);
+            const newComponent = addNewWidgetToTheEditor(
+              e.target.getAttribute('component-type'),
+              e.lastEvent,
+              currentLayout,
+              undefined,
+              'canvas'
+            );
+            addComponentToCurrentPage([newComponent]);
+            // setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+            e.target.remove();
+          } else {
+            try {
+              if (isDraggingRef.current) {
+                useStore.getState().setDraggingComponentId(null);
+                isDraggingRef.current = false;
+              }
+              prevDragParentId.current = null;
+              newDragParentId.current = null;
+              setDragParentId(null);
+
+              if (!e.lastEvent) return;
+
+              // Build the drag context from the event
+              const dragContext = dragContextBuilder({ event: e, widgets: boxList });
+              const { target, source, dragged } = dragContext;
+
+              const targetSlotId = target?.slotId;
+              const targetGridWidth = useGridStore.getState().subContainerWidths[targetSlotId] || gridWidth;
+
+              // const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[source.widgetType] || [];
+              // const draggedWidgetType = dragged.widgetType;
+              const isParentChangeAllowed = dragContext.isDroppable;
+
+              // Compute new position
+              // console.log('target', target);
+              let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
+              console.log('left, top', left, top);
+              const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
+
+              if (isParentChangeAllowed && !isModalToCanvas) {
+                const parent = target.slotId === 'real-canvas' ? null : target.slotId;
+                // Special case for Modal; If source widget is modal, prevent drops to canvas
+                handleDragEnd([{ id: e.target.id, x: left, y: top, parent }]);
+              } else {
+                const sourcegridWidth = useGridStore.getState().subContainerWidths[source.slotId] || gridWidth;
+
+                left = dragged.left * sourcegridWidth;
+                top = dragged.top;
+
+                !isModalToCanvas ??
+                  toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+              }
+
+              // Apply transform for smooth transition
+              e.target.style.transform = `translate(${left}px, ${top}px)`;
+
+              // Select the dragged component after drop
+              setTimeout(() => setSelectedComponents([dragged.id]));
+            } catch (error) {
+              console.error('Error in onDragEnd:', error);
             }
-            prevDragParentId.current = null;
-            newDragParentId.current = null;
-            setDragParentId(null);
-
-            if (!e.lastEvent) return;
-
-            // Build the drag context from the event
-            const dragContext = dragContextBuilder({ event: e, widgets: boxList });
-            const { target, source, dragged } = dragContext;
-
-            const targetSlotId = target?.slotId;
-            const targetGridWidth = useGridStore.getState().subContainerWidths[targetSlotId] || gridWidth;
-
-            // const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[source.widgetType] || [];
-            // const draggedWidgetType = dragged.widgetType;
-            const isParentChangeAllowed = dragContext.isDroppable;
-
-            // Compute new position
-            let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
-
-            const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
-
-            if (isParentChangeAllowed && !isModalToCanvas) {
-              const parent = target.slotId === 'real-canvas' ? null : target.slotId;
-              // Special case for Modal; If source widget is modal, prevent drops to canvas
-              handleDragEnd([{ id: e.target.id, x: left, y: top, parent }]);
-            } else {
-              const sourcegridWidth = useGridStore.getState().subContainerWidths[source.slotId] || gridWidth;
-
-              left = dragged.left * sourcegridWidth;
-              top = dragged.top;
-
-              !isModalToCanvas ??
-                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
-            }
-
-            // Apply transform for smooth transition
-            e.target.style.transform = `translate(${left}px, ${top}px)`;
-
-            // Select the dragged component after drop
-            setTimeout(() => setSelectedComponents([dragged.id]));
-          } catch (error) {
-            console.error('Error in onDragEnd:', error);
+            setCanvasBounds({ ...CANVAS_BOUNDS });
+            hideGridLines();
+            toggleCanvasUpdater();
           }
-          setCanvasBounds({ ...CANVAS_BOUNDS });
-          hideGridLines();
-          toggleCanvasUpdater();
         }}
         onDrag={(e) => {
-          console.log('onDrag', e);
+          const _gridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
+
+          if (e.target.id === 'virtual-moveable-target') {
+            showGridLines();
+            // let left = Math.round(e.translate?.[0] / _gridWidth) * _gridWidth + 18;
+            // let top = e.translate?.[1];
+            let left = e.translate?.[0];
+            let top = e.translate?.[1] - document.querySelector('.components-container')?.scrollTop || 0;
+            // console.log(document.querySelector('.components-container')?.scrollTop);
+            // let left = e.clientX;
+            // let top = e.clientY;
+
+            // let left = Math.round((e.translate?.[0] + 100) / _gridWidth) * _gridWidth;
+            // let top = Math.round(e.translate?.[1] / GRID_HEIGHT) * GRID_HEIGHT;
+            // console.log('left', left, top, _gridWidth, e);
+            e.target.style.transform = `translate(${left}px, ${top}px)`;
+            return;
+          }
+          // console.log('onDrag');
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
             useStore.getState().setDraggingComponentId(e.target.id);
             showGridLines();
             isDraggingRef.current = true;
           }
+
+          // if (e.target.id === 'virtual-moveable-target') {
+          //   e.target.style.width = '100px' || `${e.target.getAttribute('default-width')}px` * _gridWidth;
+          //   e.target.style.height = '100px' || `${e.target.getAttribute('default-height')}px`;
+          //   // e.target.style.backgroundColor = 'red';
+          //   console.log('virtual-moveable-target', e.target.style);
+          //   return;
+          // }
           const currentWidget = boxList.find((box) => box.id === e.target.id);
           const currentParentId =
             currentWidget?.component?.parent === null ? 'canvas' : currentWidget?.component?.parent;
-          const _gridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
           const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;
 
           // Snap to grid
@@ -1059,7 +1124,7 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
             };
             setCanvasBounds({ ...relativePosition });
           }
-
+          console.log(e);
           e.target.style.transform = `translate(${left}px, ${top}px)`;
           e.target.setAttribute(
             'widget-pos2',
@@ -1069,38 +1134,57 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
           );
 
           // This block is to show grid lines on the canvas when the dragged element is over a new canvas
-          // if (document.elementFromPoint(e.clientX, e.clientY)) {
-          //   const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-          //   const draggedOverElements = targetElems.filter(
-          //     (ele) =>
-          //       (ele.id !== e.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
-          //   );
-          //   const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
-          //   const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
+          if (document.elementFromPoint(e.clientX, e.clientY)) {
+            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+            const draggedOverElements = targetElems.filter(
+              (ele) =>
+                (ele.id !== e.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
+            );
+            const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
+            const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
 
-          //   // Determine potential new parent
-          //   let newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+            // Determine potential new parent
+            let newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
 
-          //   if (newParentId === e.target.id) {
-          //     newParentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
-          //   } else if (parentComponent?.component?.component === 'Modal') {
-          //     // Never update parentId for Modal
-          //     newParentId = parentComponent?.id;
-          //   }
+            if (newParentId === e.target.id) {
+              newParentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
+            } else if (parentComponent?.component?.component === 'Modal') {
+              // Never update parentId for Modal
+              newParentId = parentComponent?.id;
+            }
 
-          //   if (newParentId !== prevDragParentId.current) {
-          //     setDragParentId(newParentId === 'canvas' ? null : newParentId);
-          //     newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
-          //     prevDragParentId.current = newParentId;
-          //     handleActivateTargets(newParentId);
-          //   }
-          // }
+            if (newParentId !== prevDragParentId.current) {
+              setDragParentId(newParentId === 'canvas' ? null : newParentId);
+              newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
+              const snapContainer = document.getElementById(newParentId || 'real-canvas');
+              const _gridWidth = useGridStore.getState().subContainerWidths?.[newParentId] || gridWidth;
+              setSnapContainer(snapContainer);
+              setSnapGridWidth(_gridWidth);
+              prevDragParentId.current = newParentId;
+              handleActivateTargets(newParentId);
+            }
+          }
           // Postion ghost element exactly as same at dragged element
           if (document.getElementById(`moveable-drag-ghost`)) {
             document.getElementById(`moveable-drag-ghost`).style.transform = `translate(${left}px, ${top}px)`;
             document.getElementById(`moveable-drag-ghost`).style.width = `${e.target.clientWidth}px`;
             document.getElementById(`moveable-drag-ghost`).style.height = `${e.target.clientHeight}px`;
           }
+
+          // e.target.style.backgroundColor = 'red';
+          // console.log('virtual-moveable-target', document.getElementById(`virtual-moveable-target`));
+          // const virtualMoveableTarget = document.getElementById(`virtual-moveable-target`);
+          // if (
+          //   virtualMoveableTarget &&
+          //   virtualMoveableTarget.getAttribute('component-type') === e.target.getAttribute('component-type')
+          // ) {
+          //   virtualMoveableTarget.style.transform = `translate(${left}px, ${top}px)`;
+          //   virtualMoveableTarget.style.width =
+          //     `${1000}px` || `${virtualMoveableTarget.getAttribute('default-width')}px`;
+          //   virtualMoveableTarget.style.height =
+          //     `${1000}px` || `${virtualMoveableTarget.getAttribute('default-height')}px`;
+          //   // virtualMoveableTarget.style.backgroundColor = 'red';
+          // }
         }}
         // onDrag={helper.onDrag}
         onDragGroup={(ev) => {
@@ -1148,11 +1232,12 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
             }
           }
         }}
+        // snapGridWidth={gridWidth}
         //snap settgins
         snappable={true}
         snapGap={false}
         isDisplaySnapDigit={false}
-        snapThreshold={GRID_HEIGHT}
+        // snapThreshold={GRID_HEIGHT}
         bounds={canvasBounds}
         // Guidelines configuration
         elementGuidelines={[...elementGuidelines, '.virtual-moveable-target']}
@@ -1172,11 +1257,13 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
           center: false,
           middle: false,
         }}
-        verticalGuidelines={[100, 300]}
-        horizontalGuidelines={[100, 300]}
+        snapContainer={snapContainer}
+        snapGridWidth={snapGridWidth}
+        // verticalGuidelines={[100, 300]}
+        // horizontalGuidelines={[100, 300]}
         isDisplayInnerSnapDigit={true}
         onSnap={(e) => {
-          console.log('onSnap', e);
+          // console.log('onSnap', e);
           const components = e.elements;
           if (isArray(componentsSnappedTo.current)) {
             for (const component of componentsSnappedTo.current) {
@@ -1188,8 +1275,10 @@ export default function Grid({ gridWidth, currentLayout, moveableRef }) {
             component.element.classList.add('active-target');
           }
         }}
-        snapGridAll={true}
+        scrollable={true}
+        // snapGridAll={true}
       />
+      <RightSidebar />
     </>
   );
 }

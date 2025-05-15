@@ -75,4 +75,5 @@ export const createGridSlice = (set, get) => ({
     set({ lastCanvasClickPosition: position });
   },
   setMoveableRef: (ref) => set(() => ({ moveableRef: ref })),
+  setTargets: (targets) => set(() => ({ targets })),
 });

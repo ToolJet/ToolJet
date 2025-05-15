@@ -26,22 +26,37 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const offsetFromTopOfWindow = canvasBoundingRect?.top;
-  const offsetFromLeftOfWindow = canvasBoundingRect?.left;
-  const currentOffset = eventMonitorObject?.getSourceClientOffset();
-  const subContainerWidth = canvasBoundingRect?.width;
+  // const offsetFromTopOfWindow = canvasBoundingRect?.top;
+  // const offsetFromLeftOfWindow = canvasBoundingRect?.left;
+  // const currentOffset = eventMonitorObject?.getSourceClientOffset();
+  // const subContainerWidth = canvasBoundingRect?.width;
 
-  let left = Math.round(currentOffset?.x - offsetFromLeftOfWindow);
-  let top = Math.round(currentOffset?.y - offsetFromTopOfWindow);
+  // let left = Math.round(currentOffset?.x - offsetFromLeftOfWindow) || 0;
+  // let top = Math.round(currentOffset?.y - offsetFromTopOfWindow) || 0;
 
-  [left, top] = snapToGrid(subContainerWidth, left, top);
+  // [left, top] = snapToGrid(subContainerWidth, left, top);
 
-  const gridWidth = subContainerWidth / NO_OF_GRIDS;
-  left = Math.round(left / gridWidth);
-  // Adjust widget width based on the dropping canvas width
+  // const gridWidth = subContainerWidth / NO_OF_GRIDS;
+  // left = Math.round(left / gridWidth);
+  // // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  // const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth) || 5;
+  const canvasWidth = document.getElementById('real-canvas')?.offsetWidth;
+  const left = canvasWidth - (eventMonitorObject?.right - 300 + eventMonitorObject?.width);
+  const top = eventMonitorObject?.top;
+  // console.log('left', eventMonitorObject);
 
+  let _left = Math.round(left / mainCanvasWidth);
+
+  // Adjust position and width if exceeding grid bounds
+  // if (_width + _left > NO_OF_GRIDS) {
+  //   _left = Math.max(0, NO_OF_GRIDS - _width);
+  //   _width = Math.min(_width, NO_OF_GRIDS);
+  // }
+
+  // Round y position
+  let _top = Math.max(0, Math.round(top / 10) * 10);
+  // console.log('top', _top, _left);
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;
@@ -57,21 +72,21 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
     },
     layouts: {
       [currentLayout]: {
-        top: top,
-        left: left,
-        width,
+        top: _top || 0,
+        left: _left || 0,
+        width: defaultWidth,
         height: defaultHeight,
       },
       [nonActiveLayout]: {
-        top: top,
-        left: left,
-        width,
+        top: _top || 0,
+        left: _left || 0,
+        width: defaultWidth,
         height: defaultHeight,
       },
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
   };
-
+  console.log('newComponent', newComponent);
   return newComponent;
 };
 

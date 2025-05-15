@@ -611,7 +611,7 @@ button {
   }
 
   .editor-sidebar {
-    position: fixed;
+    // position: fixed;
     right: 0;
     overflow: hidden;
     width: 300px;
@@ -620,7 +620,7 @@ button {
     border-left: 1px solid var(--slate5);
     background-color: var(--base);
     background-clip: border-box;
-    height: 100vh;
+    // height: 100vh;
 
     >div {
       background-color: var(--base);
@@ -771,7 +771,7 @@ button {
       height: 100%;
       top: 48px;
       position: fixed;
-      right: 300px;
+      right:0px;
       left: 48px;
       overflow-y: scroll;
       overflow-x: hidden;
