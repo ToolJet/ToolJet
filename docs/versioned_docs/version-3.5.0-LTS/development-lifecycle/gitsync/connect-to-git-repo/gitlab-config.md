@@ -58,7 +58,7 @@ The table below describes each configuration values:
 #### Self-hosted GitLab (Optional)
 | **Setting**                    | **Description**                                                                                                                                   |
 |-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| **GitLub enterprise URL**             |    The domain used to access your self-hosted GitLab instance. (e.g `https://gitlab.corp.com`) If you use GitLab Cloud, you can leave this blank.                                                                                        |
+| **GitLab enterprise URL**             |    The domain used to access your self-hosted GitLab instance. (e.g `https://gitlab.corp.com`) If you use GitLab Cloud, you can leave this blank.                                                                                        |
 
 #### Project Access Configuration
 | **Setting**                    | **Description**                                                                                                                                   |
