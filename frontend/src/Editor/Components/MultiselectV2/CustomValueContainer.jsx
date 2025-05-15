@@ -6,7 +6,11 @@ import './multiselectV2.scss';
 
 const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
-  const values = Array.isArray(selectProps?.value) && selectProps?.value?.map((option) => option.label);
+  const values =
+    Array.isArray(selectProps?.value) &&
+    selectProps?.value
+      ?.filter((option) => option.value !== 'multiselect-custom-menulist-select-all') //Remove the Select all option if selected
+      ?.map((option) => option.label);
   const isAllOptionsSelected = selectProps?.value.length === selectProps.options.length;
   const valueContainerWidth = selectProps?.containerRef?.current?.offsetWidth;
   // eslint-disable-next-line import/namespace

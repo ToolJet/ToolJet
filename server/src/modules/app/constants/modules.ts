@@ -8,7 +8,7 @@ export enum MODULES {
   USER = 'USER',
   PROFILE = 'PROFILE',
   PLUGINS = 'Plugins',
-  GLOBAL_DATA_SOURCE = 'GlobalDataSource',
+  GLOBAL_DATA_SOURCE = 'DATA_SOURCE',
   DATA_QUERY = 'DataQueries',
   THREAD = 'Thread',
   COMMENT = 'Comment',
@@ -37,4 +37,6 @@ export enum MODULES {
   TEMPLATES = 'Templates',
   AI = 'ai',
   APP_PERMISSIONS = 'AppPermissions',
+  AUDIT_LOGS = 'auditLogs',
+  EXTERNAL_APIS = 'externalApis',
 }

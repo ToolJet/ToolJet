@@ -19,9 +19,10 @@ export const formConfig = {
       accessorKey: 'text',
       styles: ['fontWeight', 'textSize', 'textColor'],
       defaultValue: {
-        text: 'Form',
+        text: 'Form title',
         textSize: 16,
         textColor: '#000',
+        fontWeight: 'bold',
       },
     },
     {
@@ -29,8 +30,9 @@ export const formConfig = {
       slotName: 'footer',
       layout: {
         top: 12,
-        left: 32,
+        left: 29,
         height: 36,
+        width: 13,
       },
       properties: ['text'],
       defaultValue: {
@@ -42,9 +44,9 @@ export const formConfig = {
       componentName: 'TextInput',
       layout: {
         top: 20,
-        left: 5,
+        left: 1,
         height: 40,
-        width: 31,
+        width: 41,
       },
       properties: ['placeholder', 'label'],
       styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
@@ -62,9 +64,9 @@ export const formConfig = {
       componentName: 'NumberInput',
       layout: {
         top: 80,
-        left: 5,
+        left: 1,
         height: 40,
-        width: 31,
+        width: 41,
       },
       properties: ['placeholder', 'label'],
       styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
@@ -74,26 +76,6 @@ export const formConfig = {
         width: '{{60}}',
         direction: 'left',
         alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-      },
-    },
-    {
-      componentName: 'TextInput',
-      layout: {
-        top: 140,
-        left: 5,
-        height: 40,
-        width: 31,
-      },
-      properties: ['placeholder', 'label'],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
-      defaultValue: {
-        placeholder: 'Tomy',
-        label: 'Pet name',
-        width: '{{60}}',
-        alignment: 'side',
-        direction: 'left',
         auto: '{{false}}',
         padding: 'default',
       },
@@ -289,6 +271,8 @@ export const formConfig = {
       backgroundColor: { value: '#fff' },
       borderRadius: { value: '0' },
       borderColor: { value: '#fff' },
+      headerBackgroundColor: { value: '#fff' },
+      footerBackgroundColor: { value: '#fff' },
     },
   },
 };

@@ -41,7 +41,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (isBuilder) {
       // Only builder can do scope change, Get call is there on app builder
       can(FEATURE_KEY.SCOPE_CHANGE, DataSource);
-      can(FEATURE_KEY.GET, DataSource);
       can(FEATURE_KEY.GET_FOR_APP, DataSource);
     }
 
@@ -88,27 +87,24 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (
-      resourcePermissions?.configurableDataSourceId?.length &&
-      dataSourceId &&
-      resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)
-    ) {
-      can(
-        [FEATURE_KEY.GET, FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION],
-        DataSource
-      );
+    if (resourcePermissions?.configurableDataSourceId?.length) {
+      can([FEATURE_KEY.GET], DataSource);
+
+      if (dataSourceId && resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)) {
+        can([FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
+      }
     }
 
     if (isAllViewable) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+      can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION], DataSource);
       return;
     }
-    if (
-      resourcePermissions.usableDataSourcesId?.length &&
-      dataSourceId &&
-      resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)
-    ) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+    if (resourcePermissions.usableDataSourcesId?.length) {
+      can([FEATURE_KEY.GET], DataSource);
+      if (dataSourceId && resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)) {
+        can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
+      }
+      return;
     }
   }
 }
