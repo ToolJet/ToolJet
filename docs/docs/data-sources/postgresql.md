@@ -51,22 +51,16 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 <div style={{paddingTop:'24px'}}>
 
-## Querying PostgreSQL
+## Querying in SQL Mode
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the **PostgreSQL** datasource added in previous step.
-3. Select the query mode from the dropdown and enter the query.
+2. Select the **PostgreSQL** datasource.
+3. Select the SQL query mode from the dropdown and enter the query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/newquery.png" alt="PG connection"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/postgresql/sql-v2.png" alt="PG connection"/>
 
-### SQL Mode
-
-To execute SQL queries, select the SQL mode from the dropdown and enter your query in the editor.
-
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/sql-v2.png" alt="PG connection"/>
-
-#### Parameterized Queries:
+### Parameterized Queries
 
 ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
 
@@ -86,13 +80,23 @@ SQL Parameters:
   Value: oliver // or {{ components.username.value }}
 ```
 
-#### Query Timeout
+### Query Timeout
 
 You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
-### GUI Mode
+</div>
 
-Choose the GUI mode from the dropdown and select the operation **Bulk update using primary key**. Provide the **Table** name and the **Primary key column** name. Then, in the editor, input the **records** as an array of objects.
+<div style={{paddingTop:'24px'}}>
+
+## Querying in GUI Mode
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **PostgreSQL** datasource.
+3. Select the GUI mode from the dropdown.
+4. Select the operation **Bulk update using primary key**.
+5. Provide the **Table** name and the **Primary key column** name.
+6. Then, in the editor, input the **records** as an array of objects.
+7. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 <img className="screenshot-full" src="/img/datasource-reference/postgresql/gui-v2.png" alt="PG connection"/>
 
