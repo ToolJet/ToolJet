@@ -12,24 +12,26 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') || 
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
         contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
         contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
+      fail-fast: false
       matrix:
-        edition: >-
-          ${{
-            (contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]')) ||
-            (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && fromJson('["ce", "ee"]')) ||
-            (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && !contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && fromJson('["ce"]')) ||
-            (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && !contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && fromJson('["ee"]')) ||
-            (contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]')) ||
-            fromJson('[]')
-          }}
+        edition:
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && 'ce' || '' }}
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress') && 'ee' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' || '' }}
+        exclude:
+          - edition: ''
 
     steps:
+      - name: Debug labels and matrix edition
+        run: |
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -60,6 +62,7 @@ jobs:
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
+        if: matrix.edition == 'ce'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -86,7 +89,7 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
@@ -113,28 +116,30 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-          echo "REDIS_HOST=${{ matrix.edition == 'ee' && 'redis' }}" >> .env
-          echo "REDIS_USER= ${{ matrix.edition == 'ee' && 'default' }}" >> .env
-          echo "REDIS_PASSWORD=${{ matrix.edition == 'ee' && '' }}" >> .env
-          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && 'tj-oidc-simulator' }}" >> .env
-          echo "SSO_OPENID_CLIENT_ID=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-          echo "SSO_OPENID_CLIENT_SECRET=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=${{ matrix.edition == 'ee' && 'http://34.66.166.236:8080/.well-known/openid-configuration' }}" >> .env
-          echo "LICENSE_KEY=${{ matrix.edition == 'ee' && secrets.RENDER_LICENSE_KEY }}" >> .env
+          
+          # Only add EE-specific env vars if edition is ee
+          if [ "${{ matrix.edition }}" = "ee" ]; then
+            echo "REDIS_HOST=redis" >> .env
+            echo "REDIS_USER=default" >> .env
+            echo "REDIS_PASSWORD=" >> .env
+            echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+            echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+            echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+            echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
+            echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          fi
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-      - name: Update docker-compose file for CE
+      - name: Update docker-compose file
         run: |
-          # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
-
-      - name: Update docker-compose file for EE
-        if: matrix.edition == 'ee'
-        run: |
-          # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          # Update docker-compose.yaml with the appropriate image based on edition
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          fi
 
       - name: Install Docker Compose
         run: |
@@ -147,15 +152,12 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
-      - name: Checking containers
-        run: docker ps -a
-
       - name: docker logs
         run: sudo docker logs Tooljet-app
 
       - name: Wait for the server to be ready
         run: |
-          timeout 1500 bash -c '
+          timeout 500 bash -c '
           until curl --silent --fail http://localhost:3000; do
             sleep 5
           done'
