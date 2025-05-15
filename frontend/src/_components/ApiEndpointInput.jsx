@@ -110,7 +110,7 @@ const ApiEndpointInput = (props) => {
     if (isEmpty(paths)) return [];
 
     const pathGroups = Object.keys(paths).reduce((acc, path) => {
-      const operations = Object.keys(paths[path]);
+      const operations = Object.keys(paths[path]).filter((op) => Object.keys(operationColorMapping).includes(op));
       const category = path.split('/')[2];
       operations.forEach((operation) => categorizeOperations(operation, path, acc, category));
       return acc;
