@@ -91,6 +91,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'VerticalDivider',
   'ModalV2',
   'Tabs',
+  'RangeSlider',
   'Link',
 ];
 
