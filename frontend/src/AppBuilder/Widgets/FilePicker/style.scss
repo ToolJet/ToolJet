@@ -11,6 +11,7 @@
   background: var(--surfaces-surface-01);
   border: 1px solid transparent;
   box-sizing: border-box;
+  color: var(--cc-primary-text);
 
   &:hover {
     background: var(--surfaces-surface-02);
@@ -40,14 +41,14 @@
 
     .file-name {
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--cc-primary-text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .file-meta {
-      color: var(--text-placeholder);
+      color: var(--cc-placeholder-text);
       font-size: 11px;
       white-space: nowrap;
     }
@@ -71,7 +72,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  border: 1px dashed var(--borders-default);
+  border: 1px dashed var(--cc-default-border);
   outline: none;
   border-radius: 6px;
   transition-property: border-color, background-color, box-shadow, color;
@@ -89,16 +90,16 @@
   }
   
   &:focus, &:active {
-    border-color: var(--primary-brand);
-    color: var(--text-primary);
+    border-color: var(--cc-primary-brand);
+    color: var(--cc-primary-text);
   }
 
   &.is-dragging {
-    border-color: var(--primary-accent-strong);
+    border-color: var(--cc-primary-brand);
   }
 
   &.is-accepting {
-    border-color: var(--primary-accent-strong);
+    border-color: var(--cc-primary-brand);
   }
 
   &.is-rejecting {
@@ -113,8 +114,8 @@
   }
 
   &.is-disabled {
-    border-color: var(--borders-disabled-on-white);
-    background-color: var(--surfaces-surface-02);
+    border-color: var(--cc-disabled-border);
+    background-color: var(--cc-surface2-surface);
     cursor: not-allowed;
     opacity: 0.6;
   }
@@ -141,6 +142,10 @@
   }
 }
 
+.file-picker-title {
+  color: var(--cc-primary-text);
+}
+
 // Validation Bar
 .validation-bar {
   display: flex;
@@ -153,6 +158,10 @@
   font-size: 12px;
   line-height: 20px;
   letter-spacing: 0;
+
+  .validation-info {
+    color: var(--cc-placeholder-text);
+  }
 
   .validation-separator {
     margin: 0 8px;

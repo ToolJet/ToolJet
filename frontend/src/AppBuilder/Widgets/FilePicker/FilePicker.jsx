@@ -62,7 +62,7 @@ const FilePicker = (props) => {
     () => ({
       display: isVisible ? 'flex' : 'none',
       borderRadius: `${borderRadius}px`,
-      backgroundColor: darkMode ? '#2b3541' : 'var(--surfaces-surface-01)',
+      backgroundColor: 'var(--cc-surface1-surface)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
       boxShadow: boxShadow,
       height: `${numericWidgetHeight}px`,
