@@ -91,13 +91,13 @@ jobs:
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
           echo "PG_DB=tooljet_development" >> .env
           echo "PG_USER=postgres" >> .env
-          echo "PG_HOST=localhost" >> .env
+          echo "PG_HOST=postgres" >> .env
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_HOST=localhost" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
