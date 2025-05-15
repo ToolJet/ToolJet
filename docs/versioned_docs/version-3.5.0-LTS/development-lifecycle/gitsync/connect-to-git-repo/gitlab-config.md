@@ -26,7 +26,7 @@ Role Required: **Admin**
     To get the project ID, navigate to your project's settings and look for the *Project ID* field under the General section. This value represents the unique identifier assigned by GitLab to your project. Save this value for later use.
 
 
-### 2. Generate a Personal Access Token
+### 3. Generate a Personal Access Token
 Follow these steps to generate a [personal access token](https://docs.gitlab.com/user/project/settings/project_access_tokens/#create-a-project-access-token):
 - Go to your Project Settings and click on *Access Tokens*
 - Enter name for your token.
