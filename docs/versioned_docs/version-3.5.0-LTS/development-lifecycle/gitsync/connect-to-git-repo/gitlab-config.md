@@ -13,7 +13,7 @@ title: GitLab Configuration
 </div>
 
 
-The GitLab configuration for git sync offers a flexible way to connect your ToolJet instance to a Git repository. This setup uses HTTPS instead of the traditional SSH-based method, eliminating the need to manage SSH keys and bypassing SSH port blocks. You can also select and switch repository branches directly within the ToolJet interface.
+The GitLab configuration for git sync offers a flexible way to connect your ToolJet workspace to a GitLab repository. This setup uses HTTPS instead of the traditional SSH-based method, eliminating the need to manage SSH keys and bypassing SSH port blocks. You can also select and switch repository branches directly within the ToolJet interface.
 
 
 Role Required: **Admin**
@@ -23,8 +23,9 @@ Role Required: **Admin**
 
 
 ### 2. Get the GitLab Project ID
-    To get the project ID, navigate to your project's settings and look for the *Project ID* field under the General section. This value represents the unique identifier assigned by GitLab to your project. Save this value for later use.
+On the project overview page, click Actions in the upper-right corner and then select Copy project ID. This value represents the unique identifier assigned by GitLab to your project. Save this value for later use.
 
+<img className="screenshot-full img-s" src="/img/gitsync/gitlab-config/projectid.png" alt="git sync" />
 
 ### 3. Generate a Personal Access Token
 Follow these steps to generate a [personal access token](https://docs.gitlab.com/user/project/settings/project_access_tokens/#create-a-project-access-token):
