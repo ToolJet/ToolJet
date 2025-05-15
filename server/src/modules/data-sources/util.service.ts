@@ -259,38 +259,53 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
     const parsedOptions = {};
+
+    if (dataSource?.options) {
+      for (const key in dataSource.options) {
+        if (dataSource.options[key]?.workspace_constant) {
+          parsedOptions[key] = {
+            workspace_constant: dataSource.options[key].workspace_constant,
+            credential_id: dataSource.options[key].credential_id,
+            encrypted: dataSource.options[key].encrypted,
+          };
+        }
+      }
+    }
+
     return await dbTransactionWrap(async (entityManager: EntityManager) => {
       for (const option of optionsWithOauth) {
         const key = option['key'];
         const credentialValue = option['value'];
 
         if (option['encrypted']) {
+          if (credentialValue && (credentialValue.includes('{{constants') || credentialValue.includes('{{secrets'))) {
+            if (!parsedOptions[key]) {
+              parsedOptions[key] = {};
+            }
+            parsedOptions[key].workspace_constant = credentialValue;
+          }
+
           const existingCredentialId =
             dataSource?.options && dataSource.options[key] && dataSource.options[key]['credential_id'];
 
-          if (credentialValue && (credentialValue.includes('{{constants') || credentialValue.includes('{{secrets'))) {
-            parsedOptions[key] = {
-              workspace_constant: credentialValue,
-            };
-          }
-
           if (existingCredentialId) {
-            (credentialValue || credentialValue === '') &&
-              (await this.credentialService.update(existingCredentialId, credentialValue || ''));
+            if (credentialValue !== undefined) {
+              await this.credentialService.update(existingCredentialId, credentialValue || '');
+            }
 
-            parsedOptions[key] = {
-              ...parsedOptions[key],
-              credential_id: existingCredentialId,
-              encrypted: option['encrypted'],
-            };
+            if (!parsedOptions[key]) {
+              parsedOptions[key] = {};
+            }
+            parsedOptions[key].credential_id = existingCredentialId;
+            parsedOptions[key].encrypted = option['encrypted'];
           } else {
             const credential = await this.credentialService.create(credentialValue || '', entityManager);
 
-            parsedOptions[key] = {
-              ...parsedOptions[key],
-              credential_id: credential.id,
-              encrypted: option['encrypted'],
-            };
+            if (!parsedOptions[key]) {
+              parsedOptions[key] = {};
+            }
+            parsedOptions[key].credential_id = credential.id;
+            parsedOptions[key].encrypted = option['encrypted'];
           }
         } else {
           parsedOptions[key] = {
