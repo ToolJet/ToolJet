@@ -69,6 +69,7 @@ export const Container = React.memo(
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+    const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow);
 
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
@@ -82,6 +83,7 @@ export const Container = React.memo(
         item.canvasWidth = getContainerCanvasWidth();
       },
       drop: async ({ componentType, component }, monitor) => {
+        setShowModuleBorder(false); // Hide the module border when dropping
         if (appType === 'module' && componentType !== 'ModuleContainer') return;
         const didDrop = monitor.didDrop();
         if (didDrop) return;

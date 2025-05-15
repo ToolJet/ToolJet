@@ -5,9 +5,13 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { snapToGrid } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const DragLayer = ({ index, component, isModuleTab = false }) => {
-  // const currentLayout = useStore((state) => state.currentLayout, shallow);
+  const { isModuleEditor } = useModuleContext();
+  const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow);
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
@@ -20,6 +24,14 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
+
+  useEffect(() => {
+    if (isDragging && !isModuleEditor) {
+      setShowModuleBorder(true);
+    } else {
+      setShowModuleBorder(false);
+    }
+  }, [isDragging, setShowModuleBorder, isModuleEditor]);
 
   // const size = isModuleTab
   //   ? component.module_container.layouts[currentLayout]
