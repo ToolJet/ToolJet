@@ -6,52 +6,47 @@ export const tabsConfig = {
     width: 30,
     height: 300,
   },
-  defaultChildren: [
-    {
-      componentName: 'Image',
-      layout: {
-        top: 60,
-        left: 17,
-        height: 100,
-        width: 7,
-      },
-      tab: 0,
-      properties: ['source'],
-      defaultValue: {
-        source: 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg',
-      },
-    },
-    {
-      componentName: 'Text',
-      layout: {
-        top: 100,
-        left: 5,
-        height: 50,
-        width: 34,
-      },
-      tab: 1,
-      properties: ['text'],
-      defaultValue: {
-        text: 'Open-source low-code framework to build & deploy internal tools within minutes.',
-      },
-    },
-    {
-      componentName: 'Table',
-      layout: {
-        top: 0,
-        left: 1,
-        width: 41,
-        height: 250,
-      },
-      tab: 2,
-    },
-  ],
   component: 'Tabs',
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    useDynamicOptions: {
+      type: 'toggle',
+      displayName: 'Dynamic options',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     tabs: {
       type: 'code',
       displayName: 'Tabs',
@@ -89,6 +84,7 @@ export const tabsConfig = {
     hideTabs: {
       type: 'toggle',
       displayName: 'Hide tabs',
+      section: 'additionalActions',
       validation: {
         schema: {
           type: 'boolean',
@@ -99,6 +95,7 @@ export const tabsConfig = {
     renderOnlyActiveTab: {
       type: 'toggle',
       displayName: 'Render only active tab',
+      section: 'additionalActions',
       validation: {
         schema: {
           type: 'boolean',
@@ -115,37 +112,97 @@ export const tabsConfig = {
       },
       section: 'additionalActions',
     },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
   styles: {
-    highlightColor: {
-      type: 'colorSwatches',
-      displayName: 'Highlight color',
+    headerBackground: {
+      type: 'color',
+      displayName: 'Header background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: '#375FCF',
       },
+      accordian: 'Tabs',
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
+    divider: {
+      type: 'color',
+      displayName: 'Divider',
       validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
       },
+      accordian: 'Tabs',
     },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
+    unselectedText: {
+      type: 'color',
+      displayName: 'Unselected text',
       validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
       },
+      accordian: 'Tabs',
     },
+    selectedText: {
+      type: 'color',
+      displayName: 'Selected text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Tabs',
+    },
+    hoverBackground: {
+      type: 'color',
+      displayName: 'Hover Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#1B1F24',
+      },
+      accordian: 'Tabs',
+    },
+    unselectedIcon: {
+      type: 'color',
+      displayName: 'Unselected Icon',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    selectedIcon: {
+      type: 'color',
+      displayName: 'Selected Icon',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    accent: {
+      type: 'color',
+      displayName: 'Accent',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    // highlightColor: {
+    //   type: 'color',
+    //   displayName: 'Highlight color',
+    //   validation: {
+    //     schema: { type: 'string' },
+    //     defaultValue: '#375FCF',
+    //   },
+    //   accordian: 'Tabs',
+    // },
     tabWidth: {
       type: 'select',
       displayName: 'Tab width',
@@ -153,6 +210,54 @@ export const tabsConfig = {
         { name: 'Auto', value: 'auto' },
         { name: 'Equally split', value: 'split' },
       ],
+      accordian: 'Tabs',
+    },
+    transition: {
+      type: 'select',
+      displayName: 'Transition',
+      options: [
+        { name: 'Slide', value: 'slide' },
+        { name: 'None', value: 'none' },
+      ],
+      accordian: 'Tabs',
+    },
+    border: {
+      type: 'color',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        defaultValue: false,
+      },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Container',
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: { schema: { type: 'string' } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Container',
     },
   },
   actions: [
@@ -166,8 +271,85 @@ export const tabsConfig = {
         },
       ],
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setTabDisable',
+      displayName: 'Set Tab disable',
+      params: [
+        {
+          handle: 'tabId',
+          displayName: 'Tab',
+          type: 'select',
+          isDynamicOpiton: true,
+          optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+        {
+          handle: 'value',
+          type: 'toggle',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+        },
+      ],
+    },
+    {
+      handle: 'setTabLoading',
+      displayName: 'Set Tab Loading',
+      params: [
+        {
+          handle: 'tabId',
+          displayName: 'Tab',
+          type: 'select',
+          isDynamicOpiton: true,
+          optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+        {
+          handle: 'value',
+          type: 'toggle',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+        },
+      ],
+    },
+    {
+      handle: 'setTabVisibility',
+      displayName: 'Set Tab visibility',
+      params: [
+        {
+          handle: 'tabId',
+          displayName: 'Tab',
+          type: 'select',
+          isDynamicOpiton: true,
+          optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+        {
+          handle: 'value',
+          type: 'toggle',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+        },
+      ],
+    },
   ],
-  exposedVariables: { currentTab: '' },
+  exposedVariables: {
+    currentTab: '',
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -175,20 +357,67 @@ export const tabsConfig = {
     },
     properties: {
       dynamicHeight: { value: '{{false}}' },
+      useDynamicOptions: { value: '{{false}}' },
       tabs: {
         value:
           "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
       },
+      tabItems: {
+        value: [
+          {
+            id: 't0',
+            title: 'Tab 1',
+            icon: { value: 'IconHome2' },
+            iconVisibility: { value: false },
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: 't1',
+            title: 'Tab 2',
+            icon: { value: 'IconHome2' },
+            iconVisibility: { value: false },
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: 't2',
+            title: 'Tab 3',
+            icon: { value: 'IconHome2' },
+            iconVisibility: { value: false },
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+        ],
+      },
       defaultTab: { value: '0' },
       hideTabs: { value: false },
       renderOnlyActiveTab: { value: false },
+      loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
-      highlightColor: { value: 'var(--primary-brand)' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
+      headerBackground: { value: '#FFFFFF' },
+      divider: { value: '#CCD1D5' },
+      unselectedText: { value: '#6A727C' },
+      selectedText: { value: '#1B1F24' },
+      highlightColor: { value: '#375FCF' },
+      hoverBackground: { value: '#1B1F24' },
+      unselectedIcon: { value: '#CCD1D5' },
+      selectedIcon: { value: '#CCD1D5' },
+      accent: { value: '#4368E3' },
       tabWidth: { value: 'auto' },
+      transition: { value: 'slide' },
+      borderRadius: { value: '{{6}}' },
+      border: { value: '#CCD1D5' },
+      boxShadow: { value: '0px 0px 0px 0px #121212' },
+      padding: { value: 'default' },
     },
   },
 };

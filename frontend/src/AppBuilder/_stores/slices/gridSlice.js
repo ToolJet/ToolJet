@@ -181,7 +181,7 @@ export const createGridSlice = (set, get) => ({
             extraHeight += footerHeight;
           }
         } else if (componentType === 'Tabs') {
-          extraHeight = 50;
+          extraHeight = 20;
         }
         maxHeight = currentMax + 50 + extraHeight;
       }
