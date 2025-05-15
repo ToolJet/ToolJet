@@ -52,7 +52,7 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
 
 ### Async Workflow Query Execution
 
-By default, triggering a workflow via the `/trigger` endpoint waits until the entire execution is complete, which can lead to timeouts if the workflow takes too long.
+By default, when a workflow is triggered via the `/trigger` endpoint, the request waits until the entire execution is complete — which can lead to timeouts if the workflow takes too long.
 
 To avoid this, you can use the `/trigger-async` endpoint. It starts the workflow in the background and immediately responds with an `execution_id` and `timestamp`. You can then track the execution separately.
 
@@ -69,7 +69,7 @@ Once the execution starts, the webhook response should be in the following forma
 }
 ```
 
-To track execution:
+You can track the workflow execution in two ways: by streaming live updates or by polling the execution status at regular intervals.
 - Stream live updates:
   ```
   http://{TOOLJET_HOST}/api/v2/webhooks/workflows/:workflow_id/execution/:execution_id/stream
