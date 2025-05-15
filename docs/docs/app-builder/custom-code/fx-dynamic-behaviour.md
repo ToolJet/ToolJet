@@ -3,17 +3,18 @@ title: Fx for dynamic behaviour
 id: fx-dynamic-behaviour
 ---
 
-In ToolJet, you can customize your applications using code. This guide will walk you through how to use dynamic expressions to control component properties and create more interactive, responsive interfaces.
+In ToolJet, you can make your applications more interactive and responsive by writing logic directly into component properties using the built-in fx editor. This allows components to react automatically to user input and changes in data.
 
+For instance, you might want to disable a submit button until all required form fields are filled, or change the color of an input field based on whether the entered value is valid. You can define the behavior using JavaScript expressions in the fx editor.
 
-A component behavior can change depending on user input or data state. For example, You might want to disable a submit button until all required fields in a form are filled out, or change the color of a field based on whether the value entered is valid. Instead of manually updating each component’s properties, you can use `fx` expressions to define this dynamic logic directly, right where it’s needed.
+This makes it easy to build interfaces that feel dynamic and intuitive, with components that respond in real time to user actions and data updates.
 
-## How Fx Works?
-Whenever you see the fx icon next to a property in the component settings, it means you can switch to expression mode. Click the icon to write custom logic using JavaScript inside `{{ }}`. You can reference query results, component states, and app-level variables directly within these expressions. ToolJet supports full JavaScript syntax here, including conditional logic, string interpolation, array methods like map, filter, and reduce, and more.
+## How fx Works?
+Whenever you see the fx icon next to a property in the component settings, it means you can switch to expression mode. Clicking the icon opens an input GUI where you can write custom logic using JavaScript inside `{{ }}`. You can reference query results, component states, and app-level variables directly within these expressions. ToolJet supports full JavaScript syntax here, including conditional logic, string interpolation, array methods like map, filter, and reduce, and more.
 
 Let’s say you’re building a form that takes user input. You want the Submit button to be enabled only if all form validations pass.
 
-With ToolJet’s FX support, you can achieve this in the Disabled property of the button component like so:
+With ToolJet’s fx support, you can achieve this in the Disabled property of the button component like so:
 
 <img className="screenshot-full img-m" src="/img/app-builder/custom-code/button-disable.png" alt=" button disable "/>
 
@@ -39,4 +40,4 @@ Example: In an app where you are using forms, you can enable the “Submit” bu
 Example: In an employee directory app, you can display the “Add Employee” button only if the user has an admin role.
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/visibility.png" alt=" button disable "/>
 
-Using FX expressions it is easy to add dynamic behavior to your applications without writing any boilerplate code. Whether it’s showing or hiding components, validating forms, applying styles, or managing loading states with fx you can build more responsive and interactive interfaces.
+Using fx expressions it is easy to add dynamic behavior to your applications without writing any boilerplate code. Whether it’s showing or hiding components, validating forms, applying styles, or managing loading states with fx you can build more responsive and interactive interfaces.
