@@ -112,14 +112,14 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-          echo "REDIS_HOST=${{ matrix.edition == 'ee' && 'redis'}}" >> .env
-          echo "REDIS_USER= ${{ matrix.edition == 'ee' && 'default'}}" >> .env
-          echo "REDIS_PASSWORD=${{ matrix.edition == 'ee' && ''}}" >> .env
-          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && 'tj-oidc-simulator'}}" >> .env
-          echo "SSO_OPENID_CLIENT_ID=${{ matrix.edition == 'ee' && 'secrets.SSO_OPENID_CLIENT_ID' }}" >> .env
-          echo "SSO_OPENID_CLIENT_SECRET=${{ matrix.edition == 'ee' && 'secrets.SSO_OPENID_CLIENT_SECRET' }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=${{ matrix.edition == 'ee' && 'http://34.66.166.236:8080/.well-known/openid-configuration'}}" >> .env
-          echo "LICENSE_KEY=${{ matrix.edition == 'ee' && 'secrets.RENDER_LICENSE_KEY' }}" >> .env
+          echo "REDIS_HOST=${{ matrix.edition == 'ee' && 'redis' }}" >> .env
+          echo "REDIS_USER= ${{ matrix.edition == 'ee' && 'default' }}" >> .env
+          echo "REDIS_PASSWORD=${{ matrix.edition == 'ee' && '' }}" >> .env
+          echo "SSO_OPENID_NAME=${{ matrix.edition == 'ee' && 'tj-oidc-simulator' }}" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ matrix.edition == 'ee' && secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=${{ matrix.edition == 'ee' && 'http://34.66.166.236:8080/.well-known/openid-configuration' }}" >> .env
+          echo "LICENSE_KEY=${{ matrix.edition == 'ee' && secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -129,7 +129,7 @@ jobs:
           # Update docker-compose.yaml with the new image
           sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
 
-      - name: Update docker-compose file for CE
+      - name: Update docker-compose file for EE
         if: matrix.edition == 'ee'
         run: |
           # Update docker-compose.yaml with the new image
