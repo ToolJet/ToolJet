@@ -110,9 +110,9 @@ export const EditorHeader = ({ darkMode }) => {
                     <>
                       <AppEnvironments darkMode={darkMode} />
                       <AppVersionsManager darkMode={darkMode} />
+                      <GitSyncManager />
                     </>
                   )}
-                  <GitSyncManager />
                 </div>
               </div>
             </div>
