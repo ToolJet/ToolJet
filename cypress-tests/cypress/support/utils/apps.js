@@ -135,7 +135,7 @@ export const resolveHost = () => {
     const baseUrl = Cypress.config("baseUrl");
 
     const urlMapping = {
-        "http://localhost:8082": "http://localhost:8082",
+        "http://localhost:3000": "http://localhost:3000",
         "http://localhost:3000/apps": "http://localhost:3000/apps",
         "http://localhost:4001": "http://localhost:3000",
         "http://localhost:4001/apps": "http://localhost:3000/apps",
