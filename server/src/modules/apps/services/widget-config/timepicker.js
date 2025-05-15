@@ -229,7 +229,7 @@ export const timePickerConfig = {
     accentColor: {
       type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--primary-brand)' },
       accordian: 'field',
     },
     selectedTextColor: {
@@ -338,7 +338,7 @@ export const timePickerConfig = {
       auto: { value: '{{true}}' },
       fieldBackgroundColor: { value: '#fff' },
       fieldBorderColor: { value: '#CCD1D5' },
-      accentColor: { value: '#4368E3' },
+      accentColor: { value: 'var(--primary-brand)' },
       selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
       icon: { value: 'IconClock' },
