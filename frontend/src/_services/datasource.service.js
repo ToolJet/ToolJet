@@ -11,7 +11,18 @@ export const datasourceService = {
   save,
   fetchOauth2BaseUrl,
   testSampleDb,
+  getDecryptedOptions,
 };
+
+function getDecryptedOptions(options) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(options),
+  };
+  return fetch(`${config.apiUrl}/data-sources/decrypt`, requestOptions).then(handleResponse);
+}
 
 function getAll(appVersionId, environment_id, includeStaticSources = false) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };

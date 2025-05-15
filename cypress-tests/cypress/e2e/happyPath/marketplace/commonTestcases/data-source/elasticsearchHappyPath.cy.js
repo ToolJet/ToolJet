@@ -17,9 +17,12 @@ import {
 const data = {};
 describe("Data source Elasticsearch", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.defaultWorkspaceLogin();
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    cy.apiLogin();
+    cy.visit("/");
+
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on Elasticsearch connection form", () => {
@@ -123,14 +126,14 @@ describe("Data source Elasticsearch", () => {
       "have.text",
       elasticsearchText.errorConnectionRefused
     );
-    deleteDatasource(`cypress-${data.lastName}-elasticsearch`);
+    deleteDatasource(`cypress-${data.dataSourceName}-elasticsearch`);
   });
 
   it("Should verify the functionality of Elasticsearch connection form.", () => {
     selectAndAddDataSource(
       "databases",
       elasticsearchText.elasticSearch,
-      data.lastName
+      data.dataSourceName
     );
 
     fillDataSourceTextField(
@@ -210,12 +213,12 @@ describe("Data source Elasticsearch", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.lastName}-elasticsearch-button"]`
+      `[data-cy="cypress-${data.dataSourceName}-elasticsearch-button"]`
     ).verifyVisibleElement(
       "have.text",
-      `cypress-${data.lastName}-elasticsearch`
+      `cypress-${data.dataSourceName}-elasticsearch`
     );
 
-    deleteDatasource(`cypress-${data.lastName}-elasticsearch`);
+    deleteDatasource(`cypress-${data.dataSourceName}-elasticsearch`);
   });
 });
