@@ -502,7 +502,7 @@ const DynamicEditorBridge = (props) => {
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   let modifiedValue = initialValue;
-  if (paramType === 'colorSwatches' && initialValue?.includes('var(')) {
+  if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
     modifiedValue = getCssVarValue(document.documentElement, initialValue);
   }
 

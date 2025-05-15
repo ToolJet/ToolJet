@@ -22,7 +22,7 @@ export const kanbanConfig = {
         text: '{{cardData.title}}',
         fontWeight: 'bold',
         textSize: 16,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
       },
     },
     {
@@ -38,7 +38,7 @@ export const kanbanConfig = {
       defaultValue: {
         text: '{{cardData.description}}',
         textSize: 14,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
       },
     },
   ],

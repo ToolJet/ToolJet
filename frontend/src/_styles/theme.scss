@@ -18959,6 +18959,79 @@ section.ai-message-prompt-input-wrapper {
 
 
 .canvas-component {
+
+  .kanban-container {
+    background-color: var(--cc-surface1-surface);
+
+    .header {
+      background-color: var(--cc-surface1-surface);
+    }
+
+    .subcontainer-container {
+      background-color: var(--cc-surface1-surface);
+
+      .real-canvas {
+        background-color: var(--cc-surface1-surface) !important;
+      }
+    }
+    
+  }
+
+
+
+  .calendar-widget {
+    background-color: var(--cc-surface1-surface);
+
+
+    .rbc-time-header-gutter{
+      color: var(--cc-primary-text);
+    }
+    .rbc-timeslot-group {
+      color: var(--cc-primary-text);
+    }
+    .rbc-toolbar {
+      color: var(--cc-primary-text);
+
+      .rbc-btn-group {
+        button {
+          border-color: var(--cc-default-border);
+          color: var(--cc-primary-text);
+        }
+      }
+    }
+
+    .rbc-day-bg {
+      border: 1px solid var(--cc-weak-border) !important;
+    }
+
+    .rbc-button-link{
+      color: var(--cc-primary-text);
+    }
+    .rbc-off-range{
+      .rbc-button-link {
+        color : var(--cc-placeholder-text);
+      }
+    }
+    
+    .rbc-off-range-bg {
+      background-color: var(--cc-surface2-surface);
+
+    
+      
+    }
+    
+    .rbc-month-header {
+      .rbc-header {
+        span {
+          color: var(--cc-primary-text);
+        }
+      }
+
+    }
+
+  }
+
+
   input::placeholder, textarea::placeholder {
     color: var(--cc-placeholder-text) !important;
   }
