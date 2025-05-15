@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { isEmpty, debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { LEGACY_ITEMS } from './constants';
+import { LEGACY_ITEMS, IGNORED_ITEMS } from './constants';
 import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
@@ -17,7 +17,9 @@ import { ModuleManager } from '@/modules/Modules/components';
 
 export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const componentList = useMemo(() => {
-    return componentTypes.map((component) => component.component);
+    return componentTypes
+      .map((component) => component.component)
+      .filter((component) => !IGNORED_ITEMS.includes(component));
   }, [componentTypes]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
