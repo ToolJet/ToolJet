@@ -84,7 +84,7 @@ export const Container = React.memo(
       },
       drop: async ({ componentType, component }, monitor) => {
         setShowModuleBorder(false); // Hide the module border when dropping
-        if (appType === 'module' && componentType !== 'ModuleContainer') return;
+        if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
         const didDrop = monitor.didDrop();
         if (didDrop) return;
         if (componentType === 'PDF' && !isPDFSupported()) {

@@ -132,7 +132,8 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
         className={cx(
           'canvas-container align-items-center page-container',
           { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
-          { 'overflow-x-auto': (currentMode === 'edit' && isSidebarOpen) || currentMode === 'view' }
+          { 'overflow-x-auto': (currentMode === 'edit' && isSidebarOpen) || currentMode === 'view' },
+          { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
         )}
         style={styles}
       >
