@@ -74,13 +74,17 @@ To switch between the workspaces,
 
 Default workspace in ToolJet simplifies team onboarding. When configured, new users can sign up through the main company (instance) URL and get added to the default workspace. This eliminates the need to share & maintain long workspace URLs for single-workspace set ups.
 
-To set up a default workspace for your instance, navigate to **Settings** > **All workspaces**. Here you'll find a dropdown labeled *Default Workspace*. From here, select the workspace you want to designate as the default. 
+The first workspace created by the super admin will be designate as the default workspace. To update the default workspace for your instance, navigate to **Settings** > **All workspaces**. Here you'll find a dropdown labeled *Default Workspace*. From here, select the workspace you want to designate as the default. 
 
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/tooljet-setup/workspace/default-workspace.png" alt="Set default workspace" />
 
 When configuring login settings for your instance, make sure to enable the Enable Signup option. Once enabled, you can share your  instance URL (e.g., `https://app.corp.com`) for inviting users to sign up.
 
 Be sure to share the complete instance URL, whether it’s a subdomain, subpath, or a full custom domain. Anyone who signs up using this link will be added to the default workspace.
+
+:::note
+The default workspace cannot be archived. Please set a different workspace as the default before proceeding with archiving this one.
+:::
 
 
 ## Workspace Admin
