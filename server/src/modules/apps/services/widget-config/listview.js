@@ -49,10 +49,23 @@ export const listviewConfig = {
     data: {
       type: 'code',
       displayName: 'List data',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'array', element: { type: 'object' } },{ type: 'array', element: { type: 'string' } }] },
+      schema: {
+        type: 'union',
+        schemas: [
+          { type: 'array', element: { type: 'object' } },
+          { type: 'array', element: { type: 'string' } },
+        ],
         defaultValue: "[{text: 'Sample text 1'}]",
       },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
     },
     mode: {
       type: 'select',
@@ -182,6 +195,7 @@ export const listviewConfig = {
       rowHeight: {
         value: '100',
       },
+      dynamicHeight: { value: '{{false}}' },
       visible: { value: '{{true}}' },
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
