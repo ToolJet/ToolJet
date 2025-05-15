@@ -50,8 +50,8 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
-    setIsComponentLayoutReady(true);
-    return () => setIsComponentLayoutReady(false);
+    setIsComponentLayoutReady(true, moduleId);
+    return () => setIsComponentLayoutReady(false, moduleId);
   }, []);
 
   useEffect(() => {

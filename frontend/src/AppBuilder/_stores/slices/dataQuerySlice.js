@@ -431,7 +431,7 @@ export const createDataQuerySlice = (set, get) => ({
         });
     }, 500),
     runOnLoadQueries: async (moduleId = 'canvas') => {
-      const queries = get().dataQuery.queries.modules.canvas;
+      const queries = get().dataQuery.queries.modules[moduleId];
       try {
         for (const query of queries) {
           if ((query.options.runOnPageLoad || query.options.run_on_page_load) && isQueryRunnable(query)) {

@@ -16,7 +16,6 @@ const initialState = {
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
-  isComponentLayoutReady: false,
   appStore: {
     modules: {
       canvas: {

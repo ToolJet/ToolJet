@@ -536,7 +536,7 @@ const useAppData = (
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
-  }, [isComponentLayoutReady, moduleMode]);
+  }, [isComponentLayoutReady, moduleId]);
 
   useEffect(() => {
     if (moduleMode) return;
