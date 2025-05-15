@@ -1,33 +1,41 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { processDataInBatches } from '@helpers/migration.helper';
+import { ConfigScope, SSOConfigs, SSOType } from '@entities/sso_config.entity';
+import { SsoConfigOidcGroupSync } from '@entities/sso_config_oidc_group_sync.entity';
 
 export class MigrateGroupSyncData1752624000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Filter rows with config_scope='organization'
-    const ssoConfigs = await queryRunner.query(
-      `SELECT id, configs FROM sso_configs WHERE config_scope = 'organization'`
-    );
+    const entityManager = queryRunner.manager;
+    await processDataInBatches(
+      entityManager,
+      async (entityManager: EntityManager) => {
+        return await entityManager
+          .createQueryBuilder(SSOConfigs, 'sso_configs')
+          .select(['sso_configs.id', 'sso_configs.configs'])
+          .where('sso_configs.config_scope = :scope', { scope: 'organization' })
+          .andWhere('sso_configs.sso = :sso', { sso: 'openid' })
+          .getMany();
+      },
+      async (entityManager: EntityManager, ssoConfigs: SSOConfigs[]) => {
+        await this.processUpdates(entityManager, ssoConfigs);
+      },
+      100
+    );    
+  }
+
+  private async processUpdates(entityManager: EntityManager, ssoConfigs: SSOConfigs[]) {
     for (const config of ssoConfigs) {
       const { id: ssoConfigId, configs } = config;
+      const { claimName, groupMapping, enableGroupSync } = configs as any;
 
-      // Parse the configs JSON
-      let parsedConfigs;
-      try {
-        parsedConfigs = JSON.parse(configs);
-      } catch (error) {
-        console.error(`Failed to parse configs for sso_config_id: ${ssoConfigId}`);
-        continue;
-      }
-
-      const { claimName, groupMapping, enableGroupSync } = parsedConfigs;
-
-      // Only migrate if group sync is enabled and groupMapping exists
-      if (enableGroupSync && groupMapping && claimName) {
-        await queryRunner.query(
-          `INSERT INTO sso_config_oidc_group_sync (sso_config_id, claim_name, group_mappings, is_group_sync_enabled, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, NOW(), NOW())`,
-          [ssoConfigId, claimName, groupMapping, enableGroupSync]
-        );
-      }
+      const enrty = entityManager.create(SsoConfigOidcGroupSync, {
+        ssoConfigId,
+        organizationId: null,
+        claimName: claimName || null,
+        groupMappings: groupMapping || null,
+        isGroupSyncEnabled: enableGroupSync || false,
+      });
+      entityManager.save(SsoConfigOidcGroupSync, enrty);
     }
   }
 
