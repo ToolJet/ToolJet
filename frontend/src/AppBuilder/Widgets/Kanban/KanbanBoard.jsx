@@ -80,7 +80,8 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
     updateCustomResolvables(
       id,
       flatCardData.map((d) => ({ cardData: d })),
-      'cardData'
+      'cardData',
+      moduleId
     );
   }, []);
 
