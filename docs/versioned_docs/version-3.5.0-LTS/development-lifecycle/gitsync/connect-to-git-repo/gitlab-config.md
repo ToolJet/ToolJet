@@ -52,7 +52,7 @@ The table below describes each configuration values:
 #### Repository
 | **Setting**                    | **Description**                                                                                                                                   |
 |-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Repo URL**              | The URL of the Project you created to use with ToolJet. (e.g `https://gitlab.com/<your-group>/<project-name>.git` or `https://gitlab.com/<username>/project-name.git`)                                          |
+| **Repo URL**              | The URL of the Project you created to use with ToolJet. (e.g `https://gitlab.com/<group-name>/<project-name>` or `https://gitlab.com/<username>/<project-name>`)                                          |
 | **Branch name**         | Branch name of your project. By default, it uses the main branch.                                                                                      |
 
 #### Self-hosted GitLab (Optional)
