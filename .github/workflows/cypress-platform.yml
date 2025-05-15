@@ -21,11 +21,15 @@ jobs:
       matrix:
         edition: >-
           ${{ 
-            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && fromJson('["ee"]') ||
-            fromJson('[]')
+            contains(github.event.pull_request.labels.*.name, 'run-cypress') 
+              && fromJson('["ce", "ee"]') 
+              || contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') 
+              && fromJson('["ce"]') 
+              || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') 
+              && fromJson('["ce"]') 
+              || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') 
+              && fromJson('["ee"]') 
+              || fromJson('[]')
           }}
 
     steps:
