@@ -53,7 +53,7 @@ export class BaseGitUtilService {
     throw new Error('Method not implemented.');
   }
 
-  async UpdateGitApp(schemaUnifiedAppParam: any, app: App): Promise<App> {
+  async UpdateGitApp(schemaUnifiedAppParam: any, app: App, user: User): Promise<App> {
     throw new Error('Method not implemented.');
   }
 

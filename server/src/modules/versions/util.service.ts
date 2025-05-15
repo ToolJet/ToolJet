@@ -97,7 +97,7 @@ export class VersionUtilService implements IVersionUtilService {
   }
   async deleteVersionGit(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (app.currentVersionId === app.appVersions[0].id) {
+      if (app.currentVersionId && app.currentVersionId === app.appVersions[0].id) {
         throw new BadRequestException('You cannot delete a released version');
       }
 
