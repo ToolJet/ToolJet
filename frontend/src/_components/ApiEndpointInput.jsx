@@ -110,7 +110,7 @@ const ApiEndpointInput = (props) => {
     if (isEmpty(paths)) return [];
 
     const pathGroups = Object.keys(paths).reduce((acc, path) => {
-      const operations = Object.keys(paths[path]);
+      const operations = Object.keys(paths[path]).filter((op) => Object.keys(operationColorMapping).includes(op));
       const category = path.split('/')[2];
       operations.forEach((operation) => categorizeOperations(operation, path, acc, category));
       return acc;
@@ -135,7 +135,7 @@ const ApiEndpointInput = (props) => {
       {loadingSpec && (
         <div className="p-3">
           <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          {props.t('stripe', 'Please wait while we load the OpenAPI specification.')}
+          <span>Please wait while we load the OpenAPI specification.</span>
         </div>
       )}
       {options && !loadingSpec && (
