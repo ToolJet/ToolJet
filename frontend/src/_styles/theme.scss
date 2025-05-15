@@ -16269,10 +16269,26 @@ div.ds-svg-container img {
 
 .tabs-component {
   .tab-pane {
-    top: initial !important;
+    top: initial;
   }
 }
 
+
+.tabs-list {
+  .list-group-item {
+    margin-bottom: 0 !important;
+    background-color: var(--interactive-default) !important;
+  }
+
+  .active-column-list {
+    background-color: var(--interactive-hover) !important;
+  }
+
+  .list-group-item:hover {
+    background-color: var(--interactive-hover) !important;
+  }
+
+}
 
 fieldset:disabled {
   .json-form-wrapper-disabled {

@@ -30,6 +30,7 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
+import { get } from 'lodash';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 
@@ -373,8 +374,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-          })
+          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+        })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -884,51 +885,60 @@ export const EventManager = ({
                 </div>
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
-                  (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => (
-                    <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
-                        {param?.displayName}
+                  (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => {
+                    let optionsList = param.isDynamicOpiton
+                      ? get({ ...components[event?.componentId] }, param.optionsGetter, []).map((tab) => ({
+                        name: tab.title,
+                        value: tab.id,
+                      }))
+                      : param.options;
+
+                    return (
+                      <div className="row mt-2" key={param.handle}>
+                        <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
+                          {param?.displayName}
+                        </div>
+
+                        {param.type === 'select' ? (
+                          <div className="col-9" data-cy="action-options-action-selection-field">
+                            <Select
+                              className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                              options={optionsList}
+                              value={valueForComponentSpecificActionHandle(event, param)}
+                              search={true}
+                              onChange={(value) => {
+                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
+                              }}
+                              placeholder={t('globals.select', 'Select') + '...'}
+                              styles={styles}
+                              useMenuPortal={false}
+                              useCustomStyles={true}
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={`${param?.type ? '' : 'fx-container-eventmanager-code'
+                              } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            data-cy="action-options-text-input-field"
+                          >
+                            <CodeHinter
+                              type="fxEditor"
+                              initialValue={valueForComponentSpecificActionHandle(event, param)}
+                              onChange={(value) => {
+                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
+                              }}
+                              paramLabel={' '}
+                              paramType={param?.type}
+                              fieldMeta={{ options: param?.options }}
+                              cyLabel={`event-${param.displayName}`}
+                              component={component}
+                              isEventManagerParam={true}
+                            />
+                          </div>
+                        )}
                       </div>
-                      {param.type === 'select' ? (
-                        <div className="col-9" data-cy="action-options-action-selection-field">
-                          <Select
-                            className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                            options={param.options}
-                            value={valueForComponentSpecificActionHandle(event, param)}
-                            search={true}
-                            onChange={(value) => {
-                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
-                            }}
-                            placeholder={t('globals.select', 'Select') + '...'}
-                            styles={styles}
-                            useMenuPortal={false}
-                            useCustomStyles={true}
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className={`${
-                            param?.type ? '' : 'fx-container-eventmanager-code'
-                          } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
-                          data-cy="action-options-text-input-field"
-                        >
-                          <CodeHinter
-                            type="fxEditor"
-                            initialValue={valueForComponentSpecificActionHandle(event, param)}
-                            onChange={(value) => {
-                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
-                            }}
-                            paramLabel={' '}
-                            paramType={param?.type}
-                            fieldMeta={{ options: param?.options }}
-                            cyLabel={`event-${param.displayName}`}
-                            component={component}
-                            isEventManagerParam={true}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
               </>
             )}
             <div className="row mt-3">
