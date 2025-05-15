@@ -13,7 +13,7 @@ title: GitLab Configuration
 </div>
 
 
-The GitLab Configuration for GitSync introduces a more flexible way to connect your ToolJet instance to a Git repository. Compared to traditional SSH-based setups, it works over HTTPS, helping you avoid SSH port blocks, and lets you choose branches directly from the UI.
+The GitLab configuration for git sync offers a flexible way to connect your ToolJet instance to a Git repository. This setup uses HTTPS instead of the traditional SSH-based method, eliminating the need to manage SSH keys and bypassing SSH port blocks. You can also select and switch repository branches directly within the ToolJet interface.
 
 
 Role Required: **Admin**
@@ -27,7 +27,7 @@ Role Required: **Admin**
 
 
 ### 2. Generate a Personal Access Token
-Follow these steps to generate a personal access token:
+Follow these steps to generate a [personal access token](https://docs.gitlab.com/user/project/settings/project_access_tokens/#create-a-project-access-token):
 - Go to your Project Settings and click on *Access Tokens*
 - Enter name for your token.
 - Select a role as Developer, Maintainer, or Owner
@@ -38,13 +38,13 @@ Follow these steps to generate a personal access token:
         - write_repository
 - Click the Create personal access token button.
 
-Once generated, copy and store the token as it won't be displayed again. This token will be used later when configuring GitSync.
+Once generated, copy and store the token as it won't be displayed again. This token will be used later when configuring git sync.
 
-### 4. Configure GitLab in GitSync 
+### 4. Configure GitLab in git sync 
 
 Navigate to the **Workspace settings** page and click on the **Configure git** tab. Then, enter the required configuration values after selecting GitLab as your repository provider.
 
-<img className="screenshot-full img-s" src="/img/gitsync/gitlab-config/config.png" alt="GitSync" />
+<img className="screenshot-full img-s" src="/img/gitsync/gitlab-config/config.png" alt="git sync" />
 
 
 The table below describes each configuration values:
@@ -67,4 +67,4 @@ The table below describes each configuration values:
 | **GitLab Project access token**           | The [GitLab project token](https://docs.gitlab.com/user/project/settings/project_access_tokens/#create-a-project-access-token).    |
 
 
-    Once you've entered the necessary configurations, click **Save Changes**. Your ToolJet instance will now be connected to your GitLab project.
+    Once you've entered the necessary configurations, click **Save Changes**. Your workspace will now be connected to your GitLab project.
