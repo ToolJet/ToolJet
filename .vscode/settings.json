@@ -1,28 +1,24 @@
 {
-    "[javascript, typescript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "[javascript, typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.format.enable": true,
+  "editor.formatOnSave": false,
+  "json.schemas": [
+    {
+      "fileMatch": ["/*.operations.json"],
+      "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json"
     },
-    "eslint.validate": [
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact"
-    ],
-    "eslint.format.enable": true,
-    "editor.formatOnSave": true,
-    "json.schemas": [
-        {
-            "fileMatch": [
-                "/*.operations.json"
-            ],
-            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json"
-        },
-        {
-            "fileMatch": [
-                "/*.manifest.json"
-            ],
-            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
-        }
-    ],
-    "CodeGPT.apiKey": "CodeGPT Plus Beta"
+    {
+      "fileMatch": ["/*.manifest.json"],
+      "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
+    }
+  ],
+  "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
