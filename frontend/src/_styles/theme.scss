@@ -4903,6 +4903,12 @@ input[type="text"] {
   }
 }
 
+.modal-content.home-modal-component-editor.dark-theme {
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .home-modal-component {
   .btn-close {
     opacity: 1 !important;
