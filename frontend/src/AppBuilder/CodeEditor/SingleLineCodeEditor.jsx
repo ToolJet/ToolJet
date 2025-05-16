@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -226,16 +226,11 @@ const EditorInput = ({
     const hintsWithoutParamHints = getSuggestions();
     const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
 
-    const allHints = {
-      ...hints,
-      appHints: [...hints.appHints, ...serverHints],
-    };
-
     let word = context.matchBefore(/\w*/);
 
     const hints = {
       ...hintsWithoutParamHints,
-      appHints: [...hintsWithoutParamHints.appHints, ...paramHints, ...serverHints],
+      appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
     };
 
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
@@ -266,7 +261,7 @@ const EditorInput = ({
       queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, allHints, totalReferences, originalQueryInput);
+    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
 
     return {
       from: word.from,
