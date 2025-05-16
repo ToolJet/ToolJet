@@ -10,12 +10,13 @@ import AppModeToggle from './AppModeToggle';
 import { ThemeSelect } from '@/modules/Appbuilder/components';
 import MaintenanceMode from './MaintenanceMode';
 import HideHeaderToggle from './HideHeaderToggle';
+import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 
 const GlobalSettings = ({ darkMode }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   return (
-    <>
+    <ModuleProvider moduleId={'canvas'}>
       <div>
         <div bsPrefix="global-settings-popover" className="global-settings-panel">
           <HeaderSection>
@@ -44,7 +45,7 @@ const GlobalSettings = ({ darkMode }) => {
           </div>
         </div>
       </div>
-    </>
+    </ModuleProvider>
   );
 };
 
