@@ -12,10 +12,10 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       matrix:
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.18.2
+          node-version: 22.15.0
 
       - name: Set up Git authentication for private submodules
         run: |
@@ -175,7 +175,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.18.2
+          node-version: 22.15.0
 
       - name: Set up Git authentication for private submodules
         run: |
@@ -311,7 +311,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.18.2
+          node-version: 22.15.0
 
       - name: Set up Git authentication for private submodules
         run: |
@@ -459,7 +459,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.18.2
+          node-version: 22.15.0
 
       - name: Set up Git authentication for private submodules
         run: |

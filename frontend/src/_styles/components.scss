@@ -17,7 +17,7 @@ $btn-dark-color: #FFFFFF;
   transition: all 0.3s ease-in-out;
 
   &:hover {
-    @if $bg  !=none {
+    @if $bg !=none {
       background-color: darken($bg, 10%);
     }
   }
@@ -26,13 +26,17 @@ $btn-dark-color: #FFFFFF;
 
 .base-button {
   @include button($btn-bg, $btn-color);
-  border-radius: $base-border-radius;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 4px 16px;
-  border: 1px solid #D7DBDF;
+
+  & {
+    border-radius: $base-border-radius;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 16px;
+    border: 1px solid #D7DBDF;
+
+  }
 }
 
 .base-button.dark {
@@ -52,11 +56,14 @@ $btn-dark-color: #FFFFFF;
 
 .unstyled-button {
   @include button(none, inherit);
-  border: none;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 20px;
+
+  & {
+    border: none;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+  }
 }
 
 .unstyled-button.dark {
@@ -273,74 +280,86 @@ $btn-dark-color: #FFFFFF;
   }
 }
 
-.delete-folder-modal{
-  &.dark-theme{
-    .delete-all-button{
-      &:hover{
+.delete-folder-modal {
+  &.dark-theme {
+    .delete-all-button {
+      &:hover {
         background: #fff;
         box-shadow: none;
         border: 1px solid rgb(77, 114, 250);
       }
     }
   }
-  .delete-all-button{
+
+  .delete-all-button {
     margin: 0;
     border-radius: 6px;
     border: 1px solid#CCD1D5;
-    background:#FFF;
+    background: #FFF;
     box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
     padding: 5px 10px;
     display: flex;
     align-items: center;
     gap: 6px;
-    &:hover{
+
+    &:hover {
       background: rgba(172, 178, 185, 0.30);
       box-shadow: none;
 
     }
-    span{
+
+    span {
       font-size: 12px;
       font-style: normal;
       font-weight: 500;
-      line-height: 18px; /* 150% */
+      line-height: 18px;
+      /* 150% */
     }
-    &.danger{
+
+    &.danger {
       border-radius: 6px;
       background: #D72D39;
-      border:none;
+      border: none;
 
       box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
-      span{
+
+      span {
         color: #fff;
       }
-      &:hover{
+
+      &:hover {
         border: none;
         background: #B5121D;
         box-shadow: none;
       }
     }
   }
-  .modal-title{
+
+  .modal-title {
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
   }
-  .modal-dialog{
+
+  .modal-dialog {
     width: 408px;
   }
-  .modal-body{
+
+  .modal-body {
     padding: 16px 0;
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
     line-height: 18px;
   }
-  .modal-content{
+
+  .modal-content {
     border-radius: 12px;
     padding: 16px;
 
   }
-  .modal-header{
+
+  .modal-header {
     padding: 0;
     min-height: unset;
     border: none;
@@ -349,7 +368,8 @@ $btn-dark-color: #FFFFFF;
     font-style: normal;
     font-weight: 500;
   }
-  .modal-footer{
+
+  .modal-footer {
     margin: 0;
     padding: 0;
     justify-content: unset;
@@ -398,7 +418,7 @@ $btn-dark-color: #FFFFFF;
   }
 
   .page-handler-input {
-    border-radius: $base-border-radius  !important;
+    border-radius: $base-border-radius !important;
   }
 }
 
@@ -475,12 +495,12 @@ $btn-dark-color: #FFFFFF;
 
 #page-handler-menu.global-settings {
   background-color: var(--base);
+  border: none;
 
   .popover-body {
     color: var(--slate12);
   }
 
-  border: none;
 }
 
 #inspector-tabpane-properties .code-hinter textarea {
@@ -490,14 +510,17 @@ $btn-dark-color: #FFFFFF;
 }
 
 // Style for Chart component
-.widget-chart{
-  .js-plotly-plot{
+.widget-chart {
+  .js-plotly-plot {
     border-radius: inherit;
-    .plot-container{
+
+    .plot-container {
       border-radius: inherit;
-      .svg-container{
+
+      .svg-container {
         border-radius: inherit;
-        .main-svg{
+
+        .main-svg {
           border-radius: inherit;
         }
       }
@@ -509,6 +532,7 @@ $btn-dark-color: #FFFFFF;
 .widget-type-container {
   overflow: hidden auto;
   scrollbar-width: none;
+
   &:hover {
     scrollbar-width: auto;
   }
