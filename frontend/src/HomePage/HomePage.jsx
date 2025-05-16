@@ -47,6 +47,7 @@ import {
   ConsultationBanner,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const { iconList, defaultIcon } = configs;
 
@@ -118,6 +119,7 @@ class HomePageComponent extends React.Component {
       dependentPluginsDetail: {},
       showMissingGroupsModal: false,
       missingGroups: [],
+      missingGroupsExpanded: false,
     };
   }
 
@@ -903,6 +905,7 @@ class HomePageComponent extends React.Component {
       dependentPluginsDetail,
       showMissingGroupsModal,
       missingGroups,
+      missingGroupsExpanded,
     } = this.state;
     const modalConfigs = {
       create: {
@@ -954,6 +957,40 @@ class HomePageComponent extends React.Component {
     };
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+
+    const testGroups = [
+      { name: 'Group 1' },
+      { name: 'Group 2 long name' },
+      { name: 'Group 3 med' },
+      { name: 'Group 4 med' },
+      { name: 'Group 4 really long name' },
+      { name: 'Group 1' },
+      { name: 'Group 2 long name' },
+      { name: 'Group 3 med' },
+      { name: 'Group 4 med' },
+      { name: 'Group 4 really long name' },
+      { name: 'Group 1' },
+      { name: 'Group 2 long name' },
+      { name: 'Group 3 med' },
+      { name: 'Group 4 med' },
+      { name: 'Group 4 really long name' },
+      { name: 'Group 1' },
+      { name: 'Group 2 long name' },
+      { name: 'Group 3 med' },
+      { name: 'Group 4 med' },
+      { name: 'Group 4 really long name' },
+      { name: 'Group 1' },
+      { name: 'Group 2 long name' },
+      { name: 'Group 3 med' },
+      { name: 'Group 4 med' },
+      { name: 'Group 4 really long name' },
+    ];
+
+    //import app missing groups modal config
+    const threshold = 3;
+    const isLong = missingGroups.length > threshold;
+    const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
+
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -969,7 +1006,8 @@ class HomePageComponent extends React.Component {
             onCommitChange={this.handleCommitChange}
           />
           <ModalBase
-            title={'Missing groups in workspace'}
+            showHeader={false}
+            showFooter={false}
             handleConfirm={() => this.importFile(fileContent, fileName, true)}
             show={showMissingGroupsModal}
             isLoading={importingApp}
@@ -978,17 +1016,80 @@ class HomePageComponent extends React.Component {
               title: 'Import',
               tooltipMessage: '',
             }}
+            className="missing-groups-modal"
             darkMode={this.props.darkMode}
           >
-            <p className="tj-text-sm">
-              The following group permissions are missing for page permissions. Are you sure you want to continue?
-            </p>
-            <div className="item-list">
-              {missingGroups.map((item, index) => (
-                <div key={index}>
-                  <span className="tj-text-sm">{`${index + 1}. ${item}`}</span>
+            <div className="missing-groups-modal-body">
+              <div className="flex items-start">
+                <SolidIcon name="warning" width="40px" fill="var(--icon-warning)" />
+                <div>
+                  <div className="header">Warning: Missing user groups for permissions</div>
+                  <p className="sub-header">
+                    Permissions for the following user group(s) won’t be applied since they do not exist in this
+                    workspace.
+                  </p>
                 </div>
-              ))}
+              </div>
+
+              <div className="groups-list">
+                <div
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
+                >
+                  <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
+                    User groups
+                  </div>
+                  <div className="mt-1">
+                    {displayedGroups.map((group, idx) => (
+                      <span className="tj-text-xsm font-weight-500" key={idx}>
+                        {group}
+                        {idx < displayedGroups.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                    {!missingGroupsExpanded && isLong && '...'}
+                  </div>
+                </div>
+
+                {isLong && (
+                  <button
+                    class="toggle-button"
+                    onClick={() => this.setState({ missingGroupsExpanded: !missingGroupsExpanded })}
+                  >
+                    <span className="chevron">
+                      <SolidIcon
+                        fill="var(--icon-brand)"
+                        name={missingGroupsExpanded ? 'cheveronup' : 'cheverondown'}
+                      />
+                    </span>
+                    <span class="label">{missingGroupsExpanded ? 'See less' : 'See more'}</span>
+                  </button>
+                )}
+              </div>
+
+              <p className="info">
+                Restricted pages, queries, or components will become accessible to all users or to existing groups with
+                permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after
+                import.
+              </p>
+
+              <div className="mt-6 d-flex justify-between action-btns">
+                <ButtonSolid
+                  className="secondary-action"
+                  variant={'tertiary'}
+                  onClick={() => this.setState({ showMissingGroupsModal: false, isImportingApp: false })}
+                >
+                  Cancel import
+                </ButtonSolid>
+                <ButtonSolid
+                  isLoading={importingApp}
+                  variant={'primary'}
+                  onClick={() => this.importFile(fileContent, fileName, true)}
+                  className="primary-action"
+                >
+                  Import with limited permissions
+                </ButtonSolid>
+              </div>
             </div>
           </ModalBase>
           {showRenameAppModal && (

@@ -18876,3 +18876,69 @@ section.ai-message-prompt-input-wrapper {
     max-height: 100px !important;
   }
 }
+
+.missing-groups-modal {
+  .modal-body {
+    padding: 16px;
+
+    .header {
+      padding-top: 12px;
+      padding-left: 4px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .sub-header {
+      margin-bottom: 0px;
+      font-size: 12px;
+    }
+
+    .groups-list {
+      padding-top: 16px;
+      padding-bottom: 16px;
+
+      .container {
+        padding: 12px;
+      }
+    }
+
+    .info {
+      margin-bottom: 0px;
+      font-size: 12px;
+      padding-bottom: 24px;
+    }
+
+    .action-btns {
+      justify-content: space-between;
+    }
+
+    .primary-action, .secondary-action {
+      padding: 8px !important;
+      font-size: 12px;
+    }
+
+    .toggle-button {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+      color: var(--icon-brand);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+    
+    .toggle-button:hover {
+      text-decoration: underline;
+    }
+    
+    .toggle-button .chevron {
+      transition: transform 0.2s ease;
+    }
+    
+    .toggle-button.expanded .chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
