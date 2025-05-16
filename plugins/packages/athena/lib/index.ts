@@ -68,7 +68,7 @@ export default class Athena implements QueryService {
     await this.waitQuery(athenaClient, execId);
 
     result = await this.loadResults(athenaClient, queryOptions, execId);
-    console.log("result1@", result);
+
     return {
       status: "ok",
       data: result,
@@ -103,7 +103,7 @@ export default class Athena implements QueryService {
           {}
         );
       }
-      console.log("results@", results);
+
       const cols = results.ResultSet?.ResultSetMetadata?.ColumnInfo || [];
       const rows = results.ResultSet?.Rows || [];
       const dataRows = isFirstPage ? rows.slice(1) : rows;
@@ -132,7 +132,6 @@ export default class Athena implements QueryService {
       queryExecutionId: "",
       operation: "",
     });
-    console.log("test connection success");
     return { status: "ok" };
   }
 
