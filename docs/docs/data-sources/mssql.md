@@ -33,9 +33,9 @@ ToolJet requires the following to connect to your PostgreSQL database.
 You can add optional configurations in **key-value pairs** for the MS SQL data source connection. 
 
 #### Example:
-| Key                     | Value  |
-|:--------------------------|:--------|
-| trustServerCertificate| true |
+| Key                     | Value   |
+|:------------------------|:--------|
+| trustServerCertificate  | true    |
 
 These options allow you to fine-tune the connection, such as enabling encryption when using a self-signed certificate.
 
@@ -58,20 +58,14 @@ To enhance security during data transfer, encryption can be enabled even with a 
 
 <div style={{paddingTop:'24px'}}>
 
-## Querying SQL Server / Azure SQL Databases
-
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the database added in the previous step as the data source.
-
-Once the SQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
-
-### SQL Mode
+## Querying in SQL Mode
 
 SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries.  
 
-1. Select **SQL mode** from the dropdown.
-2. Enter the SQL query in the editor.
-3. Click on the **Run** button to run the query.
+1. Create a new query and select the MS SQL data source.
+2. Select **SQL mode** from the dropdown.
+3. Enter the SQL query in the editor.
+4. Click on the **Run** button to run the query.
 
 #### Example
 ```sql
@@ -80,7 +74,7 @@ SELECT * FROM users
 
 <img className="screenshot-full" src="/img/datasource-reference/mssql/sql mode.png" alt="ToolJet mssql sql mode" style={{marginBottom:'15px'}}/>
 
-#### Parameterized queries:
+### Parameterized Queries
 
 ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
 
@@ -93,27 +87,36 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
 </div>
 
-##### Example:
+#### Example:
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
-SQL Parameters:
-  Key: username
-  Value: oliver // or {{ components.username.value }}
 ```
+SQL Parameters:
+- Key: username
+- Value: oliver // or `{{ components.username.value }}`
 
-#### Query Timeout
+### Row Level Security
+
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](#) guide for more information.
+
+### Query Timeout
 
 You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
-### GUI Mode
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Querying in GUI Mode
 
 GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries.
 
-1. Select **GUI mode** from the dropdown.
-2. Choose the operation **Bulk update using the primary key**.
-3. Enter the **Table** name and **Primary key** column name. 
-4. In the editor, enter the records in the form of an array of objects. 
-5. Click on the **Run** button to run the query.
+1. Create a new query and select the MS SQL data source.
+2. Select **GUI mode** from the dropdown.
+3. Choose the operation **Bulk update using the primary key**.
+4. Enter the **Table** name and **Primary key** column name. 
+5. In the editor, enter the records in the form of an array of objects. 
+6. Click on the **Run** button to run the query.
 
 #### Example
 ```json

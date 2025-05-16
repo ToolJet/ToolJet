@@ -62,7 +62,7 @@ Role Required: **Admin**
 
 ## Configuring GitSync on a Different Branch
 
-Starting from version **v3.5.3-ee-lts**, GitSync in ToolJet supports custom branches. This feature is available only in the Self-Hosted version of ToolJet. The custom branch for GitSync is configured at the instance level via an environment variable.
+GitSync in ToolJet supports custom branches. This feature is available only on self-hosted versions of ToolJet. The custom branch for GitSync is configured at the instance level via an environment variable.
 
 Different repositories can be configured for different workspaces, but the custom branch set in the **.env** file must be present in all configured repositories to ensure smooth operation. The branch specified in the **.env** file will apply to all workspaces with GitSync support.
 

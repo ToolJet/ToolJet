@@ -11,7 +11,7 @@ Once the git sync is configured and the changes are committed to the git reposit
 
 ## Sequential Development
 
-Starting from version `v3.5.35-ee-lts`, git sync can be used to do sequential developement, allowing multiple developers to work on a single application in a sequential manner. In this approach, one developer makes changes and commits them, and the next developer must pull the latest commit before beginning any new changes. 
+Git Sync can be used to do sequential developement, allowing multiple developers to work on a single application in a sequential manner. In this approach, one developer makes changes and commits them, and the next developer must pull the latest commit before beginning any new changes. 
 
 For example - If the Developer A commits (Commit A), then Developer B must pull the latest commit before starting work and subsequently makes a new commit. Otherwise the work commited by Developer A might be lost.
 
