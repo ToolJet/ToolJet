@@ -34,7 +34,7 @@ export default class Athena implements QueryService {
   }
 
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
-    let result: Array<Object> = [];
+    let result: Array<Record<string, unknown>> = [];
 
     const athenaClient = await this.getConnection(sourceOptions);
 
@@ -54,7 +54,7 @@ export default class Athena implements QueryService {
       const startResp = await athenaClient.send(startQueryExec);
       execId = startResp.QueryExecutionId;
     } catch (error) {
-      throw new QueryError('Query could not be started', error.messag, {});
+      throw new QueryError('Query could not be started', error.message, {});
     }
 
     await this.waitQuery(athenaClient, execId);
@@ -69,7 +69,7 @@ export default class Athena implements QueryService {
 
   private async loadResults(client: AthenaClient, queryOptions: QueryOptions, QueryExecutionId: string) {
     let nextToken = queryOptions.nextToken;
-    const allRows: Array<Object> = [];
+    const allRows: Array<Record<string, unknown>> = [];
     let isFirstPage = true;
     do {
       const getCmd = new GetQueryResultsCommand({
@@ -94,7 +94,7 @@ export default class Athena implements QueryService {
       isFirstPage = false;
 
       const data = dataRows.map((r) =>
-        r.Data!.reduce((obj, cell, idx) => {
+        r?.Data?.reduce((obj, cell, idx) => {
           obj[cols[idx].Name] = cell.VarCharValue ?? null;
           return obj;
         }, {} as Record<string, any>)
