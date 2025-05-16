@@ -106,7 +106,7 @@ export default class Athena implements QueryService {
 
       const cols = results.ResultSet?.ResultSetMetadata?.ColumnInfo ?? [];
       const rows = results.ResultSet?.Rows ?? [];
-      const dataRows = isFirstPage ? rows.slice(1) : rows;
+      const dataRows = isFirstPage ? rows.slice(1) : rows; // skipping the header for the first page
       isFirstPage = false;
 
       const data = dataRows.map((r) =>
