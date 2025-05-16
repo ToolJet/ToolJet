@@ -1,10 +1,5 @@
-import {
-  QueryError,
-  QueryResult,
-  QueryService,
-  ConnectionTestResult,
-} from "@tooljet-plugins/common";
-import { SourceOptions, QueryOptions } from "./types";
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions } from './types';
 import {
   AthenaClient,
   AthenaClientConfig,
@@ -12,7 +7,7 @@ import {
   GetQueryExecutionCommand,
   GetQueryResultsCommand,
   GetQueryResultsCommandOutput,
-} from "@aws-sdk/client-athena";
+} from '@aws-sdk/client-athena';
 
 export default class Athena implements QueryService {
   private client: AthenaClient;
@@ -21,27 +16,24 @@ export default class Athena implements QueryService {
     const command = new GetQueryExecutionCommand({ QueryExecutionId });
     const response = await client.send(command);
     const state = response.QueryExecution.Status.State;
-    if (state === "SUCCEEDED") {
+    if (state === 'SUCCEEDED') {
       return true;
     }
-    if (state === "QUEUED" || state === "RUNNING") {
+    if (state === 'QUEUED' || state === 'RUNNING') {
       await new Promise((r) => {
         setTimeout(r, 500);
       });
       return this.waitQuery(client, QueryExecutionId);
     }
-    if (state === "FAILED" || state === "CANCELLED") {
+    if (state === 'FAILED' || state === 'CANCELLED') {
       const msg = response.QueryExecution.Status.StateChangeReason;
-      throw new QueryError("Athena query failed", msg ?? "Unknown reason", {});
+      throw new QueryError('Athena query failed', msg ?? 'Unknown reason', {});
     }
 
-    throw new QueryError("Athena query failed", "Unknown reason", {});
+    throw new QueryError('Athena query failed', 'Unknown reason', {});
   }
 
-  async run(
-    sourceOptions: SourceOptions,
-    queryOptions: QueryOptions
-  ): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result: Array<Object> = [];
 
     const athenaClient = await this.getConnection(sourceOptions);
@@ -62,7 +54,7 @@ export default class Athena implements QueryService {
       const startResp = await athenaClient.send(startQueryExec);
       execId = startResp.QueryExecutionId;
     } catch (error) {
-      throw new QueryError("Query could not be started", error.messag, {});
+      throw new QueryError('Query could not be started', error.messag, {});
     }
 
     await this.waitQuery(athenaClient, execId);
@@ -70,16 +62,12 @@ export default class Athena implements QueryService {
     result = await this.loadResults(athenaClient, queryOptions, execId);
 
     return {
-      status: "ok",
+      status: 'ok',
       data: result,
     };
   }
 
-  private async loadResults(
-    client: AthenaClient,
-    queryOptions: QueryOptions,
-    QueryExecutionId: string
-  ) {
+  private async loadResults(client: AthenaClient, queryOptions: QueryOptions, QueryExecutionId: string) {
     let nextToken = queryOptions.nextToken;
     const allRows: Array<Object> = [];
     let isFirstPage = true;
@@ -97,11 +85,7 @@ export default class Athena implements QueryService {
       try {
         results = await client.send(getCmd);
       } catch (err) {
-        throw new QueryError(
-          "Failed to fetch Athena results",
-          (err as Error).message,
-          {}
-        );
+        throw new QueryError('Failed to fetch Athena results', (err as Error).message, {});
       }
 
       const cols = results.ResultSet?.ResultSetMetadata?.ColumnInfo ?? [];
@@ -122,17 +106,15 @@ export default class Athena implements QueryService {
     return allRows;
   }
 
-  async testConnection(
-    sourceOptions: SourceOptions
-  ): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     await this.run(sourceOptions, {
-      query: "SHOW TABLES",
-      pagination: "1",
-      nextToken: "",
-      queryExecutionId: "",
-      operation: "",
+      query: 'SHOW TABLES',
+      pagination: '1',
+      nextToken: '',
+      queryExecutionId: '',
+      operation: '',
     });
-    return { status: "ok" };
+    return { status: 'ok' };
   }
 
   async getConnection(sourceOptions: SourceOptions) {
