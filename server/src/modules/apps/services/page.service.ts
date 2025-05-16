@@ -23,9 +23,9 @@ export class PageService implements IPageService {
     protected eventHandlerService: EventsService
   ) {}
 
-  async findPagesForVersion(appVersionId: string): Promise<Page[]> {
+  async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     // const allPages = await this.pageRepository.find({ where: { appVersionId }, order: { index: 'ASC' } });
-    const allPages = await this.pageHelperService.fetchPages(appVersionId);
+    const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
         const components = await this.componentsService.getAllComponents(page.id);
@@ -54,7 +54,7 @@ export class PageService implements IPageService {
     // TODO - Should use manager here - multiple db operations found
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
-        where: { id: pageId, versionId: appVersionId },
+        where: { id: pageId, appVersionId },
       });
 
       if (!pageToClone) {
@@ -86,7 +86,7 @@ export class PageService implements IPageService {
 
       await this.clonePageEventsAndComponents(pageId, clonedpage.id);
 
-      const pages = await this.findPagesForVersion(appVersionId);
+      const pages = await this.findPagesForVersion(appVersionId, manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
 
       return { pages, events };
