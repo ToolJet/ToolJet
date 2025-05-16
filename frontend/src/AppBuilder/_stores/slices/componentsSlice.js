@@ -1769,48 +1769,49 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|}}]+)/g;
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\['"]?)([^.\s:?[\]'"+\-&|}}/*+\-%]|$)/g;
+    return input.replace(
+      regex,
+      (match, category, prefix, id, suffix, optionalChainingOrBracket, propertyOrOperator) => {
+        if (mappings[category] && mappings[category][id]) {
+          let name;
+          if (category === 'components') {
+            name = mappings[category][id];
+          } else {
+            name = mappings[category][id];
+          }
 
-    return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
-      if (mappings[category] && mappings[category][id]) {
-        let name;
-        if (category === 'components') {
-          name = mappings[category][id];
-        } else {
-          name = mappings[category][id];
+          let result = `${category}`;
+
+          if (prefix.includes('?.')) {
+            result += '?.';
+          } else if (prefix.includes('.')) {
+            result += '.';
+          }
+
+          if (prefix.includes('[')) {
+            result += `["${name}"]`;
+          } else {
+            result += name;
+          }
+
+          if (optionalChainingOrBracket && optionalChainingOrBracket.startsWith('?.')) {
+            result += '?.';
+          } else if (optionalChainingOrBracket && optionalChainingOrBracket.startsWith('.')) {
+            result += optionalChainingOrBracket;
+          } else if (optionalChainingOrBracket && optionalChainingOrBracket.startsWith('[')) {
+            result += optionalChainingOrBracket;
+          }
+
+          if (propertyOrOperator && !['/', '*', '+', '-', '%'].includes(propertyOrOperator.charAt(0))) {
+            result += propertyOrOperator;
+          }
+
+          return result;
         }
-
-        // Reconstruct the string with the name instead of UUID
-        let result = `${category}`;
-
-        // Handle optional chaining at the beginning
-        if (prefix.includes('?.')) {
-          result += '?.';
-        } else if (prefix.includes('.')) {
-          result += '.';
-        }
-
-        // Handle bracket notation
-        if (prefix.includes('[')) {
-          result += `["${name}"]`;
-        } else {
-          result += name;
-        }
-
-        // Handle optional chaining after the name
-        if (optionalChaining) {
-          result += optionalChaining;
-        }
-
-        // Add the property if it exists
-        if (property) {
-          result += property;
-        }
-
-        return result;
+        return match;
       }
-      return match; // Return the original match if no mapping is found
-    });
+    );
   },
   calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition) => {
     const componentDefinition = get().getComponentDefinition(componentId);
