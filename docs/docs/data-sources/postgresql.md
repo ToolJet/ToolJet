@@ -71,14 +71,18 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
 
-##### Example:
+#### Example:
 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
-SQL Parameters:
-  Key: username
-  Value: oliver // or {{ components.username.value }}
 ```
+SQL Parameters: <br/>
+- Key: username <br/>
+- Value: oliver or `{{ components.username.value }}`
+
+### Row Level Security
+
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](#) guide for more information.
 
 ### Query Timeout
 
