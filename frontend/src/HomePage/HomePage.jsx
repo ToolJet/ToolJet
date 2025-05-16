@@ -958,34 +958,6 @@ class HomePageComponent extends React.Component {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.is_builder;
 
-    const testGroups = [
-      { name: 'Group 1' },
-      { name: 'Group 2 long name' },
-      { name: 'Group 3 med' },
-      { name: 'Group 4 med' },
-      { name: 'Group 4 really long name' },
-      { name: 'Group 1' },
-      { name: 'Group 2 long name' },
-      { name: 'Group 3 med' },
-      { name: 'Group 4 med' },
-      { name: 'Group 4 really long name' },
-      { name: 'Group 1' },
-      { name: 'Group 2 long name' },
-      { name: 'Group 3 med' },
-      { name: 'Group 4 med' },
-      { name: 'Group 4 really long name' },
-      { name: 'Group 1' },
-      { name: 'Group 2 long name' },
-      { name: 'Group 3 med' },
-      { name: 'Group 4 med' },
-      { name: 'Group 4 really long name' },
-      { name: 'Group 1' },
-      { name: 'Group 2 long name' },
-      { name: 'Group 3 med' },
-      { name: 'Group 4 med' },
-      { name: 'Group 4 really long name' },
-    ];
-
     //import app missing groups modal config
     const threshold = 3;
     const isLong = missingGroups.length > threshold;
