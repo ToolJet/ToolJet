@@ -41,7 +41,8 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
-
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned, shallow);
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
@@ -73,10 +74,15 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
         className={cx(
           'canvas-container align-items-center page-container',
           { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
-          { 'overflow-x-auto': (currentMode === 'edit' && isSidebarOpen) || currentMode === 'view' }
+          {
+            'overflow-x-auto':
+              (currentMode === 'edit' && (isSidebarOpen || (isRightSidebarOpen && !isRightSidebarPinned))) ||
+              currentMode === 'view',
+          }
         )}
         style={{
           // transform: `scale(1)`,
+          width: '100%',
           borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
           height: currentMode === 'edit' ? canvasContainerHeight : '100%',
           background:
@@ -91,12 +97,17 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
                 ? '65px'
                 : '210px'
               : 'auto',
+          // borderRight:
+          //   !isRightSidebarPinned && currentMode === 'edit' && isRightSidebarOpen ? '388px solid' : undefined,
+          // right: isRightSidebarPinned ? '380px' : '40px',
         }}
       >
         <div
-          style={{
-            minWidth: `calc((100vw - 300px) - 48px)`,
-          }}
+          style={
+            {
+              // minWidth: `calc((100vw - 300px) - 48px)`,
+            }
+          }
           className={`app-${appId} _tooljet-page-${getPageId()}`}
         >
           {currentMode === 'edit' && (

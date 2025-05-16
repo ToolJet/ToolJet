@@ -612,7 +612,7 @@ button {
 
   .editor-sidebar {
     position: fixed;
-    right: 0;
+    right: 40px;
     overflow: hidden;
     width: 300px;
     flex: 1 1 auto;
@@ -771,7 +771,7 @@ button {
       height: 100%;
       top: 48px;
       position: fixed;
-      right: 300px;
+      // right: 300px;
       left: 48px;
       overflow-y: scroll;
       overflow-x: hidden;
