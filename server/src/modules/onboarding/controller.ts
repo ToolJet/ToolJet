@@ -49,7 +49,6 @@ export class OnboardingController implements IOnboardingController {
   @InitFeature(FEATURE_KEY.SIGNUP)
   @UseGuards(
     SignupDisableGuard,
-    AllowPersonalWorkspaceGuard,
     UserCountGuard,
     EditorUserCountGuard,
     FirstUserSignupDisableGuard,
