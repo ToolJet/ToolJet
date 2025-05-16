@@ -19,6 +19,9 @@ import { UserRepository } from '../users/repository';
 import { AuthUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { IAuthService } from './interfaces/IService';
+import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -28,6 +31,7 @@ export class AuthService implements IAuthService {
     protected sessionUtilService: SessionUtilService,
     protected organizationRepository: OrganizationRepository,
     protected instanceSettingsUtilService: InstanceSettingsUtilService,
+    protected setupOrganizationsUtilService: SetupOrganizationsUtilService,
     protected eventEmitter: EventEmitter2
   ) {}
 
@@ -81,7 +85,7 @@ export class AuthService implements IAuthService {
         } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
-          organization = await this.organizationRepository.createOne(name, slug, manager);
+          organization = await this.setupOrganizationsUtilService.create({ name, slug }, user, manager);
         } else {
           if (!isInviteRedirect) throw new UnauthorizedException('User is not assigned to any workspaces');
         }
@@ -115,14 +119,12 @@ export class AuthService implements IAuthService {
       await this.userRepository.updateOne(user.id, updateData, manager);
 
       if (!isInviteRedirect) {
-        // this.eventEmitter.emit('auditLogEntry', {
-        //   userId: user.id,
-        //   organizationId: organization.id,
-        //   resourceId: user.id,
-        //   resourceType: ResourceTypes.USER,
-        //   resourceName: user.email,
-        //   actionType: ActionTypes.USER_LOGIN,
-        // });
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+        });
       }
 
       return await this.sessionUtilService.generateLoginResultPayload(
@@ -192,6 +194,7 @@ export class AuthService implements IAuthService {
       return;
     }
     const forgotPasswordToken = uuid.v4();
+    await this.userRepository.updateOne(user.id, { forgotPasswordToken });
     this.eventEmitter.emit('emailEvent', {
       type: EMAIL_EVENTS.SEND_PASSWORD_RESET_EMAIL,
       payload: {

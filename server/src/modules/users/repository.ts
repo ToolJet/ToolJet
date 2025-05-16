@@ -18,6 +18,7 @@ import { Organization } from '@entities/organization.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { isSuperAdmin } from '@helpers/utils.helper';
 import * as uuid from 'uuid';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 
 type UserFilterOptions = { searchText?: string; status?: string; page?: number };
 
@@ -39,14 +40,19 @@ export class UserRepository extends Repository<User> {
     if (options?.status) {
       findOptions.status = options?.status;
     }
-    const whereConditions = [];
+
+    // For the search query, create an array of conditions
+    let whereOptions: FindOptionsWhere<User> | FindOptionsWhere<User>[] = findOptions;
+
     if (options?.searchText) {
       const searchLower = options.searchText.toLowerCase();
-      whereConditions.concat([
-        { email: ILike(`%${searchLower}%`) },
-        { firstName: ILike(`%${searchLower}%`) },
-        { lastName: ILike(`%${searchLower}%`) },
-      ]);
+
+      // Create an array of OR conditions
+      whereOptions = [
+        { ...findOptions, email: ILike(`%${searchLower}%`) },
+        { ...findOptions, firstName: ILike(`%${searchLower}%`) },
+        { ...findOptions, lastName: ILike(`%${searchLower}%`) },
+      ];
     }
 
     const [items, total] = await this.manager.findAndCount(User, {
@@ -74,7 +80,7 @@ export class UserRepository extends Repository<User> {
           organization: true,
         },
       },
-      where: whereConditions ? whereConditions.map((condition) => ({ ...findOptions, ...condition })) : findOptions,
+      where: whereOptions,
       order: { createdAt: 'ASC' },
       take: 10,
       skip: 10 * (options?.page ? options?.page - 1 : 0),
@@ -161,6 +167,18 @@ export class UserRepository extends Repository<User> {
     manager?: EntityManager
   ): Promise<void> {
     await manager.upsert(UserDetails, updatableParams, conflictsPaths);
+  }
+
+  async getUserWithAdminRole(organizationId: string, manager?: EntityManager): Promise<User | null> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(User, 'user')
+        .innerJoin('user.userGroups', 'groupUsers')
+        .innerJoin('groupUsers.group', 'group')
+        .where('group.name = :groupName', { groupName: USER_ROLE.ADMIN })
+        .andWhere('group.organizationId = :organizationId', { organizationId })
+        .getOne();
+    }, manager || this.manager);
   }
 
   async findByEmail(

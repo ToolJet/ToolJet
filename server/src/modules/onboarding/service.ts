@@ -59,6 +59,8 @@ import { OnboardingStatus } from './constants';
 import { LicenseUtilService } from '@modules/licensing/util.service';
 import { IOnboardingService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 @Injectable()
 export class OnboardingService implements IOnboardingService {
   constructor(
@@ -117,6 +119,9 @@ export class OnboardingService implements IOnboardingService {
       const { firstName, lastName } = names;
       const userParams = { email, password, firstName, lastName };
 
+      // Find the default workspace
+      const defaultWorkspace = await this.organizationRepository.  getDefaultWorkspaceOfInstance();
+
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
         return await this.onboardingUtilService.whatIfTheSignUpIsAtTheWorkspaceLevel(
@@ -124,9 +129,18 @@ export class OnboardingService implements IOnboardingService {
           signingUpOrganization,
           userParams,
           redirectTo,
+          defaultWorkspace,
           manager
         );
       } else {
+        if(defaultWorkspace && !signingUpOrganization) {
+          return await this.onboardingUtilService.createUserInDefaultWorkspace(
+            userParams,
+            defaultWorkspace,
+            redirectTo,
+            manager
+          );
+        }
         return await this.onboardingUtilService.createUserOrPersonalWorkspace(
           userParams,
           existingUser,
@@ -147,8 +161,7 @@ export class OnboardingService implements IOnboardingService {
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
       const organization = await this.organizationRepository.createOne(
-        workspace || 'My workspace',
-        'my-workspace',
+        { name: workspace || 'My workspace', slug: 'my-workspace' },
         manager
       );
 
@@ -224,7 +237,8 @@ export class OnboardingService implements IOnboardingService {
         (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
           'true';
 
-      if (!(allowPersonalWorkspace || organizationToken)) {
+      const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+      if (!(defaultWorkspace || allowPersonalWorkspace || organizationToken)) {
         throw new BadRequestException('Invalid invitation link');
       }
       if (organizationToken) {
@@ -249,7 +263,8 @@ export class OnboardingService implements IOnboardingService {
           throw new BadRequestException('Please enter password');
         }
 
-        if (allowPersonalWorkspace) {
+        const activateDefaultWorkspace = (defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId) || allowPersonalWorkspace;
+        if (activateDefaultWorkspace) {
           // Getting default workspace
           const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
             (ou) => ou.organizationId === user.defaultOrganizationId
@@ -261,6 +276,14 @@ export class OnboardingService implements IOnboardingService {
 
           // Activate default workspace
           await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
+
+          if(defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId){
+            const personalWorkspaces = await this.organizationUsersUtilService.personalWorkspaces(user.id);
+            for(const personalWorkspace of personalWorkspaces){
+              // if any personal workspace left. activate those
+              await this.organizationUsersUtilService.activateOrganization(personalWorkspace, manager);  
+            }
+          }
 
           if (workspaceName) {
             const { slug } = generateNextNameAndSlug('My workspace');
@@ -334,18 +357,12 @@ export class OnboardingService implements IOnboardingService {
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
 
-      // this.eventEmitter.emit(
-      //   'auditLogEntry',
-      //   {
-      //     userId: user.id,
-      //     organizationId: organization?.id,
-      //     resourceId: user.id,
-      //     resourceName: user.email,
-      //     resourceType: ResourceTypes.USER,
-      //     actionType: ActionTypes.USER_INVITE_REDEEM,
-      //   },
-      //   manager
-      // );
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: organization?.id,
+        resourceId: user.id,
+        resourceName: user.email,
+      });
 
       await this.licenseUserService.validateUser(manager);
       return this.sessionUtilService.generateLoginResultPayload(
@@ -453,10 +470,10 @@ export class OnboardingService implements IOnboardingService {
       onboarding_details: {
         status: user.onboardingStatus,
         password: isPasswordMandatory(user.source), // Should accept password if user is setting up first time
-        questions:
-          (this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true' &&
-            !organizationUser) || // Should ask onboarding questions if first user of the instance. If ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true, then will ask questions to all signup users
-          (await this.userRepository.count({ where: { status: USER_STATUS.ACTIVE } })) === 0,
+        // questions:
+        //   (this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true' &&
+        //     !organizationUser) || // Should ask onboarding questions if first user of the instance. If ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true, then will ask questions to all signup users
+        //   (await this.userRepository.count({ where: { status: USER_STATUS.ACTIVE } })) === 0,
       },
     };
   }
@@ -550,14 +567,12 @@ export class OnboardingService implements IOnboardingService {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
-    // this.eventEmitter.emit('auditLogEntry', {
-    //   userId: user.id,
-    //   organizationId: organizationUser.organizationId,
-    //   resourceId: user.id,
-    //   resourceName: user.email,
-    //   resourceType: ResourceTypes.USER,
-    //   actionType: ActionTypes.USER_INVITE_REDEEM,
-    // });
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: organizationUser.organizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+    });
 
     return {
       email: user.email,
@@ -692,8 +707,7 @@ export class OnboardingService implements IOnboardingService {
       // Create first organization
       const workspaceSlug = generateWorkspaceSlug(workspaceName || 'My workspace');
       const organization = await this.setupOrganizationsUtilService.create(
-        workspaceName || 'My workspace',
-        workspaceSlug,
+        { name: workspaceName || 'My workspace', slug: workspaceSlug },
         null,
         manager
       );

@@ -20,20 +20,20 @@ import {
 describe("Private and Public apps", {
   retries: { runMode: 2 },
 }, () => {
-  const data = {};
+  let data;
 
   beforeEach(() => {
-    data.appName = `${fake.companyName} P P App`;
-    data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
-    data.workspaceName = fake.firstName;
-    data.workspaceSlug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
+    data = {
+      appName: `${fake.companyName} P P App`,
+      slug: `${fake.companyName} P P App`.toLowerCase().replace(/\s+/g, "-"),
+      firstName: fake.firstName,
+      email: fake.email.toLowerCase(),
+      workspaceName: fake.firstName,
+      workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
+    }
 
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
-    cy.log(data.appName, "text1")
-
   });
 
   it("Verify private and public app share functionality", () => {
@@ -78,16 +78,16 @@ describe("Private and Public apps", {
 
     // Test private access
     logout();
-    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
+
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
     cy.wait(2000);
-    cy.loginWithCredentials("dev@tooljet.io", "password");
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.appUILogin();
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
     // Test public access
     cy.get(commonSelectors.viewerPageLogo).click();
@@ -106,8 +106,8 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
   });
 
@@ -116,6 +116,9 @@ describe("Private and Public apps", {
 
     inviteUserToWorkspace(data.firstName, data.email);
     logout();
+    cy.visit("/");
+    cy.wait(2000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     // Test private access
     cy.visitSlug({
@@ -123,30 +126,32 @@ describe("Private and Public apps", {
     });
 
     cy.wait(2000);
-    cy.loginWithCredentials(data.email, "password");
+    cy.appUILogin(data.email, "password");
 
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible", { timeout: 20000 });
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
 
     // Test with private app valid session
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
     cy.get(commonSelectors.viewerPageLogo).click();
 
     // Test public access
     cy.defaultWorkspaceLogin();
+    cy.wait(1000);
     cy.apiMakeAppPublic();
     logout();
+    cy.wait(1000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
 
     // Test with public app with valid session
@@ -154,8 +159,8 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
   });
 
@@ -177,11 +182,14 @@ describe("Private and Public apps", {
     cy.apiMakeAppPublic();
     logout();
 
+    cy.wait(1000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
+
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
 
     // Verify public app with valid session
@@ -189,8 +197,8 @@ describe("Private and Public apps", {
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
   });
 
@@ -224,11 +232,13 @@ describe("Private and Public apps", {
     // Process invitation
     onboardUserFromAppLink(data.email, data.slug);
 
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
     cy.get('[data-cy="viewer-page-logo"]').click();
     logout();
+    cy.wait(1000);
+    cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
     // Setup new workspace and app
     cy.defaultWorkspaceLogin();
@@ -269,8 +279,8 @@ describe("Private and Public apps", {
     });
 
     onboardUserFromAppLink(data.email, data.slug, data.workspaceName, false);
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
-    cy.get('.text-widget-section > div').should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
 
   });
 

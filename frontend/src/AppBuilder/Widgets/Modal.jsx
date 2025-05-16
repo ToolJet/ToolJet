@@ -90,9 +90,9 @@ export const Modal = function Modal({
   const onHideSideEffects = () => {
     const canvasElement = document.querySelector('.page-container.canvas-container');
     const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-    const allModalContainers = realCanvasEl.querySelectorAll('.modal');
-    const modalContainer = allModalContainers[allModalContainers.length - 1];
-    const hasManyModalsOpen = allModalContainers.length > 1;
+    const allModalContainers = realCanvasEl?.querySelectorAll('.modal');
+    const modalContainer = allModalContainers?.[allModalContainers.length - 1];
+    const hasManyModalsOpen = allModalContainers?.length > 1;
 
     if (canvasElement && realCanvasEl && modalContainer) {
       modalContainer.style.height = ``;
@@ -277,7 +277,7 @@ export const Modal = function Modal({
 
       <Modal.Component
         show={showModal}
-        contentClassName="modal-component"
+        contentClassName="modal-component tj-modal--container"
         container={document.getElementsByClassName('real-canvas')[0]}
         size={size}
         keyboard={true}

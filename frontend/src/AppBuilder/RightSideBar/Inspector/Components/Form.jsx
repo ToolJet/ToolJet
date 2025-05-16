@@ -40,6 +40,7 @@ export const Form = ({
 
   const { id } = component;
   const newOptions = [{ name: 'None', value: 'none' }];
+
   Object.entries(allComponents).forEach(([componentId, _component]) => {
     const validParent =
       _component.component.parent === id ||
@@ -51,6 +52,19 @@ export const Form = ({
   });
 
   tempComponentMeta.properties.buttonToSubmit.options = newOptions;
+
+  // Hide header footer if custom schema is turned on
+
+  if (component.component.definition.properties.advanced.value === '{{true}}') {
+    component.component.properties.showHeader = {
+      ...component.component.properties.headerHeight,
+      isHidden: true,
+    };
+    component.component.properties.showFooter = {
+      ...component.component.properties.headerHeight,
+      isHidden: true,
+    };
+  }
 
   const accordionItems = baseComponentProperties(
     properties,
@@ -110,24 +124,6 @@ export const baseComponentProperties = (
     });
   }
 
-  items.push({
-    title: 'Additional actions',
-    isOpen: true,
-    children: additionalActions?.map((property) =>
-      renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode
-      )
-    ),
-  });
-
   if (events.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.events', 'Events')}`,
@@ -149,6 +145,24 @@ export const baseComponentProperties = (
     });
   }
 
+  items.push({
+    title: 'Additional actions',
+    isOpen: true,
+    children: additionalActions?.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode
+      )
+    ),
+  });
+
   if (validations.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.validation', 'Validation')}`,
@@ -167,25 +181,6 @@ export const baseComponentProperties = (
       ),
     });
   }
-
-  items.push({
-    title: `${i18next.t('widget.common.general', 'General')}`,
-    isOpen: true,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          layoutPropertyChanged,
-          dataQueries,
-          'tooltip',
-          'general',
-          currentState,
-          allComponents
-        )}
-      </>
-    ),
-  });
 
   items.push({
     title: `${i18next.t('widget.common.devices', 'Devices')}`,

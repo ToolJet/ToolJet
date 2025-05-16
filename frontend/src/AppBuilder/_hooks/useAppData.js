@@ -28,6 +28,8 @@ import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
 import useThemeAccess from './useThemeAccess';
+import { handleError } from '@/_helpers/handleAppAccess';
+import toast from 'react-hot-toast';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -316,16 +318,29 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
 
+      //no access to homepage, set to the next available page
+      if (startingPage?.restricted) {
+        startingPage = appData.pages.find((page) => !page?.restricted);
+      }
+
       if (initialLoadRef.current) {
         // if initial load, check if the path has a page handle and set that as the starting page
         const initialLoadPath = location.pathname.split('/').pop();
+
         const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
         if (page) {
           // if page is disabled, and not editing redirect to home page
-          if (mode !== 'edit' && page?.disabled) {
-            const currentUrl = window.location.href;
-            const replacedUrl = currentUrl.replace(initialLoadPath, startingPage.handle);
-            window.history.replaceState(null, null, replacedUrl);
+          const shouldRedirect = page?.restricted || (mode !== 'edit' && page?.disabled);
+
+          if (shouldRedirect) {
+            const newUrl = window.location.href.replace(initialLoadPath, startingPage.handle);
+            window.history.replaceState(null, null, newUrl);
+
+            if (page?.restricted) {
+              toast.error('Access to this page is restricted. Contact admin to know more.', {
+                className: 'text-nowrap w-auto mw-100',
+              });
+            }
           } else {
             startingPage = page;
           }
