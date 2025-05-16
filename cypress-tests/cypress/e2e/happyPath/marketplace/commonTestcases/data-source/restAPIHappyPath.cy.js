@@ -329,9 +329,9 @@ describe("Data source Rest API", () => {
     );
     cy.contains("Save").click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
-    deleteDatasource(`cypress-${data.dataSourceName}-restapi`);
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
   });
-  it("Should verify basic connection for Rest API", () => {
+  it.only("Should verify connection response for all methods", () => {
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
@@ -370,10 +370,16 @@ describe("Data source Rest API", () => {
     cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
     cy.openApp();
     createAndRunRestAPIQuery(
-      "get_restapi",
+      "get_beeceptor_data",
       `cypress-${data.dataSourceName}-restapi`,
       "GET",
-      "/api/users"
+      "",
+      [],
+      [],
+      null,
+      true,
+      "/api/users",
+      true
     );
     createAndRunRestAPIQuery(
       "post_restapi",
@@ -387,7 +393,8 @@ describe("Data source Rest API", () => {
         name: "Violin",
       },
       true,
-      "/api/users"
+      "/api/users",
+      true
     );
     cy.readFile("cypress/fixtures/restAPI/storedId.json").then(
       (postResponseID) => {
@@ -404,13 +411,9 @@ describe("Data source Rest API", () => {
             name: "Guitar",
           },
           true,
-          `/api/users/${id1}`
+          `/api/users/${id1}`,
+          true
         );
-      }
-    );
-    cy.readFile("cypress/fixtures/restAPI/storedId.json").then(
-      (putResponseID) => {
-        const id2 = putResponseID.id;
         createAndRunRestAPIQuery(
           "patch_restapi_id",
           `cypress-${data.dataSourceName}-restapi`,
@@ -420,13 +423,9 @@ describe("Data source Rest API", () => {
           [],
           { price: 999 },
           true,
-          `/api/users/${id2}`
+          `/api/users/${id1}`,
+          true
         );
-      }
-    );
-    cy.readFile("cypress/fixtures/restAPI/storedId.json").then(
-      (patchResponseID) => {
-        const id3 = patchResponseID.id;
         createAndRunRestAPIQuery(
           "get_restapi_id",
           `cypress-${data.dataSourceName}-restapi`,
@@ -435,9 +434,9 @@ describe("Data source Rest API", () => {
           [],
           [],
           true,
-          `/api/users/${id3}`
+          `/api/users/${id1}`,
+          true
         );
-
         createAndRunRestAPIQuery(
           "delete_restapi_id",
           `cypress-${data.dataSourceName}-restapi`,
@@ -446,9 +445,265 @@ describe("Data source Rest API", () => {
           [],
           [],
           true,
-          `/api/users/${id3}`
+          `/api/users/${id1}`
         );
       }
     );
+    // cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
+  });
+  it("Should verify response for basic authentication type connection", () => {
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-restapi`,
+      "restapi",
+      [
+        { key: "url", value: "https://httpbin.org" },
+        { key: "auth_type", value: "basic" },
+        { key: "grant_type", value: "authorization_code" },
+        { key: "add_token_to", value: "header" },
+        { key: "header_prefix", value: "Bearer " },
+        { key: "access_token_url", value: "" },
+        { key: "client_id", value: "" },
+        {
+          key: "client_secret",
+          encrypted: true,
+          credential_id: "b044a293-82b4-4381-84fd-d173c86a6a0c",
+        },
+        { key: "audience", value: "" },
+        { key: "scopes", value: "read, write" },
+        { key: "username", value: "user", encrypted: false },
+        { key: "password", value: "pass", encrypted: true },
+        {
+          key: "bearer_token",
+          encrypted: true,
+          credential_id: "21caf3cb-dbde-43c7-9f42-77feffb63062",
+        },
+        { key: "auth_url", value: "" },
+        { key: "client_auth", value: "header" },
+        { key: "headers", value: [["", ""]] },
+        { key: "custom_query_params", value: [["", ""]], encrypted: false },
+        { key: "custom_auth_params", value: [["", ""]] },
+        {
+          key: "access_token_custom_headers",
+          value: [["", ""]],
+          encrypted: false,
+        },
+        { key: "multiple_auth_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "retry_network_errors", value: true, encrypted: false },
+        { key: "url_parameters", value: [["", ""]], encrypted: false },
+        { key: "tokenData", encrypted: false },
+      ]
+    );
+    cy.reload();
+    cy.intercept("GET", "/api/library_apps").as("appLibrary");
+    cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
+    cy.openApp();
+    createAndRunRestAPIQuery(
+      "get_basic_auth_valid",
+      `cypress-${data.dataSourceName}-restapi`,
+      "GET",
+      "",
+      [],
+      [],
+      null,
+      true,
+      "/basic-auth/user/pass",
+      true,
+      { authenticated: true, user: "user" }
+    );
+    createAndRunRestAPIQuery(
+      "get_basic_auth_invalid",
+      `cypress-${data.dataSourceName}-restapi`,
+      "GET",
+      "",
+      [],
+      [],
+      null,
+      true,
+      "/basic-auth/invaliduser/invalidpass",
+      false
+    );
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
+  });
+  it("Should verify response for bearer authentication type connection", () => {
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-restapi`,
+      "restapi",
+      [
+        { key: "url", value: "https://httpbin.org" },
+        { key: "auth_type", value: "bearer" },
+        { key: "grant_type", value: "authorization_code" },
+        { key: "add_token_to", value: "header" },
+        { key: "header_prefix", value: "Bearer " },
+        { key: "access_token_url", value: "" },
+        { key: "client_id", value: "" },
+        {
+          key: "client_secret",
+          encrypted: true,
+          credential_id: "b044a293-82b4-4381-84fd-d173c86a6a0c",
+        },
+        { key: "audience", value: "" },
+        { key: "scopes", value: "read, write" },
+        { key: "username", value: "", encrypted: false },
+        { key: "password", value: "", encrypted: true },
+        {
+          key: "bearer_token",
+          value: "my-token-123",
+          encrypted: true,
+        },
+        { key: "auth_url", value: "" },
+        { key: "client_auth", value: "header" },
+        { key: "headers", value: [["", ""]] },
+        { key: "custom_query_params", value: [["", ""]], encrypted: false },
+        { key: "custom_auth_params", value: [["", ""]] },
+        {
+          key: "access_token_custom_headers",
+          value: [["", ""]],
+          encrypted: false,
+        },
+        { key: "multiple_auth_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "retry_network_errors", value: true, encrypted: false },
+        { key: "url_parameters", value: [["", ""]], encrypted: false },
+        { key: "tokenData", encrypted: false },
+      ]
+    );
+    cy.reload();
+    cy.intercept("GET", "/api/library_apps").as("appLibrary");
+    cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
+    // cy.openApp();
+    createAndRunRestAPIQuery(
+      "get_bearer_auth_valid",
+      `cypress-${data.dataSourceName}-restapi`,
+      "GET",
+      "",
+      [],
+      [],
+      null,
+      true,
+      "/bearer",
+      true,
+      { authenticated: true, token: "my-token-123" }
+    );
+    cy.intercept("GET", "api/data_sources?**").as("datasource");
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-restapi-invalid`,
+      "restapi",
+      [
+        { key: "url", value: "https://httpbin.org" },
+        { key: "auth_type", value: "bearer" },
+        { key: "grant_type", value: "authorization_code" },
+        { key: "add_token_to", value: "header" },
+        { key: "header_prefix", value: "Bearer " },
+        { key: "access_token_url", value: "" },
+        { key: "client_id", value: "" },
+        {
+          key: "client_secret",
+          encrypted: true,
+          credential_id: "b044a293-82b4-4381-84fd-d173c86a6a0c",
+        },
+        { key: "audience", value: "" },
+        { key: "scopes", value: "read, write" },
+        { key: "username", value: "", encrypted: false },
+        { key: "password", value: "", encrypted: true },
+        {
+          key: "bearer_token",
+          value: "",
+          encrypted: true,
+        },
+        { key: "auth_url", value: "" },
+        { key: "client_auth", value: "header" },
+        { key: "headers", value: [["", ""]] },
+        { key: "custom_query_params", value: [["", ""]], encrypted: false },
+        { key: "custom_auth_params", value: [["", ""]] },
+        {
+          key: "access_token_custom_headers",
+          value: [["", ""]],
+          encrypted: false,
+        },
+        { key: "multiple_auth_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "retry_network_errors", value: true, encrypted: false },
+        { key: "url_parameters", value: [["", ""]], encrypted: false },
+        { key: "tokenData", encrypted: false },
+      ]
+    );
+    cy.apiCreateApp(`${fake.companyName}-restAPI-App-invalid`);
+    //cy.openApp();
+    createAndRunRestAPIQuery(
+      "get_bearer_auth_invalid",
+      `cypress-${data.dataSourceName}-restapi-invalid`,
+      "GET",
+      "",
+      [],
+      [],
+      null,
+      true,
+      "/bearer",
+      false
+    );
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
+  });
+  it("Should verify response for authentication code grant type connection", () => {
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-restapi`,
+      "restapi",
+      [
+        {
+          key: "url",
+          value: "https://dev-6lj2hoxdz5fg3m57.uk.auth0.com/api/v2/users",
+        },
+        { key: "auth_type", value: "oauth2" },
+        { key: "grant_type", value: "client_credentials" },
+        { key: "add_token_to", value: "header" },
+        { key: "header_prefix", value: "Bearer " },
+        {
+          key: "access_token_url",
+          value: "https://dev-6lj2hoxdz5fg3m57.uk.auth0.com/oauth/token",
+        },
+        { key: "client_id", value: "JBDuuLU9vaSTP6Do7zYSkw0GvVgWhfyZ" },
+        {
+          key: "client_secret",
+          encrypted: true,
+          credential_id: "a6d26607-4d09-42a2-8bc0-e5c185c7c2f7",
+        },
+        {
+          key: "audience",
+          value: "https://dev-6lj2hoxdz5fg3m57.uk.auth0.com/api/v2/",
+        },
+        { key: "scopes", value: "" },
+        { key: "username", value: "", encrypted: false },
+        {
+          key: "password",
+          encrypted: true,
+          credential_id: "4502a906-b512-447a-a128-39f67e9778d2",
+        },
+        {
+          key: "bearer_token",
+          encrypted: true,
+          credential_id: "c94262c7-d2c5-4d7f-96f8-657689f2b1f0",
+        },
+        { key: "auth_url", value: "" },
+        { key: "client_auth", value: "header" },
+        { key: "headers", value: [["", ""]] },
+        { key: "custom_query_params", value: [["", ""]], encrypted: false },
+        { key: "custom_auth_params", value: [["", ""]] },
+        {
+          key: "access_token_custom_headers",
+          value: [["", ""]],
+          encrypted: false,
+        },
+        { key: "multiple_auth_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "retry_network_errors", value: true, encrypted: false },
+      ]
+    );
+    cy.reload();
+    cy.intercept("GET", "/api/library_apps").as("appLibrary");
+    cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
   });
 });

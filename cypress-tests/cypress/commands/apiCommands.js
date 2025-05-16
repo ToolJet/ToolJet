@@ -52,7 +52,7 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
         log: false;
       }
       expect(response.status).to.equal(201);
-      Cypress.env(`${kind}`, response.body.id);
+      Cypress.env(`${name}`, response.body.id);
 
       Cypress.log({
         name: "Create Data Source",
@@ -80,12 +80,13 @@ Cypress.Commands.add("apiFetchDataSourcesId", () => {
       Cypress.log({
         name: "DS Fetch",
         displayName: "Data Sources Fetched",
-        message: dataSources.map(ds => `\nKind: '${ds.kind}', Name: '${ds.id}'`).join(','),
+        message: dataSources
+          .map((ds) => `\nKind: '${ds.kind}', Name: '${ds.id}'`)
+          .join(","),
       });
     });
   });
 });
-
 
 Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
   cy.window({ log: false }).then((win) => {
@@ -168,7 +169,6 @@ Cypress.Commands.add(
 
       Cypress.env("editingVersionId", responseData.editing_version.id);
       Cypress.env("environmentId", responseData.editorEnvironment.id);
-
     });
     cy.get(componentSelector, { timeout: 10000 });
   }
@@ -221,21 +221,21 @@ Cypress.Commands.add(
     const requestBody =
       envVar === "Enterprise"
         ? {
-          email: userEmail,
-          firstName: userName,
-          groups: [],
-          lastName: "",
-          role: userRole,
-          userMetadata: metaData,
-        }
+            email: userEmail,
+            firstName: userName,
+            groups: [],
+            lastName: "",
+            role: userRole,
+            userMetadata: metaData,
+          }
         : {
-          email: userEmail,
-          firstName: userName,
-          groups: [],
-          lastName: "",
-          role: userRole,
-          userMetadata: metaData,
-        };
+            email: userEmail,
+            firstName: userName,
+            groups: [],
+            lastName: "",
+            role: userRole,
+            userMetadata: metaData,
+          };
 
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request(
@@ -289,7 +289,9 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
 Cypress.Commands.add(
   "apiAddQueryToApp",
   (queryName, options, dsName, dsKind) => {
-    cy.log(`${Cypress.env("server_host")}/api/data-queries/data-sources/${Cypress.env(dsKind)}/versions/${Cypress.env("editingVersionId")}`)
+    cy.log(
+      `${Cypress.env("server_host")}/api/data-queries/data-sources/${Cypress.env(dsKind)}/versions/${Cypress.env("editingVersionId")}`
+    );
     cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
       const authToken = `tj_auth_token=${cookie.value}`;
       const workspaceId = Cypress.env("workspaceId");
@@ -734,6 +736,32 @@ Cypress.Commands.add("apiGetAppData", (appId = Cypress.env("appId")) => {
     }).then((response) => {
       expect(response.status).to.equal(200);
       return response.body;
+    });
+  });
+});
+
+Cypress.Commands.add("apiDeleteGDS", (name) => {
+  const dataSourceId = Cypress.env(`${name}`);
+
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request({
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}`,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: `tj_auth_token=${cookie.value}`,
+      },
+      failOnStatusCode: false,
+    }).then((response) => {
+      console.log("Delete response:", response);
+
+      expect(response.status, "Delete status code").to.eq(200);
+
+      Cypress.log({
+        name: "Delete Data Source",
+        displayName: "DATA SOURCE DELETED",
+        message: `Name: '${name}' | ID: '${dataSourceId}'`,
+      });
     });
   });
 });

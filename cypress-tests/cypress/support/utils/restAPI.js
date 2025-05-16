@@ -7,7 +7,9 @@ export const createAndRunRestAPIQuery = (
   bodyList = [],
   jsonBody = null,
   run = true,
-  urlSuffix = ""
+  urlSuffix = "",
+  shouldSucceed = true,
+  expectedResponseShape = {}
 ) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
@@ -32,7 +34,6 @@ export const createAndRunRestAPIQuery = (
         const dataSource = dsResponse.body.data_sources.find(
           (ds) => ds.name === dsName
         );
-
         if (!dataSource) {
           throw new Error(`Data source '${dsName}' not found.`);
         }
@@ -92,19 +93,54 @@ export const createAndRunRestAPIQuery = (
 
           expect(createdOptions.runOnPageLoad).to.equal(run);
           cy.log("Metadata verified successfully");
+
           if (run) {
             cy.request({
               method: "POST",
               url: `${Cypress.env("server_host")}/api/data-queries/${queryId}/run`,
               headers,
+              failOnStatusCode: false,
             }).then((runResponse) => {
-              expect([200, 201]).to.include(runResponse.status);
-              cy.log("Query executed successfully:", runResponse.body);
-              if (runResponse.body?.data.id) {
-                cy.writeFile("cypress/fixtures/restAPI/storedId.json", {
-                  id: runResponse.body.data.id,
-                });
-                cy.log("Stored ID:", runResponse.body.data.id);
+              const responseData = runResponse.body?.data;
+
+              if (shouldSucceed) {
+                expect([200, 201]).to.include(runResponse.status);
+                cy.log("✅ Query executed successfully:", responseData);
+
+                if (
+                  expectedResponseShape &&
+                  typeof expectedResponseShape === "object"
+                ) {
+                  Object.entries(expectedResponseShape).forEach(
+                    ([key, value]) => {
+                      expect(responseData).to.have.property(key, value);
+                    }
+                  );
+                }
+
+                if (Array.isArray(responseData)) {
+                  expect(responseData.length).to.be.greaterThan(0);
+                  responseData.forEach((item) => {
+                    expect(item).to.have.all.keys("id", "name", "price");
+                  });
+                }
+                if (responseData?.id) {
+                  cy.writeFile("cypress/fixtures/restAPI/storedId.json", {
+                    id: responseData.id,
+                  });
+                  cy.log("Stored ID:", responseData.id);
+                }
+              } else {
+                expect(runResponse.status).to.be.oneOf([
+                  201, 400, 401, 403, 404,
+                ]);
+                expect(runResponse.body.status).to.equal("failed");
+                expect(runResponse.body.message).to.include(
+                  "Query could not be completed"
+                );
+                expect(runResponse.body.description).to.include(
+                  "Response code"
+                );
               }
             });
           }
