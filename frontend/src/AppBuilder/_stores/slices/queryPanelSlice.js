@@ -337,7 +337,10 @@ export const createQueryPanelSlice = (set, get) => ({
         if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters);
         } else if (query.kind === 'runpy') {
-          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState);
+          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, {
+            ...queryState,
+            parameters,
+          });
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = executeWorkflow(
             moduleId,
@@ -693,7 +696,29 @@ export const createQueryPanelSlice = (set, get) => ({
     evaluatePythonCode: async (options, moduleId = 'canvas') => {
       const { eventsSlice, dataQuery } = get();
       const { generateAppActions } = eventsSlice;
-      const { query, mode, isPreview, code, currentState, queryResult } = options;
+      let { query, mode, isPreview, code, currentState, queryResult } = options;
+
+      if (typeof currentState?.parameters !== 'object' || currentState?.parameters === null) {
+        currentState['parameters'] = {};
+      }
+      const defaultParams =
+        query?.options?.parameters?.reduce(
+          (paramObj, param) => ({
+            ...paramObj,
+            [param.name]: resolveReferences(param.defaultValue, undefined),
+          }),
+          {}
+        ) || {};
+
+      let formattedParams = {};
+      if (query) {
+        Object.keys(defaultParams).map((key) => {
+          formattedParams[key] =
+            currentState?.parameters[key] === undefined ? defaultParams[key] : currentState?.parameters[key];
+        });
+      } else {
+        formattedParams = { ...currentState?.parameters };
+      }
       let pyodide;
       try {
         pyodide = await loadPyodide();
@@ -718,9 +743,24 @@ export const createQueryPanelSlice = (set, get) => ({
           for (const key of Object.keys(queriesInCurentState)) {
             queriesInCurentState[key] = {
               ...queriesInCurentState[key],
-              run: () => {
+              run: (params) => {
+                if (typeof params !== 'object' || params === null) {
+                  params = {};
+                }
+
+                // Convert ProxyPy object to a normal JS object
+                if (pyodide.isPyProxy(params)) {
+                  params = params.toJs();
+                }
+
+                if (params instanceof Map) {
+                  params = Object.fromEntries(params);
+                }
+
+                const processedParams = {};
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-                return actions.runQuery(query.name);
+                query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
+                return actions.runQuery(query.name, processedParams);
               },
 
               getData: () => {
@@ -747,7 +787,7 @@ export const createQueryPanelSlice = (set, get) => ({
         await pyodide.globals.set('tj_globals', resolvedState['globals']);
         await pyodide.globals.set('constants', resolvedState['constants']);
         await pyodide.globals.set('page', deepClone(resolvedState['page']));
-        await pyodide.globals.set('parameters', currentState['parameters']);
+        await pyodide.globals.set('parameters', ...(!_.isEmpty(formattedParams) ? [formattedParams] : []));
         await pyodide.globals.set('variables', appStateVars);
         if (queryResult) await pyodide.globals.set('data', queryResult);
 
@@ -1024,8 +1064,8 @@ export const createQueryPanelSlice = (set, get) => ({
         const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
         const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
         const proxiedFormattedParams = createProxy(
-          !_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : [],
-          'params'
+          deepClone(!_.isEmpty(formattedParams) ? formattedParams : {}),
+          'parameters'
         );
 
         const fnParams = [
@@ -1055,7 +1095,7 @@ export const createQueryPanelSlice = (set, get) => ({
           proxiedVariables,
           actions,
           proxiedConstants,
-          ...proxiedFormattedParams,
+          ...(!_.isEmpty(formattedParams) ? [proxiedFormattedParams] : []),
         ];
 
         result = {
