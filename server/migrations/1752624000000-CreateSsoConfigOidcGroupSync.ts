@@ -16,47 +16,47 @@ export class CreateSsoConfigOidcGroupSync1752624000000 implements MigrationInter
           {
             name: 'sso_config_id',
             type: 'uuid',
-            isNullable: false
+            isNullable: false,
           },
           {
             name: 'organization_id',
             type: 'uuid',
-            isNullable: true
+            isNullable: true,
           },
           {
             name: 'claim_name',
             type: 'varchar',
-            isNullable: false
+            isNullable: false,
           },
           {
-            name: 'group_mappings',
+            name: 'group_mapping',
             type: 'jsonb',
-            isNullable: false
+            isNullable: false,
           },
           {
-            name: 'is_group_sync_enabled',
+            name: 'enable_group_sync',
             type: 'boolean',
-            isNullable: true
+            isNullable: true,
           },
           {
             name: 'created_at',
             type: 'timestamp',
-            default: 'now()'
+            default: 'now()',
           },
           {
             name: 'updated_at',
             type: 'timestamp',
-            default: 'now()'
-          }
+            default: 'now()',
+          },
         ],
         foreignKeys: [
           {
             columnNames: ['sso_config_id'],
             referencedColumnNames: ['id'],
             referencedTableName: 'sso_configs',
-            onDelete: 'CASCADE'
-          }
-        ]
+            onDelete: 'CASCADE',
+          },
+        ],
       })
     );
   }

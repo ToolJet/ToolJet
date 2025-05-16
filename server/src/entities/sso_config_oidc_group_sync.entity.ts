@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { SSOConfigs } from './sso_config.entity';
 
@@ -14,7 +14,7 @@ export class SsoConfigOidcGroupSync {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => SSOConfigs, (ssoConfig:SSOConfigs) => ssoConfig.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => SSOConfigs, (ssoConfig: SSOConfigs) => ssoConfig.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sso_config_id' })
   ssoConfig: SSOConfigs;
 
@@ -27,11 +27,11 @@ export class SsoConfigOidcGroupSync {
   @Column({ name: 'claim_name', type: 'varchar' })
   claimName: string;
 
-  @Column({ name: 'group_mappings', type: 'jsonb' })
-  groupMappings: Record<string, string>;
+  @Column({ name: 'group_mapping', type: 'jsonb' })
+  groupMapping: Record<string, string>;
 
-  @Column({ name: 'is_group_sync_enabled', type: 'boolean', nullable: true })
-  isGroupSyncEnabled: boolean | null;
+  @Column({ name: 'enable_group_sync', type: 'boolean', nullable: true })
+  enableGroupSync: boolean | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

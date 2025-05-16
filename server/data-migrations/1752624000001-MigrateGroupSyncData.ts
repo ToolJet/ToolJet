@@ -32,8 +32,8 @@ export class MigrateGroupSyncData1752624000001 implements MigrationInterface {
         ssoConfigId,
         organizationId: null,
         claimName: claimName || null,
-        groupMappings: groupMapping || null,
-        isGroupSyncEnabled: enableGroupSync || false,
+        groupMapping: groupMapping || null,
+        enableGroupSync: enableGroupSync || false,
       });
       entityManager.save(SsoConfigOidcGroupSync, enrty);
     }
