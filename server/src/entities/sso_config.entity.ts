@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Organization } from './organization.entity';
+import { SsoConfigOidcGroupSync } from './sso_config_oidc_group_sync.entity';
 
 type Google = {
   clientId: string;
@@ -97,4 +99,7 @@ export class SSOConfigs {
   @ManyToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @OneToMany(() => SsoConfigOidcGroupSync, (groupSync) => groupSync.ssoConfig)
+  oidcGroupSyncs: SsoConfigOidcGroupSync[];
 }

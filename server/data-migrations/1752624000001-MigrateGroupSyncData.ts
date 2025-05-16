@@ -1,6 +1,6 @@
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { processDataInBatches } from '@helpers/migration.helper';
-import { ConfigScope, SSOConfigs, SSOType } from '@entities/sso_config.entity';
+import { SSOConfigs } from '@entities/sso_config.entity';
 import { SsoConfigOidcGroupSync } from '@entities/sso_config_oidc_group_sync.entity';
 
 export class MigrateGroupSyncData1752624000001 implements MigrationInterface {
@@ -20,7 +20,7 @@ export class MigrateGroupSyncData1752624000001 implements MigrationInterface {
         await this.processUpdates(entityManager, ssoConfigs);
       },
       100
-    );    
+    );
   }
 
   private async processUpdates(entityManager: EntityManager, ssoConfigs: SSOConfigs[]) {
