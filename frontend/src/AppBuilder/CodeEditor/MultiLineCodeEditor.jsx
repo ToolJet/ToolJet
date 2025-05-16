@@ -20,6 +20,7 @@ import { PreviewBox } from './PreviewBox';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { syntaxTree } from '@codemirror/language';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
 import { handleSearchPanel } from './SearchBox';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
@@ -67,7 +68,7 @@ const MultiLineCodeEditor = (props) => {
 
   const context = useContext(CodeHinterContext);
 
-  const { suggestionList } = createReferencesLookup(context, true);
+  const { suggestionList: paramList } = createReferencesLookup(context, true);
 
   const currentValueRef = useRef(initialValue);
 
@@ -148,8 +149,29 @@ const MultiLineCodeEditor = (props) => {
       return suggestion.hint.includes(nearestSubstring);
     });
 
+    const localVariables = new Set();
+
+    // Traverse the syntax tree to extract variable declarations
+    syntaxTree(context.state).iterate({
+      enter: (node) => {
+        // JavaScript: Detect variable declarations (var, let, const)
+        if (node.name === 'VariableDefinition') {
+          const varName = context.state.sliceDoc(node.from, node.to);
+          if (varName && varName.startsWith(nearestSubstring)) localVariables.add(varName);
+        }
+      },
+    });
+
+    // Convert Set to an array of completion suggestions
+    const localVariableSuggestions = [...localVariables].map((varName) => ({
+      hint: varName,
+      type: 'variable',
+    }));
+
+    const suggestionList = paramList.filter((paramSuggestion) => paramSuggestion.hint.includes(nearestSubstring));
+
     const suggestions = generateHints(
-      [...JSLangHints, ...autoSuggestionList, ...suggestionList],
+      [...localVariableSuggestions, ...JSLangHints, ...autoSuggestionList, ...suggestionList],
       null,
       nearestSubstring
     ).map((hint) => {
@@ -206,6 +228,7 @@ const MultiLineCodeEditor = (props) => {
     return {
       from: context.pos,
       options: [...suggestions],
+      filter: false,
     };
   }
 
@@ -239,7 +262,7 @@ const MultiLineCodeEditor = (props) => {
   ]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [paramList]);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
