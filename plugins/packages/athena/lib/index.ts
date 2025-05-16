@@ -32,7 +32,7 @@ export default class Athena implements QueryService {
     }
     if (state === "FAILED" || state === "CANCELLED") {
       const msg = response.QueryExecution.Status.StateChangeReason;
-      throw new QueryError("Athena query failed", msg || "Unknown reason", {});
+      throw new QueryError("Athena query failed", msg ?? "Unknown reason", {});
     }
 
     throw new QueryError("Athena query failed", "Unknown reason", {});
@@ -104,14 +104,14 @@ export default class Athena implements QueryService {
         );
       }
 
-      const cols = results.ResultSet?.ResultSetMetadata?.ColumnInfo || [];
-      const rows = results.ResultSet?.Rows || [];
+      const cols = results.ResultSet?.ResultSetMetadata?.ColumnInfo ?? [];
+      const rows = results.ResultSet?.Rows ?? [];
       const dataRows = isFirstPage ? rows.slice(1) : rows;
       isFirstPage = false;
 
       const data = dataRows.map((r) =>
         r.Data!.reduce((obj, cell, idx) => {
-          obj[cols[idx].Name] = cell.VarCharValue || null;
+          obj[cols[idx].Name] = cell.VarCharValue ?? null;
           return obj;
         }, {} as Record<string, any>)
       );
