@@ -9,6 +9,10 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
       auditLogsKey: 'USER_DETAILS_UPDATE',
     },
+    [FEATURE_KEY.UPDATE_USER_TYPE_INSTANCE]: {
+      isPublic: true,
+      auditLogsKey: 'SET_AS_SUPERADMIN',
+    },
     [FEATURE_KEY.AUTO_UPDATE_USER_PASSWORD]: {},
     [FEATURE_KEY.CHANGE_USER_PASSWORD]: {},
   },
