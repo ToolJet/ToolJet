@@ -62,7 +62,7 @@ To enhance security during data transfer, encryption can be enabled even with a 
 
 SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries.  
 
-1. Create a new query and select the data source.
+1. Create a new query and select the MS SQL data source.
 2. Select **SQL mode** from the dropdown.
 3. Enter the SQL query in the editor.
 4. Click on the **Run** button to run the query.
@@ -107,7 +107,7 @@ You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_S
 
 GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries.
 
-1. Create a new query and select the data source.
+1. Create a new query and select the MS SQL data source.
 2. Select **GUI mode** from the dropdown.
 3. Choose the operation **Bulk update using the primary key**.
 4. Enter the **Table** name and **Primary key** column name. 

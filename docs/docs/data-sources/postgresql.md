@@ -53,7 +53,7 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 ## Querying in SQL Mode
 
-1. Create a new query and select the data source.
+1. Create a new query and select the PostgreSQL data source.
 2. Select the SQL query mode from the dropdown and enter the query.
 3. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
@@ -93,7 +93,7 @@ You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_S
 
 ## Querying in GUI Mode
 
-1. Create a new query and select the data source.
+1. Create a new query and select the PostgreSQL data source.
 2. Select the GUI mode from the dropdown.
 3. Select the operation **Bulk update using primary key**.
 4. Provide the **Table** name and the **Primary key column** name.
