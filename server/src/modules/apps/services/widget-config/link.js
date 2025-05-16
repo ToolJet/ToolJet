@@ -159,14 +159,6 @@ export const linkConfig = {
       ],
       accordian: 'container',
     },
-    alignment: {
-      type: 'alignButtons',
-      displayName: 'Alignment',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'left',
-      },
-    },
   },
   exposedVariables: {},
   actions: [
