@@ -13,8 +13,7 @@
     },
     "options": {
       "url": {
-        "type": "string",
-        "encrypted": false
+        "type": "string"
       },
       "apiKey": {
         "type": "string",
@@ -29,8 +28,7 @@
       "key": "url",
       "type": "text",
       "description": "Enter your Qdrant URL.",
-      "helpText": "<a href='https://qdrant.tech/documentation/quickstart-cloud/#authenticate-via-sdks' target='_blank' rel='noreferrer'>REST URL</a> to authenticate the requests of the Qdrant instance.",
-      "encrypted": true
+      "helpText": "<a href='https://qdrant.tech/documentation/quickstart-cloud/#authenticate-via-sdks' target='_blank' rel='noreferrer'>REST URL</a> to authenticate the requests of the Qdrant instance."
     },
     "apiKey": {
       "label": "API Key",
