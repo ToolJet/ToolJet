@@ -9,6 +9,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { cleanObject } from '@helpers/utils.helper';
 import { OrganizationConfigsUpdateDto } from './dto';
+import { SsoConfigOidcGroupSyncRepository } from './oidc-group-sync.repository';
 
 @Injectable()
 export class LoginConfigsService implements ILoginConfigsService {
@@ -17,7 +18,8 @@ export class LoginConfigsService implements ILoginConfigsService {
     protected organizationsRepository: OrganizationRepository,
     protected configService: ConfigService,
     protected encryptionService: EncryptionService,
-    protected loginConfigsUtilService: LoginConfigsUtilService
+    protected loginConfigsUtilService: LoginConfigsUtilService,
+    protected oidcGroupSyncRepository: SsoConfigOidcGroupSyncRepository
   ) {}
 
   async getProcessedOrganizationDetails(organizationId: string) {
@@ -51,7 +53,7 @@ export class LoginConfigsService implements ILoginConfigsService {
   }
 
   async updateOrganizationSSOConfigs(organizationId: string, params: any): Promise<any> {
-    const { type, configs, enabled } = params;
+    const { type, configs, enabled, oidcGroupSyncs } = params;
 
     if (
       !(type && [SSOType.GOOGLE, SSOType.GIT, SSOType.FORM, SSOType.OPENID, SSOType.SAML, SSOType.LDAP].includes(type))
@@ -61,13 +63,19 @@ export class LoginConfigsService implements ILoginConfigsService {
 
     await this.loginConfigsUtilService.encryptSecret(configs);
 
-    return await this.ssoConfigsRepository.createOrUpdateSSOConfig({
+    const ssoConfig = await this.ssoConfigsRepository.createOrUpdateSSOConfig({
       sso: type,
       configs,
       enabled,
       organizationId,
       configScope: ConfigScope.ORGANIZATION,
     });
+
+    if (oidcGroupSyncs) {
+      await this.oidcGroupSyncRepository.createOrUpdateGroupSync(oidcGroupSyncs, ssoConfig.id);
+    }
+
+    return ssoConfig;
   }
 
   async updateGeneralOrganizationConfigs(organizationId: string, params: OrganizationConfigsUpdateDto) {
