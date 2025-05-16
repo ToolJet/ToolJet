@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 
 import { ActionTypes } from '@/Editor/ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -32,6 +32,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { components as selectComponents } from 'react-select';
 
@@ -84,6 +85,8 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const lastFocusedEventIndex = useRef(null);
+  const shouldSkipOnToggle = useRef(null);
 
   const { t } = useTranslation();
 
@@ -1090,10 +1093,21 @@ export const EventManager = ({
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
                           overlay={eventPopover(event.event, index)}
-                          onHide={() => setFocusedEventIndex(null)}
                           onToggle={(showing) => {
+                            // If the toggle action should be skipped (e.g., due to a previous state change), reset the flag and exit early.
+                            if (shouldSkipOnToggle.current) {
+                              shouldSkipOnToggle.current = false;
+                              return;
+                            }
+
+                            // If there is already a focused event, set the skip flag to prevent unnecessary state updates.
+                            if (focusedEventIndex !== null && showing) {
+                              shouldSkipOnToggle.current = true;
+                            }
+
                             if (showing) {
                               setFocusedEventIndex(index);
+                              lastFocusedEventIndex.current = index;
                             } else {
                               setFocusedEventIndex(null);
                             }
@@ -1102,6 +1116,7 @@ export const EventManager = ({
                         >
                           <div
                             key={index}
+                            id={`${sourceId}-${index}`}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
@@ -1144,6 +1159,17 @@ export const EventManager = ({
       </AddNewButton>
     );
   };
+
+  const shouldUsePopoverObserver = events.length !== 0 && eventSourceType === 'data_query';
+
+  usePopoverObserver(
+    shouldUsePopoverObserver ? document.getElementsByClassName('query-details')[0] : null,
+    document.getElementById(`${sourceId}-${lastFocusedEventIndex.current}`),
+    document.getElementById('popover-basic'),
+    focusedEventIndex !== null,
+    () => (document.getElementById('popover-basic').style.display = 'block'),
+    () => (document.getElementById('popover-basic').style.display = 'none')
+  );
 
   if (events.length === 0) {
     return (
