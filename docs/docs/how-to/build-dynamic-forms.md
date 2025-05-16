@@ -57,7 +57,7 @@ d. Finally, the *button1* component has to be disabled if the rating, email, and
 
 It’s time to put your form to the test! Check that everything functions smoothly and as expected.
 
-1. Check whether the *textinput1* is visible and hidden based on the star rating.
+1. Check whether the textinput1 component's visibility is changed based on the rating selected in the Star Rating component.
         <img src="/img/how-to/build-dynamic-forms/start-rating-condition-test.png" style={{paddingBottom:"25px", marginTop:'15px'}} alt="Dynamic Form UI - Test Star Rating" />
         <img src="/img/how-to/build-dynamic-forms/start-rating-condition-test-2.png" style={{paddingBottom:"25px"}} alt="Dynamic Form UI - Test Star Rating 2" />
 2. Enter incorrect email and contact details to see whether the related components throw an error while disabling the button.

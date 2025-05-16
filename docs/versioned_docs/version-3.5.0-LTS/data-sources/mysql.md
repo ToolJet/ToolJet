@@ -50,11 +50,10 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 SQL mode can be used to query MySQL database using SQL queries. 
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the database added in the previous step as the data source. 
-3. Select **SQL mode** from the dropdown.
-4. Enter the SQL query in the editor.
-5. Click on the **Run** button to run the query.
+1. Create a new query and select the data source.
+2. Select **SQL mode** from the dropdown.
+3. Enter the SQL query in the editor.
+4. Click on the **Run** button to run the query.
 
 **Example:**
 
@@ -91,11 +90,12 @@ You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_S
 
 GUI mode can be used to query MySQL database without writing queries. 
 
-1. Select **GUI mode** from the dropdown.
-2. Choose the operation **Bulk update using primary key**.
-3. Enter the **Table** name and **Primary key column** name.
-4. In the editor enter the records in the form of an array of objects.
-5. Click on the **Run** button to run the query.
+1. Create a new query and select the data source.
+2. Select **GUI mode** from the dropdown.
+3. Choose the operation **Bulk update using primary key**.
+4. Enter the **Table** name and **Primary key column** name.
+5. In the editor enter the records in the form of an array of objects.
+6. Click on the **Run** button to run the query.
 
 **Example:**
 
