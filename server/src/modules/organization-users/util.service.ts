@@ -7,6 +7,7 @@ import {
   lifecycleEvents,
   USER_STATUS,
   USER_TYPE,
+  WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
@@ -210,7 +211,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async createDefaultOrganization(manager: EntityManager) {
     const { name, slug } = generateNextNameAndSlug('My workspace');
-    return await this.setupOrganizationsUtilService.create(name, slug, null, manager);
+    return await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
   }
 
   addUserAsAdmin(userId: string, organizationId: string, manager: EntityManager) {
@@ -341,7 +342,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async personalWorkspaces(userId: string): Promise<OrganizationUser[]> {
     const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
-      select: ['organizationId', 'invitationToken'],
+      select: ['organizationId', 'invitationToken', 'id'],
       where: { userId },
     });
     const personalWorkspaceArray: OrganizationUser[] = [];
@@ -598,4 +599,41 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     user.organizationUserSource = organizationUser.source;
     return user;
   }
+
+  addUserToWorkspace = async (
+    user: User,
+    workspace: Organization,
+    manager?: EntityManager
+  ) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Create organization user entry if not exists
+      let existingOrgUser = await this.organizationUsersRepository.findOne({
+        where: {
+          userId: user.id,
+          organizationId: workspace.id,
+        }
+      });
+
+      if(existingOrgUser){ 
+        return existingOrgUser;
+      }
+
+      const organizationUser = await this.organizationUsersRepository.createOne(
+        user,
+        workspace,
+        true,
+        manager,
+        WORKSPACE_USER_SOURCE.SIGNUP
+      );
+
+      // Add end-user role in default workspace if not already present
+      await this.rolesUtilService.addUserRole(
+        workspace.id,
+        { role: USER_ROLE.END_USER, userId: user.id },
+        manager
+      );
+
+      return organizationUser;
+    }, manager);
+  };
 }
