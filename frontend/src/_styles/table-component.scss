@@ -1126,20 +1126,10 @@
 }
 
 .table-select-column-accordian {
-  padding: 0px 16px 0px;
   margin-top: -24px;
-
-  .accordion-button {
-    padding: 16px 0px !important;
-  }
-
-  .accordion-body {
-    padding: 0 !important;
-  }
 
   .accordion-item {
     border-width: 0px 0px 0px 0px !important;
-    border: solid var(--slate5);
   }
 
   .list-group-item {
