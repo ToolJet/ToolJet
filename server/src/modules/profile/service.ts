@@ -30,14 +30,14 @@ export class ProfileService implements IProfileService {
   }
 
   async updateUserPassword(userId: string, password: string): Promise<void> {
-    await this.userRepository.updateOne(userId, {
-      password,
-      passwordRetryCount: 0,
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      await this.serviceUtils.updateUserPassword(userId, password, manager);
     });
   }
 
   async updateUserName(userId: string, updateUserDto: ProfileUpdateDto): Promise<void> {
-    const { first_name: firstName, last_name: lastName } = updateUserDto;
-    await this.userRepository.updateOne(userId, { firstName, lastName });
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      await this.serviceUtils.updateUserName(userId, updateUserDto, manager);
+    });
   }
 }

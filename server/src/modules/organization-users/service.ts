@@ -24,6 +24,9 @@ import { Response } from 'express';
 import { UserCsvRow } from './interfaces';
 import { IOrganizationUsersService } from './interfaces/IService';
 import { UpdateOrgUserDto } from './dto';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { Organization } from '@entities/organization.entity';
 @Injectable()
 export class OrganizationUsersService implements IOrganizationUsersService {
   constructor(
@@ -81,15 +84,40 @@ export class OrganizationUsersService implements IOrganizationUsersService {
   }
 
   async archive(id: string, organizationId: string, user?: User): Promise<void> {
-    const organizationUser = await this.organizationUsersRepository.findOneOrFail({
-      where: { id, organizationId },
-      relations: ['user'],
-    });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationUser = await manager.findOneOrFail(OrganizationUser, {
+        where: { id, organizationId },
+        relations: ['user'],
+      });
 
-    await this.organizationUsersUtilService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
-    await this.organizationUsersRepository.update(id, {
-      status: WORKSPACE_USER_STATUS.ARCHIVED,
-      invitationToken: null,
+      await this.organizationUsersUtilService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
+      await manager.update(OrganizationUser, id, {
+        status: WORKSPACE_USER_STATUS.ARCHIVED,
+        invitationToken: null,
+      });
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+        resourceData: {
+          archived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          archived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
 
@@ -144,6 +172,29 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+        resourceData: {
+          unarchived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          unarchived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
 
     if (organizationUser.user.invitationToken) {
@@ -160,6 +211,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           sender: user.firstName,
         },
       });
+
       return;
     }
 
