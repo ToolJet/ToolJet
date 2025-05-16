@@ -14,6 +14,9 @@ const NEW_WIDGETS = [
   'TimePicker',
   'ModalV2',
   'TextArea',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

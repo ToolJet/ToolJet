@@ -31,11 +31,11 @@ export const TJDefaultTheme: Definition = {
         light: '#1B1F24',
         dark: '#CFD3D8',
       },
-      secondary: {
+      placeholder: {
         light: '#6A727C',
         dark: '#858C94',
       },
-      tertiary: {
+      disabled: {
         light: '#ACB2B9',
         dark: '#545B64',
       },
@@ -48,15 +48,15 @@ export const TJDefaultTheme: Definition = {
       large: 0,
     },
     colors: {
-      primary: {
+      default: {
         light: '#CCD1D5',
         dark: '#3C434B',
       },
-      secondary: {
+      weak: {
         light: '#E4E7EB',
         dark: '#EEF0F1',
       },
-      tertiary: {
+      disabled: {
         light: '#E4E7EB',
         dark: '#F6F8FA',
       },
@@ -64,15 +64,15 @@ export const TJDefaultTheme: Definition = {
   },
   systemStatus: {
     colors: {
-      primary: {
+      success: {
         light: '#1E823B',
         dark: '#318344',
       },
-      secondary: {
+      error: {
         light: '#D72D39',
         dark: '#D03F43',
       },
-      tertiary: {
+      warning: {
         light: '#BF4F03',
         dark: '#BA5722',
       },
@@ -83,6 +83,18 @@ export const TJDefaultTheme: Definition = {
       appBackground: {
         light: '#F6F6F6',
         dark: '#121518',
+      },
+      surface1: {
+        light: '#FFFFFF',
+        dark: '#1E2226',
+      },
+      surface2: {
+        light: '#F6F8FA',
+        dark: '#2B3036',
+      },
+      surface3: {
+        light: '#E4E7EB',
+        dark: '#3C434B',
       },
     },
   },
