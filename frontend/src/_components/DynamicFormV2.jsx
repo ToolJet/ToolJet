@@ -295,6 +295,7 @@ const DynamicFormV2 = ({
     const currentValue = options?.[key]?.value;
     const skipValidation =
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
+    const workspaceConstant = options?.[key]?.workspace_constant;
 
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
@@ -312,7 +313,7 @@ const DynamicFormV2 = ({
           key,
           widget,
           label,
-          placeholder: isEncrypted ? '**************' : description,
+          placeholder: workspaceConstant ? workspaceConstant : isEncrypted ? '**************' : description,
           className: cx('form-control', {
             'dynamic-form-encrypted-field': isEncrypted,
           }),
@@ -321,10 +322,10 @@ const DynamicFormV2 = ({
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
           isGDS: true,
-          workspaceVariables: [],
-          workspaceConstants: [],
           encrypted: isEncrypted,
           onBlur,
+          workspaceVariables,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       }
       case 'password-v3':
@@ -334,7 +335,7 @@ const DynamicFormV2 = ({
           key,
           widget,
           label,
-          placeholder: isEncrypted ? '**************' : description,
+          placeholder: workspaceConstant ? workspaceConstant : isEncrypted ? '**************' : description,
           className: cx('form-control', {
             'dynamic-form-encrypted-field': isEncrypted,
           }),
@@ -343,8 +344,6 @@ const DynamicFormV2 = ({
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
-          workspaceVariables: [],
-          workspaceConstants: [],
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
@@ -356,6 +355,8 @@ const DynamicFormV2 = ({
             ? { valid: true, message: '' }
             : { valid: null, message: '' }, // handle optional && encrypted fields
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          workspaceVariables,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       }
       case 'react-component-headers': {

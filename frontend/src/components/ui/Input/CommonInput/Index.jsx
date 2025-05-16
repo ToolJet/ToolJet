@@ -12,8 +12,12 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [originalValue, setOriginalValue] = useState(null);
 
   const isEncrypted = type === 'password' || encrypted;
+  const isWorkspaceConstant =
+    restProps.placeholder &&
+    (restProps.placeholder.includes('{{constants') || restProps.placeholder.includes('{{secrets'));
 
   const handleChange = (e) => {
     if (validation) {
@@ -44,7 +48,20 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
 
     const willBeInEditMode = !isEditing;
     setIsEditing(willBeInEditMode);
-    change({ target: { value: '' } });
+
+    if (willBeInEditMode) {
+      setOriginalValue(restProps.value);
+
+      if (isWorkspaceConstant) {
+        change({ target: { value: restProps.placeholder } });
+      } else {
+        change({ target: { value: '' } });
+      }
+    } else {
+      if (restProps.value === restProps.placeholder && isWorkspaceConstant) {
+        change({ target: { value: originalValue } });
+      }
+    }
   };
 
   return (
@@ -86,6 +103,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
         required={required}
         response={isValid}
         onChange={handleChange}
+        isWorkspaceConstant={isWorkspaceConstant}
         {...restProps}
       />
       {helperText && (
