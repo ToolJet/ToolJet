@@ -641,7 +641,8 @@
                     "development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config"
                   ]
                 },
-                "development-lifecycle/gitsync/connect-to-git-repo/github-config"
+                "development-lifecycle/gitsync/connect-to-git-repo/github-config",
+                "development-lifecycle/gitsync/connect-to-git-repo/gitlab-config"
               ]
             },
             "development-lifecycle/gitsync/delete-gitsync",
