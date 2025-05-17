@@ -119,36 +119,6 @@ export class AbilityUtilService {
     return query;
   }
 
-  private addAppsPermissionsTOQuery(query: SelectQueryBuilder<GroupPermissions>, appsList?: ResourcesItem[]) {
-    query
-      .leftJoin('granularPermissions.appsGroupPermissions', 'appsGroupPermissions')
-      .leftJoin('appsGroupPermissions.groupApps', 'groupApps')
-      .addSelect([
-        'groupApps.appId',
-        'appsGroupPermissions.canEdit',
-        'appsGroupPermissions.canView',
-        'appsGroupPermissions.hideFromDashboard',
-      ]);
-
-    const appsIdList = Array.from(new Set(appsList?.filter((item) => item?.resourceId).map((item) => item.resourceId)));
-
-    if (appsIdList?.length) {
-      query.andWhere(
-        new Brackets((qb) => {
-          appsIdList.forEach((appId, index) => {
-            if (index === 0) {
-              qb.where('groupApps.appId = :appId', { appId })
-                .orWhere('granularPermissions.isAll = true')
-                .orWhere('groupApps.id IS NULL');
-            } else {
-              qb.orWhere('groupApps.appId = :appId', { appId });
-            }
-          });
-        })
-      );
-    }
-  }
-
   private addDataSourcesPermissionsTOQuery(
     query: SelectQueryBuilder<GroupPermissions>,
     dataSourcesList?: ResourcesItem[]

@@ -395,72 +395,6 @@ export class AppsUtilService implements IAppsUtilService {
     });
   }
 
-  private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
-    console.log('userAppPermissions are', userAppPermissions);
-    return userAppPermissions.hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
-  }
-
-  private calculateViewableWorkflows(userWorkflowPermissions: UserWorkflowPermissions): string[] {
-    return [
-      null,
-      ...Array.from(
-        new Set([...userWorkflowPermissions.editableWorkflowsId, ...userWorkflowPermissions.executableWorkflowsId])
-      ),
-    ];
-  }
-
-  private addViewableFrontEndAppsFilter(
-    query: SelectQueryBuilder<AppBase>,
-    userAppPermissions: UserAppsPermissions,
-    viewableApps: string[]
-  ): SelectQueryBuilder<AppBase> {
-    const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-    if (isAllEditable) return query;
-
-    if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
-      query.andWhere('apps.id IN (:...viewableApps)', {
-        viewableApps,
-      });
-      return query;
-    }
-
-    const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
-    if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0) {
-      query.andWhere('apps.id NOT IN (:...hiddenApps)', {
-        hiddenApps,
-      });
-    }
-
-    return query;
-  }
-
-  private addViewableWorkflowAppsFilter(
-    query: SelectQueryBuilder<AppBase>,
-    userWorkflowPermissions: UserWorkflowPermissions,
-    viewableWorkflows: string[]
-  ): SelectQueryBuilder<AppBase> {
-    const { isAllEditable, isAllExecutable } = userWorkflowPermissions;
-    if (isAllEditable || isAllExecutable) return query;
-
-    if (!isAllExecutable && !isAllEditable) {
-      query.andWhere('apps.id IN (:...viewableWorkflows)', {
-        viewableWorkflows,
-      });
-    }
-
-    return query;
-  }
-
   protected viewableAppsQueryUsingPermissions(
     user: User,
     userAppPermissions: UserAppsPermissions | UserWorkflowPermissions,
@@ -495,23 +429,56 @@ export class AppsUtilService implements IAppsUtilService {
       return viewableAppsQb;
     }
 
-    if (type === APP_TYPES.WORKFLOW) {
-      const viewableWorkflows = this.calculateViewableWorkflows(
-        userAppPermissions as unknown as UserWorkflowPermissions
-      );
-      return this.addViewableWorkflowAppsFilter(
-        viewableAppsQb,
-        userAppPermissions as unknown as UserWorkflowPermissions,
-        viewableWorkflows
-      );
+    const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
+
+    switch (type) {
+      case APP_TYPES.FRONT_END:
+      default:
+        return this.addViewableFrontEndAppsFilter(
+          viewableAppsQb,
+          userAppPermissions as unknown as UserAppsPermissions,
+          viewableApps
+        );
+    }
+  }
+
+  private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
+    return userAppPermissions.hideAll
+      ? [null, ...userAppPermissions.editableAppsId]
+      : [
+          null,
+          ...Array.from(
+            new Set([
+              ...userAppPermissions.editableAppsId,
+              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+            ])
+          ),
+        ];
+  }
+
+  private addViewableFrontEndAppsFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userAppPermissions: UserAppsPermissions,
+    viewableApps: string[]
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+    if (isAllEditable) return query;
+
+    if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
+      query.andWhere('apps.id IN (:...viewableApps)', {
+        viewableApps,
+      });
+      return query;
     }
 
-    const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
-    return this.addViewableFrontEndAppsFilter(
-      viewableAppsQb,
-      userAppPermissions as unknown as UserAppsPermissions,
-      viewableApps
-    );
+    const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
+    if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0) {
+      query.andWhere('apps.id NOT IN (:...hiddenApps)', {
+        hiddenApps,
+      });
+    }
+
+    return query;
   }
 
   protected isSuperAdmin(user: User) {

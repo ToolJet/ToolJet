@@ -9,9 +9,9 @@ export interface AddableResourceItem {
   id: string;
 }
 type CreateResourcePermissionMap = {
-  [ResourceType.APP]: CreateBaseAppsPermissionsObject;
+  [ResourceType.APP]: CreateAppsPermissionsObject;
   [ResourceType.DATA_SOURCE]: CreateDataSourcePermissionsObject;
-  [ResourceType.WORKFLOWS]: CreateBaseAppsPermissionsObject;
+  [ResourceType.WORKFLOWS]: CreateWorkflowPermissionsObject;
 };
 
 export type CreateResourcePermissionObject<T extends ResourceType> = CreateResourcePermissionMap[T];
@@ -20,9 +20,13 @@ export interface CreateBaseAppsPermissionsObject {
   canEdit?: boolean;
   canView?: boolean;
   appType?: APP_TYPES;
-  hideFromDashboard?: boolean;
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.APP | ResourceType.WORKFLOWS>;
 }
+export interface CreateAppsPermissionsObject extends CreateBaseAppsPermissionsObject {
+  hideFromDashboard?: boolean;
+}
+
+export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {}
 export interface CreateAppsPermissionsObject extends CreateBaseAppsPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.APP>;
 }

@@ -155,11 +155,7 @@ export class SessionUtilService {
       user,
       {
         organizationId: user.organizationId,
-        resources: [
-          { resource: MODULES.APP },
-          { resource: MODULES.GLOBAL_DATA_SOURCE },
-          { resource: MODULES.WORKFLOWS },
-        ],
+        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }],
       },
       manager
     );

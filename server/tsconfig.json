@@ -15,7 +15,6 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "skipLibCheck": true,
     "paths": {
       "@ee/*": ["ee/*"],
       "@apps/*": ["ee/apps/*"],

@@ -457,7 +457,7 @@ class HomePageComponent extends React.Component {
         canUpdateWorkflow ||
         workflow_group_permissions?.is_all_executable ||
         workflow_group_permissions?.executable_workflows_id?.includes(app?.id);
-      const canDeleteWorkflow = canCreateWorkflow || user_permissions?.workflow_delete || admin;
+      const canDeleteWorkflow = user_permissions?.workflow_delete || admin;
 
       switch (action) {
         case 'create':
@@ -465,7 +465,6 @@ class HomePageComponent extends React.Component {
         case 'read':
           return canCreateWorkflow || canUpdateWorkflow || canDeleteWorkflow || canExecuteWorkflow;
         case 'update':
-          console.log('canUpdateWorkflow', canUpdateWorkflow);
           return canUpdateWorkflow;
         case 'delete':
           return canDeleteWorkflow;

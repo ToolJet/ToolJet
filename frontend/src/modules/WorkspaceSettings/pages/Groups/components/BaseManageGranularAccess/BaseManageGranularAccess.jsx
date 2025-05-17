@@ -149,8 +149,6 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   getSelectedResources = () => {
-    console.log('Selected resources', this.state.selectedResources);
-
     return this.state.selectedResources;
   };
 

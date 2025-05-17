@@ -56,9 +56,6 @@ function AddEditResourcePermissionsModal({
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'All data sources';
       default:
-        console.log(resourceType);
-
-        console.log('All resources', resourceType);
         return 'All resources';
     }
   };
@@ -66,7 +63,6 @@ function AddEditResourcePermissionsModal({
   const renderPermissionActions = (resourceType) => {
     switch (resourceType) {
       case RESOURCE_TYPE.APPS:
-        console.log('App permissions for resource type', resourceType);
         return (
           <AppPermissionsActions
             handleClickEdit={() => {
