@@ -1,14 +1,9 @@
 import * as winston from 'winston';
 
-interface AuditLogOptions {
-  resourceType?: string;
-  [key: string]: any;
-}
-
 export const auditLog = winston.format((info) => {
-  info.auditLog = info.options as AuditLogOptions;
+  info.auditLog = info.options;
   delete info.options;
-  info.label = (info.auditLog as AuditLogOptions)?.resourceType;
+  info.label = info.auditLog?.resourceType;
   return info;
 });
 
