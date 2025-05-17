@@ -65,8 +65,7 @@
 
 
 [data-theme='dark'] .theme-doc-markdown a:not(.home-page a) {
-  color: white;
-
+  color: var(--ifm-link-color);
 }
 
 
@@ -113,7 +112,7 @@
 }
 
 .pagination-nav__label {
-  color: #1B1F24;
+  color: var(--ifm-link-color);
 }
 
 .pagination-nav__link--prev .pagination-nav__sublabel::before {
@@ -499,11 +498,11 @@ img {
 
 .navbar-signin,
 .navbar-signin:hover {
-  padding: 6px 9px !important;  
+  padding: 6px 9px !important;
 }
 
 .navbar-signin:hover,
-.navbar-website:hover{
+.navbar-website:hover {
   background-color: #F0F1F2;
 }
 
@@ -909,7 +908,7 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 .breadcrumbs__item .breadcrumbs__link {
   padding-right: 4px;
   padding-left: 4px;
-  color: #2D343B;
+  color: var(--ifm-link-color);
 }
 
 .breadcrumbs__item:first-child .breadcrumbs__link {
@@ -941,6 +940,6 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   color: #4368E3;
 }
 
-.footer{
+.footer {
   padding: 0px 70px !important;
 }
