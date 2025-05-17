@@ -108,7 +108,7 @@
 }
 
 .pagination-nav__sublabel {
-  color: #6A727C;
+  color: var(--ifm-link-color);
 }
 
 .pagination-nav__label {
