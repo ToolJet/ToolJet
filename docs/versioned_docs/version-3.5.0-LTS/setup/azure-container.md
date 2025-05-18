@@ -31,7 +31,26 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 
  </div>
 
-3. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
+3. Select "Create new environment" to configure the basic networking setup.
+ <div style={{textAlign: 'center'}}>
+
+ <img className="screenshot-full" src="/img/setup/azure-container/step3-1.png" alt="Deploying ToolJet on Azure container apps" />
+
+ </div>
+   
+Now, let’s proceed to the Networking section for detailed configuration steps. Please update the configurations as shown below:
+ :::tip
+ The Container app, the PostgreSQL server, and the Redis server all should be in the same virtual network (VNet).
+:::
+
+ <div style={{textAlign: 'center'}}>
+
+ <img className="screenshot-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
+
+ </div>
+Create and exit.
+
+4. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
  <div style={{textAlign: 'center'}}>
  
  <img className="screenshot-full" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
@@ -42,7 +61,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
  
-4. Under environmental variables, please add the below ToolJet application variables:
+5. Under environmental variables, please add the below ToolJet application variables:
 
   You can use these variables for: tooljet-app:
 
@@ -128,14 +147,14 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
 
    </div>
 
-5. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
+6. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
  <div style={{textAlign: 'center'}}>
  
  <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 
  </div>
 
-6. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
+7. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
@@ -143,7 +162,7 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
  </div>
 
 
-7. Once the container is deployed, you can verify its status under revision management.
+8. Once the container is deployed, you can verify its status under revision management.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
