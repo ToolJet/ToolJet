@@ -65,8 +65,8 @@ export const Node = (props) => {
   const onExpand = (node) => {
     const { element } = node || {};
     const { metadata } = element || {};
-    const { path } = metadata || {};
-    setSelectedNodes(path);
+    const { path, actualPath } = metadata || {};
+    setSelectedNodes(actualPath || path);
   };
 
   const onSelect = (node) => {

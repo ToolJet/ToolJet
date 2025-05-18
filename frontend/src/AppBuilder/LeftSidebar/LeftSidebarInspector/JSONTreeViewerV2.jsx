@@ -4,7 +4,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import Fuse from 'fuse.js';
 import JSONViewer from './JSONViewer';
-import { SearchBox } from '@/_components';
 import { Node } from './Node';
 import { v4 as uuidv4 } from 'uuid';
 import InputComponent from '@/components/ui/Input/Index';
@@ -16,12 +15,21 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
   const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const setSearchValue = useStore((state) => state.setInspectorSearchValue, shallow);
-  const [selectedNodePath, setSelectedNodePath] = React.useState(null);
+  const selectedNodePath = useStore((state) => state.selectedNodePath, shallow);
+  const setSelectedNodePath = useStore((state) => state.setSelectedNodePath, shallow);
+
   const selectedNodes = useStore((state) => state.selectedNodes, shallow);
 
   function fuzzySearch(query, searchablePaths) {
     const list = Array.from(searchablePaths);
-    const fuse = new Fuse(list, { threshold: 0.3 });
+    const fuse = new Fuse(list, {
+      threshold: 0.2,
+      minMatchCharLength: 2,
+      includeScore: true,
+      distance: 1000,
+      tokenize: true,
+      matchAllTokens: true,
+    });
     return fuse.search(query).map((result) => result.item);
   }
 
@@ -106,8 +114,8 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     const expandedIdsSet = new Set(expandedIds);
     const filtered = flattendedData.filter((item) => {
       const { metadata } = item || {};
-      const { path } = metadata || {};
-      return expandedIdsSet.has(path);
+      const { actualPath, path } = metadata || {};
+      return expandedIdsSet.has(actualPath || path);
     });
 
     return filtered

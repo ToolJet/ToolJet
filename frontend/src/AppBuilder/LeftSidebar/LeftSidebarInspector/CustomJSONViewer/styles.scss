@@ -4,9 +4,20 @@
     font-family: "IBM Plex Sans";
     font-size: 12px;
     color: var(--text-default, #1B1F24);
-
+    overflow-x: auto;
+    min-width: 0;
+    
+    // Hide scrollbar for Chrome, Safari and Opera
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    
+    // Hide scrollbar for IE, Edge and Firefox
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 
     .json-viewer-row-container {
+        min-width: max-content;
         &:hover {
             background-color: var(--interactive-overlays-fill-hover);
 
@@ -22,6 +33,7 @@
         height: 20px;
         align-items: center;
         overflow: hidden;
+        cursor: pointer;
         
         .json-viewer-expand-icon {
             width: 12px;
@@ -33,9 +45,8 @@
         }
 
         .json-viewer-label-container  {
-            margin-left: 8px;
             margin-right: 4px;
-            flex-shrink: 0; /* don’t shrink */
+            flex-shrink: 0; /* don't shrink */
             white-space: nowrap;
         }
 
@@ -54,6 +65,8 @@
             width:40px;
             align-items: center;
             flex-shrink: 0;
+            position: absolute;
+            right:20px;
 
             .json-viewer-action-icon {
                 display: flex;

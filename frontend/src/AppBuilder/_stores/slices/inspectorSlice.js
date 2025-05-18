@@ -3,6 +3,7 @@ const initialState = {
   searchedNodes: new Set(),
   inspectorSearchValue: '',
   inspectorSearchResults: new Set(),
+  selectedNodePath: null,
 };
 
 export const createInspectorSlice = (set, get) => ({
@@ -30,6 +31,9 @@ export const createInspectorSlice = (set, get) => ({
   },
   setInspectorSearchResults: (results) => {
     set({ inspectorSearchResults: results });
+  },
+  setSelectedNodePath: (path) => {
+    set({ selectedNodePath: path });
   },
   getAllComponentChildrenById: (id) => {
     const { getComponentDefinition, getResolvedComponent } = get();
@@ -97,7 +101,8 @@ export const createInspectorSlice = (set, get) => ({
         .filter((item) => item.name)
         .reduce((acc, { key, name, parentType }) => {
           const currentPath = `components.${name}`;
-          searchablePaths.add(currentPath);
+          const actualPath = `${path}.${name}`;
+          searchablePaths.add(actualPath);
           const children = getAllComponentChildrenById(key).map((childKey) => {
             const childComponent = getComponentDefinition(childKey);
             let parentComponentType = null;
@@ -115,13 +120,14 @@ export const createInspectorSlice = (set, get) => ({
           return [
             ...acc,
             {
-              id: currentPath,
+              id: actualPath,
               name,
-              children: reduceData(children, currentPath, level + 1),
+              children: reduceData(children, actualPath, level + 1),
               metadata: {
                 type: 'components',
                 path: currentPath,
                 parentType: parentType,
+                actualPath,
               },
             },
           ];

@@ -7,6 +7,7 @@ import NullNode from './NullNode';
 import ArrayNode from './ArrayNode';
 import ObjectNode from './ObjectNode';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { DefaultCopyIcon } from '../../DefaultCopyIcon';
 import { copyToClipboard } from '../../utils';
@@ -35,8 +36,8 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
   const isArray = Array.isArray(value);
 
   return (
-    <div>
-      <div className="json-viewer-row-container" style={{ marginLeft: level > 1 ? '8px' : '0px' }}>
+    <div style={{ marginLeft: `${level === 1 ? '0px' : '22px'}` }}>
+      <div className="json-viewer-row-container">
         <div className="json-viewer-row" onClick={() => setIsExpanded((prev) => !prev)}>
           <div className="json-viewer-expand-icon">
             {(isArray || isObject) &&
@@ -59,13 +60,13 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
               ))}
           </div>
           <div className="json-viewer-label-container">
-            <span>{label}</span>
+            <OverflowTooltip style={{ width: '100%' }}>{label}</OverflowTooltip>
           </div>
           <div className="json-viewer-value-container">
             <Node />
           </div>
           <div className="json-viewer-actions-container">
-            <ToolTip message={'Copy to clipboard'}>
+            <ToolTip message={'Copy path'}>
               <span
                 onClick={() => {
                   copyToClipboard(absolutePath);
@@ -89,20 +90,14 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
         </div>
       </div>
       {isExpanded && isObject && (
-        <div
-          className="json-viewer-children"
-          style={{ marginLeft: `${20 * level}px`, borderLeft: '1px solid var(--border-weak)' }}
-        >
+        <div className="json-viewer-children" style={{ marginLeft: '5px', borderLeft: '1px solid var(--border-weak)' }}>
           {Object.entries(value).map(([key, val]) => (
             <Row key={key} label={key} value={val} level={level + 1} absolutePath={`${absolutePath}.${key}`} />
           ))}
         </div>
       )}
       {isExpanded && isArray && (
-        <div
-          className="json-viewer-children"
-          style={{ marginLeft: `${20 * level}px`, borderLeft: '1px solid var(--border-weak)' }}
-        >
+        <div className="json-viewer-children" style={{ marginLeft: '5px', borderLeft: '1px solid var(--border-weak)' }}>
           {value.map((item, index) => {
             return (
               <Row

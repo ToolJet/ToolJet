@@ -13,7 +13,6 @@ export const HiddenOptions = (props) => {
   const [showMenu, setShowMenu] = useState(false);
   const closeMenu = () => {
     setShowMenu(false);
-    setActionClicked(false);
   };
 
   const copyPath = () => {
@@ -38,6 +37,11 @@ export const HiddenOptions = (props) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // This is to ensure that the actionClicked state is updated when the menu is shown or deleted on the next render to avoid misplacing the Popover
+  useEffect(() => {
+    setTimeout(() => setActionClicked(showMenu), 0);
+  }, [showMenu]);
 
   const renderOptions = () => {
     return nodeSpecificFilteredActions?.map((actionOption, index) => {
@@ -69,7 +73,7 @@ export const HiddenOptions = (props) => {
         alignItems: 'center',
         justifyContent: 'center',
       }}
-      className="d-flex position-absolute"
+      className={cx('d-flex position-absolute', { 'show-menu': showMenu })}
     >
       {renderOptions()}
       <OverlayTrigger
@@ -78,7 +82,7 @@ export const HiddenOptions = (props) => {
         rootClose={false}
         show={showMenu}
         overlay={
-          <Popover className={cx('copy-menu-options', { 'dark-theme': darkMode })}>
+          <Popover className={cx('copy-menu-options', { 'dark-theme': darkMode })} onClick={(e) => e.stopPropagation()}>
             <Popover.Body bsPrefix="popover-body">
               <div className="menu-options mb-0">
                 <div
@@ -112,7 +116,6 @@ export const HiddenOptions = (props) => {
           onClick={(event) => {
             event.stopPropagation();
             setShowMenu((prev) => !prev);
-            setActionClicked((prev) => !prev);
           }}
           className="node-action-icon"
           style={{
