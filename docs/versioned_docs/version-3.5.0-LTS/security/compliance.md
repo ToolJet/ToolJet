@@ -48,7 +48,7 @@ ToolJet takes privacy seriously. Our transparent privacy policies ensure custome
 - **TLS**: If you are using ToolJet cloud, all connections are encrypted using TLS. We also have documentation for setting up TLS for self-hosted installations of ToolJet.
 - **Audit logs**: Audit logs are available on the enterprise edition of ToolJet. Every user action is logged along with the IP addresses and user information.
 - **Request logging**: All the requests to server are logged. If self-hosted, you can easily extend ToolJet to use your preferred logging service. ToolJet comes with built-in Sentry integration.
-- **Whitelisted IPs**: If you are using ToolJet cloud, you can whitelist our IP address (34.86.81.252) so that your datasources are not exposed to the public.
+- **Whitelisted IPs**: If you are using ToolJet cloud, you can whitelist our IP address (130.131.224.28) so that your datasources are not exposed to the public.
 - **Backups**: ToolJet cloud is hosted on AWS using EKS with autoscaling and regular backups.
 
 If you notice a security vulnerability, please let the team know by sending an email to [security@tooljet.com](mailto:security@tooljet.com). 

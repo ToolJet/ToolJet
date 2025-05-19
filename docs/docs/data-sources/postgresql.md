@@ -51,22 +51,15 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 <div style={{paddingTop:'24px'}}>
 
-## Querying PostgreSQL
+## Querying in SQL Mode
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the **PostgreSQL** datasource added in previous step.
-3. Select the query mode from the dropdown and enter the query.
-4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+1. Create a new query and select the PostgreSQL data source.
+2. Select the SQL query mode from the dropdown and enter the query.
+3. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/newquery.png" alt="PG connection"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/postgresql/sql-v2.png" alt="PG connection"/>
 
-### SQL Mode
-
-To execute SQL queries, select the SQL mode from the dropdown and enter your query in the editor.
-
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/sql-v2.png" alt="PG connection"/>
-
-#### Parameterized Queries:
+### Parameterized Queries
 
 ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
 
@@ -77,22 +70,35 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
 
-##### Example:
+#### Example:
 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
-SQL Parameters:
-  Key: username
-  Value: oliver // or {{ components.username.value }}
 ```
+SQL Parameters: <br/>
+- Key: username <br/>
+- Value: oliver or `{{ components.username.value }}`
 
-#### Query Timeout
+### Row Level Security
+
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](#) guide for more information.
+
+### Query Timeout
 
 You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
-### GUI Mode
+</div>
 
-Choose the GUI mode from the dropdown and select the operation **Bulk update using primary key**. Provide the **Table** name and the **Primary key column** name. Then, in the editor, input the **records** as an array of objects.
+<div style={{paddingTop:'24px'}}>
+
+## Querying in GUI Mode
+
+1. Create a new query and select the PostgreSQL data source.
+2. Select the GUI mode from the dropdown.
+3. Select the operation **Bulk update using primary key**.
+4. Provide the **Table** name and the **Primary key column** name.
+5. Then, in the editor, input the **records** as an array of objects.
+6. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 <img className="screenshot-full" src="/img/datasource-reference/postgresql/gui-v2.png" alt="PG connection"/>
 

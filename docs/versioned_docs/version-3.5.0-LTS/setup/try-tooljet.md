@@ -3,19 +3,15 @@ id: try-tooljet
 title: Try ToolJet
 ---
 
-# Try ToolJet
-
 ## On local with Docker
 
 ::::info
-
-This deployment is **not suitable for production**. It is a lightweight setup designed for quickly exploring ToolJet and trying out its features.
+This deployment is not suitable for production. It is a lightweight setup intended for quickly exploring ToolJet and trying out its features. For production-level usage, refer to the [Docker Compose](/docs/setup/docker) guide.
+::::
 
 :::warning
 To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
-
-::::
 
 You can run the command below to have ToolJet up and running right away.
 

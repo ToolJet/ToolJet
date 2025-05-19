@@ -47,8 +47,6 @@ Please find the latest LTS version here: <br/>
 
 Pre-Release versions are designed for those looking to explore the latest features and advancements in ToolJet. These versions are experimental and may include new functionalities not yet available in LTS versions. However, due to their experimental nature, they may also contain bugs and lack the stability of LTS versions. Therefore, we advise against using Pre-Release versions in production environments.
 
-*All versions starting from **2.60.x.x** are considered Pre-Release versions.*
-
 ## Past versions (Not maintained anymore)
 
 Past versions of ToolJet are those that are no longer actively maintained or supported. These versions may still be available but are not recommended, especially in production environments, as they do not receive updates, bug fixes, or security patches. 
