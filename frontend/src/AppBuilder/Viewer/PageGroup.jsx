@@ -11,8 +11,6 @@ import cx from 'classnames';
 
 const RenderPage = ({ page, currentPageId, switchPageWrapper, labelStyle, computeStyles, darkMode, homePageId }) => {
   const isHomePage = page.id === homePageId;
-  console.log({ page, homePageId });
-  console.log({ isHomePage });
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
   const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
   return (page.hidden || page.disabled) && page?.restricted ? null : (

@@ -34,7 +34,6 @@ export default function PagePermission({ darkMode }) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPermissionsLoading, setPermissionsLoading] = useState(true);
-  const [pageToDelete, setPageToDelete] = useState(null);
   const [initialSelectedGroups, setInitialSelectedGroups] = useState([]);
   const [initialSelectedUsers, setInitialSelectedUsers] = useState([]);
   const [initalPagePermissionType, setInitialPagePermissionType] = useState('all');
@@ -42,7 +41,7 @@ export default function PagePermission({ darkMode }) {
   useEffect(() => {
     if (!showPagePermissionModal) return;
     const fetchPagePermission = () => {
-      appPermissionService.getPagePermission(appId, editingPage?.id || pageToDelete).then((data) => {
+      appPermissionService.getPagePermission(appId, editingPage?.id).then((data) => {
         if (data) {
           if (data[0] && data[0]?.type === PERMISSION_TYPES.group) {
             const groups =
@@ -55,7 +54,6 @@ export default function PagePermission({ darkMode }) {
             setInitialPagePermissionType(data[0]?.type?.toLowerCase());
             setPagePermission(data);
             toggleUserGroupSelect(true);
-            setPageToDelete(null);
             setInitialSelectedGroups(groups);
             data?.length && setSelectedUserGroups(groups);
           } else if (data[0] && data[0]?.type === PERMISSION_TYPES.single) {
@@ -74,7 +72,6 @@ export default function PagePermission({ darkMode }) {
             setInitialPagePermissionType(data[0]?.type?.toLowerCase());
             setPagePermission(data);
             toggleUsersSelect(true);
-            setPageToDelete(null);
             setInitialSelectedUsers(users);
             data?.length && setSelectedUsers(users);
           }
@@ -83,7 +80,7 @@ export default function PagePermission({ darkMode }) {
       });
     };
     fetchPagePermission();
-  }, [showPagePermissionModal, pageToDelete]);
+  }, [showPagePermissionModal]);
 
   const isSelectionUnchanged = useMemo(() => {
     if (pagePermissionType === 'group') {
@@ -237,13 +234,12 @@ export default function PagePermission({ darkMode }) {
   const deletePagePermission = () => {
     setIsLoading(true);
     appPermissionService
-      .deletePagePermission(appId, pageToDelete)
+      .deletePagePermission(appId, editingPage?.id)
       .then((data) => {
         toast.success('Permission successfully deleted!', {
           className: 'text-nowrap w-auto mw-100',
         });
-        updatePageWithPermissions(pageToDelete, []);
-        setPageToDelete(null);
+        updatePageWithPermissions(editingPage?.id, []);
       })
       .catch(() => {
         toast.error('Permission could not be deleted. Please try again!', {
@@ -284,25 +280,18 @@ export default function PagePermission({ darkMode }) {
         isLoading={isLoading}
         handleClose={handlePagePermissionModalClose}
         confirmBtnProps={{
-          title: pagePermission ? 'Update' : pagePermissionType === 'all' ? 'Default permission' : 'Create permission',
+          title: pagePermission
+            ? 'Save changes'
+            : pagePermissionType === 'all'
+            ? 'Default permission'
+            : 'Create permission',
           disabled: isPermissionsLoading || isSelectionUnchanged,
           tooltipMessage: '',
+          leftIcon: pagePermission && 'save',
+          className: 'action-btn-page-permission',
         }}
         darkMode={darkMode}
         className="page-permissions-modal"
-        headerAction={() =>
-          pagePermission && (
-            <span
-              onClick={(e) => {
-                setPageToDelete(editingPage?.id);
-                togglePagePermissionModal(false);
-                setShowConfirmDelete(true);
-              }}
-            >
-              <SolidIcon fill="var(--tomato10)" width="20" name="trash" />
-            </span>
-          )
-        }
       >
         <div className="page-permission">
           {isPermissionsLoading ? (
