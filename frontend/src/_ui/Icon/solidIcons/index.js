@@ -234,6 +234,7 @@ import NewTabSmall from './NewTabSmall.jsx';
 import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
+import CurlyBraces from './CurlyBraces.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -329,6 +330,8 @@ const Icon = (props) => {
       return <Computer {...props} />;
     case 'copy':
       return <Copy {...props} />;
+    case 'curlybraces':
+      return <CurlyBraces {...props} />;
     case 'darkmode':
       return <DarkMode {...props} />;
     case 'datasource':

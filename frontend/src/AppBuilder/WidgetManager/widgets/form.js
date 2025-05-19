@@ -100,6 +100,27 @@ export const formConfig = {
         value: false,
       },
     },
+    generateFormFrom: {
+      type: 'dropdownMenu',
+      displayName: 'Generate form from',
+      options: [
+        { name: 'Write function', value: 'writeFunction' },
+        { name: 'Raw JSON', value: 'rawJson' },
+      ],
+      section: 'data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
+      newLine: true,
+    },
+    rawJsonData: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'rawJson',
+      },
+      section: 'data',
+      showLabel: false,
+    },
     validateOnSubmit: {
       type: 'toggle',
       displayName: 'Validate all fields on submission',

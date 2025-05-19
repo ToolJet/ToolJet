@@ -69,7 +69,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
-
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
@@ -431,11 +430,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                    javascript({ jsx: lang === 'jsx' }),
-                    autoCompleteConfig,
-                    keymap.of([...customKeyMaps]),
-                    customTabKeymap,
-                  ]
+                      javascript({ jsx: lang === 'jsx' }),
+                      autoCompleteConfig,
+                      keymap.of([...customKeyMaps]),
+                      customTabKeymap,
+                    ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -490,9 +489,26 @@ const DynamicEditorBridge = (props) => {
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
-  const { isFxNotRequired } = fieldMeta;
+  const { isFxNotRequired, newLine = false } = fieldMeta;
   const { t } = useTranslation();
-  const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
+  let newInitialValue = initialValue,
+    shouldResolve = true;
+
+  // This is to handle the case when the initial value is a string and contains components or queries
+  // and we need to replace the ids with names
+  // but we don't want to resolve the references as it needs to be displayed as it is
+  if (paramName === 'generateFormFrom') {
+    if (
+      typeof initialValue === 'string' &&
+      (initialValue?.includes('components') || initialValue?.includes('queries'))
+    ) {
+      newInitialValue = replaceIdsWithName(initialValue);
+      shouldResolve = false;
+    }
+  }
+  const [_, error, value] =
+    type === 'fxEditor' ? (shouldResolve ? resolveReferences(newInitialValue) : [false, '', newInitialValue]) : [];
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   useEffect(() => {
@@ -500,25 +516,58 @@ const DynamicEditorBridge = (props) => {
   }, [component, fxActive]);
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
-  return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+
+  const renderedLabel = () => {
+    return (
+      <>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-                }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
           </div>
         )}
+      </>
+    );
+  };
+
+  const renderDynamicFx = () => {
+    if (codeShow) return null;
+    return (
+      <DynamicFxTypeRenderer
+        value={!error ? value : ''}
+        onChange={onChange}
+        paramName={paramName}
+        paramLabel={paramLabel}
+        paramType={paramType}
+        forceCodeBox={() => {
+          setForceCodeBox(true);
+          onFxPress(true);
+        }}
+        meta={fieldMeta}
+        cyLabel={cyLabel}
+        styleDefinition={styleDefinition}
+        component={component}
+        onVisibilityChange={onVisibilityChange}
+      />
+    );
+  };
+
+  return (
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
+      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+        {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div
-                className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
-                  }`}
+                className={`col-auto pt-0 fx-common fx-button-container ${
+                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
+                }`}
               >
                 <FxButton
                   active={codeShow}
@@ -537,25 +586,9 @@ const DynamicEditorBridge = (props) => {
             )}
           </div>
         </div>
-        {!codeShow && (
-          <DynamicFxTypeRenderer
-            value={!error ? value : ''}
-            onChange={onChange}
-            paramName={paramName}
-            paramLabel={paramLabel}
-            paramType={paramType}
-            forceCodeBox={() => {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }}
-            meta={fieldMeta}
-            cyLabel={cyLabel}
-            styleDefinition={styleDefinition}
-            component={component}
-            onVisibilityChange={onVisibilityChange}
-          />
-        )}
+        {!newLine && renderDynamicFx()}
       </div>
+      {newLine && renderDynamicFx()}
       {codeShow && (
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>

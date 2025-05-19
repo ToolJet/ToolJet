@@ -31,7 +31,7 @@ export const Form = ({
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Data') {
+    } else if (componentMeta?.properties[key]?.section === 'data') {
       dataProperties.push(key);
     } else {
       properties.push(key);
@@ -81,7 +81,8 @@ export const Form = ({
     validations,
     darkMode,
     pages,
-    additionalActions
+    additionalActions,
+    dataProperties
   );
 
   return <Accordion items={accordionItems} />;
@@ -102,7 +103,8 @@ export const baseComponentProperties = (
   validations,
   darkMode,
   pages,
-  additionalActions
+  additionalActions,
+  dataProperties
 ) => {
   let items = [];
   if (properties.length > 0) {
@@ -144,6 +146,24 @@ export const baseComponentProperties = (
       ),
     });
   }
+
+  items.push({
+    title: 'Data',
+    isOpen: true,
+    children: dataProperties?.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode
+      )
+    ),
+  });
 
   items.push({
     title: 'Additional actions',

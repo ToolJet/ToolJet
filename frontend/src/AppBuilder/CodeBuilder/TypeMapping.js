@@ -1,3 +1,5 @@
+import { drop } from 'lodash';
+
 export const TypeMapping = {
   text: 'Text',
   string: 'Text',
@@ -20,4 +22,5 @@ export const TypeMapping = {
   visibility: 'Visibility',
   numberInput: 'NumberInput',
   tableRowHeightInput: 'TableRowHeightInput',
+  dropdownMenu: 'DropdownMenu',
 };
