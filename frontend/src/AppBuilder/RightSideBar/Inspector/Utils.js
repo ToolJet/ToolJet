@@ -54,7 +54,8 @@ export function renderCustomStyles(
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'Button' ||
     componentConfig.component == 'Image' ||
-    componentConfig.component == 'ModalV2'
+    componentConfig.component == 'ModalV2' ||
+    componentConfig.component == 'FilePicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

@@ -40,9 +40,15 @@ export const useFilePicker = ({
   const isMandatory = validation?.enableValidation ?? false;
 
   // --- Resolved Styles ---
+  const containerBackgroundColor = styles?.containerBackgroundColor ?? 'var(--color-surface-1)';
+  const containerBorder = styles?.containerBorder ?? 'transparent';
+  const containerBoxShadow = styles?.containerBoxShadow ?? 'none';
+  const containerPadding = styles?.containerPadding ?? 16;
   const borderRadius = styles?.borderRadius ?? 8;
-  const boxShadow = styles?.boxShadow;
 
+  const dropzoneTitleColor = styles?.dropzoneTitleColor ?? 'var(--text-primary';
+  const dropzoneActiveColor = styles?.dropzoneActiveColor ?? 'var(--file-picker-primary-brand)';
+  const dropzoneErrorColor = styles?.dropzoneErrorColor ?? 'var(--status-error)';
   // --- Use useExposeState Hook ---
   const { isDisabled, isVisible, isLoading } = useExposeState(
     initialLoading,
@@ -306,7 +312,6 @@ export const useFilePicker = ({
       maxFileCount,
       fileErrors,
       uploadingStatus,
-      dropzoneRejections,
     ]
   );
 
@@ -508,7 +513,13 @@ export const useFilePicker = ({
     disablePicker, // Needed for styling/cursor
     disabledState: isDisabled, // Return isDisabled from useExposeState
     borderRadius, // Needed for styling
-    boxShadow, // Needed for styling
+    containerBackgroundColor,
+    containerBorder,
+    containerBoxShadow,
+    containerPadding,
+    dropzoneTitleColor,
+    dropzoneActiveColor,
+    dropzoneErrorColor,
     height, // Needed for styling
     minSize,
     maxSize,
