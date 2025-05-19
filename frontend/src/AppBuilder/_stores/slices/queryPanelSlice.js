@@ -201,7 +201,7 @@ export const createQueryPanelSlice = (set, get) => ({
       confirmed = undefined,
       mode = 'edit',
       userSuppliedParameters = {},
-      shouldSetPreviewData = false,
+      shouldSetPreviewData = true,
       isOnLoad = false,
       moduleId = 'canvas'
     ) => {
