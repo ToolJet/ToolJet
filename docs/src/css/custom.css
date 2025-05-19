@@ -11,7 +11,7 @@
 
 :root {
   --ifm-color-primary: #4d72fa;
-  --ifm-color-primary-dark: rgb(33, 175, 144);
+  --ifm-color-primary-dark: rgb(33, 175, 144);  
   --ifm-color-primary-darker: rgb(31, 165, 136);
   --ifm-color-primary-darkest: rgb(26, 136, 112);
   --ifm-color-primary-light: rgb(70, 203, 174);
@@ -65,7 +65,8 @@
 
 
 [data-theme='dark'] .theme-doc-markdown a:not(.home-page a) {
-  color: var(--ifm-link-color);
+  color: white;
+
 }
 
 
@@ -108,11 +109,15 @@
 }
 
 .pagination-nav__sublabel {
-  color: var(--ifm-link-color);
+  color: #6A727C;
 }
 
 .pagination-nav__label {
-  color: var(--ifm-link-color);
+  color: #1B1F24;
+}
+
+[data-theme='dark'] .pagination-nav__label {
+  color: white;
 }
 
 .pagination-nav__link--prev .pagination-nav__sublabel::before {
@@ -908,7 +913,11 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 .breadcrumbs__item .breadcrumbs__link {
   padding-right: 4px;
   padding-left: 4px;
-  color: var(--ifm-link-color);
+  color: #1B1F24;
+}
+
+[data-theme='dark'] .breadcrumbs__item .breadcrumbs__link {
+  color: white;
 }
 
 .breadcrumbs__item:first-child .breadcrumbs__link {
