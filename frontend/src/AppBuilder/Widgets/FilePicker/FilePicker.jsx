@@ -62,7 +62,7 @@ const FilePicker = (props) => {
     dropzoneErrorColor,
   } = useFilePicker({ ...props, setExposedVariable, setExposedVariables });
 
-  // Set the CSS variable globally when dropzoneActiveColor or dropzoneErrorColor changes
+  // Set the CSS variable globally when dropzoneActiveColor, dropzoneErrorColor, dropzoneTitleColor, or the container style props change
   useEffect(() => {
     if (dropzoneActiveColor) {
       document.documentElement.style.setProperty('--file-picker-primary-brand', dropzoneActiveColor);
@@ -73,33 +73,45 @@ const FilePicker = (props) => {
     if (dropzoneTitleColor) {
       document.documentElement.style.setProperty('--file-picker-text-primary', dropzoneTitleColor);
     }
-  }, [dropzoneActiveColor, dropzoneErrorColor, dropzoneTitleColor]);
+    if (borderRadius !== undefined) {
+      document.documentElement.style.setProperty(
+        '--file-picker-border-radius',
+        typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius
+      );
+    }
+    if (containerBackgroundColor) {
+      document.documentElement.style.setProperty('--file-picker-background-color', containerBackgroundColor);
+    }
+    if (containerBorder) {
+      document.documentElement.style.setProperty('--file-picker-border', containerBorder);
+    }
+    if (containerBoxShadow) {
+      document.documentElement.style.setProperty('--file-picker-box-shadow', containerBoxShadow);
+    }
+    if (containerPadding !== undefined) {
+      document.documentElement.style.setProperty('--file-picker-padding', `${Number.parseInt(containerPadding, 10)}px`);
+    }
+  }, [
+    dropzoneActiveColor,
+    dropzoneErrorColor,
+    dropzoneTitleColor,
+    borderRadius,
+    containerBackgroundColor,
+    containerBorder,
+    containerBoxShadow,
+    containerPadding,
+  ]);
 
   const [isFocused, setIsFocused] = useState(false);
 
   const dynamicDropzoneStyle = useMemo(
     () => ({
       display: isVisible ? 'flex' : 'none',
-      borderRadius: `${borderRadius}px`,
-      backgroundColor: containerBackgroundColor,
-      border: containerBorder,
-      boxShadow: containerBoxShadow,
-      padding: `${containerPadding}px`,
       color: darkMode ? '#c3c9d2' : '#5e6571',
       height: `${numericWidgetHeight}px`,
       overflowY: isSmallWidget ? 'auto' : 'visible',
     }),
-    [
-      containerBackgroundColor,
-      containerBorder,
-      containerBoxShadow,
-      containerPadding,
-      borderRadius,
-      darkMode,
-      numericWidgetHeight,
-      isVisible,
-      isSmallWidget,
-    ]
+    [darkMode, numericWidgetHeight, isVisible, isSmallWidget]
   );
 
   const dropzoneClasses = clsx('file-picker-dropzone', {

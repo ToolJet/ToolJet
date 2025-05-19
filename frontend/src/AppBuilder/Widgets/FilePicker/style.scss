@@ -2,6 +2,11 @@
   --file-picker-primary-brand: var(--primary-brand);
   --file-picker-error-strong: var(--status-error-strong);
   --file-picker-text-primary: var(--text-primary);
+  --file-picker-border-radius: 6px;
+  --file-picker-background-color: var(--color-surface-1);
+  --file-picker-border: transparent;
+  --file-picker-box-shadow: none;
+  --file-picker-padding: 16px;
 }
 
 // File List Item
@@ -76,10 +81,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  border: 1px dashed var(--borders-default);
+  padding: var(--file-picker-padding);
+  border: 1px dashed var(--file-picker-border);
   outline: none;
-  border-radius: 6px;
+  border-radius: var(--file-picker-border-radius);
   transition-property: border-color, background-color, box-shadow, color;
   transition-duration: 0.18s;
   transition-timing-function: ease-in-out;
@@ -180,10 +185,14 @@
   }
 
   &-widget-wrapper {
-    padding: 16px;
+    padding: var(--file-picker-padding);
     display: flex;
     flex-direction: column;
     gap: 12px;
+    background-color: var(--file-picker-background-color);
+    border-radius: var(--file-picker-border-radius);
+    border: var(--file-picker-border);
+    box-shadow: var(--file-picker-box-shadow);
   }
 
   &-files-pane {

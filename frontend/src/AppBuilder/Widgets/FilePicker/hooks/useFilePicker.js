@@ -139,23 +139,6 @@ export const useFilePicker = ({
     [getFileData, parseContent, fileTypeFromExtension]
   );
 
-  // Error Handling for Size
-  const handleFileSizeErrors = useCallback(
-    (rejectedFileSize, errorObj) => {
-      const { code } = errorObj;
-      const errorMessages = {
-        'file-too-small': `File size ${formatFileSize(rejectedFileSize)} is too small. Minimum size is ${formatFileSize(
-          minSize
-        )}.`,
-        'file-too-large': `File size ${formatFileSize(rejectedFileSize)} is too large. Maximum size is ${formatFileSize(
-          maxSize
-        )}.`,
-      };
-      return errorMessages[code] || errorObj.message;
-    },
-    [minSize, maxSize]
-  );
-
   // --- Dropzone Setup ---
   const onDropRejected = useCallback(
     (rejectedFiles) => {
@@ -173,10 +156,14 @@ export const useFilePicker = ({
             }
             break;
           case 'file-too-small':
-            specificMessage = `The file "${file.name}" (${formatFileSize(file.size)}) is smaller than the minimum allowed size of ${formatFileSize(minSize)}.`;
+            specificMessage = `The file "${file.name}" (${formatFileSize(
+              file.size
+            )}) is smaller than the minimum allowed size of ${formatFileSize(minSize)}.`;
             break;
           case 'file-too-large':
-            specificMessage = `The file "${file.name}" (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}.`;
+            specificMessage = `The file "${file.name}" (${formatFileSize(
+              file.size
+            )}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}.`;
             break;
           case 'too-many-files':
             specificMessage = `You can select a maximum of ${maxFileCount} files.`;
@@ -185,9 +172,10 @@ export const useFilePicker = ({
             specificMessage = `The file "${file.name}" has already been selected.`;
             break;
           default:
-            specificMessage = error.message && typeof error.message === 'string' && error.message.trim() !== ''
-              ? error.message
-              : `An issue occurred with file "${file.name}".`;
+            specificMessage =
+              error.message && typeof error.message === 'string' && error.message.trim() !== ''
+                ? error.message
+                : `An issue occurred with file "${file.name}".`;
             break;
         }
         setUiErrorMessage(specificMessage);
@@ -203,8 +191,13 @@ export const useFilePicker = ({
       }
       // dropzoneRejections state can be kept raw for other potential uses or removed if only for this UI message
       setDropzoneRejections(rejectedFiles); // Keep raw rejections for potential debugging or detailed listing elsewhere
+
+      // Clear setUiErrorMessage afgter 5 seconds
+      setTimeout(() => {
+        clearErrorStates();
+      }, 5000);
     },
-    [fileTypeCategory, minSize, maxSize, maxFileCount, setExposedVariable]
+    [fileTypeCategory, minSize, maxSize, maxFileCount]
   );
 
   // Custom validator
@@ -329,6 +322,14 @@ export const useFilePicker = ({
     }, {});
   }, [fileTypeCategory]);
 
+  // Reusable function to clear error states
+  const clearErrorStates = useCallback(() => {
+    setUiErrorMessage('');
+    setDropzoneRejections([]);
+    setFileErrors({});
+    setUploadingStatus({});
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     accept: acceptProp, // Use the calculated accept prop
     noClick: !enablePicker || disablePicker,
@@ -341,6 +342,18 @@ export const useFilePicker = ({
     onDropRejected: onDropRejected,
     validator: validateFile,
     onDrop: onDrop,
+    onDropAccepted: (acceptedFiles) => {
+      // After files are accepted, check if minFileCount is met
+      if (selectedFiles.length + acceptedFiles.length < minFileCount) {
+        setUiErrorMessage(`Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`);
+        setTimeout(() => {
+          clearErrorStates();
+        }, 5000);
+      } else {
+        setUiErrorMessage('');
+      }
+    },
+    onFileDialogOpen: clearErrorStates,
   });
 
   // Function to remove a file
