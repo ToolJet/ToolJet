@@ -147,6 +147,8 @@ class BaseManageGroupPermissionResources extends React.Component {
       selectedUsers: [],
       isLoadingUsers: false,
       isAddingUsers: false,
+      isLoadingSearch: false,
+      searchQuery: '',
     });
   };
 
