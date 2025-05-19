@@ -59,6 +59,8 @@ class BaseManageGroupPermissionResources extends React.Component {
       autoRoleChangeModalList: [],
       autoRoleChangeMessageType: '',
       updateParam: {},
+      isLoadingSearch: true,
+      searchQuery: '',
     };
   }
 
@@ -124,12 +126,15 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   fetchUsersInGroup = (groupPermissionId, searchString = '') => {
-    groupPermissionV2Service.getUsersInGroup(groupPermissionId, searchString).then((data) => {
-      this.setState({
-        usersInGroup: data,
-        isLoadingUsers: false,
+    this.setState({ isLoadingSearch: true, searchQuery: searchString });
+    groupPermissionV2Service
+      .getUsersInGroup(groupPermissionId, searchString)
+      .then((data) => {
+        this.setState({ usersInGroup: data });
+      })
+      .finally(() => {
+        this.setState({ isLoadingUsers: false, isLoadingSearch: false });
       });
-    });
   };
 
   clearErrorState = () => {
@@ -355,10 +360,25 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   toggleUserTabSearchBox = () => {
-    this.fetchUsersInGroup(this.props.groupPermissionId);
-    this.setState((prevState) => ({
-      showUserSearchBox: !prevState.showUserSearchBox,
-    }));
+    const { showUserSearchBox } = this.state;
+
+    if (showUserSearchBox) {
+      this.setState({ isLoadingSearch: true, searchQuery: '' });
+
+      groupPermissionV2Service
+        .getUsersInGroup(this.props.groupPermissionId, '')
+        .then((data) => {
+          this.setState({
+            usersInGroup: data,
+            showUserSearchBox: false,
+          });
+        })
+        .finally(() => {
+          this.setState({ isLoadingUsers: false, isLoadingSearch: false });
+        });
+    } else {
+      this.setState({ showUserSearchBox: true, searchQuery: '' });
+    }
   };
 
   toggleAutoRoleChangeModal = () => {
@@ -445,6 +465,8 @@ class BaseManageGroupPermissionResources extends React.Component {
       autoRoleChangeModalMessage,
       autoRoleChangeModalList,
       autoRoleChangeMessageType,
+      isLoadingSearch,
+      searchQuery,
     } = this.state;
 
     const { featureAccess } = this.props;
@@ -744,7 +766,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       )}
 
                       <section className="group-users-list-container">
-                        {isLoadingGroup || isLoadingUsers ? (
+                        {isLoadingGroup || isLoadingUsers || isLoadingSearch ? (
                           <tr>
                             <td className="col-auto">
                               <div className="row">
@@ -837,18 +859,20 @@ class BaseManageGroupPermissionResources extends React.Component {
                             </span>
                           </div>
                         ) : (
-                          <div className="manage-groups-no-apps-wrap">
-                            <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
-                              <SolidIcon name="warning-user-notfound" width="48" />
+                          searchQuery && (
+                            <div className="manage-groups-no-apps-wrap">
+                              <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
+                                <SolidIcon name="warning-user-notfound" width="48" />
+                              </div>
+                              <p className="tj-text-md font-weight-500" data-cy="user-empty-page">
+                                No results found
+                              </p>
+                              <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
+                                There were no results found for your search. Please <br />
+                                try changing the filters and try again.
+                              </span>
                             </div>
-                            <p className="tj-text-md font-weight-500" data-cy="user-empty-page">
-                              No results found
-                            </p>
-                            <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
-                              There were no results found for your search. Please <br />
-                              try changing the filters and try again.
-                            </span>
-                          </div>
+                          )
                         )}
                       </section>
                     </div>
