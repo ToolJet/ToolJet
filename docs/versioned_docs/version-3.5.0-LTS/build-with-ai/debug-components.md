@@ -14,7 +14,7 @@ If a component property contains an error, you’ll see an error message in the 
 
 <img className="screenshot-full img-s" style={{marginBottom:"15px"}}  src="/img/tooljet-ai/fix01.png" alt="tooljet ai doc assistant" />
 
-Clicking on the **Fix with AI** opens a mini chat window, anchored right near the error and it knows which component and property the issue is coming from. This means you don’t need to re-explain the problem. The AI sees the broken component, the error message, and and fixes it for you.
+Clicking on the **Fix with AI** opens a mini chat window, anchored right near the error and it knows which component and property the issue is coming from. This means you don’t need to re-explain the problem. The AI sees the broken component, the error message, and and fixes it for you. This is a single action chat and does not retain context of previous fixes.
 
 <img className="screenshot-full img-s" style={{marginBottom:"15px"}}  src="/img/tooljet-ai/fix02.png" alt="tooljet ai doc assistant" />
 
