@@ -1,3 +1,9 @@
+:root {
+  --file-picker-primary-brand: var(--primary-brand);
+  --file-picker-error-strong: var(--status-error-strong);
+  --file-picker-text-primary: var(--text-primary);
+}
+
 // File List Item
 .file-list-item {
   width: 100%;
@@ -40,7 +46,7 @@
 
     .file-name {
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--file-picker-text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -85,20 +91,20 @@
 
   &:hover {
     border-color: var(--borders-strong);
-    color: var(--text-primary);
+    color: var(--file-picker-text-primary);
   }
   
   &:focus, &:active {
-    border-color: var(--primary-brand);
-    color: var(--text-primary);
+    border-color: var(--file-picker-primary-brand);
+    color: var(--file-picker-text-primary);
   }
 
   &.is-dragging {
-    border-color: var(--primary-accent-strong);
+    border-color: var(--file-picker-primary-brand);
   }
 
   &.is-accepting {
-    border-color: var(--primary-accent-strong);
+    border-color: var(--file-picker-primary-brand);
   }
 
   &.is-rejecting {
@@ -130,7 +136,7 @@
     }
 
     &-instruction-link {
-      color: var(--primary-brand);
+      color: var(--file-picker-primary-brand);
       font-weight: 500;
       cursor: pointer;
       
@@ -163,7 +169,7 @@
 // File Picker Widget
 .file-picker {
   &-title {
-    color: var(--text-primary);
+    color: var(--file-picker-text-primary);
     text-align: left;
     width: 100%;
     font-weight: 500;
