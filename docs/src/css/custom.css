@@ -65,8 +65,7 @@
 
 
 [data-theme='dark'] .theme-doc-markdown a:not(.home-page a) {
-  color: white;
-
+  color: var(--ifm-link-color);
 }
 
 
