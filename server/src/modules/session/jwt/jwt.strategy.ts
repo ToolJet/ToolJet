@@ -8,17 +8,20 @@ import { Request } from 'express';
 import { UserRepository } from '@modules/users/repository';
 import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
+import { ForbiddenException } from '@nestjs/common';
+import { UserSessionRepository } from '@modules/session/repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     protected readonly configService: ConfigService,
     protected readonly sessionUtilService: SessionUtilService,
-    protected readonly userRepository: UserRepository
+    protected readonly userRepository: UserRepository,
+    protected readonly sessionRepository: UserSessionRepository
   ) {
     super({
       jwtFromRequest: (request) => {
-        return request?.cookies['tj_auth_token'];
+        return request.cookies['tj_auth_token'] || request.cookies['tj_embed_auth_token'];
       },
       ignoreExpiration: true,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),
@@ -38,10 +41,37 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId);
     }
 
+    // 🛡️ Check for PAT session and PAT expiry
+    if (payload.isPatLogin) {
+      const session = await this.sessionRepository.findOne({
+        where: { id: payload.sessionId },
+        relations: ['pat'], // includes UserPersonalAccessToken
+      });
+
+      if (session?.sessionType === 'pat') {
+        const now = new Date();
+
+        if (!session.pat) {
+          throw new ForbiddenException('Invalid PAT session: token missing');
+        }
+
+        if (session.pat.expiresAt < now) {
+          throw new ForbiddenException('PAT has expired');
+        }
+
+        if (session.expiry < now) {
+          throw new ForbiddenException('Session has expired');
+        }
+      }
+    }
+
     if (isGetUserSession) {
       const user: User = await this.userRepository.findByEmail(payload.sub);
       user.organizationIds = payload.organizationIds;
       user.sessionId = payload.sessionId;
+      if (payload.isPatLogin) {
+        (user as any).embedToken = req.cookies['tj_embed_auth_token'];
+      }
       return user;
     }
 
@@ -51,7 +81,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         : req.headers['tj-workspace-id'];
 
     if (isUserMandatory) {
-      // header deos not exist
+      // header does not exist
       if (!organizationId) return false;
 
       // No authenticated workspaces
@@ -69,7 +99,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (payload?.sub && organizationId && !isInviteSession) {
       /* Usual JWT case: user with valid organization id */
       const archivedWorkspaceUser = isGettingOrganizations || req['isSwitchingOrganization'];
-      user = await this.userRepository.findByEmail(payload.sub, archivedWorkspaceUser ? null : organizationId, WORKSPACE_USER_STATUS.ACTIVE);
+      user = await this.userRepository.findByEmail(
+        payload.sub,
+        archivedWorkspaceUser ? null : organizationId,
+        WORKSPACE_USER_STATUS.ACTIVE
+      );
       if (bypassOrganizationValidation) {
         await this.sessionUtilService.findOrganization(organizationId);
       }

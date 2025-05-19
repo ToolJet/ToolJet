@@ -135,6 +135,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'confirm-invite',
     'oauth2',
     'applications',
+    'embed-apps',
     'integrations',
     'settings',
     'licence',
@@ -181,6 +182,7 @@ export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
     const paths = [
       '/applications/',
+      '/embed-apps/',
       '/integrations',
       '/instance-settings',
       '/organization-invitations/',

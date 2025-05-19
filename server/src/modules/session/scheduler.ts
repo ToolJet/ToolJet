@@ -8,7 +8,7 @@ import { EntityManager, LessThan } from 'typeorm';
 export class SessionScheduler {
   @Cron(CronExpression.EVERY_HOUR)
   async handleCron() {
-    console.log('starting job to clear expired sessions at ', new Date().toISOString());
+    console.log('starting job to clear expired user and pat sessions at ', new Date().toISOString());
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(UserSessions, {
         expiry: LessThan(new Date()),
