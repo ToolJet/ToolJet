@@ -3,6 +3,7 @@ import NumberInput from './NumberInput';
 import TextInput from './TextInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
 import { ButtonSolid } from '../../../../_components/AppButton';
+import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
   const { type, encrypted, validation, isValidatedMessages, isDisabled } = restProps;
@@ -32,21 +33,28 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
     }
   }, [isValidatedMessages]);
 
+  useEffect(() => {
+    if (isValid === true && (!isValidatedMessages || isValidatedMessages.valid === null)) {
+      setIsValid(true);
+    }
+  }, [isValid, isValidatedMessages]);
+
   const toggleEditing = () => {
     if (isDisabled) return;
 
     const willBeInEditMode = !isEditing;
     setIsEditing(willBeInEditMode);
-
-    if (willBeInEditMode) {
-      change({ target: { value: '' } });
-    }
+    change({ target: { value: '' } });
   };
 
   return (
     <div>
       <div className="d-flex">
-        {label && <InputLabel disabled={disabled} label={label} required={required} />}
+        {label && (
+          <div className="tw-flex-shrink-0">
+            <InputLabel disabled={disabled} label={label} required={required} />
+          </div>
+        )}
         {type === 'password' && (
           <div className="d-flex justify-content-between w-100">
             <div className="mx-1 col">
@@ -58,13 +66,14 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 rel="noreferrer"
                 disabled={isDisabled}
                 onClick={toggleEditing}
+                data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
               </ButtonSolid>
             </div>
 
             <div className="col-auto mb-2">
-              <small className="text-green">
+              <small className="text-green" data-cy="encrypted-text">
                 <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                 Encrypted
               </small>

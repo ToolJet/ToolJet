@@ -53,6 +53,8 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
 };
 
 export const verifyAppDelete = (appName) => {
+  cy.get("body").should("exist").and("be.visible");
+  cy.get('[data-cy="dashboard-section-header"]').should("be.visible");
   cy.get("body").then(($title) => {
     if (!$title.text().includes(commonText.introductionMessage)) {
       cy.clearAndType(commonSelectors.homePageSearchBar, appName);

@@ -15,7 +15,7 @@ import {
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
     // cy.createApp();
   });
 

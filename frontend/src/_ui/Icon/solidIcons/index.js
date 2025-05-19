@@ -235,6 +235,7 @@ import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
 import EnterpriseCrown from './EnterrpiseCrown.jsx';
+import Moon from './Moon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -710,6 +711,8 @@ const Icon = (props) => {
       return <AICrown {...props} />;
     case 'play01':
       return <Play01 {...props} />;
+    case 'moon':
+      return <Moon {...props} />;
     default:
       return <Apps {...props} />;
   }
