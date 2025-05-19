@@ -758,7 +758,6 @@ const Table = ({ collapseSidebar }) => {
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
-    console.log(cellValue, 'cellValue Before');
 
     primaryKeyColumns.forEach((primaryKeyColumnName) => {
       if (rows[rIndex]?.values[primaryKeyColumnName]) {
@@ -772,15 +771,41 @@ const Table = ({ collapseSidebar }) => {
     const dataType = headerGroups[0].headers[index].dataType;
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellValue };
-    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
 
-    if (error) {
+    try {
+      // Update local state first
+      const selectedTableDataCopy = [...selectedTableData];
+      if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
+        selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
+        setSelectedTableData([...selectedTableDataCopy]);
+      }
+
+      // Then make API call
+      const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+
+      if (error) throw error;
+
+      // Only close UI elements after successful save
+      setEditPopover(false);
+      handleOnCloseEditMenu();
+      setCellClick((prev) => ({
+        ...prev,
+        rowIndex: rIndex,
+        cellIndex: index,
+        errorState: false,
+      }));
+      cellValue === null ? setNullValue(true) : setNullValue(false);
+      handleProgressAnimation('Column edited successfully', true);
+      if (dataType === 'timestamp with time zone') return;
+      document.getElementById('edit-input-blur')?.blur();
+    } catch (error) {
       handleProgressAnimation(
         error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`,
         false
       );
       setEditPopover(false);
       handleOnCloseEditMenu();
+
       setTimeout(() => {
         setCellClick((prev) => ({
           ...prev,
@@ -798,31 +823,9 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(oldValue);
         oldValue === null ? setNullValue(true) : setNullValue(false);
-        document.getElementById('edit-input-blur').blur();
+        document.getElementById('edit-input-blur')?.blur();
       }, 3000);
-      return;
     }
-
-    // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
-    const selectedTableDataCopy = [...selectedTableData];
-    if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
-      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
-      setSelectedTableData([...selectedTableDataCopy]);
-    }
-
-    // handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
-    setEditPopover(false);
-    handleOnCloseEditMenu();
-    setCellClick((prev) => ({
-      ...prev,
-      rowIndex: rIndex,
-      cellIndex: index,
-      errorState: false,
-    }));
-    cellValue === null ? setNullValue(true) : setNullValue(false);
-    handleProgressAnimation('Column edited successfully', true);
-    if (dataType === 'timestamp with time zone') return;
-    document.getElementById('edit-input-blur').blur();
   };
 
   useEffect(() => {
@@ -1771,9 +1774,7 @@ const Table = ({ collapseSidebar }) => {
       <ConfirmDialog
         title={'Delete Column'}
         show={editColumnHeader?.deletePopupModal}
-        message={
-          'Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?'
-        }
+        message={`Deleting the column could affect it's associated queries/components. Are you sure you want to continue?`}
         onConfirm={handleDeleteColumn}
         onCancel={() => {
           setEditColumnHeader((prevState) => ({
