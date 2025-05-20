@@ -129,6 +129,13 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
 
   const initialLoadRef = useRef(true);
 
+  const { isReleasedVersionId } = useStore(
+    (state) => ({
+      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
+    }),
+    shallow
+  );
+
   const fetchAndInjectCustomStyles = async (isPublicAccess = false) => {
     try {
       const head = document.head || document.getElementsByTagName('head')[0];
@@ -462,8 +469,13 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   }, [isComponentLayoutReady]);
 
   useEffect(() => {
-    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: app.appName });
-  }, [app.appName]);
+    fetchAndSetWindowTitle({
+      page: pageTitles.EDITOR,
+      appName: app.appName,
+      mode: mode,
+      isReleased: isReleasedVersionId,
+    });
+  }, [app.appName, isReleasedVersionId]);
 
   useEffect(() => {
     if (!themeAccess) return;
