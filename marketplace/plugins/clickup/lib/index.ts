@@ -49,8 +49,24 @@ export default class Clickup implements QueryService {
         status: 'ok',
         data: JSON.parse(response.body),
       };
-    } catch (error) {
-      throw new QueryError('Query could not be completed', error.response?.body || error.message, {});
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err.response) {
+        const { statusCode, body } = err.response;
+        errorDetails.statusCode = statusCode;
+
+        try {
+          const parsedBody = JSON.parse(body);
+          errorDetails.error = parsedBody.err || null;
+          errorDetails.code = parsedBody.ECODE || null;
+        } catch (parseError) {
+          errorDetails.rawBody = body;
+        }
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 
@@ -58,19 +74,18 @@ export default class Clickup implements QueryService {
     const apiKey = sourceOptions.apiKey;
 
     try {
-      const response = await got('https://api.clickup.com/api/v2/team', {
+      const response = await got('https://api.clickup.com/api/v2/user', {
         headers: this.authHeader(apiKey),
       });
 
       const data = JSON.parse(response.body);
 
-      // Check if at least one team (workspace) is returned
-      if (data?.teams?.length > 0) {
+      if (data?.user?.id) {
         return {
           status: 'ok',
         };
       } else {
-        throw new QueryError('No teams found', 'The team list is empty', {});
+        throw new QueryError('User information not found', 'Invalid API key or insufficient permissions', {});
       }
     } catch (error) {
       throw new QueryError('Connection could not be established', error.response?.body || error.message, {});
