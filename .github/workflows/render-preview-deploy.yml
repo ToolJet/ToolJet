@@ -1294,30 +1294,42 @@ jobs:
           PR_NUMBER: ${{ github.event.issue.number }}
         run: |
           # CE
-          CE_SERVICE_ID=$(curl --request GET \
+          CE_SERVICE_JSON=$(curl --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
             --header 'accept: application/json' \
-            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
-          CE_DEPLOY_INFO=$(curl --request GET \
-            --url "https://api.render.com/v1/services/$CE_SERVICE_ID/deploys?limit=1" \
-            --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY")
-          CE_DEPLOY_ID=$(echo $CE_DEPLOY_INFO | jq -r '.[0].id')
-          CE_DEPLOY_STATUS=$(echo $CE_DEPLOY_INFO | jq -r '.[0].status')
+          CE_SERVICE_ID=$(echo "$CE_SERVICE_JSON" | jq -r 'if type=="array" and length>0 then .[0].service.id else "" end')
+          if [ -n "$CE_SERVICE_ID" ]; then
+            CE_DEPLOY_INFO=$(curl --request GET \
+              --url "https://api.render.com/v1/services/$CE_SERVICE_ID/deploys?limit=1" \
+              --header 'accept: application/json' \
+              --header "authorization: Bearer $RENDER_API_KEY")
+            CE_DEPLOY_ID=$(echo "$CE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].id else "" end')
+            CE_DEPLOY_STATUS=$(echo "$CE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].status else "" end')
+          else
+            CE_DEPLOY_ID=""
+            CE_DEPLOY_STATUS=""
+          fi
           echo "CE_SERVICE_ID=$CE_SERVICE_ID" >> $GITHUB_ENV
           echo "CE_DEPLOY_ID=$CE_DEPLOY_ID" >> $GITHUB_ENV
           echo "CE_DEPLOY_STATUS=$CE_DEPLOY_STATUS" >> $GITHUB_ENV
           # EE
-          EE_SERVICE_ID=$(curl --request GET \
+          EE_SERVICE_JSON=$(curl --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
             --header 'accept: application/json' \
-            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
-          EE_DEPLOY_INFO=$(curl --request GET \
-            --url "https://api.render.com/v1/services/$EE_SERVICE_ID/deploys?limit=1" \
-            --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY")
-          EE_DEPLOY_ID=$(echo $EE_DEPLOY_INFO | jq -r '.[0].id')
-          EE_DEPLOY_STATUS=$(echo $EE_DEPLOY_INFO | jq -r '.[0].status')
+          EE_SERVICE_ID=$(echo "$EE_SERVICE_JSON" | jq -r 'if type=="array" and length>0 then .[0].service.id else "" end')
+          if [ -n "$EE_SERVICE_ID" ]; then
+            EE_DEPLOY_INFO=$(curl --request GET \
+              --url "https://api.render.com/v1/services/$EE_SERVICE_ID/deploys?limit=1" \
+              --header 'accept: application/json' \
+              --header "authorization: Bearer $RENDER_API_KEY")
+            EE_DEPLOY_ID=$(echo "$EE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].id else "" end')
+            EE_DEPLOY_STATUS=$(echo "$EE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].status else "" end')
+          else
+            EE_DEPLOY_ID=""
+            EE_DEPLOY_STATUS=""
+          fi
           echo "EE_SERVICE_ID=$EE_SERVICE_ID" >> $GITHUB_ENV
           echo "EE_DEPLOY_ID=$EE_DEPLOY_ID" >> $GITHUB_ENV
           echo "EE_DEPLOY_STATUS=$EE_DEPLOY_STATUS" >> $GITHUB_ENV
