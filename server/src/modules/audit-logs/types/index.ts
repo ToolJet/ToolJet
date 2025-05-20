@@ -23,6 +23,7 @@ export interface AuditLogFields {
   resourceName?: string;
   ipAddress?: string;
   metadata?: object;
+  organizationIds?: Array<string>;
 }
 
 export interface Features {
