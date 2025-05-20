@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class AppGitCreateDto {
   @IsString()
@@ -76,4 +76,8 @@ export class AppGitPullUpdateDto {
 
   @IsString()
   gitVersionName: string;
+}
+export class AppGitUpdateDto {
+  @IsBoolean()
+  allowEditing: boolean;
 }

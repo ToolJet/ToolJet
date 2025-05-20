@@ -5,7 +5,7 @@ export class OrganizationGitCreateDto {
   organizationId: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   gitUrl: string;
 
   @IsString()
@@ -26,6 +26,17 @@ export class OrganizationGitUpdateDto {
   @IsString()
   @IsIn(['ed25519', 'rsa'])
   keyType: 'ed25519' | 'rsa';
+}
+
+export class OrganizationGitHTTPSUpdateDto {
+  @IsOptional()
+  @IsBoolean()
+  autoCommit: boolean;
+}
+export class OrganizationGitLabUpdateDto {
+  @IsOptional()
+  @IsBoolean()
+  autoCommit: boolean;
 }
 
 export class OrganizationGitStatusUpdateDto {

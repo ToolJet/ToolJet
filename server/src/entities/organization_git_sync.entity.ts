@@ -14,10 +14,11 @@ import { AppGitSync } from './app_git_sync.entity';
 import { Organization } from './organization.entity';
 import { OrganizationGitSsh } from './gitsync_entities/organization_git_ssh.entity';
 import { OrganizationGitHttps } from './gitsync_entities/organization_git_https.entity';
-
+import { OrganizationGitLab } from './gitsync_entities/organization_gitlab.entity';
 export enum GITConnectionType {
   GITHUB_SSH = 'github_ssh',
   GITHUB_HTTPS = 'github_https',
+  GITLAB = 'gitlab',
   DISABLED = 'disabled',
 }
 @Entity({ name: 'organization_git_sync' })
@@ -70,4 +71,7 @@ export class OrganizationGitSync extends BaseEntity {
 
   @OneToOne(() => OrganizationGitHttps, (gitHttps) => gitHttps.orgGitSync, {})
   gitHttps: OrganizationGitHttps;
+
+  @OneToOne(() => OrganizationGitLab, (gitHttps) => gitHttps.orgGitSync, {})
+  gitLab: OrganizationGitLab;
 }
