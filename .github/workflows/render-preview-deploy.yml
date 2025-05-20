@@ -1281,132 +1281,137 @@ jobs:
               body
             });
 
-  render-bot-check-deployment:
-    if: ${{ github.event.label.name == 'render-check-deployment' }}
-    runs-on: ubuntu-latest
+render-bot-check-deployment:
+  if: ${{ github.event.label.name == 'render-check-deployment' }}
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Get CE/EE deployment info
-        id: get_deploy_info
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          # CE
-          CE_SERVICE_JSON=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
+  steps:
+    - name: Get PR labels
+      id: get_labels
+      uses: actions-ecosystem/action-get-labels@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get CE deployment info
+      if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
+      id: get_ce_info
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        PR_NUMBER: ${{ github.event.issue.number }}
+      run: |
+        SERVICE_JSON=$(curl --silent --request GET \
+          --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
+          --header 'accept: application/json' \
+          --header "authorization: Bearer $RENDER_API_KEY")
+
+        SERVICE_ID=$(echo "$SERVICE_JSON" | jq -r 'if type=="array" and length>0 then .[0].service.id else "" end')
+
+        if [ -n "$SERVICE_ID" ]; then
+          DEPLOY_INFO=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
             --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY")
 
-          CE_SERVICE_ID=$(echo "$CE_SERVICE_JSON" | jq -r 'if type=="array" and length>0 then .[0].service.id else "" end')
+          DEPLOY_ID=$(echo "$DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.id else "" end')
+          DEPLOY_STATUS=$(echo "$DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.status else "" end')
+        fi
 
-          if [ -n "$CE_SERVICE_ID" ]; then
-            CE_DEPLOY_INFO=$(curl --silent --request GET \
-              --url "https://api.render.com/v1/services/$CE_SERVICE_ID/deploys?limit=1" \
-              --header 'accept: application/json' \
-              --header "authorization: Bearer $RENDER_API_KEY")
+        echo "CE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+        echo "CE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+        echo "CE_DEPLOY_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
 
-            CE_DEPLOY_ID=$(echo "$CE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.id else "" end')
-            CE_DEPLOY_STATUS=$(echo "$CE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.status else "" end')
-          else
-            CE_DEPLOY_ID=""
-            CE_DEPLOY_STATUS=""
-          fi
+    - name: Get EE deployment info
+      if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+      id: get_ee_info
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        PR_NUMBER: ${{ github.event.issue.number }}
+      run: |
+        SERVICE_JSON=$(curl --silent --request GET \
+          --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
+          --header 'accept: application/json' \
+          --header "authorization: Bearer $RENDER_API_KEY")
 
-          echo "CE_SERVICE_ID=$CE_SERVICE_ID" >> $GITHUB_ENV
-          echo "CE_DEPLOY_ID=$CE_DEPLOY_ID" >> $GITHUB_ENV
-          echo "CE_DEPLOY_STATUS=$CE_DEPLOY_STATUS" >> $GITHUB_ENV
+        SERVICE_ID=$(echo "$SERVICE_JSON" | jq -r 'if type=="array" and length>0 then .[0].service.id else "" end')
 
-          # EE
-          EE_SERVICE_JSON=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
+        if [ -n "$SERVICE_ID" ]; then
+          DEPLOY_INFO=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
             --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY")
 
-          EE_SERVICE_ID=$(echo "$EE_SERVICE_JSON" | jq -r 'if type=="array" and length>0 then .[0].service.id else "" end')
+          DEPLOY_ID=$(echo "$DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.id else "" end')
+          DEPLOY_STATUS=$(echo "$DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.status else "" end')
+        fi
 
-          if [ -n "$EE_SERVICE_ID" ]; then
-            EE_DEPLOY_INFO=$(curl --silent --request GET \
-              --url "https://api.render.com/v1/services/$EE_SERVICE_ID/deploys?limit=1" \
-              --header 'accept: application/json' \
-              --header "authorization: Bearer $RENDER_API_KEY")
+        echo "EE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+        echo "EE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+        echo "EE_DEPLOY_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
 
-            EE_DEPLOY_ID=$(echo "$EE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.id else "" end')
-            EE_DEPLOY_STATUS=$(echo "$EE_DEPLOY_INFO" | jq -r 'if type=="array" and length>0 then .[0].deploy.status else "" end')
-          else
-            EE_DEPLOY_ID=""
-            EE_DEPLOY_STATUS=""
-          fi
+    - name: Comment CE/EE deploy info
+      if: contains(steps.get_labels.outputs.result, 'active-ce-review-app') || contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+      uses: actions/github-script@v6
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        CE_SERVICE_ID: ${{ env.CE_SERVICE_ID }}
+        CE_DEPLOY_ID: ${{ env.CE_DEPLOY_ID }}
+        CE_DEPLOY_STATUS: ${{ env.CE_DEPLOY_STATUS }}
+        EE_SERVICE_ID: ${{ env.EE_SERVICE_ID }}
+        EE_DEPLOY_ID: ${{ env.EE_DEPLOY_ID }}
+        EE_DEPLOY_STATUS: ${{ env.EE_DEPLOY_STATUS }}
+        PR_NUMBER: ${{ github.event.issue.number }}
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prNumber = process.env.PR_NUMBER;
+          const apiKey = process.env.RENDER_API_KEY;
+          const headers = {
+            accept: 'application/json',
+            authorization: `Bearer ${apiKey}`,
+          };
 
-          echo "EE_SERVICE_ID=$EE_SERVICE_ID" >> $GITHUB_ENV
-          echo "EE_DEPLOY_ID=$EE_DEPLOY_ID" >> $GITHUB_ENV
-          echo "EE_DEPLOY_STATUS=$EE_DEPLOY_STATUS" >> $GITHUB_ENV
+          async function fetchCommit(serviceId, deployId) {
+            try {
+              const res = await fetch(`https://api.render.com/v1/services/${serviceId}/deploys/${deployId}`, { headers });
+              const data = await res.json();
+              return data.commit || {};
+            } catch (e) {
+              return {};
+            }
+          }
 
-      - name: Comment CE/EE deploy info
-        uses: actions/github-script@v6
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          CE_SERVICE_ID: ${{ env.CE_SERVICE_ID }}
-          CE_DEPLOY_ID: ${{ env.CE_DEPLOY_ID }}
-          CE_DEPLOY_STATUS: ${{ env.CE_DEPLOY_STATUS }}
-          EE_SERVICE_ID: ${{ env.EE_SERVICE_ID }}
-          EE_DEPLOY_ID: ${{ env.EE_DEPLOY_ID }}
-          EE_DEPLOY_STATUS: ${{ env.EE_DEPLOY_STATUS }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = process.env.PR_NUMBER;
-            const apiKey = process.env.RENDER_API_KEY;
-            let ceInfo = '', eeInfo = '';
+          const makeSection = async (label, prefix) => {
+            const serviceId = process.env[`${prefix}_SERVICE_ID`];
+            const deployId = process.env[`${prefix}_DEPLOY_ID`];
+            const deployStatus = process.env[`${prefix}_DEPLOY_STATUS`];
 
-            // CE Info
-            if (process.env.CE_SERVICE_ID) {
-              ceInfo = `### Community Edition\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.CE_SERVICE_ID}`;
-              if (process.env.CE_DEPLOY_ID) {
-                const ceRes = await fetch(`https://api.render.com/v1/services/${process.env.CE_SERVICE_ID}/deploys/${process.env.CE_DEPLOY_ID}`, {
-                  headers: {
-                    'accept': 'application/json',
-                    'authorization': `Bearer ${apiKey}`
-                  }
-                });
-                const ceData = await ceRes.json();
-                const ceCommit = ceData.commit || {};
-                ceInfo += `\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}\n- Status: ${process.env.CE_DEPLOY_STATUS || 'unknown'}`;
-              } else {
-                ceInfo += '\n- No deploy found for this service.';
-              }
+            if (!serviceId) return '';
+
+            let section = `### ${label}\n- App: https://tooljet-${prefix.toLowerCase()}-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${serviceId}`;
+            if (deployId) {
+              const commit = await fetchCommit(serviceId, deployId);
+              section += `\n- Commit: ${commit.id || ''}\n- Message: ${commit.message || ''}\n- Status: ${deployStatus || 'unknown'}`;
+            } else {
+              section += '\n- No deploy found for this service.';
             }
 
-            // EE Info
-            if (process.env.EE_SERVICE_ID) {
-              eeInfo = `### Enterprise Edition\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.EE_SERVICE_ID}`;
-              if (process.env.EE_DEPLOY_ID) {
-                const eeRes = await fetch(`https://api.render.com/v1/services/${process.env.EE_SERVICE_ID}/deploys/${process.env.EE_DEPLOY_ID}`, {
-                  headers: {
-                    'accept': 'application/json',
-                    'authorization': `Bearer ${apiKey}`
-                  }
-                });
-                const eeData = await eeRes.json();
-                const eeCommit = eeData.commit || {};
-                eeInfo += `\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}\n- Status: ${process.env.EE_DEPLOY_STATUS || 'unknown'}`;
-              } else {
-                eeInfo += '\n- No deploy found for this service.';
-              }
-            }
+            return section;
+          };
 
-            let body = [ceInfo, eeInfo].filter(Boolean).join('\n\n');
-            if (!body) body = 'No active CE or EE review app deployments found.';
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body
-            });
+          const ceInfo = await makeSection('Community Edition', 'CE');
+          const eeInfo = await makeSection('Enterprise Edition', 'EE');
 
-      - name: Remove trigger label
-        uses: actions-ecosystem/action-remove-labels@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          labels: render-check-deployment
+          const body = [ceInfo, eeInfo].filter(Boolean).join('\n\n') || 'No active CE or EE review app deployments found.';
+
+          await github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body
+          });
+
+    - name: Remove trigger label
+      uses: actions-ecosystem/action-remove-labels@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        labels: render-check-deployment
