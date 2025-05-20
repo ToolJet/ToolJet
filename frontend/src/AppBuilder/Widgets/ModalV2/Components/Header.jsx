@@ -1,27 +1,46 @@
 import React from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
-import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { getCanvasHeight } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
+import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
+import { MODAL_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const ModalHeader = React.memo(
-  ({ id, isDisabled, customStyles, hideCloseButton, darkMode, width, onHideModal, headerHeight, onClick }) => {
+  ({
+    id,
+    isDisabled,
+    customStyles,
+    hideCloseButton,
+    darkMode,
+    width,
+    onHideModal,
+    headerHeight,
+    onClick,
+    isEditing,
+    updateHeaderSizeInStore,
+    activeSlot,
+    headerMaxHeight,
+  }) => {
     const canvasHeaderHeight = getCanvasHeight(headerHeight);
-
     return (
       <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={onClick}>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <SubContainer
-            id={`${id}-header`}
-            canvasHeight={canvasHeaderHeight}
-            canvasWidth={width}
-            allowContainerSelect={false}
-            darkMode={darkMode}
-            styles={{
-              backgroundColor: 'transparent',
-              overflowX: 'hidden',
-              overflowY: isDisabled ? 'hidden' : 'auto',
+          <HorizontalSlot
+            slotName={'header'}
+            slotStyle={{
+              height: `100%`,
+              padding: `${4.5}px ${MODAL_CANVAS_PADDING}px`,
+              maxHeight: `${headerMaxHeight}px`,
             }}
+            isEditing={isEditing}
+            id={`${id}-header`}
+            height={canvasHeaderHeight}
+            width={width}
+            darkMode={darkMode}
+            isDisabled={isDisabled}
+            isActive={activeSlot === `${id}-header`}
+            onResize={updateHeaderSizeInStore}
             componentType="ModalV2"
+            maxHeight={headerMaxHeight}
           />
         </div>
         {isDisabled && (

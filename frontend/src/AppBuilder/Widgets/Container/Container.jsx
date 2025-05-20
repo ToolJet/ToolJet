@@ -9,6 +9,8 @@ import {
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
 import './container.scss';
+import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 
 export const Container = ({
   id,
@@ -33,8 +35,13 @@ export const Container = ({
     shallow
   );
 
+  const isEditing = useStore((state) => state.currentMode === 'edit');
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+
+  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow } = styles;
   const { headerHeight = 80 } = properties;
+  const headerMaxHeight = parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
@@ -65,6 +72,7 @@ export const Container = ({
   const containerHeaderStyles = {
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${headerMaxHeight}px`,
     ...headerBgColor,
   };
 
@@ -73,6 +81,11 @@ export const Container = ({
     display: 'flex',
     height: '100%',
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+  };
+
+  const updateHeaderSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
   };
 
   return (
@@ -87,17 +100,19 @@ export const Container = ({
       ) : (
         <>
           {properties.showHeader && (
-            <div style={containerHeaderStyles} className="wj-container-header">
-              <ContainerComponent
-                id={`${id}-header`}
-                styles={{ ...headerBgColor, height: `${headerHeight}px` }}
-                canvasHeight={headerHeight / 10}
-                canvasWidth={width}
-                allowContainerSelect={true}
-                darkMode={darkMode}
-                componentType="Container"
-              />
-            </div>
+            <HorizontalSlot
+              slotName={'header'}
+              slotStyle={containerHeaderStyles}
+              isEditing={isEditing}
+              id={`${id}-header`}
+              height={headerHeight}
+              width={width}
+              darkMode={darkMode}
+              isDisabled={isDisabled}
+              isActive={activeSlot === `${id}-header`}
+              onResize={updateHeaderSizeInStore}
+              componentType="Container"
+            />
           )}
           <div style={containerContentStyles}>
             <ContainerComponent

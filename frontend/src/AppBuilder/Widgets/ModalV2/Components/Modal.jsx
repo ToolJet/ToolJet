@@ -4,7 +4,8 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import { ModalHeader } from '@/AppBuilder/Widgets/ModalV2/Components/Header';
 import { ModalFooter } from '@/AppBuilder/Widgets/ModalV2/Components/Footer';
-
+import useStore from '@/AppBuilder/_stores/store';
+import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 export const ModalWidget = ({ ...restProps }) => {
   const {
     customStyles,
@@ -24,7 +25,24 @@ export const ModalWidget = ({ ...restProps }) => {
     headerHeight,
     footerHeight,
     onSelectModal,
+    modalHeight,
   } = restProps['modalProps'];
+
+  const isEditing = useStore((state) => state.currentMode === 'edit');
+  const setComponentProperty = useStore((state) => state.setComponentProperty);
+  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
+  const headerMaxHeight = parseInt(modalHeight, 10) - parseInt(footerHeight, 10) - 100 - 10;
+  const footerMaxHeight = parseInt(modalHeight, 10) - parseInt(headerHeight, 10) - 100 - 10;
+
+  const updateHeaderSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
+  };
+
+  const updateFooterSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
+  };
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
   const handleModalSlotClick = (event) => {
@@ -53,10 +71,20 @@ export const ModalWidget = ({ ...restProps }) => {
     };
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      const modalContent = document.querySelector(`.tj-modal-content-${id}`);
+      if (restProps.show && modalContent) {
+        modalContent.style.height = `${modalHeight}px`;
+      }
+    }, 100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalHeight, restProps.show]);
+
   return (
     <BootstrapModal
       {...restProps}
-      contentClassName="modal-component tj-modal--container tj-modal-widget-content"
+      contentClassName={`modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`}
       animation={true}
       onEscapeKeyDown={(e) => {
         e.preventDefault();
@@ -65,6 +93,7 @@ export const ModalWidget = ({ ...restProps }) => {
         }
       }}
       onClick={handleModalSlotClick}
+      // style={{ height: `${modalHeight}px`, maxHeight: '100%' }}
     >
       {showConfigHandler && (
         <ConfigHandle
@@ -87,6 +116,10 @@ export const ModalWidget = ({ ...restProps }) => {
           onHideModal={onHideModal}
           headerHeight={headerHeight}
           onClick={handleModalSlotClick}
+          isEditing={isEditing}
+          updateHeaderSizeInStore={updateHeaderSizeInStore}
+          activeSlot={activeSlot}
+          headerMaxHeight={headerMaxHeight}
         />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
@@ -128,6 +161,10 @@ export const ModalWidget = ({ ...restProps }) => {
           width={modalWidth}
           footerHeight={footerHeight}
           onClick={handleModalSlotClick}
+          isEditing={isEditing}
+          updateFooterSizeInStore={updateFooterSizeInStore}
+          activeSlot={activeSlot}
+          footerMaxHeight={footerMaxHeight}
         />
       )}
     </BootstrapModal>

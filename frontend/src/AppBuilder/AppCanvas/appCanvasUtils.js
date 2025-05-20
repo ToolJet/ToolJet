@@ -757,7 +757,6 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
     if (isModalHeader) {
       const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
         ?.hideCloseButton;
-      console.log('isModalHeaderCloseBtnEnabled', isModalHeaderCloseBtnEnabled);
       padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
     } else {
       padding = 2 * MODAL_CANVAS_PADDING;
