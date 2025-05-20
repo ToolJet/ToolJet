@@ -227,6 +227,8 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   }
 
   const paramLabelWithDescription = (param) => {
+    const paramValue = type === 'request' ? param : param.name;
+    const chWidth = paramValue.length + 1;
     return (
       <ToolTip message={type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description}>
         <div className="cursor-help">
@@ -236,6 +238,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
             className="form-control form-control-underline"
             placeholder="key"
             disabled
+            style={{ width: `${chWidth}ch`, paddingRight: '0px' }}
           />
         </div>
       </ToolTip>
@@ -243,13 +246,17 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   };
 
   const paramLabelWithoutDescription = (param) => {
+    const paramValue = type === 'request' ? param : param.name;
+    const chWidth = paramValue.length + 1;
+
     return (
       <input
         type="text"
-        value={type === 'request' ? param : param.name}
+        value={paramValue}
         className="form-control"
         placeholder="key"
         disabled
+        style={{ width: `${chWidth}ch`, paddingRight: '0px' }}
       />
     );
   };
@@ -273,11 +280,13 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
 
   const paramDetails = (param) => {
     return (
-      <div className="col-auto d-flex field field-width-179 align-items-center">
-        {(type === 'request' && parameters[param].description) || param?.description
-          ? paramLabelWithDescription(param)
-          : paramLabelWithoutDescription(param)}
-        {param.required && <span className="text-danger fw-bold">*</span>}
+      <div className="col-auto d-flex field field-width-179 align-items-center justify-content-between">
+        <div className="d-flex align-items-center">
+          {(type === 'request' && parameters[param].description) || param?.description
+            ? paramLabelWithDescription(param)
+            : paramLabelWithoutDescription(param)}
+          {param.required && <span className="text-danger fw-bold">*</span>}
+        </div>
         {paramType(param)}
       </div>
     );
