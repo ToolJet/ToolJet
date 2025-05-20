@@ -1281,15 +1281,6 @@ jobs:
               body
             });
 
-
-name: Render Deployment Info
-
-on:
-  issues:
-    types:
-      - labeled
-
-jobs:
   render-bot-check-deployment:
     if: ${{ github.event.label.name == 'render-check-deployment' }}
     runs-on: ubuntu-latest
