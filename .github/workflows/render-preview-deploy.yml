@@ -1287,20 +1287,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Get PR labels
-        id: get_labels
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const prNumber = github.event.pull_request.number;
-            console.log(`Getting labels for PR #${prNumber}`);
-            const labels = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber
-            });
-            return labels.data.map(l => l.name);
-
       - name: Get CE/EE deployment info
         id: get_deploy_info
         env:
