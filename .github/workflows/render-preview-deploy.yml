@@ -1223,7 +1223,7 @@ jobs:
 
       - name: Check if comment is a render-check-deployment command
         id: check-comment
-        uses: peter-evans/pull-request-comment-trigger@v3
+        uses: khan/pull-request-comment-trigger@v1.1.0
         with:
           trigger: '/render-check-deployment'
           reaction: rocket  # Optional: adds a 🚀 reaction to the triggering comment
