@@ -1276,4 +1276,148 @@ jobs:
               body
             });
 
-# testing 1
+      - name: Comment CE/EE deploy info
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app') || contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        uses: actions/github-script@v6
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          CE_SERVICE_ID: ${{ env.SERVICE_ID }}
+          CE_DEPLOY_ID: ${{ env.DEPLOY_ID }}
+          PR_NUMBER: ${{ github.event.number }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const apiKey = process.env.RENDER_API_KEY;
+            let ceInfo = '', eeInfo = '';
+            // CE
+            if (process.env.CE_SERVICE_ID && process.env.CE_DEPLOY_ID) {
+              const ceRes = await fetch(`https://api.render.com/v1/services/${process.env.CE_SERVICE_ID}/deploys/${process.env.CE_DEPLOY_ID}`, {
+                headers: {
+                  'accept': 'application/json',
+                  'authorization': `Bearer ${apiKey}`
+                }
+              });
+              const ceData = await ceRes.json();
+              const ceCommit = ceData.commit || {};
+              ceInfo = `Community Edition:\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.CE_SERVICE_ID}\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}`;
+            }
+            // EE
+            if (process.env.EE_SERVICE_ID && process.env.EE_DEPLOY_ID) {
+              const eeRes = await fetch(`https://api.render.com/v1/services/${process.env.EE_SERVICE_ID}/deploys/${process.env.EE_DEPLOY_ID}`, {
+                headers: {
+                  'accept': 'application/json',
+                  'authorization': `Bearer ${apiKey}`
+                }
+              });
+              const eeData = await eeRes.json();
+              const eeCommit = eeData.commit || {};
+              eeInfo = `Enterprise Edition:\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.EE_SERVICE_ID}\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}`;
+            }
+            let body = [ceInfo, eeInfo].filter(Boolean).join('\n\n');
+            if (!body) body = 'No active CE or EE review app deployments found.';
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+  render-bot-check-deployment:
+    if: ${{ github.event.action == 'created' && github.event.comment.body == '/render-bot check deployment' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR labels
+        id: get_labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            return labels.data.map(l => l.name);
+      - name: Get CE/EE deployment info
+        id: get_deploy_info
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # CE
+          CE_SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+          CE_DEPLOY_INFO=$(curl --request GET \
+            --url "https://api.render.com/v1/services/$CE_SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY")
+          CE_DEPLOY_ID=$(echo $CE_DEPLOY_INFO | jq -r '.[0].id')
+          CE_DEPLOY_STATUS=$(echo $CE_DEPLOY_INFO | jq -r '.[0].status')
+          echo "CE_SERVICE_ID=$CE_SERVICE_ID" >> $GITHUB_ENV
+          echo "CE_DEPLOY_ID=$CE_DEPLOY_ID" >> $GITHUB_ENV
+          echo "CE_DEPLOY_STATUS=$CE_DEPLOY_STATUS" >> $GITHUB_ENV
+          # EE
+          EE_SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+          EE_DEPLOY_INFO=$(curl --request GET \
+            --url "https://api.render.com/v1/services/$EE_SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY")
+          EE_DEPLOY_ID=$(echo $EE_DEPLOY_INFO | jq -r '.[0].id')
+          EE_DEPLOY_STATUS=$(echo $EE_DEPLOY_INFO | jq -r '.[0].status')
+          echo "EE_SERVICE_ID=$EE_SERVICE_ID" >> $GITHUB_ENV
+          echo "EE_DEPLOY_ID=$EE_DEPLOY_ID" >> $GITHUB_ENV
+          echo "EE_DEPLOY_STATUS=$EE_DEPLOY_STATUS" >> $GITHUB_ENV
+      - name: Comment CE/EE deploy info
+        uses: actions/github-script@v6
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          CE_SERVICE_ID: ${{ env.CE_SERVICE_ID }}
+          CE_DEPLOY_ID: ${{ env.CE_DEPLOY_ID }}
+          CE_DEPLOY_STATUS: ${{ env.CE_DEPLOY_STATUS }}
+          EE_SERVICE_ID: ${{ env.EE_SERVICE_ID }}
+          EE_DEPLOY_ID: ${{ env.EE_DEPLOY_ID }}
+          EE_DEPLOY_STATUS: ${{ env.EE_DEPLOY_STATUS }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const apiKey = process.env.RENDER_API_KEY;
+            let ceInfo = '', eeInfo = '';
+            // CE
+            if (process.env.CE_SERVICE_ID && process.env.CE_DEPLOY_ID) {
+              const ceRes = await fetch(`https://api.render.com/v1/services/${process.env.CE_SERVICE_ID}/deploys/${process.env.CE_DEPLOY_ID}`, {
+                headers: {
+                  'accept': 'application/json',
+                  'authorization': `Bearer ${apiKey}`
+                }
+              });
+              const ceData = await ceRes.json();
+              const ceCommit = ceData.commit || {};
+              ceInfo = `Community Edition:\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.CE_SERVICE_ID}\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}\n- Status: ${process.env.CE_DEPLOY_STATUS || 'unknown'}`;
+            }
+            // EE
+            if (process.env.EE_SERVICE_ID && process.env.EE_DEPLOY_ID) {
+              const eeRes = await fetch(`https://api.render.com/v1/services/${process.env.EE_SERVICE_ID}/deploys/${process.env.EE_DEPLOY_ID}`, {
+                headers: {
+                  'accept': 'application/json',
+                  'authorization': `Bearer ${apiKey}`
+                }
+              });
+              const eeData = await eeRes.json();
+              const eeCommit = eeData.commit || {};
+              eeInfo = `Enterprise Edition:\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.EE_SERVICE_ID}\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}\n- Status: ${process.env.EE_DEPLOY_STATUS || 'unknown'}`;
+            }
+            let body = [ceInfo, eeInfo].filter(Boolean).join('\n\n');
+            if (!body) body = 'No active CE or EE review app deployments found.';
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
