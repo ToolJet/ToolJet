@@ -1245,14 +1245,18 @@ jobs:
             --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
             --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+
           DEPLOY_RESPONSE=$(curl --request POST \
             --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
             --header 'accept: application/json' \
             --header 'content-type: application/json' \
-            --header "authorization: Bearer $RENDER_API_KEY" \
-          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+          DEPLOY_ID=$(echo "$DEPLOY_RESPONSE" | jq -r '.id')
+
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+
 
 
       - name: check EE review app if active
@@ -1266,14 +1270,18 @@ jobs:
             --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
             --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+
           DEPLOY_RESPONSE=$(curl --request POST \
             --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
             --header 'accept: application/json' \
             --header 'content-type: application/json' \
-            --header "authorization: Bearer $RENDER_API_KEY" \
-          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+          DEPLOY_ID=$(echo "$DEPLOY_RESPONSE" | jq -r '.id')
+
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+
 
       - name: Comment CE deploy info
         if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
