@@ -6,13 +6,20 @@ import { ButtonSolid } from '../../../../_components/AppButton';
 import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
-  const { type, encrypted, validation, isValidatedMessages, isDisabled } = restProps;
+  const {
+    propertyKey,
+    type,
+    encrypted,
+    validation,
+    isValidatedMessages,
+    isDisabled,
+    isEditing,
+    handleEncryptedFieldsToggle,
+  } = restProps;
 
   const InputComponentType = type === 'number' ? NumberInput : TextInput;
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [originalValue, setOriginalValue] = useState(null);
 
   const isEncrypted = type === 'password' || encrypted;
   const isWorkspaceConstant =
@@ -43,27 +50,6 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
     }
   }, [isValid, isValidatedMessages]);
 
-  const toggleEditing = () => {
-    if (isDisabled) return;
-
-    const willBeInEditMode = !isEditing;
-    setIsEditing(willBeInEditMode);
-
-    if (willBeInEditMode) {
-      setOriginalValue(restProps.value);
-
-      if (isWorkspaceConstant) {
-        change({ target: { value: restProps.placeholder } });
-      } else {
-        change({ target: { value: '' } });
-      }
-    } else {
-      if (restProps.value === restProps.placeholder && isWorkspaceConstant) {
-        change({ target: { value: originalValue } });
-      }
-    }
-  };
-
   return (
     <div>
       <div className="d-flex">
@@ -82,7 +68,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 target="_blank"
                 rel="noreferrer"
                 disabled={isDisabled}
-                onClick={toggleEditing}
+                onClick={(e) => handleEncryptedFieldsToggle(e, propertyKey)}
                 data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
