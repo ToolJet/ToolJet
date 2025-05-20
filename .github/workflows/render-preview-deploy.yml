@@ -1283,7 +1283,7 @@ jobs:
 
 
   render-bot-check-deployment:
-    if: ${{ github.event.action == 'created' && github.event.comment.body && startsWith(github.event.comment.body, '/render-bot check deployment') && github.event.issue.pull_request }}
+    if: ${{ contains(github.event.comment.html_url, '/pull/') && startsWith(github.event.comment.body, '/render-bot check deployment') }}
     runs-on: ubuntu-latest
     steps:
       - name: Get PR labels
