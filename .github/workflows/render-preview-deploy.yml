@@ -1286,17 +1286,21 @@ jobs:
     if: ${{ github.event.label.name == 'render-check-deployment' }}
     runs-on: ubuntu-latest
     steps:
+
       - name: Get PR labels
         id: get_labels
         uses: actions/github-script@v6
         with:
           script: |
+            const prNumber = github.event.pull_request.number;
+            console.log(`Getting labels for PR #${prNumber}`);
             const labels = await github.rest.issues.listLabelsOnIssue({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: github.event.issue.number
+              issue_number: prNumber
             });
             return labels.data.map(l => l.name);
+
       - name: Get CE/EE deployment info
         id: get_deploy_info
         env:
@@ -1331,6 +1335,8 @@ jobs:
           echo "EE_SERVICE_ID=$EE_SERVICE_ID" >> $GITHUB_ENV
           echo "EE_DEPLOY_ID=$EE_DEPLOY_ID" >> $GITHUB_ENV
           echo "EE_DEPLOY_STATUS=$EE_DEPLOY_STATUS" >> $GITHUB_ENV
+
+
       - name: Comment CE/EE deploy info
         uses: actions/github-script@v6
         env:
