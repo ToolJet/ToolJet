@@ -43,7 +43,7 @@ function Footer() {
                     <ThemedImage
                       sources={{
                         light: '/img/slack-icon.svg',
-                        dark: '/img/slack-icon-dark.svg'
+                        dark: '/img/slack-icon.svg'
                       }}
                       alt="Slack"
                       style={{ width: '24px', height: '24px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
