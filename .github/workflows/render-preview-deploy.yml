@@ -1353,28 +1353,38 @@ jobs:
             const apiKey = process.env.RENDER_API_KEY;
             let ceInfo = '', eeInfo = '';
             // CE
-            if (process.env.CE_SERVICE_ID && process.env.CE_DEPLOY_ID) {
-              const ceRes = await fetch(`https://api.render.com/v1/services/${process.env.CE_SERVICE_ID}/deploys/${process.env.CE_DEPLOY_ID}`, {
-                headers: {
-                  'accept': 'application/json',
-                  'authorization': `Bearer ${apiKey}`
-                }
-              });
-              const ceData = await ceRes.json();
-              const ceCommit = ceData.commit || {};
-              ceInfo = `Community Edition:\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.CE_SERVICE_ID}\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}\n- Status: ${process.env.CE_DEPLOY_STATUS || 'unknown'}`;
+            if (process.env.CE_SERVICE_ID) {
+              ceInfo = `Community Edition:\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.CE_SERVICE_ID}`;
+              if (process.env.CE_DEPLOY_ID) {
+                const ceRes = await fetch(`https://api.render.com/v1/services/${process.env.CE_SERVICE_ID}/deploys/${process.env.CE_DEPLOY_ID}`, {
+                  headers: {
+                    'accept': 'application/json',
+                    'authorization': `Bearer ${apiKey}`
+                  }
+                });
+                const ceData = await ceRes.json();
+                const ceCommit = ceData.commit || {};
+                ceInfo += `\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}\n- Status: ${process.env.CE_DEPLOY_STATUS || 'unknown'}`;
+              } else {
+                ceInfo += '\n- No deploy found for this service.';
+              }
             }
             // EE
-            if (process.env.EE_SERVICE_ID && process.env.EE_DEPLOY_ID) {
-              const eeRes = await fetch(`https://api.render.com/v1/services/${process.env.EE_SERVICE_ID}/deploys/${process.env.EE_DEPLOY_ID}`, {
-                headers: {
-                  'accept': 'application/json',
-                  'authorization': `Bearer ${apiKey}`
-                }
-              });
-              const eeData = await eeRes.json();
-              const eeCommit = eeData.commit || {};
-              eeInfo = `Enterprise Edition:\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.EE_SERVICE_ID}\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}\n- Status: ${process.env.EE_DEPLOY_STATUS || 'unknown'}`;
+            if (process.env.EE_SERVICE_ID) {
+              eeInfo = `Enterprise Edition:\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.EE_SERVICE_ID}`;
+              if (process.env.EE_DEPLOY_ID) {
+                const eeRes = await fetch(`https://api.render.com/v1/services/${process.env.EE_SERVICE_ID}/deploys/${process.env.EE_DEPLOY_ID}`, {
+                  headers: {
+                    'accept': 'application/json',
+                    'authorization': `Bearer ${apiKey}`
+                  }
+                });
+                const eeData = await eeRes.json();
+                const eeCommit = eeData.commit || {};
+                eeInfo += `\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}\n- Status: ${process.env.EE_DEPLOY_STATUS || 'unknown'}`;
+              } else {
+                eeInfo += '\n- No deploy found for this service.';
+              }
             }
             let body = [ceInfo, eeInfo].filter(Boolean).join('\n\n');
             if (!body) body = 'No active CE or EE review app deployments found.';
