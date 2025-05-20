@@ -21,7 +21,7 @@ RUN git config --global http.postBuffer 524288000
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout ${BRANCH_NAME}
+RUN git checkout main
 
 RUN git submodule update --init --recursive
 
