@@ -10895,7 +10895,7 @@ tbody {
   background: var(--indigo3);
   border-radius: 6px;
   padding: 5px 10px;
-  
+
   p {
     font-weight: 500 !important;
     line-height: 18px !important;
@@ -12305,11 +12305,11 @@ tbody {
   }
 
   .design-component-inputs textarea {
-    
+
     &.valid-textarea {
       border: 1.5px solid #519b62 !important;
     }
-    
+
     &.invalid-textarea {
       border: 1.5px solid #e26367 !important;
     }
@@ -18890,5 +18890,13 @@ section.ai-message-prompt-input-wrapper {
 .single-line-codehinter-input {
   .cm-editor {
     max-height: 100px !important;
+  }
+}
+
+.codehinter-popup {
+  .single-line-codehinter-input {
+    .cm-editor {
+      max-height: 100% !important;
+    }
   }
 }
