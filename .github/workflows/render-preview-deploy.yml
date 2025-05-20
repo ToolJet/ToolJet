@@ -1217,7 +1217,9 @@ jobs:
 
 
   render-bot-check-deployment:
-    if: ${{ github.event.label.name == 'render-check-deployment' }}
+    if: |
+      github.event.issue.pull_request &&
+      github.event.comment.body == 'render-check-deployment'
     runs-on: ubuntu-latest
     
     steps:
