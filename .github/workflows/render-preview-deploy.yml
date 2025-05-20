@@ -1287,7 +1287,6 @@ jobs:
 
     steps:
       - name: Get CE deployment info
-        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         id: get_ce_info
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -1315,7 +1314,6 @@ jobs:
           echo "CE_DEPLOY_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
 
       - name: Get EE deployment info
-        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         id: get_ee_info
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
