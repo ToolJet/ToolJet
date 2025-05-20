@@ -1193,37 +1193,6 @@ jobs:
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
 
-      - name: Comment CE commit name
-        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
-        uses: actions/github-script@v6
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          SERVICE_ID: ${{ env.SERVICE_ID }}
-          DEPLOY_ID: ${{ env.DEPLOY_ID }}
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const serviceId = process.env.SERVICE_ID;
-            const deployId = process.env.DEPLOY_ID;
-            const apiKey = process.env.RENDER_API_KEY;
-            if (!serviceId || !deployId) return;
-            const res = await fetch(`https://api.render.com/v1/services/${serviceId}/deploys/${deployId}`, {
-              headers: {
-                'accept': 'application/json',
-                'authorization': `Bearer ${apiKey}`
-              }
-            });
-            const data = await res.json();
-            const commit = data.commit || {};
-            const sha = commit.id || '';
-            const msg = commit.message || '';
-            const body = `Community Edition Deploy commit:\nSHA: ${sha}\nMessage: ${msg}`;
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body
-            });
 
       - name: Redeploy EE review app if active
         if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
@@ -1246,40 +1215,8 @@ jobs:
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
 
-      - name: Comment EE commit name
-        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
-        uses: actions/github-script@v6
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          SERVICE_ID: ${{ env.SERVICE_ID }}
-          DEPLOY_ID: ${{ env.DEPLOY_ID }}
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const serviceId = process.env.SERVICE_ID;
-            const deployId = process.env.DEPLOY_ID;
-            const apiKey = process.env.RENDER_API_KEY;
-            if (!serviceId || !deployId) return;
-            const res = await fetch(`https://api.render.com/v1/services/${serviceId}/deploys/${deployId}`, {
-              headers: {
-                'accept': 'application/json',
-                'authorization': `Bearer ${apiKey}`
-              }
-            });
-            const data = await res.json();
-            const commit = data.commit || {};
-            const sha = commit.id || '';
-            const msg = commit.message || '';
-            const body = `Enterprise Edition Deploy commit:\nSHA: ${sha}\nMessage: ${msg}`;
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body
-            });
-
-      - name: Comment CE/EE deploy info
-        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app') || contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+      - name: Comment CE deploy info
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         uses: actions/github-script@v6
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -1291,8 +1228,7 @@ jobs:
           script: |
             const prNumber = process.env.PR_NUMBER;
             const apiKey = process.env.RENDER_API_KEY;
-            let ceInfo = '', eeInfo = '';
-            // CE
+            let ceInfo = '';
             if (process.env.CE_SERVICE_ID && process.env.CE_DEPLOY_ID) {
               const ceRes = await fetch(`https://api.render.com/v1/services/${process.env.CE_SERVICE_ID}/deploys/${process.env.CE_DEPLOY_ID}`, {
                 headers: {
@@ -1304,7 +1240,28 @@ jobs:
               const ceCommit = ceData.commit || {};
               ceInfo = `Community Edition:\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.CE_SERVICE_ID}\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}`;
             }
-            // EE
+            let body = ceInfo || 'No active CE review app deployment found.';
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+      - name: Comment EE deploy info
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        uses: actions/github-script@v6
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          EE_SERVICE_ID: ${{ env.SERVICE_ID }}
+          EE_DEPLOY_ID: ${{ env.DEPLOY_ID }}
+          PR_NUMBER: ${{ github.event.number }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const apiKey = process.env.RENDER_API_KEY;
+            let eeInfo = '';
             if (process.env.EE_SERVICE_ID && process.env.EE_DEPLOY_ID) {
               const eeRes = await fetch(`https://api.render.com/v1/services/${process.env.EE_SERVICE_ID}/deploys/${process.env.EE_DEPLOY_ID}`, {
                 headers: {
@@ -1316,14 +1273,14 @@ jobs:
               const eeCommit = eeData.commit || {};
               eeInfo = `Enterprise Edition:\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${process.env.EE_SERVICE_ID}\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}`;
             }
-            let body = [ceInfo, eeInfo].filter(Boolean).join('\n\n');
-            if (!body) body = 'No active CE or EE review app deployments found.';
+            let body = eeInfo || 'No active EE review app deployment found.';
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body
             });
+
 
   render-bot-check-deployment:
     if: ${{ github.event.action == 'created' && github.event.comment.body && startsWith(github.event.comment.body, '/render-bot check deployment') && github.event.issue.pull_request }}
