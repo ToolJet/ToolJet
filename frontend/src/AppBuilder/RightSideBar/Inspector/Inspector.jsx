@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
-import { Form } from './Components/Form';
+import Form from './Components/Form/index.js';
 import { renderElement, renderCustomStyles } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';

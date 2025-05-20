@@ -1,10 +1,12 @@
 import React from 'react';
 import Accordion from '@/_ui/Accordion';
-import { EventManager } from '../EventManager';
-import { renderElement } from '../Utils';
+import { EventManager } from '../../EventManager';
+import { renderElement } from '../../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { Button } from '@/components/ui/Button/Button';
+import LabeledDivider from './LabeledDivider';
 
 export const Form = ({
   componentMeta,
@@ -107,6 +109,52 @@ export const baseComponentProperties = (
   dataProperties
 ) => {
   let items = [];
+
+  const renderDataPropeties = () =>
+    dataProperties?.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode
+      )
+    );
+
+  const renderDataElement = () => {
+    return (
+      <>
+        {renderDataPropeties()}
+        <div className="tw-flex tw-justify-center tw-items-center">
+          <Button
+            fill="#4368E3"
+            leadingIcon="plus"
+            isLoading={true}
+            disabled
+            variant="secondary"
+            loaderText="Generating"
+            onClick={() => {}}
+          >
+            Generate form
+          </Button>
+        </div>
+        <div className="tw-flex tw-justify-between tw-items-center tw-gap-1.5">
+          <div className="tw-flex-1">
+            <LabeledDivider label="Fields" />
+          </div>
+          <Button iconOnly leadingIcon="plus" variant="ghost" size="small" />
+        </div>
+        <span className="base-regular text-placeholder tw-block tw-p-3 tw-text-center">
+          No fields yet. Generate a form from a data source or add custom fields.
+        </span>
+      </>
+    );
+  };
+
   if (properties.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.properties', 'Properties')}`,
@@ -125,6 +173,12 @@ export const baseComponentProperties = (
       ),
     });
   }
+
+  items.push({
+    title: 'Data',
+    isOpen: true,
+    children: renderDataElement(),
+  });
 
   if (events.length > 0) {
     items.push({
@@ -146,24 +200,6 @@ export const baseComponentProperties = (
       ),
     });
   }
-
-  items.push({
-    title: 'Data',
-    isOpen: true,
-    children: dataProperties?.map((property) =>
-      renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode
-      )
-    ),
-  });
 
   items.push({
     title: 'Additional actions',

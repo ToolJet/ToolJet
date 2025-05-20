@@ -3,6 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import DataSourceIcon from '@/AppBuilder/QueryManager/Components/DataSourceIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import LabeledDivider from '@/AppBuilder/RightSideBar/Inspector/Components/Form/LabeledDivider';
 import cx from 'classnames';
 import './styles.scss';
 
@@ -146,14 +147,7 @@ export const DropdownMenu = (props) => {
             </div>
 
             {/* Divider with "From query" text */}
-            <div className="tw-relative tw-py-2">
-              <div className="tw-absolute tw-inset-0 tw-flex tw-items-center">
-                <div className="tw-w-full tw-border-t tw-border-gray-200 tw-border-dashed custom-line"></div>
-              </div>
-              <div className="tw-relative tw-flex tw-justify-center">
-                <span className="separator-text base-medium">From query</span>
-              </div>
-            </div>
+            <LabeledDivider label="From query" />
 
             {/* Query options section */}
             <div className="tw-py-1 dropdown-menu-items">
