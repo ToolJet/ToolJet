@@ -4,7 +4,7 @@ import { Input } from '../Input';
 import { HelperMessage, ValidationMessage } from '../InputUtils/InputUtils';
 import Tooltip from '../../Tooltip/Tooltip';
 
-const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps }) => {
+const EditableTitleInput = ({ size, disabled, helperText, onChange: change, readOnly, placeholder, ...restProps }) => {
   const inputRef = useRef(null);
   const [tooltipWidth, setTooltipWidth] = useState('auto');
   const [isValid, setIsValid] = useState(null);
@@ -17,7 +17,7 @@ const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps
       setIsValid(validateObj.valid);
       setMessage(validateObj.message);
     }
-    onChange(e, validateObj);
+    change(e, validateObj);
   };
 
   const inputStyle = `tw-border-transparent hover:tw-border-border-default tw-font-medium tw-pl-[12px] tw-pr-[12px] ${
@@ -35,7 +35,14 @@ const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps
   return (
     <div className="tw-relative">
       <div className="tw-peer tw-relative" ref={inputRef}>
-        <Input size={size} disabled={disabled} onChange={handleChange} {...restProps} className={inputStyle} />
+        <Input
+          size={size}
+          disabled={disabled}
+          placeholder={disabled && readOnly ? readOnly : placeholder}
+          onChange={handleChange}
+          {...restProps}
+          className={inputStyle}
+        />
         <SolidIcon
           name="editable"
           width="16px"
