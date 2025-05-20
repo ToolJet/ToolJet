@@ -1385,4 +1385,4 @@ jobs:
         uses: actions-ecosystem/action-remove-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          labels: render-bot-check-deployment
+          labels: render-check-deployment
