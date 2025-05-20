@@ -2,6 +2,8 @@ name: Render review deploy
 on:
   pull_request_target:
     types: [labeled, unlabeled, closed, synchronize, opened]
+  issue_comment:
+    types: [created]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -1324,7 +1326,13 @@ jobs:
             });
 
   render-bot-check-deployment:
-    if: ${{ github.event.action == 'created' && github.event.comment.body == '/render-bot check deployment' }}
+    if: >-
+      ${ {
+        github.event.action == 'created' &&
+        github.event.comment.body &&
+        startsWith(trim(github.event.comment.body), '/render-bot check deployment') &&
+        github.event.issue.pull_request
+      } }
     runs-on: ubuntu-latest
     steps:
       - name: Get PR labels
@@ -1335,7 +1343,7 @@ jobs:
             const labels = await github.rest.issues.listLabelsOnIssue({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number
+              issue_number: github.event.issue.number
             });
             return labels.data.map(l => l.name);
       - name: Get CE/EE deployment info
