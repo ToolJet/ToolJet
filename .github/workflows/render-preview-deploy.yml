@@ -1286,11 +1286,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get PR labels
-        id: get_labels
-        uses: actions-ecosystem/action-get-labels@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get CE deployment info
         if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
