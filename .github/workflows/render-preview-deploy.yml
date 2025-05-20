@@ -1258,7 +1258,6 @@ jobs:
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
 
 
-
       - name: check EE review app if active
         if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         id: redeploy_ee
@@ -1351,3 +1350,19 @@ jobs:
               repo: context.repo.repo,
               body
             });
+
+      - name: Remove render-check-deployment label
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'render-check-deployment'
+              })
+            } catch (e) {
+              console.log(e)
+            }
