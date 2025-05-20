@@ -20,8 +20,8 @@ import {
 const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");

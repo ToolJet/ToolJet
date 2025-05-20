@@ -36,16 +36,23 @@ function DataSourcePicker({ darkMode }) {
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   //StaicDataSources DIDNT HAVE ID
-  const updatedStaticDataSources = staticDataSources.map((source) => {
-    // Find a matching object from staticDataSourcesFullObject based on the 'kind' field
-    const matchingObject = staticDataSourcesFullObject?.find((gds) => gds.kind === source.kind);
+  const updatedStaticDataSources = staticDataSources
+    .filter((source) => {
+      if (source.kind === 'workflows') {
+        return staticDataSourcesFullObject?.some((gds) => gds.kind === 'workflows');
+      }
+      return true;
+    })
+    .map((source) => {
+      // Find a matching object from staticDataSourcesFullObject based on the 'kind' field
+      const matchingObject = staticDataSourcesFullObject?.find((gds) => gds.kind === source.kind);
 
-    // Replace the 'id' with the one from the matching object, or keep the existing one if no match
-    return {
-      ...source,
-      id: matchingObject?.id || source.id,
-    };
-  });
+      // Replace the 'id' with the one from the matching object, or keep the existing one if no match
+      return {
+        ...source,
+        id: matchingObject?.id || source.id,
+      };
+    });
 
   const docLink = 'sampledb.com';
 

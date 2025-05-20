@@ -8,7 +8,7 @@ import { importText } from "Texts/exportImport";
 
 describe("App creation", () => {
     const data = {};
-    const appFile = "cypress/fixtures/templates/test-app.json";
+    const appFile = "cypress/fixtures/templates/one_version.json";
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
@@ -200,7 +200,7 @@ describe("App creation", () => {
             force: true,
         });
 
-        cy.get(commonSelectors.importAppTitle).verifyVisibleElement(
+        cy.get(importSelectors.importAppTitle).verifyVisibleElement(
             "have.text",
             "Import app"
         );
@@ -210,7 +210,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "test-app"
+            "one_version"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",
@@ -236,7 +236,7 @@ describe("App creation", () => {
         });
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "test-app"
+            "one_version"
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.cancelButton).click();
@@ -247,7 +247,7 @@ describe("App creation", () => {
         });
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "test-app"
+            "one_version"
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.importAppButton).should("be.enabled").click();
