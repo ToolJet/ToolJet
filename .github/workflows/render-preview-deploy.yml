@@ -1218,35 +1218,22 @@ jobs:
 
   render-bot-check-deployment:
     runs-on: ubuntu-latest
-    if: github.event.issue.pull_request
+    if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
     steps:
-
-      - name: Check if comment is a render-check-deployment command
-        id: check-comment
-        uses: khan/pull-request-comment-trigger@v1.1.0g
+      - name: Get PR labels
+        id: get_labels
+        uses: actions/github-script@v6
         with:
-          trigger: '/render-check-deployment'
-          reaction: rocket  # Optional: adds a 🚀 reaction to the triggering comment
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-
-      - run: 'echo Found it!'
-        if: steps.check.outputs.triggered == 'true'
-
-      # - name: Get PR labels
-      #   id: get_labels
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const labels = await github.rest.issues.listLabelsOnIssue({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         issue_number: context.issue.number
-      #       });
-      #       return labels.data.map(l => l.name);
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            return labels.data.map(l => l.name);
 
       - name: check CE review app if active
-        # if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         id: redeploy_ce
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -1270,7 +1257,7 @@ jobs:
 
 
       - name: check EE review app if active
-        # if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         id: redeploy_ee
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -1294,7 +1281,7 @@ jobs:
 
 
       - name: Comment CE deploy info
-        # if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         uses: actions/github-script@v6
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -1327,9 +1314,8 @@ jobs:
               body
             });
 
-
       - name: Comment EE deploy info
-        # if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         uses: actions/github-script@v6
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -1361,3 +1347,20 @@ jobs:
               repo: context.repo.repo,
               body
             });
+
+      - name: Remove label
+        if: contains(steps.get_labels.outputs.result, 'render-check-deployment')
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'render-check-deployment'
+              })
+            } catch (e) {
+              console.log(e)
+            }
