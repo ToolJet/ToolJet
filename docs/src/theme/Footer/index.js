@@ -9,7 +9,7 @@ function Footer() {
   const { footer } = useThemeConfig();
   if (!footer) {
     return null;
-  }
+  } z
 
   const { copyright, links, logo, style } = footer;
 
@@ -25,28 +25,37 @@ function Footer() {
                 <ThemedImage
                   alt={logo.alt}
                   sources={{ light: logo.src, dark: logo.srcDark || logo.src }}
-                  style={{ width: '160px', height: 'auto', boxShadow: 'none', borderRadius: '0'  }}
+                  style={{ width: '160px', height: 'auto', boxShadow: 'none', borderRadius: '0' }}
                 />
                 <p className="footer__tagline" style={{ marginTop: '0.5rem' }}>AI-powered apps, built with AI</p>
                 <div className="footer__socials" style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
                   <a href="https://github.com/ToolJet" target="_blank" rel="noopener noreferrer">
-                    <img 
-                      src="/img/github-icon.svg"
-                      alt="GitHub" 
+                    <ThemedImage
+                      sources={{
+                        light: '/img/github-icon.svg',
+                        dark: '/img/github-icon-white.svg'
+                      }}
+                      alt="GitHub"
                       style={{ width: '24px', height: '24px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
                     />
                   </a>
                   <a href="https://tooljet.ai/slack" target="_blank" rel="noopener noreferrer">
-                    <img
-                      src="/img/slack-icon.svg"
+                    <ThemedImage
+                      sources={{
+                        light: '/img/slack-icon.svg',
+                        dark: '/img/slack-icon-dark.svg'
+                      }}
                       alt="Slack"
                       style={{ width: '24px', height: '24px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
                     />
                   </a>
                   <a href="https://x.com/ToolJet" target="_blank" rel="noopener noreferrer">
-                    <img 
-                      src="/img/x-icon.svg" 
-                      alt="X" 
+                    <ThemedImage
+                      sources={{
+                        light: '/img/x-icon.svg',
+                        dark: '/img/x-icon-white.svg'
+                      }}
+                      alt="X"
                       style={{ width: '24px', height: '24px', objectFit: 'contain', boxShadow: 'none', borderRadius: '0' }}
                     />
                   </a>
@@ -76,9 +85,9 @@ function Footer() {
             )}
           </div>
           <div className="footer__policies" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <Link to="https://www.tooljet.ai/privacy" style={{color: '#606770'}}>Privacy policy</Link>
+            <Link to="https://www.tooljet.ai/privacy" style={{ color: '#606770' }}>Privacy policy</Link>
             <span></span><span></span><span></span>
-            <Link to="https://www.tooljet.ai/terms" style={{color: '#606770'}}>Terms of Service</Link>
+            <Link to="https://www.tooljet.ai/terms" style={{ color: '#606770' }}>Terms of Service</Link>
           </div>
         </div>
       </div>
