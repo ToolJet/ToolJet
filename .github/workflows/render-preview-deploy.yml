@@ -1283,7 +1283,7 @@ jobs:
 
 
   render-bot-check-deployment:
-    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/render-bot-check-deployment' }}
+    if: ${{ github.event.label.name == 'render-check-deployment' }}
     runs-on: ubuntu-latest
     steps:
       - name: Get PR labels
@@ -1380,3 +1380,9 @@ jobs:
               repo: context.repo.repo,
               body
             });
+
+      - name: Remove trigger label
+        uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: render-bot-check-deployment
