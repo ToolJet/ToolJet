@@ -22,7 +22,8 @@ export interface IDataQueriesUtilService {
     dataQuery: any,
     queryOptions: object,
     organization_id: string,
-    environmentId?: string
+    environmentId?: string,
+    user?: User
   ): Promise<{
     service: any;
     sourceOptions: object;
@@ -31,5 +32,11 @@ export interface IDataQueriesUtilService {
 
   setCookiesBackToClient(response: Response, responseHeaders: any): void;
 
-  parseQueryOptions(object: any, options: object, organization_id: string, environmentId?: string): Promise<object>;
+  parseQueryOptions(
+    object: any,
+    options: object,
+    organization_id: string,
+    environmentId?: string,
+    user?: User
+  ): Promise<object>;
 }

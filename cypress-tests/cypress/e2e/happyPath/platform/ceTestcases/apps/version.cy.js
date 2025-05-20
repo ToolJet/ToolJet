@@ -114,7 +114,7 @@ describe("App Version", () => {
     cy.wait(3000);
 
     // cy.reload();
-    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", { timeout: 10000 });
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", { timeout: 10000 });
 
     // Preview and release verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
@@ -123,7 +123,7 @@ describe("App Version", () => {
     releasedVersionAndVerify("v2");
   });
 
-  it.only("should verify version management with components and queries", () => {
+  it("should verify version management with components and queries", () => {
     // Initial setup with component and datasource
     cy.apiAddComponentToApp(
       data.appName,

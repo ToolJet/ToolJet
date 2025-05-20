@@ -36,6 +36,7 @@ import Inspect from '@/_ui/Icon/solidIcons/Inspect';
 import classNames from 'classnames';
 import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
+import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 // import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -86,8 +87,11 @@ const NEW_REVAMPED_COMPONENTS = [
   'Icon',
   'Image',
   'Container',
+  'Divider',
+  'VerticalDivider',
   'ModalV2',
   'Link',
+  'Steps',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -537,8 +541,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
@@ -738,6 +742,8 @@ const GetAccordion = React.memo(
       case 'DatePickerV2':
       case 'TimePicker':
         return <DatetimePickerV2 {...restProps} componentName={componentName} />;
+      case 'Steps':
+        return <Steps {...restProps} />;
       case 'PhoneInput':
         return <PhoneInput {...restProps} />;
       case 'CurrencyInput':
