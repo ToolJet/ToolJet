@@ -234,6 +234,7 @@ import NewTabSmall from './NewTabSmall.jsx';
 import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
+import EnterpriseCrown from './EnterrpiseCrown.jsx';
 import Moon from './Moon.jsx';
 
 const Icon = (props) => {
@@ -356,6 +357,8 @@ const Icon = (props) => {
       return <EnterpriseNew {...props} />;
     case 'enterprisev3':
       return <EnterpriseV3 {...props} />;
+    case 'enterprisecrown':
+      return <EnterpriseCrown {...props} />;
     case 'lockGradient':
       return <LockGradient {...props} />;
     case 'datasourceGradient':
