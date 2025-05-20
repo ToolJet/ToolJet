@@ -1,7 +1,7 @@
 name: Render review deploy
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled, unlabeled, closed, synchronize, opened]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -1153,3 +1153,127 @@ jobs:
   #           } catch (e) {
   #             console.log(e)
   #           }
+
+  redeploy-review-app:
+    if: ${{ github.event.action == 'synchronize' || github.event.action == 'opened' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR labels
+        id: get_labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            return labels.data.map(l => l.name);
+
+      - name: Redeploy CE review app if active
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
+        id: redeploy_ce
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+          DEPLOY_RESPONSE=$(curl --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" \
+            --data '{"clearCache":true,"triggerBuild":true}')
+          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+
+      - name: Comment CE commit name
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
+        uses: actions/github-script@v6
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ env.SERVICE_ID }}
+          DEPLOY_ID: ${{ env.DEPLOY_ID }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fetch = require('node-fetch');
+            const serviceId = process.env.SERVICE_ID;
+            const deployId = process.env.DEPLOY_ID;
+            const apiKey = process.env.RENDER_API_KEY;
+            if (!serviceId || !deployId) return;
+            const res = await fetch(`https://api.render.com/v1/services/${serviceId}/deploys/${deployId}`, {
+              headers: {
+                'accept': 'application/json',
+                'authorization': `Bearer ${apiKey}`
+              }
+            });
+            const data = await res.json();
+            const commit = data.commit || {};
+            const sha = commit.id || '';
+            const msg = commit.message || '';
+            const body = `Community Edition Deploy commit:\nSHA: ${sha}\nMessage: ${msg}`;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+      - name: Redeploy EE review app if active
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        id: redeploy_ee
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+          DEPLOY_RESPONSE=$(curl --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" \
+            --data '{"clearCache":true,"triggerBuild":true}')
+          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+
+      - name: Comment EE commit name
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        uses: actions/github-script@v6
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ env.SERVICE_ID }}
+          DEPLOY_ID: ${{ env.DEPLOY_ID }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fetch = require('node-fetch');
+            const serviceId = process.env.SERVICE_ID;
+            const deployId = process.env.DEPLOY_ID;
+            const apiKey = process.env.RENDER_API_KEY;
+            if (!serviceId || !deployId) return;
+            const res = await fetch(`https://api.render.com/v1/services/${serviceId}/deploys/${deployId}`, {
+              headers: {
+                'accept': 'application/json',
+                'authorization': `Bearer ${apiKey}`
+              }
+            });
+            const data = await res.json();
+            const commit = data.commit || {};
+            const sha = commit.id || '';
+            const msg = commit.message || '';
+            const body = `Enterprise Edition Deploy commit:\nSHA: ${sha}\nMessage: ${msg}`;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
