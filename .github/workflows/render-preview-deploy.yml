@@ -1201,7 +1201,6 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const fetch = require('node-fetch');
             const serviceId = process.env.SERVICE_ID;
             const deployId = process.env.DEPLOY_ID;
             const apiKey = process.env.RENDER_API_KEY;
@@ -1255,7 +1254,6 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const fetch = require('node-fetch');
             const serviceId = process.env.SERVICE_ID;
             const deployId = process.env.DEPLOY_ID;
             const apiKey = process.env.RENDER_API_KEY;
