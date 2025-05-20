@@ -18892,3 +18892,11 @@ section.ai-message-prompt-input-wrapper {
     max-height: 100px !important;
   }
 }
+
+.codehinter-popup {
+  .single-line-codehinter-input {
+    .cm-editor {
+      max-height: 100% !important;
+    }
+  }
+}
