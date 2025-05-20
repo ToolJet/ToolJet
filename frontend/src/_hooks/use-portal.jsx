@@ -43,7 +43,7 @@ const usePortal = ({ children, ...restProps }) => {
           isCopilotEnabled={isCopilotEnabled}
         >
           <div
-            className={`editor-container ${optionalProps.cls ?? ''}`}
+            className={`editor-container codehinter-popup ${optionalProps.cls ?? ''}`}
             key={key}
             data-cy={`codehinder-popup-input-field`}
           >
