@@ -1282,14 +1282,6 @@ jobs:
             });
 
 
-name: Render Bot PR Deployment Checker
-
-# This is the key part that was missing - we need to specify when the workflow should run
-on:
-  issue_comment:
-    types: [created]
-
-jobs:
   render-bot-check-deployment:
     if: ${{ github.event.action == 'created' && github.event.comment.body && startsWith(github.event.comment.body, '/render-bot check deployment') && github.event.issue.pull_request }}
     runs-on: ubuntu-latest
