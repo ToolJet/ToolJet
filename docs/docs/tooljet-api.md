@@ -26,6 +26,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Export Application](#export-application)
 - [Import Application](#import-application)
+- [Generate Personal Access Token](#generate-personal-access-token)
 
 ## Enabling ToolJet API
 
@@ -1366,3 +1367,40 @@ By default, server accepts maximum JSON size as 50 MB. To increase this limit, u
 </details>
 
     - **Response:** `201 Created`
+
+
+### Create Personal Access Token 
+
+    - **Description:** Creates a new personal access token.
+    - **URL:** `/api/ext/users/personal-access-token`
+    - **Method:** POST
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Body:** The body object can contain the following fields:
+        - `email` (string, required): The email address of the user.
+        - `appId` (string, required): ToolJet app ID.
+        - `sessionExpiry` (number, optional): The expiry time for the PAT session in minute. If not provided, it defaults to 60 minutes.
+        - `patExpiry` (number, optional): The expiry time for the PAT itself in minutes. If not provided, it defaults to 1000000 minutes.
+        
+  <details id="tj-dropdown">
+  <summary>**Request Body Example**</summary>
+```json
+{
+  "email": "alice@example.com",
+  "appId": "8ba8bf0e-6b8f-4e07-abb9-6fd2d816fabc",
+  "sessionExpiry": 60,
+  "patExpiry": 1000000
+}
+```
+</details>
+
+
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
+```json
+{
+"personalAccessToken": "pat_6d93ba6e531a186898d51a46ac800ebb7206194a650829f065928d93085d5ff" ,
+"redirectUrl": "http://your-instance-url.com/embed-apps/02424290-de40-4b9e-8c42-502dd609c-fbcpersonal-access-token=pat_6d93ba6e531aa186898d51a46ac800ebb7206194a650829f065928d93085d5ff"
+}
+```
+</details>
