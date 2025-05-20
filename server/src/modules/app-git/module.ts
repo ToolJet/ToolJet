@@ -15,6 +15,7 @@ import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
+import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { AppGitController } = await import(`${await getImportPath()}/app-git/controller`);
@@ -22,11 +23,14 @@ export class AppGitModule {
     const { SourceControlProviderService } = await import(`${await getImportPath()}/app-git/source-control-provider`);
     const { SSHAppGitService } = await import(`${await getImportPath()}/app-git/providers/github-ssh/service`);
     const { HTTPSAppGitService } = await import(`${await getImportPath()}/app-git/providers/github-https/service`);
-    const { HTTPSGitSyncUtilityService } = await import(
+    const { HTTPSAppGitUtilityService } = await import(
       `${await getImportPath()}/app-git/providers/github-https/util.service`
     );
-    const { SSHGitSyncUtilityService } = await import(
+    const { SSHAppGitUtilityService } = await import(
       `${await getImportPath()}/app-git/providers/github-ssh/util.service`
+    );
+    const { GitLabAppGitUtilityService } = await import(
+      `${await getImportPath()}/app-git/providers/gitlab/util.service`
     );
     const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
     const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
@@ -39,6 +43,7 @@ export class AppGitModule {
           OrganizationGitSsh,
           OrganizationGitSync,
           OrganizationGitHttps,
+          OrganizationGitLab,
           AppsRepository,
           AppVersion,
         ]),
@@ -55,14 +60,15 @@ export class AppGitModule {
         SourceControlProviderService,
         SSHAppGitService,
         HTTPSAppGitService,
-        SSHGitSyncUtilityService,
-        HTTPSGitSyncUtilityService,
+        SSHAppGitUtilityService,
+        HTTPSAppGitUtilityService,
+        GitLabAppGitUtilityService,
         VersionRepository,
         BaseGitUtilService,
         BaseGitSyncService,
         AppGitAbilityFactory,
       ],
-      exports: [SSHGitSyncUtilityService, HTTPSGitSyncUtilityService],
+      exports: [SSHAppGitUtilityService, HTTPSAppGitUtilityService, GitLabAppGitUtilityService],
     };
   }
 }
