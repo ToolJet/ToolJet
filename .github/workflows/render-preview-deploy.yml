@@ -1186,7 +1186,7 @@ jobs:
             --header 'accept: application/json' \
             --header 'content-type: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" \
-            --data '{"clearCache":true,"triggerBuild":true}')
+            --data '{"clearCache":"clear"}')
           DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
@@ -1239,7 +1239,7 @@ jobs:
             --header 'accept: application/json' \
             --header 'content-type: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" \
-            --data '{"clearCache":true,"triggerBuild":true}')
+            --data '{"clearCache":"clear"}')
           DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
