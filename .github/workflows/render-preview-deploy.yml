@@ -3,7 +3,7 @@ on:
   pull_request_target:
     types: [labeled, unlabeled, closed, synchronize, opened]
   issue_comment:
-    types: [created]
+    types: [created, edited, deleted]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
