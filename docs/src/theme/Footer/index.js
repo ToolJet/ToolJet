@@ -9,7 +9,7 @@ function Footer() {
   const { footer } = useThemeConfig();
   if (!footer) {
     return null;
-  } z
+  }
 
   const { copyright, links, logo, style } = footer;
 
