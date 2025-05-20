@@ -1341,7 +1341,6 @@ jobs:
           echo "EE_DEPLOY_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
 
       - name: Comment CE/EE deploy info
-        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app') || contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         uses: actions/github-script@v6
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
