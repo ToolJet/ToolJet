@@ -1216,7 +1216,7 @@ jobs:
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
 
 
-  render-ce-bot-check-deployment:
+  render-bot-check-deployment:
     runs-on: ubuntu-latest
     if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
     steps:
@@ -1301,10 +1301,6 @@ jobs:
               body: ceInfo
             });
 
-  render-ee-bot-check-deployment:
-    runs-on: ubuntu-latest
-    if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
-    steps:
       - name: Fetch EE service and deploy ID
         run: |
           response=$(curl --silent --request GET \
