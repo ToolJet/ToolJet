@@ -83,7 +83,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                updateId ({ dbconfig, sql }) {
+                dbConnection ({ dbconfig, sql }) {
                     const client = new pg.Pool(dbconfig);
                     return client.query(sql);
                 },
@@ -97,8 +97,9 @@ module.exports = defineConfig({
         baseUrl: environment.baseUrl,
         configFile: environment.configFile,
         specPattern: [
-            "cypress/e2e/happyPath/platform/ceTestcases/userFlow/firstUserOnboarding.cy.js",
-            "cypress/e2e/happyPath/platform/ceTestcases/!(userFlow)/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
+            "cypress/e2e/happyPath/platform/ceTestcases/apps/appSlug.cy.js",
+            "cypress/e2e/happyPath/platform/ceTestcases/**/!(*appSlug).cy.js",
             "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
         ],
         numTestsKeptInMemory: 1,

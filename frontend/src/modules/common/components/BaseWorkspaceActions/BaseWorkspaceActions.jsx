@@ -11,6 +11,8 @@ const BaseWorkspaceActions = ({
 }) => {
   //If License ToolTip component is not passed from version specific component--> We will show normal ToolTip component
   const isDefaultLicenseTooltip = LicenseTooltip === DefaultLicenseTooltip;
+  const isAllowPersonalWorkspace = window.public_config?.ALLOW_PERSONAL_WORKSPACE === 'true';
+
   return (
     <div
       className="d-flex"
@@ -24,21 +26,23 @@ const BaseWorkspaceActions = ({
           </div>
         </ToolTip>
       ) : (
-        <LicenseTooltip
-          limits={workspacesLimit}
-          feature={'workspaces'}
-          placement="top"
-          customTitle="Add new workspace"
-          isAvailable={true}
-        >
-          <div
-            disabled={!workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100}
-            onClick={handleAddWorkspace}
-            style={{ marginLeft: super_admin ? '0px' : '10px' }}
-          >
-            <SolidIcon name="plus" fill="var(--icon-strong)" dataCy="add-new-workspace-link" width="17" />
-          </div>
-        </LicenseTooltip>
+          (isAllowPersonalWorkspace || super_admin) && (
+            <LicenseTooltip
+              limits={workspacesLimit}
+              feature={'workspaces'}
+              placement="top"
+              customTitle="Add new workspace"
+              isAvailable={true}
+            >
+              <div
+                disabled={!workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100}
+                onClick={handleAddWorkspace}
+                style={{ marginLeft: super_admin ? '0px' : '10px' }}
+              >
+                <SolidIcon name="plus" fill="var(--icon-strong)" dataCy="add-new-workspace-link" width="17" />
+              </div>
+            </LicenseTooltip>
+          )
       )}
     </div>
   );

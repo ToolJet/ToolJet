@@ -5,9 +5,15 @@ import { FeaturesConfig } from '../types';
 export const FEATURES: FeaturesConfig = {
   [MODULES.GLOBAL_DATA_SOURCE]: {
     [FEATURE_KEY.GET]: {},
-    [FEATURE_KEY.CREATE]: {},
-    [FEATURE_KEY.UPDATE]: {},
-    [FEATURE_KEY.DELETE]: {},
+    [FEATURE_KEY.CREATE]: {
+      auditLogsKey: 'DATA_SOURCE_CREATE',
+    },
+    [FEATURE_KEY.UPDATE]: {
+      auditLogsKey: 'DATA_SOURCE_UPDATE',
+    },
+    [FEATURE_KEY.DELETE]: {
+      auditLogsKey: 'DATA_SOURCE_DELETE',
+    },
     [FEATURE_KEY.GET_BY_ENVIRONMENT]: {},
     [FEATURE_KEY.TEST_CONNECTION]: {},
     [FEATURE_KEY.SCOPE_CHANGE]: {},

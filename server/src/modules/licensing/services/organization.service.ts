@@ -27,8 +27,10 @@ export class LicenseOrganizationService implements ILicenseOrganizationService {
   }
 
   async limit(manager?: EntityManager): Promise<void> {
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
-
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
+      LICENSE_FIELD.WORKSPACES,
+      LICENSE_FIELD.STATUS,
+    ]);
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return {
         workspacesCount: generatePayloadForLimits(

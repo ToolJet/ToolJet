@@ -2,7 +2,7 @@ name: Cypress Platform
 
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled]
   workflow_dispatch:
 
 env:
@@ -12,21 +12,19 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
-    if: |
-      github.event.action == 'labeled' &&
-      (
-        github.event.label.name == 'run-cypress' || 
-        github.event.label.name == 'run-ce-cypress-platform' || 
-        github.event.label.name == 'run-ee-cypress-platform'
-      )
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') || 
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
+        contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       matrix:
         edition: >-
           ${{ 
             contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-platform') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-platform') && fromJson('["ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && fromJson('["ee"]') ||
             fromJson('[]')
           }}
 
@@ -102,6 +100,10 @@ jobs:
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
 
       - name: Set up database
         run: |
@@ -147,13 +149,27 @@ jobs:
           name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
-
   Cypress-Platform-Subpath:
     runs-on: ubuntu-22.04
     if: |
-      github.event.action == 'labeled' && 
-      (github.event.label.name == 'run-cypress-platform-subpath' || 
-       github.event.label.name == 'run-proxy-platform')
+      github.event.action == 'labeled' &&
+      (
+        github.event.label.name == 'run-cypress-platform-subpath' || 
+        github.event.label.name == 'run-proxy-platform' ||
+        github.event.label.name == 'run-ce-cypress-platform-subpath' ||
+        github.event.label.name == 'run-ee-cypress-platform-subpath'
+      )
+
+    strategy:
+      matrix:
+        edition: >-
+          ${{ 
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-subpath') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-proxy-platform') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-platform-subpath') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-platform-subpath') && fromJson('["ee"]') ||
+            fromJson('[]')
+          }}
 
     steps:
       - name: Setup Node.js
@@ -161,10 +177,21 @@ jobs:
         with:
           node-version: 18.18.2
 
-      - name: Checkout
+      - name: Set up Git authentication for private submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Checkout with Submodules
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checking out the correct branch for submodules EE
+        if: matrix.edition == 'ee'
+        run: |
+          git submodule update --init --recursive
+          git submodule foreach --recursive '
+            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
 
       - name: Set up Docker configuration
         run: |
@@ -186,13 +213,14 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/production.Dockerfile
+          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
 
       - name: Set up environment variables
         run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
@@ -254,15 +282,30 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots
+          name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
   Cypress-Platform-Proxy:
     runs-on: ubuntu-22.04
     if: |
-      github.event.action == 'labeled' && 
-      (github.event.label.name == 'run-cypress-platform-proxy' || 
-       github.event.label.name == 'run-proxy-platform')
+      github.event.action == 'labeled' &&
+      (
+        github.event.label.name == 'run-cypress-platform-proxy' || 
+        github.event.label.name == 'run-proxy-platform' ||
+        github.event.label.name == 'run-ce-cypress-platform-proxy' ||
+        github.event.label.name == 'run-ee-cypress-platform-proxy'
+      )
+
+    strategy:
+      matrix:
+        edition: >-
+          ${{ 
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-proxy') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-proxy-platform') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-platform-proxy') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-platform-proxy') && fromJson('["ee"]') ||
+            fromJson('[]')
+          }}
 
     steps:
       - name: Setup Node.js
@@ -270,10 +313,21 @@ jobs:
         with:
           node-version: 18.18.2
 
-      - name: Checkout
+      - name: Set up Git authentication for private submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Checkout with Submodules
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checking out the correct branch for submodules EE
+        if: matrix.edition == 'ee'
+        run: |
+          git submodule update --init --recursive
+          git submodule foreach --recursive '
+            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
 
       - name: Set up Docker configuration
         run: |
@@ -295,13 +349,14 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/production.Dockerfile
+          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
 
       - name: Set up environment variables
         run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
@@ -375,15 +430,30 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots
+          name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
   Cypress-Platform-Proxy-Subpath:
     runs-on: ubuntu-22.04
     if: |
-      github.event.action == 'labeled' && 
-      (github.event.label.name == 'run-cypress-platform-proxy-subpath' || 
-       github.event.label.name == 'run-proxy-platform')
+      github.event.action == 'labeled' &&
+      (
+        github.event.label.name == 'run-cypress-platform-proxy-subpath' || 
+        github.event.label.name == 'run-proxy-platform' ||
+        github.event.label.name == 'run-ce-cypress-platform-proxy-subpath' ||
+        github.event.label.name == 'run-ee-cypress-platform-proxy-subpath'
+      )
+
+    strategy:
+      matrix:
+        edition: >-
+          ${{ 
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-proxy-subpath') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-proxy-platform') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-platform-proxy-subpath') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-platform-proxy-subpath') && fromJson('["ee"]') ||
+            fromJson('[]')
+          }}
 
     steps:
       - name: Setup Node.js
@@ -391,10 +461,21 @@ jobs:
         with:
           node-version: 18.18.2
 
-      - name: Checkout
+      - name: Set up Git authentication for private submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Checkout with Submodules
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checking out the correct branch for submodules EE
+        if: matrix.edition == 'ee'
+        run: |
+          git submodule update --init --recursive
+          git submodule foreach --recursive '
+            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
 
       - name: Set up Docker configuration
         run: |
@@ -416,13 +497,14 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/production.Dockerfile
+          file: ${{ matrix.edition == 'ee' && 'docker/ee/ee-production.Dockerfile' || 'docker/ce-production.Dockerfile' }}
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
 
       - name: Set up environment variables
         run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
@@ -497,5 +579,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots
+          name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots

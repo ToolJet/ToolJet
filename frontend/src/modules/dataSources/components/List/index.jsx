@@ -189,13 +189,13 @@ export const List = ({ updateSelectedDatasource }) => {
         </div>
       </div>
       <Modal
-        title="Dependent queries"
+        title="Dependent queries found !"
         show={showDependentQueriesInfo}
         closeModal={() => setShowDependentQueriesInfo(false)}
       >
         <div className="mt-3 mb-3">
-          Cannot delete the <b>{selectedDataSource?.name ? selectedDataSource.name : 'datasource'}</b> as it is used in
-          the apps
+          Cannot delete <b>{selectedDataSource?.name ? selectedDataSource.name : 'datasource'}</b> as it is used in the
+          apps
         </div>
       </Modal>
       <ConfirmDialog

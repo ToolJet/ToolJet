@@ -69,7 +69,7 @@ export const InstalledPlugins = () => {
           })}
           {!fetching && installedPlugins?.length === 0 && (
             <div className="empty">
-              <p className="empty-title">No results found</p>
+              <p className="empty-title">No plugins added. Please add a plugin from the Marketplace.</p>
             </div>
           )}
         </div>
@@ -168,7 +168,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
   return (
     <>
       <Modal
-        title="Dependent queries"
+        title="Dependent queries found !"
         show={showDependentQueriesInfo}
         closeModal={() => setShowDependentQueriesInfo(false)}
       >
