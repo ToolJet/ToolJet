@@ -13,19 +13,19 @@ export class AppPermissionsService implements IAppPermissionsService {
     throw new Error('Method not implemented.');
   }
 
-  async fetchPagePermissions(pageId) {
+  async fetchAppPermissions(type, pageId) {
     throw new Error('Method not implemented.');
   }
 
-  async createPagePermissions(pageId, body) {
+  async createAppPermissions(type, pageId, body) {
     throw new Error('Method not implemented.');
   }
 
-  async updatePagePermissions(appId, pageId, body, user) {
+  async updateAppPermissions(type, appId, pageId, body, user) {
     throw new Error('Method not implemented.');
   }
 
-  async deletePagePermissions(pageId) {
+  async deleteAppPermissions(type, pageId) {
     throw new Error('Method not implemented.');
   }
 }

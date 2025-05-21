@@ -4,6 +4,12 @@ export enum PAGE_PERMISSION_TYPE {
   ALL = 'ALL',
 }
 
+export enum PERMISSION_ENTITY_TYPE {
+  PAGE = 'PAGE',
+  QUERY = 'QUERY',
+  COMPONENT = 'COMPONENT',
+}
+
 export enum FEATURE_KEY {
   FETCH_USERS = 'fetch_users',
   FETCH_USER_GROUPS = 'fetch_user_groups',
