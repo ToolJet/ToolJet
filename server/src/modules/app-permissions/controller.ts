@@ -8,7 +8,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { CreatePagePermissionDto } from './dto';
+import { CreatePagePermissionDto, CreateQueryPermissionDto } from './dto';
 
 @InitModule(MODULES.APP_PERMISSIONS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
@@ -77,6 +77,52 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('pageId') pageId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.FETCH_QUERY_PERMISSIONS)
+  @Get(':appId/queries/:queryId')
+  async fetchQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_QUERY_PERMISSIONS)
+  @Post(':appId/queries/:queryId')
+  async createQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
+    @Body() body: CreateQueryPermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_QUERY_PERMISSIONS)
+  @Put(':appId/queries/:queryId')
+  async updateQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
+    @Body() body: CreateQueryPermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_QUERY_PERMISSIONS)
+  @Delete(':appId/queries/:queryId')
+  async deleteQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();
