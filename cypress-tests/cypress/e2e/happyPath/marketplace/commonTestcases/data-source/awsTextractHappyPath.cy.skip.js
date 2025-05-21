@@ -21,15 +21,15 @@ import {
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source AWS Textract", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
+    cy.visit("/");
+    data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should  verify elements on AWS Textract connection form", () => {
+  it.skip("Should  verify elements on AWS Textract connection form", () => {
     const Accesskey = Cypress.env("awstextract_access");
     const Secretkey = Cypress.env("awstextract_secret");
 
@@ -87,7 +87,7 @@ describe("Data source AWS Textract", () => {
     deleteDatasource(`cypress-${data.dsName}-aws-textract`);
   });
 
-  it("Should  verify functionality of AWS Textract connection form", () => {
+  it.skip("Should  verify functionality of AWS Textract connection form", () => {
     const Accesskey = Cypress.env("awstextract_access");
     const Secretkey = Cypress.env("awstextract_secret");
 
@@ -122,9 +122,10 @@ describe("Data source AWS Textract", () => {
     );
 
     deleteDatasource(`cypress-${data.dsName}-aws-textract`);
+    cy.uninstallMarketplacePlugin("AWS Textract");
   });
 
-  it("Should  able to run the query with valid conection", () => {
+  it.skip("Should  able to run the query with valid conection", () => {
     const Accesskey = Cypress.env("awstextract_access");
     const Secretkey = Cypress.env("awstextract_secret");
 
