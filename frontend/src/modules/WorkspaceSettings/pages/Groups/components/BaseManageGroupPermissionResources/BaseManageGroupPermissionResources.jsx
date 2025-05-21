@@ -362,13 +362,13 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   toggleUserTabSearchBox = () => {
-    const { showUserSearchBox } = this.state;
+    const { showUserSearchBox, groupPermission } = this.state;
 
     if (showUserSearchBox) {
       this.setState({ isLoadingSearch: true, searchQuery: '' });
 
       groupPermissionV2Service
-        .getUsersInGroup(this.props.groupPermissionId, '')
+        .getUsersInGroup(groupPermission.id, '')
         .then((data) => {
           this.setState({
             usersInGroup: data,
