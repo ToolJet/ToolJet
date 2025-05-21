@@ -54,14 +54,15 @@ jobs:
           npm install
 
           echo "🏗️ Building 'common' plugin first"
-          npm run build --workspace=@tooljet/common || exit 1
+          npm run build --workspace=plugins/common || exit 1
 
           echo "🔁 Building all remaining plugins"
           PLUGINS=$(ls plugins | grep -v '^common$')
           for plugin in $PLUGINS; do
             echo "🔨 Building plugin: $plugin"
-            npm run build --workspace=@tooljet/$plugin || exit 1
+            npm run build --workspace=plugins/$plugin || exit 1
           done
+
 
       - name: Build marketplace plugins and capture summary
         run: |
