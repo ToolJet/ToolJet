@@ -237,6 +237,7 @@ import WorkspaceV3 from './WorkspaceV3.jsx';
 import CurlyBraces from './CurlyBraces.jsx';
 import Sliders from './Sliders.jsx';
 import Asterix from './Asterix.jsx';
+import ArrowDirectionLoop from './ArrowDirectionLoop.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -272,6 +273,8 @@ const Icon = (props) => {
       return <ArrowBackDown {...props} />;
     case 'arrowdown':
       return <ArrowDown {...props} />;
+    case 'arrowdirectionloop':
+      return <ArrowDirectionLoop {...props} />;
     case 'arroweft':
       return <Arroweft {...props} />;
     case 'arrowreturn':

@@ -192,3 +192,24 @@
     }
 
 }
+
+.refresh-data-section {
+    border-radius: 6px;
+    background: var(--background-surface-layer-02);
+    margin-top: 12px;
+
+    .neutral-light-color {
+        color: var(--neutral-light-n-900, #091E42);
+    }
+
+    .refresh-data-button {
+        width: 147px;
+        margin: 0px 24px;
+    }
+}
+
+.custom-schema-fields-section {
+    background: var(--background-warning-weak, #FAEFE7);
+    border-radius: 6px;
+    margin-top: 12px;
+}

@@ -13,6 +13,7 @@ import LabeledDivider from './LabeledDivider';
 import ColumnMappingComponent from './ColumnMappingComponent';
 import { FormFieldsList } from './FormFieldsList';
 import { useDropdownState } from './hooks/useDropdownState';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './styles.scss';
 
 export const Form = ({
@@ -162,6 +163,36 @@ export const Form = ({
     setShowAddFieldPopover(false);
   };
 
+  const renderRefreshDataSection = () => {
+    return (
+      <div className="tw-p-3 tw-flex tw-flex-col tw-gap-3 refresh-data-section">
+        <div className="tw-flex tw-items-center tw-gap-[6px]">
+          <SolidIcon name="warning" width="18px" height="18px" fill="#4368E3" />
+          <span className="base-medium neutral-light-color">Json has been updated</span>
+        </div>
+        <Button
+          fill="#4368E3"
+          leadingIcon="arrowdirectionloop"
+          variant="secondary"
+          className="refresh-data-button tw-my-2"
+        >
+          Refresh form data
+        </Button>
+      </div>
+    );
+  };
+
+  const renderCustomSchemaSection = () => {
+    return (
+      <div className="tw-p-3 tw-flex tw-flex-col tw-gap-3 custom-schema-fields-section">
+        <div className="tw-flex tw-items-center tw-gap-[6px]">
+          <SolidIcon name="warning" width="18px" height="18px" fill="#BF4F03" />
+          <span className="base-medium neutral-light-color">Custom fields can’t be added</span>
+        </div>
+      </div>
+    );
+  };
+
   const renderDataElement = () => {
     return (
       <>
@@ -183,6 +214,9 @@ export const Form = ({
             Generate form
           </Button>
         </div>
+        {renderRefreshDataSection()}
+        {renderCustomSchemaSection()}
+
         <div className="tw-flex tw-justify-between tw-items-center tw-gap-1.5">
           <div className="tw-flex-1">
             <LabeledDivider label="Fields" />
