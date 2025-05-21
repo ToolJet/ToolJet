@@ -321,7 +321,7 @@ export const tableConfig = {
     columnBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Column background',
-      validation: { schema: { type: 'string' }, defaultValue: '#F6F8FA' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface2-surface)' },
       accordian: 'Column Header',
     },
     textColor: {
@@ -412,7 +412,7 @@ export const tableConfig = {
     containerBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'Container',
     },
     borderRadius: {
@@ -685,8 +685,8 @@ export const tableConfig = {
     events: [],
     styles: {
       columnTitleColor: { value: 'var(--cc-placeholder-text)' },
-      columnBackgroundColor: { value: '#F6F8FA' },
-      containerBackgroundColor: { value: '#fff' },
+      columnBackgroundColor: { value: 'var(--cc-surface2-surface)' },
+      containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       textColor: { value: 'var(--cc-primary-text)' },
       columnHeaderWrap: { value: 'fixed' },
       headerCasing: { value: 'uppercase' },

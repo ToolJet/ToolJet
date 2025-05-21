@@ -10,6 +10,7 @@ import { CSS } from '@dnd-kit/utilities';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
@@ -36,6 +37,8 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     zIndex: isDragging ? 1 : 0,
     backgroundColor: columnBackgroundColor,
     color: columnTitleColor,
+    '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 'hover'),
+    '--cc-table-header-active': getModifiedColor(columnBackgroundColor, 'active'),
   };
 
   return (

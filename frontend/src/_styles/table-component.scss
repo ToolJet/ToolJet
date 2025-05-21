@@ -38,7 +38,7 @@
 
   .card-footer {
     padding: 0.75rem;
-    background-color: var(--cc-surface1-surface) !important;
+    // background-color: var(--cc-surface1-surface) !important;
   }
 
   .card-header {
@@ -300,7 +300,7 @@
 
       .table-row:hover,
       .table-row:focus {
-        background: var(--slate4, #ECEEF0) !important;
+        background: var(--cc-table-row-hover, #ECEEF0) !important;
       }
     }
 
@@ -817,7 +817,8 @@
 
       &:hover {
 
-        background: linear-gradient(0deg, var(--surfaces-surface-02), var(--surfaces-surface-02)), linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)) !important;
+        // background: linear-gradient(0deg, var(--surfaces-surface-02), var(--surfaces-surface-02)), linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)) !important;
+        background: var(--cc-table-header-hover) !important;
       }
 
       &:focus-within {
