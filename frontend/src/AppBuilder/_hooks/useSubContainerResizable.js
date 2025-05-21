@@ -15,7 +15,7 @@ const defaultProps = {
   isReverseVerticalDrag: false,
 };
 
-export const useResizable = (options = {}) => {
+export const useSubContainerResizable = (options = {}) => {
   const props = { ...defaultProps, ...options };
   const parentRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false); // ✅ Track dragging state
@@ -115,7 +115,7 @@ export const useResizable = (options = {}) => {
           // Get the updated height and width from the DOM instead of relying on state
           const finalHeight = parentRef.current ? parseInt(parentRef.current.clientHeight) : parseInt(height);
           const finalWidth = parentRef.current ? parseInt(parentRef.current.clientWidth) : parseInt(width);
-
+          console.log(finalHeight, 'dragEnd');
           props.onDragEnd({ newHeight: finalHeight, newWidth: finalWidth });
         }
       };
@@ -132,4 +132,4 @@ export const useResizable = (options = {}) => {
   return { rootRef: parentRef, getRootProps, getHandleProps, getResizeState };
 };
 
-export default useResizable;
+export default useSubContainerResizable;

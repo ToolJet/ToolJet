@@ -49,6 +49,7 @@
   .modal-header {
     padding: 0;
     position: relative;
+    min-height: 40px;
   }
 
   .modal-body {
@@ -62,5 +63,11 @@
     border-top: 1px solid var(--border-weak);
     overflow-x: hidden;
     width: 100%;
+
   }
+}
+
+.jet-modalv2-footer .resize-handle {
+  top: -4px;
+  bottom: unset;
 }

@@ -92,18 +92,6 @@ export const modalV2Config = {
       accordian: 'Data',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 400 },
     },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Header height',
-      accordian: 'Data',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
-    },
-    footerHeight: {
-      type: 'numberInput',
-      displayName: 'Footer height',
-      accordian: 'Data',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
-    },
     hideOnEsc: { type: 'toggle', displayName: 'Close on escape key', section: 'additionalActions' },
     closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
     hideCloseButton: { type: 'toggle', displayName: 'Hide close button', section: 'additionalActions' },
