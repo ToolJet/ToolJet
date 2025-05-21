@@ -23,4 +23,12 @@ export class AppPermissionsUtilService implements IUtilService {
   async updatePagePermission(pageId: string, body: CreatePermissionDto): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  async createQueryPermission(queryId: string, body: CreatePermissionDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  async updateQueryPermission(queryId: string, body: CreatePermissionDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
 }

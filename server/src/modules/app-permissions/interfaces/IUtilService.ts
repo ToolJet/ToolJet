@@ -10,4 +10,8 @@ export interface IUtilService {
   createPagePermission(pageId: string, body: CreatePermissionDto): Promise<any>;
 
   updatePagePermission(pageId: string, body: CreatePermissionDto): Promise<any>;
+
+  createQueryPermission(queryId: string, body: CreatePermissionDto): Promise<any>;
+
+  updateQueryPermission(queryId: string, body: CreatePermissionDto): Promise<any>;
 }
