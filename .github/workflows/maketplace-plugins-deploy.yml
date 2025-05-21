@@ -59,9 +59,10 @@ jobs:
           cd marketplace && AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js
 
       - name: Comment deployment URL
+        if: success()
         uses: actions/github-script@v5
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -70,7 +71,9 @@ jobs:
               body: 'Marketplace Plugin added to stage bucket'
             })
 
-      - uses: actions/github-script@v6
+      - name: Label update on success
+        if: success()
+        uses: actions/github-script@v6
         with:
           script: |
             try {
@@ -89,4 +92,17 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['marketplace-plugin-deployed']
+            })
+
+      - name: Comment on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ Marketplace Plugin deployment failed. Please check the GitHub Actions logs for details.'
             })
