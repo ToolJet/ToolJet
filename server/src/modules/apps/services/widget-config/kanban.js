@@ -157,7 +157,7 @@ export const kanbanConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
-      accentColor: { value: 'var(--primary-brand)' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
     },
   },
 };

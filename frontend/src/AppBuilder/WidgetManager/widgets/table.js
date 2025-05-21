@@ -295,7 +295,7 @@ export const tableConfig = {
     columnTitleColor: {
       type: 'colorSwatches',
       displayName: 'Column title',
-      validation: { schema: { type: 'string' }, defaultValue: '#6A727C' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
       accordian: 'Column Header',
     },
     columnHeaderWrap: {
@@ -329,7 +329,7 @@ export const tableConfig = {
       displayName: 'Text',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000',
+        defaultValue: 'var(--cc-primary-text)',
       },
       accordian: 'Data',
     },
@@ -684,10 +684,10 @@ export const tableConfig = {
     },
     events: [],
     styles: {
-      columnTitleColor: { value: '#6A727C' },
+      columnTitleColor: { value: 'var(--cc-placeholder-text)' },
       columnBackgroundColor: { value: '#F6F8FA' },
       containerBackgroundColor: { value: '#fff' },
-      textColor: { value: '#000' },
+      textColor: { value: 'var(--cc-primary-text)' },
       columnHeaderWrap: { value: 'fixed' },
       headerCasing: { value: 'uppercase' },
       actionButtonRadius: { value: '0' },

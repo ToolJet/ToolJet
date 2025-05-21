@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
+import { FormCheck } from 'react-bootstrap';
 import { MultiSelect } from 'react-multi-select-component';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
@@ -7,7 +8,7 @@ import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
-    <input type="checkbox" onClick={onClick} checked={checked} tabIndex={-1} disabled={disabled} />
+    <FormCheck checked={checked} disabled={disabled} tabIndex={-1} onClick={onClick} />
     <span>{option.label}</span>
   </div>
 );
@@ -163,14 +164,22 @@ export const Multiselect = function Multiselect({
     >
       <div className="col-auto my-auto d-flex align-items-center">
         <label
-          style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
-          className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
+          style={{ marginRight: label ? '1rem' : '', marginBottom: 0, color: 'var(--cc-primary-text)' }}
+          className={`form-label py-1`}
           data-cy={`multiselect-label-${componentName?.toLowerCase()}`}
         >
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
+      <div
+        className="col px-0 h-100"
+        style={{
+          borderRadius: parseInt(borderRadius),
+          boxShadow,
+          backgroundColor: 'var(--cc-surface1-surface)',
+          color: 'var(--cc-primary-text)',
+        }}
+      >
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}

@@ -1387,7 +1387,7 @@ export const computeColor = (styleDefinition, value, meta) => {
       return value;
     }
     if (meta?.displayName == 'Text color') {
-      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      value = value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
       return value;
     }
     if (meta?.displayName == 'Icon color') {

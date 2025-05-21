@@ -39,7 +39,7 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
             {isMandatory && (
               <span
                 style={{
-                  color: 'var(--status-error-strong)',
+                  color: 'var(--cc-error-systemStatus)',
                   position: 'absolute',
                   right: direction == 'right' ? '0px' : '4px',
                   top: '0px',

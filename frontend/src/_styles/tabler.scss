@@ -5368,7 +5368,7 @@ fieldset:disabled .btn {
     align-items: center;
     justify-content: space-between;
     padding: 1.5rem;
-    border-bottom: 1px solid #e6e8e9;
+    border-bottom: 1px solid var(--cc-default-border, #e6e8e9) !important;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px
 }
@@ -6136,7 +6136,7 @@ fieldset:disabled .btn {
     width: 1.5rem;
     height: 1.5rem;
     vertical-align: text-bottom;
-    border: 2px solid var(--primary-brand);
+    border: 2px solid var(--cc-primary-brand);
     border-right-color: transparent;
     border-radius: 50%; 
     -webkit-animation: .75s linear infinite spinner-border;
