@@ -47,42 +47,48 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
           aws-region: us-east-2
 
-      - name: Install and build dependencies
-        run: |
-          cd marketplace && npm install && npm run build --workspaces
-        continue-on-error: true
-
-      - name: Build marketplace plugins
+      - name: Install and build dependencies in order
         run: |
           cd marketplace
-          AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js | tee scripts/upload-to-s3.log
+          echo "🔧 Installing all workspace dependencies"
+          npm install
 
-      - name: Extract upload summary from logs
+          echo "🏗️ Building 'common' plugin first"
+          npm run build --workspace=@tooljet/common || exit 1
+
+          echo "🔁 Building all remaining plugins"
+          PLUGINS=$(ls plugins | grep -v '^common$')
+          for plugin in $PLUGINS; do
+            echo "🔨 Building plugin: $plugin"
+            npm run build --workspace=@tooljet/$plugin || exit 1
+          done
+
+      - name: Build marketplace plugins and capture summary
         run: |
-          grep -A 5 'UPLOAD SUMMARY' marketplace/scripts/upload-to-s3.log > upload_summary.txt || echo 'Upload summary not found.' > upload_summary.txt
+          cd marketplace
+          echo "🚀 Uploading to S3"
+          AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js | tee upload_summary.log
+
+      - name: Extract upload summary
+        id: upload_summary
+        run: |
+          SUMMARY=$(awk '/UPLOAD SUMMARY/,0' marketplace/upload_summary.log)
+          echo "UPLOAD_SUMMARY<<EOF" >> $GITHUB_ENV
+          echo "$SUMMARY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Comment on success
         if: success()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
-            const summary = fs.readFileSync('upload_summary.txt', 'utf8');
             const runId = process.env.GITHUB_RUN_ID;
             const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
+            const summary = process.env.UPLOAD_SUMMARY;
+            const body = `Marketplace Plugin added to stage bucket\n\n🔍 [View Deployment Logs & Summary](${runUrl})\n\n\`\`\`\n${summary}\n\`\`\``;
 
-            const body = [
-              'Marketplace Plugin added to stage bucket \ud83d\ude80',
-              '',
-              '### \ud83d\udce6 Upload Summary',
-              '```',
-              summary.trim(),
-              '```',
-              `\ud83d\udd17 [View Full GitHub Actions Logs](${runUrl})`
-            ].join('\n');
-
-            await github.rest.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -100,9 +106,9 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 name: 'deploy-marketplace-plugin'
-              });
+              })
             } catch (e) {
-              console.log(e);
+              console.log(e)
             }
 
             await github.rest.issues.addLabels({
@@ -110,7 +116,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['marketplace-plugin-deployed']
-            });
+            })
 
       - name: Comment on failure
         if: failure()
@@ -125,5 +131,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `\u274c Marketplace Plugin deployment failed.\n\n\ud83d\udd0d [View Deployment Logs & Summary](${runUrl})`
+              body: `❌ Marketplace Plugin deployment failed.\n\n🔍 [View Deployment Logs & Summary](${runUrl})`
             });
