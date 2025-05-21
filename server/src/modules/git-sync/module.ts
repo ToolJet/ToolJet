@@ -11,6 +11,7 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { AppGitSync } from '@entities/app_git_sync.entity';
+import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 
 export class GitSyncModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -19,11 +20,15 @@ export class GitSyncModule {
     const { SourceControlProviderService } = await import(`${await getImportPath()}/git-sync/source-control-provider`);
     const { SSHGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-ssh/service`);
     const { HTTPSGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/github-https/service`);
+    const { GitLabGitSyncService } = await import(`${await getImportPath()}/git-sync/providers/gitlab/service`);
     const { HTTPSGitSyncUtilityService } = await import(
       `${await getImportPath()}/git-sync/providers/github-https/util.service`
     );
     const { SSHGitSyncUtilityService } = await import(
       `${await getImportPath()}/git-sync/providers/github-ssh/util.service`
+    );
+    const { GitLabGitSyncUtilityService } = await import(
+      `${await getImportPath()}/git-sync/providers/gitlab/util.service`
     );
     const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
     const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
@@ -37,6 +42,7 @@ export class GitSyncModule {
           Organization,
           OrganizationGitSsh,
           OrganizationGitHttps,
+          OrganizationGitLab,
           AppVersion,
         ]),
         await ImportExportResourcesModule.register(configs),
@@ -50,12 +56,14 @@ export class GitSyncModule {
         SourceControlProviderService,
         SSHGitSyncService,
         HTTPSGitSyncService,
+        GitLabGitSyncService,
         HTTPSGitSyncUtilityService,
         SSHGitSyncUtilityService,
+        GitLabGitSyncUtilityService,
         BaseGitUtilService,
         BaseGitSyncService,
       ],
-      exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService],
+      exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService],
     };
   }
 }

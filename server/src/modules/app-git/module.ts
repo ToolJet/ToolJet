@@ -23,6 +23,7 @@ export class AppGitModule {
     const { SourceControlProviderService } = await import(`${await getImportPath()}/app-git/source-control-provider`);
     const { SSHAppGitService } = await import(`${await getImportPath()}/app-git/providers/github-ssh/service`);
     const { HTTPSAppGitService } = await import(`${await getImportPath()}/app-git/providers/github-https/service`);
+    const { GitLabAppGitService } = await import(`${await getImportPath()}/app-git/providers/gitlab/service`);
     const { HTTPSAppGitUtilityService } = await import(
       `${await getImportPath()}/app-git/providers/github-https/util.service`
     );
@@ -60,6 +61,7 @@ export class AppGitModule {
         SourceControlProviderService,
         SSHAppGitService,
         HTTPSAppGitService,
+        GitLabAppGitService,
         SSHAppGitUtilityService,
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
