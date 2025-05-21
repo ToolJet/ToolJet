@@ -1,23 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import FieldPopoverContent from './FieldPopoverContent';
+import { useDropdownState } from './hooks/useDropdownState';
 
 export const FormField = ({ name, type, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState({ name, type });
-  const [dropdownState, setDropdownState] = useState('closed'); // 'closed' | 'opening' | 'open'
-
-  const handleDropdownOpen = useCallback(() => {
-    setDropdownState('open');
-  }, []);
-
-  const handleDropdownClose = useCallback(() => {
-    setDropdownState('closing');
-    setTimeout(() => setDropdownState('closed'), 100);
-  }, []);
+  const { handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
 
   // Close main popover when another field's menu opens
   useEffect(() => {
@@ -34,10 +26,12 @@ export const FormField = ({ name, type, onDelete, activeMenu, onMenuToggle, dark
     <Popover id="popover-basic" className="shadow form-fields-column-popover">
       <FieldPopoverContent
         field={fieldData}
+        mode="edit"
         onClose={() => setShowPopover(false)}
         onChange={handleFieldChange}
         onDropdownOpen={handleDropdownOpen}
         onDropdownClose={handleDropdownClose}
+        shouldPreventPopoverClose={shouldPreventPopoverClose}
       />
     </Popover>
   );
@@ -97,7 +91,7 @@ export const FormField = ({ name, type, onDelete, activeMenu, onMenuToggle, dark
         placement="left"
         show={showPopover}
         onToggle={(show) => {
-          if (!show && dropdownState !== 'closed') {
+          if (!show && shouldPreventPopoverClose) {
             return; // Prevent closing when dropdown is being interacted with or just closed
           }
           if (show) onMenuToggle(null);

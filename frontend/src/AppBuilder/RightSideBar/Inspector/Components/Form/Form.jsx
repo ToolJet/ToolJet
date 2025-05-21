@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Accordion from '@/_ui/Accordion';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
+import FieldPopoverContent from './FieldPopoverContent';
 import { EventManager } from '../../EventManager';
 import { renderElement } from '../../Utils';
 // eslint-disable-next-line import/no-unresolved
@@ -9,6 +12,7 @@ import { Button } from '@/components/ui/Button/Button';
 import LabeledDivider from './LabeledDivider';
 import ColumnMappingComponent from './ColumnMappingComponent';
 import { FormFieldsList } from './FormFieldsList';
+import { useDropdownState } from './hooks/useDropdownState';
 import './styles.scss';
 
 export const Form = ({
@@ -25,7 +29,8 @@ export const Form = ({
   pages,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [fields, setFields] = useState([]);
+  const [showAddFieldPopover, setShowAddFieldPopover] = useState(false);
+  const addFieldButtonRef = useRef(null);
   const [fields, setFields] = useState([
     {
       name: 'lastNamelastNamelastNamelastNamelastName',
@@ -79,6 +84,8 @@ export const Form = ({
     { name: 'salary', dataType: 'number', inputType: 'text', mandatory: false, label: 'Input value', selected: true },
   ]);
   const tempComponentMeta = deepClone(componentMeta);
+
+  const { dropdownState, handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
 
   let properties = [];
   let additionalActions = [];
@@ -140,6 +147,21 @@ export const Form = ({
     setFields((prevFields) => prevFields.filter((_, i) => i !== index));
   };
 
+  const handleAddField = (newField) => {
+    setFields((prevFields) => [
+      ...prevFields,
+      {
+        name: newField.label || 'New Field',
+        dataType: 'varchar',
+        inputType: newField.type || 'text',
+        mandatory: false,
+        label: newField.label || 'New Field',
+        selected: true,
+      },
+    ]);
+    setShowAddFieldPopover(false);
+  };
+
   const renderDataElement = () => {
     return (
       <>
@@ -165,7 +187,34 @@ export const Form = ({
           <div className="tw-flex-1">
             <LabeledDivider label="Fields" />
           </div>
-          <Button iconOnly leadingIcon="plus" variant="ghost" size="small" />
+          <OverlayTrigger
+            trigger="click"
+            placement="left"
+            show={showAddFieldPopover}
+            onToggle={(show) => {
+              if (!show && shouldPreventPopoverClose) {
+                return;
+              }
+              setShowAddFieldPopover(show);
+            }}
+            rootClose
+            overlay={
+              <Popover id="add-field-popover" className="shadow form-fields-column-popover">
+                <FieldPopoverContent
+                  field={{}}
+                  onChange={handleAddField}
+                  onClose={() => setShowAddFieldPopover(false)}
+                  darkMode={darkMode}
+                  mode="add"
+                  onDropdownOpen={handleDropdownOpen}
+                  onDropdownClose={handleDropdownClose}
+                  shouldPreventPopoverClose={shouldPreventPopoverClose}
+                />
+              </Popover>
+            }
+          >
+            <Button ref={addFieldButtonRef} iconOnly leadingIcon="plus" variant="ghost" size="small" />
+          </OverlayTrigger>
         </div>
 
         <FormFieldsList fields={fields} onDeleteField={handleDeleteField} />
