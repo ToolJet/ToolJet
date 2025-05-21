@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useLayoutEffect, useRef } from 'react';
 import { openapiService } from '@/_services';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
@@ -227,37 +227,25 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   }
 
   const paramLabelWithDescription = (param) => {
-    const paramValue = type === 'request' ? param : param.name;
-    const chWidth = paramValue.length + 1;
+    const label = type === 'request' ? param : param.name;
+    const description = type === 'request' ? parameters[param]?.description : param.description;
+
     return (
-      <ToolTip message={type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description}>
-        <div className="cursor-help">
-          <input
-            type="text"
-            value={type === 'request' ? param : param.name}
-            className="form-control form-control-underline"
-            placeholder="key"
-            disabled
-            style={{ width: `${chWidth}ch`, paddingRight: '0px' }}
-          />
+      <ToolTip message={DOMPurify.sanitize(description)}>
+        <div className="cursor-help d-flex align-items-center">
+          <AutoWidthText value={label} className="form-control form-control-underline" />
         </div>
       </ToolTip>
     );
   };
 
   const paramLabelWithoutDescription = (param) => {
-    const paramValue = type === 'request' ? param : param.name;
-    const chWidth = paramValue.length + 1;
+    const label = type === 'request' ? param : param.name;
 
     return (
-      <input
-        type="text"
-        value={paramValue}
-        className="form-control"
-        placeholder="key"
-        disabled
-        style={{ width: `${chWidth}ch`, paddingRight: '0px' }}
-      />
+      <div className="d-flex align-items-center" style={{ gap: '4px' }}>
+        <AutoWidthText value={label} className="form-control" />
+      </div>
     );
   };
 
@@ -281,7 +269,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   const paramDetails = (param) => {
     return (
       <div className="col-auto d-flex field field-width-179 align-items-center justify-content-between">
-        <div className="d-flex align-items-center">
+        <div className="d-inline-flex align-items-center gap-3">
           {(type === 'request' && parameters[param].description) || param?.description
             ? paramLabelWithDescription(param)
             : paramLabelWithoutDescription(param)}
@@ -367,4 +355,35 @@ RenderParameterFields.propTypes = {
   changeParam: PropTypes.func,
   removeParam: PropTypes.func,
   darkMode: PropTypes.bool,
+};
+
+const AutoWidthText = ({ value, className }) => {
+  const spanRef = useRef(null);
+  const [width, setWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    if (spanRef.current) {
+      setWidth(spanRef.current.offsetWidth);
+    }
+  }, [value]);
+
+  return (
+    <div className={className} style={{ display: 'inline-block', width: width ? `${width}px` : 'auto' }}>
+      <span
+        ref={spanRef}
+        style={{
+          position: 'absolute',
+          visibility: 'hidden',
+          whiteSpace: 'pre',
+          fontSize: '12px',
+          fontFamily: 'inherit',
+          fontWeight: 400,
+          lineHeight: '20px',
+        }}
+      >
+        {value}
+      </span>
+      {value}
+    </div>
+  );
 };
