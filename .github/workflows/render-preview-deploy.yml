@@ -1232,12 +1232,7 @@ jobs:
             });
             return labels.data.map(l => l.name);
 
-      - name: check CE review app if active
-        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
-        id: fetch_ce_deploy_info
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          PR_NUMBER: ${{ github.event.number }}
+      - name: Fetch CE service and deploy ID
         run: |
           SERVICE_ID=$(curl --silent --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
@@ -1253,14 +1248,11 @@ jobs:
 
           echo "CE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "CE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
-
-
-      - name: check EE review app if active
-        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
-        id: fetch_ee_deploy_info
         env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          PR_NUMBER: ${{ github.event.number }}
+
+      - name: Fetch EE service and deploy ID
         run: |
           SERVICE_ID=$(curl --silent --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
@@ -1276,7 +1268,9 @@ jobs:
 
           echo "EE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "EE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
-
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
       - name: Comment CE deploy info
         if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
