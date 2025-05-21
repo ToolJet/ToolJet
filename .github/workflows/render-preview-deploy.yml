@@ -1216,7 +1216,7 @@ jobs:
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
 
 
-  render-bot-check-deployment:
+  render-ce-bot-check-deployment:
     runs-on: ubuntu-latest
     if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
     steps:
@@ -1248,26 +1248,6 @@ jobs:
 
           echo "CE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "CE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
-        env:
-          PR_NUMBER: ${{ env.PR_NUMBER }}
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-
-      - name: Fetch EE service and deploy ID
-        run: |
-          SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
-            --header 'accept: application/json' \
-            --header "authorization: Bearer $RENDER_API_KEY" \
-            | jq -r '.[0].service.id')
-
-          DEPLOY_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
-            --header 'accept: application/json' \
-            --header "authorization: Bearer $RENDER_API_KEY" \
-            | jq -r '.[0].deploy.id')
-
-          echo "EE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
-          echo "EE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -1313,6 +1293,30 @@ jobs:
               repo: context.repo.repo,
               body: ceInfo
             });
+
+  render-ee-bot-check-deployment:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
+    steps:
+      - name: Fetch EE service and deploy ID
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" \
+            | jq -r '.[0].service.id')
+
+          DEPLOY_ID=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" \
+            | jq -r '.[0].deploy.id')
+
+          echo "EE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "EE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
       - name: Comment EE deployment details
         uses: actions/github-script@v6
