@@ -235,6 +235,8 @@ import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
 import CurlyBraces from './CurlyBraces.jsx';
+import Sliders from './Sliders.jsx';
+import Asterix from './Asterix.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -284,6 +286,8 @@ const Icon = (props) => {
       return <ArrowTransfer {...props} />;
     case 'arrowup':
       return <ArrowUp {...props} />;
+    case 'asterix':
+      return <Asterix {...props} />;
     case 'auditlogs':
       return <AuditLogs {...props} />;
     case 'booksearch':
@@ -542,6 +546,8 @@ const Icon = (props) => {
       return <ShieldCheck {...props} />;
     case 'signpost':
       return <Signpost {...props} />;
+    case 'sliders':
+      return <Sliders {...props} />;
     case 'smilerectangle':
       return <SmileRectangle {...props} />;
     case 'sortarrowdown':

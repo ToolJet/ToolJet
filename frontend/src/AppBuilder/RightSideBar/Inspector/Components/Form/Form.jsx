@@ -8,6 +8,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { Button } from '@/components/ui/Button/Button';
 import LabeledDivider from './LabeledDivider';
 import ColumnMappingComponent from './ColumnMappingComponent';
+import { FormFieldsList } from './FormFieldsList';
 import './styles.scss';
 
 export const Form = ({
@@ -24,6 +25,59 @@ export const Form = ({
   pages,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [fields, setFields] = useState([]);
+  const [fields, setFields] = useState([
+    {
+      name: 'lastNamelastNamelastNamelastNamelastName',
+      dataType: 'varchar',
+      inputType: 'text',
+      mandatory: false,
+      label: 'Input value',
+      selected: true,
+    },
+    {
+      name: 'dateOfBirth',
+      dataType: 'date',
+      inputType: 'text',
+      mandatory: false,
+      label: 'Input value',
+      selected: true,
+    },
+    {
+      name: 'hireDate',
+      dataType: 'datetime',
+      inputType: 'text',
+      mandatory: false,
+      label: 'Input value',
+      selected: true,
+    },
+    {
+      name: 'jobTitle',
+      dataType: 'varchar',
+      inputType: 'text',
+      mandatory: false,
+      label: 'Input value',
+      selected: true,
+    },
+    { name: 'email', dataType: 'varchar', inputType: 'text', mandatory: false, label: 'Input value', selected: true },
+    {
+      name: 'phoneNumber',
+      dataType: 'varchar',
+      inputType: 'text',
+      mandatory: false,
+      label: 'Input value',
+      selected: true,
+    },
+    {
+      name: 'department',
+      dataType: 'varchar',
+      inputType: 'text',
+      mandatory: false,
+      label: 'Input value',
+      selected: true,
+    },
+    { name: 'salary', dataType: 'number', inputType: 'text', mandatory: false, label: 'Input value', selected: true },
+  ]);
   const tempComponentMeta = deepClone(componentMeta);
 
   let properties = [];
@@ -82,7 +136,10 @@ export const Form = ({
     { name: 'salary', dataType: 'number' },
   ];
 
-  // Define the renderDataElement function here to access isModalOpen and setIsModalOpen
+  const handleDeleteField = (index) => {
+    setFields((prevFields) => prevFields.filter((_, i) => i !== index));
+  };
+
   const renderDataElement = () => {
     return (
       <>
@@ -110,9 +167,14 @@ export const Form = ({
           </div>
           <Button iconOnly leadingIcon="plus" variant="ghost" size="small" />
         </div>
-        <span className="base-regular text-placeholder tw-block tw-p-3 tw-text-center">
-          No fields yet. Generate a form from a data source or add custom fields.
-        </span>
+
+        <FormFieldsList fields={fields} onDeleteField={handleDeleteField} />
+
+        <div className="tw-flex tw-justify-center tw-items-center tw-mt-3">
+          <Button fill="#ACB2B9" leadingIcon="sliders" variant="outline" onClick={() => setIsModalOpen(true)}>
+            Manage fields
+          </Button>
+        </div>
 
         <ColumnMappingComponent
           isOpen={isModalOpen}
@@ -122,8 +184,7 @@ export const Form = ({
           mode="mapping"
           title="Map columns"
           onSubmit={(selectedFields) => {
-            console.log('Selected fields:', selectedFields);
-            // Here you would handle the form generation with the selected fields
+            setFields(selectedFields);
             setIsModalOpen(false);
           }}
         />

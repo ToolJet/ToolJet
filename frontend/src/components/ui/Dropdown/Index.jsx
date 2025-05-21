@@ -14,6 +14,8 @@ const DropdownComponent = ({ options = {}, ...props }) => {
 
   const handleOpenChange = () => {
     setOpen(!open);
+    if (!open) props.onOpen?.();
+    else props.onClose?.();
   };
 
   const handleChange = (e) => {
