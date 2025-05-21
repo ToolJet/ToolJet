@@ -52,7 +52,17 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table' | 'Button' | 'Checkbox' | 'Divider' | 'VerticalDivider' | 'Link';
+type NewRevampedComponent =
+  | 'Text'
+  | 'TextInput'
+  | 'PasswordInput'
+  | 'NumberInput'
+  | 'Table'
+  | 'Button'
+  | 'Checkbox'
+  | 'Divider'
+  | 'VerticalDivider'
+  | 'Link';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -84,9 +94,9 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected readonly entityManager: EntityManager,
     protected componentsService: ComponentsService
-  ) { }
+  ) {}
 
-  async export(user: User, id: string, searchParams: any = {}, organizationId?: string): Promise<{ appV2: App }> {
+  async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     // filter by search params
@@ -96,7 +106,7 @@ export class AppImportExportService {
         .createQueryBuilder(App, 'apps')
         .where('apps.id = :id AND apps.organization_id = :organizationId', {
           id,
-          organizationId: user?.organizationId || organizationId,
+          organizationId: user?.organizationId,
         });
       const appToExport = await queryForAppToExport.getOne();
 
@@ -125,7 +135,7 @@ export class AppImportExportService {
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
         .where('app_environments.organizationId = :organizationId', {
-          organizationId: user?.organizationId || organizationId,
+          organizationId: user?.organizationId,
         })
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();
@@ -186,13 +196,13 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const events = await manager
@@ -228,8 +238,7 @@ export class AppImportExportService {
     externalResourceMappings = {},
     isGitApp = false,
     tooljetVersion = '',
-    cloning = false,
-    organizationId?: string
+    cloning = false
   ): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
@@ -257,13 +266,7 @@ export class AppImportExportService {
 
     const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    const importedApp = await this.createImportedAppForUser(
-      this.entityManager, //create new BC
-      schemaUnifiedAppParams,
-      user,
-      isGitApp,
-      organizationId
-    );
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
 
     const resourceMapping = await this.setupImportedAppAssociations(
       this.entityManager,
@@ -272,8 +275,7 @@ export class AppImportExportService {
       user,
       externalResourceMappings,
       isNormalizedAppDefinitionSchema,
-      currentTooljetVersion,
-      organizationId
+      currentTooljetVersion
     );
     await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
 
@@ -346,17 +348,11 @@ export class AppImportExportService {
     }
   }
 
-  async createImportedAppForUser(
-    manager: EntityManager,
-    appParams: any,
-    user: User,
-    isGitApp = false,
-    organizationId?: string
-  ): Promise<App> {
+  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
-        organizationId: user?.organizationId || organizationId,
+        organizationId: user?.organizationId,
         userId: user.id, //fetch super admin user id for EE
         slug: null,
         icon: appParams.icon,
@@ -419,22 +415,14 @@ export class AppImportExportService {
     user: User,
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
-    tooljetVersion: string | null,
-    organizationId?: string
+    tooljetVersion: string | null
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
     // TODO: have version based conditional based on app versions
     // isLessThanExportVersion(appParams.tooljet_version, 'v0.12.0')
     if (!appParams?.appVersions) {
-      await this.performLegacyAppImport(
-        manager,
-        importedApp,
-        appParams,
-        externalResourceMappings,
-        user,
-        organizationId
-      );
+      await this.performLegacyAppImport(manager, importedApp, appParams, externalResourceMappings, user);
       return;
     }
 
@@ -465,8 +453,7 @@ export class AppImportExportService {
       importedApp,
       importingAppVersions,
       appResourceMappings,
-      isNormalizedAppDefinitionSchema,
-      organizationId
+      isNormalizedAppDefinitionSchema
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -492,8 +479,7 @@ export class AppImportExportService {
         importingPages,
         importingComponents,
         importingEvents,
-        tooljetVersion,
-        organizationId
+        tooljetVersion
       );
 
       if (!isNormalizedAppDefinitionSchema) {
@@ -700,8 +686,7 @@ export class AppImportExportService {
     importingPages: Page[],
     importingComponents: Component[],
     importingEvents: EventHandler[],
-    tooljetVersion: string | null,
-    organizationId?: string
+    tooljetVersion: string | null
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -714,8 +699,7 @@ export class AppImportExportService {
         user,
         importingAppEnvironments,
         importingAppVersion,
-        appResourceMappings,
-        organizationId
+        appResourceMappings
       );
       appResourceMappings.appEnvironmentMapping = appEnvironmentMapping;
 
@@ -723,8 +707,7 @@ export class AppImportExportService {
         manager,
         importingAppVersion,
         user,
-        appResourceMappings,
-        organizationId
+        appResourceMappings
       );
       appResourceMappings.defaultDataSourceIdMapping = defaultDataSourceIdMapping;
 
@@ -743,8 +726,7 @@ export class AppImportExportService {
           manager,
           importingDataSource,
           appResourceMappings.appVersionMapping[importingAppVersion.id],
-          user,
-          organizationId
+          user
         );
 
         // TODO: Have version based conditional based on app versions
@@ -792,7 +774,7 @@ export class AppImportExportService {
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
           manager,
-          user?.organizationId || organizationId,
+          user?.organizationId,
           importingDataQueriesForAppVersion,
           importingDataSource,
           dataSourceForAppVersion,
@@ -1089,10 +1071,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1180,11 +1162,10 @@ export class AppImportExportService {
     manager: EntityManager,
     appVersion: AppVersion,
     user: User,
-    appResourceMappings: AppResourceMappings,
-    organizationId?: string
+    appResourceMappings: AppResourceMappings
   ) {
     const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user?.organizationId || organizationId,
+      user?.organizationId,
       appResourceMappings.appVersionMapping[appVersion.id],
       DefaultDataSourceKinds,
       manager
@@ -1198,8 +1179,7 @@ export class AppImportExportService {
     manager: EntityManager,
     dataSource: DataSource,
     appVersionId: string,
-    user: User,
-    organizationId?: string
+    user: User
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
@@ -1224,7 +1204,7 @@ export class AppImportExportService {
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
           scope: 'global',
-          organizationId: user?.organizationId || organizationId,
+          organizationId: user?.organizationId,
         },
       });
     };
@@ -1235,7 +1215,7 @@ export class AppImportExportService {
           kind: dataSource.kind,
           type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
           scope: 'global',
-          organizationId: user?.organizationId || organizationId,
+          organizationId: user?.organizationId,
         },
       });
     };
@@ -1253,7 +1233,7 @@ export class AppImportExportService {
 
       if (plugin) {
         const newDataSource = manager.create(DataSource, {
-          organizationId: user?.organizationId || organizationId,
+          organizationId: user?.organizationId,
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
@@ -1268,7 +1248,7 @@ export class AppImportExportService {
 
     const createNewGlobalDs = async (ds: DataSource): Promise<DataSource> => {
       const newDataSource = manager.create(DataSource, {
-        organizationId: user?.organizationId || organizationId,
+        organizationId: user?.organizationId,
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
@@ -1292,12 +1272,11 @@ export class AppImportExportService {
     user: User,
     appEnvironments: Record<string, any>[],
     appVersion: AppVersion,
-    appResourceMappings: AppResourceMappings,
-    organizationId?: string
+    appResourceMappings: AppResourceMappings
   ) {
     appResourceMappings = { ...appResourceMappings };
     const currentOrgEnvironments = await this.appEnvironmentUtilService.getAll(
-      user?.organizationId || organizationId,
+      user?.organizationId,
       appVersion.appId,
       manager
     );
@@ -1354,13 +1333,12 @@ export class AppImportExportService {
     importedApp: App,
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
-    isNormalizedAppDefinitionSchema: boolean,
-    organizationId?: string
+    isNormalizedAppDefinitionSchema: boolean
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
     const organization: Organization = await manager.findOne(Organization, {
-      where: { id: user?.organizationId || organizationId },
+      where: { id: user?.organizationId },
       relations: ['appEnvironments'],
     });
     let currentEnvironmentId: string;
@@ -1559,8 +1537,7 @@ export class AppImportExportService {
     importedApp: App,
     appParams: any,
     externalResourceMappings: any,
-    user: any,
-    organizationId?: string
+    user: any
   ) {
     const dataSourceMapping = {};
     const dataQueryMapping = {};
@@ -1580,7 +1557,7 @@ export class AppImportExportService {
 
     // Create default data sources
     const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user?.organizationId || organizationId,
+      user?.organizationId,
       version.id,
       DefaultDataSourceKinds,
       manager
@@ -1588,7 +1565,7 @@ export class AppImportExportService {
     let envIdArray: string[] = [];
 
     const organization: Organization = await manager.findOne(Organization, {
-      where: { id: user?.organizationId || organizationId },
+      where: { id: user?.organizationId },
       relations: ['appEnvironments'],
     });
     envIdArray = [...organization.appEnvironments.map((env) => env.id)];
@@ -1597,7 +1574,7 @@ export class AppImportExportService {
       await Promise.all(
         defaultAppEnvironments.map(async (en) => {
           const env = manager.create(AppEnvironment, {
-            organizationId: user?.organizationId || organizationId,
+            organizationId: user?.organizationId,
             name: en.name,
             isDefault: en.isDefault,
             priority: en.priority,
@@ -1664,7 +1641,7 @@ export class AppImportExportService {
             ? this.replaceTooljetDbTableIds(
                 query.options,
                 externalResourceMappings['tooljet_database'],
-                user?.organizationId || organizationId
+                user?.organizationId
               )
             : query.options,
       });

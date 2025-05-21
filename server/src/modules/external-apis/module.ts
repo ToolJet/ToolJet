@@ -13,6 +13,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { SessionModule } from '@modules/session/module';
 import { UserRepository } from '@modules/users/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { UsersModule } from '@modules/users/module';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -23,6 +24,7 @@ export class ExternalApiModule {
     return {
       module: ExternalApiModule,
       imports: [
+        await UsersModule.register(configs),
         await RolesModule.register(configs),
         await GroupPermissionsModule.register(configs),
         await TooljetDbModule.register(configs),

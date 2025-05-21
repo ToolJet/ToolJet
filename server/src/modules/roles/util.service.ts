@@ -14,14 +14,12 @@ import { ERROR_HANDLER } from '@modules/group-permissions/constants/error';
 import { RolesRepository } from './repository';
 import { AddUserRoleObject } from '@modules/group-permissions/types';
 import { IRolesUtilService } from './interfaces/IUtilService';
-import { LicenseUserService } from '@modules/licensing/services/user.service';
 
 @Injectable()
 export class RolesUtilService implements IRolesUtilService {
   constructor(
     protected groupPermissionsRepository: GroupPermissionsRepository,
-    protected roleRepository: RolesRepository,
-    protected licenseUserService: LicenseUserService
+    protected roleRepository: RolesRepository
   ) {}
 
   async changeEndUserToEditor(
@@ -195,23 +193,5 @@ export class RolesUtilService implements IRolesUtilService {
       ).length;
       return isBuilderLevelAppsPermission || isBuilderLevelDataSourcePermissions;
     }, manager);
-  }
-
-  async updateUserRole(organizationId: string, editRoleDto: EditUserRoleDto) {
-    const { userId, newRole } = editRoleDto;
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      const userRole = await this.roleRepository.getUserRole(userId, organizationId, manager);
-      if (_.isEmpty(userRole)) {
-        throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
-      }
-
-      if (userRole.name == newRole) {
-        throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
-      }
-      editRoleDto.currentRole = userRole;
-      await this.editDefaultGroupUserRole(organizationId, editRoleDto, manager);
-
-      await this.licenseUserService.validateUser(manager);
-    });
   }
 }

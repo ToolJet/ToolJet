@@ -123,7 +123,7 @@ describe("App Version", () => {
     releasedVersionAndVerify("v2");
   });
 
-  it.only("should verify version management with components and queries", () => {
+  it("should verify version management with components and queries", () => {
     // Initial setup with component and datasource
     cy.apiAddComponentToApp(
       data.appName,

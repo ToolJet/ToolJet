@@ -46,9 +46,7 @@ describe("App Export", () => {
     });
 
     it("Verify the elements of export dialog box", () => {
-        cy.window({ log: false }).then((win) => {
-            win.localStorage.setItem("walkthroughCompleted", "true");
-        });
+        cy.skipWalkthrough()
 
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
