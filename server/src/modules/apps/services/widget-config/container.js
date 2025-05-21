@@ -61,6 +61,7 @@ export const containerConfig = {
         top: 20,
         left: 1,
         height: 40,
+        width: 20,
       },
       displayName: 'ContainerText',
       properties: ['text'],
