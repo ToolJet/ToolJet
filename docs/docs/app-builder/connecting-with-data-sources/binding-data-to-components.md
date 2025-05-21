@@ -14,15 +14,10 @@ For example, you are working on a Employee Directory app where you want to show 
 
 <img className="screenshot-full img-full" style={{marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/binding.png" alt="App Builder: bininding data to components"/>
 
-Similarly, if you want to fetch the data from another component, you can use the following syntax:
-`{{components.<component-name>.<variable-name>}}` 
 
-For example, let's say you have a Dropdown component called *dropdown1* and you want to display the selected value in of the text component. You can set the value property of the Text component to 
-`{{components.dropdown1.value}}` 
+ToolJet also supports JavaScript expressions inside `{{ }}`, so you can manipulate the data on the fly. Here are a few usecases:
 
-
-ToolJet also supports JavaScript expressions inside `{{ }}`, so you can manipulate the data on the fly. Here are a few examples:
-
+## Use cases
 ### Filtering Data
 If you want to show only employees from the ‘Engineering’ department:
 
@@ -55,4 +50,4 @@ You can also chain multiple JavaScript methods for more complex transformations.
      .map(emp => emp.name.toUpperCase()) }}
 ```
 
-These dynamic expressions give you control over how data is displayed and interacted with inside your ToolJet applications.
+These expressions give you control over how data is displayed and interacted with inside your ToolJet applications.

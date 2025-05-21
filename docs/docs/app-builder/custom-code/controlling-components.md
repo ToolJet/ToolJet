@@ -3,7 +3,7 @@ id: control-components
 title: Controlling Components Using Code
 ---
 
-In ToolJet, components can be controlled using code, enabling you to build responsive UIs. This is made possible through Component-Specific Actions (CSAs), which allow you to modify a component’s properties like value, loading state, and other component properties at runtime.
+In ToolJet, components can be controlled using code, enabling you to build interactive UIs. This is made possible through Component-Specific Actions (CSAs), which allow you to modify a component’s properties like value, loading state, and other component properties in the app.
 
 Let’s say you want to:
 - Automatically reset a form after submission.
@@ -16,14 +16,16 @@ In each of these cases, CSAs help you control components using simple JavaScript
 
 ## How It Works
 
-Each component in ToolJet comes with a set of Component-Specific Actions (CSAs) like:
+Each component in ToolJet comes with a set of Component-Specific Actions (CSAs) as follows:
 - setValue(): Set or update a component’s value.
 - clear(): Clear the value of an input.
 - setLoading(): Set or unset the loading state of a component.
 - setDisable(true/false): Enable/disable a component.
 - setVisibility(true/false): Dynamically control visibility.
 
-You can trigger these actions from within your app by writing JavaScript code. For example, if you have a button that triggers an API call or if there is any async operation logic in your code and you may want to show loading on the button until the async operation completes. In such scenarios, you could use `setLoading()` to show a spinner. You can use this code snippet as follows:
+You can trigger these actions from within your app by writing JavaScript code. 
+
+For example, if you have a button that triggers an API call and want to show a loader till the time data is loaded. You could use `setLoading()` to show a spinner. You can use this code snippet as follows:
 
 ```js
 await components.button1.setLoading(true)
@@ -31,7 +33,7 @@ await components.button1.setLoading(true)
 
 ## Use Cases
 
-1. Pre-fill a form field based on user selection
+### Pre-fill a form field based on user selection
 
 When a user selects a product from a dropdown, automatically set the price in a text input:
 
@@ -39,7 +41,7 @@ When a user selects a product from a dropdown, automatically set the price in a 
 await components.textInput1.setValue(components.dropdown1.value)
 ```
 
-2. Clear fields after submitting a form:
+### Clear fields after submitting a form:
 
 After a user submits a form, reset all inputs:
 
@@ -48,7 +50,7 @@ await components.nameInput.clear()
 await components.emailInput.clear()
 await components.commentsInput.clear()
 ```
-3. Close the modal after form submission:
+### Close the modal after form submission:
 
 If you are using a modal for collecting data, close it once the form has been submitted successfully:
 

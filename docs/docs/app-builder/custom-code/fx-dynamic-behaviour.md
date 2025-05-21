@@ -3,7 +3,7 @@ title: Fx for dynamic behaviour
 id: fx-dynamic-behaviour
 ---
 
-In ToolJet, you can make your applications more interactive and responsive by writing logic directly into component properties using the built-in fx editor. This allows components to react automatically to user input and changes in data.
+In ToolJet, you can make your applications more interactive by writing logic directly into component properties using the built-in fx editor. This allows components to react automatically to user input and changes in data.
 
 For instance, you might want to disable a submit button until all required form fields are filled, or change the color of an input field based on whether the entered value is valid. You can define the behavior using JavaScript expressions in the fx editor.
 
@@ -22,12 +22,14 @@ This expression disables the button when the form is invalid, no manual toggling
 
 ## Common Use Cases
 
-**Loading States**: Display loading indicators while waiting for asynchronous operations like API calls.
+### Loading States
+
+Display loading indicators while waiting for asynchronous operations like API calls.
 
 Example: In an app where you are loading data in the table component, you might want to show a loading spinner in the table component while fetching employee data.
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/loading.png" alt=" button disable "/>
 
-**Dynamic Styling**: Apply conditional styling (colors, fonts, sizes) based on values from queries or application state.
+**Conditional Styling**: Apply conditional styling (colors, fonts, sizes) based on values from queries or application state.
 
 Example: In an app like a employee directory with a user list, you can display different text colors based on whether the user is active or inactive.
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/style.png" alt=" button disable "/>
