@@ -1,0 +1,108 @@
+.column-mapping-modal-header {
+    background-color: var(--primary-white) !important;
+    border-bottom: 1px solid var(--border-medium, rgba(106, 114, 124, 0.26));
+
+}
+
+.column-mapping-modal-body {
+    background: var(--page-page-default, #F6F8FA);
+    box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0px 8px 16px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
+
+    .column-mapping-modal-body-content {
+        background-color: var(--primary-white) !important;
+        border-radius: 8px;
+
+        .header-row {
+            height: 36px;
+
+            .header-column {
+                height: 16px;
+
+                span {
+                    vertical-align: top;
+                }
+
+                button[role="checkbox"] {
+                    margin-top: 0px;
+                }
+
+                .editable-icon svg {
+                    vertical-align: initial;
+                }
+            }
+
+        }
+
+        .name-column {
+            width: 230px;
+            margin-right: 6px;
+            padding-left: 8px;
+        }
+
+        .arrow-column {
+            width: 40px
+        }
+
+        .mapped-column {
+            width: 160px;
+            padding: 0px 10px;
+        }
+
+        .type-column {
+            width: 76px;
+            padding: 0px 10px;
+
+            &.rows {
+                width: 160px;
+            }
+        }
+
+        .mandatory-column {
+            width: 84px;
+            margin-left: 8px;
+
+            &.rows {
+                width: 16px;
+            }
+        }
+
+
+        .column-mapping-row {
+            height: 40px;
+            color: var(--text-default, #1B1F24);
+            border-bottom: 1px solid var(--border-weak, #E4E7EB);
+
+            span.base-regular {
+                color: var(--text-default, #1B1F24);
+            }
+
+            &:last-child {
+                border-bottom-left-radius: 6px;
+                border-bottom-right-radius: 6px;
+            }
+
+            .data-type {
+                color: var(--text-placeholder, #6A727C);
+                font-family: monospace;
+                font-size: 11px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 16px;
+            }
+
+            .hide-border {
+
+                button[role="combobox"],
+                input[type="text"] {
+                    border-color: transparent;
+                    border-radius: 6px;
+
+                    &:hover {
+                        border-color: var(--border-strong, #ACB2B9);
+                    }
+                }
+            }
+        }
+
+    }
+}
