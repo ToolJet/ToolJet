@@ -1218,7 +1218,9 @@ jobs:
 
   render-bot-check-deployment:
     runs-on: ubuntu-latest
-    if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
+    if: |
+      (github.event_name == 'issue_comment' && github.event.comment.body == '/render-check-deployment') ||
+      (github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment')
     steps:
       - name: Get PR labels
         id: get_labels
