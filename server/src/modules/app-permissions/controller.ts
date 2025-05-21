@@ -8,7 +8,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { CreatePagePermissionDto, CreateQueryPermissionDto } from './dto';
+import { CreatePermissionDto } from './dto';
 
 @InitModule(MODULES.APP_PERMISSIONS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
@@ -53,7 +53,7 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('pageId') pageId: string,
-    @Body() body: CreatePagePermissionDto,
+    @Body() body: CreatePermissionDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();
@@ -65,7 +65,7 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('pageId') pageId: string,
-    @Body() body: CreatePagePermissionDto,
+    @Body() body: CreatePermissionDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();
@@ -99,7 +99,7 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('queryId') queryId: string,
-    @Body() body: CreateQueryPermissionDto,
+    @Body() body: CreatePermissionDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();
@@ -111,7 +111,7 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('queryId') queryId: string,
-    @Body() body: CreateQueryPermissionDto,
+    @Body() body: CreatePermissionDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();

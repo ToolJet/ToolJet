@@ -1,5 +1,5 @@
 import { User } from '@entities/user.entity';
-import { CreatePagePermissionDto } from '../dto';
+import { CreatePermissionDto } from '../dto';
 import { PERMISSION_ENTITY_TYPE } from '../constants';
 
 export interface IAppPermissionsService {
@@ -7,17 +7,17 @@ export interface IAppPermissionsService {
 
   fetchUserGroups(appId: string, user: User): Promise<any>;
 
-  fetchAppPermissions(type: PERMISSION_ENTITY_TYPE, pageId: string): Promise<any>;
+  fetchAppPermissions(type: PERMISSION_ENTITY_TYPE, id: string): Promise<any>;
 
-  createAppPermissions(type: PERMISSION_ENTITY_TYPE, pageId: string, body: CreatePagePermissionDto): Promise<any>;
+  createAppPermissions(type: PERMISSION_ENTITY_TYPE, id: string, body: CreatePermissionDto): Promise<any>;
 
   updateAppPermissions(
     type: PERMISSION_ENTITY_TYPE,
     appId: string,
-    pageId: string,
-    body: CreatePagePermissionDto,
+    id: string,
+    body: CreatePermissionDto,
     user: User
   ): Promise<any>;
 
-  deleteAppPermissions(type: PERMISSION_ENTITY_TYPE, pageId: string): Promise<any>;
+  deleteAppPermissions(type: PERMISSION_ENTITY_TYPE, id: string): Promise<any>;
 }
