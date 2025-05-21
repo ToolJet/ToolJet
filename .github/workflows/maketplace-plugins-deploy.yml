@@ -52,24 +52,41 @@ jobs:
           cd marketplace && npm install && npm run build --workspaces
         continue-on-error: true
 
-      - name: Build marketplace plugins 
+      - name: Build marketplace plugins
         run: |
-          cd marketplace && AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js
+          cd marketplace
+          AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js | tee scripts/upload-to-s3.log
+
+      - name: Extract upload summary from logs
+        run: |
+          grep -A 5 'UPLOAD SUMMARY' marketplace/scripts/upload-to-s3.log > upload_summary.txt || echo 'Upload summary not found.' > upload_summary.txt
 
       - name: Comment on success
         if: success()
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('upload_summary.txt', 'utf8');
             const runId = process.env.GITHUB_RUN_ID;
             const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
-            
-            github.rest.issues.createComment({
+
+            const body = [
+              'Marketplace Plugin added to stage bucket \ud83d\ude80',
+              '',
+              '### \ud83d\udce6 Upload Summary',
+              '```',
+              summary.trim(),
+              '```',
+              `\ud83d\udd17 [View Full GitHub Actions Logs](${runUrl})`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `Marketplace Plugin added to stage bucket\n\n🔍 [View Deployment Logs & Summary](${runUrl})`
+              body
             });
 
       - name: Label update on success
@@ -83,9 +100,9 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 name: 'deploy-marketplace-plugin'
-              })
+              });
             } catch (e) {
-              console.log(e)
+              console.log(e);
             }
 
             await github.rest.issues.addLabels({
@@ -93,7 +110,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['marketplace-plugin-deployed']
-            })
+            });
 
       - name: Comment on failure
         if: failure()
@@ -108,5 +125,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `❌ Marketplace Plugin deployment failed.\n\n🔍 [View Deployment Logs & Summary](${runUrl})`
+              body: `\u274c Marketplace Plugin deployment failed.\n\n\ud83d\udd0d [View Deployment Logs & Summary](${runUrl})`
             });
