@@ -18,6 +18,8 @@ const DraggableHeader = ({ header, darkMode, id }) => {
 
   const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
+  const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
+  const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
 
   const getResolvedValue = useStore.getState().getResolvedValue;
 
@@ -32,6 +34,8 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     whiteSpace: 'nowrap',
     width: header.column.getSize(),
     zIndex: isDragging ? 1 : 0,
+    backgroundColor: columnBackgroundColor,
+    color: columnTitleColor,
   };
 
   return (

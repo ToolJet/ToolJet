@@ -109,6 +109,9 @@ export const createInitSlice = (set, get) => ({
           maxRowHeightValue = 80,
           columnHeaderWrap = 'fixed',
           headerCasing = 'uppercase',
+          containerBackgroundColor = '#fff',
+          columnTitleColor = '#6A727C',
+          columnBackgroundColor = '#F6F8FA',
         } = styles;
 
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
@@ -123,6 +126,9 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.maxRowHeightValue = maxRowHeightValue;
         state.components[id].styles.columnHeaderWrap = columnHeaderWrap;
         state.components[id].styles.headerCasing = headerCasing;
+        state.components[id].styles.containerBackgroundColor = containerBackgroundColor;
+        state.components[id].styles.columnTitleColor = columnTitleColor;
+        state.components[id].styles.columnBackgroundColor = columnBackgroundColor;
       },
       false,
       { type: 'setStyles', payload: { id, styles } }

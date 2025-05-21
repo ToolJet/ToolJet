@@ -292,22 +292,19 @@ export const tableConfig = {
     onTableDataDownload: { displayName: 'Download data' },
   },
   styles: {
-    textColor: {
+    columnTitleColor: {
       type: 'colorSwatches',
-      displayName: 'Text Color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#000',
-      },
-      accordian: 'Data',
+      displayName: 'Column title',
+      validation: { schema: { type: 'string' }, defaultValue: '#6A727C' },
+      accordian: 'Column Header',
     },
     columnHeaderWrap: {
       type: 'switch',
-      displayName: 'Column header',
+      displayName: 'Overflow',
       validation: { schema: { type: 'string' } },
-      accordian: 'Data',
+      accordian: 'Column Header',
       options: [
-        { displayName: 'Fixed', value: 'fixed' },
+        { displayName: 'None', value: 'fixed' },
         { displayName: 'Wrap', value: 'wrap' },
       ],
     },
@@ -315,11 +312,26 @@ export const tableConfig = {
       type: 'switch',
       displayName: 'Header casing',
       validation: { schema: { type: 'string' } },
-      accordian: 'Data',
+      accordian: 'Column Header',
       options: [
-        { displayName: 'AA', value: 'uppercase' },
         { displayName: 'As typed', value: 'none' },
+        { displayName: 'AA', value: 'uppercase' },
       ],
+    },
+    columnBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Column background',
+      validation: { schema: { type: 'string' }, defaultValue: '#F6F8FA' },
+      accordian: 'Column Header',
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#000',
+      },
+      accordian: 'Data',
     },
     tableType: {
       type: 'select',
@@ -391,11 +403,17 @@ export const tableConfig = {
     },
     actionButtonRadius: {
       type: 'numberInput',
-      displayName: 'Button radius',
+      displayName: 'Action button radius',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
       },
-      accordian: 'Action button',
+      accordian: 'Data',
+    },
+    containerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      accordian: 'Container',
     },
     borderRadius: {
       type: 'numberInput',
@@ -666,6 +684,9 @@ export const tableConfig = {
     },
     events: [],
     styles: {
+      columnTitleColor: { value: '#6A727C' },
+      columnBackgroundColor: { value: '#F6F8FA' },
+      containerBackgroundColor: { value: '#fff' },
       textColor: { value: '#000' },
       columnHeaderWrap: { value: 'fixed' },
       headerCasing: { value: 'uppercase' },
