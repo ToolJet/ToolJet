@@ -13,6 +13,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { FeatureAbilityFactory } from './ability';
+import { UserSessionRepository } from './repository';
 
 export class SessionModule {
   static async register(config: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -50,6 +51,7 @@ export class SessionModule {
         JwtStrategy,
         SessionScheduler,
         FeatureAbilityFactory,
+        UserSessionRepository,
       ],
       exports: [SessionUtilService],
     };

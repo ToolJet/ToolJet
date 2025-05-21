@@ -12,6 +12,9 @@ import {
   IsNotEmpty,
   IsDefined,
   IsObject,
+  IsBoolean,
+  IsInt,
+  Min,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
@@ -203,4 +206,35 @@ export class ImportTooljetDatabaseDto {
 
   // @IsOptional()
   // data: boolean;
+}
+
+export class GeneratePATDto {
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsUUID()
+  appId: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  sessionExpiry?: number; // In minutes
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  patExpiry?: number; // In minutes
+}
+
+export class ValidatePATSessionDto {
+  @IsUUID()
+  appId: string;
+
+  @IsString()
+  accessToken: string;
 }

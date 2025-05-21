@@ -12,7 +12,7 @@ export class AuthorizeWorkspaceGuard extends AuthGuard('jwt') {
 
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
-    if (request?.cookies['tj_auth_token']) {
+    if (request?.cookies['tj_auth_token'] || request?.cookies['tj_embed_auth_token']) {
       let user: any;
       const organizationId =
         typeof request.headers['tj-workspace-id'] === 'object'

@@ -7,7 +7,7 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
     let user;
     const request = context.switchToHttp().getRequest();
     request.isGetUserSession = true;
-    if (request?.cookies['tj_auth_token']) {
+    if (request?.cookies['tj_auth_token'] || request?.cookies['tj_embed_auth_token']) {
       try {
         user = await super.canActivate(context);
       } catch (err) {
