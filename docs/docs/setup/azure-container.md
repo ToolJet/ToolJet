@@ -25,7 +25,17 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
  </div>
 
-3. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
+3. Select "Create new environment" in `Container Apps environment` to configure the basic networking setup.
+    <img className="screenshot-full" src="/img/setup/azure-container/step3-1.png" alt="Deploying ToolJet on Azure container apps" />
+   
+4. Let's now move on to the Networking section to configure it in detail. You can retain the default settings for Workload Profiles and Monitoring configurations.
+    :::tip
+    The Container app, the PostgreSQL server, and the Redis server all should be in the same virtual network (VNet).
+    :::
+    <img className="screenshot-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
+5. Click create.
+
+6. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
  <div style={{textAlign: 'center'}}>
  
  <img className="screenshot-full" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
@@ -61,14 +71,14 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
    </div>
 
-4. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
+7. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
  <div style={{textAlign: 'center'}}>
  
  <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 
  </div>
 
-5. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
+8. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
@@ -76,7 +86,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
  </div>
 
 
-6. Once the container is deployed, you can verify its status under revision management.
+9. Once the container is deployed, you can verify its status under revision management.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
