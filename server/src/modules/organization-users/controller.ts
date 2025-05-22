@@ -90,14 +90,14 @@ export class OrganizationUsersController implements IOrganizationUsersController
     if (user.id === userId) {
       throw new NotAcceptableException('Self archive not allowed');
     }
-    await this.organizationUsersService.archiveFromAll(userId);
+    await this.organizationUsersService.archiveFromAll(userId, user);
     return;
   }
 
   @InitFeature(FEATURE_KEY.USER_UNARCHIVE_ALL)
   @Post(':userId/unarchive-all')
   async unarchiveAll(@User() user: UserEntity, @Param('userId') userId: string) {
-    await this.organizationUsersService.unarchiveUser(userId);
+    await this.organizationUsersService.unarchiveUser(userId, user);
     return;
   }
 
