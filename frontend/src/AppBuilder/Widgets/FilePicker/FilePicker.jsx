@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { formatFileSize } from '@/_helpers/utils';
@@ -62,34 +62,39 @@ const FilePicker = (props) => {
     dropzoneErrorColor,
   } = useFilePicker({ ...props, setExposedVariable, setExposedVariables });
 
-  // Set the CSS variable globally when dropzoneActiveColor, dropzoneErrorColor, dropzoneTitleColor, or the container style props change
+  const rootRef = useRef(null);
+
   useEffect(() => {
+    if (!rootRef.current) return;
     if (dropzoneActiveColor) {
-      document.documentElement.style.setProperty('--file-picker-primary-brand', dropzoneActiveColor);
+      rootRef.current.style.setProperty('--file-picker-primary-brand', dropzoneActiveColor);
     }
     if (dropzoneErrorColor) {
-      document.documentElement.style.setProperty('--file-picker-error-strong', dropzoneErrorColor);
+      rootRef.current.style.setProperty('--file-picker-error-strong', dropzoneErrorColor);
     }
     if (dropzoneTitleColor) {
-      document.documentElement.style.setProperty('--file-picker-text-primary', dropzoneTitleColor);
+      rootRef.current.style.setProperty('--file-picker-text-primary', dropzoneTitleColor);
     }
     if (borderRadius !== undefined) {
-      document.documentElement.style.setProperty(
+      rootRef.current.style.setProperty(
         '--file-picker-border-radius',
         typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius
       );
     }
     if (containerBackgroundColor) {
-      document.documentElement.style.setProperty('--file-picker-background-color', containerBackgroundColor);
+      rootRef.current.style.setProperty('--file-picker-background-color', containerBackgroundColor);
     }
     if (containerBorder) {
-      document.documentElement.style.setProperty('--file-picker-border', containerBorder);
+      rootRef.current.style.setProperty('--file-picker-border', containerBorder);
     }
     if (containerBoxShadow) {
-      document.documentElement.style.setProperty('--file-picker-box-shadow', containerBoxShadow);
+      rootRef.current.style.setProperty('--file-picker-box-shadow', containerBoxShadow);
     }
     if (containerPadding !== undefined) {
-      document.documentElement.style.setProperty('--file-picker-padding', `${Number.parseInt(containerPadding, 10)}px`);
+      rootRef.current.style.setProperty(
+        '--file-picker-padding',
+        typeof containerPadding === 'number' ? `${containerPadding}px` : containerPadding
+      );
     }
   }, [
     dropzoneActiveColor,
@@ -163,7 +168,7 @@ const FilePicker = (props) => {
   });
 
   return (
-    <div className="file-picker-widget-wrapper" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
+    <div ref={rootRef} className="file-picker-widget-wrapper" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
       {isLoading ? (
         <div className="p-2 tw-flex tw-items-center tw-justify-center h-full">
           <div className="spinner-border" role="status" />
