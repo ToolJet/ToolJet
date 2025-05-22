@@ -242,9 +242,9 @@ export const filepickerConfig = {
       accordian: 'Container',
     },
     containerBorder: {
-      type: 'code',
+      type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+      validation: { schema: { type: 'string' }, defaultValue: 'transparent' },
       accordian: 'Container',
     },
     borderRadius: {
@@ -297,10 +297,10 @@ export const filepickerConfig = {
     events: [],
     styles: {
       borderRadius: { value: '{{6}}' },
-      dropzoneTitleColor: { value: '#333333' },
-      dropzoneActiveColor: { value: 'var(--primary-brand)' },
-      dropzoneErrorColor: { value: 'var(--status-error)' },
-      containerBackgroundColor: { value: 'var(--surface-layer1)' },
+      dropzoneTitleColor: { value: 'var(--cc-primary-text)' },
+      dropzoneActiveColor: { value: 'var(--cc-primary-brand)' },
+      dropzoneErrorColor: { value: 'var(--cc-status-systemStatus)' },
+      containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBorder: { value: 'none' },
       containerBoxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
       containerPadding: { value: '16px' },

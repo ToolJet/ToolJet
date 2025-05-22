@@ -47,8 +47,8 @@ export const useFilePicker = ({
   const borderRadius = styles?.borderRadius ?? 8;
 
   const dropzoneTitleColor = styles?.dropzoneTitleColor ?? 'var(--text-primary';
-  const dropzoneActiveColor = styles?.dropzoneActiveColor ?? 'var(--file-picker-primary-brand)';
-  const dropzoneErrorColor = styles?.dropzoneErrorColor ?? 'var(--status-error)';
+  const dropzoneActiveColor = styles?.dropzoneActiveColor ?? 'var(--primary-brand)';
+  const dropzoneErrorColor = styles?.dropzoneErrorColor ?? 'var(--status-error-strong)';
   // --- Use useExposeState Hook ---
   const { isDisabled, isVisible, isLoading } = useExposeState(
     initialLoading,
@@ -215,7 +215,7 @@ export const useFilePicker = ({
       if (!enableMultiple && selectedFiles.length >= 1) {
         return {
           code: 'max-files-exceeded',
-          message: `Only one file can be uploaded.`,
+          message: 'Only one file can be uploaded.',
         };
       }
 
