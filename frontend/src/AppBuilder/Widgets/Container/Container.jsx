@@ -67,7 +67,6 @@ export const Container = ({
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
     ...headerBgColor,
   };
-
   const containerContentStyles = {
     overflow: 'hidden auto',
     display: 'flex',

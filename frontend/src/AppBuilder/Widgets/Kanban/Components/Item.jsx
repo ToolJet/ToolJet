@@ -81,7 +81,6 @@ export const Item = React.memo(
           >
             <div className="subcontainer-container" onMouseDown={(e) => e.stopPropagation()}>
               <SubContainer
-                parentComponent={component}
                 canvasWidth={Number(cardWidth) || 300}
                 canvasHeight={Number(cardHeight) || 100}
                 id={id}
@@ -90,11 +89,7 @@ export const Item = React.memo(
                   backgroundColor: 'var(--base)',
                 }}
                 darkMode={darkMode}
-                // parentName={component.name}
-                // customResolvables={{ cardData: cardDataAsObj[value] }}
-                // {...containerProps}
-                // readOnly={isDragActive || !isFirstItem}
-                // parentRef={parentRef}
+                componentType="Kanban"
               />
             </div>
             <span className="handle-container">
