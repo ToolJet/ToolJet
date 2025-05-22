@@ -31,6 +31,10 @@ export const Footer = memo(
     const isFooterVisible = useTableStore((state) => state.getFooterVisibility(id), shallow);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
+    const containerBackgroundColor = useTableStore(
+      (state) => state.getTableStyles(id)?.containerBackgroundColor,
+      shallow
+    );
 
     const enablePagination = useTableStore((state) => state.getTableProperties(id)?.enablePagination, shallow);
     const showBulkUpdateActions = useTableStore(
@@ -73,6 +77,9 @@ export const Footer = memo(
           className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
             darkMode && 'dark-theme'
           }`}
+          style={{
+            backgroundColor: containerBackgroundColor,
+          }}
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
             <div className="col d-flex justify-content-start custom-gap-4">

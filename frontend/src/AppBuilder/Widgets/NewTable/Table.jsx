@@ -30,7 +30,10 @@ export const Table = memo(
     // get table styles
     const boxShadow = useTableStore((state) => state.getTableStyles(id)?.boxShadow, shallow);
     const borderColor = useTableStore((state) => state.getTableStyles(id)?.borderColor, shallow);
-
+    const containerBackgroundColor = useTableStore(
+      (state) => state.getTableStyles(id)?.containerBackgroundColor,
+      shallow
+    );
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
 
@@ -123,6 +126,7 @@ export const Table = memo(
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,
           borderColor,
+          backgroundColor: containerBackgroundColor,
         }}
       >
         <TableContainer

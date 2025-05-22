@@ -38,7 +38,7 @@
 
   .card-footer {
     padding: 0.75rem;
-    background-color: var(--cc-surface1-surface) !important;
+    // background-color: var(--cc-surface1-surface) !important;
   }
 
   .card-header {
@@ -300,7 +300,7 @@
 
       .table-row:hover,
       .table-row:focus {
-        background: var(--slate4, #ECEEF0) !important;
+        background: var(--cc-table-row-hover, #ECEEF0) !important;
       }
     }
 
@@ -312,12 +312,14 @@
       background: transparent;
     }
 
-    .jet-data-table:hover {
-      overflow-x: auto;
-      overflow-y: auto;
-    }
+    // .jet-data-table:hover {
+    //   overflow-x: auto;
+    //   overflow-y: auto;
+    // }
 
     .jet-data-table {
+      overflow-x: auto;
+      overflow-y: auto;
 
       .th:first-child,
       td:first-child {
@@ -329,7 +331,7 @@
         border-right: none;
       }
 
-      overflow: hidden;
+      // overflow: hidden;
 
       .form-check {
         margin-bottom: 0;
@@ -807,7 +809,7 @@
       border-top: 0 !important;
       padding: 6px 12px;
       align-items: center;
-      color: var(--text-primary) !important;
+      // color: var(--text-primary) !important;
       font-weight: 500 !important;
       font-size: 14px !important;
       width: 100%;
@@ -815,7 +817,8 @@
 
       &:hover {
 
-        background: linear-gradient(0deg, var(--surfaces-surface-02), var(--surfaces-surface-02)), linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)) !important;
+        // background: linear-gradient(0deg, var(--surfaces-surface-02), var(--surfaces-surface-02)), linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)) !important;
+        background: var(--cc-table-header-hover) !important;
       }
 
       &:focus-within {
