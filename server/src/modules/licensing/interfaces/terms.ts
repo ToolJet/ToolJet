@@ -27,7 +27,7 @@ export interface Terms {
     gitSync?: boolean;
     comments?: boolean;
     customThemes?: boolean;
-    serverSideGlobal?: boolean;
+    serverSideGlobalResolve?: boolean;
     ai?: boolean;
     externalApi?: boolean;
     appWhiteLabelling?: boolean;

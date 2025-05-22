@@ -214,7 +214,7 @@ const EditorInput = ({
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
 
-  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+  const getServerSideGlobalResolveSuggestions = useStore((state) => state.getServerSideGlobalResolveSuggestions, shallow);
 
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
@@ -224,7 +224,7 @@ const EditorInput = ({
   );
   function autoCompleteExtensionConfig(context) {
     const hintsWithoutParamHints = getSuggestions();
-    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
+    const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     let word = context.matchBefore(/\w*/);
 
