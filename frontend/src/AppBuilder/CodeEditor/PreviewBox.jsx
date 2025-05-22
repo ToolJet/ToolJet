@@ -96,7 +96,7 @@ export const PreviewBox = ({
   const [largeDataset, setLargeDataset] = useState(false);
   const globals = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
-  const globalServerConstantsRegex = /^\{\{.*globals\.server.*\}\}$/;
+  const globalServerConstantsRegex = /\{\{.*globals\.server.*\}\}/;
 
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;
@@ -249,7 +249,10 @@ const RenderResolvedValue = ({
   isServerConstant = false,
   isLargeDataset,
 }) => {
-  const isServerSideGlobalResolveEnabled = useStore((state) => !!state?.license?.featureAccess?.serverSideGlobalResolve, shallow);
+  const isServerSideGlobalResolveEnabled = useStore(
+    (state) => !!state?.license?.featureAccess?.serverSideGlobalResolve,
+    shallow
+  );
 
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
