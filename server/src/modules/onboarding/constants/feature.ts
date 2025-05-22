@@ -6,6 +6,7 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.ONBOARDING]: {
     [FEATURE_KEY.ACTIVATE_ACCOUNT]: {
       isPublic: true,
+      auditLogsKey: 'USER_SIGNUP',
     }, // Account Activation
     [FEATURE_KEY.SETUP_SUPER_ADMIN]: {
       isPublic: true,
