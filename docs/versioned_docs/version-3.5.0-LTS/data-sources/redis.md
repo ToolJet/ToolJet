@@ -11,12 +11,13 @@ ToolJet enables you to execute Redis commands on your Redis instances.
 
 To establish a connection with the Redis data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Redis as the data source.
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/connect-v2.png" alt="Redis Connection" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-l" src="/img/datasource-reference/redis/connect-v3.png" alt="Redis Connection" style={{marginBottom:'15px'}} />
 
 To connect ToolJet with Redis, you need to provide the following connection details:
 
 - **Host**: The address or hostname of the Redis server.
 - **Port**: The port number used by the Redis server (default is 6379).
+- **Database**: The Redis database index to connect (0, 1 or 2).
 - **Username**: The username used for authentication.
 - **Password**: The password used for authentication.
 - **TLS**: Toggle to enable/disable TLS connection.
