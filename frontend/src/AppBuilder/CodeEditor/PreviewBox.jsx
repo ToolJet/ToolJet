@@ -249,7 +249,7 @@ const RenderResolvedValue = ({
   isServerConstant = false,
   isLargeDataset,
 }) => {
-  const isServerSideGlobalEnabled = useStore((state) => !!state?.license?.featureAccess?.serverSideGlobal, shallow);
+  const isServerSideGlobalResolveEnabled = useStore((state) => !!state?.license?.featureAccess?.serverSideGlobalResolve, shallow);
 
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
@@ -274,7 +274,7 @@ const RenderResolvedValue = ({
     : previewType;
 
   const previewContent = isServerConstant
-    ? isServerSideGlobalEnabled
+    ? isServerSideGlobalResolveEnabled
       ? 'Server variables would be resolved at runtime'
       : 'Server variables are only available in paid plans'
     : isSecretConstant

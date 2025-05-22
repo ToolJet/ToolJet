@@ -58,7 +58,7 @@ const MultiLineCodeEditor = (props) => {
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
-  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+  const getServerSideGlobalResolveSuggestions = useStore((state) => state.getServerSideGlobalResolveSuggestions, shallow);
 
   const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
   const isInsideQueryManager = useMemo(
@@ -116,7 +116,7 @@ const MultiLineCodeEditor = (props) => {
 
     const hints = getSuggestions();
 
-    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
+    const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {
       ...hints,

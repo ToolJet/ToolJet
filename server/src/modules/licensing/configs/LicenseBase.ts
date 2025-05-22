@@ -19,7 +19,7 @@ export default class LicenseBase {
   private _isCustomStyling: boolean;
   private _isWhiteLabelling: boolean;
   private _isCustomThemes: boolean;
-  private _isServerSideGlobal: boolean;
+  private _isServerSideGlobalResolve: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
   private _isComments: boolean;
@@ -65,7 +65,7 @@ export default class LicenseBase {
       this._isCustomStyling = true;
       this._isWhiteLabelling = true;
       this._isCustomThemes = true;
-      this._isServerSideGlobal = true;
+      this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
@@ -108,7 +108,7 @@ export default class LicenseBase {
     this._isWhiteLabelling = this.getFeatureValue('whiteLabelling');
     this._isAppWhiteLabelling = this.getFeatureValue('appWhiteLabelling');
     this._isCustomThemes = this.getFeatureValue('customThemes');
-    this._isServerSideGlobal = this.getFeatureValue('serverSideGlobal');
+    this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
@@ -285,11 +285,11 @@ export default class LicenseBase {
     return this._isCustomThemes;
   }
 
-  public get serverSideGlobal(): boolean {
+  public get serverSideGlobalResolve(): boolean {
     if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobal;
+      return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobalResolve;
     }
-    return this._isServerSideGlobal;
+    return this._isServerSideGlobalResolve;
   }
   public get externalApis(): boolean {
     if (this.IsBasicPlan) {
@@ -340,7 +340,7 @@ export default class LicenseBase {
       customStyling: this.customStyling,
       whiteLabelling: this.whiteLabelling,
       customThemes: this.customThemes,
-      serverSideGlobal: this.serverSideGlobal,
+      serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       gitSync: this.gitSync,
@@ -370,7 +370,7 @@ export default class LicenseBase {
       samlEnabled: this.saml,
       customStylingEnabled: this.customStyling,
       customThemesEnabled: this.customThemes,
-      serverSideGlobalEnabled: this.serverSideGlobal,
+      serverSideGlobalResolveEnabled: this.serverSideGlobalResolve,
       multiEnvironmentEnabled: this.multiEnvironment,
       multiPlayerEditEnabled: this.multiPlayerEdit,
       commentsEnabled: this.comments,

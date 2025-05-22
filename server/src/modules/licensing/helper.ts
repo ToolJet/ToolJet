@@ -60,7 +60,7 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
       return licenseInstance.customThemes;
 
     case LICENSE_FIELD.SERVER_SIDE_GLOBAL:
-      return licenseInstance.serverSideGlobal;
+      return licenseInstance.serverSideGlobalResolve;
     case LICENSE_FIELD.EXTERNAL_API:
       return licenseInstance.externalApis;
 
