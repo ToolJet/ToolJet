@@ -415,7 +415,10 @@ img {
   padding: 2px 4px;
 }
 
-
+[data-theme='dark'] .alert.alert--info a {
+  color: #1b1f24 !important;
+  text-decoration: underline !important;
+}
 
 /* Warning Alert box */
 
