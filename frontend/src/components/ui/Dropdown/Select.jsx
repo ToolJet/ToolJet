@@ -39,7 +39,12 @@ const SelectTrigger = React.forwardRef(({ className, children, open, size, ...pr
     >
       <div className="tw-flex tw-items-center tw-gap-[6px]">
         {props.leadingIcon && (
-          <LeadingIcon avatarSrc={props.avatarSrc} avatarAlt={props.avatarAlt} avatarFall={props.avatarFall} />
+          <LeadingIcon
+            icon={props.leadingIcon}
+            avatarSrc={props.avatarSrc}
+            avatarAlt={props.avatarAlt}
+            avatarFall={props.avatarFall}
+          />
         )}
         <div
           className={`${
@@ -113,7 +118,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'tw-relative tw-flex tw-w-full tw-h-[30px] tw-items-center tw-rounded-[6px] tw-py-[6px] tw-pl-[30px] tw-pr-[8px] tw-text-[12px]/[18px] tw-font-normal tw-text-text-default tw-outline-none focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-interactive-focus-outline hover:tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/35 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-text-text-placeholder [&>span]:tw-w-[50px] [&>span]:tw-text-left [&>span]:tw-line-clamp-1',
+      'tw-relative tw-flex tw-w-full tw-h-[30px] tw-items-center tw-rounded-[6px] tw-py-[6px] tw-pl-[30px] tw-pr-[8px] tw-text-[12px]/[18px] tw-font-normal tw-text-text-default tw-outline-none focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-interactive-focus-outline hover:tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/35 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-text-text-placeholder [&>span]:tw-w-[100px] [&>span]:tw-text-left [&>span]:tw-line-clamp-1',
       className
     )}
     {...props}
@@ -125,6 +130,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
     </div>
     {props.leadingIcon && (
       <LeadingIcon
+        icon={props.leadingIcon}
         avatarSrc={props.avatarSrc}
         avatarAlt={props.avatarAlt}
         avatarFall={props.avatarFall}

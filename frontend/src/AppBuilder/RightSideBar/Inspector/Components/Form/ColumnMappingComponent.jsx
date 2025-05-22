@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import Checkbox from '@/components/ui/Checkbox/Index';
 import { cn } from '@/lib/utils';
@@ -6,6 +6,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Input from '@/components/ui/Input/Index';
+import { getInputTypeOptions } from './utils';
 
 const ColumnMappingRow = ({
   column, // column now contains both database info and form config
@@ -15,23 +16,11 @@ const ColumnMappingRow = ({
   isChecked,
   mode = 'mapping',
   index,
+  darkMode = false,
 }) => {
-  const dataTypes = {
-    varchar: { icon: 'Text', label: 'Text input' },
-    date: { icon: 'Calendar', label: 'Date picker' },
-    datetime: { icon: 'Clock', label: 'Date picker' },
-    timestamp: { icon: 'Clock', label: 'Date picker' },
-    number: { icon: 'Number', label: 'Number input' },
-  };
+  if (!column) return null;
 
-  const inputTypeOptions = {
-    'Text input': { value: 'text', icon: 'Text' },
-    'Number input': { value: 'number', icon: 'Number' },
-    'Date picker': { value: 'date', icon: 'Calendar' },
-    Checkbox: { value: 'checkbox', icon: 'Checkbox' },
-    Dropdown: { value: 'dropdown', icon: 'Dropdown' },
-    Multiselect: { value: 'multiselect', icon: 'List' },
-  };
+  const inputTypeOptions = getInputTypeOptions(darkMode);
 
   const handleLabelChange = (e) => {
     onChange?.({
@@ -50,7 +39,7 @@ const ColumnMappingRow = ({
   const handleInputTypeChange = (value) => {
     onChange?.({
       ...column,
-      inputType: value,
+      component: value,
     });
   };
 
@@ -79,8 +68,9 @@ const ColumnMappingRow = ({
           name={`dropdown-${index}`}
           id={`dropdown-${index}`}
           size="small"
-          zIndex={1061}
-          value={column.inputType}
+          zIndex={9999}
+          value={column.component || 'TextComponent'}
+          leadingIcon={inputTypeOptions[column.component || 'TextComponent'].leadingIcon}
           onChange={handleInputTypeChange}
           width="140px"
         />
@@ -116,16 +106,11 @@ const ColumnMappingComponent = ({
   title,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [mappedColumns, setMappedColumns] = useState(columns);
 
-  const [mappedColumns, setMappedColumns] = useState(
-    columns.map((col) => ({
-      ...col,
-      inputType: 'text',
-      mandatory: false,
-      label: 'Input value',
-      selected: false,
-    }))
-  );
+  useEffect(() => {
+    setMappedColumns(columns);
+  }, [columns]);
 
   // Compute states from mappedColumns
   const isAllSelected = mappedColumns.every((col) => col.selected);

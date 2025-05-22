@@ -120,6 +120,23 @@ export const formConfig = {
       },
       section: 'data',
       showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    queryJsonData: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'rawJson',
+      },
+      section: 'data',
+      showLabel: false,
+      isHidden: true,
+      validation: {
+        schema: { type: 'object' },
+      },
     },
     validateOnSubmit: {
       type: 'toggle',
@@ -306,6 +323,10 @@ export const formConfig = {
       footerHeight: { value: 60 },
       validateOnSubmit: { value: '{{true}}' },
       resetOnSubmit: { value: '{{true}}' },
+      rawJsonData: {
+        value:
+          "{{{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }}}",
+      },
     },
     events: [],
     styles: {

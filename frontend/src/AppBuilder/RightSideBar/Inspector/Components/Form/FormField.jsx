@@ -6,9 +6,9 @@ import WidgetIcon from '@/../assets/images/icons/widgets';
 import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
 
-export const FormField = ({ name, type, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
+export const FormField = ({ name, component, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
   const [showPopover, setShowPopover] = useState(false);
-  const [fieldData, setFieldData] = useState({ name, type });
+  const [fieldData, setFieldData] = useState({ name, component });
   const { handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
 
   // Close main popover when another field's menu opens

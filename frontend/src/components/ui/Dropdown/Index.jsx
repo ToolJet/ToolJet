@@ -41,6 +41,7 @@ const DropdownComponent = ({ options = {}, ...props }) => {
               <SelectItem
                 {...props}
                 value={options[key].value}
+                leadingIcon={options[key].leadingIcon}
                 avatarSrc={options[key].avatarSrc}
                 avatarAlt={options[key].avatarAlt}
                 avatarFall={options[key].avatarFall}
