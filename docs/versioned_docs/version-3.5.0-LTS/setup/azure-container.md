@@ -17,26 +17,25 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 
 ## Deploying ToolJet application
 
-1. Open the Azure dashboard at https://portal.azure.com, navigate to Container Apps, and click on "Create container app".
+1. Open the [Azure dashboard](https://portal.azure.com) and navigate to Container Apps, then click on **Create container app**.
     <img className="screenshot-full" src="/img/setup/azure-container/step1.png" alt="Deploying ToolJet on Azure container apps" />
 
-2. Select the appropriate subscription and provide basic details such as the container name.
+2. Select the appropriate subscription and provide basic details such as the container name and then click on the **Create new environment** button below "Container Apps environment" to configure the networking setup.
     <img className="screenshot-full" src="/img/setup/azure-container/step2.png" alt="Deploying ToolJet on Azure container apps" />
 
-3. Select "Create new environment" in `Container Apps environment` to configure the basic networking setup.
+3. Configure the basic settings as shown in the screenshot below.
     <img className="screenshot-full" src="/img/setup/azure-container/step3-1.png" alt="Deploying ToolJet on Azure container apps" />
    
-4. Let's now move on to the Networking section to configure it in detail. You can retain the default settings for Workload Profiles and Monitoring configurations.
+4. Move to the "Networking" tab for the detailed configuration as shown in the screenshot. You can retain the default settings for Workload Profiles and Monitoring configurations.
     :::tip
     The Container app, the PostgreSQL server, and the Redis server all should be in the same virtual network (VNet).
     :::
     <img className="screenshot-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
-5. Click create.
 
-6. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
+5. Click on the **Create** button at the bottom of the page.
+
+6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
     <img className="screenshot-full img-m" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
-    - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
-    - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
 7. Under environmental variables, please add the below ToolJet application variables:
     ```env
@@ -60,15 +59,15 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 
 ## ToolJet Database
 
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+You can use the ToolJet-hosted **ToolJet Database** to build apps faster, and manage your data with ease. Refer to the [ToolJet Database](/docs/tooljet-db/tooljet-database) guide for more information.
 
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+Note: **Deploying ToolJet Database is mandatory from ToolJet 3.0** or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 
 - [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
 #### Setting Up ToolJet Database
 
-To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
+You will need to configure the following environment variables to setup ToolJet Database:
 
 ```env
 TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
@@ -84,13 +83,6 @@ Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniq
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
-   :::tip
-    If you have openssl installed, you can run the 
-    command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
-
-If this parameter is not specified, PostgREST will refuse authentication requests.
-:::
-
 ```env
  PGRST_HOST=localhost:3001
  PGRST_LOG_LEVEL=info
@@ -99,6 +91,13 @@ If this parameter is not specified, PostgREST will refuse authentication request
  PGRST_DB_URI=
  PGRST_JWT_SECRET=
 ```
+
+:::tip
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified, PostgREST will refuse authentication requests.
+:::
 
 The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
 
@@ -114,10 +113,10 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
 
 <img className="screenshot-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
-8. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
+8. In the Ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
     <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 
-9. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
+9. Move to Review + create tab and wait for the template to be verified and passed, as shown in the screenshot below.
     <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
 10. Once the container is deployed, you can verify its status under revision management.
