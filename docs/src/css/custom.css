@@ -65,7 +65,7 @@
 
 
 [data-theme='dark'] .theme-doc-markdown a:not(.home-page a) {
-  color: #3e63dd;
+  color: white;
 }
 
 
@@ -434,6 +434,10 @@ img {
   padding: 2px 4px;
 }
 
+[data-theme='dark'] .alert.alert--warning a {
+  color: #000000 !important;
+  text-decoration: underline !important;
+}
 
 /* Tip Alert box */
 
