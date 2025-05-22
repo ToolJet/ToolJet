@@ -92,6 +92,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'ModalV2',
   'Link',
   'Steps',
+  'FilePicker',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
