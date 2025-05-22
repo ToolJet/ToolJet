@@ -8,11 +8,7 @@ export const editVersionText = {
 
 export const deleteVersionText = {
   deleteModalText: (text) => {
-    // return `Are you sure you want to delete this version - ${cyParamName(
-    //   text
-    // )}?`;
-
-    return `Deleting a version will permanently remove it from all environments.Are you sure you want to delete this version - ${cyParamName(
+    return `Are you sure you want to delete this version - ${cyParamName(
       text
     )}?`;
   },

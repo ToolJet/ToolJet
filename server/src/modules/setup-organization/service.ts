@@ -4,12 +4,13 @@ import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { SetupOrganizationsUtilService } from './util.service';
 import { ISetupOrganizationsService } from './interfaces/IService';
+import { OrganizationInputs } from './types/organization-inputs';
 
 @Injectable()
 export class SetupOrganizationsService implements ISetupOrganizationsService {
   constructor(protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService) {}
 
-  async create(name: string, slug: string, user?: User, manager?: EntityManager): Promise<Organization> {
-    return this.setupOrganizationsUtilService.create(name, slug, user, manager);
+  async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
+    return this.setupOrganizationsUtilService.create(organizationInputs, user, manager);
   }
 }

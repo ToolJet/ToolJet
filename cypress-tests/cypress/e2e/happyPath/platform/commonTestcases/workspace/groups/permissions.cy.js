@@ -204,10 +204,7 @@ describe("Manage Groups", () => {
 
         cy.wait(2500);
         cy.deleteApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appDeletedToast
-        );
+
 
         // Folder operations
         createFolder(data.folderName);

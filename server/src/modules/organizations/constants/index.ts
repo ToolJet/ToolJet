@@ -26,4 +26,5 @@ export enum FEATURE_KEY {
   CHECK_UNIQUE = 'check_unique',
   CREATE = 'create',
   CHECK_UNIQUE_ONBOARDING = 'check_unique_onboarding',
+  SET_DEFAULT = 'set_default',
 }

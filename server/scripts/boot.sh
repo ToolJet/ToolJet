@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-service postgresql start
-
 echo "
    _____           _   ___      _
   |_   _|         | | |_  |    | |
@@ -15,6 +13,7 @@ Everything you need to build internal tools!
 GitHub: https://github.com/ToolJet/ToolJet
 "
 
+# Run setup
 npm run db:setup:prod
-npm run db:seed:prod
-npm run start:prod
+# Start ToolJet
+exec npm run start:prod

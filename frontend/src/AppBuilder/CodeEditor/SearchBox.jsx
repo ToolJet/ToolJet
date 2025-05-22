@@ -9,7 +9,6 @@ import {
   findPrevious,
   replaceNext,
   replaceAll,
-  openSearchPanel,
 } from '@codemirror/search';
 import './SearchBox.scss';
 import InputComponent from '@/components/ui/Input/Index.jsx';
@@ -162,22 +161,3 @@ function SearchPanel({ view }) {
     </div>
   );
 }
-
-export const SearchBtn = ({ view }) => {
-  return (
-    <div
-      className="d-flex justify-content-end w-100 position-absolute tw-pt-[3px] tw-pr-[4px] codehinter-search-btn-wrapper"
-      style={{ top: 0 }}
-    >
-      <ButtonComponent
-        iconOnly
-        trailingIcon="search01"
-        size="small"
-        variant="outline"
-        ariaLabel="Open search panel"
-        className="codehinter-search-btn"
-        onClick={() => openSearchPanel(view)}
-      />
-    </div>
-  );
-};

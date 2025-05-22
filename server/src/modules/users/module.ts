@@ -16,6 +16,7 @@ export class UsersModule {
       imports: [await SessionModule.register(configs)],
       controllers: [UsersController],
       providers: [UsersService, UserRepository, UsersUtilService, FeatureAbilityFactory],
+      exports: [UsersUtilService],
     };
   }
 }

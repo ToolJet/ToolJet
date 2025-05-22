@@ -368,8 +368,8 @@ export class SessionUtilService {
   async #onboardingFlags(user: User) {
     let isFirstUserOnboardingCompleted = true;
     let isOnboardingCompleted = true;
-    const isOnboardingQuestionsEnabled =
-      this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true';
+    // const isOnboardingQuestionsEnabled =
+    //   this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true';
 
     const instanceUsersCount = await this.userRepository.count({
       where: { status: USER_STATUS.ACTIVE },
@@ -383,14 +383,14 @@ export class SessionUtilService {
     }
 
     /* Signed up user check */
-    if (
-      instanceUsersCount > 1 &&
-      isOnboardingQuestionsEnabled &&
-      user.onboardingStatus !== OnboardingStatus.ONBOARDING_COMPLETED
-    ) {
-      /* Signed up user went through onboarding flow, didn't complete */
-      isOnboardingCompleted = false;
-    }
+    // if (
+    //   instanceUsersCount > 1 &&
+    //   isOnboardingQuestionsEnabled &&
+    //   user.onboardingStatus !== OnboardingStatus.ONBOARDING_COMPLETED
+    // ) {
+    //   /* Signed up user went through onboarding flow, didn't complete */
+    //   isOnboardingCompleted = false;
+    // }
 
     return { isFirstUserOnboardingCompleted, isOnboardingCompleted };
   }

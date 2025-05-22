@@ -4,9 +4,9 @@ function usePopoverObserver(containerRef, triggerRef, popoverRef, show, onShow, 
   const prevShow = useRef(false);
 
   // Check if it is a ref or a DOM element
-  const container = containerRef?.current ? containerRef.current : containerRef;
-  const trigger = triggerRef?.current ? triggerRef.current : triggerRef;
-  const popover = popoverRef?.current ? popoverRef.current : popoverRef;
+  const container = containerRef?.current !== undefined ? containerRef.current : containerRef;
+  const trigger = triggerRef?.current !== undefined ? triggerRef.current : triggerRef;
+  const popover = popoverRef?.current !== undefined ? popoverRef.current : popoverRef;
 
   useEffect(() => {
     if (!container || !trigger) return;

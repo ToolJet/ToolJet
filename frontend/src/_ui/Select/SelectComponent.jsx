@@ -24,6 +24,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     isDisabled = false,
     borderRadius,
     openMenuOnFocus = false,
+    customClassPrefix = '',
   } = restProps;
 
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
@@ -74,7 +75,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
-      classNamePrefix={`${isDarkMode && 'dark-theme'} ${'react-select'}`}
+      classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
     />
   );
 };
