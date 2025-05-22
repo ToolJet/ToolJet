@@ -36,7 +36,7 @@ export const verticalDividerConfig = {
       displayName: 'Divider color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-default-border)',
       },
       accordian: 'Divider',
     },
@@ -90,7 +90,7 @@ export const verticalDividerConfig = {
     },
     events: [],
     styles: {
-      dividerColor: { value: '#CCD1D5' },
+      dividerColor: { value: 'var(--cc-default-border)' },
       dividerStyle: { value: 'solid' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

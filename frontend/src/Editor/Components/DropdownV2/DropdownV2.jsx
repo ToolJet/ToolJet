@@ -366,8 +366,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -403,13 +403,13 @@ export const DropdownV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
+      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--cc-surface1-surface)',
       color:
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+          ? 'var(--cc-disabled-text)'
+          : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
       '&:hover': {
@@ -428,7 +428,7 @@ export const DropdownV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: 'var(--cc-surface1-surface)',
     }),
     menu: (provided) => ({
       ...provided,
@@ -445,8 +445,8 @@ export const DropdownV2 = ({
         data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) ||
-              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',

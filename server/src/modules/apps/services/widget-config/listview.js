@@ -49,8 +49,12 @@ export const listviewConfig = {
     data: {
       type: 'code',
       displayName: 'List data',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'array', element: { type: 'object' } },{ type: 'array', element: { type: 'string' } }] },
+      schema: {
+        type: 'union',
+        schemas: [
+          { type: 'array', element: { type: 'object' } },
+          { type: 'array', element: { type: 'string' } },
+        ],
         defaultValue: "[{text: 'Sample text 1'}]",
       },
     },
@@ -125,7 +129,7 @@ export const listviewConfig = {
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     borderColor: {
@@ -189,7 +193,7 @@ export const listviewConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: '#dadcde' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

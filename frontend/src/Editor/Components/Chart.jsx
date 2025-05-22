@@ -6,6 +6,7 @@ import { isStringValidJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { getCssVarValue } from './utils';
 
 var tinycolor = require('tinycolor2');
 
@@ -31,6 +32,9 @@ export const Chart = function Chart({
   const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
+
+  const modifiedBackgroundColor = getCssVarValue(document.documentElement, backgroundColor);
+  const modifiedMarkerColor = getCssVarValue(document.documentElement, markerColor);
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -65,11 +69,11 @@ export const Chart = function Chart({
 
   const chartLayout = isDescriptionJson ? JSON.parse(jsonData).layout ?? {} : {};
 
-  const updatedBgColor = ['#fff', '#ffffff'].includes(backgroundColor)
+  const updatedBgColor = ['#fff', '#ffffff'].includes(modifiedBackgroundColor)
     ? darkMode
       ? '#1f2936'
       : '#fff'
-    : backgroundColor;
+    : modifiedBackgroundColor;
   const fontColor = getColor(updatedBgColor);
 
   const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
@@ -168,7 +172,7 @@ export const Chart = function Chart({
           type: chartType || 'line',
           x: rawData.map((item) => item['x']),
           y: rawData.map((item) => item['y']),
-          marker: { color: markerColor },
+          marker: { color: modifiedMarkerColor },
         },
       ];
     }
@@ -179,7 +183,7 @@ export const Chart = function Chart({
   const memoizedChartData = useMemo(
     () => computeChartData(data, dataString),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, dataString, chartType, markerColor]
+    [data, dataString, chartType, modifiedMarkerColor]
   );
 
   const handleClick = useCallback((data) => {

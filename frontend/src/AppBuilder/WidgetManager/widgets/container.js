@@ -71,7 +71,7 @@ export const containerConfig = {
         text: 'Container title',
         fontWeight: 'bold',
         textSize: 16,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
       },
     },
   ],
@@ -82,7 +82,7 @@ export const containerConfig = {
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
       accordian: 'container',
     },
@@ -91,7 +91,7 @@ export const containerConfig = {
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ddd',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
       accordian: 'header',
     },
@@ -159,8 +159,8 @@ export const containerConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
-      headerBackgroundColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '4' },
       headerHeight: { value: '{{80}}' },
       borderColor: { value: '#fff' },

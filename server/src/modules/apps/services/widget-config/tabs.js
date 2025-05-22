@@ -114,7 +114,7 @@ export const tabsConfig = {
       displayName: 'Highlight color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     visibility: {
@@ -175,7 +175,7 @@ export const tabsConfig = {
     },
     events: [],
     styles: {
-      highlightColor: { value: 'var(--primary-brand)' },
+      highlightColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tabWidth: { value: 'auto' },

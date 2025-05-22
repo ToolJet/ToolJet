@@ -125,9 +125,9 @@ export const dropdownV2Config = {
   },
   styles: {
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
     alignment: {
@@ -177,33 +177,33 @@ export const dropdownV2Config = {
     },
 
     fieldBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
     fieldBorderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     icon: {
@@ -214,7 +214,7 @@ export const dropdownV2Config = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: '',
       showLabel: false,
       validation: {
@@ -335,14 +335,14 @@ export const dropdownV2Config = {
     },
     events: [],
     styles: {
-      labelColor: { value: '#1B1F24' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       labelWidth: { value: '33' },
       auto: { value: '{{true}}' },
       fieldBorderRadius: { value: '6' },
-      selectedTextColor: { value: '#1B1F24' },
-      fieldBorderColor: { value: '#CCD1D5' },
-      errTextColor: { value: '#D72D39' },
-      fieldBackgroundColor: { value: '#fff' },
+      selectedTextColor: { value: 'var(--cc-primary-text)' },
+      fieldBorderColor: { value: 'var(--cc-default-border)' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
+      fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
       padding: { value: 'default' },
@@ -350,7 +350,7 @@ export const dropdownV2Config = {
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       iconColor: { value: '#6A727C' },
-      accentColor: { value: '#4368E3' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
     },
   },
 };

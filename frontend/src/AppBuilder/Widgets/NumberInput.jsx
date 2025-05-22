@@ -98,12 +98,12 @@ export const NumberInput = (props) => {
             right: '1px',
             borderLeft:
               inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '1px solid var(--borders-default)',
+                ? '1px solid var(--cc-disabled-border)'
+                : '1px solid var(--cc-default-border)',
             borderBottom:
               inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '.5px solid var(--borders-default)',
+                ? '1px solid var(--cc-disabled-border)'
+                : '.5px solid var(--cc-default-border)',
             borderTopRightRadius: props.styles.borderRadius - 1,
             backgroundColor: 'transparent',
           }}
@@ -127,12 +127,12 @@ export const NumberInput = (props) => {
             bottom: '1px',
             borderLeft:
               inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '1px solid var(--borders-default)',
+                ? '1px solid var(--cc-disabled-border)'
+                : '1px solid var(--cc-default-border)',
             borderTop:
               inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '.5px solid var(--borders-default)',
+                ? '1px solid var(--cc-disabled-border)'
+                : '.5px solid var(--cc-default-border)',
             borderBottomRightRadius: props.styles.borderRadius - 1,
             backgroundColor: 'transparent',
           }}
