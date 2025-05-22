@@ -221,5 +221,13 @@
     "id": "azurerepos",
     "author": "Tooljet",
     "timestamp": "Mon, 23 Dec 2024 11:57:30 GMT"
+  },
+  {
+    "name": "ClickUp",
+    "description": "ClickUp plugin for task, list, and doc management",
+    "version": "1.0.0",
+    "id": "clickup",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
   }
 ]

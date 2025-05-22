@@ -245,7 +245,7 @@ const DynamicForm = ({
     encrypted,
     placeholders = {},
     editorType = 'basic',
-    specUrl = '',
+    spec_url = '',
     disabled = false,
     buttonText,
     text,
@@ -486,7 +486,7 @@ const DynamicForm = ({
         };
       case 'react-component-api-endpoint':
         return {
-          specUrl: specUrl,
+          specUrl: spec_url,
           optionsChanged,
           options,
           darkMode,
