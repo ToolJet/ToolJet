@@ -15,7 +15,7 @@ export class UsersController implements IUserController {
   autoUpdateUserPassword(userId: string, user: User): Promise<{ newPassword: string }> {
     throw new NotFoundException();
   }
-  changeUserPassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+  changeUserPassword(userId: string, changePasswordDto: ChangePasswordDto, user: User): Promise<void> {
     throw new NotFoundException();
   }
 }

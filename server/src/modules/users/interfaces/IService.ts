@@ -9,7 +9,7 @@ export interface IUsersService {
 
   updateUserType(updateUserTypeDto: UpdateUserTypeDto, user: User): Promise<void>;
 
-  updatePassword(userId: string, password: string): Promise<void>;
+  updatePassword(userId: string, user: User, password: string): Promise<void>;
 
   autoUpdateUserPassword(userId: string, user: User): Promise<string>;
 }

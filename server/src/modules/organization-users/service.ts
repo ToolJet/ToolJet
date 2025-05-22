@@ -133,12 +133,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
       );
       await this.organizationUsersUtilService.updateUserStatus(userId, USER_STATUS.ARCHIVED, manager);
-      const organizationIds: string[] = [];
-      for (const archivedUser of archivedUserWorkspaces) {
-        console.log('archived user single', archivedUser);
-        organizationIds.push(archivedUser.organizationId);
-      }
-      console.log('saving organization ids', organizationIds);
+      const organizationIds = archivedUserWorkspaces.map((user) => user.organizationId);
       const auditLogEntry = {
         userId: user.id,
         organizationIds: organizationIds,
@@ -174,12 +169,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       await this.organizationUsersUtilService.updateUserStatus(userId, updatedStatus, manager);
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);
-      const organizationIds: string[] = [];
-      for (const unarchivedUser of unarchivedUserWorkspaces) {
-        console.log('archived user single', unarchivedUser);
-        organizationIds.push(unarchivedUser.organizationId);
-      }
-      console.log('saving organization ids', organizationIds);
+      const organizationIds = unarchivedUserWorkspaces.map((user) => user.organizationId);
       const auditLogEntry = {
         userId: user.id,
         organizationIds: organizationIds,

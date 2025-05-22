@@ -13,7 +13,7 @@ export class UsersService implements IUsersService {
   updateUserType(updateUserTypeDto: UpdateUserTypeDto, user: User): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  updatePassword(userId: string, password: string): Promise<void> {
+  updatePassword(userId: string, user: User, password: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
   autoUpdateUserPassword(userId: string, user: User): Promise<string> {
