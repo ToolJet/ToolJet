@@ -7,7 +7,7 @@ import { App } from '@entities/app.entity';
 import { UpdateSourceDto } from '../dto';
 import { Response } from 'express';
 export interface IDataQueriesController {
-  index(versionId: string): Promise<object>;
+  index(user: UserEntity, versionId: string, mode?: string): Promise<object>;
 
   create(
     user: UserEntity,

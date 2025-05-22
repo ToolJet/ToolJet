@@ -374,7 +374,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       const queryData =
         isPublicAccess || (mode !== 'edit' && appData.is_public)
           ? appData
-          : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
+          : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
       const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
       dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
       setQueries(dataQueries);
@@ -547,7 +547,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
           setSecrets(orgSecrets);
         }
 
-        const queryData = await dataqueryService.getAll(currentVersionId);
+        const queryData = await dataqueryService.getAll(currentVersionId, mode);
         const dataQueries = queryData.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries);

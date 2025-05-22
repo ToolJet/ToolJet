@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { DataQueriesService } from './service';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
@@ -30,8 +30,8 @@ export class DataQueriesController implements IDataQueriesController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId')
-  index(@Param('versionId') versionId: string) {
-    return this.dataQueriesService.getAll(versionId);
+  index(@User() user: UserEntity, @Param('versionId') versionId: string, @Query('mode') mode?: string) {
+    return this.dataQueriesService.getAll(user, versionId, mode);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)

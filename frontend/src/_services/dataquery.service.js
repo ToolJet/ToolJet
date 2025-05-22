@@ -13,9 +13,9 @@ export const dataqueryService = {
   bulkUpdateQueryOptions,
 };
 
-function getAll(appVersionId) {
+function getAll(appVersionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-queries/${appVersionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${appVersionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
 function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
