@@ -38,8 +38,9 @@
 }
 
 .toggle-switch-container {
-    margin-top: 30px;
+    margin-top: 0px;
     display: flex;
+    margin-bottom: 16px !important;
 
     .switch {
         margin-top: 3px;
@@ -62,5 +63,15 @@
             color: var(--slate11);
 
         }
+    }
+}
+
+.open-id-group-sync-container {
+    border-top:1px solid var(--slate5) !important;
+    margin-top: 12px !important;
+    .custom-card-body {
+        padding-top: 12px !important;
+        padding-bottom: 0px !important;
+        border-bottom: none !important;
     }
 }

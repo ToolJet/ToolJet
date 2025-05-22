@@ -5,6 +5,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SSOConfigsRepository } from './repository';
 import { EncryptionModule } from '@modules/encryption/module';
 import { FeatureAbilityFactory } from './ability';
+import { SsoConfigOidcGroupSyncRepository } from './oidc-group-sync.repository';
 
 export class LoginConfigsModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -24,6 +25,7 @@ export class LoginConfigsModule {
         LoginConfigsUtilService,
         OrganizationRepository,
         SSOConfigsRepository,
+        SsoConfigOidcGroupSyncRepository,
         FeatureAbilityFactory,
         SSOGuard,
         FeatureGuard,
