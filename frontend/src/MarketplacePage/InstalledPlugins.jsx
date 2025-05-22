@@ -168,7 +168,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
   return (
     <>
       <Modal
-        title="Dependent queries found !"
+        title="Dependent queries found!"
         show={showDependentQueriesInfo}
         closeModal={() => setShowDependentQueriesInfo(false)}
       >

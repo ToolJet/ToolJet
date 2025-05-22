@@ -189,7 +189,7 @@ export const List = ({ updateSelectedDatasource }) => {
         </div>
       </div>
       <Modal
-        title="Dependent queries found !"
+        title="Dependent queries found!"
         show={showDependentQueriesInfo}
         closeModal={() => setShowDependentQueriesInfo(false)}
       >
