@@ -65,6 +65,7 @@ export async function setFaviconAndTitle(location) {
     'reset-password': '',
     'workspace-constants': 'Workspace constants',
     setup: '',
+    '/': 'Dashboard',
   };
 
   const pageTitleKey = Object.keys(pageTitles).find((path) => location?.pathname.includes(path));
@@ -77,6 +78,8 @@ export async function fetchAndSetWindowTitle(pageDetails) {
   const whiteLabelText = retrieveWhiteLabelText();
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
+  let mode = pageDetails?.mode || '';
+  let isPreview = !pageDetails?.isReleased || false;
   switch (pageTitleKey) {
     case pageTitles.VIEWER: {
       const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
@@ -85,13 +88,21 @@ export async function fetchAndSetWindowTitle(pageDetails) {
     }
     case pageTitles.EDITOR:
     case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
+      if (mode == 'edit') {
+        pageTitle = `${pageDetails?.appName}`;
+      } else {
+        pageTitle = `Preview - ${pageDetails?.appName}` || 'My App';
+      }
       break;
     }
     default: {
       pageTitle = pageTitleKey;
       break;
     }
+  }
+  if (!isPreview && mode === 'view') {
+    document.title = `${pageDetails?.appName}`;
+    return;
   }
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
 }
