@@ -27,3 +27,5 @@ export const BOX_PADDING = 2;
 export const TAB_CANVAS_PADDING = 7.5;
 
 export const MODAL_CANVAS_PADDING = 5;
+
+export const LISTVIEW_CANVAS_PADDING = 7;

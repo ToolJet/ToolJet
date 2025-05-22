@@ -109,10 +109,11 @@ export const Container = React.memo(
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
         if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id);
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }
       return realCanvasRef?.current?.offsetWidth;
     }
+
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
