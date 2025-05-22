@@ -12,7 +12,10 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
   }
 
   async findInstanceConfigs(): Promise<SSOConfigs[]> {
-    return this.find({ where: { organizationId: IsNull() } });
+    return this.createQueryBuilder('ssoConfigs')
+      .leftJoinAndSelect('ssoConfigs.oidcGroupSyncs', 'oidcGroupSyncs')
+      .where('ssoConfigs.organizationId IS NULL')
+      .getMany();
   }
 
   async createOrUpdateSSOConfig(configData: Partial<SSOConfigs>): Promise<SSOConfigs> {
