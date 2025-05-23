@@ -10,13 +10,15 @@ import { FilesRepository } from '@modules/files/repository';
 import { IPluginsService } from './interfaces/IService';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 const fs = require('fs');
 
 @Injectable()
 export class PluginsService implements IPluginsService {
   constructor(
     protected readonly pluginsUtilService: PluginsUtilService,
-    protected readonly fileRepository: FilesRepository
+    protected readonly fileRepository: FilesRepository,
+    protected readonly dataSourcesRepository: DataSourcesRepository
   ) {}
 
   async install(body: CreatePluginDto) {
@@ -57,7 +59,18 @@ export class PluginsService implements IPluginsService {
     return await this.pluginsUtilService.upgrade(id, body, version, { index, operations, icon, manifest });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    const dataSourcesByMarketplacePlugin = await this.dataSourcesRepository.getDatasourceByPluginId(id);
+    if (dataSourcesByMarketplacePlugin.length) {
+      const queries = [];
+      dataSourcesByMarketplacePlugin?.forEach((datasource) => {
+        if (datasource.dataQueries.length) queries.push(...datasource.dataQueries);
+      });
+      if (queries.length) {
+        throw new InternalServerErrorException(`Plugin can't be removed, queries of plugin are in use`);
+      }
+    }
+
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.delete(Plugin, id);
     });
