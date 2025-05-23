@@ -62,7 +62,7 @@ export const parseData = (data) => {
           key: `${key}.${nestedKey}`,
           name: `${key}.${nestedKey}`,
           label: startCase(nestedKey),
-          value: nestedValue,
+          value: dataType === 'number' || dataType === 'boolean' ? `{{${nestedValue}}}` : nestedValue,
           dataType: dataType,
           componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
           mandatory: false,
@@ -75,7 +75,7 @@ export const parseData = (data) => {
         key,
         name: key,
         label: startCase(key),
-        value,
+        value: dataType === 'number' || dataType === 'boolean' ? `{{${value}}}` : value,
         dataType: dataType,
         componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
         mandatory: false,
@@ -187,7 +187,7 @@ export const getInputTypeOptions = (darkMode) => {
  */
 export const createFormFieldComponents = (columns, parentId, currentLayout, lastPosition) => {
   if (!columns || !Array.isArray(columns) || columns.length === 0) {
-    return [];
+    return { updatedColumns: [], formFields: [] };
   }
 
   const formFieldComponents = [];
@@ -195,8 +195,8 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
 
   // Initialize position from lastPosition
   let currentTop = lastPosition?.top || 0;
-  const left = lastPosition?.left || 0;
-  const width = lastPosition?.width || 12;
+  const left = 3;
+  const width = 37;
 
   columns.forEach((column, index) => {
     const componentType = column.componentType || 'TextInput';
@@ -235,11 +235,13 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
             label: {
               value: column.label,
             },
-            isMandatory: {
-              value: `{{${column.mandatory || false}}}`,
-            },
             visibility: {
               value: `{{${column.selected || false}}}`,
+            },
+          },
+          validation: {
+            mandatory: {
+              value: `{{${column.mandatory || false}}}`,
             },
           },
           others: {
@@ -271,28 +273,37 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
     // Set default value if available in column
 
     if (column.value !== undefined && column.value !== null) {
-      if (componentType === 'TextInput' || componentType === 'NumberInput') {
+      if (componentType === 'TextInput') {
         set(formField.component.definition.properties, 'value.value', column.value);
+      }
+      if (componentType === 'NumberInput') {
+        set(formField.component.definition.properties, 'value.value', `{{${column.value}}}`);
       } else if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
-        set(formField.component.definition.properties, 'checked.value', column.value);
+        set(formField.component.definition.properties, 'defaultValue.value', column.value);
+      } else if (
+        componentType === 'DropdownV2' ||
+        componentType === 'MultiselectV2' ||
+        componentType === 'RadioButtonV2'
+      ) {
+        set(formField.component.definition.properties, 'options.value', buildOptions(column.value));
       }
     }
-
-    // // Additional component-specific configurations based on data type
-    // if (column.dataType === 'array' && formField.component.component === 'DropdownV2') {
-    //   // Handle array values for dropdown
-    //   set(
-    //     formField.component.definition.properties,
-    //     'options.value',
-    //     Array.isArray(column.value) ? JSON.stringify(column.value) : '{{["Option 1", "Option 2", "Option 3"]}}'
-    //   );
-    // }
 
     // Update the current top position for the next field
     currentTop = fieldTop + defaultHeight;
 
     formFieldComponents.push(formField);
+    column.componentId = fieldId; // Add componentId to the column for reference
   });
 
-  return formFieldComponents;
+  return { updatedColumns: columns, formFields: formFieldComponents };
 };
+
+const buildOptions = (options) =>
+  options.map((option, index) => ({
+    label: option,
+    value: `${index + 1}`,
+    disable: { value: false },
+    visible: { value: true },
+    default: { value: false },
+  }));

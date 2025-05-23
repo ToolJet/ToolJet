@@ -69,8 +69,8 @@ const ColumnMappingRow = ({
           id={`dropdown-${index}`}
           size="small"
           zIndex={9999}
-          value={column.component || 'TextInput'}
-          leadingIcon={inputTypeOptions[column.component || 'TextInput'].leadingIcon}
+          value={column.componentType || 'TextInput'}
+          leadingIcon={inputTypeOptions[column.componentType || 'TextInput'].leadingIcon}
           onChange={handleInputTypeChange}
           width="140px"
         />
@@ -96,8 +96,8 @@ const ColumnMappingRow = ({
   );
 };
 
-const RenderSection = ({ columns = [], title, mode = 'mapping', darkMode }) => {
-  const [mappedColumns, setMappedColumns] = useState(columns);
+const RenderSection = ({ mappedColumns = [], setMappedColumns, title, mode = 'mapping', darkMode }) => {
+  // const [mappedColumns, setMappedColumns] = useState(columns);
   // Compute states from mappedColumns
   const isAllSelected = mappedColumns.every((col) => col.selected);
   const isIntermediateSelected = !isAllSelected && mappedColumns.some((col) => col.selected);
@@ -184,7 +184,7 @@ const RenderSection = ({ columns = [], title, mode = 'mapping', darkMode }) => {
 
       {/* Rows */}
       <div className="tw-max-h-[400px] tw-overflow-y-auto">
-        {columns.map((column, index) => (
+        {mappedColumns.map((column, index) => (
           <ColumnMappingRow
             key={column.name}
             column={mappedColumns.find((c) => c.name === column.name)}
@@ -227,7 +227,13 @@ const ColumnMappingComponent = ({
 
   const modalBody = (
     <div className="tw-w-full column-mapping-modal-body-container">
-      <RenderSection columns={mappedColumns} title={title} mode={mode} darkMode={darkMode} />
+      <RenderSection
+        mappedColumns={mappedColumns}
+        setMappedColumns={setMappedColumns}
+        title={title}
+        mode={mode}
+        darkMode={darkMode}
+      />
       {/* Footer */}
       <div className="tw-flex tw-justify-end tw-mt-4">
         <Button

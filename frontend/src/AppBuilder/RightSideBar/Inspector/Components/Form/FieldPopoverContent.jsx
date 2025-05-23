@@ -21,7 +21,7 @@ const FieldPopoverContent = ({
   const inputTypeOptions = getInputTypeOptions(darkMode);
 
   const renderPlaceholder = () => {
-    if (['Checkbox', 'RadioButtonV2', 'Datepicker'].includes(field.component)) return null;
+    if (['Checkbox', 'RadioButtonV2', 'Datepicker'].includes(field.componentType)) return null;
     return (
       <div>
         <label className="tw-text-text-default base-medium">Placeholder</label>
@@ -39,13 +39,14 @@ const FieldPopoverContent = ({
   };
 
   const renderDefaultValue = () => {
-    if (['RadioButtonV2', 'DropdownV2', 'MultiselectV2'].includes(field.component)) return null;
+    if (['RadioButtonV2', 'DropdownV2', 'MultiselectV2'].includes(field.componentType)) return null;
+
     return (
       <div>
         <label className="tw-text-text-default base-medium">Default value</label>
         <CodeHinter
           type={'basic'}
-          initialValue={''}
+          initialValue={field.value || ''}
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
@@ -80,11 +81,11 @@ const FieldPopoverContent = ({
               id="field-type"
               size="medium"
               zIndex={9999}
-              value={field.component || 'TextInput'}
-              leadingIcon={inputTypeOptions[field.component || 'TextInput'].leadingIcon}
+              value={field.componentType || 'TextInput'}
+              leadingIcon={inputTypeOptions[field.componentType || 'TextInput'].leadingIcon}
               onChange={(value) => {
                 if (!shouldPreventPopoverClose) {
-                  onChange?.({ ...field, component: value });
+                  onChange?.({ ...field, componentType: value });
                 }
               }}
               width="100%"

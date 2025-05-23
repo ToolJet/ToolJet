@@ -189,15 +189,20 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
                 // Get the last position of the child components
                 const lastPosition = findLastElementPosition(childComponents, currentLayout);
                 // Create form field components from columns
-                const formFields = createFormFieldComponents(columns, component.id, currentLayout, lastPosition);
+                const { updatedColumns, formFields } = createFormFieldComponents(
+                  columns,
+                  component.id,
+                  currentLayout,
+                  lastPosition
+                );
+
                 // Add the components to the canvas
                 if (formFields.length > 0) {
                   await addComponentToCurrentPage(formFields);
                 }
+                // Update the form fields property
+                paramUpdated({ name: 'fields' }, 'value', updatedColumns, 'properties');
               }
-
-              // Update the form fields property
-              paramUpdated({ name: 'fields' }, 'value', columns, 'properties');
             } catch (error) {
               console.error('Error processing form fields:', error);
             }
