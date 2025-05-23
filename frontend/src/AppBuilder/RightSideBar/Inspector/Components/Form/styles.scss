@@ -1,3 +1,12 @@
+.form-data-section {
+    button {
+        &:disabled {
+            border: 1px solid var(--border-weak, #E4E7EB) !important;
+            box-shadow: none;
+        }
+    }
+}
+
 .column-mapping-modal-header {
     background-color: var(--primary-white) !important;
     border-bottom: 1px solid var(--border-medium, rgba(106, 114, 124, 0.26));

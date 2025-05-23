@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { FormField } from './FormField';
+import { Button } from '@/components/ui/Button/Button';
 
-export const FormFieldsList = ({ fields, onDeleteField }) => {
+export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen }) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
   if (fields.length === 0) {
@@ -13,16 +14,24 @@ export const FormFieldsList = ({ fields, onDeleteField }) => {
   }
 
   return (
-    <div className="tw-flex tw-flex-col tw-gap-1">
-      {fields.map((field, index) => (
-        <FormField
-          key={field.name}
-          field={field}
-          activeMenu={activeMenuField}
-          onMenuToggle={(fieldName) => setActiveMenuField(fieldName)}
-          onDelete={() => onDeleteField(index)}
-        />
-      ))}
-    </div>
+    <>
+      <div className="tw-flex tw-flex-col tw-gap-1">
+        {fields.map((field, index) => (
+          <FormField
+            key={field.name}
+            field={field}
+            activeMenu={activeMenuField}
+            onMenuToggle={(fieldName) => setActiveMenuField(fieldName)}
+            onDelete={() => onDeleteField(index)}
+          />
+        ))}
+      </div>
+
+      <div className="tw-flex tw-justify-center tw-items-center tw-mt-3">
+        <Button fill="#ACB2B9" leadingIcon="sliders" variant="outline" onClick={() => setIsModalOpen(true)}>
+          Manage fields
+        </Button>
+      </div>
+    </>
   );
 };

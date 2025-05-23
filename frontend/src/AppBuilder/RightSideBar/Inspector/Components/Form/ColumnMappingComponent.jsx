@@ -146,8 +146,7 @@ const ColumnMappingComponent = ({
 
   const handleSubmit = () => {
     setIsGenerating(true);
-    const selectedData = mappedColumns.filter((col) => col.selected);
-    onSubmit?.(selectedData);
+    onSubmit?.(mappedColumns);
     setTimeout(() => {
       setIsGenerating(false);
     }, 500);
@@ -219,6 +218,8 @@ const ColumnMappingComponent = ({
           onClick={handleSubmit}
           disabled={mappedColumns.every((col) => !col.selected) || isGenerating}
           leadingIcon="plus"
+          isLoading={isGenerating}
+          loaderText="Generating"
         >
           Generate form
         </Button>

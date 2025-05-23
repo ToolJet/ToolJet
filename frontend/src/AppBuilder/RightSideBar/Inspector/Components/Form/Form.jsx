@@ -23,8 +23,6 @@ export const Form = ({
 }) => {
   const tempComponentMeta = deepClone(componentMeta);
 
-  console.log('here--- currentState--- ', currentState);
-
   let properties = [];
   let additionalActions = [];
   let dataProperties = [];
@@ -38,6 +36,8 @@ export const Form = ({
     } else if (componentMeta?.properties[key]?.section === 'data') {
       dataProperties.push(key);
     } else {
+      // Skip the fields property as it is handled separately
+      if (key === 'fields') continue;
       properties.push(key);
     }
   }

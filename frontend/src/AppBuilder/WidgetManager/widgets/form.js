@@ -138,6 +138,10 @@ export const formConfig = {
         schema: { type: 'object' },
       },
     },
+    fields: {
+      type: 'array',
+      displayName: 'Table Columns',
+    },
     validateOnSubmit: {
       type: 'toggle',
       displayName: 'Validate all fields on submission',
@@ -327,6 +331,7 @@ export const formConfig = {
         value:
           "{{{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }}}",
       },
+      // fields: { value: [] },
     },
     events: [],
     styles: {

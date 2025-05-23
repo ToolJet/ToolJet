@@ -14,6 +14,9 @@ import { parseData } from './utils';
 const DataSectionUI = ({ component, darkMode = false }) => {
   const resolveReferences = useStore((state) => state.resolveReferences);
   const generateFormFrom = component.component.definition.properties['generateFormFrom'] || null;
+  const generatedFields = component.component.definition.properties['fields'] || [];
+  const isFormGenerated = generatedFields.length > 0;
+
   let jsonData = null,
     formattedJson = null;
 
@@ -89,69 +92,83 @@ const DataSectionUI = ({ component, darkMode = false }) => {
       </div>
     );
   };
+
+  const renderAddCustomFieldButton = () => {
+    return (
+      <OverlayTrigger
+        trigger="click"
+        placement="left"
+        show={showAddFieldPopover}
+        onToggle={(show) => {
+          if (!show && shouldPreventPopoverClose) {
+            return;
+          }
+          setShowAddFieldPopover(show);
+        }}
+        rootClose
+        overlay={
+          <Popover id="add-field-popover" className="shadow form-fields-column-popover">
+            <FieldPopoverContent
+              field={{}}
+              onChange={handleAddField}
+              onClose={() => setShowAddFieldPopover(false)}
+              darkMode={darkMode}
+              mode="add"
+              onDropdownOpen={handleDropdownOpen}
+              onDropdownClose={handleDropdownClose}
+              shouldPreventPopoverClose={shouldPreventPopoverClose}
+            />
+          </Popover>
+        }
+      >
+        <Button ref={addFieldButtonRef} iconOnly leadingIcon="plus" variant="ghost" size="small" />
+      </OverlayTrigger>
+    );
+  };
+
   return (
     <>
-      <div className="tw-flex tw-justify-center tw-items-center">
-        <Button fill="#4368E3" leadingIcon="plus" variant="secondary" onClick={() => setIsModalOpen(true)}>
+      <div className="tw-flex tw-justify-center tw-items-center form-data-section">
+        <Button
+          fill={generateFormFrom === null ? '#E4E7EB' : '#4368E3'}
+          leadingIcon="plus"
+          variant={generateFormFrom === null ? 'outline' : 'secondary'}
+          onClick={() => setIsModalOpen(true)}
+          disabled={generateFormFrom === null}
+        >
           Generate form
         </Button>
       </div>
-      {renderRefreshDataSection()}
-      {renderCustomSchemaSection()}
+      {isFormGenerated && (
+        <>
+          {renderRefreshDataSection()}
+          {renderCustomSchemaSection()}
+        </>
+      )}
       <div className="tw-flex tw-justify-between tw-items-center tw-gap-1.5">
         <div className="tw-flex-1">
-          <LabeledDivider label="Fields" />
+          <LabeledDivider label="Fields" isFormGenerated={isFormGenerated} />
         </div>
-        <OverlayTrigger
-          trigger="click"
-          placement="left"
-          show={showAddFieldPopover}
-          onToggle={(show) => {
-            if (!show && shouldPreventPopoverClose) {
-              return;
-            }
-            setShowAddFieldPopover(show);
+        {isFormGenerated && renderAddCustomFieldButton()}
+      </div>
+
+      <FormFieldsList fields={generatedFields} onDeleteField={handleDeleteField} setIsModalOpen={setIsModalOpen} />
+
+      {isModalOpen && (
+        <ColumnMappingComponent
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          darkMode={darkMode}
+          columns={fields}
+          mode="mapping"
+          title="Map columns"
+          onSubmit={(columns) => {
+            console.log('here--- columns--- ', columns);
+            // setFields(selectedFields);
+            // setIsModalOpen(false);
           }}
-          rootClose
-          overlay={
-            <Popover id="add-field-popover" className="shadow form-fields-column-popover">
-              <FieldPopoverContent
-                field={{}}
-                onChange={handleAddField}
-                onClose={() => setShowAddFieldPopover(false)}
-                darkMode={darkMode}
-                mode="add"
-                onDropdownOpen={handleDropdownOpen}
-                onDropdownClose={handleDropdownClose}
-                shouldPreventPopoverClose={shouldPreventPopoverClose}
-              />
-            </Popover>
-          }
-        >
-          <Button ref={addFieldButtonRef} iconOnly leadingIcon="plus" variant="ghost" size="small" />
-        </OverlayTrigger>
-      </div>
-
-      <FormFieldsList fields={fields} onDeleteField={handleDeleteField} />
-
-      <div className="tw-flex tw-justify-center tw-items-center tw-mt-3">
-        <Button fill="#ACB2B9" leadingIcon="sliders" variant="outline" onClick={() => setIsModalOpen(true)}>
-          Manage fields
-        </Button>
-      </div>
-
-      <ColumnMappingComponent
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        darkMode={darkMode}
-        columns={fields}
-        mode="mapping"
-        title="Map columns"
-        onSubmit={(selectedFields) => {
-          setFields(selectedFields);
-          setIsModalOpen(false);
-        }}
-      />
+        />
+      )}
     </>
   );
 };
