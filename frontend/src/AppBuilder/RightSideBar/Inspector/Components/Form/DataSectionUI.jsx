@@ -23,7 +23,6 @@ const DataSectionUI = ({ component, darkMode = false }) => {
     if (resolvedJsonData) {
       try {
         formattedJson = parseData(resolvedJsonData);
-        console.log('here--- formattedJson--- ', formattedJson);
       } catch (e) {
         console.error('Error parsing JSON data:', e);
       }
@@ -51,7 +50,7 @@ const DataSectionUI = ({ component, darkMode = false }) => {
       ...prevFields,
       {
         name: newField.label || 'New Field',
-        dataType: 'varchar',
+        dataType: 'string',
         inputType: newField.type || 'text',
         mandatory: false,
         label: newField.label || 'New Field',

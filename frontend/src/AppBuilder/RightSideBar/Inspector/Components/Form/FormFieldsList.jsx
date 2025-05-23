@@ -17,7 +17,7 @@ export const FormFieldsList = ({ fields, onDeleteField }) => {
       {fields.map((field, index) => (
         <FormField
           key={field.name}
-          {...field}
+          field={field}
           activeMenu={activeMenuField}
           onMenuToggle={(fieldName) => setActiveMenuField(fieldName)}
           onDelete={() => onDeleteField(index)}

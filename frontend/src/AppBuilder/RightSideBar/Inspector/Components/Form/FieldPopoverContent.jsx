@@ -20,6 +20,42 @@ const FieldPopoverContent = ({
 
   const inputTypeOptions = getInputTypeOptions(darkMode);
 
+  const renderPlaceholder = () => {
+    if (['Checkbox', 'RadioButtonV2', 'Datepicker'].includes(field.component)) return null;
+    return (
+      <div>
+        <label className="tw-text-text-default base-medium">Placeholder</label>
+        <CodeHinter
+          type={'basic'}
+          initialValue={''}
+          theme={darkMode ? 'monokai' : 'default'}
+          mode="javascript"
+          lineNumbers={false}
+          placeholder={'Enter email id'}
+          // onChange={(value) => handleLabelChange(value, index)}
+        />
+      </div>
+    );
+  };
+
+  const renderDefaultValue = () => {
+    if (['Checkbox', 'RadioButtonV2', 'DropdownV2', 'MultiselectV2'].includes(field.component)) return null;
+    return (
+      <div>
+        <label className="tw-text-text-default base-medium">Default value</label>
+        <CodeHinter
+          type={'basic'}
+          initialValue={''}
+          theme={darkMode ? 'monokai' : 'default'}
+          mode="javascript"
+          lineNumbers={false}
+          placeholder={'{{}}'}
+          // onChange={(value) => handleLabelChange(value, index)}
+        />
+      </div>
+    );
+  };
+
   return (
     <>
       <Popover.Header className="d-flex justify-content-between align-items-center tw-px-4 tw-py-2 form-field-popover-header bg-white">
@@ -44,8 +80,8 @@ const FieldPopoverContent = ({
               id="field-type"
               size="medium"
               zIndex={9999}
-              value={field.component || 'TextComponent'}
-              leadingIcon={inputTypeOptions[field.component || 'TextComponent'].leadingIcon}
+              value={field.component || 'TextInput'}
+              leadingIcon={inputTypeOptions[field.component || 'TextInput'].leadingIcon}
               onChange={(value) => {
                 if (!shouldPreventPopoverClose) {
                   onChange?.({ ...field, component: value });
@@ -62,7 +98,7 @@ const FieldPopoverContent = ({
             <label className="tw-text-text-default base-medium">Label</label>
             <CodeHinter
               type={'basic'}
-              initialValue={'Hello World'}
+              initialValue={field.label || ''}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -71,35 +107,12 @@ const FieldPopoverContent = ({
             />
           </div>
 
-          <div>
-            <label className="tw-text-text-default base-medium">Placeholder</label>
-            <CodeHinter
-              type={'basic'}
-              initialValue={'Hello World'}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'Enter email id'}
-              // onChange={(value) => handleLabelChange(value, index)}
-            />
-          </div>
-
-          <div>
-            <label className="tw-text-text-default base-medium">Default value</label>
-            <CodeHinter
-              type={'basic'}
-              initialValue={'Hello World'}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'{{}}'}
-              // onChange={(value) => handleLabelChange(value, index)}
-            />
-          </div>
+          {renderPlaceholder()}
+          {renderDefaultValue()}
 
           <div className="field mb-2">
             <CodeHinter
-              initialValue={true}
+              initialValue={field.mandatory || false}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -118,7 +131,7 @@ const FieldPopoverContent = ({
           {mode === 'edit' ? (
             <div className="field m-0">
               <CodeHinter
-                initialValue={true}
+                initialValue={field.selected || false}
                 theme={darkMode ? 'monokai' : 'default'}
                 mode="javascript"
                 lineNumbers={false}

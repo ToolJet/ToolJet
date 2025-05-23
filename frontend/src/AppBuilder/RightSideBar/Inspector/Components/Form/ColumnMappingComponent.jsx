@@ -69,8 +69,8 @@ const ColumnMappingRow = ({
           id={`dropdown-${index}`}
           size="small"
           zIndex={9999}
-          value={column.component || 'TextComponent'}
-          leadingIcon={inputTypeOptions[column.component || 'TextComponent'].leadingIcon}
+          value={column.component || 'TextInput'}
+          leadingIcon={inputTypeOptions[column.component || 'TextInput'].leadingIcon}
           onChange={handleInputTypeChange}
           width="140px"
         />
