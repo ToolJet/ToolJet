@@ -459,6 +459,10 @@ img {
   padding: 2px 4px;
 }
 
+[data-theme='dark'] .alert.alert--success a {
+  color: #1b1f24 !important;
+  text-decoration: underline !important;
+}
 
 /* Danger Alert box */
 
@@ -477,6 +481,10 @@ img {
   padding: 2px 4px;
 }
 
+[data-theme='dark'] .alert.alert--danger a {
+  color: #1b1f24 !important;
+  text-decoration: underline !important;
+}
 
 
 .admonition-heading .menu {
