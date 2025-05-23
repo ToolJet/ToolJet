@@ -38,6 +38,9 @@ export class OrganizationGitSsh {
   @Column({ name: 'is_finalized', nullable: false, default: false })
   isFinalized: boolean;
 
+  @Column({ name: 'is_enabled', nullable: false, default: false })
+  isEnabled: boolean;
+
   // defines foreign key relation
   @OneToOne(() => OrganizationGitSync, (orgGit) => orgGit.id, {
     onDelete: 'CASCADE',

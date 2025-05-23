@@ -39,6 +39,9 @@ export class OrganizationGitLab extends BaseEntity {
   @Column({ name: 'is_finalized', nullable: false, default: false })
   isFinalized: boolean;
 
+  @Column({ name: 'is_enabled', nullable: false, default: false })
+  isEnabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

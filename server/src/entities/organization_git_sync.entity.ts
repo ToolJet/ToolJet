@@ -29,8 +29,8 @@ export class OrganizationGitSync extends BaseEntity {
   @Column({ name: 'organization_id', nullable: false })
   organizationId: string;
 
-  @Column({ name: 'is_enabled', nullable: false, default: false })
-  isEnabled: boolean;
+  // @Column({ name: 'is_enabled', nullable: false, default: false })
+  // isEnabled: boolean;
 
   @Column({ name: 'auto_commit', nullable: false, default: false })
   autoCommit: boolean;
@@ -72,6 +72,6 @@ export class OrganizationGitSync extends BaseEntity {
   @OneToOne(() => OrganizationGitHttps, (gitHttps) => gitHttps.orgGitSync, {})
   gitHttps: OrganizationGitHttps;
 
-  @OneToOne(() => OrganizationGitLab, (gitHttps) => gitHttps.orgGitSync, {})
+  @OneToOne(() => OrganizationGitLab, (gitLab) => gitLab.orgGitSync, {})
   gitLab: OrganizationGitLab;
 }

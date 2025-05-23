@@ -20,10 +20,10 @@ export class AddEnabledColumnProviderTable1747923859030 implements MigrationInte
     `);
 
     await queryRunner.query(`
-      UPDATE "organization_git_https" git_ssh
+      UPDATE "organization_git_https" git_https
       SET "is_enabled" = TRUE 
       FROM "organization_git_sync" git_sync 
-      WHERE git_ssh."config_id" = git_sync."id" 
+      WHERE git_https."config_id" = git_sync."id" 
         AND git_sync."is_enabled" = TRUE 
         AND git_sync."git_type" = 'github_https';
     `);
@@ -33,13 +33,16 @@ export class AddEnabledColumnProviderTable1747923859030 implements MigrationInte
     `);
 
     await queryRunner.query(`
-      UPDATE "organization_gitlab" git_ssh
+      UPDATE "organization_gitlab" gitlab
       SET "is_enabled" = TRUE 
       FROM "organization_git_sync" git_sync 
-      WHERE git_ssh."config_id" = git_sync."id" 
+      WHERE gitlab."config_id" = git_sync."id" 
         AND git_sync."is_enabled" = TRUE 
         AND git_sync."git_type" = 'gitlab';
     `);
+
+    // Delete is enabled column from the parent table
+    await queryRunner.dropColumn('organization_git_sync', 'is_enabled');
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
