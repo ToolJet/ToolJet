@@ -9,10 +9,14 @@ import Popover from 'react-bootstrap/Popover';
 import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
-import { parseData } from './utils';
+import { shallow } from 'zustand/shallow';
+import { parseData, findLastElementPosition, createFormFieldComponents } from './utils';
 
 const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
-  const resolveReferences = useStore((state) => state.resolveReferences);
+  const resolveReferences = useStore((state) => state.resolveReferences, shallow);
+  const getChildComponents = useStore((state) => state.getChildComponents, shallow);
+  const currentLayout = useStore((state) => state.currentLayout, shallow);
+  const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
   const generateFormFrom = component.component.definition.properties['generateFormFrom'] || null;
   const generatedFields = component.component.definition.properties['fields']?.value || [];
   const isFormGenerated = generatedFields.length > 0;
@@ -178,8 +182,26 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
           mode="mapping"
           title="Map columns"
           isFormGenerated={isFormGenerated}
-          onSubmit={(columns) => {
-            paramUpdated({ name: 'fields' }, 'value', columns, 'properties');
+          onSubmit={async (columns) => {
+            try {
+              const childComponents = getChildComponents(component?.id);
+              if (childComponents) {
+                // Get the last position of the child components
+                const lastPosition = findLastElementPosition(childComponents, currentLayout);
+                // Create form field components from columns
+                const formFields = createFormFieldComponents(columns, component.id, currentLayout, lastPosition);
+                // Add the components to the canvas
+                if (formFields.length > 0) {
+                  await addComponentToCurrentPage(formFields);
+                }
+              }
+
+              // Update the form fields property
+              paramUpdated({ name: 'fields' }, 'value', columns, 'properties');
+            } catch (error) {
+              console.error('Error processing form fields:', error);
+            }
+
             setIsModalOpen(false);
           }}
         />

@@ -39,7 +39,7 @@ const FieldPopoverContent = ({
   };
 
   const renderDefaultValue = () => {
-    if (['Checkbox', 'RadioButtonV2', 'DropdownV2', 'MultiselectV2'].includes(field.component)) return null;
+    if (['RadioButtonV2', 'DropdownV2', 'MultiselectV2'].includes(field.component)) return null;
     return (
       <div>
         <label className="tw-text-text-default base-medium">Default value</label>

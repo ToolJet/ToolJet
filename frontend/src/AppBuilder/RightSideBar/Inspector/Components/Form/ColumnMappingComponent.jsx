@@ -233,7 +233,8 @@ const ColumnMappingComponent = ({
         <Button
           variant="primary"
           onClick={handleSubmit}
-          disabled={mappedColumns.every((col) => !col.selected) || isSaving}
+          // disabled={mappedColumns.every((col) => !col.selected) || isSaving}
+          disabled={isSaving}
           leadingIcon={isFormGenerated ? 'save' : 'plus'}
           isLoading={isSaving}
           loaderText={isFormGenerated ? 'Saving' : 'Generating'}
