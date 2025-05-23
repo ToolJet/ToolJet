@@ -12,6 +12,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { SessionModule } from '@modules/session/module';
 import { SampleDBScheduler } from './schedulers/sample-db.scheduler';
+import { InMemoryCacheService } from '@helpers/in_memory_cache.service';
 
 export class DataSourcesModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -43,6 +44,7 @@ export class DataSourcesModule {
         SampleDataSourceService,
         FeatureAbilityFactory,
         SampleDBScheduler,
+        InMemoryCacheService,
       ],
       controllers: [DataSourcesController],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
