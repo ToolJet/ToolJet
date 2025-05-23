@@ -49,8 +49,20 @@ export default class DynamodbQueryService implements QueryService {
           result = await putItem(client, JSON.parse(queryOptions.new_item_details));
           break;
       }
-    } catch (err) {
-      throw new QueryError('Query could not be completed', err.message, {});
+    } catch (error) {
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      if (error && error instanceof Error) {
+        const dynamodbError = error as any;
+        const { code, retryable, statusCode } = dynamodbError;
+
+        errorDetails.code = code;
+        errorDetails.retryable = retryable;
+        errorDetails.statusCode = statusCode;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
