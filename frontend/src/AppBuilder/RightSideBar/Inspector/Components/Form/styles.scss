@@ -1,4 +1,4 @@
-.form-data-section {
+.form-generate-form-btn {
     button {
         &:disabled {
             border: 1px solid var(--border-weak, #E4E7EB) !important;
@@ -20,6 +20,20 @@
     .column-mapping-modal-body-content {
         background-color: var(--primary-white) !important;
         border-radius: 8px;
+
+        .column-mapping-modal-title {
+            padding-left: 2rem;
+            padding-top: 10px;
+            color: var(--text-default, #1B1F24);
+
+            &.new {
+                color: var(--text-success, #1E823B);
+            }
+
+            &.removed {
+                color: var(--text-danger, #D92D2A);
+            }
+        }
 
         .header-row {
             height: 36px;
@@ -45,7 +59,6 @@
         .name-column {
             width: 230px;
             margin-right: 6px;
-            padding-left: 8px;
         }
 
         .arrow-column {

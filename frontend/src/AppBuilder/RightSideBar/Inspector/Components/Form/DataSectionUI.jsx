@@ -11,10 +11,10 @@ import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { parseData } from './utils';
 
-const DataSectionUI = ({ component, darkMode = false }) => {
+const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   const resolveReferences = useStore((state) => state.resolveReferences);
   const generateFormFrom = component.component.definition.properties['generateFormFrom'] || null;
-  const generatedFields = component.component.definition.properties['fields'] || [];
+  const generatedFields = component.component.definition.properties['fields']?.value || [];
   const isFormGenerated = generatedFields.length > 0;
 
   let jsonData = null,
@@ -62,6 +62,19 @@ const DataSectionUI = ({ component, darkMode = false }) => {
     ]);
     setShowAddFieldPopover(false);
   };
+
+  const renderRefreshButton = () => (
+    <div className="tw-flex tw-justify-center tw-items-center">
+      <Button
+        fill={'#ACB2B9'}
+        leadingIcon="arrowdirectionloop"
+        variant={'outline'}
+        onClick={() => setIsModalOpen(true)}
+      >
+        Refresh data
+      </Button>
+    </div>
+  );
 
   const renderRefreshDataSection = () => {
     return (
@@ -128,22 +141,24 @@ const DataSectionUI = ({ component, darkMode = false }) => {
 
   return (
     <>
-      <div className="tw-flex tw-justify-center tw-items-center form-data-section">
-        <Button
-          fill={generateFormFrom === null ? '#E4E7EB' : '#4368E3'}
-          leadingIcon="plus"
-          variant={generateFormFrom === null ? 'outline' : 'secondary'}
-          onClick={() => setIsModalOpen(true)}
-          disabled={generateFormFrom === null}
-        >
-          Generate form
-        </Button>
-      </div>
-      {isFormGenerated && (
+      {isFormGenerated ? (
         <>
+          {renderRefreshButton()}
           {renderRefreshDataSection()}
           {renderCustomSchemaSection()}
         </>
+      ) : (
+        <div className="tw-flex tw-justify-center tw-items-center form-generate-form-btn">
+          <Button
+            fill={generateFormFrom === null ? '#E4E7EB' : '#4368E3'}
+            leadingIcon="plus"
+            variant={generateFormFrom === null ? 'outline' : 'secondary'}
+            onClick={() => setIsModalOpen(true)}
+            disabled={generateFormFrom === null}
+          >
+            Generate form
+          </Button>
+        </div>
       )}
       <div className="tw-flex tw-justify-between tw-items-center tw-gap-1.5">
         <div className="tw-flex-1">
@@ -162,10 +177,10 @@ const DataSectionUI = ({ component, darkMode = false }) => {
           columns={fields}
           mode="mapping"
           title="Map columns"
+          isFormGenerated={isFormGenerated}
           onSubmit={(columns) => {
-            console.log('here--- columns--- ', columns);
-            // setFields(selectedFields);
-            // setIsModalOpen(false);
+            paramUpdated({ name: 'fields' }, 'value', columns, 'properties');
+            setIsModalOpen(false);
           }}
         />
       )}

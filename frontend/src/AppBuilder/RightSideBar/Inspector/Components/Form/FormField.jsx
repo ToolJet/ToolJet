@@ -18,6 +18,10 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
     }
   }, [activeMenu, fieldData.name]);
 
+  useEffect(() => {
+    setFieldData(field);
+  }, [field]);
+
   const handleFieldChange = (changes) => {
     setFieldData((prev) => ({ ...prev, ...changes }));
   };

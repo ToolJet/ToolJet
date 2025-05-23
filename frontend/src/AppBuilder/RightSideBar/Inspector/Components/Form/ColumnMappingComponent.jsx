@@ -96,27 +96,16 @@ const ColumnMappingRow = ({
   );
 };
 
-const ColumnMappingComponent = ({
-  isOpen,
-  onClose,
-  columns = [],
-  mode = 'mapping',
-  darkMode = false,
-  onSubmit,
-  title,
-}) => {
-  const [isGenerating, setIsGenerating] = useState(false);
+const RenderSection = ({ columns = [], title, mode = 'mapping', darkMode }) => {
   const [mappedColumns, setMappedColumns] = useState(columns);
-
-  useEffect(() => {
-    setMappedColumns(columns);
-  }, [columns]);
-
   // Compute states from mappedColumns
   const isAllSelected = mappedColumns.every((col) => col.selected);
   const isIntermediateSelected = !isAllSelected && mappedColumns.some((col) => col.selected);
   const isAllSelectedMandatory = mappedColumns.every((col) => col.mandatory);
   const isIntermediateMandatory = !isAllSelectedMandatory && mappedColumns.some((col) => col.mandatory);
+
+  const isNew = mode === 'new';
+  const isRemoved = mode === 'removed';
 
   const handleSelectAll = (checked) => {
     setMappedColumns((prev) =>
@@ -144,14 +133,6 @@ const ColumnMappingComponent = ({
     setMappedColumns((prev) => prev.map((col) => (col.name === columnName ? { ...col, ...changes } : col)));
   };
 
-  const handleSubmit = () => {
-    setIsGenerating(true);
-    onSubmit?.(mappedColumns);
-    setTimeout(() => {
-      setIsGenerating(false);
-    }, 500);
-  };
-
   const renderEditableIcon = () => {
     return (
       <div className="tw-mr-2 editable-icon">
@@ -160,68 +141,104 @@ const ColumnMappingComponent = ({
     );
   };
 
+  const renderHeader = () => {
+    return (
+      <div className="tw-flex tw-items-center tw-w-full tw-py-[10px] tw-px-2 header-row column-mapping-row">
+        <div className="tw-w-6 header-column">
+          <Checkbox
+            checked={isAllSelected || isIntermediateSelected}
+            onCheckedChange={handleSelectAll}
+            intermediate={isIntermediateSelected}
+          />
+        </div>
+        <div className="name-column header-column">
+          <span className="text-default small-medium">Column name</span>
+        </div>
+        <div className="arrow-column header-column" />
+        <div className="mapped-column header-column tw-flex">
+          {renderEditableIcon()}
+          <span className="text-default small-medium">Mapped to</span>
+        </div>
+        <div className="type-column tw-flex-1 header-column tw-flex">
+          {renderEditableIcon()}
+          <span className="text-default small-medium">Input label</span>
+        </div>
+        <div className="mandatory-column header-column tw-flex tw-justify-end">
+          <span className="text-default small-medium tw-mr-2">Mandatory?</span>
+          <Checkbox
+            checked={isAllSelectedMandatory || isIntermediateMandatory}
+            onCheckedChange={handleSelectAllMandatory}
+            intermediate={!isAllSelectedMandatory && isIntermediateMandatory}
+          />
+        </div>
+        {mode === 'manage' && <div className="tw-w-10" />}
+      </div>
+    );
+  };
+
+  return (
+    <div className="tw-w-full column-mapping-modal-body-content">
+      <div className={cn('large-medium column-mapping-modal-title', { new: isNew, removed: isRemoved })}>Existing</div>
+      {/* Header Row */}
+      {renderHeader()}
+
+      {/* Rows */}
+      <div className="tw-max-h-[400px] tw-overflow-y-auto">
+        {columns.map((column, index) => (
+          <ColumnMappingRow
+            key={column.name}
+            column={mappedColumns.find((c) => c.name === column.name)}
+            isChecked={mappedColumns.find((c) => c.name === column.name)?.selected}
+            onCheckboxChange={(checked) => handleColumnSelect(column.name, checked)}
+            onChange={(changes) => handleColumnChange(column.name, changes)}
+            mode={mode}
+            index={index}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ColumnMappingComponent = ({
+  isOpen,
+  onClose,
+  columns = [],
+  mode = 'mapping',
+  darkMode = false,
+  onSubmit,
+  isFormGenerated,
+  title,
+}) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [mappedColumns, setMappedColumns] = useState(columns);
+
+  useEffect(() => {
+    setMappedColumns(columns);
+  }, [columns]);
+
+  const handleSubmit = () => {
+    setIsSaving(true);
+    onSubmit?.(mappedColumns);
+    // setTimeout(() => {
+    //   setIsGenerating(false);
+    // }, 500);
+  };
+
   const modalBody = (
     <div className="tw-w-full column-mapping-modal-body-container">
-      <div className="tw-w-full column-mapping-modal-body-content">
-        {/* Header Row */}
-        <div className="tw-flex tw-items-center tw-w-full tw-py-[10px] tw-px-2 header-row column-mapping-row">
-          <div className="tw-w-6 header-column">
-            <Checkbox
-              checked={isAllSelected || isIntermediateSelected}
-              onCheckedChange={handleSelectAll}
-              intermediate={isIntermediateSelected}
-            />
-          </div>
-          <div className="name-column header-column">
-            <span className="text-default small-medium">Column name</span>
-          </div>
-          <div className="arrow-column header-column" />
-          <div className="mapped-column header-column tw-flex">
-            {renderEditableIcon()}
-            <span className="text-default small-medium">Mapped to</span>
-          </div>
-          <div className="type-column tw-flex-1 header-column tw-flex">
-            {renderEditableIcon()}
-            <span className="text-default small-medium">Input label</span>
-          </div>
-          <div className="mandatory-column header-column tw-flex tw-justify-end">
-            <span className="text-default small-medium tw-mr-2">Mandatory?</span>
-            <Checkbox
-              checked={isAllSelectedMandatory || isIntermediateMandatory}
-              onCheckedChange={handleSelectAllMandatory}
-              intermediate={!isAllSelectedMandatory && isIntermediateMandatory}
-            />
-          </div>
-          {mode === 'manage' && <div className="tw-w-10" />}
-        </div>
-
-        {/* Rows */}
-        <div className="tw-max-h-[400px] tw-overflow-y-auto">
-          {columns.map((column, index) => (
-            <ColumnMappingRow
-              key={column.name}
-              column={mappedColumns.find((c) => c.name === column.name)}
-              isChecked={mappedColumns.find((c) => c.name === column.name)?.selected}
-              onCheckboxChange={(checked) => handleColumnSelect(column.name, checked)}
-              onChange={(changes) => handleColumnChange(column.name, changes)}
-              mode={mode}
-              index={index}
-            />
-          ))}
-        </div>
-      </div>
-
+      <RenderSection columns={mappedColumns} title={title} mode={mode} darkMode={darkMode} />
       {/* Footer */}
       <div className="tw-flex tw-justify-end tw-mt-4">
         <Button
           variant="primary"
           onClick={handleSubmit}
-          disabled={mappedColumns.every((col) => !col.selected) || isGenerating}
-          leadingIcon="plus"
-          isLoading={isGenerating}
-          loaderText="Generating"
+          disabled={mappedColumns.every((col) => !col.selected) || isSaving}
+          leadingIcon={isFormGenerated ? 'save' : 'plus'}
+          isLoading={isSaving}
+          loaderText={isFormGenerated ? 'Saving' : 'Generating'}
         >
-          Generate form
+          {isFormGenerated ? 'Save' : 'Generate form'}
         </Button>
       </div>
     </div>

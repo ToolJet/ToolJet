@@ -86,7 +86,7 @@ export const Form = ({
             darkMode
           );
         })}
-        <DataSectionUI component={component} />
+        <DataSectionUI component={component} paramUpdated={paramUpdated} darkMode={darkMode} />
       </>
     );
   };
