@@ -5,8 +5,11 @@ import Popover from 'react-bootstrap/Popover';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
+  const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState(field);
   const { handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
@@ -62,7 +65,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
             size="default"
             onClick={() => {
               onMenuToggle(null);
-              setTimeout(() => setShowPopover(true), 100);
+              setSelectedComponents([field.componentId]);
             }}
             className="base-regular"
             leadingIcon="inspect"
