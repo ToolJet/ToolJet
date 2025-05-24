@@ -22,7 +22,8 @@ export interface IDataQueriesService {
     updateDataQueryDto: UpdateDataQueryDto,
     ability: object,
     dataSource: DataSource,
-    response: Response
+    response: Response,
+    mode?: string
   ): Promise<object>;
 
   runQueryForApp(

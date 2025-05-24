@@ -113,7 +113,8 @@ export class DataQueriesController implements IDataQueriesController {
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Ability() ability: AppAbility,
     @DataSource() dataSource: DataSourceEntity,
-    @Res({ passthrough: true }) response: Response
+    @Res({ passthrough: true }) response: Response,
+    @Query('mode') mode?: string
   ) {
     return this.dataQueriesService.runQueryOnBuilder(
       user,
@@ -122,7 +123,8 @@ export class DataQueriesController implements IDataQueriesController {
       updateDataQueryDto,
       ability,
       dataSource,
-      response
+      response,
+      mode
     );
   }
 

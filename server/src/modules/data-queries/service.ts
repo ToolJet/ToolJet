@@ -127,7 +127,8 @@ export class DataQueriesService implements IDataQueriesService {
     updateDataQueryDto: UpdateDataQueryDto,
     ability: AppAbility,
     dataSource: DataSource,
-    response: Response
+    response: Response,
+    mode?: string
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -153,7 +154,7 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, options, response, environmentId);
   }
 
-  private async runAndGetResult(
+  protected async runAndGetResult(
     user: User,
     dataQuery: DataQuery,
     resolvedOptions: object,
