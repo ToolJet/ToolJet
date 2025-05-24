@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Popover from 'react-bootstrap/Popover';
 import { Button } from '@/components/ui/Button/Button';
-import { useDropdownState } from './hooks/useDropdownState';
 import { getInputTypeOptions } from './utils';
 
 const FieldPopoverContent = ({
@@ -14,44 +13,62 @@ const FieldPopoverContent = ({
   mode = 'edit',
   onDropdownOpen,
   onDropdownClose,
-  shouldPreventPopoverClose,
 }) => {
-  // const { handleDropdownOpen, handleDropdownClose } = useDropdownState();
+  // Initialize local state with the provided field
+  const [localField, setLocalField] = useState(field ?? {});
+
+  // Update local state if external field prop changes
+  useEffect(() => {
+    setLocalField({ ...field });
+  }, [field]);
 
   const inputTypeOptions = getInputTypeOptions(darkMode);
 
+  // Handle changes to any field property
+  const handleFieldChange = (property, value) => {
+    setLocalField((prevField) => ({ ...prevField, [property]: value }));
+  };
+
+  // Handle form submission
+  const handleSubmit = () => {
+    onChange?.(localField);
+    if (mode !== 'edit') {
+      onClose?.();
+    }
+  };
+
   const renderPlaceholder = () => {
-    if (['Checkbox', 'RadioButtonV2', 'Datepicker'].includes(field.componentType)) return null;
+    if (['Checkbox', 'RadioButtonV2', 'Datepicker'].includes(localField.componentType)) return null;
     return (
       <div>
         <label className="tw-text-text-default base-medium">Placeholder</label>
         <CodeHinter
           type={'basic'}
-          initialValue={''}
+          initialValue={localField.placeholder || ''}
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
           placeholder={'Enter email id'}
-          // onChange={(value) => handleLabelChange(value, index)}
+          onChange={(value) => handleFieldChange('placeholder', value)}
         />
       </div>
     );
   };
 
   const renderDefaultValue = () => {
-    if (['RadioButtonV2', 'DropdownV2', 'MultiselectV2'].includes(field.componentType)) return null;
+    if (['RadioButtonV2', 'DropdownV2', 'MultiselectV2'].includes(localField.componentType)) return null;
 
     return (
       <div>
         <label className="tw-text-text-default base-medium">Default value</label>
         <CodeHinter
           type={'basic'}
-          initialValue={field.value || ''}
+          initialValue={localField.value || ''}
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
           placeholder={'{{}}'}
-          // onChange={(value) => handleLabelChange(value, index)}
+          onChange={(value) => handleFieldChange('value', value)}
         />
       </div>
     );
@@ -68,7 +85,7 @@ const FieldPopoverContent = ({
               <Button iconOnly leadingIcon="eyedisable" variant="ghost" size="medium" />
             </>
           ) : (
-            <Button iconOnly leadingIcon="remove" variant="ghost" size="medium" onClick={onClose} />
+            <Button iconOnly leadingIcon="remove" variant="ghost" size="medium" />
           )}
         </div>
       </Popover.Header>
@@ -81,12 +98,10 @@ const FieldPopoverContent = ({
               id="field-type"
               size="medium"
               zIndex={9999}
-              value={field.componentType || 'TextInput'}
-              leadingIcon={inputTypeOptions[field.componentType || 'TextInput'].leadingIcon}
+              value={localField.componentType || 'TextInput'}
+              leadingIcon={inputTypeOptions[localField.componentType || 'TextInput'].leadingIcon}
               onChange={(value) => {
-                if (!shouldPreventPopoverClose) {
-                  onChange?.({ ...field, componentType: value });
-                }
+                handleFieldChange('componentType', value);
               }}
               width="100%"
               label="Component"
@@ -99,12 +114,12 @@ const FieldPopoverContent = ({
             <label className="tw-text-text-default base-medium">Label</label>
             <CodeHinter
               type={'basic'}
-              initialValue={field.label || ''}
+              initialValue={localField.label || ''}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               placeholder={'Email id'}
-              // onChange={(value) => handleLabelChange(value, index)}
+              onChange={(value) => handleFieldChange('label', value)}
             />
           </div>
 
@@ -113,7 +128,7 @@ const FieldPopoverContent = ({
 
           <div className="field mb-2">
             <CodeHinter
-              initialValue={field.mandatory || false}
+              initialValue={localField.mandatory || false}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -127,12 +142,13 @@ const FieldPopoverContent = ({
                 isFxNotRequired: true,
               }}
               paramType={'toggle'}
+              onChange={(value) => handleFieldChange('mandatory', value)}
             />
           </div>
-          {mode === 'edit' ? (
+          {mode === 'edit' && (
             <div className="field m-0">
               <CodeHinter
-                initialValue={field.selected || false}
+                initialValue={localField.selected || false}
                 theme={darkMode ? 'monokai' : 'default'}
                 mode="javascript"
                 lineNumbers={false}
@@ -146,22 +162,22 @@ const FieldPopoverContent = ({
                   isFxNotRequired: true,
                 }}
                 paramType={'toggle'}
+                onChange={(value) => handleFieldChange('selected', value)}
               />
             </div>
-          ) : (
-            <Button
-              leadingIcon="plus"
-              variant="primary"
-              onClick={() => onChange?.(field)}
-              className="tw-w-full tw-rounded-[6px]"
-            >
-              Add Field
-            </Button>
           )}
+          <Button
+            leadingIcon={mode === 'edit' ? 'save' : 'plus'}
+            variant="primary"
+            onClick={handleSubmit}
+            className="tw-w-full tw-rounded-[6px]"
+          >
+            {mode === 'edit' ? 'Save' : 'Add Field'}
+          </Button>
         </div>
       </Popover.Body>
     </>
   );
 };
 
-export default FieldPopoverContent;
+export default React.memo(FieldPopoverContent);

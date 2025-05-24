@@ -53,17 +53,18 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   };
 
   const handleAddField = (newField) => {
-    setFields((prevFields) => [
-      ...prevFields,
-      {
-        name: newField.label || 'New Field',
-        dataType: 'string',
-        inputType: newField.type || 'text',
-        mandatory: false,
-        label: newField.label || 'New Field',
-        selected: true,
-      },
-    ]);
+    const updatedFields = {
+      componentType: newField.componentType,
+      name: 'custom',
+      mandatory: newField.mandatory,
+      label: newField.label,
+      value: '',
+      placeholder: newField.placeholder,
+      selected: `{{true}}`,
+      isCustomField: true,
+    };
+    console.log('here--- newField--- ', updatedFields);
+
     setShowAddFieldPopover(false);
   };
 
@@ -126,7 +127,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
         overlay={
           <Popover id="add-field-popover" className="shadow form-fields-column-popover">
             <FieldPopoverContent
-              field={{}}
+              field={undefined}
               onChange={handleAddField}
               onClose={() => setShowAddFieldPopover(false)}
               darkMode={darkMode}
