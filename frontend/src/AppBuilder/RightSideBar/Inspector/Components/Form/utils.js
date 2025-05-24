@@ -274,7 +274,7 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
     };
 
     // Set default value if available in column
-    if (column.value !== undefined && column.value !== null) {
+    if (column.value !== undefined && column.value !== null && !column.isCustomField) {
       if (componentType === 'TextInput') {
         set(formField.component.definition.properties, 'value.value', column.value);
       }
@@ -291,10 +291,15 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
       }
     }
 
+    if (column.placeholder && componentType !== 'Checkbox' && componentType !== 'DatePickerV2') {
+      set(formField.component.definition.properties, 'placeholder.value', column.placeholder);
+    }
+
     // Update the current top position for the next field
     currentTop = fieldTop + defaultHeight;
 
     formFieldComponents.push(formField);
+    column.isCustomField = column.isCustomField ?? false; // Update the column to indicate it's a custom field
     column.name = componentName; // Update column name to match the generated component name
     column.componentId = fieldId; // Add componentId to the column for reference
   });

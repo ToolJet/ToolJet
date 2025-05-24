@@ -52,7 +52,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     setFields((prevFields) => prevFields.filter((_, i) => i !== index));
   };
 
-  const createComponentAndUpdateFields = async (columns) => {
+  const createComponentAndUpdateFields = async (columns, isSingleField = false, isUpdate = false) => {
     const childComponents = getChildComponents(component?.id);
     if (childComponents) {
       // Get the last position of the child components
@@ -69,8 +69,13 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       if (formFields.length > 0) {
         await addComponentToCurrentPage(formFields);
       }
+
       // Update the form fields property
-      paramUpdated({ name: 'fields' }, 'value', updatedColumns, 'properties');
+      if (isSingleField) {
+        paramUpdated({ name: 'fields' }, 'value', [...fields, ...updatedColumns], 'properties');
+      } else {
+        paramUpdated({ name: 'fields' }, 'value', updatedColumns, 'properties');
+      }
     }
   };
 
@@ -85,7 +90,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       selected: `{{true}}`,
       isCustomField: true,
     };
-    createComponentAndUpdateFields([updatedFields]);
+    createComponentAndUpdateFields([updatedFields], true);
     // Close the popover after adding the field
     setShowAddFieldPopover(false);
   };
