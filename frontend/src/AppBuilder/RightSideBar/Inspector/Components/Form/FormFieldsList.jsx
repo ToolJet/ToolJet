@@ -22,7 +22,7 @@ export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen }) => {
             field={field}
             activeMenu={activeMenuField}
             onMenuToggle={(fieldName) => setActiveMenuField(fieldName)}
-            onDelete={() => onDeleteField(index)}
+            onDelete={onDeleteField}
           />
         ))}
       </div>

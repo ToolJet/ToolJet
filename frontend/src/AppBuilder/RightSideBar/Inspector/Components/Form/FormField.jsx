@@ -76,8 +76,9 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
           <Button
             variant="ghost"
             size="default"
-            onClick={() => {
-              onDelete?.();
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent closing the main popover
+              onDelete(fieldData);
               onMenuToggle(null);
             }}
             className="base-regular"

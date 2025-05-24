@@ -16,6 +16,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   const resolveReferences = useStore((state) => state.resolveReferences, shallow);
   const getChildComponents = useStore((state) => state.getChildComponents, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
+  const deleteComponents = useStore((state) => state.deleteComponents, shallow);
   const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
   const generateFormFrom = component.component.definition.properties['generateFormFrom'] || null;
   const generatedFields = component.component.definition.properties['fields']?.value || [];
@@ -50,8 +51,10 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     }
   }, [JSON.stringify(formattedJson), JSON.stringify(generatedFields), isFormGenerated]);
 
-  const handleDeleteField = (index) => {
-    // setFields((prevFields) => prevFields.filter((_, i) => i !== index));
+  const handleDeleteField = (field) => {
+    const updatedFields = fields.filter((f) => f.componentId !== field.componentId);
+    deleteComponents([field.componentId]);
+    paramUpdated({ name: 'fields' }, 'value', updatedFields, 'properties');
   };
 
   const createComponentAndUpdateFields = async (columns, isSingleField = false, isUpdate = false) => {

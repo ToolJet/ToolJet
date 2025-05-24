@@ -901,36 +901,39 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       deleteComponentNameIdMapping,
       removeNode,
+      checkIfParentIsFormAndDeleteField,
     } = get();
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
+
+    const toDeleteComponents = [];
+    const toDeleteEvents = [];
+    const allComponents = getCurrentPageComponents();
+
+    const findAllChildComponents = (componentId) => {
+      if (!toDeleteComponents.includes(componentId)) {
+        toDeleteComponents.push(componentId);
+
+        // Find the children of this component
+        const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
+        if (children.length > 0) {
+          // Recursively find children of children
+          children.forEach((child) => {
+            findAllChildComponents(child);
+          });
+        }
+      }
+    };
+
+    _selectedComponents.forEach((componentId) => {
+      checkIfParentIsFormAndDeleteField(componentId, moduleId);
+      findAllChildComponents(componentId);
+    });
+
     set(
       withUndoRedo((state) => {
-        const toDeleteComponents = [];
-        const toDeleteEvents = [];
-        const allComponents = getCurrentPageComponents();
-
-        const findAllChildComponents = (componentId) => {
-          if (!toDeleteComponents.includes(componentId)) {
-            toDeleteComponents.push(componentId);
-
-            // Find the children of this component
-            const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
-            if (children.length > 0) {
-              // Recursively find children of children
-              children.forEach((child) => {
-                findAllChildComponents(child);
-              });
-            }
-          }
-        };
-
-        _selectedComponents.forEach((componentId) => {
-          findAllChildComponents(componentId);
-        });
-
         const page = state.modules?.canvas?.pages.find((page) => page.id === state.currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
@@ -1919,5 +1922,19 @@ export const createComponentsSlice = (set, get) => ({
     }, 0);
 
     setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+  },
+  // Check if the parent component is a Form and delete the form fields if it has the componentId
+  checkIfParentIsFormAndDeleteField: (componentId, moduleId = 'canvas') => {
+    const { getParentComponentType, getComponentDefinition, setComponentProperty } = get();
+    const componentDefinition = getComponentDefinition(componentId, moduleId);
+    const parentId = componentDefinition?.component?.parent;
+    if (!parentId) return;
+
+    if (getParentComponentType(parentId, moduleId) === 'Form') {
+      const componentDefinition = getComponentDefinition(parentId, moduleId);
+      const fields = componentDefinition?.component?.definition?.properties?.fields?.value || [];
+      const updatedFields = fields.filter((field) => field.componentId !== componentId);
+      setComponentProperty(parentId, 'fields', updatedFields, 'properties', 'value', false, moduleId);
+    }
   },
 });
