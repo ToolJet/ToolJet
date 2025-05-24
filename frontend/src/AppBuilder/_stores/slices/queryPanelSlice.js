@@ -215,6 +215,7 @@ export const createQueryPanelSlice = (set, get) => ({
         selectedEnvironment,
         isPublicAccess,
         currentVersionId,
+        currentMode,
       } = get();
       const {
         queryPreviewData,
@@ -352,7 +353,8 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             query?.options,
             currentVersionId,
-            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
+            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            currentMode
           );
         }
 

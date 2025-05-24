@@ -10,11 +10,13 @@ import {
   JoinTable,
   ManyToMany,
   AfterLoad,
+  OneToMany,
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
+import { QueryPermission } from './query_permissions.entity';
 
 @Entity({ name: 'data_queries' })
 export class DataQuery extends BaseEntity {
@@ -80,6 +82,9 @@ export class DataQuery extends BaseEntity {
   apps: App[];
 
   app: App;
+
+  @OneToMany(() => QueryPermission, (permission) => permission.query)
+  permissions: QueryPermission[];
 
   @AfterLoad()
   updatePlugin() {

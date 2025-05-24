@@ -177,7 +177,7 @@ export default function PagePermission({ darkMode }) {
 
   const createPagePermission = () => {
     const body = {
-      pageId: editingPage?.id,
+      id: editingPage?.id,
       type: PERMISSION_TYPES[pagePermissionType],
       ...(pagePermissionType === 'group'
         ? { groups: selectedUserGroups.map((group) => group?.value) }
@@ -205,7 +205,7 @@ export default function PagePermission({ darkMode }) {
 
   const updatePagePermission = () => {
     const body = {
-      pageId: editingPage?.id,
+      id: editingPage?.id,
       type: PERMISSION_TYPES[pagePermissionType],
       ...(pagePermissionType === 'group'
         ? { groups: selectedUserGroups.map((group) => group?.value) }

@@ -4,6 +4,12 @@ export enum PAGE_PERMISSION_TYPE {
   ALL = 'ALL',
 }
 
+export enum PERMISSION_ENTITY_TYPE {
+  PAGE = 'PAGE',
+  QUERY = 'QUERY',
+  COMPONENT = 'COMPONENT',
+}
+
 export enum FEATURE_KEY {
   FETCH_USERS = 'fetch_users',
   FETCH_USER_GROUPS = 'fetch_user_groups',
@@ -11,4 +17,8 @@ export enum FEATURE_KEY {
   CREATE_PAGE_PERMISSIONS = 'create_page_permissions',
   UPDATE_PAGE_PERMISSIONS = 'update_page_permissions',
   DELETE_PAGE_PERMISSIONS = 'delete_page_permissions',
+  FETCH_QUERY_PERMISSIONS = 'fetch_query_permissions',
+  CREATE_QUERY_PERMISSIONS = 'create_query_permissions',
+  UPDATE_QUERY_PERMISSIONS = 'update_query_permissions',
+  DELETE_QUERY_PERMISSIONS = 'delete_query_permissions',
 }
