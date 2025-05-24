@@ -124,6 +124,14 @@
                     }
                 }
             }
+
+            .no-mapped-column {
+                border-radius: 9px;
+                background-color: #88909914;
+                height: 18px;
+                padding: 0px 6px;
+                color: var(--text-placeholder, #6A727C);
+            }
         }
 
     }

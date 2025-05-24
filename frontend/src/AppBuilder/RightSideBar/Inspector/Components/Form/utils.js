@@ -222,7 +222,6 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
     // Create a deep clone of the component definition to avoid reference issues
     const componentData = deepClone(componentMeta);
     const componentName = generateUniqueComponentName(column.name);
-    console.log('here--- componentName--- ', componentName);
 
     // Initialize the form field with default component properties
     const formField = {
@@ -360,4 +359,15 @@ export const generateUniqueComponentName = (baseName) => {
   }
 
   return newName;
+};
+
+// Helper function to check if a value is considered "true"
+export const isTrueValue = (value) => {
+  if (value === true) return true;
+  if (typeof value === 'string') {
+    const trimmedValue = value.trim().toLowerCase();
+    // Check for "{{true}}" format or just "true"
+    return trimmedValue === '{{true}}' || trimmedValue === 'true';
+  }
+  return false;
 };

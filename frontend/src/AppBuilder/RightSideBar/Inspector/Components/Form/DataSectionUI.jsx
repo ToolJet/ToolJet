@@ -40,16 +40,18 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAddFieldPopover, setShowAddFieldPopover] = useState(false);
   const addFieldButtonRef = useRef(null);
-  const [fields, setFields] = useState(formattedJson || []);
+  const [fields, setFields] = useState(isFormGenerated ? generatedFields : formattedJson || []);
 
   useEffect(() => {
-    if (formattedJson) {
+    if (isFormGenerated) {
+      setFields(generatedFields);
+    } else if (formattedJson) {
       setFields(formattedJson);
     }
-  }, [JSON.stringify(formattedJson)]);
+  }, [JSON.stringify(formattedJson), JSON.stringify(generatedFields), isFormGenerated]);
 
   const handleDeleteField = (index) => {
-    setFields((prevFields) => prevFields.filter((_, i) => i !== index));
+    // setFields((prevFields) => prevFields.filter((_, i) => i !== index));
   };
 
   const createComponentAndUpdateFields = async (columns, isSingleField = false, isUpdate = false) => {
@@ -199,7 +201,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
         {isFormGenerated && renderAddCustomFieldButton()}
       </div>
 
-      <FormFieldsList fields={generatedFields} onDeleteField={handleDeleteField} setIsModalOpen={setIsModalOpen} />
+      <FormFieldsList fields={fields} onDeleteField={handleDeleteField} setIsModalOpen={setIsModalOpen} />
 
       {isModalOpen && (
         <ColumnMappingComponent
@@ -207,8 +209,6 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
           onClose={() => setIsModalOpen(false)}
           darkMode={darkMode}
           columns={fields}
-          mode="mapping"
-          title="Map columns"
           isFormGenerated={isFormGenerated}
           onSubmit={(columns) => {
             try {
