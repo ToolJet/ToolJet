@@ -6,6 +6,7 @@ import { QueryService } from './query_service.interface';
 import {
   isEmpty,
   cacheConnection,
+  configCacheConnection,
   getCachedConnection,
   parseJson,
   cleanSensitiveData,
@@ -37,6 +38,7 @@ export {
   User,
   App,
   cacheConnection,
+  configCacheConnection,
   getCachedConnection,
   parseJson,
   isEmpty,

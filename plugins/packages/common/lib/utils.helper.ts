@@ -17,8 +17,19 @@ export function cacheConnection(dataSourceId: string, connection: any): any {
   CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
 }
 
-export function getCachedConnection(dataSourceId: string | number, dataSourceUpdatedAt: any): any {
-  const cachedData = CACHED_CONNECTIONS[dataSourceId];
+export function configCacheConnection(dataSourceId: string, enhancedCacheKey: string, connection: any): any {
+  const updatedAt = new Date();
+  const allKeys = Object.keys(CACHED_CONNECTIONS);
+  const oldKeysForThisDatasource = allKeys.filter(
+    (key) => key.startsWith(`${dataSourceId}_`) && key !== enhancedCacheKey
+  );
+  oldKeysForThisDatasource.forEach((oldKey) => delete CACHED_CONNECTIONS[oldKey]);
+
+  CACHED_CONNECTIONS[enhancedCacheKey] = { connection, updatedAt };
+}
+
+export function getCachedConnection(cacheKey: string | number, dataSourceUpdatedAt: any): any {
+  const cachedData = CACHED_CONNECTIONS[cacheKey];
 
   if (cachedData) {
     const updatedAt = new Date(dataSourceUpdatedAt || null);

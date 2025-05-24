@@ -1,6 +1,6 @@
 import {
   ConnectionTestResult,
-  cacheConnection,
+  configCacheConnection,
   getCachedConnection,
   QueryService,
   QueryResult,
@@ -9,6 +9,7 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
 import { isEmpty } from '@tooljet-plugins/common';
+import crypto from 'crypto';
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
@@ -145,13 +146,27 @@ export default class PostgresqlQueryService implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<Knex> {
     if (checkCache) {
-      const cachedConnection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
+      const optionsHash = this.generateSourceOptionsHash(sourceOptions);
+      const enhancedCacheKey = `${dataSourceId}_${optionsHash}_${dataSourceUpdatedAt}`;
+      const cachedConnection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
       if (cachedConnection) return cachedConnection;
+
+      const connection = await this.buildConnection(sourceOptions);
+      configCacheConnection(dataSourceId, enhancedCacheKey, connection);
+      return connection;
     }
 
-    const connection = await this.buildConnection(sourceOptions);
-    if (checkCache && dataSourceId) cacheConnection(dataSourceId, connection);
-    return connection;
+    return await this.buildConnection(sourceOptions);
+  }
+
+  private generateSourceOptionsHash(sourceOptions) {
+    const sortedEntries = Object.entries(sourceOptions)
+      .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}:${value}`)
+      .join('|');
+
+    return crypto.createHash('sha256').update(sortedEntries).digest('hex').substring(0, 16);
   }
 
   buildBulkUpdateQuery(queryOptions: QueryOptions): string {
