@@ -5,6 +5,7 @@ import { startCase, merge, set } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const isValidJSONObject = (jsonString) => {
   try {
@@ -62,7 +63,7 @@ export const parseData = (data) => {
           key: `${key}.${nestedKey}`,
           name: `${key}.${nestedKey}`,
           label: startCase(nestedKey),
-          value: dataType === 'number' || dataType === 'boolean' ? `{{${nestedValue}}}` : nestedValue,
+          value: dataType === 'number' || dataType === 'boolean' ? ensureHandlebars(nestedValue) : nestedValue,
           dataType: dataType,
           componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
           mandatory: false,
@@ -75,7 +76,7 @@ export const parseData = (data) => {
         key,
         name: key,
         label: startCase(key),
-        value: dataType === 'number' || dataType === 'boolean' ? `{{${value}}}` : value,
+        value: dataType === 'number' || dataType === 'boolean' ? ensureHandlebars(value) : value,
         dataType: dataType,
         componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
         mandatory: false,
@@ -220,15 +221,17 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
 
     // Create a deep clone of the component definition to avoid reference issues
     const componentData = deepClone(componentMeta);
+    const componentName = generateUniqueComponentName(column.name);
+    console.log('here--- componentName--- ', componentName);
 
     // Initialize the form field with default component properties
     const formField = {
       id: fieldId,
-      name: column.name,
+      name: componentName,
       component: {
         ...componentData,
         component: componentType,
-        name: column.name,
+        name: componentName,
         parent: parentId,
         definition: merge({}, componentData.definition, {
           properties: {
@@ -236,12 +239,12 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
               value: column.label,
             },
             visibility: {
-              value: `{{${column.selected || false}}}`,
+              value: ensureHandlebars(column.selected || false),
             },
           },
           validation: {
             mandatory: {
-              value: `{{${column.mandatory || false}}}`,
+              value: ensureHandlebars(column.mandatory || false),
             },
           },
           others: {
@@ -271,13 +274,12 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
     };
 
     // Set default value if available in column
-
     if (column.value !== undefined && column.value !== null) {
       if (componentType === 'TextInput') {
         set(formField.component.definition.properties, 'value.value', column.value);
       }
       if (componentType === 'NumberInput') {
-        set(formField.component.definition.properties, 'value.value', `{{${column.value}}}`);
+        set(formField.component.definition.properties, 'value.value', ensureHandlebars(column.value));
       } else if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
         set(formField.component.definition.properties, 'defaultValue.value', column.value);
       } else if (
@@ -293,12 +295,18 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
     currentTop = fieldTop + defaultHeight;
 
     formFieldComponents.push(formField);
+    column.name = componentName; // Update column name to match the generated component name
     column.componentId = fieldId; // Add componentId to the column for reference
   });
 
   return { updatedColumns: columns, formFields: formFieldComponents };
 };
 
+/**
+ * Builds options array for dropdown, multiselect, and radio button components
+ * @param {Array} options - Array of string values to convert to option objects
+ * @returns {Array} Array of option objects with label, value, and state properties
+ */
 const buildOptions = (options) =>
   options.map((option, index) => ({
     label: option,
@@ -307,3 +315,44 @@ const buildOptions = (options) =>
     visible: { value: true },
     default: { value: false },
   }));
+
+/**
+ * Ensures a value is wrapped in handlebars if it's not already
+ * @param {*} value - The value to wrap in handlebars
+ * @returns {string} Value properly wrapped in handlebars
+ */
+export const ensureHandlebars = (value) => {
+  if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
+    return value; // Already has handlebars
+  }
+  return `{{${value}}}`;
+};
+
+/**
+ * Generates a unique component name by checking if it already exists
+ * @param {string} baseName - The base name for the component
+ * @returns {string} Unique component name
+ */
+export const generateUniqueComponentName = (baseName) => {
+  const existingComponents = useStore.getState().getCurrentPageComponents();
+  if (!existingComponents || typeof existingComponents !== 'object') {
+    return baseName;
+  }
+
+  // Check if the base name is already available
+  if (!Object.values(existingComponents).some((component) => component.component.name === baseName)) {
+    return baseName;
+  }
+
+  // If base name exists, try adding numeric suffix
+  let counter = 1;
+  let newName = `${baseName}${counter}`;
+
+  // Keep incrementing counter until we find an available name
+  while (Object.values(existingComponents).some((component) => component.name === newName)) {
+    counter++;
+    newName = `${baseName}${counter}`;
+  }
+
+  return newName;
+};

@@ -52,6 +52,28 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     setFields((prevFields) => prevFields.filter((_, i) => i !== index));
   };
 
+  const createComponentAndUpdateFields = async (columns) => {
+    const childComponents = getChildComponents(component?.id);
+    if (childComponents) {
+      // Get the last position of the child components
+      const lastPosition = findLastElementPosition(childComponents, currentLayout);
+      // Create form field components from columns
+      const { updatedColumns, formFields } = createFormFieldComponents(
+        columns,
+        component.id,
+        currentLayout,
+        lastPosition
+      );
+
+      // Add the components to the canvas
+      if (formFields.length > 0) {
+        await addComponentToCurrentPage(formFields);
+      }
+      // Update the form fields property
+      paramUpdated({ name: 'fields' }, 'value', updatedColumns, 'properties');
+    }
+  };
+
   const handleAddField = (newField) => {
     const updatedFields = {
       componentType: newField.componentType,
@@ -63,8 +85,8 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       selected: `{{true}}`,
       isCustomField: true,
     };
-    console.log('here--- newField--- ', updatedFields);
-
+    createComponentAndUpdateFields([updatedFields]);
+    // Close the popover after adding the field
     setShowAddFieldPopover(false);
   };
 
@@ -183,27 +205,9 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
           mode="mapping"
           title="Map columns"
           isFormGenerated={isFormGenerated}
-          onSubmit={async (columns) => {
+          onSubmit={(columns) => {
             try {
-              const childComponents = getChildComponents(component?.id);
-              if (childComponents) {
-                // Get the last position of the child components
-                const lastPosition = findLastElementPosition(childComponents, currentLayout);
-                // Create form field components from columns
-                const { updatedColumns, formFields } = createFormFieldComponents(
-                  columns,
-                  component.id,
-                  currentLayout,
-                  lastPosition
-                );
-
-                // Add the components to the canvas
-                if (formFields.length > 0) {
-                  await addComponentToCurrentPage(formFields);
-                }
-                // Update the form fields property
-                paramUpdated({ name: 'fields' }, 'value', updatedColumns, 'properties');
-              }
+              createComponentAndUpdateFields(columns);
             } catch (error) {
               console.error('Error processing form fields:', error);
             }
