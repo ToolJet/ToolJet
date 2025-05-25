@@ -455,6 +455,9 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+
   return (
     <div className="inspector">
       <div>
@@ -468,7 +471,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-9 p-0 ${shouldFreeze && 'disabled'}`}>
+          <div className={`col-7 p-0 ${shouldFreeze && 'disabled'}`}>
             <div className="input-icon" style={{ marginLeft: '8px' }}>
               <input
                 onChange={(e) => setNewComponentName(e.target.value)}
@@ -518,6 +521,11 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                 <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
               </span>
             </OverlayTrigger>
+          </div>
+          <div className="col-2">
+            <span className="cursor-pointer" onClick={() => toggleRightSidebarPin()}>
+              <SolidIcon name={isRightSidebarPinned ? 'unpin' : 'pin'} width="24" fill={'var(--slate12)'} />
+            </span>
           </div>
         </div>
         <div className={`${shouldFreeze && 'disabled'}`}>
