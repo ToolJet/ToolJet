@@ -32,6 +32,9 @@ export class AddEnabledColumnProviderTable1747923859030 implements MigrationInte
         AND git_sync."git_type" = 'github_https';
     `);
 
+    await queryRunner.commitTransaction();
+    await queryRunner.startTransaction();
+
     await queryRunner.query(`
       UPDATE "organization_gitlab" gitlab
       SET "is_enabled" = TRUE 

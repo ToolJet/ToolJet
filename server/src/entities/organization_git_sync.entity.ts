@@ -38,14 +38,14 @@ export class OrganizationGitSync extends BaseEntity {
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
-  @Column({
-    name: 'git_type',
-    type: 'enum',
-    enumName: 'git_type',
-    enum: GITConnectionType,
-    default: GITConnectionType.GITHUB_SSH,
-  })
-  gitType: string;
+  // @Column({
+  //   name: 'git_type',
+  //   type: 'enum',
+  //   enumName: 'git_type',
+  //   enum: GITConnectionType,
+  //   default: GITConnectionType.GITHUB_SSH,
+  // })
+  // gitType: string;
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
