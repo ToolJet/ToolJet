@@ -17,6 +17,7 @@ import * as bcrypt from 'bcrypt';
 export class UserPersonalAccessToken extends BaseEntity {
   @BeforeInsert()
   @BeforeUpdate()
+  // need to remove this, use normal encryption (md5)
   hashToken(): void {
     if (this.tokenHash) {
       this.tokenHash = bcrypt.hashSync(this.tokenHash, 10);

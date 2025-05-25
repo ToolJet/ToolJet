@@ -39,6 +39,7 @@ export class UserPersonalAccessTokenRepository extends Repository<UserPersonalAc
     options?: { patExpiryMinutes?: number; sessionExpiryMinutes?: number }
   ): Promise<UserPersonalAccessToken> {
     const patExpiry = options?.patExpiryMinutes ?? (parseInt(process.env?.PAT_EXPIRY) || defaultPatExpiry) * 24 * 60; // default: 10 days
+    //defaultPatSessionExpiry should be equal to user session expiry
     const sessionExpiry =
       options?.sessionExpiryMinutes ?? (parseInt(process.env?.PAT_SESSION_EXPIRY) || defaultPatSessionExpiry); // default: 60 minutes
 
