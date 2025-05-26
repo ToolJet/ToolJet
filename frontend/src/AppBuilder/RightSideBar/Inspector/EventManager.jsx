@@ -35,6 +35,7 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { components as selectComponents } from 'react-select';
+import { APP_MODES } from '@/AppBuilder/LeftSidebar/GlobalSettings/AppModeToggle';
 
 export const EventManager = ({
   sourceId,
@@ -70,7 +71,6 @@ export const EventManager = ({
   const eventToDeleteLoaderIndex = useStore((state) => state.eventsSlice.getEventToDeleteLoaderIndex(), shallow);
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
-
   const { updateState } = useAppDataActions();
 
   const currentEvents = allAppEvents?.filter((event) => {
@@ -1016,6 +1016,29 @@ export const EventManager = ({
                       )}
                     </div>
                   ))}
+              </>
+            )}
+            {event.actionId === 'toggle-app-mode' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.appMode', 'App mode')}</div>
+                  <div className="col-9" data-cy="query-selection-field">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={APP_MODES}
+                      value={event?.appMode}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'appMode', value);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
               </>
             )}
             <div className="row mt-3">
