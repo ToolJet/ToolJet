@@ -41,6 +41,8 @@ import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import got from 'got';
+import { RenameAppOrVersionDto } from '@ee/git-sync/providers/dto/rename-app.dto';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -154,6 +156,28 @@ export class AppsService implements IAppsService {
     if (name && app.creationMode != 'GIT' && name != app.name) {
       // Can use event emitter
       // this.appGitUtilService.renameAppOrVersion(user, app.id, prevName);
+      const request = RequestContext.getRequest();
+      const headers = {
+        'Content-Type': 'application/json',
+        Cookie: request.headers['cookie'],
+        'tj-workspace-id': request.headers['tj-workspace-id'],
+      };
+      const renameAppDto = new RenameAppOrVersionDto();
+      renameAppDto.prevName = prevName;
+      renameAppDto.updatedName = name;
+      try {
+        // TO DO : Review if we can make it asynchronous
+        const host = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.TOOLJET_HOST;
+        await got.put(`${host}/api/app-git/app/${app.id}/rename`, {
+          json: renameAppDto,
+          headers,
+          responseType: 'json',
+        });
+      } catch (err) {
+        console.log('APP rename commit failed with error', err);
+        // Don't throw the error here as this failure is related to the commit, but the app rename itself has been successful.
+        // This ensures the rest of the process continues, even though the commit may have failed
+      }
     }
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {

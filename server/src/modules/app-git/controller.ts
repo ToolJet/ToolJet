@@ -1,7 +1,7 @@
-import { Controller, Get, UseGuards, Post, Param, Body, NotFoundException } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Param, Body, NotFoundException, Put } from '@nestjs/common';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
-import { User } from '@modules/app/decorators/user.decorator';
-import { AppGitPullDto, AppGitPullUpdateDto, AppGitPushDto } from '@modules/app-git/dto';
+import { User, UserEntity } from '@modules/app/decorators/user.decorator';
+import { AppGitPullDto, AppGitPullUpdateDto, AppGitPushDto, RenameAppOrVersionDto } from '@modules/app-git/dto';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
@@ -67,6 +67,17 @@ export class AppGitController {
   @UseGuards(JwtAuthGuard)
   @Post('gitpull/app/:appId')
   async pullGitAppChanges(@User() user, @Param('appId') appId, @Body() appData: AppGitPullUpdateDto): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
+  @InitFeature(FEATURE_KEY.GIT_APP_VERSION_RENAME)
+  @Put('app/:appId/rename')
+  async renameAppOrVersion(
+    @User() user: UserEntity,
+    @Param('appId') appId: string,
+    @Body() renameAppOrVersionDto: RenameAppOrVersionDto
+  ) {
     throw new NotFoundException();
   }
 }
