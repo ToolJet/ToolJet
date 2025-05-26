@@ -16,11 +16,14 @@ ToolJet offers two ways to connect with Slack:
 1. Add a new **Slack** data source in ToolJet.
 2. Select **Custom slack app** from the dropdown and copy the Redirect URL displayed at the bottom.
     <img className="screenshot-full img-m" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/custom-slack-app.png" alt="Slack datasource: ToolJet"/>
-3. Visit the [Slack API](https://api.slack.com/apps) dashboard and click on **Create New App** button.
+3. Visit the [Slack API](https://api.slack.com/apps) dashboard and click on **Create New App** button. <br/>
+    <img className="screenshot-full img-l" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/slack-app.png" alt="Slack datasource: ToolJet"/>
 4. Select **From scratch** in the modal, enter the App Name, and choose your workspace from the dropdown. <br/>
     <img className="screenshot-full img-s" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/slack-api.png" alt="Slack datasource: ToolJet"/>
-5. Click **Create App**. You will be redirected to the App Credentials page where you can find the Client ID, Client Secret, and other credentials.
-6. From the left navigation bar, go to the **OAuth & Permissions** tab and add the Redirect URL you copied from ToolJet under Redirect URLs. Click Save URLs.
+5. Click **Create App**. You will be redirected to the App Credentials page where you can find the Client ID, Client Secret, and other credentials. <br/>
+    <img className="screenshot-full img-l" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/creds.png" alt="Slack datasource: ToolJet"/>
+6. From the left navigation bar, go to the **OAuth & Permissions** tab and add the Redirect URL you copied from ToolJet under Redirect URLs. Click Save URLs. <br/>
+    <img className="screenshot-full img-l" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/oauth.png" alt="Slack datasource: ToolJet"/>
 7. In the same tab, scroll down to Scopes and add the necessary OAuth scopes, including the mandatory scopes required by ToolJet (as mentioned on the Slack Data Source configuration page).
 8. Return to the ToolJet Slack Data Source configuration page and enter the Client ID and Client Secret obtained in step 5.
 9. Click **Connect to Slack**. You will be redirected to Slack to authorize the app for your workspace. <br/>
