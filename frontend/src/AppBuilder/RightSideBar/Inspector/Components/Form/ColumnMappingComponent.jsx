@@ -56,7 +56,7 @@ const ColumnMappingRow = ({
   const handleInputTypeChange = (value) => {
     onChange?.({
       ...column,
-      component: value,
+      componentType: value,
     });
   };
 
