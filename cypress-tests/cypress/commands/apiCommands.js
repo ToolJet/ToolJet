@@ -759,9 +759,35 @@ Cypress.Commands.add("apiDeleteGDS", (name) => {
 
       Cypress.log({
         name: "Delete Data Source",
-        displayName: "DATA SOURCE DELETED",
+        displayName: "Data source deleted",
         message: `Name: '${name}' | ID: '${dataSourceId}'`,
       });
     });
   });
 });
+
+Cypress.Commands.add(
+  "apiUpdateGDS",
+  ({ name, options, envName = "development" }) => {
+    cy.getAuthHeaders().then((headers) => {
+      cy.apiGetEnvironments().then((environments) => {
+        const environment = environments.find((env) => env.name === envName);
+        const environmentId = environment.id;
+        const dataSourceId = Cypress.env(`${name}`);
+
+        cy.request({
+          method: "PUT",
+          url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}?environment_id=${environmentId}`,
+          headers: headers,
+          body: {
+            name: name,
+            options: options,
+          },
+        }).then((response) => {
+          expect(response.status).to.equal(200);
+          cy.log(`Datasource "${name}" updated successfully.`);
+        });
+      });
+    });
+  }
+);
