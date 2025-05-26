@@ -34,6 +34,8 @@ export const ProgramaticallyHandleProperties = ({
         return props.linkColor;
       case 'useDynamicOptions':
         return props?.useDynamicOptions;
+      case 'autoAssignColors':
+        return props?.autoAssignColors;
       case 'makeDefaultOption':
         return props?.[index]?.makeDefaultOption;
       case 'textColor':
@@ -52,6 +54,10 @@ export const ProgramaticallyHandleProperties = ({
         return props?.isDateSelectionEnabled;
       case 'jsonIndentation':
         return props?.jsonIndentation;
+      case 'labelColor':
+        return props?.labelColor;
+      case 'optionColor':
+        return props?.optionColor;
       default:
         return;
     }
@@ -73,6 +79,14 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'textColor') {
       return definitionObj?.value ?? '#11181C';
+    }
+    if (property === 'labelColor') {
+      // return definitionObj?.value ?? 'var(--cc-primary-text)';
+      return definitionObj?.value ?? '#1B1F24';
+    }
+    if (property === 'optionColor') {
+      // return definitionObj?.value ?? 'var(--cc-surface2-surface)';
+      return definitionObj?.value ?? '#E4E7EB';
     }
     if (property === 'underlineColor') {
       return definitionObj?.value ?? '#4368E3';
