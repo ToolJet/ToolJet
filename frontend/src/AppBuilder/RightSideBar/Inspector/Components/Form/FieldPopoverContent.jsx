@@ -26,7 +26,20 @@ const FieldPopoverContent = ({
 
   // Handle changes to any field property
   const handleFieldChange = (property, value) => {
+    if (property === 'mandatory') {
+      return setLocalField((prevField) => ({
+        ...prevField,
+        [property]: { ...prevField[property], value },
+      }));
+    }
     setLocalField((prevField) => ({ ...prevField, [property]: value }));
+  };
+
+  const handleFxChange = (property, fxActive) => {
+    setLocalField((prevField) => ({
+      ...prevField,
+      [property]: { ...prevField[property], fxActive },
+    }));
   };
 
   // Handle form submission
@@ -128,41 +141,41 @@ const FieldPopoverContent = ({
 
           <div className="field mb-2">
             <CodeHinter
-              initialValue={localField.mandatory || false}
+              initialValue={localField.mandatory?.value ?? false}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               type={'fxEditor'}
               paramLabel={'Make this field mandatory'}
               paramName={'isMandatory'}
-              fxActive={false}
+              fxActive={localField.mandatory?.fxActive ?? false}
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
-                //   isFxNotRequired: true,
               }}
               paramType={'toggle'}
               onChange={(value) => handleFieldChange('mandatory', value)}
+              onFxPress={(active) => handleFxChange('mandatory', active)}
             />
           </div>
           {mode === 'edit' && (
             <div className="field m-0">
               <CodeHinter
-                initialValue={localField.selected || false}
+                initialValue={localField.selected?.value ?? true}
                 theme={darkMode ? 'monokai' : 'default'}
                 mode="javascript"
                 lineNumbers={false}
                 type={'fxEditor'}
                 paramLabel={'Visibility'}
                 paramName={'visible'}
-                fxActive={false}
+                fxActive={localField.selected?.fxActive ?? false}
                 fieldMeta={{
                   type: 'toggle',
                   displayName: 'Make editable',
-                  //   isFxNotRequired: true,
                 }}
                 paramType={'toggle'}
                 onChange={(value) => handleFieldChange('selected', value)}
+                onFxPress={(active) => handleFxChange('selected', active)}
               />
             </div>
           )}

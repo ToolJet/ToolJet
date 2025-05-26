@@ -12,6 +12,14 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { parseData, findLastElementPosition, createFormFieldComponents } from './utils';
 
+/* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
+               This is to support dynamic values and fx expressions in the form fields.
+               When using these properties, ensure to access the value like so: field.mandatory.value
+               or field.selected.value.
+               Rest all the fields are directly accessible as strings or booleans.
+               For example: field.label, field.name, field.value, etc.
+*/
+
 /**
  * Retrieves field data from a component definition in the store
  * @param {string} componentId - Component ID to fetch definition for
@@ -41,8 +49,8 @@ const getFieldDataFromComponent = (componentId, getComponentDefinition) => {
     value = definition.properties?.value?.value;
   }
 
-  const mandatory = definition.validation?.mandatory?.value || false;
-  const selected = definition.properties?.visibility?.value || false;
+  const mandatory = definition.validation?.mandatory;
+  const selected = definition.properties?.visibility;
   const placeholder = definition.properties?.placeholder?.value || '';
 
   return {
@@ -121,8 +129,6 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     return field;
   });
 
-  console.log('here--- enhancedFields--- ', enhancedFields);
-
   useEffect(() => {
     if (isFormGenerated) {
       setFields(generatedFields);
@@ -173,7 +179,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       label: newField.label,
       value: '',
       placeholder: newField.placeholder,
-      selected: `{{true}}`,
+      selected: { value: `{{true}}` },
       isCustomField: true,
     };
     createComponentAndUpdateFields([updatedFields], true);

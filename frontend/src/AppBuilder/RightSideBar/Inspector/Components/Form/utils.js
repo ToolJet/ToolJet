@@ -66,8 +66,8 @@ export const parseData = (data) => {
           value: dataType === 'number' || dataType === 'boolean' ? ensureHandlebars(nestedValue) : nestedValue,
           dataType: dataType,
           componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
-          mandatory: false,
-          selected: false,
+          mandatory: { value: false },
+          selected: { value: false },
           isCustomField: false,
         });
       });
@@ -80,8 +80,8 @@ export const parseData = (data) => {
         value: dataType === 'number' || dataType === 'boolean' ? ensureHandlebars(value) : value,
         dataType: dataType,
         componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
-        mandatory: false,
-        selected: false,
+        mandatory: { value: false },
+        selected: { value: false },
         isCustomField: false,
       });
     }
@@ -239,14 +239,10 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
             label: {
               value: column.label,
             },
-            visibility: {
-              value: ensureHandlebars(column.selected || false),
-            },
+            visibility: column.selected,
           },
           validation: {
-            mandatory: {
-              value: ensureHandlebars(column.mandatory || false),
-            },
+            mandatory: column.mandatory,
           },
           others: {
             showOnDesktop: {
@@ -380,4 +376,13 @@ export const isTrueValue = (value) => {
     return trimmedValue === '{{true}}' || trimmedValue === 'true';
   }
   return false;
+};
+
+/**
+ * Checks if a property has fx active and should be disabled for direct editing
+ * @param {Object} property - The property to check
+ * @returns {boolean} - Whether the property is controlled by fx
+ */
+export const isPropertyFxControlled = (property) => {
+  return property && typeof property === 'object' && property.fxActive === true;
 };

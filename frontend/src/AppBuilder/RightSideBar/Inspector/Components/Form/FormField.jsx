@@ -7,6 +7,7 @@ import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { isTrueValue, isPropertyFxControlled } from './utils';
 
 export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
@@ -28,6 +29,12 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
   const handleFieldChange = (changes) => {
     setFieldData((prev) => ({ ...prev, ...changes }));
   };
+
+  // Check if mandatory property is fx controlled
+  const isMandatoryFxControlled = isPropertyFxControlled(fieldData.mandatory);
+
+  // Determine if the field is currently mandatory
+  const isCurrentlyMandatory = isTrueValue(fieldData.mandatory.value);
 
   const mainPopover = (
     <Popover id="popover-basic" className="shadow form-fields-column-popover">
@@ -51,14 +58,23 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
             variant="ghost"
             size="default"
             onClick={() => {
-              handleFieldChange({ ...fieldData, required: true });
+              // Toggle mandatory status if not fx controlled
+              const newValue = !isCurrentlyMandatory;
+              handleFieldChange({
+                ...fieldData,
+                mandatory:
+                  typeof fieldData.mandatory === 'object'
+                    ? { ...fieldData.mandatory, value: `{{${newValue}}}` }
+                    : `{{${newValue}}}`,
+              });
               onMenuToggle(null);
             }}
-            className="base-regular"
+            disabled={isMandatoryFxControlled} // Disable button if mandatory is fx controlled
+            className={`base-regular ${isMandatoryFxControlled ? 'tw-opacity-50' : ''}`}
             leadingIcon="asterix"
             fill="#CCD1D5"
           >
-            Make mandatory
+            {isCurrentlyMandatory ? 'Make optional' : 'Make mandatory'}
           </Button>
           <Button
             variant="ghost"

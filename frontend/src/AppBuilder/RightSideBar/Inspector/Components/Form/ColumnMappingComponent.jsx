@@ -6,11 +6,17 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Input from '@/components/ui/Input/Index';
-import { getInputTypeOptions, isTrueValue } from './utils';
+import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from './utils';
+
+/**
+ * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
+ * This is to prevent users from changing the state of fx controlled properties directly.
+ * Instead, they should use the fx editor to manage these properties.
+ *
+ */
 
 const ColumnMappingRow = ({
   column, // column now contains both database info and form config
-  onDelete,
   onChange,
   onCheckboxChange,
   index,
@@ -20,6 +26,9 @@ const ColumnMappingRow = ({
 
   const inputTypeOptions = getInputTypeOptions(darkMode);
 
+  const isSelectedFxControlled = isPropertyFxControlled(column.selected);
+  const isMandatoryFxControlled = isPropertyFxControlled(column.mandatory);
+
   const handleLabelChange = (e) => {
     onChange?.({
       ...column,
@@ -28,10 +37,20 @@ const ColumnMappingRow = ({
   };
 
   const handleMandatoryChange = (checked) => {
-    onChange?.({
-      ...column,
-      mandatory: checked,
-    });
+    if (typeof column.mandatory === 'object') {
+      onChange?.({
+        ...column,
+        mandatory: {
+          ...column.mandatory,
+          value: checked,
+        },
+      });
+    } else {
+      onChange?.({
+        ...column,
+        mandatory: checked,
+      });
+    }
   };
 
   const handleInputTypeChange = (value) => {
@@ -45,7 +64,11 @@ const ColumnMappingRow = ({
     <div className="tw-flex tw-items-center tw-w-full tw-py-3 tw-px-2 tw-border-b tw-border-border-lighter column-mapping-row">
       {/* Checkbox */}
       <div className="tw-w-6">
-        <Checkbox checked={isTrueValue(column.selected)} onCheckedChange={onCheckboxChange} />
+        <Checkbox
+          checked={isTrueValue(column.selected.value)}
+          onCheckedChange={onCheckboxChange}
+          disabled={isSelectedFxControlled} // Disable if fx controlled
+        />
       </div>
 
       {/* Column Name and Type */}
@@ -88,7 +111,11 @@ const ColumnMappingRow = ({
 
       {/* Mandatory Checkbox */}
       <div className="mandatory-column rows tw-flex tw-justify-end">
-        <Checkbox checked={isTrueValue(column.mandatory)} onCheckedChange={handleMandatoryChange} />
+        <Checkbox
+          checked={isTrueValue(column.mandatory.value)}
+          onCheckedChange={handleMandatoryChange}
+          disabled={isMandatoryFxControlled} // Disable if fx controlled
+        />
       </div>
     </div>
   );
@@ -98,38 +125,82 @@ const RenderSection = ({ mappedColumns = [], setMappedColumns, darkMode, section
   // Ensure mappedColumns is always an array
   const columnsArray = Array.isArray(mappedColumns) ? mappedColumns : [];
 
-  // Compute states from mappedColumns - fix the .every calls
-  const isAllSelected = columnsArray.length > 0 ? columnsArray.every((col) => isTrueValue(col.selected)) : false;
-  const isIntermediateSelected = !isAllSelected && columnsArray.some((col) => isTrueValue(col.selected));
+  const selectableColumns = columnsArray.filter((col) => !isPropertyFxControlled(col.selected));
+  const mandatorySettableColumns = columnsArray.filter((col) => !isPropertyFxControlled(col.mandatory));
+
+  const isAllSelected =
+    selectableColumns.length > 0 ? selectableColumns.every((col) => isTrueValue(col.selected.value)) : false;
+
+  const isIntermediateSelected = !isAllSelected && selectableColumns.some((col) => isTrueValue(col.selected.value));
+
   const isAllSelectedMandatory =
-    columnsArray.length > 0 ? columnsArray.every((col) => isTrueValue(col.mandatory)) : false;
-  const isIntermediateMandatory = !isAllSelectedMandatory && columnsArray.some((col) => isTrueValue(col.mandatory));
+    mandatorySettableColumns.length > 0
+      ? mandatorySettableColumns.every((col) => isTrueValue(col.mandatory.value))
+      : false;
+
+  const isIntermediateMandatory =
+    !isAllSelectedMandatory && mandatorySettableColumns.some((col) => isTrueValue(col.mandatory.value));
 
   const handleSelectAll = (checked) => {
-    // Don't use the functional update if it's causing issues
-    // Instead, directly modify the current columnsArray
     if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => ({
-        ...col,
-        selected: checked,
-      }));
+      const updatedColumns = columnsArray.map((col) => {
+        if (isPropertyFxControlled(col.selected)) {
+          return col;
+        }
+
+        return {
+          ...col,
+          selected: {
+            ...col.selected,
+            value: checked,
+          },
+        };
+      });
       setMappedColumns(updatedColumns);
     }
   };
 
   const handleSelectAllMandatory = (checked) => {
     if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => ({
-        ...col,
-        mandatory: checked,
-      }));
+      const updatedColumns = columnsArray.map((col) => {
+        if (isPropertyFxControlled(col.mandatory)) {
+          return col;
+        }
+
+        return {
+          ...col,
+          mandatory: {
+            ...col.mandatory,
+            value: checked,
+          },
+        };
+      });
       setMappedColumns(updatedColumns);
     }
   };
 
   const handleColumnSelect = (columnName, checked) => {
     if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => (col.name === columnName ? { ...col, selected: checked } : col));
+      const updatedColumns = columnsArray.map((col) => {
+        if (col.name !== columnName || isPropertyFxControlled(col.selected)) {
+          return col;
+        }
+
+        if (typeof col.selected === 'object') {
+          return {
+            ...col,
+            selected: {
+              ...col.selected,
+              value: checked,
+            },
+          };
+        } else {
+          return {
+            ...col,
+            selected: checked,
+          };
+        }
+      });
       setMappedColumns(updatedColumns);
     }
   };
