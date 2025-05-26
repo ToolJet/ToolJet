@@ -6,24 +6,16 @@ title: Azure container apps
 # Deploying ToolJet on Azure container apps
 
 :::info
-Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis.
+Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis. We've provided detailed configuration steps in the [Redis Setup](#redis-setup) section.
 :::
 
 ## Deploying ToolJet application
 
 1. Open the Azure dashboard at https://portal.azure.com, navigate to Container Apps, and click on "Create container app".
- <div style={{textAlign: 'center'}}>
-
- <img className="screenshot-full" src="/img/setup/azure-container/step1.png" alt="Deploying ToolJet on Azure container apps" />
-
- </div>
+   <img className="screenshot-full" src="/img/setup/azure-container/step1.png" alt="Deploying ToolJet on Azure container apps" />
 
 2. Select the appropriate subscription and provide basic details such as the container name.
- <div style={{textAlign: 'center'}}>
-
- <img className="screenshot-full" src="/img/setup/azure-container/step2.png" alt="Deploying ToolJet on Azure container apps" />
-
- </div>
+   <img className="screenshot-full" src="/img/setup/azure-container/step2.png" alt="Deploying ToolJet on Azure container apps" />
 
 3. Select "Create new environment" in `Container Apps environment` to configure the basic networking setup.
     <img className="screenshot-full" src="/img/setup/azure-container/step3-1.png" alt="Deploying ToolJet on Azure container apps" />
@@ -32,68 +24,57 @@ Please note that you need to set up a PostgreSQL database manually to be used by
     :::tip
     The Container app, the PostgreSQL server, and the Redis server all should be in the same virtual network (VNet).
     :::
-    <img className="screenshot-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
+   <img className="screenshot-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
 5. Click create.
 
 6. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
- <div style={{textAlign: 'center'}}>
+   <img className="screenshot-full" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
  
- <img className="screenshot-full" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
- 
- </div>
- 
-  - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
-  - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
+   Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
 
-  **Note**: ToolJet requires:
-   - **TOOLJET_DB** 
-   - **TOOLJET_DB_HOST**
-   - **TOOLJET_DB_USER**
-   - **TOOLJET_DB_PASS**
-   - **PG_HOST**
-   - **PG_DB**
-   - **PG_USER**
-   - **PG_PASS**
-   - **SECRET_KEY_BASE** 
-   - **LOCKBOX_KEY**
- 
+   Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
+
+   **Note**: ToolJet requires:
+   ```
+    TOOLJET_DB
+    TOOLJET_DB_HOST
+    TOOLJET_DB_USER
+    TOOLJET_DB_PASS
+    PG_HOST
+    PG_DB
+    PG_USER
+    PG_PASS
+    SECRET_KEY_BASE
+    LOCKBOX_KEY
+   ```
+
    For redis connection ensure below environment variables are added:
-   - **REDIS_HOST**
-   - **REDIS_PORT**
-   - **REDIS_USER**
+   ```
+    REDIS_HOST
+    REDIS_PORT
+    REDIS_USER
+   ```
 
    If using Azure Database for Postgresql-Flexible server, add:
-   - **PGSSLMODE = require**
-  
-   <div style={{textAlign: 'center'}}>
- 
+   ```
+    PGSSLMODE = require
+   ```
+
    <img className="screenshot-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
-   </div>
 
 7. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
- <div style={{textAlign: 'center'}}>
- 
- <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
-
- </div>
+   <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 
 8. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
- <div style={{textAlign: 'center'}}>
+   <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
- <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
-
- </div>
 
 
 9. Once the container is deployed, you can verify its status under revision management.
- <div style={{textAlign: 'center'}}>
+   <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
 
- <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
-
- </div>
-
-You can access ToolJet via the application URL provided in the overview tab.
+   You can access ToolJet via the application URL provided in the overview tab.
 
 ## Redis Setup
 
@@ -105,33 +86,25 @@ If you already have Redis configured, you can use your existing setup. Otherwise
 
 - Create a Redis instance with the minimum required specifications.
 
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/1.png" alt="Step one of redis setup" />
-</div>
+   <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/1.png" alt="Step one of redis setup" />
  
  **Choose Network Settings**
 
 - Select your preferred network settings based on your setup. 
 
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/2.png" alt="Step two of redis setup" />
-</div>
+   <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/2.png" alt="Step two of redis setup" />
 
 **Configure TLS Port**
 
 - Choose your preferred settings for the TLS port.
 
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/3.png" alt="Step three of redis setup" />
-</div>
+   <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/3.png" alt="Step three of redis setup" />
 
 **Review and Create**
 
 - Click on "Review + create" and wait for the template to be verified and passed.
 
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/4.png" alt="Step four of redis setup" />
-</div>
+   <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/4.png" alt="Step four of redis setup" />
 
 ## Upgrading to the Latest LTS Version
 
