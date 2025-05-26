@@ -204,7 +204,12 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
         {isFormGenerated && renderAddCustomFieldButton()}
       </div>
 
-      <FormFieldsList fields={fields} onDeleteField={handleDeleteField} setIsModalOpen={setIsModalOpen} />
+      <FormFieldsList
+        isFormGenerated={isFormGenerated}
+        fields={fields}
+        onDeleteField={handleDeleteField}
+        setIsModalOpen={setIsModalOpen}
+      />
 
       {isModalOpen && (
         <ColumnMappingComponent

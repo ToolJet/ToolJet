@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { FormField } from './FormField';
 import { Button } from '@/components/ui/Button/Button';
 
-export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen }) => {
+export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsModalOpen }) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
-  if (fields.length === 0) {
+  if (!isFormGenerated || fields.length === 0) {
     return (
       <span className="base-regular text-placeholder tw-block tw-p-3 tw-text-center">
         No fields yet. Generate a form from a data source or add custom fields.

@@ -92,7 +92,7 @@ export class ComponentsService implements IComponentsService {
               componentData[column === 'others' ? 'displayPreferences' : column],
               updatedDefinition[column],
               (objValue, srcValue) => {
-                if (componentData.type === 'Table' && _.isArray(objValue)) {
+                if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
                   return srcValue;
                 } else if (
                   (componentData.type === 'DropdownV2' || componentData.type === 'MultiselectV2') &&
