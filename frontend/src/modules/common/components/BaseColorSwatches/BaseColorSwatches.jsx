@@ -61,7 +61,7 @@ const BaseColorSwatches = ({
           // This is fix when color picker don't have much space to open in bottom side
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
-        style={{ zIndex: 10000 }}
+        style={{ zIndex: 999999 }}
       >
         <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'} style={{ padding: '0px' }}>
           <>{ColorPicker()}</>

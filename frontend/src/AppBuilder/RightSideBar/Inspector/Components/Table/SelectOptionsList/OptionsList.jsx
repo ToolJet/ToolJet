@@ -9,6 +9,7 @@ import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { resolveReferences } from '@/_helpers/utils';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { unset } from 'lodash';
 export const OptionsList = ({
   column,
@@ -141,12 +142,23 @@ export const OptionsList = ({
 
       props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
     };
+
+    const handleOptionColorChange = (index, property, value) => {
+      handleSelectOption(option, optionIndex, value, index, property);
+    };
+
     return (
       <Popover
         id="popover-basic"
         className={`${darkMode && 'dark-theme'}`}
         onClick={(e) => e.stopPropagation()}
-        style={{ zIndex: 99999, minWidth: 200 }}
+        style={{
+          zIndex: 99999,
+          minWidth: 200,
+          boxShadow: '0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03)',
+          borderRadius: '6px',
+          border: '1px solid var(--border-default)',
+        }}
       >
         <Popover.Body>
           <div className="field mb-2 tj-app-input" onClick={(e) => e.stopPropagation()}>
@@ -167,7 +179,7 @@ export const OptionsList = ({
               }}
             />
           </div>
-          <div className="field mb-2 tj-app-input" onClick={(e) => e.stopPropagation()}>
+          <div className="field tj-app-input" onClick={(e) => e.stopPropagation()}>
             <label data-cy={`label-action-button-text`} className="form-label">
               Option value
             </label>
@@ -185,8 +197,34 @@ export const OptionsList = ({
               }}
             />
           </div>
+          <div className="field table-select-colorpicker" style={{ marginBottom: '8px', marginTop: '8px' }}>
+            <ProgramaticallyHandleProperties
+              label="Label color"
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={handleOptionColorChange}
+              property="labelColor"
+              props={option}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Label color' }}
+              paramType="properties"
+            />
+          </div>
+          <div className="field table-select-colorpicker" style={{ marginBottom: '24px' }}>
+            <ProgramaticallyHandleProperties
+              label="Option color"
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={handleOptionColorChange}
+              property="optionColor"
+              props={option}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Option color' }}
+              paramType="properties"
+            />
+          </div>
           <ProgramaticallyHandleProperties
-            label="Make this option as default"
+            label="Make this as default option"
             currentState={currentState}
             index={optionIndex}
             darkMode={darkMode}
@@ -220,6 +258,21 @@ export const OptionsList = ({
     title: 'Options',
     children: (
       <div className="d-flex custom-gap-7 flex-column">
+        <ProgramaticallyHandleProperties
+          label="Auto assign colors"
+          currentState={currentState}
+          index={index}
+          darkMode={darkMode}
+          callbackFunction={onColumnItemChange}
+          property="autoAssignColors"
+          props={column}
+          component={component}
+          paramMeta={{
+            type: 'toggle',
+            displayName: 'Auto assign colors',
+          }}
+          paramType="properties"
+        />
         <ProgramaticallyHandleProperties
           label="Dynamic option"
           currentState={currentState}
@@ -330,10 +383,17 @@ export const OptionsList = ({
             <div>
               {column?.options?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
               <div>
-                <AddNewButton dataCy={`button-add-column`} onClick={() => createNewOption()}>
-                  {/* {this.props.t('widget.Table.addNewColumn', ' Add new column')} */}
+                <ButtonComponent
+                  leadingIcon="addrectangle"
+                  onClick={() => {
+                    createNewOption();
+                  }}
+                  variant="secondary"
+                  className="tw-w-full mt-2"
+                  width="100%"
+                >
                   Add new option
-                </AddNewButton>
+                </ButtonComponent>
               </div>
             </div>
           </List>
