@@ -1937,4 +1937,100 @@ export const createComponentsSlice = (set, get) => ({
       setComponentProperty(parentId, 'fields', updatedFields, 'properties', 'value', false, moduleId);
     }
   },
+  setComponentPropertyByComponentIds: (componentDiffs, moduleId = 'canvas') => {
+    const {
+      addToDependencyGraph,
+      setResolvedComponent,
+      currentMode,
+      saveComponentChanges,
+      withUndoRedo,
+      currentPageIndex,
+      getResolvedComponent,
+      getComponentDefinition,
+    } = get();
+
+    let diff = {};
+
+    // Process resolved values for each component diff before state update
+    Object.entries(componentDiffs).forEach(([componentId, componentDiff]) => {
+      // Get existing component definition for backend saving
+      const currentComponent = getComponentDefinition(componentId);
+      if (!currentComponent) return;
+
+      // Get existing resolved values to merge with new ones
+      const existingResolvedValues = getResolvedComponent(componentId) || {};
+
+      // Process only the diff through dependency graph
+      const resolvedDiffValues = addToDependencyGraph(moduleId, componentId, componentDiff.component);
+
+      // Merge the resolved diff values with existing resolved values
+      const mergedResolvedValues = deepClone(existingResolvedValues);
+
+      // Merge at each property type level (properties, styles, validation, etc.)
+      ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((propType) => {
+        if (resolvedDiffValues[propType]) {
+          mergedResolvedValues[propType] = {
+            ...(mergedResolvedValues[propType] || {}),
+            ...resolvedDiffValues[propType],
+          };
+        }
+      });
+
+      // Update the resolved component in store with merged values
+      setResolvedComponent(componentId, mergedResolvedValues, moduleId);
+
+      // Prepare diff for backend saving by merging with current component
+      const { events, exposedVariables, ...filteredDefinition } = currentComponent.component.definition || {};
+
+      // Prepare diff for backend saving
+      diff[componentId] = {
+        component: {
+          ...currentComponent.component,
+          ...componentDiff.component,
+          definition: {
+            ...filteredDefinition,
+            // If the componentDiff has definition, merge it with the filtered definition
+            ...(componentDiff.component?.definition || {}),
+          },
+        },
+      };
+    });
+
+    // Update all component state changes in a single batch with one undo/redo operation
+    set(
+      withUndoRedo((state) => {
+        // Process all components in one batch
+        Object.entries(componentDiffs).forEach(([componentId, componentDiff]) => {
+          if (state.modules[moduleId]?.pages?.[currentPageIndex]?.components?.[componentId]) {
+            // Merge component changes into state
+            const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId];
+
+            // Handle component definition updates
+            if (componentDiff.component?.definition) {
+              for (const [defType, defValues] of Object.entries(componentDiff.component.definition)) {
+                if (!pageComponent.component.definition[defType]) {
+                  pageComponent.component.definition[defType] = {};
+                }
+                // Correctly merge the new values from diff into the existing definition
+                pageComponent.component.definition[defType] = {
+                  ...pageComponent.component.definition[defType],
+                  ...defValues,
+                };
+              }
+            }
+          }
+        });
+      }),
+      false,
+      'setComponentPropertiesByDiff'
+    );
+
+    // Save changes to backend if needed
+    if (currentMode !== 'view' && Object.keys(diff).length > 0) {
+      saveComponentChanges(diff, 'components', 'update');
+    }
+
+    // Broadcast updates for multiplayer
+    get().multiplayer.broadcastUpdates({ componentDiffs }, 'components', 'update');
+  },
 });

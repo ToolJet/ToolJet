@@ -26,7 +26,7 @@ const FieldPopoverContent = ({
 
   // Handle changes to any field property
   const handleFieldChange = (property, value) => {
-    if (property === 'mandatory') {
+    if (property === 'mandatory' || property === 'selected') {
       return setLocalField((prevField) => ({
         ...prevField,
         [property]: { ...prevField[property], value },

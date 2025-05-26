@@ -392,7 +392,7 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
       <div className="tw-flex tw-justify-end tw-mt-4">
         <Button
           variant="primary"
-          onClick={isFormGenerated ? undefined : handleSubmit}
+          onClick={handleSubmit}
           disabled={isSaving || allSectionsEmpty}
           leadingIcon={isFormGenerated ? 'save' : 'plus'}
           isLoading={isSaving}

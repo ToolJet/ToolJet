@@ -10,7 +10,7 @@ import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { parseData, findLastElementPosition, createFormFieldComponents } from './utils';
+import { parseData, findLastElementPosition, createFormFieldComponents, updateFormFieldComponent } from './utils';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -72,6 +72,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     deleteComponents,
     addComponentToCurrentPage,
     getComponentDefinition,
+    setComponentPropertyByComponentIds,
   } = useStore(
     (state) => ({
       resolveReferences: state.resolveReferences,
@@ -80,6 +81,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       deleteComponents: state.deleteComponents,
       addComponentToCurrentPage: state.addComponentToCurrentPage,
       getComponentDefinition: state.getComponentDefinition,
+      setComponentPropertyByComponentIds: state.setComponentPropertyByComponentIds,
     }),
     shallow
   );
@@ -144,29 +146,47 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   };
 
   // Function to create a single custom field and update the fields property
-  const createComponentAndUpdateFields = async (columns, isSingleField = false, isUpdate = false) => {
-    const childComponents = getChildComponents(component?.id);
-    if (childComponents) {
-      // Get the last position of the child components
-      const lastPosition = findLastElementPosition(childComponents, currentLayout);
-      // Create form field components from columns
-      const { updatedColumns, formFields } = createFormFieldComponents(
-        columns,
-        component.id,
-        currentLayout,
-        lastPosition
-      );
-
-      // Add the components to the canvas
-      if (formFields.length > 0) {
-        await addComponentToCurrentPage(formFields);
+  const createComponentAndUpdateFields = async (columns, isSingleField = false) => {
+    if (isFormGenerated) {
+      let diff = {};
+      columns.forEach((column) => {
+        const updatedField = updateFormFieldComponent(
+          column.componentId,
+          column,
+          fields.find((f) => f.componentId === column.componentId)
+        );
+        if (Object.keys(updatedField).length !== 0) {
+          diff[column.componentId] = updatedField;
+        }
+      });
+      if (diff) {
+        // Update the component properties in the store
+        setComponentPropertyByComponentIds(diff);
       }
+    } else {
+      const childComponents = getChildComponents(component?.id);
+      if (childComponents) {
+        // Get the last position of the child components
+        const lastPosition = findLastElementPosition(childComponents, currentLayout);
+        // Create form field components from columns
+        const { updatedColumns, formFields } = createFormFieldComponents(
+          columns,
+          component.id,
+          currentLayout,
+          lastPosition
+        );
 
-      // Update the form fields property
-      if (isSingleField) {
-        paramUpdated({ name: 'fields' }, 'value', [...fields, ...updatedColumns], 'properties');
-      } else {
-        paramUpdated({ name: 'fields' }, 'value', updatedColumns, 'properties');
+        // Add the components to the canvas
+        if (formFields.length > 0) {
+          await addComponentToCurrentPage(formFields);
+        }
+
+        // Update the form fields property
+        if (isSingleField) {
+          paramUpdated({ name: 'fields' }, 'value', [...fields, ...updatedColumns], 'properties');
+        } else {
+          paramUpdated({ name: 'fields' }, 'value', updatedColumns, 'properties');
+        }
       }
     }
   };

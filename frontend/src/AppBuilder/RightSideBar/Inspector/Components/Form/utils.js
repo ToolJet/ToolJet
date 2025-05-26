@@ -6,6 +6,8 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 export const isValidJSONObject = (jsonString) => {
   try {
@@ -385,4 +387,69 @@ export const isTrueValue = (value) => {
  */
 export const isPropertyFxControlled = (property) => {
   return property && typeof property === 'object' && property.fxActive === true;
+};
+
+/**
+ * Updates an existing form field component with new values
+ * @param {string} componentId - ID of the component to update
+ * @param {Object} updatedField - New field values to apply
+ * @param {Object} currentField - Current field data
+ * @returns {Object} Updated component definition
+ */
+export const updateFormFieldComponent = (componentId, updatedField, currentField) => {
+  // Get the current component from the store
+  const componentToUpdate = useStore.getState().getComponentDefinition(componentId);
+
+  if (!componentToUpdate) {
+    console.error(`Component with ID ${componentId} not found`);
+    return null;
+  }
+
+  // Create a deep clone of the component to avoid reference issues
+  const updatedComponent = deepClone(componentToUpdate);
+
+  // Update label if changed
+  if (updatedField.label !== currentField.label) {
+    set(updatedComponent.component.definition.properties, 'label.value', updatedField.label);
+  }
+
+  // Update mandatory status
+  if (updatedField.mandatory !== currentField.mandatory) {
+    set(updatedComponent.component.definition.validation, 'mandatory', updatedField.mandatory);
+  }
+
+  // Update visibility if changed
+  if (updatedField.selected !== currentField.selected) {
+    set(updatedComponent.component.definition.properties, 'visibility', updatedField.selected);
+  }
+
+  // Update component type specific properties
+  const componentType = updatedField.componentType || componentToUpdate.component.component;
+
+  if (updatedField.value !== undefined && updatedField.value !== null) {
+    if (componentType === 'TextInput') {
+      set(updatedComponent.component.definition.properties, 'value.value', updatedField.value);
+    } else if (componentType === 'NumberInput') {
+      set(updatedComponent.component.definition.properties, 'value.value', ensureHandlebars(updatedField.value));
+    } else if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
+      set(updatedComponent.component.definition.properties, 'defaultValue.value', updatedField.value);
+    } else if (
+      componentType === 'DropdownV2' ||
+      componentType === 'MultiselectV2' ||
+      componentType === 'RadioButtonV2'
+    ) {
+      // Handle options update if provided
+      if (Array.isArray(updatedField.value)) {
+        set(updatedComponent.component.definition.properties, 'options.value', buildOptions(updatedField.value));
+      }
+    }
+  }
+
+  // Update placeholder if available and applicable to the component type
+  if (updatedField.placeholder && componentType !== 'Checkbox' && componentType !== 'DatePickerV2') {
+    set(updatedComponent.component.definition.properties, 'placeholder.value', updatedField.placeholder);
+  }
+
+  // return updatedComponent;
+  return diff(componentToUpdate, updatedComponent);
 };

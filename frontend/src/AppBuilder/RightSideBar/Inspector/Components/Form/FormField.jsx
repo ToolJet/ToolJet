@@ -7,10 +7,11 @@ import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { isTrueValue, isPropertyFxControlled } from './utils';
+import { isTrueValue, isPropertyFxControlled, updateFormFieldComponent } from './utils';
 
 export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
+  const setComponentPropertyByComponentIds = useStore((state) => state.setComponentPropertyByComponentIds, shallow);
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState(field);
   const { handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
@@ -26,8 +27,22 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
     setFieldData(field);
   }, [field]);
 
-  const handleFieldChange = (changes) => {
-    setFieldData((prev) => ({ ...prev, ...changes }));
+  const handleFieldChange = (updatedField) => {
+    setFieldData(updatedField);
+
+    // Only update component in the store if we have a componentId
+    if (field.componentId) {
+      const updatedComponent = updateFormFieldComponent(field.componentId, updatedField, field);
+      const components = {
+        [field.componentId]: updatedComponent,
+      };
+
+      if (updatedComponent) {
+        // Update the component in the store
+        setComponentPropertyByComponentIds(components);
+        setShowPopover(false);
+      }
+    }
   };
 
   // Check if mandatory property is fx controlled
