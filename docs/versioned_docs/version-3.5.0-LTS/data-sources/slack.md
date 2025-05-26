@@ -31,6 +31,9 @@ ToolJet offers two ways to connect with Slack:
 10. After authorization, click **Save data source** in ToolJet. This will add a new Slack bot to your workspace.
 11. Optionally, customize the bot’s profile (icon, name, description, etc.) from the Slack API page.
 
+After successful configuration, a new bot will appear in your Slack workspace. You can add this bot to different channels to perform operations from ToolJet.
+<img className="screenshot-full img-full" src="/img/datasource-reference/slack/slack.png" alt="Slack datasource: ToolJet"/>
+
 ### ToolJet Slack App
 
 You can use the ToolJet Slack App to quickly set up and test Slack integration. This is available only in ToolJet Cloud.
