@@ -12,27 +12,20 @@
  * the respective concrete implementations.
  */
 
-import { OrganizationGitStatusUpdateDto } from '@dto/organization_git.dto';
 import { IBaseGitSyncInterface } from './base-git.interface';
 import { AppGitPushDto } from '@modules/app-git/dto';
 import { AppVersion } from '@entities/app_version.entity';
 
 export abstract class BaseGitSyncService implements IBaseGitSyncInterface {
   constructor() {}
-
-  async updateOrgGitStatus(
-    organizationId: string,
-    id: string,
-    updateOrgGitDto: OrganizationGitStatusUpdateDto
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
   async getAppVersionByVersionId(appGitPushBody: AppGitPushDto): Promise<AppVersion> {
     throw new Error('Method not implemented.');
   }
 
   async getAppVersionById(versionId: string): Promise<AppVersion> {
+    throw new Error('Method not implemented.');
+  }
+  async getProviderConfigs(userOrganizationId: string, organizationId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

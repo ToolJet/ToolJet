@@ -4,13 +4,8 @@
  * must implement these methods.
  */
 import { AppGitPushDto } from '@modules/app-git/dto';
-import { OrganizationGitStatusUpdateDto } from '@dto/organization_git.dto';
 export interface IBaseGitSyncInterface {
-  updateOrgGitStatus(
-    organizationId: string,
-    id: string,
-    updateOrgGitDto: OrganizationGitStatusUpdateDto
-  ): Promise<void>;
   getAppVersionById(versionId: string);
   getAppVersionByVersionId(appGitPushBody: AppGitPushDto);
+  getProviderConfigs(userOrganizationId: string, organizationId: string): Promise<any>;
 }

@@ -46,6 +46,8 @@ export class AddEnabledColumnProviderTable1747923859030 implements MigrationInte
 
     // Delete is enabled column from the parent table
     await queryRunner.dropColumn('organization_git_sync', 'is_enabled');
+    await queryRunner.dropColumn('organization_git_sync', 'git_type');
+    // Pending : remove git type colum nfrom the organization_git_sync table
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
