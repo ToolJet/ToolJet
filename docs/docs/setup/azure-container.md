@@ -11,27 +11,28 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
 ## Deploying ToolJet application
 
-1. Open the Azure dashboard at https://portal.azure.com, navigate to Container Apps, and click on "Create container app".
-   <img className="screenshot-full" src="/img/setup/azure-container/step1.png" alt="Deploying ToolJet on Azure container apps" />
+1. Open the [Azure dashboard](https://portal.azure.com) and navigate to Container Apps, then click on **Create container app**.
+    <img className="screenshot-full" src="/img/setup/azure-container/step1.png" alt="Deploying ToolJet on Azure container apps" />
 
-2. Select the appropriate subscription and provide basic details such as the container name.
-   <img className="screenshot-full" src="/img/setup/azure-container/step2.png" alt="Deploying ToolJet on Azure container apps" />
+2. Select the appropriate subscription and provide basic details such as the container name and then click on the **Create new environment** button below "Container Apps environment" to configure the networking setup.
+    <img className="screenshot-full" src="/img/setup/azure-container/step2.png" alt="Deploying ToolJet on Azure container apps" />
 
 3. Select "Create new environment" in `Container Apps environment` to configure the basic networking setup.
+3. Configure the basic settings as shown in the screenshot below.
     <img className="screenshot-full" src="/img/setup/azure-container/step3-1.png" alt="Deploying ToolJet on Azure container apps" />
    
-4. Let's now move on to the Networking section to configure it in detail. You can retain the default settings for Workload Profiles and Monitoring configurations.
+4. Move to the "Networking" tab for the detailed configuration as shown in the screenshot. You can retain the default settings for Workload Profiles and Monitoring configurations.
     :::tip
     The Container app, the PostgreSQL server, and the Redis server all should be in the same virtual network (VNet).
     :::
-   <img className="screenshot-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
-5. Click create.
+    <img className="screenshot-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
+
+5. Click on the **Create** button at the bottom of the page.
 
 6. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
-   <img className="screenshot-full" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
- 
+   <img className="screenshot-full img-m" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
    Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
-
+   
    Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
    **Note**: ToolJet requires:
@@ -66,10 +67,8 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 7. In the ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
    <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 
-8. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
-   <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
-
-
+8. Move to Review + create tab and wait for the template to be verified and passed, as shown in the screenshot below.
+    <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
 9. Once the container is deployed, you can verify its status under revision management.
    <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
