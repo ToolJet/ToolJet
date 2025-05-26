@@ -13,7 +13,7 @@ export const DocsCard = ({ label, imgSrc, link, height = 40, width = 40, title }
         DigitalOcean: "Quickly deploy ToolJet using the Deploy to DigitalOcean button",
         Docker: "Deploy ToolJet on a server using docker-compose",
         Heroku: "Deploy ToolJet on Heroku using the one-click-deployment button",
-        "AWS EC2": "Deploy ToolJet on AWS EC2 instances",
+        "AWS AMI": "Deploy ToolJet on AWS AMI instances",
         "AWS ECS": "Deploy ToolJet on AWS ECS instances",
         Openshift: "Deploy ToolJet on Openshift",
         Helm: "Deploy ToolJet with Helm Chart",
