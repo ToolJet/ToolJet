@@ -12,12 +12,70 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { parseData, findLastElementPosition, createFormFieldComponents } from './utils';
 
+/**
+ * Retrieves field data from a component definition in the store
+ * @param {string} componentId - Component ID to fetch definition for
+ * @param {Function} getComponentDefinition - Function to get component definition
+ * @returns {Object} Field data with merged component definition values
+ */
+const getFieldDataFromComponent = (componentId, getComponentDefinition) => {
+  if (!componentId) {
+    return null;
+  }
+
+  const component = getComponentDefinition(componentId);
+  if (!component) return null;
+
+  const componentType = component.component.component;
+  const definition = component.component.definition;
+
+  // Get values from component definition
+  const label = definition.properties?.label?.value || '';
+  const name = component.component.name;
+
+  // Different components store values in different properties
+  let value;
+  if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
+    value = definition.properties?.defaultValue?.value;
+  } else {
+    value = definition.properties?.value?.value;
+  }
+
+  const mandatory = definition.validation?.mandatory?.value || false;
+  const selected = definition.properties?.visibility?.value || false;
+  const placeholder = definition.properties?.placeholder?.value || '';
+
+  return {
+    label,
+    name,
+    value,
+    mandatory,
+    selected,
+    placeholder,
+    componentType,
+  };
+};
+
 const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
-  const resolveReferences = useStore((state) => state.resolveReferences, shallow);
-  const getChildComponents = useStore((state) => state.getChildComponents, shallow);
-  const currentLayout = useStore((state) => state.currentLayout, shallow);
-  const deleteComponents = useStore((state) => state.deleteComponents, shallow);
-  const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
+  const {
+    resolveReferences,
+    getChildComponents,
+    currentLayout,
+    deleteComponents,
+    addComponentToCurrentPage,
+    getComponentDefinition,
+  } = useStore(
+    (state) => ({
+      resolveReferences: state.resolveReferences,
+      getChildComponents: state.getChildComponents,
+      currentLayout: state.currentLayout,
+      deleteComponents: state.deleteComponents,
+      addComponentToCurrentPage: state.addComponentToCurrentPage,
+      getComponentDefinition: state.getComponentDefinition,
+    }),
+    shallow
+  );
+
   const generateFormFrom = component.component.definition.properties['generateFormFrom'] || null;
   const generatedFields = component.component.definition.properties['fields']?.value || [];
   const isFormGenerated = generatedFields.length > 0;
@@ -43,6 +101,28 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   const addFieldButtonRef = useRef(null);
   const [fields, setFields] = useState(isFormGenerated ? generatedFields : formattedJson || []);
 
+  // Enhance fields with component definition data when needed for UI rendering
+  const enhancedFields = fields.map((field) => {
+    if (field.componentId) {
+      const componentData = getFieldDataFromComponent(field.componentId, getComponentDefinition);
+
+      return {
+        ...field,
+        // Merge component definition data for UI rendering
+        label: componentData?.label || field.label || '',
+        name: componentData?.name || field.name || '',
+        value: componentData?.value || field.value || '',
+        mandatory: componentData?.mandatory || field.mandatory || false,
+        selected: componentData?.selected || field.selected || false,
+        placeholder: componentData?.placeholder || field.placeholder || '',
+        componentType: componentData?.componentType || field.componentType || 'TextInput',
+      };
+    }
+    return field;
+  });
+
+  console.log('here--- enhancedFields--- ', enhancedFields);
+
   useEffect(() => {
     if (isFormGenerated) {
       setFields(generatedFields);
@@ -57,6 +137,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     paramUpdated({ name: 'fields' }, 'value', updatedFields, 'properties');
   };
 
+  // Function to create a single custom field and update the fields property
   const createComponentAndUpdateFields = async (columns, isSingleField = false, isUpdate = false) => {
     const childComponents = getChildComponents(component?.id);
     if (childComponents) {
@@ -206,7 +287,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
 
       <FormFieldsList
         isFormGenerated={isFormGenerated}
-        fields={fields}
+        fields={enhancedFields} // Use enhanced fields with component data
         onDeleteField={handleDeleteField}
         setIsModalOpen={setIsModalOpen}
       />
@@ -216,7 +297,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           darkMode={darkMode}
-          columns={fields}
+          columns={enhancedFields} // Use enhanced fields with component data
           isFormGenerated={isFormGenerated}
           onSubmit={(columns) => {
             try {

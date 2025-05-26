@@ -139,7 +139,7 @@ const FieldPopoverContent = ({
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
-                isFxNotRequired: true,
+                //   isFxNotRequired: true,
               }}
               paramType={'toggle'}
               onChange={(value) => handleFieldChange('mandatory', value)}
@@ -159,7 +159,7 @@ const FieldPopoverContent = ({
                 fieldMeta={{
                   type: 'toggle',
                   displayName: 'Make editable',
-                  isFxNotRequired: true,
+                  //   isFxNotRequired: true,
                 }}
                 paramType={'toggle'}
                 onChange={(value) => handleFieldChange('selected', value)}

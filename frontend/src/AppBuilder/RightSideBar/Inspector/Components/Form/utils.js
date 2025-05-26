@@ -68,6 +68,7 @@ export const parseData = (data) => {
           componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
           mandatory: false,
           selected: false,
+          isCustomField: false,
         });
       });
     } else {
@@ -81,6 +82,7 @@ export const parseData = (data) => {
         componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
         mandatory: false,
         selected: false,
+        isCustomField: false,
       });
     }
   });
@@ -298,9 +300,17 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
     currentTop = fieldTop + defaultHeight;
 
     formFieldComponents.push(formField);
-    column.isCustomField = column.isCustomField ?? false; // Update the column to indicate it's a custom field
-    column.name = componentName; // Update column name to match the generated component name
-    column.componentId = fieldId; // Add componentId to the column for reference
+
+    // Create simplified column structure with only the required fields
+    // This will allow DataSectionUI to use componentId to fetch detailed info from the store
+    const simplifiedColumn = {
+      componentId: fieldId,
+      isCustomField: column.isCustomField ?? false,
+      dataType: column.dataType,
+      key: column.key || column.name,
+    };
+
+    columns[index] = simplifiedColumn; // Replace with simplified structure
   });
 
   return { updatedColumns: columns, formFields: formFieldComponents };
