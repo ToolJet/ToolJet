@@ -10,7 +10,12 @@ interface Features {
   [FEATURE_KEY.REPLACE_USER_WORKSPACES]: FeatureConfig;
   [FEATURE_KEY.UPDATE_USER_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_WORKSPACES]: FeatureConfig;
+  [FEATURE_KEY.GITSYNC_PULL_NEW_APP]: FeatureConfig;
+  [FEATURE_KEY.GITSYNC_PULL_EXISTING_APP]: FeatureConfig;
+  [FEATURE_KEY.GITSYNC_PUSH_VERSION]: FeatureConfig;
+  [FEATURE_KEY.GITSYNC_AUTO_PROMOTE]: FeatureConfig;
   [FEATURE_KEY.UPDATE_USER_ROLE]: FeatureConfig;
+  [FEATURE_KEY.CREATE_ORG_GIT]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
