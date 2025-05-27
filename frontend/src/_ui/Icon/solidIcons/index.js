@@ -236,6 +236,7 @@ import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
 import EnterpriseCrown from './EnterrpiseCrown.jsx';
 import Moon from './Moon.jsx';
+import MoreVertical01 from './MoreVertical01.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -713,6 +714,8 @@ const Icon = (props) => {
       return <Play01 {...props} />;
     case 'moon':
       return <Moon {...props} />;
+    case 'morevertical01':
+      return <MoreVertical01 {...props} />;
     default:
       return <Apps {...props} />;
   }
