@@ -21,6 +21,7 @@ import {
 } from "Support/utils/common";
 
 import { onboardingSelectors } from "Selectors/onboarding";
+import { enableInstanceSignup } from "Support/utils/manageSSO";
 
 const data = {};
 const envVar = Cypress.env("environment");
@@ -28,9 +29,9 @@ const envVar = Cypress.env("environment");
 describe("inviteflow edge cases", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
-        if (envVar === "Enterprise") {
-            cy.get(".btn-close").click();
-        }
+        cy.ifEnv("Enterprise", () => {
+            enableInstanceSignup();
+        });
     });
 
     it("Should verify exisiting user invite flow", () => {

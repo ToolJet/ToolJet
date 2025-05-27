@@ -371,7 +371,7 @@ export const defaultSSO = (enable) => {
   });
 };
 
-export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
+export const setSignupStatus = (enable, workspaceName = "My workspace") => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
@@ -427,5 +427,25 @@ export const resetDomain = () => {
     ).then((response) => {
       expect(response.status).to.equal(200);
     });
+  });
+};
+
+export const enableInstanceSignup = (
+  allowPersonalWorkspace = true,
+  enableLoginConfig = true,
+  allowedDomains = ""
+) => {
+  const allowValue = allowPersonalWorkspace ? "true" : "false";
+  const loginConfigValue = enableLoginConfig ? "true" : "false";
+
+  const sql = `
+    UPDATE instance_settings SET value = '${allowValue}' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';
+    UPDATE instance_settings SET value = '${loginConfigValue}' WHERE key = 'ENABLE_SIGNUP';
+    UPDATE instance_settings SET value = '${allowedDomains}' WHERE key = 'ALLOWED_DOMAINS';
+  `;
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql,
   });
 };

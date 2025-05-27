@@ -173,7 +173,7 @@ describe("Self host onboarding", () => {
       cy.get(onboardingSelectors.onPremiseLink)
         .verifyVisibleElement("have.text", "Click here")
         .and("have.attr", "href")
-        .and("equal", "https://www.tooljet.com/pricing?payment=onpremise");
+        .and("equal", "https://tooljet.ai/pricing?payment=onpremise");
 
       const planTitles = [
         {
@@ -196,65 +196,46 @@ describe("Self host onboarding", () => {
 
       const prices = [
         { selector: `${onboardingSelectors.planPrice}:eq(0)`, text: "$0" },
-        { selector: `${onboardingSelectors.planPrice}:eq(1)`, text: "$30" },
+        { selector: '[data-cy="pro-plan-price"]:eq(0)', text: "$79/monthper builder" },
+        { selector: '[data-cy="pro-plan-price"]:eq(1)', text: "$199/monthper builder" },
+        { selector: `${onboardingSelectors.planToggleLabel}:eq(0)`, text: "Yearly20% off" },
+        { selector: `${onboardingSelectors.planToggleLabel}:eq(1)`, text: "Yearly20% off" },
+
+
       ];
 
       prices.forEach((item) => {
         cy.get(item.selector).should("be.visible").and("have.text", item.text);
       });
 
-      cy.get(onboardingSelectors.planToggleInput).should("be.visible");
-      cy.get(onboardingSelectors.planToggleLabel).verifyVisibleElement(
-        "have.text",
-        "Yearly20% off"
-      );
-      cy.get(onboardingSelectors.discountDetails).verifyVisibleElement(
-        "have.text",
-        "20% off"
-      );
+      cy.get(onboardingSelectors.planToggleInput).eq(0).should("be.visible");
+      cy.get(onboardingSelectors.planToggleInput).eq(1).should("be.visible");
 
-      cy.get(onboardingSelectors.builderPrice).verifyVisibleElement(
-        "have.text",
-        "$24"
-      );
-      cy.get('[data-cy="builder-price-period"]').verifyVisibleElement(
-        "have.text",
-        onboardingText.priceMonthlyText
-      );
-      cy.get('[data-cy="builder-price-description"]').verifyVisibleElement(
-        "have.text",
-        "per builder"
-      );
-
-      cy.get(onboardingSelectors.endUserPrice).verifyVisibleElement(
-        "have.text",
-        "$8"
-      );
-      cy.get('[data-cy="enduser-price-period"]').verifyVisibleElement(
-        "have.text",
-        onboardingText.priceMonthlyText
-      );
-      cy.get('[data-cy="enduser-price-description"]').verifyVisibleElement(
-        "have.text",
-        "per end user"
-      );
-
-      cy.get(onboardingSelectors.pricingPlanToggle).uncheck({ force: true });
+      cy.get(onboardingSelectors.pricingPlanToggle).eq(0).uncheck({ force: true });
 
       cy.get(onboardingSelectors.planToggleLabel)
-        .first()
+        .eq(0)
         .verifyVisibleElement("have.text", "Monthly20% off");
       cy.get(onboardingSelectors.discountDetails)
         .should("have.css", "text-decoration")
         .and("include", "line-through");
 
-      cy.get(onboardingSelectors.builderPrice).verifyVisibleElement(
+      cy.get('[data-cy="pro-plan-price"]').eq(0).verifyVisibleElement(
         "have.text",
-        "$30"
+        "$99/monthper builder"
       );
-      cy.get(onboardingSelectors.endUserPrice).verifyVisibleElement(
+
+      cy.get(onboardingSelectors.pricingPlanToggle).eq(1).uncheck({ force: true });
+      cy.get(onboardingSelectors.planToggleLabel)
+        .eq(1)
+        .verifyVisibleElement("have.text", "Monthly20% off");
+      cy.get(onboardingSelectors.discountDetails)
+        .should("have.css", "text-decoration")
+        .and("include", "line-through");
+
+      cy.get('[data-cy="pro-plan-price"]').eq(1).verifyVisibleElement(
         "have.text",
-        "$10"
+        "$249/monthper builder"
       );
 
       cy.get(onboardingSelectors.enterpriseTitle).verifyVisibleElement(
@@ -278,14 +259,6 @@ describe("Self host onboarding", () => {
 
     cy.get(commonSelectors.skipbutton).click();
     cy.backToApps();
-
-    if (envVar === "Enterprise") {
-      cy.get(".btn-close").click();
-    }
-
-    if (envVar === "Enterprise") {
-      cy.get(".btn-close").click();
-    }
 
     logout();
     cy.appUILogin();

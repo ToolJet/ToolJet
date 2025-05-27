@@ -11,7 +11,7 @@ import { selectAppCardOption } from "Support/utils/common";
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
     ? "/api/library_apps"
-    : "/api/library_apps/";
+    : "/api/library_apps";
 
 Cypress.Commands.add(
   "appUILogin",
@@ -604,4 +604,13 @@ Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
         }
       });
   });
+});
+
+Cypress.Commands.add('ifEnv', (expectedEnvs, callback) => {
+  const actualEnv = Cypress.env("envVar");
+  const envArray = Array.isArray(expectedEnvs) ? expectedEnvs : [expectedEnvs];
+
+  if (envArray.includes(actualEnv)) {
+    callback();
+  }
 });
