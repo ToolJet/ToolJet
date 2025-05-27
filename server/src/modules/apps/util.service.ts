@@ -11,6 +11,7 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
@@ -37,6 +38,11 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
+import { RequestContext } from '@modules/request-context/service';
+import { RenameAppOrVersionDto } from '@modules/app-git/dto';
+import got from 'got';
+import { DataQuery } from '@entities/data_query.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -487,7 +493,7 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2'].includes(currentComponentData?.component?.component) &&
+              ['DropdownV2', 'MultiselectV2', 'Steps'].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -523,11 +529,79 @@ export class AppsUtilService implements IAppsUtilService {
     return components;
   }
 
+  async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
+    return await this.appRepository.findAllOrganizationApps(organizationId);
+  }
+
+  async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const tooljetDbDataQueries = await manager
+        .createQueryBuilder(DataQuery, 'data_queries')
+        .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
+        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
+        .where('app_versions.app_id = :appId', { appId })
+        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
+        .getMany();
+
+      const uniqTableIds = new Set();
+      tooljetDbDataQueries.forEach((dq) => {
+        if (dq.options?.operation === 'join_tables') {
+          const joinOptions = dq.options?.join_table?.joins ?? [];
+          (joinOptions || []).forEach((join) => {
+            const { table, conditions } = join;
+            if (table) uniqTableIds.add(table);
+            conditions?.conditionsList?.forEach((condition) => {
+              const { leftField, rightField } = condition;
+              if (leftField?.table) {
+                uniqTableIds.add(leftField?.table);
+              }
+              if (rightField?.table) {
+                uniqTableIds.add(rightField?.table);
+              }
+            });
+          });
+        }
+        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
+      });
+
+      return [...uniqTableIds].map((table_id) => {
+        return { table_id };
+      });
+    });
+  }
+
   async findByAppName(name: string, organizationId: string): Promise<App> {
     return this.appRepository.findByAppName(name, organizationId);
   }
 
   async findByAppId(appId: string): Promise<App> {
     return this.appRepository.findByAppId(appId);
+  }
+
+  async handleAppRenameCommit(appId: string, app: App, appUpdateDto: AppUpdateDto) {
+    const prevName = app.name;
+    const { name } = appUpdateDto;
+    const request = RequestContext.getRequest();
+    const headers = {
+      'Content-Type': 'application/json',
+      Cookie: request.headers['cookie'],
+      'tj-workspace-id': request.headers['tj-workspace-id'],
+    };
+    const renameAppDto = new RenameAppOrVersionDto();
+    renameAppDto.prevName = prevName;
+    renameAppDto.updatedName = name;
+    try {
+      // TO DO : Review if we can make it asynchronous
+      const host = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.TOOLJET_HOST;
+      await got.put(`${host}/api/app-git/app/${app.id}/rename`, {
+        json: renameAppDto,
+        headers,
+        responseType: 'json',
+      });
+    } catch (err) {
+      console.log('APP rename commit failed with error', err);
+      // Don't throw the error here as this failure is related to the commit, but the app rename itself has been successful.
+      // This ensures the rest of the process continues, even though the commit may have failed
+    }
   }
 }

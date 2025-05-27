@@ -12,4 +12,41 @@ export enum FEATURE_KEY {
   GITSYNC_PUSH_VERSION = 'GITSYNC_PUSH_VERSION',
   GITSYNC_AUTO_PROMOTE = 'GITSYNC_AUTO_PROMOTE',
   CREATE_ORG_GIT = 'CREATE_ORG_GIT',
+  GET_ALL_WORKSPACE_APPS = 'GET_ALL_WORKSPACE_APPS',
+  IMPORT_APP = 'IMPORT_APP',
+  EXPORT_APP = 'EXPORT_APP',
 }
+
+export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
+export type NewRevampedComponent =
+  | 'Text'
+  | 'TextInput'
+  | 'PasswordInput'
+  | 'NumberInput'
+  | 'Table'
+  | 'Button'
+  | 'Checkbox';
+export type DefaultDataSourceName =
+  | 'restapidefault'
+  | 'runjsdefault'
+  | 'runpydefault'
+  | 'tooljetdbdefault'
+  | 'workflowsdefault';
+
+export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+export const DefaultDataSourceNames: DefaultDataSourceName[] = [
+  'restapidefault',
+  'runjsdefault',
+  'runpydefault',
+  'tooljetdbdefault',
+  'workflowsdefault',
+];
+export const NewRevampedComponents: NewRevampedComponent[] = [
+  'Text',
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'Table',
+  'Checkbox',
+  'Button',
+];

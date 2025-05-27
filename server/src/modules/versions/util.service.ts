@@ -7,6 +7,9 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
+import { RenameAppOrVersionDto } from '@modules/app-git/dto';
+import { RequestContext } from '@modules/request-context/service';
+import got from 'got';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -77,6 +80,15 @@ export class VersionUtilService implements IVersionUtilService {
     return;
   }
 
+  async fetchVersions(appId: string): Promise<AppVersion[]> {
+    return await this.versionRepository.find({
+      where: { appId },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const numVersions = await this.versionRepository.getCount(app.id);
@@ -106,5 +118,37 @@ export class VersionUtilService implements IVersionUtilService {
       // TODO: Add audit logs
       return;
     }, manager);
+  }
+  async handleVersionRenameCommit(appId: string, appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto) {
+    const prevName = appVersion.name;
+    const renameAppDto = new RenameAppOrVersionDto();
+    renameAppDto.prevName = appVersion.name;
+    renameAppDto.updatedName = appVersionUpdateDto.name;
+    const request = RequestContext.getRequest();
+    const { name } = appVersionUpdateDto;
+    if (name && name != prevName) {
+      const headers = {
+        'Content-Type': 'application/json',
+        Cookie: request.headers['cookie'],
+        'tj-workspace-id': request.headers['tj-workspace-id'],
+      };
+      const host = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.TOOLJET_HOST;
+      const renameAppDto = new RenameAppOrVersionDto();
+      renameAppDto.prevName = prevName;
+      renameAppDto.updatedName = name;
+      renameAppDto.renameVersionFlag = true;
+      // TO DO : Review if we can make it asynchronous
+      try {
+        await got.put(`${host}/api/app-git/app/${appId}/rename`, {
+          json: renameAppDto,
+          headers,
+          responseType: 'json',
+        });
+      } catch (err) {
+        console.log('Version rename commit failed with error', err);
+        // Don't throw the error here as this failure is related to the commit, but the version rename itself has been successful.
+        // This ensures the rest of the process continues, even though the commit may have failed
+      }
+    }
   }
 }

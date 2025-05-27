@@ -155,9 +155,10 @@ export class VersionService implements IVersionService {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
-
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
+    } else {
+      await this.versionsUtilService.handleVersionRenameCommit(app.id, appVersion, appVersionUpdateDto);
     }
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {

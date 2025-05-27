@@ -14,9 +14,6 @@ export class InsertDataGithubSSH1742215016773 implements MigrationInterface {
       DROP COLUMN IF EXISTS key_type,
       DROP COLUMN IF EXISTS is_finalized;
     `);
-    // await queryRunner.query(`
-    //   DROP TYPE IF EXISTS ssh_key_type;
-    // `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

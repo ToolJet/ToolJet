@@ -18,23 +18,35 @@ import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const { AppGitController } = await import(`${await getImportPath()}/app-git/controller`);
-    const { AppGitService } = await import(`${await getImportPath()}/app-git/service`);
-    const { SourceControlProviderService } = await import(`${await getImportPath()}/app-git/source-control-provider`);
-    const { SSHAppGitService } = await import(`${await getImportPath()}/app-git/providers/github-ssh/service`);
-    const { HTTPSAppGitService } = await import(`${await getImportPath()}/app-git/providers/github-https/service`);
-    const { GitLabAppGitService } = await import(`${await getImportPath()}/app-git/providers/gitlab/service`);
+    const { AppGitController } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/controller`);
+    const { AppGitService } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/service`);
+    const { SourceControlProviderService } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/source-control-provider`
+    );
+    const { SSHAppGitService } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-ssh/service`
+    );
+    const { HTTPSAppGitService } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-https/service`
+    );
+    const { GitLabAppGitService } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/gitlab/service`
+    );
     const { HTTPSAppGitUtilityService } = await import(
-      `${await getImportPath()}/app-git/providers/github-https/util.service`
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-https/util.service`
     );
     const { SSHAppGitUtilityService } = await import(
-      `${await getImportPath()}/app-git/providers/github-ssh/util.service`
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-ssh/util.service`
     );
     const { GitLabAppGitUtilityService } = await import(
-      `${await getImportPath()}/app-git/providers/gitlab/util.service`
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/gitlab/util.service`
     );
-    const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
-    const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
+    const { BaseGitUtilService } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git-util.service`
+    );
+    const { BaseGitSyncService } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git.service`
+    );
     return {
       module: AppGitModule,
       imports: [

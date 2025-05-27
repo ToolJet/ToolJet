@@ -56,6 +56,18 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CREATE_ORG_GIT]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
+    }
+    [FEATURE_KEY.GET_ALL_WORKSPACE_APPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
     },
-  },
+    [FEATURE_KEY.IMPORT_APP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.EXPORT_APP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+  }
 };
