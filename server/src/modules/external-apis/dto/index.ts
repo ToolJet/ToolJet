@@ -131,3 +131,32 @@ export class UpdateUserWorkspaceDto {
   @IsOptional()
   groups?: GroupDto[];
 }
+
+export class AppGitPullDto {
+  @IsString()
+  gitAppId: string;
+
+  @IsString()
+  gitVersionId: string;
+
+  @IsString()
+  lastCommitMessage: string;
+
+  @IsString()
+  lastCommitUser: string;
+
+  @IsString()
+  lastPushDate: string;
+
+  @IsString()
+  organizationGitId: string;
+
+  @IsString()
+  organizationId: string;
+
+  @IsString()
+  gitAppName: string;
+
+  @IsString()
+  gitVersionName: string;
+}
