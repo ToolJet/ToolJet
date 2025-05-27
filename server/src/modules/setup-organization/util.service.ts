@@ -18,6 +18,7 @@ import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/to
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DefaultDataSourceKinds } from '@modules/data-sources/constants';
+import { OrganizationInputs } from './types/organization-inputs';
 
 @Injectable()
 export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilService {
@@ -36,9 +37,9 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
     protected readonly dataSourcesRepository: DataSourcesRepository
   ) {}
 
-  async create(name: string, slug: string, user?: User, manager?: EntityManager): Promise<Organization> {
+  async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organization = await this.organizationRepository.createOne(name, slug, manager);
+      const organization = await this.organizationRepository.createOne(organizationInputs, manager);
       await this.appEnvironmentUtilService.createDefaultEnvironments(organization.id, manager);
       await this.groupPermissionUtilService.createDefaultGroups(organization.id, manager);
 
