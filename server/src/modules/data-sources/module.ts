@@ -10,6 +10,7 @@ import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
+import { OrganizationRepository } from '@modules/organizations/repository';
 import { SessionModule } from '@modules/session/module';
 import { SampleDBScheduler } from './schedulers/sample-db.scheduler';
 import { InMemoryCacheService } from '@helpers/in_memory_cache.service';
@@ -22,6 +23,7 @@ export class DataSourcesModule {
     const { DataSourcesUtilService } = await import(`${importPath}/data-sources/util.service`);
     const { PluginsServiceSelector } = await import(`${importPath}/data-sources/services/plugin-selector.service`);
     const { SampleDataSourceService } = await import(`${importPath}/data-sources/services/sample-ds.service`);
+    const { OrganizationsService } = await import(`${importPath}/organizations/service`);
 
     return {
       module: DataSourcesModule,
@@ -43,6 +45,8 @@ export class DataSourcesModule {
         PluginsRepository,
         SampleDataSourceService,
         FeatureAbilityFactory,
+        OrganizationsService,
+        OrganizationRepository,
         SampleDBScheduler,
         InMemoryCacheService,
       ],
