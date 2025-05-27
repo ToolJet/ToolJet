@@ -2,82 +2,164 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Mongodb datasource",
   "description": "A schema defining mongodb datasource",
-  "type": "database",
-  "source": {
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
     "name": "MongoDB",
     "kind": "mongodb",
-    "exposedVariables": {
-      "isLoading": false,
-      "data": {},
-      "rawData": {}
-    },
-    "options": {
-      "host": {
-        "type": "string"
-      },
-      "port": {
-        "type": "string"
-      },
-      "username": {
-        "type": "string"
-      },
-      "password": {
-        "type": "string",
-        "encrypted": true
-      },
-      "connection_type": {
-        "type": "options"
-      },
-      "connection_string": {
-        "type": "string",
-        "encrypted": true
-      },
-      "ca_cert": {
-        "encrypted": true
-      },
-      "client_key": {
-        "encrypted": true
-      },
-      "client_cert": {
-        "encrypted": true
-      },
-      "root_cert": {
-        "encrypted": true
-      }
-    }
-  },
-  "defaults": {
-    "database": {
-      "value": ""
-    },
-    "host": {
-      "value": "localhost"
-    },
-    "port": {
-      "value": 27017
-    },
-    "username": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    },
-    "connection_type": {
-      "value": "manual"
-    },
-    "connection_string": {
-      "value": ""
-    },
-    "tls_certificate": {
-      "value": "none"
-    }
+    "type": "database"
   },
   "properties": {
     "connection_type": {
-      "label": "Connection type",
-      "key": "connection_type",
-      "type": "dropdown-component-flip",
+      "type": "string",
+      "title": "Connection type",
       "description": "Single select dropdown for connection_type",
+      "enum": [
+        "manual",
+        "string"
+      ],
+      "default": "manual"
+    },
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "Enter host",
+      "default": "localhost"
+    },
+    "port": {
+      "type": "number",
+      "title": "Port",
+      "description": "Enter port",
+      "default": 27017
+    },
+    "database": {
+      "type": "string",
+      "title": "Database name",
+      "description": "Name of the database"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Enter username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Enter password"
+    },
+    "tls_certificate": {
+      "type": "string",
+      "title": "TLS/SSL certificate",
+      "description": "Single select dropdown for choosing certificates",
+      "enum": [
+        "ca_certificate",
+        "client_certificate",
+        "none"
+      ],
+      "default": "none"
+    },
+    "connection_string": {
+      "type": "string",
+      "title": "Connection string",
+      "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
+    },
+    "ca_cert": {
+      "type": "string",
+      "title": "CA cert",
+      "description": "Enter CA certificate"
+    },
+    "client_key": {
+      "type": "string",
+      "title": "Client key",
+      "description": "Enter client key"
+    },
+    "client_cert": {
+      "type": "string",
+      "title": "Client cert",
+      "description": "Enter client certificate"
+    }
+  },
+  "tj:encrypted": [
+    "password",
+    "ca_cert",
+    "client_key",
+    "client_cert",
+    "connection_string"
+  ],
+  "required": [
+    "connection_type"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "connection_type": {
+            "const": "manual"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "host",
+          "port",
+          "tls_certificate"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "tls_certificate": {
+                  "const": "ca_certificate"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "ca_cert"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "tls_certificate": {
+                  "const": "client_certificate"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "client_key",
+                "client_cert",
+                "ca_cert"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "connection_type": {
+            "const": "string"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "connection_string"
+        ]
+      }
+    }
+  ],
+  "tj:ui:properties": {
+    "connection_type": {
+      "$ref": "#/properties/connection_type",
+      "key": "connection_type",
+      "label": "Connection type",
+      "description": "Single select dropdown for connection_type",
+      "widget": "dropdown-component-flip",
       "list": [
         {
           "name": "Manual connection",
@@ -92,87 +174,106 @@
     "manual": {
       "tls_certificate": {
         "label": "TLS/SSL certificate",
+        "$ref": "#/properties/tls_certificate",
         "key": "tls_certificate",
-        "type": "dropdown-component-flip",
         "description": "Single select dropdown for choosing certificates",
+        "widget": "dropdown-component-flip",
         "list": [
-          { "value": "ca_certificate", "name": "CA certificate" },
-          { "value": "client_certificate", "name": "Client certificate" },
-          { "value": "none", "name": "None" }
+          {
+            "value": "ca_certificate",
+            "name": "CA certificate"
+          },
+          {
+            "value": "client_certificate",
+            "name": "Client certificate"
+          },
+          {
+            "value": "none",
+            "name": "None"
+          }
         ],
-        "commonFields":{
+        "commonFields": {
           "host": {
-            "label": "Host",
+            "$ref": "#/properties/host",
             "key": "host",
-            "type": "text",
-            "description": "Enter host"
+            "label": "Host",
+            "description": "Enter host",
+            "widget": "text-v3",
+            "required": true
           },
           "port": {
-            "label": "Port",
+            "$ref": "#/properties/port",
             "key": "port",
-            "type": "text",
-            "description": "Enter port"
+            "label": "Port",
+            "description": "Enter port",
+            "widget": "text-v3",
+            "required": true
           },
           "database": {
             "label": "Database name",
+            "$ref": "#/properties/database",
             "key": "database",
-            "type": "text",
-            "description": "Name of the database"
+            "description": "Name of the database",
+            "widget": "text-v3"
           },
           "username": {
-            "label": "Username",
+            "$ref": "#/properties/username",
             "key": "username",
-            "type": "text",
-            "description": "Enter username"
+            "label": "Username",
+            "description": "Enter username",
+            "widget": "text-v3"
           },
           "password": {
-            "label": "Password",
+            "$ref": "#/properties/password",
             "key": "password",
-            "type": "password",
-            "description": "Enter password"
+            "label": "Password",
+            "description": "Enter password",
+            "widget": "password-v3",
+            "required": false
           }
         }
       },
       "ca_certificate": {
         "ca_cert": {
           "label": "CA cert",
+          "$ref": "#/properties/ca_cert",
           "key": "ca_cert",
-          "type": "textarea",
-          "encrypted": true,
-          "description": "Enter CA certificate"
+          "description": "Enter CA certificate",
+          "widget": "password-v3-textarea"
         }
       },
       "client_certificate": {
         "client_key": {
           "label": "Client key",
+          "$ref": "#/properties/client_key",
           "key": "client_key",
-          "type": "textarea",
-          "encrypted": true,
-          "description": "Enter client key"
+          "description": "Enter client key",
+          "widget": "password-v3-textarea"
         },
         "client_cert": {
           "label": "Client cert",
+          "$ref": "#/properties/client_cert",
           "key": "client_cert",
-          "type": "textarea",
-          "encrypted": true,
-          "description": "Enter client certificate"
+          "description": "Enter client certificate",
+          "widget": "password-v3-textarea"
         },
         "ca_cert": {
           "label": "CA cert",
+          "$ref": "#/properties/ca_cert",
           "key": "ca_cert",
-          "type": "textarea",
-          "encrypted": true,
-          "description": "Enter CA certificate"
+          "description": "Enter CA certificate",
+          "widget": "password-v3-textarea"
         }
       }
     },
     "string": {
       "connection_string": {
-        "label": "Connection string",
+        "$ref": "#/properties/connection_string",
         "key": "connection_string",
-        "type": "text",
-        "encrypted": true,
-        "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
+        "label": "Connection string",
+        "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority",
+        "widget": "password-v3-textarea",
+        "required": true
       }
     }
   }

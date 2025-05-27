@@ -51,7 +51,7 @@ const OnboardingForm = ({
             <div className={iconClasses} onClick={handleBackClick} data-cy="back-button">
               <LeftArow />
             </div>
-            <span>Step {currentStep}</span> of {totalSteps}
+            <span>Step {currentStep == 0 ? currentStep + 1 : currentStep}</span> of {totalSteps}
           </div>
           <FormHeader>{title}</FormHeader>
           {description && <FormDescription>{description}</FormDescription>}

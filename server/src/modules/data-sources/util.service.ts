@@ -189,17 +189,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         /* 
           Basic plan customer. lets update all environment options. 
           this will help us to run the queries successfully when the user buys enterprise plan 
-        */
-        await Promise.all(
-          allEnvs.map(async (envToUpdate) => {
-            dataSource.options = (
-              await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
-            ).options;
+          */
 
-            const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
-            await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
-          })
-        );
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
+        for (const env of allEnvs) {
+          dataSource.options = (
+            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
+          ).options;
+
+          await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
+        }
       }
       const updatableParams = {
         id: dataSourceId,
@@ -212,6 +211,21 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
       await manager.save(DataSource, updatableParams);
     });
+  }
+
+  async decrypt(options: Record<string, any>) {
+    const decryptedOptions = { ...options };
+
+    for (const [key, value] of Object.entries(options)) {
+      if (value?.credential_id) {
+        decryptedOptions[key] = {
+          ...value,
+          value: await this.credentialService.getValue(value.credential_id),
+        };
+      }
+    }
+
+    return decryptedOptions;
   }
 
   async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager) {
@@ -302,8 +316,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return dataSource;
   }
 
-  async resolveConstants(str: string, organizationId: string, environmentId: string): Promise<string> {
+  async resolveConstants(str: string, organizationId: string, environmentId: string, user?: User): Promise<string> {
     const regex = /\{\{(constants|secrets)\.(.*?)\}\}/g;
+
     const matches = Array.from(str.matchAll(regex));
 
     if (matches.length === 0) return str;
@@ -353,7 +368,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   async resolveValue(value, organization_id, environment_id) {
-    const constantMatcher = /{{constants|secrets\..+?}}/g;
+    const constantMatcher = /{{constants|secrets|globals.server\..+?}}/g;
 
     if (typeof value === 'string' && constantMatcher.test(value)) {
       return await this.resolveConstants(value, organization_id, environment_id);
@@ -371,7 +386,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const parsedOptions = JSON.parse(JSON.stringify(options));
 
     // need to match if currentOption is a contant, {{constants.psql_db}
-    const constantMatcher = /{{constants|secrets\..+?}}/g;
+    const constantMatcher = /{{constants|secrets|globals.server\..+?}}/g;
 
     for (const key of Object.keys(parsedOptions)) {
       let currentOption = parsedOptions[key]?.['value'];
@@ -590,10 +605,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return options;
   }
 
-  async parseSourceOptions(options: any, organizationId: string, environmentId: string): Promise<object> {
+  async parseSourceOptions(options: any, organizationId: string, environmentId: string, user?: User): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
-    const constantMatcher = /\{\{(constants|secrets)\..*?\}\}/g;
+    const constantMatcher = /\{\{(constants|secrets|globals.server)\..*?\}\}/g;
 
     for (const key of Object.keys(options)) {
       const currentOption = options[key]?.['value'];
@@ -609,7 +624,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
-                const resolved = await this.resolveConstants(inner, organizationId, environmentId);
+                const resolved = await this.resolveConstants(inner, organizationId, environmentId, user);
                 curr[j] = resolved;
               }
             }
@@ -618,7 +633,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
 
       if (constantMatcher.test(currentOption)) {
-        const resolved = await this.resolveConstants(currentOption, organizationId, environmentId);
+        const resolved = await this.resolveConstants(currentOption, organizationId, environmentId, user);
         options[key]['value'] = resolved;
       }
     }
@@ -633,7 +648,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const value = await this.credentialService.getValue(credentialId);
 
         if (value.includes('{{constants') || value.includes('{{secrets')) {
-          const resolved = await this.resolveConstants(value, organizationId, environmentId);
+          const resolved = await this.resolveConstants(value, organizationId, environmentId, user);
           parsedOptions[key] = resolved;
           continue;
         } else {

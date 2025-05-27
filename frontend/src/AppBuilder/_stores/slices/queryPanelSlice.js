@@ -206,7 +206,6 @@ export const createQueryPanelSlice = (set, get) => ({
       isOnLoad = false,
       moduleId = 'canvas'
     ) => {
-      //! TODO get this using get() when migrated into slice
       const {
         eventsSlice,
         dataQuery: dataQuerySlice,
@@ -227,6 +226,28 @@ export const createQueryPanelSlice = (set, get) => ({
         executeWorkflow,
         executeMultilineJS,
       } = queryPanel;
+      const queryUpdatePromise = dataQuerySlice.queryUpdates[queryId];
+      if (queryUpdatePromise) {
+        setResolvedQuery(queryId, {
+          isLoading: true,
+        });
+        return queryUpdatePromise.then(() =>
+          get().queryPanel.runQuery(
+            queryId,
+            queryName,
+            confirmed,
+            mode,
+            userSuppliedParameters,
+            component,
+            eventId,
+            shouldSetPreviewData,
+            isOnLoad,
+            moduleId
+          )
+        );
+      }
+      //! TODO get this using get() when migrated into slice
+
       const { onEvent } = eventsSlice;
       const { queryConfirmationList } = dataQuerySlice;
 
@@ -404,6 +425,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 isLoading: false,
                 ...(query.kind === 'restapi'
                   ? {
+                      metadata: data.metadata,
                       request: data.data.requestObject,
                       response: data.data.responseObject,
                       responseHeaders: data.data.responseHeaders,
@@ -425,7 +447,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   query,
                   'edit'
                 );
-                if (finalData.status === 'failed') {
+                if (finalData?.status === 'failed') {
                   setResolvedQuery(queryId, {
                     isLoading: false,
                   });
@@ -494,6 +516,14 @@ export const createQueryPanelSlice = (set, get) => ({
         executeMultilineJS,
         setIsPreviewQueryLoading,
       } = queryPanel;
+      const queryUpdatePromise = get().dataQuery.queryUpdates[query?.id];
+      if (queryUpdatePromise) {
+        setPreviewLoading(true);
+        setIsPreviewQueryLoading(true);
+        return queryUpdatePromise.then(() =>
+          get().queryPanel.previewQuery(query, calledFromQuery, userSuppliedParameters, moduleId)
+        );
+      }
       const { onEvent } = eventsSlice;
 
       let parameters = userSuppliedParameters;
@@ -621,7 +651,7 @@ export const createQueryPanelSlice = (set, get) => ({
                     query,
                     'edit'
                   );
-                  if (finalData.status === 'failed') {
+                  if (finalData?.status === 'failed') {
                     onEvent('onDataQueryFailure', queryEvents);
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
@@ -749,18 +779,30 @@ export const createQueryPanelSlice = (set, get) => ({
     runTransformation: async (rawData, transformation, transformationLanguage = 'javascript', query, mode = 'edit') => {
       const data = rawData;
       const {
-        queryPanel: { runPythonTransformation },
+        queryPanel: { runPythonTransformation, createProxy },
         getResolvedState,
       } = get();
-      let result = [];
+      let result = {};
       const currentState = getResolvedState();
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
       } else if (transformationLanguage === 'javascript') {
         try {
+          const { eventsSlice } = get();
+          const { generateAppActions } = eventsSlice;
+          const queriesInResolvedState = deepClone(currentState.queries);
+          const actions = generateAppActions(query?.id, mode);
+
+          const proxiedComponents = createProxy(currentState?.components, 'components');
+          const proxiedGlobals = createProxy(currentState?.globals, 'globals');
+          const proxiedConstants = createProxy(currentState?.constants, 'constants');
+          const proxiedVariables = createProxy(currentState?.variables, 'variables');
+          const proxiedPage = createProxy(deepClone(currentState?.page, 'page'));
+          const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState, 'queries');
+
           const evalFunction = Function(
-            ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants'],
+            ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants', 'actions'],
             transformation
           );
 
@@ -768,32 +810,51 @@ export const createQueryPanelSlice = (set, get) => ({
             data,
             moment,
             _,
-            currentState.components,
-            currentState.queries,
-            currentState.globals,
-            currentState.variables,
-            currentState.page,
-            currentState.constants
+            proxiedComponents,
+            proxiedQueriesInResolvedState,
+            proxiedGlobals,
+            proxiedVariables,
+            proxiedPage,
+            proxiedConstants,
+            {
+              logError: function (log) {
+                return actions.logError.call(actions, log, true);
+              },
+              logInfo: function (log) {
+                return actions.logInfo.call(actions, log, true);
+              },
+              log: function (log) {
+                return actions.log.call(actions, log, true);
+              },
+            }
           );
         } catch (err) {
-          result = {
-            message: err.stack.split('\n')[0],
-            status: 'failed',
-            data: data,
-          };
+          const stackLines = err.stack.split('\n');
+          const errorLocation =
+            stackLines[2]?.match(/<anonymous>:(\d+):(\d+)/) ?? stackLines[1]?.match(/<anonymous>:(\d+):(\d+)/);
+
+          let lineNumber = null;
+
+          if (errorLocation) {
+            lineNumber = errorLocation[1] - 2;
+          }
+
+          console.log('JS execution failed: ', err);
+          let error = err.message || err.stack.split('\n')[0] || 'JS execution failed';
+          result = { status: 'failed', data: { message: error, description: error, lineNumber } };
+          get().debugger.log({
+            logLevel: result?.status === 'failed' ? 'error' : 'success',
+            type: 'transformation',
+            kind: query.kind,
+            key: `${query.name}, transformation, line ${result?.data?.lineNumber}`,
+            message: result?.message,
+            error: result?.data,
+            isTransformation: true,
+            isQuerySuccessLog: result?.status === 'failed' ? false : true,
+            errorTarget: 'Queries',
+          });
         }
       }
-      get().debugger.log({
-        logLevel: result?.status === 'failed' ? 'error' : 'success',
-        type: 'transformation',
-        kind: query.kind,
-        key: query.name,
-        message: result?.message,
-        error: result,
-        isTransformation: true,
-        isQuerySuccessLog: result?.status === 'failed' ? false : true,
-        errorTarget: 'Queries',
-      });
       return result;
     },
 
@@ -861,12 +922,13 @@ export const createQueryPanelSlice = (set, get) => ({
     createProxy: (obj, path = '') => {
       const { queryPanel } = get();
       const { createProxy } = queryPanel;
+
       return new Proxy(obj, {
         get(target, prop) {
           const fullPath = path ? `${path}.${prop}` : prop;
 
           if (!(prop in target)) {
-            throw new Error(`Property "${fullPath}" is not defined`);
+            throw new Error(`ReferenceError: ${fullPath} is not defined`);
           }
 
           const value = target[prop];
@@ -955,13 +1017,16 @@ export const createQueryPanelSlice = (set, get) => ({
 
         //Proxy Func required to get current execution line number from stack to log in debugger
 
-        const proxiedComponents = createProxy(resolvedState?.components);
-        const proxiedGlobals = createProxy(resolvedState?.globals);
-        const proxiedConstants = createProxy(resolvedState?.constants);
-        const proxiedVariables = createProxy(resolvedState?.variables);
-        const proxiedPage = createProxy(deepClone(resolvedState?.page));
-        const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState);
-        const proxiedFormattedParams = createProxy(!_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : []);
+        const proxiedComponents = createProxy(deepClone(resolvedState?.components), 'components');
+        const proxiedGlobals = createProxy(deepClone(resolvedState?.globals), 'globals');
+        const proxiedConstants = createProxy(deepClone(resolvedState?.constants), 'constants');
+        const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
+        const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
+        const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
+        const proxiedFormattedParams = createProxy(
+          !_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : [],
+          'params'
+        );
 
         const fnParams = [
           'moment',
@@ -1027,6 +1092,24 @@ export const createQueryPanelSlice = (set, get) => ({
     },
     isQuerySelected: (queryId) => {
       return get().queryPanel.selectedQuery?.id === queryId;
+    },
+    runQueryOnShortcut: () => {
+      const { queryPanel } = get();
+      const { runQuery, selectedQuery } = queryPanel;
+      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true);
+    },
+    previewQueryOnShortcut: (moduleId = 'canvas') => {
+      const { queryPanel } = get();
+      const { previewQuery, selectedQuery, selectedDataSource } = queryPanel;
+      const query = {
+        data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+        pluginId: selectedDataSource.pluginId,
+        options: { ...selectedQuery?.options },
+        kind: selectedDataSource.kind,
+        name: selectedQuery?.name ?? '',
+        id: selectedQuery?.id,
+      };
+      previewQuery(query, false, undefined, moduleId);
     },
   },
 });

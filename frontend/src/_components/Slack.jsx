@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
@@ -15,8 +15,16 @@ const Slack = ({
   isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
-  const whiteLabelText = retrieveWhiteLabelText();
+  const [whiteLabelText, setWhiteLabelText] = useState('');
+  const plugin_id = selectedDataSource?.plugin?.id;
   const { t } = useTranslation();
+  useEffect(() => {
+    async function fetchLabel() {
+      const text = await retrieveWhiteLabelText();
+      setWhiteLabelText(text);
+    }
+    fetchLabel();
+  }, []);
 
   function authGoogle() {
     const provider = 'slack';
@@ -29,7 +37,7 @@ const Slack = ({
     }
 
     datasourceService
-      .fetchOauth2BaseUrl(provider)
+      .fetchOauth2BaseUrl(provider, plugin_id, {})
       .then((data) => {
         const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
 

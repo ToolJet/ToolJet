@@ -83,14 +83,26 @@ export const sanitizeHeaders = (
   hasDataSource = true
 ): { [k: string]: string } => {
   const cleanHeaders = (headers) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+  const filterValidHeaderEntries = (headers) => {
+    return headers.filter(([_, value]) => {
+      if (value == null) return false;
+      if (typeof value === 'string') return true;
+      if (Array.isArray(value) && value.every((v) => typeof v === 'string')) return true;
+      return false;
+    });
+  };
 
-  const _queryHeaders = cleanHeaders(queryOptions.headers || []);
-  const queryHeaders = Object.fromEntries(_queryHeaders);
+  const processHeaders = (rawHeaders) => {
+    const cleaned = cleanHeaders(rawHeaders || []);
+    const validHeaders = filterValidHeaderEntries(cleaned);
+    return Object.fromEntries(validHeaders);
+  };
+
+  const queryHeaders = processHeaders(queryOptions.headers || []);
 
   if (!hasDataSource) return queryHeaders;
 
-  const _sourceHeaders = cleanHeaders(sourceOptions.headers || []);
-  const sourceHeaders = Object.fromEntries(_sourceHeaders);
+  const sourceHeaders = processHeaders(sourceOptions.headers || []);
 
   return { ...queryHeaders, ...sourceHeaders };
 };
@@ -121,8 +133,11 @@ export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasD
   });
 
   if (!hasDataSource) return _urlParams;
+  const sanitisedUrlParamsFromSourceOptions = (sourceOptions.url_params || []).filter((o) => {
+    return o.some((e) => !isEmpty(e));
+  });
 
-  const urlParams = _urlParams.concat(sourceOptions.url_params || []);
+  const urlParams = _urlParams.concat(sanitisedUrlParamsFromSourceOptions || []);
   return urlParams;
 };
 

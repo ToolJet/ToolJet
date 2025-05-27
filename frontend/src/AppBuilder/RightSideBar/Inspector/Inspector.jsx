@@ -8,6 +8,8 @@ import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_hel
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
+import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
@@ -34,8 +36,10 @@ import Inspect from '@/_ui/Icon/solidIcons/Inspect';
 import classNames from 'classnames';
 import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
+import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
+// import { componentTypes } from '@/Editor/WidgetManager/components';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
@@ -66,7 +70,11 @@ const INSPECTOR_HEADER_OPTIONS = [
 const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
+  'TextArea',
   'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
   'NumberInput',
   'Table',
   'ToggleSwitchV2',
@@ -79,7 +87,11 @@ const NEW_REVAMPED_COMPONENTS = [
   'Icon',
   'Image',
   'Container',
+  'Divider',
+  'VerticalDivider',
   'ModalV2',
+  'Link',
+  'Steps',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -529,8 +541,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
@@ -730,6 +742,12 @@ const GetAccordion = React.memo(
       case 'DatePickerV2':
       case 'TimePicker':
         return <DatetimePickerV2 {...restProps} componentName={componentName} />;
+      case 'Steps':
+        return <Steps {...restProps} />;
+      case 'PhoneInput':
+        return <PhoneInput {...restProps} />;
+      case 'CurrencyInput':
+        return <CurrencyInput {...restProps} componentName={componentName} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

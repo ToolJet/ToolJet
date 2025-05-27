@@ -37,7 +37,7 @@ const ResendVerificationEmail = ({ email, organizationId, redirectTo }) => {
         onClick={handleResend}
         className={cx('button-parent', { disabled: isResendDisabled })}
         disabled={isResendDisabled}
-        data-cy={'resend-verification'}
+        data-cy={'resend-verification-email-button'}
       >
         <span className="button-text">
           {isResendDisabled ? `Resend verification email in ${countdown}s` : 'Resend verification email'}

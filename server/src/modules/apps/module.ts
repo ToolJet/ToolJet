@@ -19,6 +19,9 @@ import { FeatureAbilityFactory } from './ability';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { RolesRepository } from '@modules/roles/repository';
+import { UsersModule } from '@modules/users/module';
 @Module({})
 export class AppsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -36,7 +39,15 @@ export class AppsModule {
     return {
       module: AppsModule,
       imports: [
-        TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component, VersionRepository]),
+        TypeOrmModule.forFeature([
+          App,
+          Page,
+          EventHandler,
+          Organization,
+          Component,
+          VersionRepository,
+          RolesRepository,
+        ]),
         await FolderAppsModule.register(configs),
         await ThemesModule.register(configs),
         await FoldersModule.register(configs),
@@ -44,6 +55,8 @@ export class AppsModule {
         await AppEnvironmentsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
+        await AppPermissionsModule.register(configs),
+        await UsersModule.register(configs),
       ],
       controllers: [AppsController],
       providers: [
@@ -61,8 +74,9 @@ export class AppsModule {
         AppsSubscriber,
         DataSourcesRepository,
         AppImportExportService,
+        RolesRepository,
       ],
-      exports: [AppsUtilService],
+      exports: [AppsUtilService, AppImportExportService],
     };
   }
 }

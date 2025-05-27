@@ -122,6 +122,7 @@ export const createResolvedSlice = (set, get) => ({
       'setVariables'
     );
     get().updateDependencyValues(`variables.${key}`);
+    get().checkAndSetTrueBuildSuggestionsFlag();
   },
 
   getVariable: (key, moduleId = 'canvas') => {
@@ -140,6 +141,21 @@ export const createResolvedSlice = (set, get) => ({
     get().updateDependencyValues(`variables.${key}`);
   },
 
+  unsetAllVariables: (moduleId = 'canvas') => {
+    const variables = get().resolvedStore.modules[moduleId].exposedValues.variables;
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId].exposedValues.variables = {};
+      },
+      false,
+      'unsetAllVariables'
+    );
+    Object.keys(variables).forEach((key) => {
+      get().removeNode(`variables.${key}`);
+      get().updateDependencyValues(`variables.${key}`);
+    });
+  },
+
   // page.variables
   setPageVariable: (key, value, moduleId = 'canvas') => {
     set(
@@ -150,6 +166,7 @@ export const createResolvedSlice = (set, get) => ({
       'setPageVariable'
     );
     get().updateDependencyValues(`page.variables.${key}`);
+    get().checkAndSetTrueBuildSuggestionsFlag();
   },
 
   getPageVariable: (key, moduleId = 'canvas') => {
@@ -165,6 +182,21 @@ export const createResolvedSlice = (set, get) => ({
     );
     get().removeNode(`page.variables.${key}`);
     get().updateDependencyValues(`page.variables.${key}`);
+  },
+
+  unsetAllPageVariables: (moduleId = 'canvas') => {
+    const pageVariables = get().resolvedStore.modules[moduleId].exposedValues.page.variables;
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId].exposedValues.page.variables = {};
+      },
+      false,
+      'unsetAllPageVariables'
+    );
+    Object.keys(pageVariables).forEach((key) => {
+      get().removeNode(`page.variables.${key}`);
+      get().updateDependencyValues(`page.variables.${key}`);
+    });
   },
 
   setResolvedQuery: (queryId, details, moduleId = 'canvas') => {

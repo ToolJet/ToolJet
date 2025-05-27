@@ -53,6 +53,7 @@ export const PropertiesTabElements = ({
             { label: 'Image', value: 'image' },
             { label: 'Link', value: 'link' },
             { label: 'JSON', value: 'json' },
+            { label: 'Markdown', value: 'markdown' },
             // Following column types are deprecated
             { label: 'Default', value: 'default' },
             { label: 'Dropdown', value: 'dropdown' },
@@ -254,7 +255,7 @@ export const PropertiesTabElements = ({
               paramType="properties"
             />
           </div>
-          {resolveReferences(column?.isEditable) && (
+          {(column?.fxActiveFields?.includes('isEditable') || resolveReferences(column?.isEditable)) && (
             <ValidationProperties
               column={column}
               index={index}

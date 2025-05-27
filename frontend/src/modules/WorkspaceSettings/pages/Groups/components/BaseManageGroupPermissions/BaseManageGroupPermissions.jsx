@@ -645,7 +645,9 @@ class BaseManageGroupPermissions extends React.Component {
                 <div className="default-group-list-container">
                   <div className="mb-2 d-flex align-items-center">
                     <SolidIcon name="usergear" />
-                    <span className="ml-1 group-title">USER ROLE</span>
+                    <span className="ml-1 group-title" data-cy="user-role-title">
+                      USER ROLE
+                    </span>
                   </div>
                   {defaultGroups.map((permissionGroup) => {
                     return (
@@ -802,7 +804,7 @@ class BaseManageGroupPermissions extends React.Component {
                     classes="group-banner"
                     size="xsmall"
                     type={featureAccess?.licenseStatus?.licenseType}
-                    customMessage={'Custom groups & permissions are available in our paid plans.'}
+                    customMessage={'Custom groups & permissions are paid features'}
                     showCustomGroupBanner={true}
                   />
                 )}

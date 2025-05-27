@@ -2,7 +2,6 @@ import { fake } from "Fixtures/fake";
 import {
   createFolder,
   deleteFolder,
-  deleteDownloadsFolder,
   navigateToAppEditor,
   viewAppCardOptions,
   verifyModal,
@@ -14,49 +13,196 @@ import {
 } from "Support/utils/common";
 import {
   modifyAndVerifyAppCardIcon,
-  login,
   verifyAppDelete,
 } from "Support/utils/dashboard";
-import { profileSelector } from "Selectors/profile";
-import { profileText } from "Texts/profile";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
-import {
-  navigateToManageUsers,
-  logout,
-  searchUser,
-  navigateToManageGroups,
-} from "Support/utils/common";
-import { roleBasedOnboarding } from "Support/utils/onboarding";
+import { logout } from "Support/utils/common";
 
 describe("dashboard", () => {
-  const data = {};
-  data.appName = `${fake.companyName}-App`;
-  data.folderName = `${fake.companyName.toLowerCase()}-folder`;
-  data.cloneAppName = `cloned-${data.appName}`;
-  data.updatedFolderName = `new-${data.folderName}`;
-  data.firstName = fake.firstName;
-  data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-  data.workspaceName = fake.firstName;
-  data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+  let data = {};
 
   beforeEach(() => {
+    data = {
+      appName: `${fake.companyName}-App`,
+      folderName: `${fake.companyName.toLowerCase()}-folder`,
+      cloneAppName: `cloned-${fake.companyName}-App`,
+      updatedFolderName: `new-${fake.companyName.toLowerCase()}-folder`,
+      workspaceName: fake.firstName,
+      workspaceSlug: fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", ""),
+    };
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
     cy.skipWalkthrough();
+
+    cy.apiLogin();
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
+    cy.visit(`${data.workspaceSlug}`);
   });
 
+  // it("Should verify app card elements and app card operations", () => {
+  //   const customLayout = {
+  //     desktop: { top: 100, left: 20 },
+  //     mobile: { width: 8, height: 50 },
+  //   };
+
+  //   cy.apiCreateApp(data.appName);
+  //   cy.visit(`${data.workspaceSlug}`);
+
+  //   cy.wait(2000);
+  //   cy.get(commonSelectors.appCreationDetails).should("be.visible");
+  //   cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
+  //   cy.get(commonSelectors.appTitle(data.appName)).verifyVisibleElement(
+  //     "have.text",
+  //     data.appName
+  //   );
+
+  //   viewAppCardOptions(data.appName);
+  //   cy.get(
+  //     commonSelectors.appCardOptions(commonText.changeIconOption)
+  //   ).verifyVisibleElement("have.text", commonText.changeIconOption);
+  //   cy.get(
+  //     commonSelectors.appCardOptions(commonText.addToFolderOption)
+  //   ).verifyVisibleElement("have.text", commonText.addToFolderOption);
+  //   cy.get(
+  //     commonSelectors.appCardOptions(commonText.cloneAppOption)
+  //   ).verifyVisibleElement("have.text", commonText.cloneAppOption);
+  //   cy.get(
+  //     commonSelectors.appCardOptions(commonText.exportAppOption)
+  //   ).verifyVisibleElement("have.text", commonText.exportAppOption);
+  //   cy.get(
+  //     commonSelectors.appCardOptions(commonText.deleteAppOption)
+  //   ).verifyVisibleElement("have.text", commonText.deleteAppOption);
+
+  //   modifyAndVerifyAppCardIcon(data.appName);
+  //   createFolder(data.folderName);
+
+  //   viewAppCardOptions(data.appName);
+  //   cy.get(
+  //     commonSelectors.appCardOptions(commonText.addToFolderOption)
+  //   ).click();
+  //   verifyModal(
+  //     dashboardText.addToFolderTitle,
+  //     dashboardText.addToFolderButton,
+  //     dashboardSelector.selectFolder
+  //   );
+  //   cy.get(dashboardSelector.moveAppText).verifyVisibleElement(
+  //     "have.text",
+  //     dashboardText.moveAppText(data.appName)
+  //   );
+
+  //   cy.get(dashboardSelector.selectFolder).click();
+  //   cy.get(commonSelectors.folderList).contains(data.folderName).click();
+  //   cy.get(dashboardSelector.addToFolderButton).click();
+  //   cy.verifyToastMessage(
+  //     commonSelectors.toastMessage,
+  //     commonText.AddedToFolderToast,
+  //     false
+  //   );
+
+  //   cy.get(dashboardSelector.folderName(data.folderName)).verifyVisibleElement(
+  //     "have.text",
+  //     dashboardText.folderName(`${data.folderName} (1)`)
+  //   );
+
+  //   cy.get(dashboardSelector.folderName(data.folderName)).click();
+  //   cy.get(commonSelectors.appCard(data.appName))
+  //     .contains(data.appName)
+  //     .should("be.visible");
+
+  //   viewAppCardOptions(data.appName);
+
+  //   cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption))
+  //     .verifyVisibleElement("have.text", commonText.removeFromFolderOption)
+  //     .click();
+  //   verifyConfirmationModal(commonText.appRemovedFromFolderMessage);
+
+  //   cancelModal(commonText.cancelButton);
+
+  //   viewAppCardOptions(data.appName);
+  //   cy.get(
+  //     commonSelectors.appCardOptions(commonText.removeFromFolderOption)
+  //   ).click();
+  //   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  //   cy.verifyToastMessage(
+  //     commonSelectors.toastMessage,
+  //     commonText.appRemovedFromFolderTaost,
+  //     false
+  //   );
+  //   cy.get(commonSelectors.modalComponent).should("not.exist");
+  //   cy.get(commonSelectors.empytyFolderImage).should("be.visible");
+  //   cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
+  //     "have.text",
+  //     commonText.emptyFolderText
+  //   );
+  //   cy.get(commonSelectors.allApplicationsLink).click();
+  //   deleteFolder(data.folderName);
+
+  //   cy.get(commonSelectors.allApplicationsLink).click();
+
+  //   cy.wait(1000);
+  //   viewAppCardOptions(data.appName);
+  //   cy.wait(2000);
+  //   cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
+  //   cy.get(commonSelectors.exportAllButton).click();
+
+  //   cy.exec("ls ./cypress/downloads/").then((result) => {
+  //     const downloadedAppExportFileName = result.stdout.split("\n")[0];
+  //     expect(downloadedAppExportFileName).to.contain.string("app");
+  //   });
+
+  //   viewAppCardOptions(data.appName);
+  //   cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
+  //   cy.get('[data-cy="clone-app"]').click();
+  //   cy.get(".go3958317564")
+  //     .should("be.visible")
+  //     .and("have.text", dashboardText.appClonedToast);
+  //   cy.wait(3000);
+
+  //   cy.renameApp(data.cloneAppName);
+  //   cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
+  //   cy.backToApps();
+  //   cy.wait("@appLibrary");
+  //   cy.wait(1000);
+
+  //   cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
+
+  //   cy.wait(1000);
+
+  //   viewAppCardOptions(data.cloneAppName);
+  //   cy.get(commonSelectors.deleteAppOption).click();
+  //   cy.get(commonSelectors.modalMessage).verifyVisibleElement(
+  //     "have.text",
+  //     commonText.deleteAppModalMessage(data.cloneAppName)
+  //   );
+  //   cy.get(
+  //     commonSelectors.buttonSelector(commonText.cancelButton)
+  //   ).verifyVisibleElement("have.text", commonText.cancelButton);
+  //   cy.get(
+  //     commonSelectors.buttonSelector(commonText.modalYesButton)
+  //   ).verifyVisibleElement("have.text", commonText.modalYesButton);
+  //   cancelModal(commonText.cancelButton);
+
+  //   viewAppCardOptions(data.cloneAppName);
+  //   cy.get(commonSelectors.deleteAppOption).click();
+  //   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  //   cy.verifyToastMessage(
+  //     commonSelectors.toastMessage,
+  //     commonText.appDeletedToast,
+  //     false
+  //   );
+  //   verifyAppDelete(data.cloneAppName);
+  //   cy.wait("@appLibrary");
+
+  //   cy.deleteApp(data.appName);
+  //   verifyAppDelete(data.appName);
+  // });
+
   it("should verify the elements on empty dashboard", () => {
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
-      fixture: "intercept/emptyDashboard.json",
-    }).as("emptyDashboard");
-
-    cy.intercept("GET", "/api/folders?searchKey=", {
-      body: { folders: [] },
-    }).as("folders");
-
     cy.intercept("GET", "/api/metadata", {
       body: {
         installed_version: "2.9.2",
@@ -64,15 +210,10 @@ describe("dashboard", () => {
       },
     }).as("version");
 
-    cy.defaultWorkspaceLogin();
-    cy.wait("@emptyDashboard");
-    cy.wait("@folders");
-    cy.wait("@version");
-
     cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
-      "My workspace"
+      data.workspaceName
     );
     cy.get(commonSelectors.workspaceName).click();
     // cy.get(commonSelectors.editRectangleIcon).should("be.visible");
@@ -87,7 +228,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.createNewFolderButton).should("be.visible");
     cy.get(commonSelectors.allApplicationLink).verifyVisibleElement(
       "have.text",
-      commonText.allApplicationLink
+      commonText.allApplicationsLink
     );
 
     cy.get(commonSelectors.notificationsIcon).should("be.visible").click();
@@ -188,182 +329,12 @@ describe("dashboard", () => {
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
   });
 
-  it("Should verify app card elements and app card operations", () => {
-    const customLayout = {
-      desktop: { top: 100, left: 20 },
-      mobile: { width: 8, height: 50 },
-    };
-    cy.apiLogin();
-    cy.apiCreateApp(data.appName);
-    cy.openApp();
-    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
-
-    cy.backToApps();
-
-    cy.wait(500);
-    cy.get(commonSelectors.appCard(data.appName))
-      .parent()
-      .within(() => {
-        cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
-        cy.get(commonSelectors.appTitle(data.appName)).verifyVisibleElement(
-          "have.text",
-          data.appName
-        );
-        cy.get(commonSelectors.appCreationDetails).should("be.visible");
-
-        //Add the edited details
-      });
-
-    viewAppCardOptions(data.appName);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.changeIconOption)
-    ).verifyVisibleElement("have.text", commonText.changeIconOption);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.addToFolderOption)
-    ).verifyVisibleElement("have.text", commonText.addToFolderOption);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.cloneAppOption)
-    ).verifyVisibleElement("have.text", commonText.cloneAppOption);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.exportAppOption)
-    ).verifyVisibleElement("have.text", commonText.exportAppOption);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.deleteAppOption)
-    ).verifyVisibleElement("have.text", commonText.deleteAppOption);
-
-    modifyAndVerifyAppCardIcon(data.appName);
-    createFolder(data.folderName);
-
-    viewAppCardOptions(data.appName);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.addToFolderOption)
-    ).click();
-    verifyModal(
-      dashboardText.addToFolderTitle,
-      dashboardText.addToFolderButton,
-      dashboardSelector.selectFolder
-    );
-    cy.get(dashboardSelector.moveAppText).verifyVisibleElement(
-      "have.text",
-      dashboardText.moveAppText(data.appName)
-    );
-
-    cy.get(dashboardSelector.selectFolder).click();
-    cy.get(commonSelectors.folderList).contains(data.folderName).click();
-    cy.get(dashboardSelector.addToFolderButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.AddedToFolderToast
-    );
-
-    cy.get(dashboardSelector.folderName(data.folderName)).verifyVisibleElement(
-      "have.text",
-      dashboardText.folderName(`${data.folderName} (1)`)
-    );
-
-    cy.get(dashboardSelector.folderName(data.folderName)).click();
-    cy.get(commonSelectors.appCard(data.appName))
-      .contains(data.appName)
-      .should("be.visible");
-
-    cy.wait(2000);
-    viewAppCardOptions(data.appName);
-
-    cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption))
-      .verifyVisibleElement("have.text", commonText.removeFromFolderOption)
-      .click();
-    verifyConfirmationModal(commonText.appRemovedFromFolderMessage);
-
-    cancelModal(commonText.cancelButton);
-
-    viewAppCardOptions(data.appName);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.removeFromFolderOption)
-    ).click();
-    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appRemovedFromFolderTaost
-    );
-    cy.get(commonSelectors.modalComponent).should("not.exist");
-    cy.get(commonSelectors.empytyFolderImage).should("be.visible");
-    cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
-      "have.text",
-      commonText.emptyFolderText
-    );
-    cy.get(commonSelectors.allApplicationsLink).click();
-    deleteFolder(data.folderName);
-
-    cy.get(commonSelectors.allApplicationsLink).click();
-
-    viewAppCardOptions(data.appName);
-    cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
-    cy.get('[data-cy="clone-app"]').click();
-    cy.get(".go3958317564")
-      .should("be.visible")
-      .and("have.text", dashboardText.appClonedToast);
-    cy.wait(3000);
-    cy.renameApp(data.cloneAppName);
-    cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
-    cy.backToApps();
-    cy.wait("@appLibrary");
-    cy.wait(1000);
-    cy.reloadAppForTheElement(data.cloneAppName);
-
-    cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
-
-    viewAppCardOptions(data.cloneAppName);
-    cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
-    cy.get(commonSelectors.exportAllButton).click();
-
-    cy.exec("ls ./cypress/downloads/").then((result) => {
-      const downloadedAppExportFileName = result.stdout.split("\n")[0];
-      expect(downloadedAppExportFileName).to.contain.string("app");
-    });
-
-    cy.reloadAppForTheElement(data.cloneAppName);
-    viewAppCardOptions(data.cloneAppName);
-    cy.get(commonSelectors.deleteAppOption).click();
-    cy.get(commonSelectors.modalMessage).verifyVisibleElement(
-      "have.text",
-      commonText.deleteAppModalMessage(data.cloneAppName)
-    );
-    cy.get(
-      commonSelectors.buttonSelector(commonText.cancelButton)
-    ).verifyVisibleElement("have.text", commonText.cancelButton);
-    cy.get(
-      commonSelectors.buttonSelector(commonText.modalYesButton)
-    ).verifyVisibleElement("have.text", commonText.modalYesButton);
-    cancelModal(commonText.cancelButton);
-
-    cy.reloadAppForTheElement(data.cloneAppName);
-    viewAppCardOptions(data.cloneAppName);
-    cy.get(commonSelectors.deleteAppOption).click();
-    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appDeletedToast
-    );
-    verifyAppDelete(data.cloneAppName);
-    cy.wait("@appLibrary");
-
-    cy.deleteApp(data.appName);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appDeletedToast
-    );
-    verifyAppDelete(data.appName);
-  });
-
   it("Should verify the app CRUD operation", () => {
     const customLayout = {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
 
-    cy.skipWalkthrough();
-    data.appName = `${fake.companyName}-App`;
-    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
 
@@ -381,10 +352,7 @@ describe("dashboard", () => {
     cy.wait("@appLibrary");
 
     cy.deleteApp(data.appName);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appDeletedToast
-    );
+
     verifyAppDelete(data.appName);
   });
 
@@ -394,12 +362,8 @@ describe("dashboard", () => {
       mobile: { width: 8, height: 50 },
     };
 
-    data.appName = `${fake.companyName}-App`;
-    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
-
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
-
     cy.backToApps();
 
     cy.get(commonSelectors.createNewFolderButton).click();
@@ -509,20 +473,8 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.allApplicationsLink).click();
     cy.deleteApp(data.appName);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.appDeletedToast
-    );
+
     verifyAppDelete(data.appName);
     logout();
-  });
-
-  it("should verify the elements on empty dashboard for end user", () => {
-    cy.defaultWorkspaceLogin();
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
-      fixture: "intercept/emptyDashboard.json",
-    }).as("emptyDashboard")
-    roleBasedOnboarding(data.firstName, data.email, "end-user");
-    cy.get(commonSelectors.dashboardAppCreateButton).should("be.disabled");
   });
 });

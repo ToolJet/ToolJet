@@ -5,6 +5,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { DataSource } from '@entities/data_source.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 type Subjects = InferSubjects<typeof DataSource> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -33,15 +34,17 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isAllViewable = !!resourcePermissions?.isAllUsable;
 
     const dataSourceId = request?.tj_resource_id;
-
+    const toolJetEdition = getTooljetEdition();
     // Oauth end points available to all
     can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
     can(FEATURE_KEY.AUTHORIZE, DataSource);
+    if ((toolJetEdition == 'ee' && superAdmin) || (toolJetEdition !== 'ee' && isAdmin)) {
+      can(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN, DataSource);
+    }
 
     if (isBuilder) {
       // Only builder can do scope change, Get call is there on app builder
       can(FEATURE_KEY.SCOPE_CHANGE, DataSource);
-      can(FEATURE_KEY.GET, DataSource);
       can(FEATURE_KEY.GET_FOR_APP, DataSource);
     }
 
@@ -57,6 +60,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.TEST_CONNECTION,
           FEATURE_KEY.SCOPE_CHANGE,
           FEATURE_KEY.GET_FOR_APP,
+          FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE,
         ],
         DataSource
       );
@@ -71,7 +75,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       );
 
       if (isCanDelete) {
-        can(FEATURE_KEY.DELETE, DataSource);
+        can([FEATURE_KEY.DELETE, FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE], DataSource);
       }
       if (isCanCreate) {
         can(FEATURE_KEY.CREATE, DataSource);
@@ -88,27 +92,24 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (
-      resourcePermissions?.configurableDataSourceId?.length &&
-      dataSourceId &&
-      resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)
-    ) {
-      can(
-        [FEATURE_KEY.GET, FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION],
-        DataSource
-      );
+    if (resourcePermissions?.configurableDataSourceId?.length) {
+      can([FEATURE_KEY.GET], DataSource);
+
+      if (dataSourceId && resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)) {
+        can([FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
+      }
     }
 
     if (isAllViewable) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+      can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION], DataSource);
       return;
     }
-    if (
-      resourcePermissions.usableDataSourcesId?.length &&
-      dataSourceId &&
-      resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)
-    ) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
+    if (resourcePermissions.usableDataSourcesId?.length) {
+      can([FEATURE_KEY.GET], DataSource);
+      if (dataSourceId && resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)) {
+        can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
+      }
+      return;
     }
   }
 }
