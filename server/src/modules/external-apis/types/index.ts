@@ -14,6 +14,8 @@ interface Features {
   [FEATURE_KEY.GET_ALL_WORKSPACE_APPS]: FeatureConfig;
   [FEATURE_KEY.IMPORT_APP]: FeatureConfig;
   [FEATURE_KEY.EXPORT_APP]: FeatureConfig;
+  [FEATURE_KEY.GENERATE_PAT]: FeatureConfig;
+  [FEATURE_KEY.VALIDATE_PAT_SESSION]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -17,6 +17,7 @@ import { AppAuthGuard } from './guards/app-auth.guard';
 import { ValidSlugGuard } from './guards/valid-slug.guard';
 import { ValidAppGuard } from './guards/valid-app.guard';
 import { IAppsController } from './interfaces/IController';
+import { PatSessionAuthGuard } from './guards/pat-session-auth.guard';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -45,7 +46,7 @@ export class AppsController implements IAppsController {
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
-  @UseGuards(AppAuthGuard, FeatureAbilityGuard)
+  @UseGuards(AppAuthGuard, FeatureAbilityGuard, PatSessionAuthGuard)
   @Get('validate-released-app-access/:slug')
   validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
     return this.appsService.validateReleasedApp(ability, app);
