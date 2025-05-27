@@ -41,7 +41,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
   async updateOrgUser(organizationUserId: string, user: User, updateOrgUserDto: UpdateOrgUserDto) {
     const { firstName, lastName, addGroups, role, userMetadata } = updateOrgUserDto;
-
+    console.log('user metadata', userMetadata);
     const organizationUser = await this.organizationUsersRepository.findOne({
       where: { id: organizationUserId, organizationId: user.organizationId },
     });
@@ -176,7 +176,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         resourceId: user.id,
         resourceName: unarchivedUserWorkspaces[0].user.email,
         resourceData: {
-          archived_user: {
+          unarchived_user: {
             id: unarchivedUserWorkspaces[0].userId,
             email: unarchivedUserWorkspaces[0].user.email,
             first_name: unarchivedUserWorkspaces[0].user.firstName,
