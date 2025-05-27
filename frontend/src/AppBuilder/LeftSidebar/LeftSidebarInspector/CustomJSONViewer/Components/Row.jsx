@@ -10,9 +10,26 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { DefaultCopyIcon } from '../../DefaultCopyIcon';
-import { copyToClipboard } from '../../utils';
+import { copyToClipboard, extractComponentName } from '../../utils';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
-const Row = ({ label, value, level = 1, absolutePath }) => {
+const renderNodeIcons = (node, iconsList, darkMode) => {
+  const icon = iconsList.filter((icon) => icon?.iconName === node)[0];
+
+  if (icon && icon.jsx) {
+    if (icon?.tooltipMessage) {
+      return (
+        <ToolTip message={icon?.tooltipMessage}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>{icon.jsx({ height: 14, width: 14 })}</div>
+        </ToolTip>
+      );
+    }
+    return icon.jsx({ height: 14, width: 14 });
+  }
+  return null;
+};
+
+const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const Node = () => {
     if (typeof value === 'string') {
@@ -60,7 +77,10 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
               ))}
           </div>
           <div className="json-viewer-label-container">
-            <OverflowTooltip style={{ width: '100%' }}>{label}</OverflowTooltip>
+            <OverflowTooltip style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+              {renderNodeIcons(label, iconsList, darkMode)}
+              {label}
+            </OverflowTooltip>
           </div>
           <div className="json-viewer-value-container">
             <Node />
@@ -92,7 +112,15 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
       {isExpanded && isObject && (
         <div className="json-viewer-children" style={{ marginLeft: '5px', borderLeft: '1px solid var(--border-weak)' }}>
           {Object.entries(value).map(([key, val]) => (
-            <Row key={key} label={key} value={val} level={level + 1} absolutePath={`${absolutePath}.${key}`} />
+            <Row
+              key={key}
+              label={key}
+              value={val}
+              level={level + 1}
+              absolutePath={`${absolutePath}.${key}`}
+              iconsList={iconsList}
+              darkMode={darkMode}
+            />
           ))}
         </div>
       )}
@@ -106,6 +134,8 @@ const Row = ({ label, value, level = 1, absolutePath }) => {
                 value={item}
                 level={level + 1}
                 absolutePath={`${absolutePath}.${index}`}
+                iconsList={iconsList}
+                darkMode={darkMode}
               />
             );
           })}

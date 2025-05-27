@@ -141,7 +141,6 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
     })
     .flat()
     .filter((value) => value !== undefined); // Remove undefined values
-
   const iconsList = useMemo(
     () => [...queryIcons, ...componentIcons, ...deprecatedIcons],
     [queryIcons, componentIcons, deprecatedIcons]

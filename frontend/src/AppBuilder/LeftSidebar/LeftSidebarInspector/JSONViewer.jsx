@@ -4,7 +4,7 @@ import useCallbackActions from './useCallbackActions';
 import CustomJSONViewer from './CustomJSONViewer/CustomJSONViewer';
 
 export const JSONViewer = (props) => {
-  const { data, path, darkMode, backFn } = props;
+  const { data, path, darkMode, backFn, iconsList } = props;
 
   const callbackActions = useCallbackActions() || [];
   const type = path.startsWith('components') ? 'components' : path.startsWith('queries') ? 'queries' : 'actions';
@@ -27,7 +27,7 @@ export const JSONViewer = (props) => {
         data={optionsData}
         type={type}
       />
-      <CustomJSONViewer absolutePath={path} data={data} darkMode={darkMode} />
+      <CustomJSONViewer absolutePath={path} data={data} darkMode={darkMode} iconsList={iconsList} />
     </div>
   );
 };

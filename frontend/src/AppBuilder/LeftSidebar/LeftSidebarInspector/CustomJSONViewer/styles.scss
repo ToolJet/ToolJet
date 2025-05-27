@@ -18,8 +18,11 @@
 
     .json-viewer-row-container {
         min-width: max-content;
+        width: 100%;
+        position: relative;
         &:hover {
             background-color: var(--interactive-overlays-fill-hover);
+            width: 100%;
 
             .json-viewer-actions-container {
                 display: flex;
@@ -56,17 +59,20 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-          }
+            padding-right: 80px; /* Add padding to prevent text from going under actions */
+        }
 
         .json-viewer-actions-container {
-            display:none;
+            display: none;
             margin-left: auto;
             height: 12px;
-            width:40px;
+            width: 40px;
             align-items: center;
             flex-shrink: 0;
             position: absolute;
-            right:20px;
+            right: 16px; /* Align with the parent container's margin */
+            background: var(--bg-default); /* Add background to ensure text doesn't show through */
+            z-index: 1; /* Ensure actions stay on top */
 
             .json-viewer-action-icon {
                 display: flex;

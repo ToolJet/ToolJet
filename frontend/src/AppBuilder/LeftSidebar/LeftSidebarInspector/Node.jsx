@@ -95,7 +95,7 @@ export const Node = (props) => {
         // marginLeft: level > 1 ? 12 : 0,
         // paddingLeft: '16px',
         opacity: isDisabled ? 0.5 : 1,
-        height: '20px',
+        height: '24px',
         display: 'flex',
         alignItems: 'center',
         color: level === 1 ? 'var(--text-placeholder, #6A727C)' : 'var(--text-default, #1B1F24)',

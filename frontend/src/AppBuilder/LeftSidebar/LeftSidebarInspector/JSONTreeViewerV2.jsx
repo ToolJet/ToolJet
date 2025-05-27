@@ -191,7 +191,13 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
           </div>
         </div>
       ) : (
-        <JSONViewer data={selectedData} darkMode={darkMode} path={selectedNodePath} backFn={backFn} />
+        <JSONViewer
+          data={selectedData}
+          iconsList={iconsList}
+          darkMode={darkMode}
+          path={selectedNodePath}
+          backFn={backFn}
+        />
       )}
     </>
   );
