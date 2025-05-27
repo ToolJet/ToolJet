@@ -12,11 +12,12 @@ import './style.scss';
 import { SortableTree } from './Tree/SortableTree';
 import { PageGroupMenu } from './AddPageButton';
 import { PageHandlerMenu } from './PageHandlerMenu.jsx';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { EditModal } from './EditModal';
 import { SettingsModal } from './SettingsModal';
 import { DeletePageConfirmationModal } from './DeletePageConfirmationModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import PagePermission from './PagePermission';
+import { appPermissionService } from '@/_services';
 
 export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
   const showAddNewPageInput = useStore((state) => state.showAddNewPageInput);
@@ -27,6 +28,11 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
   const closePageEditPopover = useStore((state) => state.closePageEditPopover);
+  const editingPageId = useStore((state) => state.editingPage?.id);
+  const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
+  const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
+  const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
+
   useEffect(() => {
     return () => {
       closePageEditPopover();
@@ -95,7 +101,20 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
         >
           <div>
             <PageHandlerMenu darkMode={darkMode} />
-            {isLicensed ? <PagePermission darkMode={darkMode} /> : <></>}
+            {isLicensed && (
+              <AppPermissionsModal
+                modalType="page"
+                resourceId={editingPageId}
+                showModal={showPagePermissionModal}
+                toggleModal={togglePagePermissionModal}
+                darkMode={darkMode}
+                fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
+                createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
+                updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
+                deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
+                onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+              />
+            )}
             <EditModal darkMode={darkMode} />
             <SettingsModal darkMode={darkMode} />
             <DeletePageConfirmationModal darkMode={darkMode} />

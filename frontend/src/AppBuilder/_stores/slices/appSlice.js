@@ -20,6 +20,10 @@ const initialState = {
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
   isComponentLayoutReady: false,
+  appPermission: {
+    selectedUsers: [],
+    selectedUserGroups: [],
+  },
 };
 
 export const createAppSlice = (set, get) => ({
@@ -206,4 +210,12 @@ export const createAppSlice = (set, get) => ({
     );
   },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
+  setSelectedUserGroups: (groups) =>
+    set((state) => {
+      state.appPermission.selectedUserGroups = groups;
+    }),
+  setSelectedUsers: (users) =>
+    set((state) => {
+      state.appPermission.selectedUsers = users;
+    }),
 });
