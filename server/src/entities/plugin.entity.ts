@@ -6,9 +6,11 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Unique
 } from 'typeorm';
 import { File } from 'src/entities/file.entity';
 
+@Unique(['pluginId'])
 @Entity({ name: 'plugins' })
 export class Plugin {
   @PrimaryGeneratedColumn()

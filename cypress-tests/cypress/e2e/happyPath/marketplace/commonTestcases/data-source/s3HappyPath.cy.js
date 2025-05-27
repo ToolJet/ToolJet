@@ -120,7 +120,7 @@ describe("Data sources AWS S3", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       s3Text.alertRegionIsMissing
     );
@@ -144,7 +144,7 @@ describe("Data sources AWS S3", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       s3Text.alertRegionIsMissing
     );
@@ -170,7 +170,7 @@ describe("Data sources AWS S3", () => {
       .click();
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       s3Text.alertInvalidUrl
     );
@@ -188,7 +188,7 @@ describe("Data sources AWS S3", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       s3Text.accessKeyError
     );
@@ -207,7 +207,7 @@ describe("Data sources AWS S3", () => {
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
 
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       s3Text.sinatureError
     );
