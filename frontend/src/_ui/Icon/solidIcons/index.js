@@ -238,6 +238,7 @@ import CurlyBraces from './CurlyBraces.jsx';
 import Sliders from './Sliders.jsx';
 import Asterix from './Asterix.jsx';
 import ArrowDirectionLoop from './ArrowDirectionLoop.jsx';
+import Moon from './Moon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -719,6 +720,8 @@ const Icon = (props) => {
       return <AICrown {...props} />;
     case 'play01':
       return <Play01 {...props} />;
+    case 'moon':
+      return <Moon {...props} />;
     default:
       return <Apps {...props} />;
   }
