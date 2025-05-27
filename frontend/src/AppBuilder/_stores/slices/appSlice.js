@@ -172,13 +172,13 @@ export const createAppSlice = (set, get) => ({
       setResolvedGlobals,
       setResolvedPageConstants,
       setPageSwitchInProgress,
-      currentMode,
       license,
       modules: {
         canvas: { pages },
       },
+      getCurrentMode,
     } = get();
-    const isPreview = currentMode !== 'edit';
+    const isPreview = getCurrentMode(moduleId) !== 'edit';
     //!TODO clear all queued tasks
     cleanUpStore(true);
     setCurrentPageId(pageId, moduleId);
