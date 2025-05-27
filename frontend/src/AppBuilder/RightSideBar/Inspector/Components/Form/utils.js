@@ -159,6 +159,18 @@ export const getInputTypeOptions = (darkMode) => {
       value: 'NumberInput',
       leadingIcon: <WidgetIcon name={'numberinput'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
     },
+    PasswordInput: {
+      value: 'PasswordInput',
+      leadingIcon: <WidgetIcon name={'passwordinput'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
+    },
+    TextArea: {
+      value: 'TextArea',
+      leadingIcon: <WidgetIcon name={'textarea'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
+    },
+    DaterangePicker: {
+      value: 'DaterangePicker',
+      leadingIcon: <WidgetIcon name={'daterangepicker'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
+    },
     DatePickerV2: {
       value: 'DatePickerV2',
       leadingIcon: <WidgetIcon name={'datepicker'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
@@ -178,6 +190,10 @@ export const getInputTypeOptions = (darkMode) => {
     RadioButtonV2: {
       value: 'RadioButtonV2',
       leadingIcon: <WidgetIcon name={'radiobutton'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
+    },
+    ToggleSwitchV2: {
+      value: 'ToggleSwitchV2',
+      leadingIcon: <WidgetIcon name={'toggleswitch'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
     },
   };
 };
@@ -274,12 +290,16 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
 
     // Set default value if available in column
     if (column.value !== undefined && column.value !== null && !column.isCustomField) {
-      if (componentType === 'TextInput') {
+      if (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'TextArea') {
         set(formField.component.definition.properties, 'value.value', column.value);
       }
       if (componentType === 'NumberInput') {
         set(formField.component.definition.properties, 'value.value', ensureHandlebars(column.value));
-      } else if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
+      } else if (
+        componentType === 'Checkbox' ||
+        componentType === 'DatePickerV2' ||
+        componentType === 'ToggleSwitchV2'
+      ) {
         set(formField.component.definition.properties, 'defaultValue.value', column.value);
       } else if (
         componentType === 'DropdownV2' ||
@@ -290,7 +310,13 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
       }
     }
 
-    if (column.placeholder && componentType !== 'Checkbox' && componentType !== 'DatePickerV2') {
+    if (
+      column.placeholder &&
+      componentType !== 'Checkbox' &&
+      componentType !== 'DatePickerV2' &&
+      componentType !== 'ToggleSwitchV2' &&
+      componentType !== 'DaterangePicker'
+    ) {
       set(formField.component.definition.properties, 'placeholder.value', column.placeholder);
     }
 
@@ -431,11 +457,11 @@ export const updateFormFieldComponent = (componentId, updatedField, currentField
   const componentType = updatedField.componentType || componentToUpdate.component.component;
 
   if (updatedField.value !== undefined && updatedField.value !== null) {
-    if (componentType === 'TextInput') {
+    if (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'TextArea') {
       set(updatedComponent.component.definition.properties, 'value.value', updatedField.value);
     } else if (componentType === 'NumberInput') {
       set(updatedComponent.component.definition.properties, 'value.value', ensureHandlebars(updatedField.value));
-    } else if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
+    } else if (componentType === 'Checkbox' || componentType === 'DatePickerV2' || componentType === 'ToggleSwitchV2') {
       set(updatedComponent.component.definition.properties, 'defaultValue.value', updatedField.value);
     } else if (
       componentType === 'DropdownV2' ||
@@ -450,7 +476,13 @@ export const updateFormFieldComponent = (componentId, updatedField, currentField
   }
 
   // Update placeholder if available and applicable to the component type
-  if (updatedField.placeholder && componentType !== 'Checkbox' && componentType !== 'DatePickerV2') {
+  if (
+    updatedField.placeholder &&
+    componentType !== 'Checkbox' &&
+    componentType !== 'DatePickerV2' &&
+    componentType !== 'ToggleSwitchV2' &&
+    componentType !== 'DaterangePicker'
+  ) {
     set(updatedComponent.component.definition.properties, 'placeholder.value', updatedField.placeholder);
   }
 
@@ -516,11 +548,19 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
 
   // Handle component-specific properties
   if (updatedField.value !== undefined && updatedField.value !== null) {
-    if (updatedField.componentType === 'TextInput') {
+    if (
+      updatedField.componentType === 'TextInput' ||
+      updatedField.componentType === 'PasswordInput' ||
+      updatedField.componentType === 'TextArea'
+    ) {
       set(newComponent.component.definition.properties, 'value.value', updatedField.value);
     } else if (updatedField.componentType === 'NumberInput') {
       set(newComponent.component.definition.properties, 'value.value', ensureHandlebars(updatedField.value));
-    } else if (updatedField.componentType === 'Checkbox' || updatedField.componentType === 'DatePickerV2') {
+    } else if (
+      updatedField.componentType === 'Checkbox' ||
+      updatedField.componentType === 'DatePickerV2' ||
+      updatedField.componentType === 'ToggleSwitchV2 '
+    ) {
       set(newComponent.component.definition.properties, 'defaultValue.value', updatedField.value);
     } else if (
       updatedField.componentType === 'DropdownV2' ||
@@ -542,7 +582,9 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
   if (
     updatedField.placeholder &&
     updatedField.componentType !== 'Checkbox' &&
-    updatedField.componentType !== 'DatePickerV2'
+    updatedField.componentType !== 'DatePickerV2' &&
+    updatedField.componentType !== 'ToggleSwitchV2' &&
+    updatedField.componentType !== 'DaterangePicker'
   ) {
     set(newComponent.component.definition.properties, 'placeholder.value', updatedField.placeholder);
   }

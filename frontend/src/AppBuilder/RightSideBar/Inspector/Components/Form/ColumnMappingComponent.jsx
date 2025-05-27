@@ -74,7 +74,10 @@ const ColumnMappingRow = ({
       {/* Column Name and Type */}
       <div className="name-column tw-flex tw-items-center base-regular tw-justify-between">
         {column.key ? (
-          <span className="base-regular">{column.key}</span>
+          <>
+            <span className="base-regular">{column.key}</span>
+            <span className="tw-ml-2 data-type">{column.dataType}</span>
+          </>
         ) : (
           <span className="no-mapped-column small-medium">No mapped columns</span>
         )}
