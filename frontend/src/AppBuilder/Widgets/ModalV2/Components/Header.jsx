@@ -31,7 +31,7 @@ export const ModalHeader = React.memo(
             slotStyle={{
               height: `100%`,
               padding: `${4.5}px ${MODAL_CANVAS_PADDING}px`,
-              maxHeight: `${headerMaxHeight}`,
+              maxHeight: isFullScreen ? `${headerMaxHeight}` : `${headerMaxHeight}px`,
               minHeight: '10px',
             }}
             isEditing={isEditing}
