@@ -150,15 +150,17 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     if (isFormGenerated) {
       let diff = {};
       columns.forEach((column) => {
-        const updatedField = updateFormFieldComponent(
+        const { updated, added, deleted } = updateFormFieldComponent(
           column.componentId,
           column,
           fields.find((f) => f.componentId === column.componentId)
         );
-        if (Object.keys(updatedField).length !== 0) {
-          diff[column.componentId] = updatedField;
+
+        if (Object.keys(updated).length !== 0) {
+          diff[column.componentId] = updated;
         }
       });
+
       if (diff) {
         // Update the component properties in the store
         setComponentPropertyByComponentIds(diff);

@@ -405,6 +405,10 @@ export const updateFormFieldComponent = (componentId, updatedField, currentField
     return null;
   }
 
+  if (updatedField.componentType !== componentToUpdate.component.component) {
+    return handleComponentTypeChange(componentToUpdate, updatedField, componentId);
+  }
+
   // Create a deep clone of the component to avoid reference issues
   const updatedComponent = deepClone(componentToUpdate);
 
@@ -451,5 +455,107 @@ export const updateFormFieldComponent = (componentId, updatedField, currentField
   }
 
   // return updatedComponent;
-  return diff(componentToUpdate, updatedComponent);
+  return { updated: diff(componentToUpdate, updatedComponent) };
+};
+
+const handleComponentTypeChange = (componentToUpdate, updatedField, componentId) => {
+  // Generate a new ID for the component
+  const newComponentId = uuidv4();
+
+  // Get the current layout
+  const currentLayout = useStore.getState().currentLayout;
+  const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+
+  // Get component metadata for the new type
+  const componentMeta = componentTypes.find((comp) => comp.component === updatedField.componentType);
+
+  if (!componentMeta) {
+    console.error(`Component type ${updatedField.componentType} not found in componentTypes`);
+    return null;
+  }
+
+  // Extract existing layout information
+  const existingLayouts = componentToUpdate.layouts || {};
+
+  // Preserve the component name or generate a new one if needed
+  const componentName = generateUniqueComponentName(updatedField.name || componentToUpdate.component.name);
+
+  // Create a deep clone of the component definition to avoid reference issues
+  const componentData = deepClone(componentMeta);
+
+  // Initialize the new form field with preserved properties from the old one
+  const newComponent = {
+    id: newComponentId,
+    name: componentName,
+    component: {
+      ...componentData,
+      component: updatedField.componentType,
+      name: componentName,
+      parent: componentToUpdate.component.parent,
+      definition: merge({}, componentData.definition, {
+        properties: {
+          label: {
+            value: updatedField.label || componentToUpdate.component.definition.properties.label?.value,
+          },
+          visibility: updatedField.selected || componentToUpdate.component.definition.properties.visibility,
+        },
+        validation: {
+          mandatory: updatedField.mandatory || componentToUpdate.component.definition.validation.mandatory,
+        },
+        others: {
+          showOnDesktop: componentToUpdate.component.definition.others?.showOnDesktop || { value: '{{true}}' },
+          showOnMobile: componentToUpdate.component.definition.others?.showOnMobile || { value: '{{false}}' },
+        },
+      }),
+    },
+    layouts: {
+      [currentLayout]: existingLayouts[currentLayout] || { top: 0, left: 3, width: 37, height: 30 },
+      [nonActiveLayout]: existingLayouts[nonActiveLayout] || { top: 0, left: 3, width: 37, height: 30 },
+    },
+  };
+
+  // Handle component-specific properties
+  if (updatedField.value !== undefined && updatedField.value !== null) {
+    if (updatedField.componentType === 'TextInput') {
+      set(newComponent.component.definition.properties, 'value.value', updatedField.value);
+    } else if (updatedField.componentType === 'NumberInput') {
+      set(newComponent.component.definition.properties, 'value.value', ensureHandlebars(updatedField.value));
+    } else if (updatedField.componentType === 'Checkbox' || updatedField.componentType === 'DatePickerV2') {
+      set(newComponent.component.definition.properties, 'defaultValue.value', updatedField.value);
+    } else if (
+      updatedField.componentType === 'DropdownV2' ||
+      updatedField.componentType === 'MultiselectV2' ||
+      updatedField.componentType === 'RadioButtonV2'
+    ) {
+      // For dropdown-type components, ensure we have options array
+      const optionsArray = Array.isArray(updatedField.value)
+        ? updatedField.value
+        : typeof updatedField.value === 'string'
+        ? [updatedField.value]
+        : ['Option 1'];
+
+      set(newComponent.component.definition.properties, 'options.value', buildOptions(optionsArray));
+    }
+  }
+
+  // Update placeholder if available and applicable to the component type
+  if (
+    updatedField.placeholder &&
+    updatedField.componentType !== 'Checkbox' &&
+    updatedField.componentType !== 'DatePickerV2'
+  ) {
+    set(newComponent.component.definition.properties, 'placeholder.value', updatedField.placeholder);
+  }
+
+  // Update the updatedField with the new component ID
+  updatedField.componentId = newComponentId;
+
+  // Return an object that indicates to:
+  // 1. Delete the old component
+  // 2. Add the new component
+  return {
+    deleted: componentId,
+    added: newComponent,
+    updated: {},
+  };
 };

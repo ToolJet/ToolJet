@@ -32,7 +32,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
 
     // Only update component in the store if we have a componentId
     if (field.componentId) {
-      const updatedComponent = updateFormFieldComponent(field.componentId, updatedField, field);
+      const { updated: updatedComponent } = updateFormFieldComponent(field.componentId, updatedField, field);
       const components = {
         [field.componentId]: updatedComponent,
       };
