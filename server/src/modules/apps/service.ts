@@ -149,37 +149,12 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    const prevName = app.name;
     const { name } = appUpdateDto;
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
-      // Can use event emitter
-      // this.appGitUtilService.renameAppOrVersion(user, app.id, prevName);
-      const request = RequestContext.getRequest();
-      const headers = {
-        'Content-Type': 'application/json',
-        Cookie: request.headers['cookie'],
-        'tj-workspace-id': request.headers['tj-workspace-id'],
-      };
-      const renameAppDto = new RenameAppOrVersionDto();
-      renameAppDto.prevName = prevName;
-      renameAppDto.updatedName = name;
-      try {
-        // TO DO : Review if we can make it asynchronous
-        const host = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.TOOLJET_HOST;
-        await got.put(`${host}/api/app-git/app/${app.id}/rename`, {
-          json: renameAppDto,
-          headers,
-          responseType: 'json',
-        });
-      } catch (err) {
-        console.log('APP rename commit failed with error', err);
-        // Don't throw the error here as this failure is related to the commit, but the app rename itself has been successful.
-        // This ensures the rest of the process continues, even though the commit may have failed
-      }
+      await this.appsUtilService.handleAppRenameCommit(app.id, app, appUpdateDto);
     }
-
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,

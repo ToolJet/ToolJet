@@ -37,6 +37,9 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { RequestContext } from '@modules/request-context/service';
+import { RenameAppOrVersionDto } from '@modules/app-git/dto';
+import got from 'got';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -529,5 +532,32 @@ export class AppsUtilService implements IAppsUtilService {
 
   async findByAppId(appId: string): Promise<App> {
     return this.appRepository.findByAppId(appId);
+  }
+
+  async handleAppRenameCommit(appId: string, app: App, appUpdateDto: AppUpdateDto) {
+    const prevName = app.name;
+    const { name } = appUpdateDto;
+    const request = RequestContext.getRequest();
+    const headers = {
+      'Content-Type': 'application/json',
+      Cookie: request.headers['cookie'],
+      'tj-workspace-id': request.headers['tj-workspace-id'],
+    };
+    const renameAppDto = new RenameAppOrVersionDto();
+    renameAppDto.prevName = prevName;
+    renameAppDto.updatedName = name;
+    try {
+      // TO DO : Review if we can make it asynchronous
+      const host = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.TOOLJET_HOST;
+      await got.put(`${host}/api/app-git/app/${app.id}/rename`, {
+        json: renameAppDto,
+        headers,
+        responseType: 'json',
+      });
+    } catch (err) {
+      console.log('APP rename commit failed with error', err);
+      // Don't throw the error here as this failure is related to the commit, but the app rename itself has been successful.
+      // This ensures the rest of the process continues, even though the commit may have failed
+    }
   }
 }
