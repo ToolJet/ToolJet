@@ -12,6 +12,7 @@ import { isTrueValue, isPropertyFxControlled, updateFormFieldComponent } from '.
 export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const setComponentPropertyByComponentIds = useStore((state) => state.setComponentPropertyByComponentIds, shallow);
+  const performBatchComponentOperations = useStore((state) => state.performBatchComponentOperations, shallow);
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState(field);
   const { handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
@@ -32,14 +33,31 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
 
     // Only update component in the store if we have a componentId
     if (field.componentId) {
-      const { updated: updatedComponent } = updateFormFieldComponent(field.componentId, updatedField, field);
-      const components = {
-        [field.componentId]: updatedComponent,
+      const operations = {
+        updated: {},
+        added: {},
+        deleted: [],
       };
+      const { updated, added = {}, deleted = false } = updateFormFieldComponent(field.componentId, updatedField, field);
 
-      if (updatedComponent) {
+      if (Object.keys(updated).length !== 0) {
+        operations.updated[field.componentId] = updated;
+      }
+      if (Object.keys(added).length !== 0) {
+        operations.added[field.componentId] = added;
+      }
+      if (deleted) {
+        operations.deleted.push(field.componentId);
+      }
+
+      if (
+        operations.updated[field.componentId] ||
+        Object.keys(operations.added).length > 0 ||
+        operations.deleted.length > 0
+      ) {
         // Update the component in the store
-        setComponentPropertyByComponentIds(components);
+        performBatchComponentOperations(operations);
+        // setComponentPropertyByComponentIds(operations);
         setShowPopover(false);
       }
     }

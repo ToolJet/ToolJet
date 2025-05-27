@@ -11,6 +11,7 @@ import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { parseData, findLastElementPosition, createFormFieldComponents, updateFormFieldComponent } from './utils';
+import { update } from 'lodash';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -73,6 +74,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     addComponentToCurrentPage,
     getComponentDefinition,
     setComponentPropertyByComponentIds,
+    performBatchComponentOperations,
   } = useStore(
     (state) => ({
       resolveReferences: state.resolveReferences,
@@ -82,6 +84,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       addComponentToCurrentPage: state.addComponentToCurrentPage,
       getComponentDefinition: state.getComponentDefinition,
       setComponentPropertyByComponentIds: state.setComponentPropertyByComponentIds,
+      performBatchComponentOperations: state.performBatchComponentOperations,
     }),
     shallow
   );
@@ -147,24 +150,44 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
 
   // Function to create a single custom field and update the fields property
   const createComponentAndUpdateFields = async (columns, isSingleField = false) => {
-    if (isFormGenerated) {
-      let diff = {};
+    if (!isSingleField && isFormGenerated) {
+      let operations = {
+        updated: {},
+        added: {},
+        deleted: [],
+      };
       columns.forEach((column) => {
-        const { updated, added, deleted } = updateFormFieldComponent(
+        const {
+          updated,
+          added = {},
+          deleted = false,
+        } = updateFormFieldComponent(
           column.componentId,
           column,
           fields.find((f) => f.componentId === column.componentId)
         );
 
         if (Object.keys(updated).length !== 0) {
-          diff[column.componentId] = updated;
+          operations.updated[column.componentId] = updated;
+        }
+        if (Object.keys(added).length !== 0) {
+          operations.added[column.componentId] = added;
+        }
+        if (deleted) {
+          operations.deleted.push(column.componentId);
         }
       });
 
-      if (diff) {
+      if (
+        Object.keys(operations.updated).length > 0 ||
+        Object.keys(operations.added).length > 0 ||
+        operations.deleted.length > 0
+      ) {
         // Update the component properties in the store
-        setComponentPropertyByComponentIds(diff);
+        // setComponentPropertyByComponentIds(operations);
+        performBatchComponentOperations(operations);
       }
+      paramUpdated({ name: 'fields' }, 'value', columns, 'properties');
     } else {
       const childComponents = getChildComponents(component?.id);
       if (childComponents) {

@@ -554,7 +554,7 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
   // 1. Delete the old component
   // 2. Add the new component
   return {
-    deleted: componentId,
+    deleted: true,
     added: newComponent,
     updated: {},
   };

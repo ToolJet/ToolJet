@@ -892,7 +892,8 @@ export const createComponentsSlice = (set, get) => ({
   deleteComponents: (
     selected,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true, isCut = false } = {}
+    { skipUndoRedo = false, saveAfterAction = true, isCut = false } = {},
+    skipFormUpdate = true
   ) => {
     const {
       saveComponentChanges,
@@ -928,7 +929,7 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     _selectedComponents.forEach((componentId) => {
-      checkIfParentIsFormAndDeleteField(componentId, moduleId);
+      !skipFormUpdate && checkIfParentIsFormAndDeleteField(componentId, moduleId);
       findAllChildComponents(componentId);
     });
 
@@ -1937,7 +1938,11 @@ export const createComponentsSlice = (set, get) => ({
       setComponentProperty(parentId, 'fields', updatedFields, 'properties', 'value', false, moduleId);
     }
   },
-  setComponentPropertyByComponentIds: (componentDiffs, moduleId = 'canvas') => {
+  setComponentPropertyByComponentIds: (
+    componentDiffs,
+    moduleId = 'canvas',
+    { skipUndoRedo = false, saveAfterAction = true } = {}
+  ) => {
     const {
       addToDependencyGraph,
       setResolvedComponent,
@@ -2021,16 +2026,120 @@ export const createComponentsSlice = (set, get) => ({
           }
         });
       }),
-      false,
+      skipUndoRedo,
       'setComponentPropertiesByDiff'
     );
 
     // Save changes to backend if needed
-    if (currentMode !== 'view' && Object.keys(diff).length > 0) {
+    if (currentMode !== 'view' && Object.keys(diff).length > 0 && saveAfterAction) {
       saveComponentChanges(diff, 'components', 'update');
     }
 
     // Broadcast updates for multiplayer
     get().multiplayer.broadcastUpdates({ componentDiffs }, 'components', 'update');
+    return diff;
+  },
+
+  /**
+   * Performs batch operations on components (create, update, delete)
+   * @param {Object} operations - Object containing the operations to perform
+   * @param {Object} operations.added - Components to create { [componentId]: componentDefinition }
+   * @param {Object} operations.updated - Components to update { [componentId]: componentDiff }
+   * @param {Array} operations.deleted - Array of component IDs to delete
+   * @param {string} moduleId - Module ID (default: 'canvas')
+   * @param {Object} options - Additional options { skipUndoRedo, saveAfterAction }
+   * @returns {Promise} - Promise that resolves when all operations are complete
+   */
+  performBatchComponentOperations: (operations = {}, moduleId = 'canvas', options = {}) => {
+    const {
+      currentPageId,
+      addComponentToCurrentPage,
+      setComponentPropertyByComponentIds,
+      deleteComponents,
+      saveComponentChanges,
+    } = get();
+
+    const { skipUndoRedo = false, saveAfterAction = true } = options;
+    let upatedDiff = {};
+
+    // Process create operations
+    const handleCreate = async () => {
+      if (!operations.added || Object.keys(operations.added).length === 0) return null;
+
+      // Convert create operations format to match addComponentToCurrentPage expectations
+      const componentsToCreate = Object.entries(operations.added).map(([id, component]) => ({
+        id,
+        name: component.name,
+        component: component.component,
+        layouts: component.layouts,
+      }));
+
+      // Use existing addComponentToCurrentPage but with saveAfterAction=false
+      // We'll save all changes together at the end
+      return addComponentToCurrentPage(componentsToCreate, moduleId, {
+        skipUndoRedo: false, // We'll handle undo/redo for the entire batch
+        saveAfterAction: false,
+      });
+    };
+
+    // Process update operations
+    const handleUpdate = () => {
+      if (!operations.updated || Object.keys(operations.updated).length === 0) return;
+
+      // Use existing setComponentPropertyByComponentIds function
+      upatedDiff = setComponentPropertyByComponentIds(operations.updated, moduleId, {
+        skipUndoRedo: false, // We'll handle undo/redo for the entire batch
+        saveAfterAction: false, // We'll save all changes together at the end
+      });
+    };
+
+    // Process delete operations
+    const handleDelete = () => {
+      if (!operations.deleted || operations.deleted.length === 0) return;
+
+      // Use existing deleteComponents function but with saveAfterAction=false
+      deleteComponents(
+        operations.deleted,
+        moduleId,
+        {
+          skipUndoRedo: false, // We'll handle undo/redo for the entire batch
+          saveAfterAction: false,
+          isCut: false,
+        },
+        true
+      );
+    };
+
+    try {
+      // Process the operations in the correct order: delete -> update -> create -> replace
+      // This avoids potential conflicts
+      handleDelete();
+      handleUpdate();
+      handleCreate();
+
+      // Save all changes together if requested
+      if (saveAfterAction) {
+        // Construct a combined diff for backend saving
+        let combinedDiff = {
+          create: {
+            diff: operations.added || {},
+            pageId: currentPageId,
+          },
+          update: {
+            diff: upatedDiff || {},
+          },
+          delete: {
+            diff: operations.deleted || [],
+          },
+        };
+
+        saveComponentChanges(combinedDiff, 'components/batch', 'update');
+
+        // Broadcast updates for multiplayer
+        get().multiplayer.broadcastUpdates({ operations }, 'components', 'update');
+      }
+    } catch (error) {
+      console.error('Error performing batch component operations:', error);
+    }
   },
 });

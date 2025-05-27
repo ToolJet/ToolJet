@@ -22,129 +22,26 @@ export class ComponentsService implements IComponentsService {
 
   async create(componentDiff: object, pageId: string, appVersionId: string) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const page = await manager.findOne(Page, {
-        where: { appVersionId, id: pageId },
-      });
-
-      const newComponents = this.transformComponentData(componentDiff);
-
-      const componentLayouts = [];
-
-      newComponents.forEach((component) => {
-        component.page = page;
-      });
-
-      const savedComponents = await manager.save(Component, newComponents);
-
-      savedComponents.forEach((component) => {
-        const componentLayout = componentDiff[component.id].layouts;
-
-        if (componentLayout) {
-          for (const type in componentLayout) {
-            const layout = componentLayout[type];
-            const newLayout = new Layout();
-            newLayout.type = type;
-            newLayout.top = layout.top;
-            newLayout.left = layout.left;
-            newLayout.width = layout.width;
-            newLayout.height = layout.height;
-            newLayout.component = component;
-            newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-
-            componentLayouts.push(newLayout);
-          }
-        }
-      });
-
-      await manager.save(Layout, componentLayouts);
-
+      await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
       return {};
     }, appVersionId);
   }
 
   async update(componentDiff: object, appVersionId: string) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      for (const componentId in componentDiff) {
-        const { component } = componentDiff[componentId];
-
-        const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
-
-        if (doesComponentExist[1] === 0) {
-          return {
-            error: {
-              message: `Component with id ${componentId} does not exist`,
-            },
-          };
-        }
-
-        const componentData: Component = await manager.findOne(Component, {
-          where: { id: componentId },
-        });
-
-        const isComponentDefinitionChanged = component.definition ? true : false;
-
-        if (isComponentDefinitionChanged) {
-          const updatedDefinition = component.definition;
-          const columnsUpdated = Object.keys(updatedDefinition);
-
-          const newComponentsData = columnsUpdated.reduce((acc, column) => {
-            const newColumnData = _.mergeWith(
-              componentData[column === 'others' ? 'displayPreferences' : column],
-              updatedDefinition[column],
-              (objValue, srcValue) => {
-                if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
-                  return srcValue;
-                } else if (
-                  (componentData.type === 'DropdownV2' ||
-                    componentData.type === 'MultiselectV2' ||
-                    componentData.type === 'Steps') &&
-                  _.isArray(objValue)
-                ) {
-                  return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
-                }
-              }
-            );
-
-            if (column === 'others') {
-              acc['displayPreferences'] = newColumnData;
-            } else {
-              acc[column] = newColumnData;
-            }
-
-            return acc;
-          }, {});
-
-          // Update the component with merged data
-          await manager.update(Component, componentId, newComponentsData);
-        } else {
-          // Update the component directly if definition is not changed
-          await manager.update(Component, componentId, component);
-        }
+      const result = await this.updateComponents(componentDiff, appVersionId, manager);
+      if (result?.error) {
+        return result;
       }
     }, appVersionId);
   }
 
   async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const components = await manager.findBy(Component, {
-        id: In(componentIds),
-      });
-
-      if (!components.length) {
-        return {
-          error: {
-            message: `Components with ids ${componentIds} do not exist`,
-          },
-        };
+      const result = await this.deleteComponents(componentIds, appVersionId, isComponentCut, manager);
+      if (result?.error) {
+        return result;
       }
-
-      if (!isComponentCut) {
-        components.forEach((component) => {
-          this.eventHandlerService.cascadeDeleteEvents(component.id);
-        });
-      }
-
-      await manager.delete(Component, { id: In(componentIds) });
     }, appVersionId);
   }
 
@@ -306,5 +203,164 @@ export class ComponentsService implements IComponentsService {
     // const numberOfGrids = type === 'desktop' ? 43 : 12;
     const numberOfGrids = 43;
     return Math.round((dimension * numberOfGrids) / 100);
+  }
+
+  async batchOperations(
+    batchOperations: {
+      create?: { diff: object; pageId: string };
+      update?: { diff: object };
+      delete?: { diff: string[]; is_component_cut?: boolean };
+    },
+    appVersionId: string
+  ) {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+      const results: { created?: number; updated?: number; deleted?: number } = {};
+
+      // Handle create operation if present
+      if (batchOperations.create) {
+        const { diff, pageId } = batchOperations.create;
+        await this.createComponentsAndLayouts(diff, pageId, appVersionId, manager);
+        results.created = Object.keys(diff).length;
+      }
+
+      // Handle update operation if present
+      if (batchOperations.update) {
+        const { diff } = batchOperations.update;
+        await this.updateComponents(diff, appVersionId, manager);
+        results.updated = Object.keys(diff).length;
+      }
+
+      // Handle delete operation if present
+      if (batchOperations.delete) {
+        const { diff: componentIds, is_component_cut = false } = batchOperations.delete;
+        await this.deleteComponents(componentIds, appVersionId, is_component_cut, manager);
+        results.deleted = componentIds.length;
+      }
+
+      return results;
+    }, appVersionId);
+  }
+
+  // Common methods used by both the original methods and batch operations
+  private async createComponentsAndLayouts(diff: object, pageId: string, appVersionId: string, manager: EntityManager) {
+    const page = await manager.findOne(Page, {
+      where: { appVersionId, id: pageId },
+    });
+
+    const newComponents = this.transformComponentData(diff);
+    const componentLayouts = [];
+
+    newComponents.forEach((component) => {
+      component.page = page;
+    });
+
+    const savedComponents = await manager.save(Component, newComponents);
+
+    savedComponents.forEach((component) => {
+      const componentLayout = diff[component.id].layouts;
+
+      if (componentLayout) {
+        for (const type in componentLayout) {
+          const layout = componentLayout[type];
+          const newLayout = new Layout();
+          newLayout.type = type;
+          newLayout.top = layout.top;
+          newLayout.left = layout.left;
+          newLayout.width = layout.width;
+          newLayout.height = layout.height;
+          newLayout.component = component;
+          newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+
+          componentLayouts.push(newLayout);
+        }
+      }
+    });
+
+    await manager.save(Layout, componentLayouts);
+  }
+
+  private async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
+    for (const componentId in diff) {
+      const { component } = diff[componentId];
+
+      const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
+
+      if (doesComponentExist[1] === 0) {
+        return {
+          error: {
+            message: `Component with id ${componentId} does not exist`,
+          },
+        };
+      }
+
+      const componentData: Component = await manager.findOne(Component, {
+        where: { id: componentId },
+      });
+
+      const isComponentDefinitionChanged = component.definition ? true : false;
+
+      if (isComponentDefinitionChanged) {
+        const updatedDefinition = component.definition;
+        const columnsUpdated = Object.keys(updatedDefinition);
+
+        const newComponentsData = columnsUpdated.reduce((acc, column) => {
+          const newColumnData = _.mergeWith(
+            componentData[column === 'others' ? 'displayPreferences' : column],
+            updatedDefinition[column],
+            (objValue, srcValue) => {
+              if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
+                return srcValue;
+              } else if (
+                (componentData.type === 'DropdownV2' ||
+                  componentData.type === 'MultiselectV2' ||
+                  componentData.type === 'Steps') &&
+                _.isArray(objValue)
+              ) {
+                return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
+              }
+            }
+          );
+
+          if (column === 'others') {
+            acc['displayPreferences'] = newColumnData;
+          } else {
+            acc[column] = newColumnData;
+          }
+
+          return acc;
+        }, {});
+
+        await manager.update(Component, componentId, newComponentsData);
+      } else {
+        await manager.update(Component, componentId, component);
+      }
+    }
+  }
+
+  private async deleteComponents(
+    componentIds: string[],
+    appVersionId: string,
+    isComponentCut: boolean,
+    manager: EntityManager
+  ) {
+    const components = await manager.findBy(Component, {
+      id: In(componentIds),
+    });
+
+    if (!components.length) {
+      return {
+        error: {
+          message: `Components with ids ${componentIds} do not exist`,
+        },
+      };
+    }
+
+    if (!isComponentCut) {
+      components.forEach((component) => {
+        this.eventHandlerService.cascadeDeleteEvents(component.id);
+      });
+    }
+
+    await manager.delete(Component, { id: In(componentIds) });
   }
 }

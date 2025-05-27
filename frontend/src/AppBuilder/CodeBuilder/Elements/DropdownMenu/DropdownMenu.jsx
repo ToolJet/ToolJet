@@ -146,23 +146,27 @@ export const DropdownMenu = (props) => {
               ))}
             </div>
 
-            {/* Divider with "From query" text */}
-            <LabeledDivider label="From query" />
+            {dataQueries.length > 0 && (
+              <>
+                {/* Divider with "From query" text */}
+                <LabeledDivider label="From query" />
 
-            {/* Query options section */}
-            <div className="tw-py-1 dropdown-menu-items">
-              {queryOptions.map((option) => (
-                <div
-                  key={option.id}
-                  onClick={() => selectSource(option)}
-                  className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left tw-hover:bg-gray-100"
-                >
-                  {renderCheckIcon(option)}
-                  <span className="icon-image">{option.icon}</span>
-                  <span>{option.label}</span>
+                {/* Query options section */}
+                <div className="tw-py-1 dropdown-menu-items">
+                  {queryOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      onClick={() => selectSource(option)}
+                      className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left tw-hover:bg-gray-100"
+                    >
+                      {renderCheckIcon(option)}
+                      <span className="icon-image">{option.icon}</span>
+                      <span>{option.label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         )}
       </div>

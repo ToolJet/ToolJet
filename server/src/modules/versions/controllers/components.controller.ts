@@ -10,6 +10,7 @@ import { FeatureAbilityGuard } from '../ability/guard';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { ComponentsService } from '@modules/apps/services/component.service';
 import {
+  BatchComponentsDto,
   CreateComponentDto,
   DeleteComponentDto,
   LayoutUpdateDto,
@@ -57,5 +58,12 @@ export class ComponentsController implements IComponentsController {
   @Put(':id/versions/:versionId/components/layout')
   async updateComponentLayout(@App() app: AppEntity, @Body() updateComponentLayout: LayoutUpdateDto) {
     await this.componentsService.componentLayoutChange(updateComponentLayout.diff, app.appVersions[0].id);
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_COMPONENTS)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Put(':id/versions/:versionId/components/batch')
+  async batchComponentOperations(@App() app: AppEntity, @Body() batchComponentsDto: BatchComponentsDto) {
+    return this.componentsService.batchOperations(batchComponentsDto.diff, app.appVersions[0].id);
   }
 }
