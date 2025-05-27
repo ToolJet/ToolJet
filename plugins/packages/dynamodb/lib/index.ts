@@ -25,28 +25,28 @@ export default class DynamodbQueryService implements QueryService {
           result = await listTables(client);
           break;
         case 'get_item':
-          result = await getItem(client, queryOptions.table, JSON.parse(queryOptions.key));
+          result = await getItem(client, queryOptions.table, queryOptions.key !== '' ? JSON.parse(queryOptions.key) : {});
           break;
         case 'delete_item':
-          result = await deleteItem(client, queryOptions.table, JSON.parse(queryOptions.key));
+          result = await deleteItem(client, queryOptions.table, queryOptions.key !== '' ? JSON.parse(queryOptions.key) : {});
           break;
         case 'query_table':
-          result = await queryTable(client, JSON.parse(queryOptions.query_condition));
+          result = await queryTable(client, queryOptions.query_condition !== '' ? JSON.parse(queryOptions.query_condition) : {});
           break;
         case 'scan_table':
-          result = await scanTable(client, JSON.parse(queryOptions.scan_condition));
+          result = await scanTable(client, queryOptions.scan_condition !== '' ? JSON.parse(queryOptions.scan_condition) : {});
           break;
         case 'update_item':
-          result = await updateItem(client, JSON.parse(queryOptions.update_condition));
+          result = await updateItem(client, queryOptions.update_condition !== '' ? JSON.parse(queryOptions.update_condition) : {});
           break;
         case 'create_table':
-          result = await createTable(client, JSON.parse(queryOptions.table_parameters));
+          result = await createTable(client, queryOptions.table_parameters !== '' ? JSON.parse(queryOptions.table_parameters) : {});
           break;
         case 'describe_table':
           result = await describeTable(client, queryOptions.table);
           break;
         case 'put_item':
-          result = await putItem(client, JSON.parse(queryOptions.new_item_details));
+          result = await putItem(client, queryOptions.new_item_details !== '' ? JSON.parse(queryOptions.new_item_details) : {});
           break;
       }
     } catch (error) {
