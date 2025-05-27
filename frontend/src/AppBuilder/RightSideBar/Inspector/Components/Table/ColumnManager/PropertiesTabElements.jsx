@@ -54,6 +54,7 @@ export const PropertiesTabElements = ({
             { label: 'Link', value: 'link' },
             { label: 'JSON', value: 'json' },
             { label: 'Markdown', value: 'markdown' },
+            { label: 'HTML', value: 'html' },
             // Following column types are deprecated
             { label: 'Default', value: 'default' },
             { label: 'Dropdown', value: 'dropdown' },

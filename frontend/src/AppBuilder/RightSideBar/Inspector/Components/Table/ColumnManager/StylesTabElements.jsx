@@ -129,6 +129,7 @@ export const StylesTabElements = ({
         'number',
         'json',
         'markdown',
+        'html',
         'boolean',
         'select',
         'text',
