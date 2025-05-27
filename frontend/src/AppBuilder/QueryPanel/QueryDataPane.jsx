@@ -16,6 +16,9 @@ import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import FolderEmpty from '@/_ui/Icon/solidIcons/FolderEmpty';
 import useStore from '@/AppBuilder/_stores/store';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
+import { shallow } from 'zustand/shallow';
+import { appPermissionService } from '@/_services';
 
 export const QueryDataPane = ({ darkMode }) => {
   const { t } = useTranslation();
@@ -34,6 +37,11 @@ export const QueryDataPane = ({ darkMode }) => {
   function isDataSourceLocal(dataQuery) {
     return dataSources.some((dataSource) => dataSource.id === dataQuery.data_source_id);
   }
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
+  const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -171,6 +179,20 @@ export const QueryDataPane = ({ darkMode }) => {
               {filteredQueries.map((query) => (
                 <QueryCard key={query.id} dataQuery={query} darkMode={darkMode} localDs={!!isDataSourceLocal(query)} />
               ))}
+              {licenseValid && (
+                <AppPermissionsModal
+                  modalType="query"
+                  resourceId={selectedQuery?.id}
+                  showModal={showQueryPermissionModal}
+                  toggleModal={toggleQueryPermissionModal}
+                  darkMode={darkMode}
+                  fetchPermission={(id, appId) => appPermissionService.getQueryPermission(appId, id)}
+                  createPermission={(id, appId, body) => appPermissionService.createQueryPermission(appId, id, body)}
+                  updatePermission={(id, appId, body) => appPermissionService.updateQueryPermission(appId, id, body)}
+                  deletePermission={(id, appId) => appPermissionService.deleteQueryPermission(appId, id)}
+                  // onSuccess={(data) => updateQueryWithPermissions(selectedQuery?.id, data)}
+                />
+              )}
             </div>
             <Tooltip
               id="query-card-name-tooltip"

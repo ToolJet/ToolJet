@@ -64,6 +64,7 @@ button:focus:not(:focus-visible) {
     padding: 10px 14px;
     cursor: pointer;
     display: flex;
+    align-items: center;
 
     &:hover {
       background-color: var(--slate3);

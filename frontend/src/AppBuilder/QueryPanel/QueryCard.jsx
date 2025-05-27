@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Tooltip } from 'react-tooltip';
+import { ToolTip } from '@/_components/ToolTip';
 import { updateQuerySuggestions } from '@/_helpers/appUtils';
 // import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
@@ -18,6 +19,7 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import classNames from 'classnames';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const appId = useStore((state) => state.app.appId);
@@ -31,6 +33,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const duplicateQuery = useStore((state) => state.dataQuery.duplicateQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
+  const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [showQueryMenu, setShowQueryMenu] = useState(false);
   const hasPermissions =
@@ -40,6 +43,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         canDeleteDataSource()
       : true;
 
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   const QUERY_MENU_OPTIONS = [
@@ -47,16 +53,34 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
       label: 'Rename',
       value: 'rename',
       icon: <Edit width={16} />,
+      showTooltip: false,
     },
     {
       label: 'Duplicate',
       value: 'duplicate',
       icon: <Copy width={16} />,
+      showTooltip: false,
+    },
+    {
+      label: 'Query permission',
+      value: 'permission',
+      icon: (
+        <img
+          alt="permission-icon"
+          src="assets/images/icons/editor/left-sidebar/authorization.svg"
+          width="16"
+          height="16"
+        />
+      ),
+      trailingIcon: !licenseValid ? <SolidIcon width={16} name="enterprisecrown" className="mx-1" /> : undefined,
+      tooltipText: 'Query permissions are available only in paid plans',
+      showTooltip: !licenseValid,
     },
     {
       label: 'Delete',
       value: 'delete',
       icon: <Trash width={16} fill={'#E54D2E'} />,
+      showTooltip: false,
     },
   ];
 
@@ -66,6 +90,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
     }
     if (value === 'duplicate') {
       debouncedDuplicateQuery(dataQuery?.id, appId);
+    }
+    if (value === 'permission') {
+      if (!licenseValid) return;
+      toggleQueryPermissionModal(true);
     }
     if (value === 'delete') {
       deleteDataQuery();
@@ -198,24 +226,32 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
               <Popover id="list-menu" className={darkMode && 'dark-theme'}>
                 <Popover.Body bsPrefix="list-item-popover-body">
                   {QUERY_MENU_OPTIONS.map((option) => (
-                    <div
-                      data-cy={`query-menu-${String(option?.value).toLowerCase()}-button`}
-                      className="list-item-popover-option"
+                    <ToolTip
                       key={option?.value}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleQueryMenuActions(option.value);
-                      }}
+                      message={option?.tooltipText}
+                      placement="right"
+                      show={option?.showTooltip}
                     >
-                      <div className="list-item-popover-menu-option-icon">{option.icon}</div>
                       <div
-                        className={classNames('list-item-option-menu-label', {
-                          'color-tomato9': option.value === 'delete',
-                        })}
+                        data-cy={`query-menu-${String(option?.value).toLowerCase()}-button`}
+                        className="list-item-popover-option"
+                        key={option?.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQueryMenuActions(option.value);
+                        }}
                       >
-                        {option?.label}
+                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                        <div
+                          className={classNames('list-item-option-menu-label', {
+                            'color-tomato9': option.value === 'delete',
+                          })}
+                        >
+                          {option?.label}
+                        </div>
+                        {option.trailingIcon && option.trailingIcon}
                       </div>
-                    </div>
+                    </ToolTip>
                   ))}
                 </Popover.Body>
               </Popover>

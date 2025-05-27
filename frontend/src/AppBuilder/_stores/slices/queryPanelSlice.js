@@ -26,6 +26,7 @@ const initialState = {
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
+  showQueryPermissionModal: false,
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -1112,6 +1113,11 @@ export const createQueryPanelSlice = (set, get) => ({
         id: selectedQuery?.id,
       };
       previewQuery(query, false, undefined, moduleId);
+    },
+    toggleQueryPermissionModal: (show) => {
+      set((state) => {
+        state.queryPanel.showQueryPermissionModal = show;
+      });
     },
   },
 });
