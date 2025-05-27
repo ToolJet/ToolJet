@@ -19,8 +19,10 @@ export const ModalHeader = React.memo(
     updateHeaderSizeInStore,
     activeSlot,
     headerMaxHeight,
+    isFullScreen,
   }) => {
     const canvasHeaderHeight = getCanvasHeight(headerHeight);
+    // console.log(headerMaxHeight, 'headerMaxHeight');
     return (
       <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={onClick}>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -29,7 +31,8 @@ export const ModalHeader = React.memo(
             slotStyle={{
               height: `100%`,
               padding: `${4.5}px ${MODAL_CANVAS_PADDING}px`,
-              maxHeight: `${headerMaxHeight}px`,
+              maxHeight: `${headerMaxHeight}`,
+              minHeight: '10px',
             }}
             isEditing={isEditing}
             id={`${id}-header`}
@@ -40,7 +43,7 @@ export const ModalHeader = React.memo(
             isActive={activeSlot === `${id}-header`}
             onResize={updateHeaderSizeInStore}
             componentType="ModalV2"
-            maxHeight={headerMaxHeight}
+            maxHeight={isFullScreen ? undefined : headerMaxHeight}
           />
         </div>
         {isDisabled && (

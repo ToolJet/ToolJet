@@ -26,14 +26,27 @@ export const ModalWidget = ({ ...restProps }) => {
     footerHeight,
     onSelectModal,
     modalHeight,
+    isFullScreen,
   } = restProps['modalProps'];
 
   const isEditing = useStore((state) => state.currentMode === 'edit');
   const setComponentProperty = useStore((state) => state.setComponentProperty);
   const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
-  const headerMaxHeight = parseInt(modalHeight, 10) - parseInt(footerHeight, 10) - 100 - 10;
-  const footerMaxHeight = parseInt(modalHeight, 10) - parseInt(headerHeight, 10) - 100 - 10;
+  const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
+  const headerMaxHeight = isFullScreen
+    ? `calc(${_modalHeight} - ${footerHeight} - 100px - 10px)`
+    : parseInt(_modalHeight, 10) - parseInt(footerHeight, 10) - 100 - 10;
+  const footerMaxHeight = isFullScreen
+    ? `calc(${_modalHeight} - ${headerHeight} - 100px - 10px)`
+    : parseInt(_modalHeight, 10) - parseInt(headerHeight, 10) - 100 - 10;
 
+  // const headerMaxHeight = `calc(${_modalHeight} - ${footerHeight} - 100px - 10px)`;
+  // const footerMaxHeight = `calc(${_modalHeight} - ${headerHeight} - 100px - 10px)`;
+
+  // const headerMaxHeight = parseInt(_modalHeight, 10) - parseInt(footerHeight, 10) - 100 - 10;
+  // const footerMaxHeight = parseInt(_modalHeight, 10) - parseInt(headerHeight, 10) - 100 - 10;
+  console.log(headerMaxHeight, modalHeight, isFullScreen, 'headerMaxHeight');
+  console.log(footerMaxHeight, 'footerMaxHeight');
   const updateHeaderSizeInStore = ({ newHeight }) => {
     const _height = parseInt(newHeight, 10);
     setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
@@ -75,11 +88,12 @@ export const ModalWidget = ({ ...restProps }) => {
     setTimeout(() => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
-        modalContent.style.height = `${modalHeight}px`;
+        console.log(_modalHeight, 'modalContent');
+        modalContent.style.height = isFullScreen ? '100vh' : `${modalHeight}px`;
       }
     }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalHeight, restProps.show]);
+  }, [modalHeight, restProps.show, isFullScreen]);
 
   return (
     <BootstrapModal
@@ -93,7 +107,6 @@ export const ModalWidget = ({ ...restProps }) => {
         }
       }}
       onClick={handleModalSlotClick}
-      // style={{ height: `${modalHeight}px`, maxHeight: '100%' }}
     >
       {showConfigHandler && (
         <ConfigHandle
@@ -120,6 +133,7 @@ export const ModalWidget = ({ ...restProps }) => {
           updateHeaderSizeInStore={updateHeaderSizeInStore}
           activeSlot={activeSlot}
           headerMaxHeight={headerMaxHeight}
+          isFullScreen={isFullScreen}
         />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
@@ -165,6 +179,7 @@ export const ModalWidget = ({ ...restProps }) => {
           updateFooterSizeInStore={updateFooterSizeInStore}
           activeSlot={activeSlot}
           footerMaxHeight={footerMaxHeight}
+          isFullScreen={isFullScreen}
         />
       )}
     </BootstrapModal>

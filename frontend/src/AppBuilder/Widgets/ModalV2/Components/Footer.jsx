@@ -17,6 +17,7 @@ export const ModalFooter = React.memo(
     updateFooterSizeInStore,
     activeSlot,
     footerMaxHeight,
+    isFullScreen,
   }) => {
     const canvasFooterHeight = getCanvasHeight(footerHeight);
     return (
@@ -37,7 +38,7 @@ export const ModalFooter = React.memo(
           isActive={activeSlot === `${id}-footer`}
           onResize={updateFooterSizeInStore}
           componentType="ModalV2"
-          maxHeight={footerMaxHeight}
+          maxHeight={isFullScreen ? undefined : footerMaxHeight}
         />
         {isDisabled && (
           <div

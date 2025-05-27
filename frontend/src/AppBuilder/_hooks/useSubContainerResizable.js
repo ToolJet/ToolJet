@@ -47,6 +47,7 @@ export const useSubContainerResizable = (options = {}) => {
       e.stopPropagation();
       e.preventDefault();
       const startHeight = parseInt(parentRef.current.clientHeight);
+      console.log(startHeight, 'startHeight');
       const startWidth = parseInt(parentRef.current.clientWidth);
       const parentWidth = parentRef.current.parentElement ? parentRef.current.parentElement.clientWidth : startWidth;
       const startY = e.clientY;
