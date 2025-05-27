@@ -15,6 +15,7 @@ export interface InstanceSSOConfigMap {
 export interface SSOConfig {
   enabled: boolean;
   configs: any;
+  oidcGroupSyncs?: [];
 }
 
 export interface ILoginConfigsService {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SSOConfigs, SSOType } from '@entities/sso_config.entity';
 
 @Injectable()
@@ -52,7 +52,7 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
   async getConfigs(id: string): Promise<SSOConfigs> {
     const result: SSOConfigs = await this.findOne({
       where: { id, enabled: true },
-      relations: ['organization'],
+      relations: ['organization', 'oidcGroupSyncs'],
     });
     return result;
   }

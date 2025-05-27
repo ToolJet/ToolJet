@@ -6,6 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  RelationId,
 } from 'typeorm';
 import { SSOConfigs } from './sso_config.entity';
 
@@ -14,11 +15,13 @@ export class SsoConfigOidcGroupSync {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => SSOConfigs, (ssoConfig: SSOConfigs) => ssoConfig.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => SSOConfigs, (ssoConfig) => ssoConfig.oidcGroupSyncs, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'sso_config_id' })
   ssoConfig: SSOConfigs;
 
-  @Column({ name: 'sso_config_id', type: 'uuid' })
+  @RelationId((groupSync: SsoConfigOidcGroupSync) => groupSync.ssoConfig)
   ssoConfigId: string;
 
   @Column({ name: 'organization_id', type: 'uuid', nullable: true })

@@ -101,5 +101,6 @@ export class SSOConfigs {
   organization: Organization;
 
   @OneToMany(() => SsoConfigOidcGroupSync, (groupSync) => groupSync.ssoConfig)
+  @JoinColumn({ name: 'sso_config_id', referencedColumnName: 'id' })
   oidcGroupSyncs: SsoConfigOidcGroupSync[];
 }
