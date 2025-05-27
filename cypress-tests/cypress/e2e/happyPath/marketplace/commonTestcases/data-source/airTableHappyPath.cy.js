@@ -69,25 +69,57 @@ describe("Data source Airtable", () => {
   });
 
   it("Should verify the functionality of AirTable connection form.", () => {
-    selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
-
-    fillDataSourceTextField(
-      airtableText.ApiKey,
-      airtableText.apikeyPlaceholder,
-      Cypress.env("airTable_apikey")
-    );
-    cy.get(postgreSqlSelector.buttonSave).click();
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      postgreSqlText.toastDSSaved
-    );
-
     cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dsName}-airtable`,
+      "airtable",
+      [
+        {
+          key: "personal_access_token",
+          value: "Invalid access token",
+          encrypted: true,
+        },
+      ]
+    );
     cy.get(
-      `[data-cy="cypress-${data.dsName}-airtable-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.dsName}-airtable`);
-    deleteDatasource(`cypress-${data.dsName}-airtable`);
+      dataSourceSelector.dataSourceNameButton(`cypress-${data.dsName}-airtable`)
+    )
+      .should("be.visible")
+      .click();
+
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.get(dataSourceSelector.connectionFailedText, {
+      timeout: 10000,
+    }).should("have.text", postgreSqlText.couldNotConnect);
+
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+      "have.text",
+      "Authentication failed: Invalid personal access token"
+    );
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: `cypress-${data.dsName}-airtable`,
+      options: [
+        {
+          key: "personal_access_token",
+          value: `${Cypress.env("airTable_apikey")}`,
+          encrypted: true,
+        },
+      ],
+    });
+    cy.get(
+      dataSourceSelector.dataSourceNameButton(`cypress-${data.dsName}-airtable`)
+    )
+      .should("be.visible")
+      .click();
+
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.get(postgreSqlSelector.textConnectionVerified, {
+      timeout: 10000,
+    }).should("have.text", postgreSqlText.labelConnectionVerified);
+
+    cy.apiDeleteGDS(`cypress-${data.dsName}-airtable`);
   });
 
   it("Should able to run the query with valid conection", () => {
@@ -96,30 +128,20 @@ describe("Data source Airtable", () => {
     const airTable_tableName = Cypress.env("airtable_tableName");
     const airTable_recordID = Cypress.env("airtable_recordId");
 
-    selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
-
-    fillDataSourceTextField(
-      airtableText.ApiKey,
-      airtableText.apikeyPlaceholder,
-      airTable_apiKey
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dsName}-airtable`,
+      "airtable",
+      [
+        {
+          key: "personal_access_token",
+          value: `${airTable_apiKey}`,
+          encrypted: true,
+        },
+      ]
     );
-
-    cy.wait(1000);
-    cy.get(postgreSqlSelector.buttonSave).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      postgreSqlText.toastDSSaved
-    );
-
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.get(
-      `[data-cy="cypress-${data.dsName}-airtable-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.dsName}-airtable`);
-    cy.get(commonSelectors.dashboardIcon).click();
-    cy.get(commonSelectors.appCreateButton).click();
-    cy.get(commonSelectors.appNameInput).click().type(data.dsName);
-    cy.get(commonSelectors.createAppButton).click();
-    cy.skipWalkthrough();
+    cy.apiCreateApp(`${data.dsName}-airtable-app`);
+    cy.openApp();
 
     cy.get('[data-cy="show-ds-popover-button"]').click();
     cy.get(".css-4e90k9").type(`${data.dsName}`);
@@ -280,10 +302,9 @@ describe("Data source Airtable", () => {
         commonSelectors.toastMessage,
         `Query (${data.queryName}) completed.`
       );
-      deleteAppandDatasourceAfterExecution(
-        data.dsName,
-        `cypress-${data.dsName}-airtable`
-      );
+
+      cy.apiDeleteApp(`${data.dsName}-airtable-app`);
+      cy.apiDeleteGDS(`cypress-${data.dsName}-airtable`);
     });
   });
 });

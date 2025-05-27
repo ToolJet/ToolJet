@@ -33,6 +33,7 @@ import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { ComponentsService } from './component.service';
+import { UsersUtilService } from '@modules/users/util.service';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -51,6 +52,17 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
+type NewRevampedComponent =
+  | 'Text'
+  | 'TextInput'
+  | 'PasswordInput'
+  | 'NumberInput'
+  | 'Table'
+  | 'Button'
+  | 'Checkbox'
+  | 'Divider'
+  | 'VerticalDivider'
+  | 'Link';
 type NewRevampedComponent =
   | 'Text'
   | 'TextInput'
@@ -90,9 +102,10 @@ export class AppImportExportService {
     protected dataSourcesUtilService: DataSourcesUtilService,
     protected dataSourcesRepository: DataSourcesRepository,
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
+    protected usersUtilService: UsersUtilService,
     protected readonly entityManager: EntityManager,
     protected componentsService: ComponentsService
-  ) {}
+  ) { }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -104,7 +117,7 @@ export class AppImportExportService {
         .createQueryBuilder(App, 'apps')
         .where('apps.id = :id AND apps.organization_id = :organizationId', {
           id,
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId,
         });
       const appToExport = await queryForAppToExport.getOne();
 
@@ -133,7 +146,7 @@ export class AppImportExportService {
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
         .where('app_environments.organizationId = :organizationId', {
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId,
         })
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();
@@ -194,13 +207,13 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-              .createQueryBuilder(Component, 'components')
-              .leftJoinAndSelect('components.layouts', 'layouts')
-              .where('components.pageId IN(:...pageId)', {
-                pageId: pages.map((v) => v.id),
-              })
-              .orderBy('components.created_at', 'ASC')
-              .getMany()
+            .createQueryBuilder(Component, 'components')
+            .leftJoinAndSelect('components.layouts', 'layouts')
+            .where('components.pageId IN(:...pageId)', {
+              pageId: pages.map((v) => v.id),
+            })
+            .orderBy('components.created_at', 'ASC')
+            .getMany()
           : [];
 
       const events = await manager
@@ -350,8 +363,8 @@ export class AppImportExportService {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
-        organizationId: user.organizationId,
-        userId: user.id,
+        organizationId: user?.organizationId,
+        userId: user.id, //fetch super admin user id for EE
         slug: null,
         icon: appParams.icon,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
@@ -772,7 +785,7 @@ export class AppImportExportService {
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
           manager,
-          user.organizationId,
+          user?.organizationId,
           importingDataQueriesForAppVersion,
           importingDataSource,
           dataSourceForAppVersion,
@@ -1069,10 +1082,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-              importingQuery.options,
-              externalResourceMappings['tooljet_database'],
-              organizationId
-            )
+            importingQuery.options,
+            externalResourceMappings['tooljet_database'],
+            organizationId
+          )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1163,7 +1176,7 @@ export class AppImportExportService {
     appResourceMappings: AppResourceMappings
   ) {
     const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user.organizationId,
+      user?.organizationId,
       appResourceMappings.appVersionMapping[appVersion.id],
       DefaultDataSourceKinds,
       manager
@@ -1202,7 +1215,7 @@ export class AppImportExportService {
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
           scope: 'global',
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId,
         },
       });
     };
@@ -1213,7 +1226,7 @@ export class AppImportExportService {
           kind: dataSource.kind,
           type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
           scope: 'global',
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId,
         },
       });
     };
@@ -1231,7 +1244,7 @@ export class AppImportExportService {
 
       if (plugin) {
         const newDataSource = manager.create(DataSource, {
-          organizationId: user.organizationId,
+          organizationId: user?.organizationId,
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
@@ -1246,7 +1259,7 @@ export class AppImportExportService {
 
     const createNewGlobalDs = async (ds: DataSource): Promise<DataSource> => {
       const newDataSource = manager.create(DataSource, {
-        organizationId: user.organizationId,
+        organizationId: user?.organizationId,
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
@@ -1274,7 +1287,7 @@ export class AppImportExportService {
   ) {
     appResourceMappings = { ...appResourceMappings };
     const currentOrgEnvironments = await this.appEnvironmentUtilService.getAll(
-      user.organizationId,
+      user?.organizationId,
       appVersion.appId,
       manager
     );
@@ -1336,7 +1349,7 @@ export class AppImportExportService {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
     const organization: Organization = await manager.findOne(Organization, {
-      where: { id: user.organizationId },
+      where: { id: user?.organizationId },
       relations: ['appEnvironments'],
     });
     let currentEnvironmentId: string;
@@ -1555,7 +1568,7 @@ export class AppImportExportService {
 
     // Create default data sources
     const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user.organizationId,
+      user?.organizationId,
       version.id,
       DefaultDataSourceKinds,
       manager
@@ -1563,7 +1576,7 @@ export class AppImportExportService {
     let envIdArray: string[] = [];
 
     const organization: Organization = await manager.findOne(Organization, {
-      where: { id: user.organizationId },
+      where: { id: user?.organizationId },
       relations: ['appEnvironments'],
     });
     envIdArray = [...organization.appEnvironments.map((env) => env.id)];
@@ -1572,7 +1585,7 @@ export class AppImportExportService {
       await Promise.all(
         defaultAppEnvironments.map(async (en) => {
           const env = manager.create(AppEnvironment, {
-            organizationId: user.organizationId,
+            organizationId: user?.organizationId,
             name: en.name,
             isDefault: en.isDefault,
             priority: en.priority,
@@ -1637,10 +1650,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-                query.options,
-                externalResourceMappings['tooljet_database'],
-                user.organizationId
-              )
+              query.options,
+              externalResourceMappings['tooljet_database'],
+              user?.organizationId
+            )
             : query.options,
       });
       await manager.save(newQuery);

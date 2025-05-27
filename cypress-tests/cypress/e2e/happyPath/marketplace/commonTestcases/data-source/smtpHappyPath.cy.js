@@ -105,7 +105,7 @@ describe("Data source SMTP", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       "Invalid credentials"
     );

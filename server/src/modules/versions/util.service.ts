@@ -80,6 +80,15 @@ export class VersionUtilService implements IVersionUtilService {
     return;
   }
 
+  async fetchVersions(appId: string): Promise<AppVersion[]> {
+    return await this.versionRepository.find({
+      where: { appId },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const numVersions = await this.versionRepository.getCount(app.id);

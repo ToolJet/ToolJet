@@ -239,7 +239,8 @@ export const createRestAPIQuery = (
   key = "",
   value = "",
   url = "",
-  run = true
+  run = true,
+  kind = "restapi"
 ) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
@@ -247,7 +248,6 @@ export const createRestAPIQuery = (
       Cookie: `tj_auth_token=${cookie.value}`,
     };
 
-    cy.log(Cypress.env("appId"));
     cy.request({
       method: "GET",
       url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
@@ -255,13 +255,13 @@ export const createRestAPIQuery = (
     }).then((response) => {
       const editingVersionId = response.body.editing_version.id;
 
-      const data_source_id = Cypress.env(`${dsName}-id`);
+      const data_source_id = Cypress.env(`${dsName}`);
 
       const requestBody = {
         app_id: Cypress.env("appId"),
         app_version_id: editingVersionId,
         name: queryName,
-        kind: "restapi",
+        kind: kind,
         options: {
           method: "get",
           url: url,

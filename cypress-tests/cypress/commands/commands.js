@@ -6,6 +6,7 @@ import { passwordInputText } from "Texts/passwordInput";
 import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
+import { selectAppCardOption } from "Support/utils/common";
 
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
@@ -160,12 +161,10 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.get(commonSelectors.appCard(appName))
-    .realHover()
-    .find(commonSelectors.appCardOptionsButton)
-    .realHover()
-    .click();
-  cy.get(commonSelectors.deleteAppOption).click();
+  selectAppCardOption(
+    appName,
+    commonSelectors.appCardOptions(commonText.deleteAppOption)
+  );
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
@@ -227,9 +226,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -398,39 +397,38 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.apiLogin();
+  cy.task("dbConnection", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+      SELECT id FROM organizations WHERE name = 'My workspace';`,
+  }).then((resp) => {
+    const workspaceId = resp.rows[0].id;
 
-  // cy.intercept("GET", API_ENDPOINT).as("library_apps");
-  cy.visit("/my-workspace");
-  cy.wait(2000);
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-  // cy.wait("@library_apps");
+    cy.apiLogin(
+      "dev@tooljet.io",
+      "password",
+      workspaceId,
+      "/my-workspace"
+    ).then(() => {
+      cy.visit("/");
+      cy.wait(2000);
+      cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+    });
+  });
 });
 
-Cypress.Commands.add(
-  "visitSlug",
-  ({
-    actualUrl,
-    errorUrls = [
-      `${Cypress.config("baseUrl")}/error/unknown`,
-      `${Cypress.config("baseUrl")}/error/restricted`,
-    ],
-  }) => {
-    if (!actualUrl) {
-      throw new Error("actualUrl is required for visitSlug command.");
+Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
+  cy.visit(actualUrl);
+  cy.wait(1000);
+
+  cy.url().then((currentUrl) => {
+    if (currentUrl !== actualUrl) {
+      cy.visit(actualUrl);
+      cy.wait(1000);
     }
+  });
+});
 
-    cy.visit(actualUrl);
-
-    cy.url().then((url) => {
-      if (errorUrls.includes(url)) {
-        cy.log(`Navigation resulted in error URL: ${url}. Retrying...`);
-        cy.visit(actualUrl);
-        cy.wait(1000);
-      }
-    });
-  }
-);
 
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {
@@ -551,7 +549,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 

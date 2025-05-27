@@ -3,6 +3,7 @@ import NumberInput from './NumberInput';
 import TextInput from './TextInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
 import { ButtonSolid } from '../../../../_components/AppButton';
+import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
   const { type, encrypted, validation, isValidatedMessages, isDisabled } = restProps;
@@ -65,13 +66,14 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 rel="noreferrer"
                 disabled={isDisabled}
                 onClick={toggleEditing}
+                data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
               </ButtonSolid>
             </div>
 
             <div className="col-auto mb-2">
-              <small className="text-green">
+              <small className="text-green" data-cy="encrypted-text">
                 <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                 Encrypted
               </small>

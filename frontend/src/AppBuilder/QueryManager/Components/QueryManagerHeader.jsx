@@ -254,7 +254,7 @@ const RunButton = ({ buttonLoadingState }) => {
         <ButtonComponent
           size="medium"
           variant="secondary"
-          onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
+          onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play01"
           disabled={isInDraft}
           isLoading={isLoading}
