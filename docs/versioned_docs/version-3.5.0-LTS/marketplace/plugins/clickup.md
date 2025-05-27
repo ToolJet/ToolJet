@@ -85,3 +85,14 @@ To get a `view_id` (which is needed to access a specific list view like board, t
 5. Get View ID
     - Operation: `GET /list/{list_id}/view`
     - returns `view_ids` associated with that list, such as Board view, List view, etc.
+
+## Example: Creating a Task
+
+To create a task using the ClickUp plugin in ToolJet, you’ll need the `list_id` where the task should be created. Follow Click Up Hierarchy till step 4 to get the list id. Once you get the list id, select `POST /v2/list/{list_id}/task` operation.
+
+**Required Parameters**:
+- **list_id**: The ID of the list where the new task will be added.
+- **name**: The name/title of the task to be created.
+
+##### Sample Output:
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/clickup/post-task.png" alt="Marketplace ClickUp Plugin"/>
