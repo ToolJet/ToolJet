@@ -90,7 +90,6 @@ export class AppImportExportService {
     protected dataSourcesRepository: DataSourcesRepository,
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
-    protected readonly entityManager: EntityManager,
     protected componentsService: ComponentsService
   ) {}
 
