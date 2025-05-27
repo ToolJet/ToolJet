@@ -47,7 +47,6 @@ export const useSubContainerResizable = (options = {}) => {
       e.stopPropagation();
       e.preventDefault();
       const startHeight = parseInt(parentRef.current.clientHeight);
-      console.log(startHeight, 'startHeight');
       const startWidth = parseInt(parentRef.current.clientWidth);
       const parentWidth = parentRef.current.parentElement ? parentRef.current.parentElement.clientWidth : startWidth;
       const startY = e.clientY;
@@ -116,7 +115,6 @@ export const useSubContainerResizable = (options = {}) => {
           // Get the updated height and width from the DOM instead of relying on state
           const finalHeight = parentRef.current ? parseInt(parentRef.current.clientHeight) : parseInt(height);
           const finalWidth = parentRef.current ? parseInt(parentRef.current.clientWidth) : parseInt(width);
-          console.log(finalHeight, 'dragEnd');
           props.onDragEnd({ newHeight: finalHeight, newWidth: finalWidth });
         }
       };

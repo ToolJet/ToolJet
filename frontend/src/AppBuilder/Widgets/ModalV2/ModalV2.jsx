@@ -65,8 +65,6 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  console.log(computedCanvasHeight, 'computedCanvasHeight');
-
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
