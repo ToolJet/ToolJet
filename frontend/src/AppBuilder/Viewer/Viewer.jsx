@@ -116,8 +116,8 @@ export const Viewer = ({
   }, []);
 
   useEffect(() => {
-    updateCanvasHeight(currentPageComponents);
-  }, [currentPageComponents, updateCanvasHeight]);
+    updateCanvasHeight(currentPageComponents, moduleId);
+  }, [currentPageComponents, moduleId, updateCanvasHeight]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);

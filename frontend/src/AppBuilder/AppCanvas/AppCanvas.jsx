@@ -161,7 +161,7 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
                   pageSidebarStyle={pageSidebarStyle}
                   appType={appType}
                 />
-                <div id="component-portal" />
+                {appType !== 'module' && <div id="component-portal" />}
               </div>
             )}
 

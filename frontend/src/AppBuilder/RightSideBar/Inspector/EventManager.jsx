@@ -401,7 +401,7 @@ export const EventManager = ({
   const constructDataQueryOptions = () => {
     const queries = dataQueries.filter((qry) => isQueryRunnable(qry)).map((qry) => ({ name: qry.name, value: qry.id }));
     const moduleInputs = Object.entries(moduleInputDummyQueries).map(([key, value]) => ({ name: value, value: key }));
-    return [...queries, ...moduleInputs];
+    return [...moduleInputs, ...queries];
   };
 
   function eventPopover(event, index) {
