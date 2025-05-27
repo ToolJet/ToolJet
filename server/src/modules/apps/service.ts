@@ -41,8 +41,6 @@ import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-import got from 'got';
-import { RenameAppOrVersionDto } from '@ee/git-sync/providers/dto/rename-app.dto';
 
 @Injectable()
 export class AppsService implements IAppsService {

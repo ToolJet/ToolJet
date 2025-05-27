@@ -32,7 +32,6 @@ export class GitSyncModule {
     );
     const { BaseGitUtilService } = await import(`${await getImportPath()}/git-sync/base-git-util.service`);
     const { BaseGitSyncService } = await import(`${await getImportPath()}/git-sync/base-git.service`);
-
     return {
       module: GitSyncModule,
       imports: [
