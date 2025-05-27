@@ -1,6 +1,7 @@
 import { QueryError } from './query.error';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
+import crypto from 'crypto';
 
 const CACHED_CONNECTIONS: any = {};
 
@@ -17,7 +18,17 @@ export function cacheConnection(dataSourceId: string, connection: any): any {
   CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
 }
 
-export function configCacheConnection(dataSourceId: string, enhancedCacheKey: string, connection: any): any {
+export function generateSourceOptionsHash(sourceOptions) {
+  const sortedEntries = Object.entries(sourceOptions)
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}:${value}`)
+    .join('|');
+
+  return crypto.createHash('sha256').update(sortedEntries).digest('hex').substring(0, 16);
+}
+
+export function cacheConnectionWithConfiguration(dataSourceId: string, enhancedCacheKey: string, connection: any): any {
   const updatedAt = new Date();
   const allKeys = Object.keys(CACHED_CONNECTIONS);
   const oldKeysForThisDatasource = allKeys.filter(
