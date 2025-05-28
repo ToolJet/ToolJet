@@ -1051,11 +1051,7 @@ export const createComponentsSlice = (set, get) => ({
     } = get();
     let hasParentChanged = false;
     let oldParentId;
-
-    const firstComponentId = Object.keys(componentLayouts)[0];
-    const existingParentDefinition = getComponentDefinition(firstComponentId, moduleId);
-    const currentParentId = existingParentDefinition?.component?.parent;
-
+    checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
     set(
       withUndoRedo((state) => {
         const page = state.modules[moduleId].pages[state.currentPageIndex];
@@ -1165,7 +1161,6 @@ export const createComponentsSlice = (set, get) => ({
       saveComponentChanges(diff, 'components/layout', 'update');
       get().multiplayer.broadcastUpdates(diff, 'components/layout', 'update');
     }
-    checkParentAndUpdateFormFields(componentLayouts, newParentId, currentParentId, moduleId);
   },
 
   saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {

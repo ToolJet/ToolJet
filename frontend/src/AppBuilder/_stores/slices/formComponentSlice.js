@@ -92,17 +92,19 @@ export const createFormComponentSlice = (set, get) => ({
   },
 
   // Logic is written considering that the component from different parent cannot be moved together
-  checkParentAndUpdateFormFields: (componentLayouts, newParentId, currentParentId, moduleId = 'canvas') => {
+  checkParentAndUpdateFormFields: (componentLayouts, newParentId, moduleId = 'canvas') => {
     const {
       getParentComponentType,
       getComponentDefinition,
       checkIfParentIsFormAndAddField,
       checkIfParentIsFormAndDeleteField,
       setFormFields,
-      getFormFields,
     } = get();
 
     const newParentType = getParentComponentType(newParentId, moduleId);
+    const firstComponentId = Object.keys(componentLayouts)[0];
+    const existingParentDefinition = getComponentDefinition(firstComponentId, moduleId);
+    const currentParentId = existingParentDefinition?.component?.parent;
     const currentParentType = getParentComponentType(currentParentId, moduleId);
 
     /* There are three scenarios:
@@ -132,7 +134,8 @@ export const createFormComponentSlice = (set, get) => ({
         removedComponentIds.push(deletedField);
       }
     });
-    const fields = getFormFields(currentParentId, moduleId);
+
+    const fields = existingParentDefinition?.component?.definition?.properties?.fields?.value || [];
     const updatedFields = fields.filter((field) => !removedComponentIds.includes(field.componentId));
     const newParentComponentDefinition = getComponentDefinition(newParentId, moduleId);
     const newParentFields = newParentComponentDefinition?.component?.definition?.properties?.fields?.value || [];
