@@ -181,10 +181,13 @@ export class VersionRepository extends Repository<AppVersion> {
   //   return version;
   // }
   async getAppVersionById(versionId: string) {
-    const version = await this.findOne({
-      where: { id: versionId },
-      relations: ['app'],
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const version = await manager.findOneOrFail(AppVersion, {
+        where: { id: versionId },
+        relations: ['app'],
+      });
+      if (!version) throw new BadRequestException('Wrong version Id');
+      return version;
     });
-    return version;
   }
 }
