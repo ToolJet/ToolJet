@@ -235,6 +235,8 @@ import EmptyStateModules from './EmptyStateModules.jsx';
 import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
+import FileCode from './FileCode.jsx';
+import Corners from './Corners.jsx';
 import Moon from './Moon.jsx';
 
 const Icon = (props) => {
@@ -371,6 +373,8 @@ const Icon = (props) => {
       return <EyeDisable {...props} />;
     case 'expand':
       return <Expand {...props} />;
+    case 'file-code':
+      return <FileCode {...props} />;
     case 'file01':
       return <File01 {...props} />;
     case 'filedownload':
@@ -533,6 +537,8 @@ const Icon = (props) => {
       return <ShiftButtonIcon {...props} />;
     case 'comments':
       return <Comments {...props} />;
+    case 'corners':
+      return <Corners {...props} />;
     case 'share':
       return <Share {...props} />;
     case 'shield':
