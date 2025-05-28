@@ -16,6 +16,7 @@ import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { AppGitController } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/controller`);
@@ -52,7 +53,6 @@ export class AppGitModule {
       imports: [
         TypeOrmModule.forFeature([
           AppGitSync,
-          VersionRepository,
           OrganizationGitSsh,
           OrganizationGitSync,
           OrganizationGitHttps,
@@ -68,6 +68,8 @@ export class AppGitModule {
       ],
       controllers: [AppGitController],
       providers: [
+        OrganizationGitSyncRepository,
+        VersionRepository,
         AppGitService,
         AppsAbilityFactory,
         SourceControlProviderService,

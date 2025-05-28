@@ -12,6 +12,8 @@ import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { AppGitSync } from '@entities/app_git_sync.entity';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
+import { OrganizationGitSyncRepository } from './repository';
+import { VersionRepository } from '@modules/versions/repository';
 
 export class GitSyncModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -60,10 +62,11 @@ export class GitSyncModule {
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),
         await VersionModule.register(configs),
-        // await LicenseModule.register(configs),
       ],
       controllers: [GitSyncController],
       providers: [
+        OrganizationGitSyncRepository,
+        VersionRepository,
         GitSyncService,
         SourceControlProviderService,
         SSHGitSyncService,
