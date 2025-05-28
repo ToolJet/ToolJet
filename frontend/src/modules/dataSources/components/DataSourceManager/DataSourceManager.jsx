@@ -258,7 +258,7 @@ class DataSourceManagerComponent extends React.Component {
       // to resolve any casing mis-match
       if (decamelize(key) !== key) {
         const newKey = decamelize(key);
-        isEncrypted = dataSourceMeta.options[newKey].encrypted;
+        isEncrypted = dataSourceMeta.options[newKey]?.encrypted;
       }
 
       return {
