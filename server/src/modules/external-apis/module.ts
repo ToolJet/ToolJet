@@ -9,6 +9,10 @@ import { AppsModule } from '@modules/apps/module';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { VersionModule } from '@modules/versions/module';
 import { UsersModule } from '@modules/users/module';
+import { AppGitModule } from '@modules/app-git/module';
+import { GitSyncModule } from '@modules/git-sync/module';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { VersionRepository } from '@modules/versions/repository';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -26,8 +30,17 @@ export class ExternalApiModule {
         await AppsModule.register(configs),
         await OrganizationsModule.register(configs),
         await VersionModule.register(configs),
+        await AppGitModule.register(configs),
+        await GitSyncModule.register(configs),
       ],
-      providers: [ExternalApiUtilService, ExternalApisService, FeatureAbilityFactory, RolesRepository],
+      providers: [
+        ExternalApiUtilService,
+        ExternalApisService,
+        FeatureAbilityFactory,
+        RolesRepository,
+        GroupPermissionsRepository,
+        VersionRepository,
+      ],
       controllers: [ExternalApisController],
       exports: [ExternalApiUtilService],
     };

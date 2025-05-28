@@ -4,7 +4,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
@@ -130,6 +130,17 @@ export class VersionRepository extends Repository<AppVersion> {
 
       return appVersion;
     }, manager || this.manager);
+  }
+
+  async getAppVersionById(versionId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const version = await manager.findOneOrFail(AppVersion, {
+        where: { id: versionId },
+        relations: ['app'],
+      });
+      if (!version) throw new BadRequestException('Wrong version Id');
+      return version;
+    });
   }
 
   getVersionsInApp(appId: string, manager?: EntityManager): Promise<AppVersion[]> {

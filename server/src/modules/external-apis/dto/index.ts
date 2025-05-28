@@ -12,6 +12,7 @@ import {
   IsNotEmpty,
   IsDefined,
   IsObject,
+  IsUrl,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
@@ -135,21 +136,59 @@ export class UpdateUserWorkspaceDto {
   groups?: GroupDto[];
 }
 
+export class OrganizationGitCreateDto {
+  @IsString()
+  organizationId: string;
+
+  @IsString()
+  gitUrl: string;
+}
+
+export class GithubHttpsConfigDTO extends OrganizationGitCreateDto {
+  @IsString()
+  @IsNotEmpty()
+  branchName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppInstallationId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppPrivateKey: string;
+
+  @IsUrl()
+  @IsOptional()
+  githubEnterpriseUrl?: string;
+
+  @IsUrl()
+  @IsOptional()
+  githubEnterpriseApiUrl?: string;
+}
+
 export class AppGitPullDto {
   @IsString()
   gitAppId: string;
 
+  @IsOptional()
   @IsString()
-  gitVersionId: string;
+  gitVersionId?: string;
 
+  @IsOptional()
   @IsString()
-  lastCommitMessage: string;
+  lastCommitMessage?: string;
 
+  @IsOptional()
   @IsString()
-  lastCommitUser: string;
+  lastCommitUser?: string;
 
+  @IsOptional()
   @IsString()
-  lastPushDate: string;
+  lastPushDate?: string;
 
   @IsString()
   organizationGitId: string;
@@ -159,6 +198,45 @@ export class AppGitPullDto {
 
   @IsString()
   gitAppName: string;
+
+  @IsOptional()
+  @IsString()
+  gitVersionName?: string;
+}
+
+export class AppGitPullUpdateDto {
+  @IsString()
+  gitVersionId: string;
+
+  @IsString()
+  @IsOptional()
+  lastCommitMessage?: string;
+
+  @IsString()
+  @IsOptional()
+  lastCommitUser?: string;
+
+  @IsString()
+  @IsOptional()
+  lastPushDate?: string;
+
+  @IsString()
+  gitAppName: string;
+
+  @IsString()
+  @IsOptional()
+  gitVersionName?: string;
+}
+
+export class AppGitPushDto {
+  @IsString()
+  gitAppName: string;
+
+  @IsString()
+  versionId: string;
+
+  @IsString()
+  lastCommitMessage: string;
 
   @IsString()
   gitVersionName: string;
