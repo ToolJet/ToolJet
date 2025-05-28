@@ -2,15 +2,12 @@ import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Organization } from '@entities/organization.entity';
-import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_ssh.entity';
-import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { AppGitSync } from '@entities/app_git_sync.entity';
-import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 
@@ -48,14 +45,7 @@ export class GitSyncModule {
     return {
       module: GitSyncModule,
       imports: [
-        TypeOrmModule.forFeature([
-          AppGitSync,
-          Organization,
-          OrganizationGitSsh,
-          OrganizationGitHttps,
-          OrganizationGitLab,
-          AppVersion,
-        ]),
+        TypeOrmModule.forFeature([AppGitSync, Organization, AppVersion]),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),
