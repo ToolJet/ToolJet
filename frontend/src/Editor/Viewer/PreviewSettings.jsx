@@ -15,6 +15,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import EnvironmentManager from '@/Editor/Header/EnvironmentManager';
+import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PreviewSettings = ({
   isMobileLayout,
@@ -23,6 +24,7 @@ const PreviewSettings = ({
   showHeader,
   darkMode,
 }) => {
+  const { appType } = useAppType();
   const { featureAccess, currentAppEnvironment, setCurrentAppEnvironmentId } = useEditorStore(
     (state) => ({
       featureAccess: state?.featureAccess,
@@ -84,9 +86,9 @@ const PreviewSettings = ({
     <div className={classNames({ 'dark-theme theme-dark': darkMode })} style={{ borderRadius: '6px' }}>
       <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
         <span className="preview-settings-text">Preview settings</span>
-        <span>{editingVersion && _renderAppVersionsManager()}</span>
+        <span>{editingVersion && appType !== 'module' && _renderAppVersionsManager()}</span>
         <div className="navbar-seperator"></div>
-        <span>{editingVersion && _renderEnvironmentManager()}</span>
+        <span>{editingVersion && appType !== 'module' && _renderEnvironmentManager()}</span>
         <span>
           <HeaderActions showToggleLayoutBtn darkMode={darkMode} />
         </span>

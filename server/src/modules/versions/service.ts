@@ -108,62 +108,78 @@ export class VersionService implements IVersionService {
   }
 
   async getVersion(app: App, user: User): Promise<any> {
-    const versionId = app.appVersions[0].id;
-    const appVersion = await this.versionRepository.findVersion(versionId);
-
-    const pagesForVersion = await this.pageService.findPagesForVersion(versionId);
-    const eventsForVersion = await this.eventsService.findEventsForVersion(versionId);
-
-    const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
-
-    if (
-      appCurrentEditingVersion &&
-      !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))
-    ) {
-      const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
-      appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
-    }
-
-    let shouldFreezeEditor = false;
-    if (appCurrentEditingVersion) {
-      const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
-      if (hasMultiEnvLicense) {
-        const currentEnvironment = await this.appEnvironmentUtilService.get(
-          user.organizationId,
-          appCurrentEditingVersion['currentEnvironmentId']
-        );
-        shouldFreezeEditor = currentEnvironment.priority > 1;
+    const prepareResponse = async (app: App, versionId: string) => {
+      let appVersion,
+        updatedVersionId = versionId;
+      if (updatedVersionId) {
+        appVersion = await this.versionRepository.findVersion(updatedVersionId);
       } else {
+        appVersion = await this.versionRepository.findVersionsFromApp(app);
+        appVersion = appVersion[0];
+        updatedVersionId = appVersion.id;
+      }
+
+      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
+      const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
+
+      const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
+
+      if (
+        appCurrentEditingVersion &&
+        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))
+      ) {
         const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
       }
-    }
 
-    delete appCurrentEditingVersion['app'];
+      let shouldFreezeEditor = false;
+      if (appCurrentEditingVersion) {
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        if (hasMultiEnvLicense) {
+          const currentEnvironment = await this.appEnvironmentUtilService.get(
+            user.organizationId,
+            appCurrentEditingVersion['currentEnvironmentId']
+          );
+          shouldFreezeEditor = currentEnvironment.priority > 1;
+        } else {
+          const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
+          appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
+        }
+      }
 
-    const appData = {
-      ...app,
+      delete appCurrentEditingVersion['app'];
+
+      const appData = {
+        ...app,
+      };
+
+      delete appData['editingVersion'];
+
+      const editingVersion = camelizeKeys(appCurrentEditingVersion);
+
+      // Inject app theme
+      const appTheme = await this.organizationThemesUtilService.getTheme(
+        user.organizationId,
+        editingVersion?.globalSettings?.theme?.id
+      );
+
+      editingVersion['globalSettings']['theme'] = appTheme;
+
+      return {
+        ...appData,
+        editing_version: editingVersion,
+        pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
+        events: eventsForVersion,
+        should_freeze_editor: app.creationMode === 'GIT' || shouldFreezeEditor,
+      };
     };
 
-    delete appData['editingVersion'];
+    const response = await prepareResponse(app, app.appVersions?.[0]?.id);
+    const modules = await this.appUtilService.fetchModules(app, false, undefined);
 
-    const editingVersion = camelizeKeys(appCurrentEditingVersion);
+    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
-    // Inject app theme
-    const appTheme = await this.organizationThemesUtilService.getTheme(
-      user.organizationId,
-      editingVersion?.globalSettings?.theme?.id
-    );
-
-    editingVersion['globalSettings']['theme'] = appTheme;
-
-    return {
-      ...appData,
-      editing_version: editingVersion,
-      pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
-      events: eventsForVersion,
-      should_freeze_editor: app.creationMode === 'GIT' || shouldFreezeEditor,
-    };
+    return response;
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {

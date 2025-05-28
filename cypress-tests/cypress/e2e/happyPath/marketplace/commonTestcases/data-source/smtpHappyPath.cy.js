@@ -13,8 +13,8 @@ const data = {};
 
 describe("Data source SMTP", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -105,7 +105,7 @@ describe("Data source SMTP", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       "Invalid credentials"
     );

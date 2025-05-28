@@ -3,12 +3,14 @@ import useStore from '@/AppBuilder/_stores/store';
 import SwitchComponent from '@/components/ui/Switch/Index';
 import { shallow } from 'zustand/shallow';
 import { Confirm } from '@/Editor/Viewer/Confirm';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const MaintenanceMode = ({ darkMode }) => {
+  const { moduleId } = useModuleContext();
   const [showConfirmation, setConfirmationShow] = useState(false);
   const { isMaintenanceOn, toggleAppMaintenance } = useStore(
     (state) => ({
-      isMaintenanceOn: state.app.isMaintenanceOn,
+      isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
       toggleAppMaintenance: state.toggleAppMaintenance,
     }),
     shallow

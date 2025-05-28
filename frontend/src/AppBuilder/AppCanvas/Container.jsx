@@ -25,6 +25,8 @@ import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
+import { ModuleContainerBlank } from '@/modules/Modules/components';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 
 //TODO: Revisit the logic of height (dropRef)
@@ -50,9 +52,12 @@ export const Container = React.memo(
     isViewerSidebarPinned,
     pageSidebarStyle,
     componentType,
+    appType,
   }) => {
+    const { moduleId } = useModuleContext();
     const realCanvasRef = useRef(null);
-    const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
+    const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
+
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
@@ -61,12 +66,14 @@ export const Container = React.memo(
       shallow
     );
     const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-    const currentMode = useStore((state) => state.currentMode, shallow);
+    const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+    const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow);
+
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
-    }, [componentType, index, currentMode]);
+    }, [index, componentType, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -75,7 +82,9 @@ export const Container = React.memo(
         item.canvasId = id;
         item.canvasWidth = getContainerCanvasWidth();
       },
-      drop: async ({ componentType }, monitor) => {
+      drop: async ({ componentType, component }, monitor) => {
+        setShowModuleBorder(false); // Hide the module border when dropping
+        if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
         const didDrop = monitor.didDrop();
         if (didDrop) return;
         if (componentType === 'PDF' && !isPDFSupported()) {
@@ -84,15 +93,41 @@ export const Container = React.memo(
           );
           return;
         }
+
+        // IMPORTANT: This logic needs to be changed when we implement the module versioning
+        const moduleInfo = component?.moduleId
+          ? {
+              moduleId: component.moduleId,
+              versionId: component.versionId,
+              environmentId: component.environmentId,
+              moduleName: component.displayName,
+              moduleContainer: component.moduleContainer,
+            }
+          : undefined;
+
         if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
-          const parentComponent = addNewWidgetToTheEditor(componentType, monitor, currentLayout, realCanvasRef, id);
+          const parentComponent = addNewWidgetToTheEditor(
+            componentType,
+            monitor,
+            currentLayout,
+            realCanvasRef,
+            id,
+            moduleInfo
+          );
           const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
           const newComponents = [parentComponent, ...childComponents];
           await addComponentToCurrentPage(newComponents);
           // setSelectedComponents([parentComponent?.id]);
           setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
         } else {
-          const newComponent = addNewWidgetToTheEditor(componentType, monitor, currentLayout, realCanvasRef, id);
+          const newComponent = addNewWidgetToTheEditor(
+            componentType,
+            monitor,
+            currentLayout,
+            realCanvasRef,
+            id,
+            moduleInfo
+          );
           await addComponentToCurrentPage([newComponent]);
           // setSelectedComponents([newComponent?.id]);
           setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
@@ -103,7 +138,11 @@ export const Container = React.memo(
       }),
     });
 
-    const showEmptyContainer = currentMode === 'edit' && id === 'canvas' && components.length === 0 && !isOverCurrent;
+    const showEmptyContainer =
+      currentMode === 'edit' &&
+      (id === 'canvas' || componentType === 'ModuleContainer') &&
+      components.length === 0 &&
+      !isOverCurrent;
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
@@ -115,7 +154,7 @@ export const Container = React.memo(
     }
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
     useEffect(() => {
-      useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
+      useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
 
@@ -125,7 +164,8 @@ export const Container = React.memo(
         !isPagesSidebarHidden &&
         isViewerSidebarPinned &&
         currentLayout !== 'mobile' &&
-        currentMode !== 'edit'
+        currentMode !== 'edit' &&
+        appType !== 'module'
       ) {
         return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
       }
@@ -147,6 +187,23 @@ export const Container = React.memo(
       [setLastCanvasClickPosition]
     );
 
+    /* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
+        Hence display is set to none on dragover and removed only when the component is added */
+
+    const renderEmptyContainer = () => {
+      if (components && components?.length !== 0) return;
+
+      const styles = {
+        display: showEmptyContainer ? 'block' : 'none',
+        ...(componentType === 'ModuleContainer' ? { height: '100%', width: '100%' } : {}),
+      };
+
+      return (
+        <div style={styles}>
+          {componentType === 'ModuleContainer' ? <ModuleContainerBlank /> : <NoComponentCanvasContainer />}
+        </div>
+      );
+    };
     const sortedComponents = useSortedComponents(components, currentLayout, id);
 
     return (
@@ -182,7 +239,7 @@ export const Container = React.memo(
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas',
-          'show-grid': isOverCurrent && (index === 0 || index === null),
+          'show-grid': isOverCurrent && (index === 0 || index === null) && currentMode === 'edit',
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"
@@ -216,14 +273,7 @@ export const Container = React.memo(
             />
           ))}
         </div>
-
-        {/* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
-        Hence display is set to none on dragover and removed only when the component is added */}
-        {(!components || components?.length === 0) && (
-          <div style={{ display: showEmptyContainer ? 'block' : 'none' }}>
-            <NoComponentCanvasContainer />
-          </div>
-        )}
+        {renderEmptyContainer()}
       </div>
     );
   }

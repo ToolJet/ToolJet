@@ -10,13 +10,14 @@ import useIconList from './useIconList';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { formatInspectorDataMisc, formatInspectorQueryData } from './utils';
 
-const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
+const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }) => {
   const exposedComponentsVariables = useStore((state) => state.getAllExposedValues().components, shallow);
   const exposedQueries = useStore((state) => state.getAllExposedValues().queries || {}, shallow);
   const exposedVariables = useStore((state) => state.getAllExposedValues().variables || {}, shallow);
   const exposedConstants = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
   const exposedPageVariables = useStore((state) => state.getAllExposedValues().page || {}, shallow);
   const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
+  const exposedModuleInputs = useStore((state) => state.getAllExposedValues(moduleId).input || {}, shallow);
   const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
   const formatInspectorComponentData = useStore((state) => state.formatInspectorComponentData, shallow);
   const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
@@ -54,6 +55,11 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
   const sortedGlobalVariables = useMemo(
     () => formatInspectorDataMisc(exposedGlobalVariables, 'globals', searchablePaths.current),
     [exposedGlobalVariables]
+  );
+
+  const sortedModuleInputs = useMemo(
+    () => formatInspectorDataMisc(exposedModuleInputs, 'input', searchablePaths.current),
+    [exposedModuleInputs]
   );
 
   const memoizedJSONData = React.useMemo(() => {
@@ -99,8 +105,17 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
       ],
     };
 
+    if (appType === 'module') {
+      jsontreeData.children.push({
+        id: 'input',
+        name: 'Input',
+        children: sortedModuleInputs,
+        metadata: { path: 'input' },
+      });
+    }
+
     return jsontreeData;
-  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables]);
+  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables, sortedModuleInputs]);
 
   return (
     <div

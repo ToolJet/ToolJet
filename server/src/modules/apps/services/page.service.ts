@@ -304,4 +304,8 @@ export class PageService implements IPageService {
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager);
     }, appVersionId);
   }
+
+  async findModuleContainer(appVersionId: string): Promise<any> {
+    return this.pageHelperService.findModuleContainer(appVersionId);
+  }
 }

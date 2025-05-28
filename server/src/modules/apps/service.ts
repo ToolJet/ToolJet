@@ -29,11 +29,9 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
-import { DataQuery } from '@entities/data_query.entity';
-import { DataSource } from '@entities/data_source.entity';
-import { AppVersion } from '@entities/app_version.entity';
 import { PageService } from './services/page.service';
 import { EventsService } from './services/event.service';
+import { ComponentsService } from './services/component.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
@@ -41,6 +39,7 @@ import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { MODULES } from '@modules/app/constants/modules';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -55,8 +54,9 @@ export class AppsService implements IAppsService {
     protected readonly pageService: PageService,
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
-    protected readonly aiUtilService: AiUtilService
-  ) { }
+    protected readonly aiUtilService: AiUtilService,
+    protected readonly componentsService: ComponentsService
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -101,8 +101,8 @@ export class AppsService implements IAppsService {
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
-          ? await this.versionRepository.findByName(versionName, app.id)
-          : // Handle version retrieval based on env
+        ? await this.versionRepository.findByName(versionName, app.id)
+        : // Handle version retrieval based on env
           await this.versionRepository.findLatestVersionForEnvironment(
             app.id,
             envId,
@@ -203,6 +203,13 @@ export class AppsService implements IAppsService {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type);
       }
 
+      if (type === 'module') {
+        for (const app of apps) {
+          const appVersionId = app?.appVersions[0]?.id;
+          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId);
+        }
+      }
+
       const totalCount = await this.appsUtilService.count(user, searchKey, type);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
@@ -224,40 +231,7 @@ export class AppsService implements IAppsService {
   }
 
   async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const tooljetDbDataQueries = await manager
-        .createQueryBuilder(DataQuery, 'data_queries')
-        .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
-        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
-        .where('app_versions.app_id = :appId', { appId })
-        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
-        .getMany();
-
-      const uniqTableIds = new Set();
-      tooljetDbDataQueries.forEach((dq) => {
-        if (dq.options?.operation === 'join_tables') {
-          const joinOptions = dq.options?.join_table?.joins ?? [];
-          (joinOptions || []).forEach((join) => {
-            const { table, conditions } = join;
-            if (table) uniqTableIds.add(table);
-            conditions?.conditionsList?.forEach((condition) => {
-              const { leftField, rightField } = condition;
-              if (leftField?.table) {
-                uniqTableIds.add(leftField?.table);
-              }
-              if (rightField?.table) {
-                uniqTableIds.add(rightField?.table);
-              }
-            });
-          });
-        }
-        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
-      });
-
-      return [...uniqTableIds].map((table_id) => {
-        return { table_id };
-      });
-    });
+    return await this.appsUtilService.findTooljetDbTables(appId); //moved to util
   }
 
   async getOne(app: App, user: User): Promise<any> {
@@ -332,42 +306,53 @@ export class AppsService implements IAppsService {
   }
 
   async getBySlug(app: App, user: User): Promise<any> {
-    const versionToLoad = app.currentVersionId
-      ? await this.versionRepository.findVersion(app.currentVersionId)
-      : await this.versionRepository.findVersion(app.editingVersion?.id);
+    const prepareResponse = async (app) => {
+      const versionToLoad = app.currentVersionId
+        ? await this.versionRepository.findVersion(app.currentVersionId)
+        : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
-    const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
-    const appTheme = await this.organizationThemeUtilService.getTheme(
-      app.organizationId,
-      versionToLoad?.globalSettings?.theme?.id
-    );
+      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+      const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
+      const appTheme = await this.organizationThemeUtilService.getTheme(
+        app.organizationId,
+        versionToLoad?.globalSettings?.theme?.id
+      );
 
-    if (app?.isPublic && user) {
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceName: app.name,
-      });
-    }
+      if (app?.isPublic && user) {
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: app.id,
+          resourceName: app.name,
+          resourceType: MODULES.APP,
+        });
+      }
 
-    // serialize
-    return {
-      current_version_id: app['currentVersionId'],
-      data_queries: versionToLoad?.dataQueries,
-      definition: versionToLoad?.definition,
-      is_public: app.isPublic,
-      is_maintenance_on: app.isMaintenanceOn,
-      name: app.name,
-      slug: app.slug,
-      events: eventsForVersion,
-      pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
-      homePageId: versionToLoad.homePageId,
-      globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
-      showViewerNavigation: versionToLoad.showViewerNavigation,
-      pageSettings: versionToLoad?.pageSettings,
+      // serialize
+      return {
+        current_version_id: app['currentVersionId'],
+        data_queries: versionToLoad?.dataQueries,
+        definition: versionToLoad?.definition,
+        is_public: app.isPublic,
+        is_maintenance_on: app.isMaintenanceOn,
+        name: app.name,
+        slug: app.slug,
+        events: eventsForVersion,
+        pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
+        homePageId: versionToLoad.homePageId,
+        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        showViewerNavigation: versionToLoad.showViewerNavigation,
+        pageSettings: versionToLoad?.pageSettings,
+      };
     };
+
+    const response = await prepareResponse(app);
+
+    const modules = await this.appsUtilService.fetchModules(app, false, undefined);
+
+    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
+
+    return response;
   }
 
   async release(app: App, user: User, versionReleaseDto: VersionReleaseDto) {

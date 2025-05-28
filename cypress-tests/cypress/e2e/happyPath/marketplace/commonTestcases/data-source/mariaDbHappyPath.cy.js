@@ -19,8 +19,8 @@ const data = {};
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -125,7 +125,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    // cy.get('[data-cy="connection-alert-text"]').should("be.visible")
+    // cy.get(dataSourceSelector.connectionAlertText).should("be.visible")
     deleteDatasource(`cypress-${data.dataSourceName}-mariadb`);
   });
 

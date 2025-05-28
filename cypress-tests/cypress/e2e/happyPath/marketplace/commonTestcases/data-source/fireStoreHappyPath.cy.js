@@ -17,8 +17,8 @@ const data = {};
 
 describe("Data source Firestore", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -94,7 +94,7 @@ describe("Data source Firestore", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
       firestoreText.errorGcpKeyCouldNotBeParsed
     );

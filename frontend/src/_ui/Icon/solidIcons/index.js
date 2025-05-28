@@ -231,11 +231,13 @@ import CalendarSmall from './CalendarSmall.jsx';
 import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
+import EmptyStateModules from './EmptyStateModules.jsx';
 import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
 import FileCode from './FileCode.jsx';
 import Corners from './Corners.jsx';
+import Moon from './Moon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -711,8 +713,12 @@ const Icon = (props) => {
       return <StudentIcon {...props} />;
     case 'ai-crown':
       return <AICrown {...props} />;
+    case 'empty-state-modules':
+      return <EmptyStateModules {...props} />;
     case 'play01':
       return <Play01 {...props} />;
+    case 'moon':
+      return <Moon {...props} />;
     default:
       return <Apps {...props} />;
   }

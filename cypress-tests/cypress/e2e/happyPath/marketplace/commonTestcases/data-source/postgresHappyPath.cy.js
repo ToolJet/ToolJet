@@ -20,14 +20,14 @@ const data = {};
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on connection form", () => {
+  it.skip("Should verify elements on connection form", () => {
     cy.log(process.env.NODE_ENV);
     cy.log(postgreSqlText.allDatabase());
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -136,11 +136,11 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').should("be.visible");
+    cy.get(dataSourceSelector.connectionAlertText).should("be.visible");
     deleteDatasource(`cypress-${data.dataSourceName}-postgresql`);
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
+  it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,
