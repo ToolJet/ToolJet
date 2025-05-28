@@ -50,6 +50,8 @@ export class GitSyncModule {
       providers: [
         OrganizationGitSyncRepository,
         VersionRepository,
+        BaseGitUtilService,
+        BaseGitSyncService,
         GitSyncService,
         SourceControlProviderService,
         SSHGitSyncService,
@@ -58,8 +60,6 @@ export class GitSyncModule {
         HTTPSGitSyncUtilityService,
         SSHGitSyncUtilityService,
         GitLabGitSyncUtilityService,
-        BaseGitUtilService,
-        BaseGitSyncService,
       ],
       exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService],
     };
