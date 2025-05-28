@@ -31,7 +31,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     @User() user: UserEntity,
     @Body() createGroupPermissionDto: CreateGroupPermissionDto
   ): Promise<GroupPermissions> {
-    return await this.groupPermissionsService.create(user.organizationId, createGroupPermissionDto.name);
+    return await this.groupPermissionsService.create(user, createGroupPermissionDto.name);
   }
 
   @InitFeature(FEATURE_KEY.GET_ONE)
@@ -62,14 +62,14 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
       2. EE/Cloud - Basic Plan - No'one can update custom and default group
             - Paid Plan - Can update only custom and default -builder custom group
     */
-    return await this.groupPermissionsService.updateGroup(id, user.organizationId, updateGroupDto);
+    return await this.groupPermissionsService.updateGroup(id, user, updateGroupDto);
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
   @UseGuards(GroupExistenceGuard)
   @Delete(':id')
   async delete(@User() user: UserEntity, @Param('id') id: string) {
-    return await this.groupPermissionsService.deleteGroup(id, user.organizationId);
+    return await this.groupPermissionsService.deleteGroup(id, user);
   }
 
   @InitFeature(FEATURE_KEY.DUPLICATE)
@@ -80,7 +80,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     @Param('id') groupId: string,
     @Body() duplicateGroupDto: DuplicateGroupDtoBase
   ) {
-    return await this.groupPermissionsService.duplicateGroup(groupId, user.organizationId, duplicateGroupDto);
+    return await this.groupPermissionsService.duplicateGroup(groupId, user, duplicateGroupDto);
   }
 
   @InitFeature(FEATURE_KEY.ADD_GROUP_USER)
@@ -91,9 +91,8 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     @Param('id') groupId: string,
     @Body() addGroupUserDto: AddGroupUserDto
   ) {
-    const { organizationId } = user;
     addGroupUserDto.groupId = groupId;
-    await this.groupPermissionsService.addGroupUsers(addGroupUserDto, organizationId);
+    await this.groupPermissionsService.addGroupUsers(addGroupUserDto, user);
     return;
   }
 
@@ -112,7 +111,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @InitFeature(FEATURE_KEY.DELETE_GROUP_USER)
   @Delete('users/:id')
   async deleteGroupUser(@User() user: UserEntity, @Param('id') id: string) {
-    await this.groupPermissionsService.deleteGroupUser(id, user.organizationId);
+    await this.groupPermissionsService.deleteGroupUser(id, user);
   }
 
   @InitFeature(FEATURE_KEY.GET_ADDABLE_USERS)

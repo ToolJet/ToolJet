@@ -53,18 +53,14 @@ export interface IGroupPermissionsDuplicateService {
 }
 
 export interface IGroupPermissionsService {
-  create(organizationId: string, name: string): Promise<GroupPermissions>;
+  create(user: User, name: string): Promise<GroupPermissions>;
   getGroup(organizationId: string, id: string): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }>;
   getAllGroup(organizationId: string): Promise<GetUsersResponse>;
-  updateGroup(id: string, organizationId: string, updateGroupPermissionDto: UpdateGroupPermissionDto): Promise<void>;
-  deleteGroup(id: string, organizationId: string): Promise<void>;
-  duplicateGroup(
-    groupId: string,
-    organizationId: string,
-    duplicateGroupDto: DuplicateGroupDto
-  ): Promise<GroupPermissions>;
-  addGroupUsers(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager): Promise<void>;
+  updateGroup(id: string, user: User, updateGroupPermissionDto: UpdateGroupPermissionDto): Promise<void>;
+  deleteGroup(id: string, user: User): Promise<void>;
+  duplicateGroup(groupId: string, user: User, duplicateGroupDto: DuplicateGroupDto): Promise<GroupPermissions>;
+  addGroupUsers(addGroupUserDto: AddGroupUserDto, user: User, manager?: EntityManager): Promise<void>;
   getAllGroupUsers(group: GroupPermissions, organizationId: string, searchInput?: string): Promise<GroupUsers[]>;
-  deleteGroupUser(id: string, organizationId: string): Promise<void>;
+  deleteGroupUser(id: string, user: User): Promise<void>;
   getAddableUser(groupId: string, organizationId: string, searchInput?: string): Promise<User[]>;
 }

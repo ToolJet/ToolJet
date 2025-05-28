@@ -17,6 +17,9 @@ import { DATA_BASE_CONSTRAINTS, ERROR_HANDLER } from './constants/error';
 import { RolesRepository } from '@modules/roles/repository';
 import { IGroupPermissionsService } from './interfaces/IService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { User } from '@entities/user.entity';
 
 @Injectable()
 export class GroupPermissionsService implements IGroupPermissionsService {
@@ -30,10 +33,27 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService
   ) {}
 
-  create(organizationId: string, name: string): Promise<GroupPermissions> {
+  async create(user: User, name: string): Promise<GroupPermissions> {
     const groupCreateObj: CreateDefaultGroupObject = { name };
     this.groupPermissionsUtilService.validateCreateGroupOperation(groupCreateObj);
-    return this.groupPermissionsRepository.createGroup(organizationId, groupCreateObj);
+    const groupPermissionResponse = await this.groupPermissionsRepository.createGroup(
+      user.organizationId,
+      groupCreateObj
+    );
+    //GROUP_PERMISSION_CREATE audit
+    const auditLogsData = {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: groupPermissionResponse.id,
+      resourceName: name,
+      resourceData: {
+        group_details: {
+          name: name,
+        },
+      },
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    return groupPermissionResponse;
   }
 
   getGroup(organizationId: string, id: string): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
@@ -44,10 +64,10 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     return this.groupPermissionsUtilService.getAllGroupByOrganization(organizationId);
   }
 
-  async updateGroup(id: string, organizationId: string, updateGroupPermissionDto: UpdateGroupPermissionDto) {
+  async updateGroup(id: string, user: User, updateGroupPermissionDto: UpdateGroupPermissionDto) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationId = user.organizationId;
       const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
-
       // License validation - Update not allowed on basic plan
       const isLicenseValid = await this.licenseUtilService.isValidLicense();
       if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
@@ -105,29 +125,47 @@ export class GroupPermissionsService implements IGroupPermissionsService {
 
       // Validating license
       await this.licenseUserService.validateUser(manager);
+      //GROUP_PERMISSION_UPDATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: group.id,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     });
   }
 
-  async deleteGroup(id: string, organizationId: string): Promise<void> {
+  async deleteGroup(id: string, user: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationId = user.organizationId;
       const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
 
       if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT) {
         throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_UPDATE_NOT_ALLOWED);
       }
+      //GROUP_PERMISSION_DELETE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: group.id,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       await manager.delete(GroupPermissions, id);
     });
   }
 
   async duplicateGroup(
     groupId: string,
-    organizationId: string,
+    user: User,
     duplicateGroupDto: DuplicateGroupDtoBase
   ): Promise<GroupPermissions> {
     const { addApps, addPermission, addUsers } = duplicateGroupDto;
+    const organizationId = user.organizationId;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const group = await this.groupPermissionsRepository.getGroup({ id: groupId, organizationId }, manager);
-
+      const groupCopy = JSON.parse(JSON.stringify(group));
       // Create new Group
       const newGroup = await this.groupPermissionsDuplicateService.duplicateGroup(group, addPermission, manager);
 
@@ -175,12 +213,22 @@ export class GroupPermissionsService implements IGroupPermissionsService {
       }
 
       await this.licenseUserService.validateUser(manager);
+
+      //GROUP_PERMISSION_DUPLICATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: groupCopy.id,
+        resourceName: groupCopy.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return newGroup;
     });
   }
 
-  async addGroupUsers(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager) {
+  async addGroupUsers(addGroupUserDto: AddGroupUserDto, user: User, manager?: EntityManager) {
     const { userIds } = addGroupUserDto;
+    const organizationId = user.organizationId;
 
     if (!userIds && userIds.length === 0) {
       return;
@@ -189,6 +237,18 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager);
       await this.licenseUserService.validateUser(manager);
+      const group = await this.groupPermissionsRepository.getGroup(
+        { id: addGroupUserDto.groupId, organizationId: organizationId },
+        manager
+      );
+      //USER_ADD_TO_GROUP audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: group.id,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     }, manager);
   }
 
@@ -196,10 +256,22 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     return await this.groupPermissionsRepository.getUsersInGroup(group.id, organizationId, searchInput);
   }
 
-  async deleteGroupUser(id: string, organizationId: string): Promise<void> {
-    const groupUser = await this.groupPermissionsRepository.getGroupUser(id);
-    this.groupPermissionsUtilService.validateDeleteGroupUserOperation(groupUser?.group, organizationId);
-    await this.groupPermissionsRepository.removeUserFromGroup(id);
+  async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
+    const organizationId = user.organizationId;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const groupUser = await this.groupPermissionsRepository.getGroupUser(id, manager);
+      this.groupPermissionsUtilService.validateDeleteGroupUserOperation(groupUser?.group, organizationId);
+      console.log('group user group', groupUser?.group);
+      await this.groupPermissionsRepository.removeUserFromGroup(id);
+      //USER_REMOVE_FROM_GROUP audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: groupUser?.group.id,
+        resourceName: groupUser?.group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    }, manager);
   }
 
   async getAddableUser(groupId: string, organizationId: string, searchInput?: string) {
