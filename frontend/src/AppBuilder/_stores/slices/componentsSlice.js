@@ -874,7 +874,7 @@ export const createComponentsSlice = (set, get) => ({
         );
 
         // Check if parent is a Form and add the component to form fields if needed
-        checkIfParentIsFormAndAddField(newComponent, parentId, moduleId);
+        checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
       });
       const selectedComponents = findHighestLevelofSelection(newComponents);
       get().setSelectedComponents(selectedComponents.map((component) => component.id));
@@ -1051,6 +1051,11 @@ export const createComponentsSlice = (set, get) => ({
     } = get();
     let hasParentChanged = false;
     let oldParentId;
+
+    const firstComponentId = Object.keys(componentLayouts)[0];
+    const existingParentDefinition = getComponentDefinition(firstComponentId, moduleId);
+    const currentParentId = existingParentDefinition?.component?.parent;
+
     set(
       withUndoRedo((state) => {
         const page = state.modules[moduleId].pages[state.currentPageIndex];
@@ -1095,8 +1100,6 @@ export const createComponentsSlice = (set, get) => ({
             }
             // ============ Parent update logic ends ============
           });
-
-          checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
         }
       }, skipUndoRedo),
       false,
@@ -1162,6 +1165,26 @@ export const createComponentsSlice = (set, get) => ({
       saveComponentChanges(diff, 'components/layout', 'update');
       get().multiplayer.broadcastUpdates(diff, 'components/layout', 'update');
     }
+    checkParentAndUpdateFormFields(componentLayouts, newParentId, currentParentId, moduleId);
+  },
+
+  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+    const { currentPageIndex, currentMode, saveComponentChanges } = get();
+    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
+    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
+
+    const diff = {
+      [componentId]: {
+        component: {
+          ...oldComponent,
+          definition: filteredDefinition,
+        },
+      },
+    };
+
+    if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+
+    get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
   },
 
   setComponentProperty: (
@@ -1176,7 +1199,6 @@ export const createComponentsSlice = (set, get) => ({
   ) => {
     const {
       currentPageIndex,
-      saveComponentChanges,
       withUndoRedo,
       updateResolvedValues,
       generateDependencyGraphForRefs,
@@ -1186,6 +1208,7 @@ export const createComponentsSlice = (set, get) => ({
       checkValueAndResolve,
       getResolvedComponent,
       setResolvedComponent,
+      saveComponentPropertyChanges,
     } = get();
     const { component } = getComponentDefinition(componentId, moduleId);
     const oldValue = component.definition[paramType][property];
@@ -1218,23 +1241,8 @@ export const createComponentsSlice = (set, get) => ({
         'setComponentProperty'
       );
 
-      const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-      const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-      const diff = {
-        [componentId]: {
-          component: {
-            ...oldComponent,
-            definition: filteredDefinition,
-          },
-        },
-      };
-
       if (saveAfterAction) {
-        const currentMode = get().currentMode;
-        if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
-
-        get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+        saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
       }
       return;
     }
@@ -1270,23 +1278,8 @@ export const createComponentsSlice = (set, get) => ({
       );
     }
 
-    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-    const diff = {
-      [componentId]: {
-        component: {
-          ...oldComponent,
-          definition: filteredDefinition,
-        },
-      },
-    };
-
     if (saveAfterAction) {
-      const currentMode = get().currentMode;
-      if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
-
-      get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+      saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
     }
 
     if (attr !== 'value' || skipResolve) return;

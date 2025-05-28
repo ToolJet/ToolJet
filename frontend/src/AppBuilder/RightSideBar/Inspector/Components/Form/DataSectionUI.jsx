@@ -93,7 +93,6 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   const generateFormFrom = component.component.definition.properties['generateFormFrom'] || null;
   // const generatedFields = component.component.definition.properties['fields']?.value || [];
   const generatedFields = getFormFields(component.id) || [];
-  console.log('here--- generatedFields--- ', generatedFields);
 
   const isFormGenerated = generatedFields.length > 0;
 
@@ -119,24 +118,30 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
   const [fields, setFields] = useState(isFormGenerated ? generatedFields : formattedJson || []);
 
   // Enhance fields with component definition data when needed for UI rendering
-  const enhancedFields = fields.map((field) => {
-    if (field.componentId) {
-      const componentData = getFieldDataFromComponent(field.componentId, getComponentDefinition);
+  const enhancedFields = fields
+    .map((field) => {
+      if (field.componentId) {
+        const componentData = getFieldDataFromComponent(field.componentId, getComponentDefinition);
 
-      return {
-        ...field,
-        // Merge component definition data for UI rendering
-        label: componentData?.label || field.label || '',
-        name: componentData?.name || field.name || '',
-        value: componentData?.value || field.value || '',
-        mandatory: componentData?.mandatory || field.mandatory || false,
-        selected: componentData?.selected || field.selected || false,
-        placeholder: componentData?.placeholder || field.placeholder || '',
-        componentType: componentData?.componentType || field.componentType || 'TextInput',
-      };
-    }
-    return field;
-  });
+        if (!componentData) {
+          return null; // Return null if no component data is found
+        }
+
+        return {
+          ...field,
+          // Merge component definition data for UI rendering
+          label: componentData?.label || field.label || '',
+          name: componentData?.name || field.name || '',
+          value: componentData?.value || field.value || '',
+          mandatory: componentData?.mandatory || field.mandatory || false,
+          selected: componentData?.selected || field.selected || false,
+          placeholder: componentData?.placeholder || field.placeholder || '',
+          componentType: componentData?.componentType || field.componentType || 'TextInput',
+        };
+      }
+      return field;
+    })
+    .filter((field) => field !== null); // Filter out any null fields
 
   useEffect(() => {
     if (isFormGenerated) {

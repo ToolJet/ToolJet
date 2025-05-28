@@ -12,58 +12,26 @@ export const createFormComponentSlice = (set, get) => ({
     if (!componentDefinition) return [];
     return componentDefinition?.component?.definition?.properties?.fields?.value || [];
   },
-  setFormFields: async (componentId, fields, moduleId = 'canvas') => {
-    const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentChanges } = get();
+  setFormFields: (componentId, fields, moduleId = 'canvas') => {
+    const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
     const { component } = getComponentDefinition(componentId, moduleId);
     if (!component) return;
 
     set(
-      (state) => {
-        state.modules[moduleId].pages[currentPageIndex].components[
-          componentId
-        ].component.definition.properties.fields.value = fields;
-      },
+      withUndoRedo((state) => {
+        const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
+        lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], fields);
+      }),
       false,
       'setFormFields'
     );
 
-    // set(
-    //   withUndoRedo((state) => {
-    //     state.modules[moduleId].pages[currentPageIndex].components[
-    //       componentId
-    //     ].component.definition.properties.fields.value = fields;
-    //     // const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
-    //     // lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], fields);
-    //   }),
-    //   false,
-    //   'setFormFields'
-    // );
-
-    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-    const diff = {
-      [componentId]: {
-        component: {
-          ...oldComponent,
-          definition: filteredDefinition,
-        },
-      },
-    };
-
-    const currentMode = get().currentMode;
-    if (currentMode !== 'view') await saveComponentChanges(diff, 'components', 'update');
-
-    get().multiplayer.broadcastUpdates(
-      { componentId, property: 'fields', value: fields, paramType: 'properties', attr: 'value' },
-      'components',
-      'update'
-    );
+    saveComponentPropertyChanges(componentId, 'fields', fields, 'properties', 'value', moduleId);
   },
 
   // Check if the parent component is a Form and delete the form fields if it has the componentId
   checkIfParentIsFormAndDeleteField: (componentId, moduleId = 'canvas', skipSettingProperty = false) => {
-    const { getParentComponentType, getComponentDefinition, setFormFields } = get();
+    const { getParentComponentType, getComponentDefinition, setFormFields, getFormFields } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     const parentId = componentDefinition?.component?.parent;
     if (!parentId) return;
@@ -72,16 +40,22 @@ export const createFormComponentSlice = (set, get) => ({
       if (skipSettingProperty) {
         return componentId;
       }
-      const componentDefinition = getComponentDefinition(parentId, moduleId);
-      const fields = componentDefinition?.component?.definition?.properties?.fields?.value || [];
+      const fields = getFormFields(parentId, moduleId);
+
       const updatedFields = fields.filter((field) => field.componentId !== componentId);
 
       setFormFields(parentId, updatedFields, moduleId);
     }
   },
   // Check if the parent component is a Form and add the form fields
-  checkIfParentIsFormAndAddField: (component, parentId, moduleId = 'canvas', skipSettingProperty = false) => {
-    const { getParentComponentType, getComponentDefinition, setFormFields } = get();
+  checkIfParentIsFormAndAddField: (
+    componentId,
+    component,
+    parentId,
+    moduleId = 'canvas',
+    skipSettingProperty = false
+  ) => {
+    const { getParentComponentType, getFormFields, setFormFields } = get();
     if (!parentId) return;
     const componentType = component?.component?.component;
 
@@ -103,7 +77,7 @@ export const createFormComponentSlice = (set, get) => ({
 
     if (getParentComponentType(parentId, moduleId) === 'Form') {
       const newField = {
-        componentId: component.id,
+        componentId,
         isCustomField: true,
         dataType: undefined,
         key: undefined,
@@ -112,27 +86,24 @@ export const createFormComponentSlice = (set, get) => ({
       if (skipSettingProperty) {
         return newField;
       }
-      const componentDefinition = getComponentDefinition(parentId, moduleId);
-      const fields = componentDefinition?.component?.definition?.properties?.fields?.value || [];
+      const fields = getFormFields(parentId, moduleId);
       setFormFields(parentId, [...fields, newField], moduleId);
     }
   },
 
   // Logic is written considering that the component from different parent cannot be moved together
-  checkParentAndUpdateFormFields: (componentLayouts, newParentId, moduleId = 'canvas') => {
+  checkParentAndUpdateFormFields: (componentLayouts, newParentId, currentParentId, moduleId = 'canvas') => {
     const {
       getParentComponentType,
       getComponentDefinition,
       checkIfParentIsFormAndAddField,
       checkIfParentIsFormAndDeleteField,
       setFormFields,
+      getFormFields,
     } = get();
 
     const newParentType = getParentComponentType(newParentId, moduleId);
     const currentParentType = getParentComponentType(currentParentId, moduleId);
-    const firstComponentId = Object.keys(componentLayouts)[0];
-    const existingParentDefinition = getComponentDefinition(firstComponentId, moduleId);
-    const currentParentId = existingParentDefinition?.component?.parent;
 
     /* There are three scenarios:
       1. If both newParentId and currentParentId are same, then return
@@ -151,7 +122,7 @@ export const createFormComponentSlice = (set, get) => ({
     Object.keys(componentLayouts).forEach((componentId) => {
       const componentDefinition = getComponentDefinition(componentId, moduleId);
       // Case 2: If newParentId is a Form, then add the fields to the form
-      const newField = checkIfParentIsFormAndAddField(componentDefinition, newParentId, moduleId, true);
+      const newField = checkIfParentIsFormAndAddField(componentId, componentDefinition, newParentId, moduleId, true);
       if (newField) {
         addedFields.push(newField);
       }
@@ -161,7 +132,7 @@ export const createFormComponentSlice = (set, get) => ({
         removedComponentIds.push(deletedField);
       }
     });
-    const fields = existingParentDefinition?.component?.definition?.properties?.fields?.value || [];
+    const fields = getFormFields(currentParentId, moduleId);
     const updatedFields = fields.filter((field) => !removedComponentIds.includes(field.componentId));
     const newParentComponentDefinition = getComponentDefinition(newParentId, moduleId);
     const newParentFields = newParentComponentDefinition?.component?.definition?.properties?.fields?.value || [];
