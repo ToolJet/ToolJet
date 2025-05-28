@@ -50,3 +50,4 @@ export const NewRevampedComponents: NewRevampedComponent[] = [
   'Checkbox',
   'Button',
 ];
+

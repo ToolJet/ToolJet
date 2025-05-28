@@ -36,21 +36,17 @@ export class AppGitPullDto {
   @IsString()
   gitAppId: string;
 
-  @IsOptional()
   @IsString()
-  gitVersionId?: string;
+  gitVersionId: string;
 
-  @IsOptional()
   @IsString()
-  lastCommitMessage?: string;
+  lastCommitMessage: string;
 
-  @IsOptional()
   @IsString()
-  lastCommitUser?: string;
+  lastCommitUser: string;
 
-  @IsOptional()
   @IsString()
-  lastPushDate?: string;
+  lastPushDate: string;
 
   @IsString()
   organizationGitId: string;
@@ -58,7 +54,6 @@ export class AppGitPullDto {
   @IsString()
   gitAppName: string;
 
-  @IsOptional()
   @IsString()
   gitVersionName?: string;
 }
@@ -67,23 +62,19 @@ export class AppGitPullUpdateDto {
   gitVersionId: string;
 
   @IsString()
-  @IsOptional()
-  lastCommitMessage?: string;
+  lastCommitMessage: string;
 
   @IsString()
-  @IsOptional()
-  lastCommitUser?: string;
+  lastCommitUser: string;
 
   @IsString()
-  @IsOptional()
-  lastPushDate?: string;
+  lastPushDate: string;
 
   @IsString()
   gitAppName: string;
 
   @IsString()
-  @IsOptional()
-  gitVersionName?: string;
+  gitVersionName: string;
 }
 export class AppGitUpdateDto {
   @IsBoolean()

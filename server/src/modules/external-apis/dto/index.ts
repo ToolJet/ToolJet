@@ -174,72 +174,19 @@ export class AppGitPullDto {
   @IsString()
   gitAppId: string;
 
-  @IsOptional()
-  @IsString()
-  gitVersionId?: string;
-
-  @IsOptional()
-  @IsString()
-  lastCommitMessage?: string;
-
-  @IsOptional()
-  @IsString()
-  lastCommitUser?: string;
-
-  @IsOptional()
-  @IsString()
-  lastPushDate?: string;
-
-  @IsString()
-  organizationGitId: string;
-
-  @IsString()
-  organizationId: string;
-
-  @IsString()
-  gitAppName: string;
-
-  @IsOptional()
-  @IsString()
-  gitVersionName?: string;
-}
-
-export class AppGitPullUpdateDto {
   @IsString()
   gitVersionId: string;
 
   @IsString()
-  @IsOptional()
-  lastCommitMessage?: string;
-
-  @IsString()
-  @IsOptional()
-  lastCommitUser?: string;
-
-  @IsString()
-  @IsOptional()
-  lastPushDate?: string;
-
-  @IsString()
-  gitAppName: string;
-
-  @IsString()
-  @IsOptional()
-  gitVersionName?: string;
+  organizationId: string;
 }
 
 export class AppGitPushDto {
   @IsString()
-  gitAppName: string;
-
-  @IsString()
   versionId: string;
 
   @IsString()
-  lastCommitMessage: string;
-
-  @IsString()
-  gitVersionName: string;
+  commitMessage: string;
 }
 export class VersionDto {
   id: string;
