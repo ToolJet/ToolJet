@@ -14,7 +14,7 @@ ToolJet offers two ways to connect with Slack:
 ### Custom Slack App
 
 1. Add a new **Slack** data source in ToolJet.
-2. Select **Custom slack app** from the dropdown and copy the Redirect URL displayed at the bottom.
+2. Select **Custom slack app** from the dropdown and copy the Redirect URL displayed at the bottom. <br/>
     <img className="screenshot-full img-m" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/custom-slack-app.png" alt="Slack datasource: ToolJet"/>
 3. Visit the [Slack API](https://api.slack.com/apps) dashboard and click on **Create New App** button. <br/>
     <img className="screenshot-full img-l" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/slack-app.png" alt="Slack datasource: ToolJet"/>
@@ -67,8 +67,8 @@ This operation will return the list and data of all the members in your slack wo
 This operation will send/post the message to a specified channel or posting to direct messages (also known as DMs or IMs) in your slack workspace.
 
 #### Required Parameters
-- **Channel**
-- **Message**
+- Channel
+- Message
 
 <img className="screenshot-full" src="/img/datasource-reference/slack/sendmessage-v3.png" alt="Slack datasource: ToolJet"/>
 
@@ -77,10 +77,10 @@ This operation will send/post the message to a specified channel or posting to d
 This operation will get the messages from a specified channel.
 
 #### Required Parameters
-- **Channel**
+- Channel
 
 #### Optional Parameters
-- **Limit**
-- **Next Cursor**
+- Limit
+- Next Cursor
 
 <img className="screenshot-full" src="/img/datasource-reference/slack/listmessages-v3.png" alt="Slack datasource: ToolJet"/>
