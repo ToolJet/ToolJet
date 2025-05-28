@@ -797,6 +797,7 @@ export const createComponentsSlice = (set, get) => ({
       canAddToParent,
       getComponentNameFromId,
       deleteComponentNameIdMapping,
+      checkIfParentIsFormAndAddField,
     } = get();
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
     return new Promise((resolve) => {
@@ -871,6 +872,9 @@ export const createComponentsSlice = (set, get) => ({
           false,
           'addComponentToCurrentPage'
         );
+
+        // Check if parent is a Form and add the component to form fields if needed
+        checkIfParentIsFormAndAddField(newComponent, parentId, moduleId);
       });
       const selectedComponents = findHighestLevelofSelection(newComponents);
       get().setSelectedComponents(selectedComponents.map((component) => component.id));
@@ -892,8 +896,7 @@ export const createComponentsSlice = (set, get) => ({
   deleteComponents: (
     selected,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true, isCut = false } = {},
-    skipFormUpdate = true
+    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -1044,6 +1047,7 @@ export const createComponentsSlice = (set, get) => ({
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
+      checkParentAndUpdateFormFields,
     } = get();
     let hasParentChanged = false;
     let oldParentId;
@@ -1091,6 +1095,8 @@ export const createComponentsSlice = (set, get) => ({
             }
             // ============ Parent update logic ends ============
           });
+
+          checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
         }
       }, skipUndoRedo),
       false,
@@ -1922,224 +1928,6 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
-  },
-  // Check if the parent component is a Form and delete the form fields if it has the componentId
-  checkIfParentIsFormAndDeleteField: (componentId, moduleId = 'canvas') => {
-    const { getParentComponentType, getComponentDefinition, setComponentProperty } = get();
-    const componentDefinition = getComponentDefinition(componentId, moduleId);
-    const parentId = componentDefinition?.component?.parent;
-    if (!parentId) return;
-
-    if (getParentComponentType(parentId, moduleId) === 'Form') {
-      const componentDefinition = getComponentDefinition(parentId, moduleId);
-      const fields = componentDefinition?.component?.definition?.properties?.fields?.value || [];
-      const updatedFields = fields.filter((field) => field.componentId !== componentId);
-      setComponentProperty(parentId, 'fields', updatedFields, 'properties', 'value', false, moduleId);
-    }
-  },
-  setComponentPropertyByComponentIds: (
-    componentDiffs,
-    moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true } = {}
-  ) => {
-    const {
-      addToDependencyGraph,
-      setResolvedComponent,
-      currentMode,
-      saveComponentChanges,
-      withUndoRedo,
-      currentPageIndex,
-      getResolvedComponent,
-      getComponentDefinition,
-    } = get();
-
-    let diff = {};
-
-    // Process resolved values for each component diff before state update
-    Object.entries(componentDiffs).forEach(([componentId, componentDiff]) => {
-      // Get existing component definition for backend saving
-      const currentComponent = getComponentDefinition(componentId);
-      if (!currentComponent) return;
-
-      // Get existing resolved values to merge with new ones
-      const existingResolvedValues = getResolvedComponent(componentId) || {};
-
-      // Process only the diff through dependency graph
-      const resolvedDiffValues = addToDependencyGraph(moduleId, componentId, componentDiff.component);
-
-      // Merge the resolved diff values with existing resolved values
-      const mergedResolvedValues = deepClone(existingResolvedValues);
-
-      // Merge at each property type level (properties, styles, validation, etc.)
-      ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((propType) => {
-        if (resolvedDiffValues[propType]) {
-          mergedResolvedValues[propType] = {
-            ...(mergedResolvedValues[propType] || {}),
-            ...resolvedDiffValues[propType],
-          };
-        }
-      });
-
-      // Update the resolved component in store with merged values
-      setResolvedComponent(componentId, mergedResolvedValues, moduleId);
-
-      // Prepare diff for backend saving by merging with current component
-      const { events, exposedVariables, ...filteredDefinition } = currentComponent.component.definition || {};
-
-      // Prepare diff for backend saving
-      diff[componentId] = {
-        component: {
-          ...currentComponent.component,
-          ...componentDiff.component,
-          definition: {
-            ...filteredDefinition,
-            // If the componentDiff has definition, merge it with the filtered definition
-            ...(componentDiff.component?.definition || {}),
-          },
-        },
-      };
-    });
-
-    // Update all component state changes in a single batch with one undo/redo operation
-    set(
-      withUndoRedo((state) => {
-        // Process all components in one batch
-        Object.entries(componentDiffs).forEach(([componentId, componentDiff]) => {
-          if (state.modules[moduleId]?.pages?.[currentPageIndex]?.components?.[componentId]) {
-            // Merge component changes into state
-            const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId];
-
-            // Handle component definition updates
-            if (componentDiff.component?.definition) {
-              for (const [defType, defValues] of Object.entries(componentDiff.component.definition)) {
-                if (!pageComponent.component.definition[defType]) {
-                  pageComponent.component.definition[defType] = {};
-                }
-                // Correctly merge the new values from diff into the existing definition
-                pageComponent.component.definition[defType] = {
-                  ...pageComponent.component.definition[defType],
-                  ...defValues,
-                };
-              }
-            }
-          }
-        });
-      }),
-      skipUndoRedo,
-      'setComponentPropertiesByDiff'
-    );
-
-    // Save changes to backend if needed
-    if (currentMode !== 'view' && Object.keys(diff).length > 0 && saveAfterAction) {
-      saveComponentChanges(diff, 'components', 'update');
-    }
-
-    // Broadcast updates for multiplayer
-    get().multiplayer.broadcastUpdates({ componentDiffs }, 'components', 'update');
-    return diff;
-  },
-
-  /**
-   * Performs batch operations on components (create, update, delete)
-   * @param {Object} operations - Object containing the operations to perform
-   * @param {Object} operations.added - Components to create { [componentId]: componentDefinition }
-   * @param {Object} operations.updated - Components to update { [componentId]: componentDiff }
-   * @param {Array} operations.deleted - Array of component IDs to delete
-   * @param {string} moduleId - Module ID (default: 'canvas')
-   * @param {Object} options - Additional options { skipUndoRedo, saveAfterAction }
-   * @returns {Promise} - Promise that resolves when all operations are complete
-   */
-  performBatchComponentOperations: (operations = {}, moduleId = 'canvas', options = {}) => {
-    const {
-      currentPageId,
-      addComponentToCurrentPage,
-      setComponentPropertyByComponentIds,
-      deleteComponents,
-      saveComponentChanges,
-    } = get();
-
-    const { skipUndoRedo = false, saveAfterAction = true } = options;
-    let upatedDiff = {};
-
-    // Process create operations
-    const handleCreate = async () => {
-      if (!operations.added || Object.keys(operations.added).length === 0) return null;
-
-      // Convert create operations format to match addComponentToCurrentPage expectations
-      const componentsToCreate = Object.entries(operations.added).map(([id, component]) => ({
-        id,
-        name: component.name,
-        component: component.component,
-        layouts: component.layouts,
-      }));
-
-      // Use existing addComponentToCurrentPage but with saveAfterAction=false
-      // We'll save all changes together at the end
-      return addComponentToCurrentPage(componentsToCreate, moduleId, {
-        skipUndoRedo: false, // We'll handle undo/redo for the entire batch
-        saveAfterAction: false,
-      });
-    };
-
-    // Process update operations
-    const handleUpdate = () => {
-      if (!operations.updated || Object.keys(operations.updated).length === 0) return;
-
-      // Use existing setComponentPropertyByComponentIds function
-      upatedDiff = setComponentPropertyByComponentIds(operations.updated, moduleId, {
-        skipUndoRedo: false, // We'll handle undo/redo for the entire batch
-        saveAfterAction: false, // We'll save all changes together at the end
-      });
-    };
-
-    // Process delete operations
-    const handleDelete = () => {
-      if (!operations.deleted || operations.deleted.length === 0) return;
-
-      // Use existing deleteComponents function but with saveAfterAction=false
-      deleteComponents(
-        operations.deleted,
-        moduleId,
-        {
-          skipUndoRedo: false, // We'll handle undo/redo for the entire batch
-          saveAfterAction: false,
-          isCut: false,
-        },
-        true
-      );
-    };
-
-    try {
-      // Process the operations in the correct order: delete -> update -> create -> replace
-      // This avoids potential conflicts
-      handleDelete();
-      handleUpdate();
-      handleCreate();
-
-      // Save all changes together if requested
-      if (saveAfterAction) {
-        // Construct a combined diff for backend saving
-        let combinedDiff = {
-          create: {
-            diff: operations.added || {},
-            pageId: currentPageId,
-          },
-          update: {
-            diff: upatedDiff || {},
-          },
-          delete: {
-            diff: operations.deleted || [],
-          },
-        };
-
-        saveComponentChanges(combinedDiff, 'components/batch', 'update');
-
-        // Broadcast updates for multiplayer
-        get().multiplayer.broadcastUpdates({ operations }, 'components', 'update');
-      }
-    } catch (error) {
-      console.error('Error performing batch component operations:', error);
-    }
+    // setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
   },
 });

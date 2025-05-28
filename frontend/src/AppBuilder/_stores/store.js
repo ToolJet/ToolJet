@@ -28,6 +28,7 @@ import { createDebuggerSlice } from './slices/debuggerSlice';
 import { createGitSyncSlice } from './slices/gitSyncSlice';
 import { createAiSlice } from './slices/aiSlice';
 import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
+import { createFormComponentSlice } from './slices/formComponentSlice';
 
 export default create(
   zustandDevTools(
@@ -60,6 +61,7 @@ export default create(
       ...createGitSyncSlice(...state),
       ...createAiSlice(...state),
       ...createWhiteLabellingSlice(...state),
+      ...createFormComponentSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

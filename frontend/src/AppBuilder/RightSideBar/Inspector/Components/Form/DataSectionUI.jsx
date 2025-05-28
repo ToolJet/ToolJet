@@ -11,7 +11,6 @@ import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { parseData, findLastElementPosition, createFormFieldComponents, updateFormFieldComponent } from './utils';
-import { update } from 'lodash';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -75,6 +74,7 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
     getComponentDefinition,
     setComponentPropertyByComponentIds,
     performBatchComponentOperations,
+    getFormFields,
   } = useStore(
     (state) => ({
       resolveReferences: state.resolveReferences,
@@ -85,12 +85,16 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       getComponentDefinition: state.getComponentDefinition,
       setComponentPropertyByComponentIds: state.setComponentPropertyByComponentIds,
       performBatchComponentOperations: state.performBatchComponentOperations,
+      getFormFields: state.getFormFields,
     }),
     shallow
   );
 
   const generateFormFrom = component.component.definition.properties['generateFormFrom'] || null;
-  const generatedFields = component.component.definition.properties['fields']?.value || [];
+  // const generatedFields = component.component.definition.properties['fields']?.value || [];
+  const generatedFields = getFormFields(component.id) || [];
+  console.log('here--- generatedFields--- ', generatedFields);
+
   const isFormGenerated = generatedFields.length > 0;
 
   let jsonData = null,

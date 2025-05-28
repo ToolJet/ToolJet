@@ -67,7 +67,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
   const isMandatoryFxControlled = isPropertyFxControlled(fieldData.mandatory);
 
   // Determine if the field is currently mandatory
-  const isCurrentlyMandatory = isTrueValue(fieldData.mandatory.value);
+  const isCurrentlyMandatory = isTrueValue(fieldData.mandatory?.value);
 
   const mainPopover = (
     <Popover id="popover-basic" className="shadow form-fields-column-popover">
