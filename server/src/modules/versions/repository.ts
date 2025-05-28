@@ -4,7 +4,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
@@ -163,5 +163,28 @@ export class VersionRepository extends Repository<AppVersion> {
       });
       return appVersion.app;
     }, manager || this.manager);
+  }
+
+  // async getAppVersionByVersionId(appGitPushBody: AppGitPushDto) {
+  //   let versionId = appGitPushBody.versionId;
+  //   let version = await this.findOne({
+  //     where: { id: versionId },
+  //     relations: ['app'],
+  //   });
+
+  //   versionId = versionId == version.app.editingVersion.id ? versionId : version.app.editingVersion.id;
+  //   version = await this.findOne({
+  //     where: { id: versionId },
+  //     relations: ['app'],
+  //   });
+  //   if (!version) throw new BadRequestException('Wrong version Id');
+  //   return version;
+  // }
+  async getAppVersionById(versionId: string) {
+    const version = await this.findOne({
+      where: { id: versionId },
+      relations: ['app'],
+    });
+    return version;
   }
 }

@@ -1,7 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppVersion } from '@entities/app_version.entity';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
@@ -43,7 +41,6 @@ export class GitSyncModule {
     return {
       module: GitSyncModule,
       imports: [
-        TypeOrmModule.forFeature([AppVersion]),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),
