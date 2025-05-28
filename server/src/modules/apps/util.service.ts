@@ -11,6 +11,7 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
@@ -38,8 +39,10 @@ import { IAppsUtilService } from './interfaces/IUtilService';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
+import { RequestContext } from '@modules/request-context/service';
+import { RenameAppOrVersionDto } from '@modules/app-git/dto';
+import got from 'got';
 import { DataQuery } from '@entities/data_query.entity';
-import { DataSource } from '@entities/data_source.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -565,5 +568,40 @@ export class AppsUtilService implements IAppsUtilService {
         return { table_id };
       });
     });
+  }
+
+  async findByAppName(name: string, organizationId: string): Promise<App> {
+    return this.appRepository.findByAppName(name, organizationId);
+  }
+
+  async findByAppId(appId: string): Promise<App> {
+    return this.appRepository.findByAppId(appId);
+  }
+
+  async handleAppRenameCommit(appId: string, app: App, appUpdateDto: AppUpdateDto) {
+    const prevName = app.name;
+    const { name } = appUpdateDto;
+    const request = RequestContext.getRequest();
+    const headers = {
+      'Content-Type': 'application/json',
+      Cookie: request.headers['cookie'],
+      'tj-workspace-id': request.headers['tj-workspace-id'],
+    };
+    const renameAppDto = new RenameAppOrVersionDto();
+    renameAppDto.prevName = prevName;
+    renameAppDto.updatedName = name;
+    try {
+      // TO DO : Review if we can make it asynchronous
+      const host = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.TOOLJET_HOST;
+      await got.put(`${host}/api/app-git/app/${app.id}/rename`, {
+        json: renameAppDto,
+        headers,
+        responseType: 'json',
+      });
+    } catch (err) {
+      console.log('APP rename commit failed with error', err);
+      // Don't throw the error here as this failure is related to the commit, but the app rename itself has been successful.
+      // This ensures the rest of the process continues, even though the commit may have failed
+    }
   }
 }

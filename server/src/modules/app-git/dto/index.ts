@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
 export class AppGitCreateDto {
   @IsString()
@@ -76,4 +76,25 @@ export class AppGitPullUpdateDto {
 
   @IsString()
   gitVersionName: string;
+}
+export class AppGitUpdateDto {
+  @IsBoolean()
+  allowEditing: boolean;
+}
+export class RenameAppOrVersionDto {
+  @IsString()
+  @IsNotEmpty()
+  prevName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  updatedName: string;
+
+  @IsBoolean()
+  @IsOptional()
+  renameVersionFlag: boolean;
+
+  @IsString()
+  @IsOptional()
+  remoteName: string;
 }

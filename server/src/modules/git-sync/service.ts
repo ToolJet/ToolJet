@@ -1,6 +1,5 @@
 /* eslint-disable no-prototype-builtins */
 import { Injectable } from '@nestjs/common';
-import { OrganizationGitSync } from 'src/entities/organization_git_sync.entity';
 import {
   OrganizationGitCreateDto,
   OrganizationGitStatusUpdateDto,
@@ -12,15 +11,20 @@ import { IGitSyncService } from './Interfaces/IService';
 export class GitSyncService implements IGitSyncService {
   constructor() {}
 
-  async deleteConfig(organizationId: string, organizationGit: string): Promise<void> {
+  async deleteConfig(organizationId: string, organizationGit: string, gitType: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  async createOrganizationGit(organizationGitCreateDto: OrganizationGitCreateDto): Promise<OrganizationGitSync> {
+  async createOrganizationGit(orgGitCreateDto: OrganizationGitCreateDto, userOrganizationId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
-  async updateOrgGit(organizationId: string, id: string, updateOrgGitDto: OrganizationGitUpdateDto): Promise<void> {
+  async updateOrgGit(
+    userOrganizationId: string,
+    organizationId: string,
+    updateOrgGitDto: OrganizationGitUpdateDto,
+    gitType: string
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
@@ -32,11 +36,11 @@ export class GitSyncService implements IGitSyncService {
     throw new Error('Method not implemented.');
   }
 
-  async setFinalizeConfig(userId: string, organizationId: string, organizationGitId: string) {
+  async setFinalizeConfig(userId: string, organizationId: string, organizationGitId: string, gitType: string) {
     throw new Error('Method not implemented.');
   }
 
-  async getOrganizationById(userOrganizationId: string, organizationId: string) {
+  async getOrganizationById(userOrganizationId: string, organizationId: string, gitType: string) {
     throw new Error('Method not implemented.');
   }
 

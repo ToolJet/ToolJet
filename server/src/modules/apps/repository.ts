@@ -83,4 +83,11 @@ export class AppsRepository extends Repository<App> {
       .orderBy('version.created_at', 'ASC')
       .getRawMany();
   }
+
+  async findByAppId(appId: string): Promise<App> {
+    return this.findOne({
+      where: { id: appId },
+      relations: ['appVersions'],
+    });
+  }
 }
