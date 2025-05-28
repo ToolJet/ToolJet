@@ -13,6 +13,7 @@ import { AppGitModule } from '@modules/app-git/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { VersionRepository } from '@modules/versions/repository';
+import { AppGitRepository } from '@modules/app-git/repository';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -40,6 +41,7 @@ export class ExternalApiModule {
         RolesRepository,
         GroupPermissionsRepository,
         VersionRepository,
+        AppGitRepository,
       ],
       controllers: [ExternalApisController],
       exports: [ExternalApiUtilService],
