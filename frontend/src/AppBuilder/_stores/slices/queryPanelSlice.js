@@ -266,6 +266,28 @@ export const createQueryPanelSlice = (set, get) => ({
 
       let dataQuery = {};
 
+      //for viewer, if query is restricted throw unauthorized error
+      if (query.restricted) {
+        setResolvedQuery(queryId, {
+          isLoading: false,
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized access',
+            },
+          },
+          response: {
+            statusCode: 401,
+            responseBody: 'Unauthorized access',
+          },
+        });
+        onEvent('onDataQueryFailure', queryEvents);
+        return {
+          statusCode: 401,
+          responseBody: 'Unauthorized access',
+        };
+      }
+
       //for viewer we will only get the environment id from the url
       const { currentAppEnvironmentId, environmentId } = app;
 
