@@ -6,6 +6,8 @@ import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
+import { AppVersion } from '@entities/app_version.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 export class GitSyncModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -41,6 +43,7 @@ export class GitSyncModule {
     return {
       module: GitSyncModule,
       imports: [
+        TypeOrmModule.forFeature([AppVersion]),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),

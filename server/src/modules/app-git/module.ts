@@ -11,6 +11,8 @@ import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory
 import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppGitRepository } from './repository';
+import { AppVersion } from '@entities/app_version.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { AppGitController } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/controller`);
@@ -45,6 +47,7 @@ export class AppGitModule {
     return {
       module: AppGitModule,
       imports: [
+        TypeOrmModule.forFeature([AppVersion]),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await TooljetDbModule.register(configs),
