@@ -55,7 +55,7 @@ export class AppGitPullDto {
   gitAppName: string;
 
   @IsString()
-  gitVersionName?: string;
+  gitVersionName: string;
 }
 export class AppGitPullUpdateDto {
   @IsString()
