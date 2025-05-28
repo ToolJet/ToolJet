@@ -196,7 +196,7 @@ export const QueryDataPane = ({ darkMode }) => {
                       if (query.id === selectedQuery.id) {
                         return {
                           ...query,
-                          permissions: data.length === 0 ? [] : data[0],
+                          permissions: data.length === 0 || data.length === undefined ? [] : [data[0]],
                         };
                       }
                       return query;

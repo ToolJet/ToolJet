@@ -45,6 +45,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
 
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const isRestricted = dataQuery.permissions && dataQuery.permissions.length !== 0;
 
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
@@ -140,6 +141,31 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
     [duplicateQuery]
   );
 
+  const getTooltip = () => {
+    const permission = dataQuery.permissions?.[0];
+    if (!permission) return null;
+
+    const users = permission.groups || permission.users || [];
+    if (users.length === 0) return null;
+
+    const isSingle = permission.type === 'SINGLE';
+    const isGroup = permission.type === 'GROUP';
+
+    if (isSingle) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].user.email}`
+        : `Access restricted to ${users.length} users`;
+    }
+
+    if (isGroup) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].permission_group?.name || users[0].permissionGroup?.name} group`
+        : `Access restricted to ${users.length} user groups`;
+    }
+
+    return null;
+  };
+
   return (
     <>
       <div
@@ -183,7 +209,12 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                 data-tooltip-dynamic="true"
               >
                 {decodeEntities(dataQuery.name)}
-              </span>{' '}
+              </span>
+              <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
+                <div className="d-flex align-items-center" style={{ marginLeft: '8px', marginRight: 'auto' }}>
+                  {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
+                </div>
+              </ToolTip>{' '}
               {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
               {localDs && (
                 <>
