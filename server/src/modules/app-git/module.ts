@@ -1,6 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
-import { AppGitSync } from '@entities/app_git_sync.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppsRepository } from '@modules/apps/repository';
 import { VersionRepository } from '@modules/versions/repository';
@@ -13,6 +12,7 @@ import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory
 import { AppVersion } from '@entities/app_version.entity';
 import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { AppGitRepository } from './repository';
 export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { AppGitController } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/controller`);
@@ -47,7 +47,7 @@ export class AppGitModule {
     return {
       module: AppGitModule,
       imports: [
-        TypeOrmModule.forFeature([AppGitSync, AppsRepository, AppVersion]),
+        TypeOrmModule.forFeature([AppsRepository, AppVersion]),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await TooljetDbModule.register(configs),
@@ -58,6 +58,7 @@ export class AppGitModule {
       providers: [
         OrganizationGitSyncRepository,
         VersionRepository,
+        AppGitRepository,
         AppGitService,
         AppsAbilityFactory,
         SourceControlProviderService,

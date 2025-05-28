@@ -45,7 +45,7 @@ export class GitSyncModule {
     return {
       module: GitSyncModule,
       imports: [
-        TypeOrmModule.forFeature([AppGitSync, Organization, AppVersion]),
+        TypeOrmModule.forFeature([Organization, AppVersion]),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
         await AppsModule.register(configs),
