@@ -39,6 +39,9 @@ import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataSource } from '@entities/data_source.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -51,7 +54,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly abilityService: AbilityService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataSourceUtilService: DataSourcesUtilService
-  ) {}
+  ) { }
   async create(name: string, user: User, type: string, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
@@ -222,8 +225,8 @@ export class AppsUtilService implements IAppsUtilService {
     const processEnvironmentName = environmentName
       ? environmentName
       : !isMultiEnvironmentEnabled
-      ? 'development'
-      : null;
+        ? 'development'
+        : null;
 
     const environment: AppEnvironment = environmentId
       ? await this.appEnvironmentUtilService.get(organizationId, environmentId)
@@ -439,14 +442,14 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = userAppPermissions.hideAll
       ? [null, ...userAppPermissions.editableAppsId]
       : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+          ])
+        ),
+      ];
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'viewable_apps')
       .innerJoin('viewable_apps.user', 'user')
@@ -537,7 +540,7 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2'].includes(currentComponentData?.component?.component) &&
+              ['DropdownV2', 'MultiselectV2', 'Steps'].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -577,8 +580,8 @@ export class AppsUtilService implements IAppsUtilService {
     const versionToLoad = versionId
       ? await this.versionRepository.findVersion(versionId)
       : app.currentVersionId
-      ? await this.versionRepository.findVersion(app.currentVersionId)
-      : await this.versionRepository.findVersion(app.editingVersion?.id);
+        ? await this.versionRepository.findVersion(app.currentVersionId)
+        : await this.versionRepository.findVersion(app.editingVersion?.id);
 
     const modules = await dbTransactionWrap(async (manager) => {
       const moduleComponents = await manager
@@ -601,13 +604,53 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
           : [];
       return modules;
     });
     return modules;
+  }
+  async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
+    return await this.appRepository.findAllOrganizationApps(organizationId);
+  }
+
+  async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const tooljetDbDataQueries = await manager
+        .createQueryBuilder(DataQuery, 'data_queries')
+        .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
+        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
+        .where('app_versions.app_id = :appId', { appId })
+        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
+        .getMany();
+
+      const uniqTableIds = new Set();
+      tooljetDbDataQueries.forEach((dq) => {
+        if (dq.options?.operation === 'join_tables') {
+          const joinOptions = dq.options?.join_table?.joins ?? [];
+          (joinOptions || []).forEach((join) => {
+            const { table, conditions } = join;
+            if (table) uniqTableIds.add(table);
+            conditions?.conditionsList?.forEach((condition) => {
+              const { leftField, rightField } = condition;
+              if (leftField?.table) {
+                uniqTableIds.add(leftField?.table);
+              }
+              if (rightField?.table) {
+                uniqTableIds.add(rightField?.table);
+              }
+            });
+          });
+        }
+        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
+      });
+
+      return [...uniqTableIds].map((table_id) => {
+        return { table_id };
+      });
+    });
   }
 }

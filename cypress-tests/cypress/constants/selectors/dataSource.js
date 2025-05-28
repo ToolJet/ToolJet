@@ -28,7 +28,7 @@ export const dataSourceSelector = {
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
   buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
-  dangerAlertNotSupportSSL: '.go3958317564',
+  dangerAlertNotSupportSSL: ".go3958317564",
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',
@@ -102,6 +102,12 @@ export const dataSourceSelector = {
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   connectionAlertText: '[data-cy="connection-alert-text"]',
   deleteDSButton: (datasourceName) => {
-    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`
+    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
+  },
+  labelFieldName: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-field-label"]`;
+  },
+  dataSourceNameButton: (dataSourceName) => {
+    return `[data-cy="${cyParamName(dataSourceName)}-button"]`;
   },
 };

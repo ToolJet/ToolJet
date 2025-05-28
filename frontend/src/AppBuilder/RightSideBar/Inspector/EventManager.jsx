@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 
 import { ActionTypes } from '@/Editor/ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -33,6 +33,9 @@ import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSl
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { components as selectComponents } from 'react-select';
 
 export const EventManager = ({
   sourceId,
@@ -86,6 +89,8 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const lastFocusedEventIndex = useRef(null);
+  const shouldSkipOnToggle = useRef(null);
 
   const { t } = useTranslation();
 
@@ -105,8 +110,23 @@ export const EventManager = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
 
-  let actionOptions = ActionTypes.map((action) => {
-    return { name: action.name, value: action.id };
+  let groupedOptions = ActionTypes.reduce((acc, action) => {
+    const groupName = action.group;
+
+    if (!acc[groupName]) {
+      acc[groupName] = [];
+    }
+
+    acc[groupName].push({
+      label: action.name,
+      value: action.id,
+    });
+
+    return acc;
+  }, {});
+
+  let actionOptions = Object.keys(groupedOptions).map((groupName) => {
+    return { label: groupName, options: groupedOptions[groupName] };
   });
 
   let checkIfClicksAreInsideOf = document.querySelector('.cm-completionListIncompleteBottom');
@@ -125,6 +145,46 @@ export const EventManager = ({
     menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
     menuList: (base) => ({
       ...base,
+    }),
+  };
+
+  const actionStyles = {
+    ...styles,
+    menuList: (base) => ({
+      ...base,
+      padding: '8px 0 8px 8px',
+      '&::-webkit-scrollbar': {
+        width: '10px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#E4E7EB',
+        border: '1px solid transparent',
+        backgroundClip: 'content-box',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        background: '#E4E7EB !important',
+        border: '1px solid transparent !important',
+        backgroundClip: 'content-box !important',
+      },
+      '&:hover': {
+        '&::-webkit-scrollbar-thumb': {
+          background: '#E4E7EB !important',
+          border: '1px solid transparent !important',
+          backgroundClip: 'content-box !important',
+        },
+      },
+    }),
+    group: (base) => ({
+      ...base,
+      padding: 0,
+    }),
+    groupHeading: (base) => ({
+      ...base,
+      margin: 0,
+      padding: '0',
     }),
   };
 
@@ -377,8 +437,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-          })
+          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+        })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -402,6 +462,28 @@ export const EventManager = ({
     const queries = dataQueries.filter((qry) => isQueryRunnable(qry)).map((qry) => ({ name: qry.name, value: qry.id }));
     const moduleInputs = Object.entries(moduleInputDummyQueries).map(([key, value]) => ({ name: value, value: key }));
     return [...moduleInputs, ...queries];
+  }
+  const formatGroupLabel = (data) => {
+    if (data.label === 'run-action') return;
+    return (
+      <div
+        className="tw-border-x-0 tw-border-t-0 tw-border-b-[0.5px] tw-border-solid tw-my-[4px]"
+        style={{ borderColor: 'var(--border-weak)' }}
+      ></div>
+    );
+  };
+
+  const CustomOption = (props) => {
+    return (
+      <selectComponents.Option {...props}>
+        <div className="d-flex align-items-center">
+          <div style={{ width: '16px', marginRight: '6px' }}>
+            {props.isSelected && <SolidIcon name="tickv3" width="16px" height="16px" />}
+          </div>
+          <span>{props.label}</span>
+        </div>
+      </selectComponents.Option>
+    );
   };
 
   function eventPopover(event, index) {
@@ -443,13 +525,17 @@ export const EventManager = ({
               <Select
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                 options={actionOptions}
-                value={event.actionId}
+                value={actionOptions
+                  .flatMap((group) => group.options)
+                  .find((option) => option.value === event.actionId)}
+                components={{ Option: CustomOption }}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
                 placeholder={t('globals.select', 'Select') + '...'}
-                styles={styles}
+                styles={actionStyles}
                 useMenuPortal={false}
                 useCustomStyles={true}
+                formatGroupLabel={formatGroupLabel}
               />
             </div>
           </div>
@@ -924,9 +1010,8 @@ export const EventManager = ({
                         </div>
                       ) : (
                         <div
-                          className={`${
-                            param?.type ? '' : 'fx-container-eventmanager-code'
-                          } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                          className={`${param?.type ? '' : 'fx-container-eventmanager-code'
+                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                           data-cy="action-options-text-input-field"
                         >
                           <CodeHinter
@@ -1023,10 +1108,21 @@ export const EventManager = ({
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
                           overlay={eventPopover(event.event, index)}
-                          onHide={() => setFocusedEventIndex(null)}
                           onToggle={(showing) => {
+                            // If the toggle action should be skipped (e.g., due to a previous state change), reset the flag and exit early.
+                            if (shouldSkipOnToggle.current) {
+                              shouldSkipOnToggle.current = false;
+                              return;
+                            }
+
+                            // If there is already a focused event, set the skip flag to prevent unnecessary state updates.
+                            if (focusedEventIndex !== null && showing) {
+                              shouldSkipOnToggle.current = true;
+                            }
+
                             if (showing) {
                               setFocusedEventIndex(index);
+                              lastFocusedEventIndex.current = index;
                             } else {
                               setFocusedEventIndex(null);
                             }
@@ -1035,6 +1131,7 @@ export const EventManager = ({
                         >
                           <div
                             key={index}
+                            id={`${sourceId}-${index}`}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
@@ -1077,6 +1174,17 @@ export const EventManager = ({
       </AddNewButton>
     );
   };
+
+  const shouldUsePopoverObserver = events.length !== 0 && eventSourceType === 'data_query';
+
+  usePopoverObserver(
+    shouldUsePopoverObserver ? document.getElementsByClassName('query-details')[0] : null,
+    document.getElementById(`${sourceId}-${lastFocusedEventIndex.current}`),
+    document.getElementById('popover-basic'),
+    focusedEventIndex !== null,
+    () => (document.getElementById('popover-basic').style.display = 'block'),
+    () => (document.getElementById('popover-basic').style.display = 'none')
+  );
 
   if (events.length === 0) {
     return (
