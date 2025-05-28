@@ -42,6 +42,7 @@ export const QueryDataPane = ({ darkMode }) => {
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
+  const setQueries = useStore((state) => state.dataQuery.setQueries);
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -190,7 +191,18 @@ export const QueryDataPane = ({ darkMode }) => {
                   createPermission={(id, appId, body) => appPermissionService.createQueryPermission(appId, id, body)}
                   updatePermission={(id, appId, body) => appPermissionService.updateQueryPermission(appId, id, body)}
                   deletePermission={(id, appId) => appPermissionService.deleteQueryPermission(appId, id)}
-                  // onSuccess={(data) => updateQueryWithPermissions(selectedQuery?.id, data)}
+                  onSuccess={(data) => {
+                    const updatedDataQueries = dataQueries.map((query) => {
+                      if (query.id === selectedQuery.id) {
+                        return {
+                          ...query,
+                          permissions: data.length === 0 ? [] : data[0],
+                        };
+                      }
+                      return query;
+                    });
+                    setQueries(updatedDataQueries);
+                  }}
                 />
               )}
             </div>
