@@ -103,9 +103,11 @@ export const createFormComponentSlice = (set, get) => ({
 
     const newParentType = getParentComponentType(newParentId, moduleId);
     const firstComponentId = Object.keys(componentLayouts)[0];
-    const existingParentDefinition = getComponentDefinition(firstComponentId, moduleId);
-    const currentParentId = existingParentDefinition?.component?.parent;
-    const currentParentType = getParentComponentType(currentParentId, moduleId);
+
+    const firstComponentDefinition = getComponentDefinition(firstComponentId, moduleId);
+    const currentParentId = firstComponentDefinition?.component?.parent;
+    const existingParentDefinition = getComponentDefinition(currentParentId, moduleId);
+    const currentParentType = existingParentDefinition.component.component;
 
     /* There are three scenarios:
       1. If both newParentId and currentParentId are same, then return
