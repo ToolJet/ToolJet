@@ -183,9 +183,6 @@ export class AppGitPullDto {
 
 export class AppGitPushDto {
   @IsString()
-  versionId: string;
-
-  @IsString()
   commitMessage: string;
 }
 export class VersionDto {
