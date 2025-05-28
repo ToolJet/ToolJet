@@ -12,7 +12,6 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { VersionModule } from '@modules/versions/module';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory';
-import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
@@ -54,7 +53,6 @@ export class AppGitModule {
         TypeOrmModule.forFeature([
           AppGitSync,
           OrganizationGitSsh,
-          OrganizationGitSync,
           OrganizationGitHttps,
           OrganizationGitLab,
           AppsRepository,
