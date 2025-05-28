@@ -47,7 +47,7 @@ export class AppGitModule {
     return {
       module: AppGitModule,
       imports: [
-        TypeOrmModule.forFeature([AppsRepository, AppVersion]),
+        TypeOrmModule.forFeature([AppVersion]),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await TooljetDbModule.register(configs),
@@ -59,6 +59,7 @@ export class AppGitModule {
         OrganizationGitSyncRepository,
         VersionRepository,
         AppGitRepository,
+        AppsRepository,
         AppGitService,
         AppsAbilityFactory,
         SourceControlProviderService,
