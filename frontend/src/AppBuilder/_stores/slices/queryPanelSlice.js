@@ -26,6 +26,7 @@ const initialState = {
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
+  showQueryPermissionModal: false,
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -215,6 +216,7 @@ export const createQueryPanelSlice = (set, get) => ({
         selectedEnvironment,
         isPublicAccess,
         currentVersionId,
+        currentMode,
       } = get();
       const {
         queryPreviewData,
@@ -263,6 +265,28 @@ export const createQueryPanelSlice = (set, get) => ({
       // const queryEvents = [];
 
       let dataQuery = {};
+
+      //for viewer, if query is restricted throw unauthorized error
+      if (query.restricted) {
+        setResolvedQuery(queryId, {
+          isLoading: false,
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized access',
+            },
+          },
+          response: {
+            statusCode: 401,
+            responseBody: 'Unauthorized access',
+          },
+        });
+        onEvent('onDataQueryFailure', queryEvents);
+        return {
+          statusCode: 401,
+          responseBody: 'Unauthorized access',
+        };
+      }
 
       //for viewer we will only get the environment id from the url
       const { currentAppEnvironmentId, environmentId } = app;
@@ -352,7 +376,8 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             query?.options,
             currentVersionId,
-            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
+            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            currentMode
           );
         }
 
@@ -1110,6 +1135,11 @@ export const createQueryPanelSlice = (set, get) => ({
         id: selectedQuery?.id,
       };
       previewQuery(query, false, undefined, moduleId);
+    },
+    toggleQueryPermissionModal: (show) => {
+      set((state) => {
+        state.queryPanel.showQueryPermissionModal = show;
+      });
     },
   },
 });

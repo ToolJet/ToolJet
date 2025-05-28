@@ -14,6 +14,7 @@ import { GroupUsers } from './group_users.entity';
 import { GranularPermissions } from './granular_permissions.entity';
 import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 import { PageUser } from './page_users.entity';
+import { QueryUser } from './query_users.entity';
 
 @Entity({ name: 'permission_groups' })
 export class GroupPermissions extends BaseEntity {
@@ -65,6 +66,9 @@ export class GroupPermissions extends BaseEntity {
 
   @OneToMany(() => PageUser, (pageUser) => pageUser.permissionGroup)
   pageUsers: PageUser[];
+
+  @OneToMany(() => QueryUser, (queryUser) => queryUser.permissionGroup)
+  queryUsers: QueryUser[];
 
   disabled?: boolean;
 }
