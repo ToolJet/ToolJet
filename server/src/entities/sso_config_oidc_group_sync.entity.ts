@@ -21,6 +21,7 @@ export class SsoConfigOidcGroupSync {
   @JoinColumn({ name: 'sso_config_id' })
   ssoConfig: SSOConfigs;
 
+  @Column({ name: 'sso_config_id', type: 'uuid' })
   @RelationId((groupSync: SsoConfigOidcGroupSync) => groupSync.ssoConfig)
   ssoConfigId: string;
 

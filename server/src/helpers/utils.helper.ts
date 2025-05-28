@@ -6,7 +6,7 @@ import { USER_TYPE } from '@modules/users/constants/lifecycle';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 import { getEnvVars } from 'scripts/database-config-utils';
-
+import { decamelizeKeys } from 'humps';
 
 const semver = require('semver');
 
@@ -458,4 +458,27 @@ export function getTooljetEdition(): string {
 export function getCustomEnvVars(name: string) {
   const envVars = getEnvVars();
   return envVars[name] || '';
+}
+
+export function decamelizeKeysExcept(obj: any, ignoreKeys: string[]): any {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => decamelizeKeysExcept(item, ignoreKeys));
+  }
+
+  if (obj !== null && typeof obj === 'object') {
+    const result: Record<string, any> = {};
+    for (const key in obj) {
+      if (ignoreKeys.includes(key)) {
+        // 🔒 Keep as-is
+        result[key] = obj[key];
+      } else {
+        const decamelizedKey = decamelizeKeys({ [key]: null });
+        const transformedKey = Object.keys(decamelizedKey)[0];
+        result[transformedKey] = decamelizeKeysExcept(obj[key], ignoreKeys);
+      }
+    }
+    return result;
+  }
+
+  return obj;
 }

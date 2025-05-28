@@ -1,6 +1,11 @@
 import { DataSource, Repository, Brackets, EntityManager, DeepPartial } from 'typeorm';
 import { OrganizationUser } from '@entities/organization_user.entity';
-import { USER_TYPE, WORKSPACE_USER_SOURCE, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
+import {
+  USER_STATUS,
+  USER_TYPE,
+  WORKSPACE_USER_SOURCE,
+  WORKSPACE_USER_STATUS,
+} from '@modules/users/constants/lifecycle';
 import { Injectable } from '@nestjs/common';
 import { UserFilterOptions } from './types';
 import { Organization } from '@entities/organization.entity';
@@ -150,6 +155,12 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
   async getOrganizationUser(organizationId: string, manager?: EntityManager) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.findOne(OrganizationUser, { where: { organizationId } });
+    }, manager || this.manager);
+  }
+
+  async getOrganizationUserByUserId(userId: string, manager?: EntityManager) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(OrganizationUser, { where: { userId, status: USER_STATUS.ACTIVE } });
     }, manager || this.manager);
   }
 }
