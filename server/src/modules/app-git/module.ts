@@ -1,8 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
-import { AppGitSync } from '@entities/app_git_sync.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_ssh.entity';
 import { AppsRepository } from '@modules/apps/repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { GitSyncModule } from '@modules/git-sync/module';
@@ -10,12 +7,10 @@ import { AppsModule } from '@modules/apps/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { VersionModule } from '@modules/versions/module';
-import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory';
-import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
-import { AppVersion } from '@entities/app_version.entity';
 import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
-import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { AppGitRepository } from './repository';
 export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { AppGitController } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/controller`);
@@ -50,16 +45,6 @@ export class AppGitModule {
     return {
       module: AppGitModule,
       imports: [
-        TypeOrmModule.forFeature([
-          AppGitSync,
-          VersionRepository,
-          OrganizationGitSsh,
-          OrganizationGitSync,
-          OrganizationGitHttps,
-          OrganizationGitLab,
-          AppsRepository,
-          AppVersion,
-        ]),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await TooljetDbModule.register(configs),
@@ -68,6 +53,9 @@ export class AppGitModule {
       ],
       controllers: [AppGitController],
       providers: [
+        OrganizationGitSyncRepository,
+        AppGitRepository,
+        AppsRepository,
         AppGitService,
         AppsAbilityFactory,
         SourceControlProviderService,

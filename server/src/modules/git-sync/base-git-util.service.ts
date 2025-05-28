@@ -20,14 +20,6 @@ import { Injectable } from '@nestjs/common';
 export class BaseGitUtilService {
   constructor() {}
 
-  async findAppGitById(appGitId: string): Promise<AppGitSync> {
-    throw new Error('Method not implemented.');
-  }
-
-  async findAppGitByAppId(appId: string): Promise<AppGitSync> {
-    throw new Error('Method not implemented.');
-  }
-
   async getOrganizationById(userOrganizationId: string, organizationId: string): Promise<OrganizationGitSync> {
     throw new Error('Method not implemented.');
   }

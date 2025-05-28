@@ -21,7 +21,6 @@ export abstract class BaseGitSyncService implements IBaseGitSyncInterface {
   async getAppVersionByVersionId(appGitPushBody: AppGitPushDto): Promise<AppVersion> {
     throw new Error('Method not implemented.');
   }
-
   async getAppVersionById(versionId: string): Promise<AppVersion> {
     throw new Error('Method not implemented.');
   }
