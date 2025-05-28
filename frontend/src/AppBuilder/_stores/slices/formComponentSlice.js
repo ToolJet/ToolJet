@@ -13,6 +13,8 @@ export const createFormComponentSlice = (set, get) => ({
     return componentDefinition?.component?.definition?.properties?.fields?.value || [];
   },
   setFormFields: (componentId, fields, moduleId = 'canvas') => {
+    if (!componentId) return;
+
     const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
     const { component } = getComponentDefinition(componentId, moduleId);
     if (!component) return;
@@ -106,8 +108,8 @@ export const createFormComponentSlice = (set, get) => ({
 
     const firstComponentDefinition = getComponentDefinition(firstComponentId, moduleId);
     const currentParentId = firstComponentDefinition?.component?.parent;
-    const existingParentDefinition = getComponentDefinition(currentParentId, moduleId);
-    const currentParentType = existingParentDefinition.component.component;
+    const existingParentDefinition = currentParentId ? getComponentDefinition(currentParentId, moduleId) : null;
+    const currentParentType = existingParentDefinition?.component?.component;
 
     /* There are three scenarios:
       1. If both newParentId and currentParentId are same, then return
