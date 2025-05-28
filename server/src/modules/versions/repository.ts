@@ -164,22 +164,6 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersion.app;
     }, manager || this.manager);
   }
-
-  // async getAppVersionByVersionId(appGitPushBody: AppGitPushDto) {
-  //   let versionId = appGitPushBody.versionId;
-  //   let version = await this.findOne({
-  //     where: { id: versionId },
-  //     relations: ['app'],
-  //   });
-
-  //   versionId = versionId == version.app.editingVersion.id ? versionId : version.app.editingVersion.id;
-  //   version = await this.findOne({
-  //     where: { id: versionId },
-  //     relations: ['app'],
-  //   });
-  //   if (!version) throw new BadRequestException('Wrong version Id');
-  //   return version;
-  // }
   async getAppVersionById(versionId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const version = await manager.findOneOrFail(AppVersion, {
