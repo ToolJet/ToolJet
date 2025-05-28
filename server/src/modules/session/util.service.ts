@@ -29,7 +29,6 @@ import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class SessionUtilService {
@@ -45,20 +44,6 @@ export class SessionUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
   ) {}
-
-  async setAuditLogForUser(userId: string, manager: EntityManager): Promise<void> {
-    const user = await manager.findOneOrFail(User, {
-      where: { id: userId },
-    });
-
-    const auditLogEntry = {
-      userId: user.id,
-      organizationId: user.defaultOrganizationId,
-      resourceId: user.id,
-      resourceName: user.email,
-    };
-    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
-  }
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -349,7 +334,7 @@ export class SessionUtilService {
             })
         : null;
 
-      const noWorkspaceAttachedInTheSession = await this.checkUserWorkspaceStatus(user.id) && !isSuperAdmin(user);
+      const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);
       const isAllWorkspacesArchived = await this.#isAllWorkspacesArchivedBySuperAdmin(user.id);
       const onboardingFlags = await this.#onboardingFlags(user);
       const metadata = await this.metadataUtilService.fetchMetadata();
@@ -383,7 +368,7 @@ export class SessionUtilService {
 
   async #onboardingFlags(user: User) {
     let isFirstUserOnboardingCompleted = true;
-    let isOnboardingCompleted = true;
+    const isOnboardingCompleted = true;
     // const isOnboardingQuestionsEnabled =
     //   this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true';
 
