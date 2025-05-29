@@ -607,7 +607,7 @@ Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
 });
 
 Cypress.Commands.add('ifEnv', (expectedEnvs, callback) => {
-  const actualEnv = Cypress.env("envVar");
+  const actualEnv = Cypress.env("environment");
   const envArray = Array.isArray(expectedEnvs) ? expectedEnvs : [expectedEnvs];
 
   if (envArray.includes(actualEnv)) {

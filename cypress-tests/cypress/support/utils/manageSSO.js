@@ -444,7 +444,7 @@ export const enableInstanceSignup = (
     UPDATE instance_settings SET value = '${allowedDomains}' WHERE key = 'ALLOWED_DOMAINS';
   `;
 
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql,
   });
