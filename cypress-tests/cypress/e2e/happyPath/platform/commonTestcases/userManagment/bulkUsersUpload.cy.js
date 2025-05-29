@@ -1,59 +1,117 @@
 import { commonSelectors } from "Selectors/common";
-import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { groupsSelector } from "Selectors/manageGroups";
 import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
 import { bulkUserUpload } from "Support/utils/manageUsers";
 
+// Helper to resolve correct test data based on env
+const getFile = (fileGroup) => {
+  const env = Cypress.env("envVar");
+  return env === "Enterprise" || env === "Cloud" ? fileGroup.default : fileGroup.alt;
+};
+
 describe("Bulk User Upload", () => {
-  // Test data configuration
   const TEST_FILES = {
     MISSING_NAME: {
-      path: "cypress/fixtures/bulkUser/without_name.csv",
-      fileName: "without_name",
-      error:
-        "Missing first_name,last_name,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+      default: {
+        path: "cypress/fixtures/bulkUser/missing_name.csv",
+        fileName: "missing_name",
+        error: "Missing first_name,last_name,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/missing_name_ee.csv",
+        fileName: "missing_name_ee",
+        error: "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
+      },
     },
     MISSING_EMAIL: {
-      path: "cypress/fixtures/bulkUser/without_email.csv",
-      fileName: "without_email",
-      error:
-        "Missing email,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+      default: {
+        path: "cypress/fixtures/bulkUser/missing_email.csv",
+        fileName: "missing_email",
+        error: "Missing email,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/missing_email_ee.csv",
+        fileName: "missing_email_ee",
+        error: "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
+      },
     },
     DUPLICATE_EMAIL: {
-      path: "cypress/fixtures/bulkUser/same_email.csv",
-      fileName: "same_email",
-      error: "Duplicate email found. Please provide a unique email address.",
-      isDuplicate: true,
+      default: {
+        path: "cypress/fixtures/bulkUser/same_email.csv",
+        fileName: "same_email",
+        error: "Duplicate email found. Please provide a unique email address.",
+        isDuplicate: true,
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/same_email_ee.csv",
+        fileName: "same_email_ee",
+        error: "Duplicate email found. Please provide a unique email address.",
+        isDuplicate: true,
+      },
     },
     EMPTY_NAMES: {
-      path: "cypress/fixtures/bulkUser/empty_first_and_last_name.csv",
-      fileName: "empty_first_and_last_name",
-      error:
-        "Missing first_name,last_name,groups information in 1 row(s);. No users were uploaded, please update and try again.",
+      default: {
+        path: "cypress/fixtures/bulkUser/empty_names.csv",
+        fileName: "empty_names",
+        error: "Missing first_name,last_name,groups information in 1 row(s);. No users were uploaded, please update and try again.",
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/empty_names_ee.csv",
+        fileName: "empty_names_ee",
+        error: "Missing first_name,last_name,groups,metadata,userMetadata information in 1 row(s);. No users were uploaded, please update and try again.",
+      },
     },
     LIMIT_EXCEEDED: {
-      path: "cypress/fixtures/bulkUser/500_invite_users.csv",
-      fileName: "500_invite_users",
-      error: "You can only invite 250 users at a time",
+      default: {
+        path: "cypress/fixtures/bulkUser/limit_exceeded.csv",
+        fileName: "limit_exceeded",
+        error: "You can only invite 250 users at a time",
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/limit_exceeded_ee.csv",
+        fileName: "limit_exceeded_ee",
+        error: "You can only invite 250 users at a time",
+      },
     },
     MISSING_ROLE: {
-      path: "cypress/fixtures/bulkUser/without_role.csv",
-      fileName: "without_role",
-      error:
-        "Missing user_role,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+      default: {
+        path: "cypress/fixtures/bulkUser/missing_role.csv",
+        fileName: "missing_role",
+        error: "Missing user_role,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/missing_role_ee.csv",
+        fileName: "missing_role_ee",
+        error: "Missing user_role,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
+      },
     },
     NONEXISTENT_GROUP: {
-      path: "cypress/fixtures/bulkUser/non_existing_group.csv",
-      fileName: "non_existing_group",
-      error: "2 groups doesn't exist. No users were uploaded",
+      default: {
+        path: "cypress/fixtures/bulkUser/non_existing_group.csv",
+        fileName: "non_existing_group",
+        error: "2 groups doesn't exist. No users were uploaded",
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/non_existing_group_ee.csv",
+        fileName: "non_existing_group_ee",
+        error: "2 groups doesn't exist. No users were uploaded",
+      },
     },
     VALID_USERS: {
-      path: "cypress/fixtures/bulkUser/3usersupload.csv",
-      fileName: "3usersupload",
-      testEmail: "test12@gmail.com",
-      successMessage: "3 users are being added",
+      default: {
+        path: "cypress/fixtures/bulkUser/3_users_upload.csv",
+        fileName: "3_users_upload",
+        successMessage: "3 users are being added",
+        email: "test12@gmail.com",
+      },
+      alt: {
+        path: "cypress/fixtures/bulkUser/3_users_upload_ee.csv",
+        fileName: "3_users_upload_ee",
+        successMessage: "3 users are being added",
+        email: "test12@gmail.com",
+      },
     },
   };
 
@@ -70,7 +128,6 @@ describe("Bulk User Upload", () => {
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
-    // Test all error cases
     [
       TEST_FILES.MISSING_ROLE,
       TEST_FILES.MISSING_NAME,
@@ -79,7 +136,8 @@ describe("Bulk User Upload", () => {
       TEST_FILES.EMPTY_NAMES,
       TEST_FILES.NONEXISTENT_GROUP,
       TEST_FILES.LIMIT_EXCEEDED,
-    ].forEach((testCase) => {
+    ].forEach((testCaseGroup) => {
+      const testCase = getFile(testCaseGroup);
       bulkUserUpload(
         testCase.path,
         testCase.fileName,
@@ -90,32 +148,30 @@ describe("Bulk User Upload", () => {
   });
 
   it("Should successfully upload valid users", () => {
+    const file = getFile(TEST_FILES.VALID_USERS);
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
-    cy.get(usersSelector.inputFieldBulkUpload).selectFile(
-      TEST_FILES.VALID_USERS.path,
-      {
-        force: true,
-      }
-    );
-    cy.get(commonSelectors.fileSelector).should(
-      "contain",
-      TEST_FILES.VALID_USERS.fileName
-    );
+    cy.get(usersSelector.inputFieldBulkUpload).selectFile(file.path, {
+      force: true,
+    });
+
+    cy.get(commonSelectors.fileSelector).should("contain", file.fileName);
     cy.get(usersSelector.buttonUploadUsers).click();
     cy.get(".go2072408551")
       .should("be.visible")
-      .and("have.text", TEST_FILES.VALID_USERS.successMessage);
-    common.searchUser("test12@gmail.com");
-    cy.contains("td", "test12@gmail.com")
+      .and("have.text", file.successMessage);
+
+    common.searchUser(file.email);
+    cy.contains("td", file.email)
       .parent()
       .within(() => {
         cy.get("td small").should("have.text", "invited");
       });
+
     common.navigateToManageGroups();
     cy.get(groupsSelector.groupLink("Admin")).click();
     cy.get(groupsSelector.usersLink).click();
-    cy.contains("test12@gmail.com").should("be.visible");
+    cy.contains(file.email).should("be.visible");
   });
 });

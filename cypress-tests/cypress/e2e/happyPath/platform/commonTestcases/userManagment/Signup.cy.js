@@ -15,10 +15,18 @@ import {
 } from "Support/utils/selfHostSignUp";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout } from "Support/utils/common";
+import { enableInstanceSignup } from "Support/utils/manageSSO";
 
 describe("User signup", () => {
   const data = {};
   let invitationLink = "";
+
+  before(() => {
+    cy.ifEnv("Enterprise", () => {
+      enableInstanceSignup()
+    });
+
+  });
 
   it("Verify the signup flow and UI elements", () => {
     data.fullName = fake.fullName;
