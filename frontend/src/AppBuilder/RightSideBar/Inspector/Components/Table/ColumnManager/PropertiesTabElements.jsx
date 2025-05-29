@@ -7,11 +7,57 @@ import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandlePropert
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
 import DatepickerProperties from './DatepickerProperties';
-import { Option } from '@/AppBuilder/CodeBuilder/Elements/Select';
-import DeprecatedColumnTypeMsg from './DeprecatedColumnTypeMsg';
+import DeprecatedColumnTypeMsg, {
+  DeprecatedColumnTooltip,
+  checkIfTableColumnDeprecated,
+} from './DeprecatedColumnTypeMsg';
 import CustomSelect from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { getColumnIcon } from '../utils';
+import { components } from 'react-select';
+import Check from '@/_ui/Icon/solidIcons/Check';
+import Icon from '@/_ui/Icon/solidIcons/index';
+
+const CustomOption = (props) => {
+  const ColumnIcon = getColumnIcon(props.data.value);
+  const isDeprecated = checkIfTableColumnDeprecated(props.data.value);
+
+  return (
+    <components.Option {...props}>
+      <DeprecatedColumnTooltip columnType={props.data.value}>
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-2">
+            {ColumnIcon && <ColumnIcon width="16" height="16" />}
+            <span>{props.label}</span>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            {props.isSelected && (
+              <span>
+                <Check width={'20'} fill={'#3E63DD'} />
+              </span>
+            )}
+            {isDeprecated && (
+              <span>
+                <Icon name={'warning'} height={16} width={16} fill="#DB4324" />
+              </span>
+            )}
+          </div>
+        </div>
+      </DeprecatedColumnTooltip>
+    </components.Option>
+  );
+};
+
+const CustomValueContainer = ({ data, ...props }) => {
+  const Icon = getColumnIcon(data.value);
+  return (
+    <div className="d-flex align-items-center gap-2">
+      {Icon && <Icon width="16" height="16" />}
+      <span>{data.label}</span>
+    </div>
+  );
+};
 
 export const PropertiesTabElements = ({
   column,
@@ -65,7 +111,11 @@ export const PropertiesTabElements = ({
             { label: 'Multiple badges', value: 'badges' },
             { label: 'Tags', value: 'tags' },
           ]}
-          components={{ DropdownIndicator, Option }}
+          components={{
+            DropdownIndicator,
+            Option: CustomOption,
+            SingleValue: CustomValueContainer,
+          }}
           onChange={(value) => {
             onColumnItemChange(index, 'columnType', value);
           }}
