@@ -49,19 +49,15 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
-    [FEATURE_KEY.GITSYNC_PULL_NEW_APP]: {
+    [FEATURE_KEY.PULL_NEW_APP]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
-    [FEATURE_KEY.GITSYNC_PULL_EXISTING_APP]: {
+    [FEATURE_KEY.PULL_EXISTING_APP]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
-    [FEATURE_KEY.GITSYNC_PUSH_VERSION]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
-      isPublic: true,
-    },
-    [FEATURE_KEY.GITSYNC_AUTO_PROMOTE]: {
+    [FEATURE_KEY.PUSH_APP_VERSION]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
