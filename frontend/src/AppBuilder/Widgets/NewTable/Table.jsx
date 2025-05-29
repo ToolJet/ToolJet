@@ -9,6 +9,7 @@ import useTableStore from './_stores/tableStore';
 import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
+import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/Editor/Components/utils';
 
 export const Table = memo(
   ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {
@@ -21,7 +22,8 @@ export const Table = memo(
     const setTableStyles = useTableStore((state) => state.setTableStyles, shallow);
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
-
+    const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
+    console.log('selectedTheme', selectedTheme);
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
@@ -36,6 +38,11 @@ export const Table = memo(
     );
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
+
+    const colorMode = getColorModeFromLuminance(containerBackgroundColor);
+    const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
+    const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
+    const hoverColor = getModifiedColor(containerBackgroundColor, 'hover');
 
     const {
       columns,
@@ -127,6 +134,9 @@ export const Table = memo(
           boxShadow,
           borderColor,
           backgroundColor: containerBackgroundColor,
+          '--cc-table-record-text-color': textColor,
+          '--cc-table-action-icon-color': iconColor,
+          '--cc-table-footer-action-hover': hoverColor,
         }}
       >
         <TableContainer

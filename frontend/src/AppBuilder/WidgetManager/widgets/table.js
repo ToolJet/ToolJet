@@ -320,7 +320,7 @@ export const tableConfig = {
     },
     columnBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Column background',
+      displayName: 'Background',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface2-surface)' },
       accordian: 'Column Header',
     },

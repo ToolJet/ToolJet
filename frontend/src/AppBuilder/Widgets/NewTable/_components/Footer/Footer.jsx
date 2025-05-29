@@ -74,7 +74,7 @@ export const Footer = memo(
     return (
       <>
         <div
-          className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
+          className={`card-footer d-flex align-items-center jet-table-footer table-component-footer justify-content-center ${
             darkMode && 'dark-theme'
           }`}
           style={{
