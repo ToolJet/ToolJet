@@ -103,10 +103,7 @@ export const formConfig = {
     generateFormFrom: {
       type: 'dropdownMenu',
       displayName: 'Generate form from',
-      options: [
-        { name: 'Write function', value: 'writeFunction' },
-        { name: 'Raw JSON', value: 'rawJson' },
-      ],
+      options: [{ name: 'Raw JSON', value: 'rawJson' }],
       section: 'data',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
       newLine: true,

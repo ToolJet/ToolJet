@@ -7,6 +7,8 @@ import i18next from 'i18next';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import DataSectionUI from './DataSectionUI';
 import './styles.scss';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const Form = ({
   componentMeta,
@@ -21,6 +23,7 @@ export const Form = ({
   allComponents,
   pages,
 }) => {
+  const resolveReferences = useStore((state) => state.resolveReferences, shallow);
   const tempComponentMeta = deepClone(componentMeta);
 
   let properties = [];
@@ -29,6 +32,8 @@ export const Form = ({
 
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
+
+  const resolvedCustomSchema = resolveReferences('canvas', component.component.definition.properties.advanced.value);
 
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
@@ -59,7 +64,7 @@ export const Form = ({
 
   // Hide header footer if custom schema is turned on
 
-  if (component.component.definition.properties.advanced.value === '{{true}}') {
+  if (resolvedCustomSchema) {
     component.component.properties.showHeader = {
       ...component.component.properties.headerHeight,
       isHidden: true,
@@ -107,7 +112,7 @@ export const Form = ({
     darkMode,
     pages,
     additionalActions,
-    dataProperties,
+    resolvedCustomSchema,
     renderDataElement
   );
 
@@ -134,7 +139,7 @@ export const baseComponentProperties = (
   darkMode,
   pages,
   additionalActions,
-  dataProperties,
+  resolvedCustomSchema,
   renderDataElement
 ) => {
   let items = [];
@@ -158,11 +163,13 @@ export const baseComponentProperties = (
     });
   }
 
-  items.push({
-    title: 'Data',
-    isOpen: true,
-    children: renderDataElement(),
-  });
+  if (!resolvedCustomSchema) {
+    items.push({
+      title: 'Data',
+      isOpen: true,
+      children: renderDataElement(),
+    });
+  }
 
   if (events.length > 0) {
     items.push({

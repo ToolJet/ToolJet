@@ -15,7 +15,6 @@ export const DropdownMenu = (props) => {
   // Simple emoji/text icons instead of lucide icons
   const sourceOptions = useMemo(
     () => [
-      { id: 'writeFunction', label: 'Write function', icon: <SolidIcon name="curlybraces" /> },
       { id: 'rawJson', label: 'Raw JSON', icon: <SolidIcon name="curlybraces" /> },
       // { id: 'json-schema', label: 'JSON schema' },
     ],

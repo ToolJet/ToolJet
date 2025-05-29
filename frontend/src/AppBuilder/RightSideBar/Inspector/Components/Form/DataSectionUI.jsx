@@ -322,8 +322,11 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false }) => {
       {isFormGenerated ? (
         <>
           {renderRefreshButton()}
-          {renderRefreshDataSection()}
-          {renderCustomSchemaSection()}
+
+          {/* Uncomment these sections if needed in the future */}
+
+          {/* {renderRefreshDataSection()}
+          {renderCustomSchemaSection()} */}
         </>
       ) : (
         <div className="tw-flex tw-justify-center tw-items-center form-generate-form-btn">

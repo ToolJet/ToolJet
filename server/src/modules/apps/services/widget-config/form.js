@@ -104,7 +104,6 @@ export const formConfig = {
       type: 'dropdownMenu',
       displayName: 'Generate form from',
       options: [
-        { name: 'Write function', value: 'writeFunction' },
         { name: 'Raw JSON', value: 'rawJson' },
       ],
       section: 'data',
