@@ -24,8 +24,7 @@
       "label": "API Key",
       "key": "apiKey",
       "type": "password",
-      "description": "Enter your Personal API Token",
-      "helpText": "For generating API Key, visit: <a href='https://developer.clickup.com/docs/authentication' target='_blank' rel='noreferrer'>ClickUp authentication docs</a>"
+      "description": "Enter your Personal API Token"
     }
   },
   "required": [
