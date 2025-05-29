@@ -24,11 +24,14 @@ import {
   handleActivateNonDraggingComponents,
   computeScrollDelta,
   computeScrollDeltaOnDrag,
+  getDraggingWidgetWidth,
+  positionDragGhostWidget,
 } from './gridUtils';
 import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
+import { snapToGrid } from '../appCanvasUtils';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -119,6 +122,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             top: widget?.layouts?.[currentLayout]?.top,
             width: widget?.layouts?.[currentLayout]?.width,
             parent: widget?.component?.parent,
+            componentType: widget?.component?.component,
             component: widget?.component,
           };
         })
@@ -566,6 +570,28 @@ export default function Grid({ gridWidth, currentLayout }) {
     }
   }, [draggingComponentId, resizingComponentId, isGroupDragging, selectedComponents]);
 
+  useEffect(() => {
+    const parentCanvasId = boxList.find((box) => box.id === groupedTargets?.[0]?.replace('.ele-', ''))?.parent;
+    const containerId = `canvas-${parentCanvasId}`;
+    const canvasContainer = document.getElementById(containerId);
+
+    const handleScroll = () => {
+      if (groupedTargets.length > 1 && moveableRef.current) {
+        moveableRef.current.updateRect();
+      }
+    };
+
+    if (canvasContainer) {
+      canvasContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
+
+    return () => {
+      if (canvasContainer) {
+        canvasContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [groupedTargets.length, boxList]);
+
   if (mode !== 'edit') return null;
 
   return (
@@ -588,11 +614,11 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
-          if(resizingComponentId !== e.target.id) {
+          if (resizingComponentId !== e.target.id) {
             useGridStore.getState().actions.setResizingComponentId(e.target.id);
             showGridLines();
           }
-          
+
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
           if (currentWidget.component?.parent) {
@@ -935,6 +961,9 @@ export default function Grid({ gridWidth, currentLayout }) {
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
+          const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
+          e.target.style.width = `${draggingWidgetWidth}px`;
+
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
             left = e.translate[0];
@@ -987,6 +1016,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             } else if (parentComponent?.component?.component === 'Modal') {
               // Never update parentId for Modal
               newParentId = parentComponent?.id;
+              e.target.style.width = `${e.target.clientWidth}px`;
             }
 
             if (newParentId !== prevDragParentId.current) {
@@ -1007,12 +1037,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
           );
 
-          // Postion ghost element exactly as same at dragged element
-          if (document.getElementById(`moveable-drag-ghost`)) {
-            document.getElementById(`moveable-drag-ghost`).style.transform = `translate(${left}px, ${top}px)`;
-            document.getElementById(`moveable-drag-ghost`).style.width = `${e.target.clientWidth}px`;
-            document.getElementById(`moveable-drag-ghost`).style.height = `${e.target.clientHeight}px`;
-          }
+          positionDragGhostWidget(e.target);
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
