@@ -47,6 +47,7 @@ const TextInput = ({
         <TrailingBtn
           size={size}
           type={trailingAction}
+          {...(trailingAction === 'clear' && { onClick: restProps.onClear })}
           disabled={trailingActionDisabled || disabled}
           className={`tw-absolute tw-right-[5px] ${size === 'small' ? 'tw-top-[5px]' : 'tw-top-[4px]'}`}
         />

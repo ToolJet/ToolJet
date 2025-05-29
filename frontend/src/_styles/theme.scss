@@ -10940,7 +10940,7 @@ tbody {
   background: var(--indigo3);
   border-radius: 6px;
   padding: 5px 10px;
-  
+
   p {
     font-weight: 500 !important;
     line-height: 18px !important;
@@ -18975,7 +18975,8 @@ section.ai-message-prompt-input-wrapper {
       justify-content: space-between;
     }
 
-    .primary-action, .secondary-action {
+    .primary-action,
+    .secondary-action {
       padding: 8px !important;
       font-size: 12px;
     }
@@ -18991,15 +18992,15 @@ section.ai-message-prompt-input-wrapper {
       padding: 0;
       font-family: inherit;
     }
-    
+
     .toggle-button:hover {
       text-decoration: underline;
     }
-    
+
     .toggle-button .chevron {
       transition: transform 0.2s ease;
     }
-    
+
     .toggle-button.expanded .chevron {
       transform: rotate(180deg);
     }

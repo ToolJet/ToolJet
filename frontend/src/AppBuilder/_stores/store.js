@@ -28,6 +28,7 @@ import { createDebuggerSlice } from './slices/debuggerSlice';
 import { createGitSyncSlice } from './slices/gitSyncSlice';
 import { createAiSlice } from './slices/aiSlice';
 import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
+import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
 
 export default create(
@@ -61,6 +62,7 @@ export default create(
       ...createGitSyncSlice(...state),
       ...createAiSlice(...state),
       ...createWhiteLabellingSlice(...state),
+      ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }

@@ -1,125 +1,121 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
+import JSONTreeViewerV2 from './JSONTreeViewerV2';
 import _ from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useIconList from './useIconList';
-import useCallbackActions from './useCallbackActions';
-import { useModuleId, useAppType } from '@/AppBuilder/_contexts/ModuleContext';
-
-const sortAndReduce = (obj) => {
-  return Object.entries(obj)
-    .sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }))
-    .reduce((acc, [name, value]) => {
-      acc[name] = value;
-      return acc;
-    }, {});
-};
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import { formatInspectorDataMisc, formatInspectorQueryData } from './utils';
 
 const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }) => {
-  const exposedComponentsVariables = useStore((state) => state.getAllExposedValues(moduleId).components, shallow);
-  const exposedQueries = useStore((state) => state.getAllExposedValues(moduleId).queries || {}, shallow);
-  const exposedVariables = useStore((state) => state.getAllExposedValues(moduleId).variables || {}, shallow);
-  const exposedConstants = useStore((state) => state.getAllExposedValues(moduleId).constants || {}, shallow);
-  const exposedPageVariables = useStore((state) => state.getAllExposedValues(moduleId).page || {}, shallow);
-  const exposedGlobalVariables = useStore((state) => state.getAllExposedValues(moduleId).globals || {}, shallow);
+  const exposedComponentsVariables = useStore((state) => state.getAllExposedValues().components, shallow);
+  const exposedQueries = useStore((state) => state.getAllExposedValues().queries || {}, shallow);
+  const exposedVariables = useStore((state) => state.getAllExposedValues().variables || {}, shallow);
+  const exposedConstants = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
+  const exposedPageVariables = useStore((state) => state.getAllExposedValues().page || {}, shallow);
+  const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
   const exposedModuleInputs = useStore((state) => state.getAllExposedValues(moduleId).input || {}, shallow);
+  const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
+  const formatInspectorComponentData = useStore((state) => state.formatInspectorComponentData, shallow);
+  const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
+  const searchablePaths = useRef(new Set(['queries', 'components', 'globals', 'variables', 'page', 'constants']));
 
-  const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(moduleId), shallow);
-  const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(moduleId), shallow);
-  const pathToBeInspected = useStore((state) => state.pathToBeInspected);
   const iconsList = useIconList({
     exposedComponentsVariables,
     componentIdNameMapping,
     exposedQueries,
   });
-  const callbackActions = useCallbackActions();
 
   const sortedComponents = useMemo(() => {
-    return Object.entries(componentIdNameMapping)
-      .map(([key, name]) => ({
-        key,
-        name: name || key,
-        value: exposedComponentsVariables[key] ?? { id: key },
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-      .reduce((acc, { key, name, value }) => {
-        acc[name] = { ...value, id: key };
-        return acc;
-      }, {});
+    return formatInspectorComponentData(componentIdNameMapping, exposedComponentsVariables, searchablePaths.current);
   }, [exposedComponentsVariables, componentIdNameMapping]);
 
   const sortedQueries = useMemo(() => {
-    // Create a reverse mapping for faster lookups
-    const reverseMapping = Object.fromEntries(Object.entries(queryNameIdMapping).map(([name, id]) => [id, name]));
-
-    const _sortedQueries = Object.entries(exposedQueries)
-      .map(([key, value]) => ({
-        key,
-        name: reverseMapping[key] || key,
-        value,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-      .reduce((acc, { name, value }) => {
-        acc[name] = value;
-        return acc;
-      }, {});
-    return _sortedQueries;
+    return formatInspectorQueryData(queryNameIdMapping, exposedQueries, searchablePaths.current);
   }, [exposedQueries, queryNameIdMapping]);
 
-  const sortedVariables = useMemo(() => sortAndReduce(exposedVariables), [exposedVariables]);
+  const sortedVariables = useMemo(
+    () => formatInspectorDataMisc(exposedVariables, 'variables', searchablePaths.current),
+    [exposedVariables]
+  );
 
-  const sortedConstants = useMemo(() => sortAndReduce(exposedConstants), [exposedConstants]);
+  const sortedConstants = useMemo(
+    () => formatInspectorDataMisc(exposedConstants, 'constants', searchablePaths.current),
+    [exposedConstants]
+  );
 
-  const sortedPageVariables = useMemo(() => sortAndReduce(exposedPageVariables), [exposedPageVariables]);
+  const sortedPageVariables = useMemo(
+    () => formatInspectorDataMisc(exposedPageVariables, 'page', searchablePaths.current),
+    [exposedPageVariables]
+  );
 
-  const sortedGlobalVariables = useMemo(() => sortAndReduce(exposedGlobalVariables), [exposedGlobalVariables]);
+  const sortedGlobalVariables = useMemo(
+    () => formatInspectorDataMisc(exposedGlobalVariables, 'globals', searchablePaths.current),
+    [exposedGlobalVariables]
+  );
 
-  const sortedModuleInputs = useMemo(() => sortAndReduce(exposedModuleInputs), [exposedModuleInputs]);
+  const sortedModuleInputs = useMemo(
+    () => formatInspectorDataMisc(exposedModuleInputs, 'input', searchablePaths.current),
+    [exposedModuleInputs]
+  );
 
   const memoizedJSONData = React.useMemo(() => {
-    const jsontreeData = {};
+    const jsontreeData = {
+      name: '',
+      children: [
+        {
+          id: 'queries',
+          name: 'Queries',
+          children: sortedQueries,
+          metadata: { path: 'queries' },
+        },
+        {
+          id: 'components',
+          name: 'Components',
+          children: sortedComponents,
+          metadata: { path: 'components' },
+        },
+        {
+          id: 'globals',
+          name: 'Globals',
+          children: sortedGlobalVariables,
+          metadata: { path: 'globals' },
+        },
+        {
+          id: 'variables',
+          name: 'Variables',
+          children: sortedVariables,
+          metadata: { path: 'variables' },
+        },
+        {
+          id: 'page',
+          name: 'Page',
+          children: sortedPageVariables,
+          metadata: { path: 'page' },
+        },
+        {
+          id: 'constants',
+          name: 'Constants',
+          children: sortedConstants,
+          metadata: { path: 'constants' },
+        },
+      ],
+    };
 
-    jsontreeData['queries'] = sortedQueries;
-    jsontreeData['components'] = sortedComponents;
-    jsontreeData['globals'] = sortedGlobalVariables;
-    jsontreeData['variables'] = sortedVariables;
-    jsontreeData['page'] = sortedPageVariables;
-    jsontreeData['constants'] = sortedConstants;
     if (appType === 'module') {
-      jsontreeData['input'] = sortedModuleInputs;
+      jsontreeData.children.push({
+        id: 'input',
+        name: 'Input',
+        children: sortedModuleInputs,
+        metadata: { path: 'input' },
+      });
     }
 
     return jsontreeData;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    sortedComponents,
-    sortedQueries,
-    sortedVariables,
-    sortedConstants,
-    sortedPageVariables,
-    sortedGlobalVariables,
-    sortedModuleInputs,
-    appType,
-  ]);
-
-  const handleNodeExpansion = (path, data, currentNode) => {
-    if (pathToBeInspected && path?.length > 0) {
-      const shouldExpand = pathToBeInspected.includes(path[path.length - 1]);
-
-      // Scroll to the component in the inspector
-      if (path?.length === 2 && path?.[0] === 'components' && shouldExpand) {
-        const target = document.getElementById(`inspector-node-${String(currentNode).toLowerCase()}`);
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-
-      return shouldExpand;
-    } else return false;
-  };
+  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables, sortedModuleInputs]);
 
   return (
     <div
@@ -127,38 +123,26 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
       style={{ resize: 'horizontal', minWidth: 288 }}
     >
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Inspector">
+        <HeaderSection.PanelHeader title="State inspector">
           <div className="d-flex justify-content-end">
-            <ButtonSolid
-              title={`${pinned ? 'Unpin' : 'Pin'}`}
+            <ButtonComponent
+              iconOnly
+              leadingIcon={pinned ? 'unpin' : 'pin'}
               onClick={() => setPinned(!pinned)}
-              darkMode={darkMode}
-              styles={{ width: '28px', padding: 0 }}
-              data-cy={`left-sidebar-inspector`}
-              variant="tertiary"
-              className="left-sidebar-header-btn"
-              leftIcon={pinned ? 'unpin' : 'pin'}
-              iconWidth="14"
-              fill={`var(--slate12)`}
-            ></ButtonSolid>
+              variant="ghost"
+              fill="var(--icon-strong,#6A727C)"
+              size="medium"
+            />
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
+
       <div className="card-body p-1 pb-5">
-        <JSONTreeViewer
+        <JSONTreeViewerV2
           data={memoizedJSONData}
-          useIcons={true}
           iconsList={iconsList}
-          useIndentedBlock={true}
-          enableCopyToClipboard={true}
-          useActions={true}
-          actionsList={callbackActions}
-          actionIdentifier="id"
-          expandWithLabels={true}
-          shouldExpandNode={handleNodeExpansion}
-          // selectedComponent={selectedComponent}
-          treeType="inspector"
           darkMode={darkMode}
+          searchablePaths={searchablePaths.current}
         />
       </div>
     </div>

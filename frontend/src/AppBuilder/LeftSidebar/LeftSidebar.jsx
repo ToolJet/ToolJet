@@ -250,7 +250,7 @@ export const BaseLeftSidebar = ({
           toggleLeftSidebar(false);
         }}
         open={isSidebarOpen}
-        popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
+        popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${selectedSidebarItem}`}
         side="right"
         popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}
