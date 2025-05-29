@@ -239,9 +239,15 @@ $btn-dark-color: #FFFFFF;
     display: flex;
     align-items: baseline;
     gap: 5px;
+    cursor: pointer !important;
+    pointer-events: unset !important;
 
     &.disabled {
       opacity: 1 !important;
+    }
+
+    svg {
+      margin-left: 5px;
     }
   }
 }

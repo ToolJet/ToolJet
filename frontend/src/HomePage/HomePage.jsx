@@ -48,6 +48,7 @@ import {
   AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const { iconList, defaultIcon } = configs;
 
@@ -116,6 +117,9 @@ class HomePageComponent extends React.Component {
       shouldAutoImportPlugin: false,
       dependentPlugins: [],
       dependentPluginsDetail: {},
+      showMissingGroupsModal: false,
+      missingGroups: [],
+      missingGroupsExpanded: false,
     };
   }
 
@@ -365,17 +369,24 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  importFile = async (importJSON, appName) => {
+  importFile = async (importJSON, appName, skipPagePermissionsGroupCheck = false) => {
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = this.state.currentUser?.organization_id;
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
-      importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
+      importJSON = {
+        app: [{ definition: importJSON, appName: appName }],
+        tooljet_version: importJSON.tooljetVersion,
+      };
     } else {
       importJSON.app[0].appName = appName;
     }
-    const requestBody = { organization_id, ...importJSON };
+    const requestBody = {
+      organization_id,
+      ...importJSON,
+      skip_page_permissions_group_check: skipPagePermissionsGroupCheck,
+    };
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
@@ -397,6 +408,10 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${getWorkspaceId()}/database`);
       }
     } catch (error) {
+      if (error?.error?.type === 'permission-check') {
+        this.setState({ showMissingGroupsModal: true, missingGroups: error?.error?.data });
+        return;
+      }
       if (installedPluginsInfo.length) {
         const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
         await pluginsService.uninstallPlugins(pluginsId);
@@ -896,6 +911,9 @@ class HomePageComponent extends React.Component {
       showGroupMigrationBanner,
       dependentPlugins,
       dependentPluginsDetail,
+      showMissingGroupsModal,
+      missingGroups,
+      missingGroupsExpanded,
     } = this.state;
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
@@ -951,6 +969,12 @@ class HomePageComponent extends React.Component {
     };
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+
+    //import app missing groups modal config
+    const threshold = 3;
+    const isLong = missingGroups.length > threshold;
+    const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
+
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -964,6 +988,93 @@ class HomePageComponent extends React.Component {
             configs={modalConfigs}
             onCommitChange={this.handleCommitChange}
           />
+          <ModalBase
+            showHeader={false}
+            showFooter={false}
+            handleConfirm={() => this.importFile(fileContent, fileName, true)}
+            show={showMissingGroupsModal}
+            isLoading={importingApp}
+            handleClose={() => this.setState({ showMissingGroupsModal: false })}
+            confirmBtnProps={{
+              title: 'Import',
+              tooltipMessage: '',
+            }}
+            className="missing-groups-modal"
+            darkMode={this.props.darkMode}
+          >
+            <div className="missing-groups-modal-body">
+              <div className="flex items-start">
+                <SolidIcon name="warning" width="40px" fill="var(--icon-warning)" />
+                <div>
+                  <div className="header">Warning: Missing user groups for permissions</div>
+                  <p className="sub-header">
+                    Permissions for the following user group(s) won’t be applied since they do not exist in this
+                    workspace.
+                  </p>
+                </div>
+              </div>
+
+              <div className="groups-list">
+                <div
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
+                >
+                  <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
+                    User groups
+                  </div>
+                  <div className="mt-1">
+                    {displayedGroups.map((group, idx) => (
+                      <span className="tj-text-xsm font-weight-500" key={idx}>
+                        {group}
+                        {idx < displayedGroups.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                    {!missingGroupsExpanded && isLong && '...'}
+                  </div>
+                </div>
+
+                {isLong && (
+                  <button
+                    class="toggle-button"
+                    onClick={() => this.setState({ missingGroupsExpanded: !missingGroupsExpanded })}
+                  >
+                    <span className="chevron">
+                      <SolidIcon
+                        fill="var(--icon-brand)"
+                        name={missingGroupsExpanded ? 'cheveronup' : 'cheverondown'}
+                      />
+                    </span>
+                    <span class="label">{missingGroupsExpanded ? 'See less' : 'See more'}</span>
+                  </button>
+                )}
+              </div>
+
+              <p className="info">
+                Restricted pages, queries, or components will become accessible to all users or to existing groups with
+                permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after
+                import.
+              </p>
+
+              <div className="mt-6 d-flex justify-between action-btns">
+                <ButtonSolid
+                  className="secondary-action"
+                  variant={'tertiary'}
+                  onClick={() => this.setState({ showMissingGroupsModal: false, isImportingApp: false })}
+                >
+                  Cancel import
+                </ButtonSolid>
+                <ButtonSolid
+                  isLoading={importingApp}
+                  variant={'primary'}
+                  onClick={() => this.importFile(fileContent, fileName, true)}
+                  className="primary-action"
+                >
+                  Import with limited permissions
+                </ButtonSolid>
+              </div>
+            </div>
+          </ModalBase>
           {showRenameAppModal && (
             <AppModal
               show={() => this.setState({ showRenameAppModal: true })}

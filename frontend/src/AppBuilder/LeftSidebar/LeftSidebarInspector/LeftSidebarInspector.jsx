@@ -10,6 +10,8 @@ import useIconList from './useIconList';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { formatInspectorDataMisc, formatInspectorQueryData } from './utils';
 
+import './styles.scss';
+
 const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }) => {
   const exposedComponentsVariables = useStore((state) => state.getAllExposedValues().components, shallow);
   const exposedQueries = useStore((state) => state.getAllExposedValues().queries || {}, shallow);
