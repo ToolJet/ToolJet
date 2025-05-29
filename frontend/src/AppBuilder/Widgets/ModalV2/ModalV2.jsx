@@ -68,18 +68,18 @@ export const ModalV2 = function Modal({
 
   useEffect(() => {
     const exposedVariables = {
-      open: async function () {
+      open: async () => {
         setExposedVariable('show', true);
         setShowModal(true);
       },
-      close: async function () {
+      close: async () => {
         setExposedVariable('show', false);
         setShowModal(false);
       },
     };
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setExposedVariable, setExposedVariables]);
 
   function hideModal() {
     setExposedVariable('show', false);
@@ -115,7 +115,7 @@ export const ModalV2 = function Modal({
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
+  }, []);
 
   useEffect(() => {
     // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
@@ -169,6 +169,13 @@ export const ModalV2 = function Modal({
     onHideModal,
   });
 
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+
+  const updateSizeInStore = (newHeight) => {
+    const _height = Number.parseInt(newHeight, 10);
+    setComponentProperty(id, 'modalHeight', _height, 'properties', 'value', false);
+  };
+
   return (
     <div
       className="container d-flex align-items-center"
@@ -192,6 +199,7 @@ export const ModalV2 = function Modal({
             event.stopPropagation();
             setShowModal(true);
           }}
+          type="button"
           data-cy={`${dataCy}-launch-button`}
         >
           {triggerButtonLabel ?? 'Show Modal'}
@@ -213,6 +221,9 @@ export const ModalV2 = function Modal({
         component-id={id}
         backdrop={'static'}
         scrollable={true}
+        dataCy={dataCy}
+        initialModalHeight={properties.modalHeight}
+        updateSizeInStore={updateSizeInStore}
         modalProps={{
           customStyles,
           parentRef,
