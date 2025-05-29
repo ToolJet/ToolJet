@@ -255,7 +255,7 @@ export const createRestAPIQuery = (
     }).then((response) => {
       const editingVersionId = response.body.editing_version.id;
 
-      const data_source_id = Cypress.env(kind);
+      const data_source_id = Cypress.env(`${dsName}`);
 
       const requestBody = {
         app_id: Cypress.env("appId"),
