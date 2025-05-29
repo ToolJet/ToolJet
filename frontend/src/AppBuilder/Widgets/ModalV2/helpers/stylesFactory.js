@@ -17,10 +17,9 @@ export function createModalStyles({
   isVisible,
   boxShadow,
 }) {
-  const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
+  // const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
   return {
     modalBody: {
-      height: backwardCompatibilityCheck ? computedCanvasHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowY: isDisabledModal ? 'hidden' : 'auto',

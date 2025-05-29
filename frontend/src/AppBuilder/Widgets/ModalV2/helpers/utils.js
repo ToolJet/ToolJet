@@ -18,9 +18,9 @@ export const getModalBodyHeight = (
   headerHeight = MODAL_HEADER.HEIGHT,
   footerHeight = MODAL_FOOTER.HEIGHT
 ) => {
-  let modalHeight = height ? parseInt(height, 10) : 0;
-  let parsedHeaderHeight = showHeader ? parseInt(headerHeight, 10) : 0;
-  let parsedFooterHeight = showFooter ? parseInt(footerHeight, 10) : 0;
+  let modalHeight = height ? Number.parseInt(height, 10) : 0;
+  const parsedHeaderHeight = showHeader ? Number.parseInt(headerHeight, 10) : 0;
+  const parsedFooterHeight = showFooter ? Number.parseInt(footerHeight, 10) : 0;
 
   if (showHeader) {
     modalHeight = modalHeight - parsedHeaderHeight;
@@ -32,13 +32,13 @@ export const getModalBodyHeight = (
 };
 
 export const getModalHeaderHeight = (showHeader, headerHeight = MODAL_FOOTER.HEIGHT) => {
-  let parsedHeight = showHeader ? parseInt(headerHeight, 10) : 0;
+  const parsedHeight = showHeader ? Number.parseInt(headerHeight, 10) : 0;
 
   return `${parsedHeight}px`;
 };
 
 export const getModalFooterHeight = (showFooter, footerHeight = MODAL_FOOTER.HEIGHT) => {
-  let parsedHeight = showFooter ? parseInt(footerHeight, 10) : 0;
+  const parsedHeight = showFooter ? Number.parseInt(footerHeight, 10) : 0;
 
   return `${parsedHeight}px`;
 };
