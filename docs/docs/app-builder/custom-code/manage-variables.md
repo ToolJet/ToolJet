@@ -3,7 +3,7 @@ id: managing-variables
 title: Manage variables
 ---
 
-In ToolJet, variables are the storage units that let you store data within your application. They help bridge data between queries, components, and logic written in RunJS queries. Variables allow you to:
+Variables in ToolJet help you bridge data between queries, components, and logic. It allows you to:
 - Share state between components: Store values like user inputs, calculated values, or data fetched from queries.
 - Trigger conditional logic: Use variables to make decisions in RunJS or workflows.
 - Enhance reusability: Set values once, reuse across components and pages.
@@ -17,7 +17,13 @@ There are two types of variables available in ToolJet:
 - Variables : Global across all pages. Use these to store values accessible throughout the application.
 - Page Variables : Scoped to the current page. Useful for managing data only needed for that specific page.
 
-## Setting Variables
+
+
+## Set, Get, and Unset Variables
+
+Setting, getting, and unsetting variables lets you control state of variable. Use set to create variables or update its values, get to access them in components or queries, and unset to clear state when it’s no longer needed. These actions help keep your app logic clean.
+
+### Setting Variables
 
 To set a variable in an application using code for example in a RunJS query, use the `setVariable` function. This function takes two arguments: the name of the variable and its value -   
 `actions.setVariable("<variableName>", "<variableValue>")`
@@ -35,7 +41,7 @@ For example, if you want to set a page variable named userPreference with object
 ```js
 actions.setPageVariable('userPreferences', { theme: 'dark', language: 'en' });
 ```
-## Getting Variables
+### Getting Variables
 To access variables immediately after setting them in a RunJS query, you can use the `getVariable` and `getPageVariable` functions. These functions take one argument: the name of the variable - `actions.getVariable("<variableName>")` and `actions.getPageVariable("<variableName>")`. 
 
 For example, if you want to get the value of a global variable named primaryColor immediately after setting it, you would write:
@@ -45,7 +51,7 @@ actions.setVariable('primaryColor', '#007bff');
 return actions.getVariable('primaryColor'); // returns "#007bff"
 ```
 
-## Unsetting Variables
+### Unsetting Variables
 Now, if you want to unset a variable, you can use the `unsetVariable` and `unsetPageVariable` functions. These functions take one argument: the name of the variable - `actions.unsetVariable("<variableName>")` and `actions.unsetPageVariable("<variableName>")`. 
 
 For example, if you want to unset a page variable named userPreference, you would write:
@@ -96,7 +102,5 @@ return payload;
 
 Now, you can pass this payload to a query that sends it to your backend API endpoint.
 
-While component values are great for direct bindings, variables help maintain data across pages, pageVariables fill the crucial gap of managing localized, page-specific logic. They’re ideal for handling temporary flag and managing state across page. 
-
-Use pageVariables for local, temporary UI state, and use variables when data needs to persist across pages. Always clean up variables when they’re no longer needed, and avoid naming collisions by using clear, descriptive names like *currentUserData* or *invoiceStepOne*.
+Variables help maintain data across pages, while pageVariables help managing localized, page-specific logic. Use pageVariables to handle temporary UI state within a single page, and prefer variables when data needs to persist across multiple pages. Always clean up variables when they’re no longer needed to prevent memory bloat or unexpected behavior. To avoid naming collisions, use clear and descriptive names like *currentUserData* or *invoiceStepOne*.
 
