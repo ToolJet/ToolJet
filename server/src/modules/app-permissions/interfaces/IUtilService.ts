@@ -14,4 +14,8 @@ export interface IUtilService {
   createQueryPermission(queryId: string, body: CreatePermissionDto): Promise<any>;
 
   updateQueryPermission(queryId: string, body: CreatePermissionDto): Promise<any>;
+
+  createComponentPermission(componentId: string, body: CreatePermissionDto): Promise<any>;
+
+  updateComponentPermission(componentId: string, body: CreatePermissionDto): Promise<any>;
 }
