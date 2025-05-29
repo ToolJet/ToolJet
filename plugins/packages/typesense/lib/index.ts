@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common';
+import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
 import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations';
 import { Client } from 'typesense';
 import { SourceOptions, QueryOptions } from './types';
@@ -30,8 +30,19 @@ export default class TypeSenseService implements QueryService {
           result = await deleteDocument(client, queryOptions.collection, queryOptions.id);
           break;
       }
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      if (error && error instanceof Error) {
+        const typesenseError = error as any;
+        const { name, httpStatus } = typesenseError;
+
+        errorDetails.name = name;
+        errorDetails.httpStatus = httpStatus;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
