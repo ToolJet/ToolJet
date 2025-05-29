@@ -7,7 +7,7 @@ In ToolJet, you can build dynamic, logic-driven applications using Events, Actio
 
 ## Events
 
-Events are triggers that respond when certain conditions are met — either through user interaction (like clicking a button or selecting a dropdown option) or system-level changes (like the completion of a query). Events can be chained, allowing one event to trigger a series of actions or even other events. You can configure events using event handlers on components or queries. Each handler defines the trigger and the actions that should follow. <br/>
+Events are triggers that respond when certain conditions are met — either through user interaction (for example, clicking a button or selecting a dropdown option) or system-level changes (for example, the completion of a query). You can configure events using event handlers on components or queries. Each handler defines the trigger and the actions that should follow. <br/>
 For example, when a user clicks a button, it can trigger a query to refresh data. Once that query completes, a second event can run to show a confirmation alert.
 
 ## Actions
@@ -22,8 +22,8 @@ Component-Specific Actions (CSAs) are built-in functions that allow you to contr
 
 Variables let you store and manage data either across your entire application or within specific pages. They're essential for maintaining state, controlling logic, and creating personalized user experiences.
 ToolJet supports the following types of variables:
-- App-level variables (setVariable) – accessible throughout the entire app.
-- Page-level variables (setPageVariable) – scoped to a specific page.
+- App-level variables – accessible throughout the entire app.
+- Page-level variables – scoped to a specific page.
 
-In addition, ToolJet provides [Workspace Constants and Secrets](#), which are accessible across the workspace. There are also built-in [exposed variables](#) for components and queries, which reflect the current state of those components or queries at runtime.
+In addition, ToolJet also provides built-in [exposed variables](#) for components and queries, which reflect the current state of those components or queries at runtime.
 

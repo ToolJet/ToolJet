@@ -155,13 +155,19 @@ const sidebars = {
         },
         {
           'type': 'category',
-          'label': 'Events and Logic',
+          'label': 'Events and Actions',
           'items': [
             'app-builder/events/overview',
             'app-builder/events/event-triggers',
-            'app-builder/events/csa',
-            'app-builder/events/actions',
-            'app-builder/events/variables'
+            {
+              'type': 'category',
+              'label': 'Use Cases',
+              'items': [
+                'app-builder/events/use-case/csa',
+                'app-builder/events/use-case/actions',
+                'app-builder/events/use-case/variables'
+              ],
+            },
           ],
         },
         {
