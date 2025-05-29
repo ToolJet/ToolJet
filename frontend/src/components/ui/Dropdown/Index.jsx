@@ -14,6 +14,8 @@ const DropdownComponent = ({ options = {}, ...props }) => {
 
   const handleOpenChange = () => {
     setOpen(!open);
+    if (!open) props.onOpen?.();
+    else props.onClose?.();
   };
 
   const handleChange = (e) => {
@@ -33,12 +35,13 @@ const DropdownComponent = ({ options = {}, ...props }) => {
         <SelectTrigger open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent zIndex={props.zIndex}>
           <SelectGroup>
             {Object.keys(options).map((key) => (
               <SelectItem
                 {...props}
                 value={options[key].value}
+                leadingIcon={options[key].leadingIcon}
                 avatarSrc={options[key].avatarSrc}
                 avatarAlt={options[key].avatarAlt}
                 avatarFall={options[key].avatarFall}
@@ -82,6 +85,7 @@ DropdownComponent.propTypes = {
   leadingIcon: PropTypes.bool,
   trailingAction: PropTypes.oneOf(['icon', 'counter']),
   helperText: PropTypes.string,
+  zIndex: PropTypes.number,
 };
 
 DropdownComponent.defaultProps = {
@@ -98,4 +102,5 @@ DropdownComponent.defaultProps = {
   leadingIcon: false,
   trailingAction: '',
   helperText: '',
+  zIndex: 50,
 };

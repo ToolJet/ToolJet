@@ -797,6 +797,7 @@ export const createComponentsSlice = (set, get) => ({
       canAddToParent,
       getComponentNameFromId,
       deleteComponentNameIdMapping,
+      checkIfParentIsFormAndAddField,
     } = get();
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
     return new Promise((resolve) => {
@@ -871,6 +872,9 @@ export const createComponentsSlice = (set, get) => ({
           false,
           'addComponentToCurrentPage'
         );
+
+        // Check if parent is a Form and add the component to form fields if needed
+        checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
       });
       const selectedComponents = findHighestLevelofSelection(newComponents);
       get().setSelectedComponents(selectedComponents.map((component) => component.id));
@@ -892,7 +896,7 @@ export const createComponentsSlice = (set, get) => ({
   deleteComponents: (
     selected,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true, isCut = false } = {}
+    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -901,36 +905,39 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       deleteComponentNameIdMapping,
       removeNode,
+      checkIfParentIsFormAndDeleteField,
     } = get();
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
+
+    const toDeleteComponents = [];
+    const toDeleteEvents = [];
+    const allComponents = getCurrentPageComponents();
+
+    const findAllChildComponents = (componentId) => {
+      if (!toDeleteComponents.includes(componentId)) {
+        toDeleteComponents.push(componentId);
+
+        // Find the children of this component
+        const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
+        if (children.length > 0) {
+          // Recursively find children of children
+          children.forEach((child) => {
+            findAllChildComponents(child);
+          });
+        }
+      }
+    };
+
+    _selectedComponents.forEach((componentId) => {
+      !skipFormUpdate && checkIfParentIsFormAndDeleteField(componentId, moduleId);
+      findAllChildComponents(componentId);
+    });
+
     set(
       withUndoRedo((state) => {
-        const toDeleteComponents = [];
-        const toDeleteEvents = [];
-        const allComponents = getCurrentPageComponents();
-
-        const findAllChildComponents = (componentId) => {
-          if (!toDeleteComponents.includes(componentId)) {
-            toDeleteComponents.push(componentId);
-
-            // Find the children of this component
-            const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
-            if (children.length > 0) {
-              // Recursively find children of children
-              children.forEach((child) => {
-                findAllChildComponents(child);
-              });
-            }
-          }
-        };
-
-        _selectedComponents.forEach((componentId) => {
-          findAllChildComponents(componentId);
-        });
-
         const page = state.modules?.canvas?.pages.find((page) => page.id === state.currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
@@ -1040,9 +1047,11 @@ export const createComponentsSlice = (set, get) => ({
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
+      checkParentAndUpdateFormFields,
     } = get();
     let hasParentChanged = false;
     let oldParentId;
+    checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
     set(
       withUndoRedo((state) => {
         const page = state.modules[moduleId].pages[state.currentPageIndex];
@@ -1154,6 +1163,25 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
+  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+    const { currentPageIndex, currentMode, saveComponentChanges } = get();
+    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
+    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
+
+    const diff = {
+      [componentId]: {
+        component: {
+          ...oldComponent,
+          definition: filteredDefinition,
+        },
+      },
+    };
+
+    if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+
+    get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+  },
+
   setComponentProperty: (
     componentId,
     property,
@@ -1166,7 +1194,6 @@ export const createComponentsSlice = (set, get) => ({
   ) => {
     const {
       currentPageIndex,
-      saveComponentChanges,
       withUndoRedo,
       updateResolvedValues,
       generateDependencyGraphForRefs,
@@ -1176,6 +1203,7 @@ export const createComponentsSlice = (set, get) => ({
       checkValueAndResolve,
       getResolvedComponent,
       setResolvedComponent,
+      saveComponentPropertyChanges,
     } = get();
     const { component } = getComponentDefinition(componentId, moduleId);
     const oldValue = component.definition[paramType][property];
@@ -1208,23 +1236,8 @@ export const createComponentsSlice = (set, get) => ({
         'setComponentProperty'
       );
 
-      const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-      const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-      const diff = {
-        [componentId]: {
-          component: {
-            ...oldComponent,
-            definition: filteredDefinition,
-          },
-        },
-      };
-
       if (saveAfterAction) {
-        const currentMode = get().currentMode;
-        if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
-
-        get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+        saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
       }
       return;
     }
@@ -1260,23 +1273,8 @@ export const createComponentsSlice = (set, get) => ({
       );
     }
 
-    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-    const diff = {
-      [componentId]: {
-        component: {
-          ...oldComponent,
-          definition: filteredDefinition,
-        },
-      },
-    };
-
     if (saveAfterAction) {
-      const currentMode = get().currentMode;
-      if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
-
-      get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+      saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
     }
 
     if (attr !== 'value' || skipResolve) return;
@@ -1918,6 +1916,6 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+    // setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
   },
 });

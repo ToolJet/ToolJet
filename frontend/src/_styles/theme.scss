@@ -4119,6 +4119,7 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
+
     background-color: var(--primary-brand) !important;
     border: transparent
   }
@@ -12305,11 +12306,11 @@ tbody {
   }
 
   .design-component-inputs textarea {
-    
+
     &.valid-textarea {
       border: 1.5px solid #519b62 !important;
     }
-    
+
     &.invalid-textarea {
       border: 1.5px solid #e26367 !important;
     }
@@ -15751,7 +15752,7 @@ tbody {
   /* Set the desired width */
 }
 
-textarea.tj-text-input-widget{
+textarea.tj-text-input-widget {
   resize: none !important;
   overflow-y: auto !important;
 }
@@ -18663,8 +18664,8 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .codebuilder-color-swatches-options {
-  width:100%;
-  height:30px;
+  width: 100%;
+  height: 30px;
   padding: 6px 8px;
   border-radius: 6px;
 
@@ -18697,8 +18698,8 @@ section.ai-message-prompt-input-wrapper {
 .theme-create-btn {
   width: 100%;
   margin-bottom: 8px;
-  height:32px;
-  color:#000;
+  height: 32px;
+  color: #000;
   border: 1px solid var(--Border-brand-weak, #97AEFC);
 }
 
@@ -18721,14 +18722,14 @@ section.ai-message-prompt-input-wrapper {
   border-color: var(--primary-brand);
 }
 
-.multiselct-widget-option{
+.multiselct-widget-option {
   input:checked {
     background-color: var(--primary-brand);
   }
 }
 
 .multiselect-box {
-  .options{
+  .options {
     input:checked {
       background-color: var(--primary-brand);
     }
@@ -18737,6 +18738,7 @@ section.ai-message-prompt-input-wrapper {
 
 .timer-btn {
   background-color: var(--primary-brand);
+
   &:hover {
     background-color: var(--primary-brand);
   }
@@ -18775,6 +18777,7 @@ section.ai-message-prompt-input-wrapper {
     color: #ffffff;
     border: 1px solid transparent;
   }
+
   .canvas-styles-header {
     background-color: #212325;
     color: #ffffff;
@@ -18820,8 +18823,9 @@ section.ai-message-prompt-input-wrapper {
 }
 
 #inspector-tabpane-properties .accordion-header {
-  height:32px;
+  height: 32px;
 }
+
 .cm-tooltip {
   z-index: 9999 !important;
 }
@@ -18891,4 +18895,36 @@ section.ai-message-prompt-input-wrapper {
   .cm-editor {
     max-height: 100px !important;
   }
+}
+
+.base-medium {
+  font-family: "IBM Plex Sans";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.base-regular {
+  font-family: "IBM Plex Sans";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.small-medium {
+  font-family: "IBM Plex Sans";
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.large-medium {
+  font-family: "IBM Plex Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
 }

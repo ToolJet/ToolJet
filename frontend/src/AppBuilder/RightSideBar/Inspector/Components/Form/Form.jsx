@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import Accordion from '@/_ui/Accordion';
-import { EventManager } from '../EventManager';
-import { renderElement } from '../Utils';
+import { EventManager } from '../../EventManager';
+import { renderElement } from '../../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import DataSectionUI from './DataSectionUI';
+import './styles.scss';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const Form = ({
   componentMeta,
@@ -19,6 +23,7 @@ export const Form = ({
   allComponents,
   pages,
 }) => {
+  const resolveReferences = useStore((state) => state.resolveReferences, shallow);
   const tempComponentMeta = deepClone(componentMeta);
 
   let properties = [];
@@ -28,12 +33,16 @@ export const Form = ({
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
 
+  const resolvedCustomSchema = resolveReferences('canvas', component.component.definition.properties.advanced.value);
+
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Data') {
+    } else if (componentMeta?.properties[key]?.section === 'data') {
       dataProperties.push(key);
     } else {
+      // Skip the fields property as it is handled separately
+      if (key === 'fields') continue;
       properties.push(key);
     }
   }
@@ -55,7 +64,7 @@ export const Form = ({
 
   // Hide header footer if custom schema is turned on
 
-  if (component.component.definition.properties.advanced.value === '{{true}}') {
+  if (resolvedCustomSchema) {
     component.component.properties.showHeader = {
       ...component.component.properties.headerHeight,
       isHidden: true,
@@ -65,6 +74,27 @@ export const Form = ({
       isHidden: true,
     };
   }
+
+  const renderDataElement = () => {
+    return (
+      <>
+        {dataProperties?.map((property) => {
+          return renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            property,
+            'properties',
+            currentState,
+            allComponents,
+            darkMode
+          );
+        })}
+        <DataSectionUI component={component} paramUpdated={paramUpdated} darkMode={darkMode} />
+      </>
+    );
+  };
 
   const accordionItems = baseComponentProperties(
     properties,
@@ -81,10 +111,16 @@ export const Form = ({
     validations,
     darkMode,
     pages,
-    additionalActions
+    additionalActions,
+    resolvedCustomSchema,
+    renderDataElement
   );
 
-  return <Accordion items={accordionItems} />;
+  return (
+    <>
+      <Accordion items={accordionItems} />
+    </>
+  );
 };
 
 export const baseComponentProperties = (
@@ -102,9 +138,12 @@ export const baseComponentProperties = (
   validations,
   darkMode,
   pages,
-  additionalActions
+  additionalActions,
+  resolvedCustomSchema,
+  renderDataElement
 ) => {
   let items = [];
+
   if (properties.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.properties', 'Properties')}`,
@@ -121,6 +160,14 @@ export const baseComponentProperties = (
           darkMode
         )
       ),
+    });
+  }
+
+  if (!resolvedCustomSchema) {
+    items.push({
+      title: 'Data',
+      isOpen: true,
+      children: renderDataElement(),
     });
   }
 
