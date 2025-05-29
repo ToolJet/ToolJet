@@ -16,10 +16,12 @@ import {
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { HorizontalSlot } from './Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 import './form.scss';
 
-export const Form = function Form(props) {
+const FormComponent = (props) => {
   const {
     id,
     component,
@@ -448,3 +450,17 @@ export const Form = function Form(props) {
     </form>
   );
 };
+
+// Avoid rendering the Form component if there are no changes in properties or
+// changes are only in `generateFormFrom` as it is not required to re-render
+export const Form = React.memo(FormComponent, (prevProps, nextProps) => {
+  const diffInProps = diff(prevProps, nextProps) ?? {};
+
+  if (Object.keys(diffInProps).length === 0) return true; // No changes detected, no need to re-render
+  if (Object.keys(diffInProps).length === 1) {
+    if (diffInProps['properties'] && diffInProps['properties']['generateFormFrom']) {
+      return true; // No changes detected in childrenData, no need to re-render
+    }
+  }
+  return false; // Changes detected, re-render the component
+});

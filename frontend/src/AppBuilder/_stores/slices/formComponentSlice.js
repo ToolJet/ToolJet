@@ -16,8 +16,8 @@ export const createFormComponentSlice = (set, get) => ({
     if (!componentId) return;
 
     const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
-    const { component } = getComponentDefinition(componentId, moduleId);
-    if (!component) return;
+    const componentDefinition = getComponentDefinition(componentId, moduleId);
+    if (!componentDefinition) return;
 
     set(
       withUndoRedo((state) => {

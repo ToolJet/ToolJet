@@ -75,12 +75,7 @@ export const DropdownMenu = (props) => {
     setIsOpen(false);
     if (source.id === 'rawJson') {
       onChange(source.id);
-    } else if (source.id === 'writeFunction') {
-      onChange('');
-      forceCodeBox();
     } else if (source.type === 'query') {
-      console.log('here--- Selected query:', source.value);
-
       onChange(source.value);
       forceCodeBox();
     }
