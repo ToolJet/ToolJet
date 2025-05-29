@@ -1,8 +1,9 @@
 import { App } from '@entities/app.entity';
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -84,10 +85,12 @@ export class AppsRepository extends Repository<App> {
       .getRawMany();
   }
 
-  async findByAppId(appId: string): Promise<App> {
-    return this.findOne({
-      where: { id: appId },
-      relations: ['appVersions'],
-    });
+  async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.findOne(App, {
+        where: { id: appId },
+        relations: ['appVersions'],
+      });
+    }, manager || this.manager);
   }
 }
