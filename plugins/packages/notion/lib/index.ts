@@ -1,4 +1,4 @@
-import { QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
+import { QueryResult, QueryService, ConnectionTestResult, QueryError } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { Client } from '@notionhq/client';
 import { blockOperations, databaseOperations, pageOperations, userOperations } from './operations';
@@ -9,19 +9,36 @@ export default class Notion implements QueryService {
     const { resource, operation } = queryOptions;
     let result: any;
 
-    switch (resource) {
-      case 'database':
-        result = await databaseOperations(notionClient, queryOptions, operation);
-        break;
-      case 'page':
-        result = await pageOperations(notionClient, queryOptions, operation);
-        break;
-      case 'block':
-        result = await blockOperations(notionClient, queryOptions, operation);
-        break;
-      case 'user':
-        result = await userOperations(notionClient, queryOptions, operation);
-        break;
+    try { 
+      switch (resource) {
+        case 'database':
+          result = await databaseOperations(notionClient, queryOptions, operation);
+          break;
+        case 'page':
+          result = await pageOperations(notionClient, queryOptions, operation);
+          break;
+        case 'block':
+          result = await blockOperations(notionClient, queryOptions, operation);
+          break;
+        case 'user':
+          result = await userOperations(notionClient, queryOptions, operation);
+          break;
+      }
+    } catch (error) {
+      
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+
+      if (error) {
+        const notionError = error as any;
+        const { name, code, status, body } = notionError;
+
+        errorDetails.name = name;
+        errorDetails.code = code;
+        errorDetails.status = status;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
