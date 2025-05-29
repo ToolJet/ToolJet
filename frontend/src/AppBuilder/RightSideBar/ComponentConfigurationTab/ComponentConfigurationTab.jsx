@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
 
-export const ComponentConfigurationTab = ({ darkMode }) => {
+export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
   const selectedComponentId = useStore((state) => state.selectedComponents?.[0], shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   if (!selectedComponentId) {
@@ -17,6 +17,7 @@ export const ComponentConfigurationTab = ({ darkMode }) => {
       darkMode={darkMode}
       selectedComponentId={selectedComponentId}
       pages={[]}
+      isModuleEditor={isModuleEditor}
     />
   );
 };

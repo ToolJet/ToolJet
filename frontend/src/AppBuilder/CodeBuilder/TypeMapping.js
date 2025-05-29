@@ -20,4 +20,5 @@ export const TypeMapping = {
   visibility: 'Visibility',
   numberInput: 'NumberInput',
   tableRowHeightInput: 'TableRowHeightInput',
+  query: 'Query',
 };

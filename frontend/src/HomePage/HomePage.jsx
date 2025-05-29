@@ -45,6 +45,7 @@ import {
   OrganizationList,
   UserGroupMigrationBanner,
   ConsultationBanner,
+  AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -101,7 +102,6 @@ class HomePageComponent extends React.Component {
       importingGitAppOperations: {},
       featuresLoaded: false,
       showCreateAppModal: false,
-      showCreateModuleModal: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -237,14 +237,23 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = async (appName, type) => {
+  getAppType = () => {
+    return this.props.appType === 'module' ? 'Module' : this.props.appType === 'workflow' ? 'Workflow' : 'App';
+  };
+
+  createApp = async (appName) => {
     let _self = this;
     _self.setState({ creatingApp: true });
+
     try {
-      const data = await appsService.createApp({ icon: sample(iconList), name: appName, type: this.props.appType });
+      const data = await appsService.createApp({
+        icon: sample(iconList),
+        name: appName,
+        type: this.props.appType,
+      });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
-      toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} created successfully!`);
+      toast.success(`${this.getAppType()} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
@@ -263,7 +272,7 @@ class HomePageComponent extends React.Component {
     try {
       await appsService.saveApp(appId, { name: newAppName });
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
-      toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} name has been updated!`);
+      toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
       return true;
     } catch (errorResponse) {
@@ -516,7 +525,7 @@ class HomePageComponent extends React.Component {
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
-        toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} deleted successfully.`);
+        toast.success(`${this.getAppType()} deleted successfully.`);
         this.fetchApps(
           this.state.currentPage
             ? this.state.apps?.length === 1
@@ -808,11 +817,11 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppModal = () => {
-    this.setState({ showCreateAppModal: true, showCreateModuleModal: true });
+    this.setState({ showCreateAppModal: true });
   };
 
   closeCreateAppModal = () => {
-    this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
+    this.setState({ showCreateAppModal: false });
   };
 
   openImportAppModal = async () => {
@@ -891,7 +900,6 @@ class HomePageComponent extends React.Component {
       importingGitAppOperations,
       featuresLoaded,
       showCreateAppModal,
-      showCreateModuleModal,
       showImportAppModal,
       fileContent,
       fileName,
@@ -907,14 +915,18 @@ class HomePageComponent extends React.Component {
       missingGroups,
       missingGroupsExpanded,
     } = this.state;
+
+    const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    // const invalidLicense = false;
+
     const modalConfigs = {
       create: {
         modalType: 'create',
         closeModal: this.closeCreateAppModal,
-        processApp: (name) => this.createApp(name, showCreateAppModal ? 'front-end' : 'module'),
+        processApp: (name) => this.createApp(name),
         show: this.openCreateAppModal,
-        title: this.props.appType === 'workflow' ? 'Create workflow' : 'Create app',
-        actionButton: this.props.appType === 'workflow' ? '+ Create workflow' : '+ Create app',
+        title: `Create ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Creating',
         appType: this.props.appType,
       },
@@ -969,7 +981,6 @@ class HomePageComponent extends React.Component {
           <AppActionModal
             modalStates={{
               showCreateAppModal,
-              showCreateModuleModal,
               showCloneAppModal,
               showImportAppModal,
               showCreateAppFromTemplateModal,
@@ -1071,8 +1082,8 @@ class HomePageComponent extends React.Component {
               processApp={this.renameApp}
               selectedAppId={appOperations.selectedApp.id}
               selectedAppName={appOperations.selectedApp.name}
-              title={`Rename ${this.props.appType === 'workflow' ? 'workflow' : 'app'}`}
-              actionButton={`Rename ${this.props.appType === 'workflow' ? 'workflow' : 'app'}`}
+              title={`Rename ${this.getAppType().toLocaleLowerCase()}`}
+              actionButton={`Rename ${this.getAppType().toLocaleLowerCase()}`}
               actionLoadingButton={'Renaming'}
               appType={this.props.appType}
             />
@@ -1301,6 +1312,7 @@ class HomePageComponent extends React.Component {
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
+              <AppTypeTab appType={this.props.appType} navigate={this.props.navigate} darkMode={this.props.darkMode} />
               {this.canCreateApp() && (
                 <div className="create-new-app-license-wrapper">
                   <LicenseTooltip
@@ -1314,29 +1326,37 @@ class HomePageComponent extends React.Component {
                         <Button
                           //disabled={appsLimit?.percentage >= 100}
                           disabled={
-                            this.props.appType === 'front-end'
-                              ? appsLimit?.percentage >= 100
+                            this.props.appType === 'front-end' || this.props.appType === 'module'
+                              ? appsLimit?.percentage >= 100 || (this.props.appType === 'module' && invalidLicense)
                               : workflowInstanceLevelLimit.percentage >= 100 ||
                                 workflowWorkspaceLevelLimit.percentage >= 100
                           }
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={() => this.setState({ showCreateAppModal: true })}
+                          onClick={() =>
+                            this.setState({
+                              showCreateAppModal: true,
+                            })
+                          }
                           data-cy="create-new-app-button"
                         >
                           {isImportingApp && (
                             <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
                           )}
-                          {this.props.t(
-                            `${
-                              this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                            }.header.createNewApplication`,
-                            'Create new app'
-                          )}
+                          {this.props.appType === 'module'
+                            ? 'Create new module'
+                            : this.props.t(
+                                `${
+                                  this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                }.header.createNewApplication`,
+                                'Create new app'
+                              )}
                         </Button>
 
-                        {this.props.appType !== 'workflow' && (
+                        {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
                           <Dropdown.Toggle
-                            disabled={appsLimit?.percentage >= 100}
+                            disabled={
+                              appsLimit?.percentage >= 100 || (this.props.appType === 'module' && invalidLicense)
+                            }
                             split
                             className="d-inline"
                             data-cy="import-dropdown-menu"
@@ -1426,7 +1446,7 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {this.props.appType !== 'workflow' && this.canCreateApp() && (
+                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
 
@@ -1438,6 +1458,7 @@ class HomePageComponent extends React.Component {
                           onSearchSubmit={this.onSearchSubmit}
                           darkMode={this.props.darkMode}
                           appType={this.props.appType}
+                          disabled={this.props.appType === 'module' && invalidLicense}
                         />
                         <div className="liner"></div>
                       </>
@@ -1465,31 +1486,44 @@ class HomePageComponent extends React.Component {
                     </div>
                   </>
                 )}
-                {!isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
-                  <BlankPage
-                    canCreateApp={this.canCreateApp}
-                    isLoading={true}
-                    createApp={this.createApp}
-                    readAndImport={this.readAndImport}
-                    isImportingApp={isImportingApp}
-                    fileInput={this.fileInput}
-                    openCreateAppModal={this.openCreateAppModal}
-                    openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-                    creatingApp={creatingApp}
-                    darkMode={this.props.darkMode}
-                    showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-                    viewTemplateLibraryModal={this.showTemplateLibraryModal}
-                    hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-                    appType={this.props.appType}
-                    workflowsLimit={
-                      workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                      100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                      workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                        ? workflowInstanceLevelLimit
-                        : workflowWorkspaceLevelLimit
-                    }
-                  />
-                )}
+                {!isLoading &&
+                  featuresLoaded &&
+                  meta?.total_count === 0 &&
+                  !currentFolder.id &&
+                  !appSearchKey &&
+                  (['front-end', 'workflow'].includes(this.props.appType) ? (
+                    <BlankPage
+                      canCreateApp={this.canCreateApp}
+                      isLoading={true}
+                      createApp={this.createApp}
+                      readAndImport={this.readAndImport}
+                      isImportingApp={isImportingApp}
+                      fileInput={this.fileInput}
+                      openCreateAppModal={this.openCreateAppModal}
+                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+                      creatingApp={creatingApp}
+                      darkMode={this.props.darkMode}
+                      showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+                      viewTemplateLibraryModal={this.showTemplateLibraryModal}
+                      hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+                      appType={this.props.appType}
+                      workflowsLimit={
+                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                          ? workflowInstanceLevelLimit
+                          : workflowWorkspaceLevelLimit
+                      }
+                    />
+                  ) : (
+                    <p className="empty-title mt-3">
+                      You have not created any modules.&nbsp;
+                      <a onClick={this.openCreateAppModal} className="text-bold">
+                        Create a module&nbsp;
+                      </a>
+                      to start using it within your apps.
+                    </p>
+                  ))}
                 {!isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
@@ -1513,7 +1547,7 @@ class HomePageComponent extends React.Component {
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
                     appType={this.props.appType}
-                    basicPlan={featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid}
+                    basicPlan={invalidLicense}
                     appSearchKey={this.state.appSearchKey}
                   />
                 )}
@@ -1527,6 +1561,7 @@ class HomePageComponent extends React.Component {
                     pageChanged={this.pageChanged}
                     darkMode={this.props.darkMode}
                     dataLoading={isLoading}
+                    appType={this.props.appType}
                   />
                 )}
                 {/* need to review the mobile view */}

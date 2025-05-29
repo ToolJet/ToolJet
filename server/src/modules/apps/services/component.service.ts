@@ -12,7 +12,7 @@ const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) {}
+  constructor(protected eventHandlerService: EventsService) { }
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -97,6 +97,7 @@ export class ComponentsService implements IComponentsService {
                 } else if (
                   (componentData.type === 'DropdownV2' ||
                     componentData.type === 'MultiselectV2' ||
+                    componentData.type === 'ModuleContainer' ||
                     componentData.type === 'Steps') &&
                   _.isArray(objValue)
                 ) {

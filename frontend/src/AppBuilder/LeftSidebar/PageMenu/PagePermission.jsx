@@ -8,6 +8,7 @@ import { appPermissionService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PERMISSION_TYPES = {
   single: 'SINGLE',
@@ -16,10 +17,11 @@ const PERMISSION_TYPES = {
 };
 
 export default function PagePermission({ darkMode }) {
+  const { moduleId } = useModuleContext();
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const editingPage = useStore((state) => state.editingPage);
-  const appId = useStore((state) => state.app.appId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const selectedUserGroups = useStore((state) => state.selectedUserGroups);
   const setSelectedUserGroups = useStore((state) => state.setSelectedUserGroups);
   const selectedUsers = useStore((state) => state.selectedUsers);
@@ -349,7 +351,8 @@ export default function PagePermission({ darkMode }) {
 }
 
 const UserGroupSelect = () => {
-  const appId = useStore((state) => state.app.appId);
+  const { moduleId } = useModuleContext();
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const selectedUserGroups = useStore((state) => state.selectedUserGroups);
   const setSelectedUserGroups = useStore((state) => state.setSelectedUserGroups);
   const [userGroups, setUserGroups] = useState([]);
@@ -409,7 +412,8 @@ const UserGroupSelect = () => {
 };
 
 const UserSelect = () => {
-  const appId = useStore((state) => state.app.appId);
+  const { moduleId } = useModuleContext();
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const editingPage = useStore((state) => state.editingPage);
   const selectedUsers = useStore((state) => state.selectedUsers);
   const setSelectedUsers = useStore((state) => state.setSelectedUsers);

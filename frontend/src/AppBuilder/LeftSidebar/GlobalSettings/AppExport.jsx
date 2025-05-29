@@ -3,12 +3,14 @@ import { Button } from '@/components/ui/Button/Button';
 import ExportAppModal from '@/HomePage/ExportAppModal';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import cx from 'classnames';
 
 const AppExport = ({ darkMode }) => {
+  const { moduleId } = useModuleContext();
   const { app } = useStore(
     (state) => ({
-      app: state.app,
+      app: state.appStore.modules[moduleId].app,
     }),
     shallow
   );

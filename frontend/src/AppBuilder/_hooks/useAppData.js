@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   appEnvironmentService,
   appService,
+  appsService,
   appVersionService,
   dataqueryService,
   datasourceService,
@@ -27,6 +28,7 @@ import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
+import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import { handleError } from '@/_helpers/handleAppAccess';
 import toast from 'react-hot-toast';
@@ -56,12 +58,15 @@ const normalizeQueryTransformationOptions = (query) => {
   return query;
 };
 
-const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, versionId } = {}) => {
+const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, versionId } = {}, moduleMode = false) => {
+  const mounted = useMounted();
+  const initModules = useStore((state) => state.initModules, shallow);
+  moduleMode && !mounted && initModules(moduleId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
-  const app = useStore((state) => state.app);
+  const app = useStore((state) => state.appStore.modules[moduleId].app);
   const user = useStore((state) => state.user);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
@@ -79,9 +84,9 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const previousVersion = usePrevious(currentVersionId);
-  const events = useStore((state) => state.eventsSlice.module[moduleId].events);
-  const pages = useStore((state) => state.modules[moduleId].pages);
-  const currentPageId = useStore((state) => state.currentPageId);
+  const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
+  const pages = useStore((state) => state.modules[moduleId]?.pages || []);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -106,11 +111,18 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const appMode = useStore((state) => state.globalSettings.appMode);
   const selectedTheme = useStore((state) => state.globalSettings.theme);
   const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
-  const isComponentLayoutReady = useStore((state) => state.isComponentLayoutReady, shallow);
+  const isComponentLayoutReady = useStore((state) => state.appStore.modules[moduleId].isComponentLayoutReady, shallow);
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+
+  const setModulesIsLoading = useStore((state) => state.setModulesIsLoading, shallow);
+  const setModulesList = useStore((state) => state.setModulesList, shallow);
+  const setModuleDefinition = useStore((state) => state.setModuleDefinition);
+  const getModuleDefinition = useStore((state) => state.getModuleDefinition);
+  const deleteModuleDefinition = useStore((state) => state.deleteModuleDefinition);
+
   const themeAccess = useThemeAccess();
 
   const setConversation = useStore((state) => state.ai?.setConversation);
@@ -121,13 +133,15 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  const slug = pathParams?.slug;
+  const slug = moduleMode ? '' : pathParams?.slug;
 
   const match = useMatch('/applications/:slug/:pageHandle');
 
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+
+  const appTypeRef = useRef(null);
 
   const fetchAndInjectCustomStyles = async (isPublicAccess = false) => {
     try {
@@ -153,14 +167,14 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   };
 
   useEffect(() => {
-    if (pageSwitchInProgress) {
+    if (pageSwitchInProgress && !moduleMode) {
       const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
       }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId]);
+  }, [pageSwitchInProgress, currentPageId, moduleMode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -190,29 +204,43 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
     return () => {
       subscription && subscription.unsubscribe();
     };
-  }, []);
+  }, [moduleMode]);
 
   useEffect(() => {
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
-    setResolvedGlobals('theme', { name: exposedTheme });
-  }, [appMode, darkMode]);
+    setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
+  }, [appMode, darkMode, moduleId]);
 
   useEffect(() => {
     if (!currentSession) {
       return;
     }
-    const queryParams = getPreviewQueryParams();
-    const isPublicAccess =
-      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
-    const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
     let appDataPromise;
-    if (isPublicAccess) {
-      appDataPromise = appService.fetchAppBySlug(slug);
+    const queryParams = moduleMode ? {} : getPreviewQueryParams();
+    const isPublicAccess = moduleMode
+      ? false
+      : (currentSession?.load_app && currentSession?.authentication_failed) ||
+      (!queryParams.version && mode !== 'edit');
+    const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
+
+    if (moduleMode) {
+      const moduleDefinition = getModuleDefinition(appId);
+      if (moduleDefinition) {
+        // clean up the module definition from the store
+        deleteModuleDefinition(appId);
+        appDataPromise = Promise.resolve(moduleDefinition);
+      } else {
+        appDataPromise = appService.fetchApp(appId);
+      }
     } else {
-      appDataPromise = isPreviewForVersion
-        ? appVersionService.getAppVersionData(appId, versionId)
-        : appService.fetchApp(appId);
+      if (isPublicAccess) {
+        appDataPromise = appService.fetchAppBySlug(slug);
+      } else {
+        appDataPromise = isPreviewForVersion
+          ? appVersionService.getAppVersionData(appId, versionId)
+          : appService.fetchApp(appId);
+      }
     }
 
     // const appDataPromise = appService.fetchApp(appId);
@@ -262,7 +290,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         editorEnvironment?.name
       );
 
-      setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
+      !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
       fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -285,31 +313,38 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       const homePageId =
         appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
 
-      setApp({
-        appName: appData.name,
-        appId: appData.id,
-        slug: appData.slug,
-        currentAppEnvironmentId: editorEnvironment.id,
-        isMaintenanceOn:
-          'is_maintenance_on' in result
-            ? result.is_maintenance_on
-            : 'isMaintenanceOn' in result
-            ? result.isMaintenanceOn
-            : false,
-        organizationId: appData.organizationId || appData.organization_id,
-        homePageId: homePageId,
-        isPublic: appData.is_public,
-        creationMode: appData.creation_mode,
-      });
-      setIsEditorFreezed(appData.should_freeze_editor);
-      const global_settings = mapKeys(
-        appData.editing_version?.global_settings || appData.global_settings,
-        (value, key) => camelCase(key)
+      appTypeRef.current = appData.type;
+
+      setApp(
+        {
+          appName: appData.name,
+          appId: appData.id,
+          slug: appData.slug,
+          currentAppEnvironmentId: editorEnvironment.id,
+          isMaintenanceOn:
+            'is_maintenance_on' in result
+              ? result.is_maintenance_on
+              : 'isMaintenanceOn' in result
+                ? result.isMaintenanceOn
+                : false,
+          organizationId: appData.organizationId || appData.organization_id,
+          homePageId: homePageId,
+          isPublic: appData.is_public,
+          creationMode: appData.creation_mode,
+        },
+        moduleId
       );
-      if (!global_settings?.theme) {
-        global_settings.theme = baseTheme;
+      if (!moduleMode) {
+        setIsEditorFreezed(appData.should_freeze_editor);
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings || appData.global_settings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
+        }
+        setGlobalSettings(global_settings);
       }
-      setGlobalSettings(global_settings);
       setPages(pages, moduleId);
       setPageSettings(
         computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
@@ -323,7 +358,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         startingPage = appData.pages.find((page) => !page?.restricted);
       }
 
-      if (initialLoadRef.current) {
+      if (initialLoadRef.current && !moduleMode) {
         // if initial load, check if the path has a page handle and set that as the starting page
         const initialLoadPath = location.pathname.split('/').pop();
 
@@ -358,18 +393,26 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       const newState = { ...currentState, ...pageInfo };
       window.history.replaceState(newState, '', window.location.href);
 
-      setCurrentPageHandle(startingPage.handle);
-      updateFeatureAccess();
+      setCurrentPageHandle(startingPage.handle, moduleId);
       setCurrentPageId(startingPage.id, moduleId);
-      setResolvedPageConstants({
-        id: startingPage?.id,
-        handle: startingPage?.handle,
-        name: startingPage?.name,
-      });
+      setResolvedPageConstants(
+        {
+          id: startingPage?.id,
+          handle: startingPage?.handle,
+          name: startingPage?.name,
+        },
+        moduleId
+      );
       setComponentNameIdMapping(moduleId);
-      updateEventsField('events', appData.events);
-      setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
-      setAppHomePageId(homePageId);
+      updateEventsField('events', appData.events, moduleId);
+      if (!moduleMode) {
+        updateFeatureAccess();
+        setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+      }
+      setAppHomePageId(homePageId, moduleId);
+      if (!moduleMode && appData.modules) {
+        setModuleDefinition(appData.modules);
+      }
 
       const queryData =
         isPublicAccess || (mode !== 'edit' && appData.is_public)
@@ -377,10 +420,13 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
           : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
       const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
       dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
-      setQueries(dataQueries);
+      setQueries(dataQueries, moduleId);
       if (dataQueries?.length > 0) {
-        setSelectedQuery(dataQueries[0]?.id);
-        initialiseResolvedQuery(dataQueries.map((query) => query.id));
+        !moduleMode && setSelectedQuery(dataQueries[0]?.id);
+        initialiseResolvedQuery(
+          dataQueries.map((query) => query.id),
+          moduleId
+        );
       }
       const constants = constantsResp?.constants;
 
@@ -394,13 +440,13 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
             orgSecrets[constant.name] = constant.value;
           }
         });
-        setResolvedConstants(orgConstants);
-        setSecrets(orgSecrets);
+        setResolvedConstants(orgConstants, moduleId);
+        setSecrets(orgSecrets, moduleId);
       }
       setQueryMapping(moduleId);
 
-      setResolvedGlobals('environment', editorEnvironment);
-      setResolvedGlobals('mode', { value: mode });
+      setResolvedGlobals('environment', editorEnvironment, moduleId);
+      setResolvedGlobals('mode', { value: mode }, moduleId);
       setResolvedGlobals('currentUser', {
         ...user,
         groups: currentSession?.groups,
@@ -409,11 +455,12 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
           ? { metadata: currentSession?.currentUser?.metadata }
           : {}),
-      });
-      setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
+      }, moduleId);
+      setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
       initDependencyGraph(moduleId);
-      setCurrentMode(mode); // TODO: set mode based on the slug/appDef
+      setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
       if (
+        !moduleMode &&
         state.ai &&
         state?.prompt &&
         initialLoadRef.current &&
@@ -426,7 +473,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         showWalkthrough = false;
       }
       // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
-      if (!isPublicAccess) {
+      if (!isPublicAccess && !moduleMode) {
         const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
         useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
         fetchGlobalDataSources(
@@ -435,23 +482,30 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
           editorEnvironment.id
         );
       }
-      useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
-      updateReleasedVersionId(appData.current_version_id);
+      if (!moduleMode) {
+        useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
+        updateReleasedVersionId(appData.current_version_id);
+      }
 
-      setEditorLoading(false);
+      setEditorLoading(false, moduleId);
       initialLoadRef.current = false;
       // only show if app is not created from prompt
-      if (showWalkthrough) initEditorWalkThrough();
-      checkAndSetTrueBuildSuggestionsFlag();
+      if (showWalkthrough && !moduleMode) initEditorWalkThrough();
+      !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
       return () => {
         document.title = retrieveWhiteLabelText();
       };
+    }).catch((error) => {
+      if (moduleMode) {
+        setEditorLoading(false, moduleId);
+        toast.error('Error fetching module data');
+      }
     });
   }, [setApp, setEditorLoading, currentSession]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
-      runOnLoadQueries().then(() => {
+      runOnLoadQueries(moduleId).then(() => {
         let startingPage = pages.find((page) => page.id === currentPageId);
         const currentPageEvents = events.filter(
           (event) => event.target === 'page' && event.sourceId === startingPage.id
@@ -459,11 +513,12 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
-  }, [isComponentLayoutReady]);
+  }, [isComponentLayoutReady, moduleId]);
 
   useEffect(() => {
+    if (moduleId) return;
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: app.appName });
-  }, [app.appName]);
+  }, [app.appName, moduleId]);
 
   useEffect(() => {
     if (!themeAccess) return;
@@ -476,6 +531,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   }, [darkMode, selectedTheme, themeAccess]);
 
   useEffect(() => {
+    if (moduleMode) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
     const isEnvChanged =
@@ -483,13 +539,13 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
 
     if (isEnvChanged || isVersionChanged) {
-      setEditorLoading(true);
+      setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id).then(async (appData) => {
-        cleanUpStore();
+        cleanUpStore(false);
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
@@ -507,8 +563,8 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
@@ -524,7 +580,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         );
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
-        updateEventsField('events', appData.events);
+        updateEventsField('events', appData.events, moduleId);
         // const queryData = await dataqueryService.getAll(currentVersionId);
 
         if (isEnvChanged) {
@@ -550,7 +606,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         const queryData = await dataqueryService.getAll(currentVersionId);
         const dataQueries = queryData.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
-        setQueries(dataQueries);
+        setQueries(dataQueries, moduleId);
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
@@ -579,10 +635,27 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
-        setEditorLoading(false);
+        setEditorLoading(false, false);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);
+
+  useEffect(() => {
+    if (moduleMode) return;
+    if (mode === 'edit') {
+      requestIdleCallback(
+        () => {
+          appsService.getAll(0, '', '', 'module').then((data) => {
+            setModulesIsLoading(false);
+            setModulesList(data.apps);
+          });
+        },
+        { timeout: 2000 }
+      ); // Adding a timeout of 2 seconds as fallback
+    }
+  }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
+
+  return appTypeRef.current;
 };
 
 export default useAppData;

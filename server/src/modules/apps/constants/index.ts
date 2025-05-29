@@ -15,6 +15,7 @@ export enum FEATURE_KEY {
 export enum APP_TYPES {
   FRONT_END = 'front-end',
   WORKFLOW = 'workflow',
+  MODULE = 'module',
 }
 
 export enum LayoutDimensionUnits {

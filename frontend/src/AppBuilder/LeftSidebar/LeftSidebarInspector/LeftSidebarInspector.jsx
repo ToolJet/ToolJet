@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useIconList from './useIconList';
 import useCallbackActions from './useCallbackActions';
+import { useModuleId, useAppType } from '@/AppBuilder/_contexts/ModuleContext';
 
 const sortAndReduce = (obj) => {
   return Object.entries(obj)
@@ -17,15 +18,17 @@ const sortAndReduce = (obj) => {
     }, {});
 };
 
-const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
-  const exposedComponentsVariables = useStore((state) => state.getAllExposedValues().components, shallow);
-  const exposedQueries = useStore((state) => state.getAllExposedValues().queries || {}, shallow);
-  const exposedVariables = useStore((state) => state.getAllExposedValues().variables || {}, shallow);
-  const exposedConstants = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
-  const exposedPageVariables = useStore((state) => state.getAllExposedValues().page || {}, shallow);
-  const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
-  const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
-  const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
+const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }) => {
+  const exposedComponentsVariables = useStore((state) => state.getAllExposedValues(moduleId).components, shallow);
+  const exposedQueries = useStore((state) => state.getAllExposedValues(moduleId).queries || {}, shallow);
+  const exposedVariables = useStore((state) => state.getAllExposedValues(moduleId).variables || {}, shallow);
+  const exposedConstants = useStore((state) => state.getAllExposedValues(moduleId).constants || {}, shallow);
+  const exposedPageVariables = useStore((state) => state.getAllExposedValues(moduleId).page || {}, shallow);
+  const exposedGlobalVariables = useStore((state) => state.getAllExposedValues(moduleId).globals || {}, shallow);
+  const exposedModuleInputs = useStore((state) => state.getAllExposedValues(moduleId).input || {}, shallow);
+
+  const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(moduleId), shallow);
+  const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(moduleId), shallow);
   const pathToBeInspected = useStore((state) => state.pathToBeInspected);
   const iconsList = useIconList({
     exposedComponentsVariables,
@@ -74,6 +77,8 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
 
   const sortedGlobalVariables = useMemo(() => sortAndReduce(exposedGlobalVariables), [exposedGlobalVariables]);
 
+  const sortedModuleInputs = useMemo(() => sortAndReduce(exposedModuleInputs), [exposedModuleInputs]);
+
   const memoizedJSONData = React.useMemo(() => {
     const jsontreeData = {};
 
@@ -83,10 +88,22 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
     jsontreeData['variables'] = sortedVariables;
     jsontreeData['page'] = sortedPageVariables;
     jsontreeData['constants'] = sortedConstants;
+    if (appType === 'module') {
+      jsontreeData['input'] = sortedModuleInputs;
+    }
 
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables]);
+  }, [
+    sortedComponents,
+    sortedQueries,
+    sortedVariables,
+    sortedConstants,
+    sortedPageVariables,
+    sortedGlobalVariables,
+    sortedModuleInputs,
+    appType,
+  ]);
 
   const handleNodeExpansion = (path, data, currentNode) => {
     if (pathToBeInspected && path?.length > 0) {

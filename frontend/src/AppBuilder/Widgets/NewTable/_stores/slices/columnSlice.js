@@ -14,7 +14,8 @@ export const createColumnSlice = (set, get) => ({
     firstRowOfTable,
     autogenerateColumnsFlag,
     columnDeletionHistory,
-    shouldAutogenerateColumns
+    shouldAutogenerateColumns,
+    moduleId = 'canvas'
   ) => {
     set(
       (state) => {
@@ -33,7 +34,8 @@ export const createColumnSlice = (set, get) => ({
             isDynamicColumnSelected,
             autogenerateColumnsFlag,
             columnDeletionHistory,
-            columnData
+            columnData,
+            moduleId
           );
           state.components[id].columnDetails.columnProperties = columnProperties;
           state.components[id].columnDetails.transformations = get().generateColumnTransformations(
@@ -60,7 +62,8 @@ export const createColumnSlice = (set, get) => ({
     isDynamicColumnSelected,
     autogenerateColumnsFlag,
     columnDeletionHistory,
-    columnData
+    columnData,
+    moduleId
   ) => {
     if (autogenerateColumnsFlag) {
       const setComponentProperty = useStore.getState().setComponentProperty;
@@ -75,7 +78,7 @@ export const createColumnSlice = (set, get) => ({
       );
 
       if (!isDynamicColumnSelected && !isEqual(existingGeneratedColumn, generatedColumns)) {
-        setComponentProperty(id, 'columns', generatedColumns, 'properties', 'value', false, 'canvas', {
+        setComponentProperty(id, 'columns', generatedColumns, 'properties', 'value', false, moduleId, {
           skipUndoRedo: true,
           saveAfterAction: true,
         });

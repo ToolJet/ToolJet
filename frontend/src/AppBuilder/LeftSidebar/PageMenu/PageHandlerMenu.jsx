@@ -2,11 +2,13 @@ import React from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const PageHandlerMenu = ({ darkMode }) => {
+  const { moduleId } = useModuleContext();
   const setShowEditingPopover = useStore((state) => state.setShowEditingPopover);
   const setShowPageEventsModal = useStore((state) => state.setShowPageEventsModal);
 
@@ -31,7 +33,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
     closePageEditPopover();
   };
 
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const page = editingPage;
   const isHomePage = page?.id === homePageId;
   const showMenu = showEditingPopover;
@@ -105,7 +107,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                     text="Mark home"
                     iconSrc={'assets/images/icons/home.svg'}
                     closeMenu={() => {}}
-                    callback={() => markAsHomePage(editingPage.id)}
+                    callback={() => markAsHomePage(editingPage.id, moduleId)}
                   />
                 )}
                 {!isDisabled && (
