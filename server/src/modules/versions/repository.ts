@@ -174,4 +174,17 @@ export class VersionRepository extends Repository<AppVersion> {
       return version;
     });
   }
+
+  async updateVersion(versionId: string, editableParams: Partial<AppVersion>, manager?: EntityManager): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(
+        AppVersion,
+        { id: versionId },
+        {
+          ...editableParams,
+          updatedAt: new Date(),
+        }
+      );
+    }, manager || this.manager);
+  }
 }

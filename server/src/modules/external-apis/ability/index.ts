@@ -28,6 +28,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         FEATURE_KEY.PULL_EXISTING_APP,
         FEATURE_KEY.PULL_NEW_APP,
         FEATURE_KEY.PUSH_APP_VERSION,
+        FEATURE_KEY.AUTO_PROMOTE_APP,
       ],
       User
     );

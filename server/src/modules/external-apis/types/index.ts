@@ -15,6 +15,7 @@ interface Features {
   [FEATURE_KEY.PUSH_APP_VERSION]: FeatureConfig;
   [FEATURE_KEY.UPDATE_USER_ROLE]: FeatureConfig;
   [FEATURE_KEY.CREATE_ORG_GIT]: FeatureConfig;
+  [FEATURE_KEY.AUTO_PROMOTE_APP]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_WORKSPACE_APPS]: FeatureConfig;
   [FEATURE_KEY.IMPORT_APP]: FeatureConfig;
   [FEATURE_KEY.EXPORT_APP]: FeatureConfig;
