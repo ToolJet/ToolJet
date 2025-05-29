@@ -432,8 +432,26 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           }
         }
 
+        // d: Simple variable replacement for single {{variable}}
+        if (
+          typeof resolvedValue === 'string' &&
+          (resolvedValue.match(/^{{{.*}}}$/) || // Triple brace objects - accepts anything between {{{ }}}
+            (resolvedValue.startsWith('{{') &&
+              resolvedValue.endsWith('}}') &&
+              (resolvedValue.match(/{{/g) || [])?.length === 1)) // Single variables
+        ) {
+          resolvedValue = options[resolvedValue];
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
+        }
+
         // c: Replace all occurrences of {{ }} variables
-        if (typeof resolvedValue === 'string' && resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0) {
+        else if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          !resolvedValue.match(/^\{\{[^}]*\}\}$/) // Only exclude if entire string is one template variable
+        ) {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
           for (const variable of variables || []) {
@@ -448,41 +466,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               }
             }
             // Check type of replacement and assign accordingly
-            if (
-              typeof replacement === 'string' ||
-              typeof replacement === 'number' ||
-              typeof replacement === 'boolean'
-            ) {
+            if (typeof replacement === 'string' || typeof replacement === 'number') {
               // If replacement is a string, perform the replace
               resolvedValue = resolvedValue.replace(variable, String(replacement));
-            } else if (
-              resolvedValue.startsWith('{{') &&
-              resolvedValue.endsWith('}}') &&
-              (resolvedValue.match(/{{/g) || [])?.length === 1 &&
-              (replacement === undefined || replacement === null)
-            ) {
-              //Single variable replacement for undefined and null ONLY
-              resolvedValue = options[resolvedValue];
-            } else if (replacement === undefined || replacement === null) {
-              // If replacement is undefined or null in a mixed string context, replace with stringify undefined
-              resolvedValue = resolvedValue.replace(variable, replacement);
             } else {
-              resolvedValue = options[resolvedValue];
+              // If replacement is an object or an array, assign the whole value to resolvedValue
+              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
             }
           }
-          if (parent && key !== null) {
-            parent[key] = resolvedValue;
-          }
-        }
-
-        // d: Simple variable replacement for single {{variable}}
-        if (
-          typeof resolvedValue === 'string' &&
-          resolvedValue.startsWith('{{') &&
-          resolvedValue.endsWith('}}') &&
-          (resolvedValue.match(/{{/g) || [])?.length === 1
-        ) {
-          resolvedValue = options[resolvedValue];
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }
