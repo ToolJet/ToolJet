@@ -19,6 +19,24 @@ import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperti
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
+import {
+  TextTypeIcon,
+  DatepickerTypeIcon,
+  SelectTypeIcon,
+  MultiselectTypeIcon,
+  BooleanTypeIcon,
+  ImageTypeIcon,
+  LinkTypeIcon,
+  JSONTypeIcon,
+  MarkdownTypeIcon,
+  HTMLTypeIcon,
+  NumberTypeIcon,
+  StringTypeIcon,
+  BadgeTypeIcon,
+  TagsTypeIcon,
+  RadioTypeIcon,
+} from './_assets';
+import { getColumnIcon } from './utils';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
@@ -679,6 +697,7 @@ class TableComponent extends React.Component {
                                         }
                                       }}
                                       darkMode={darkMode}
+                                      showIconOnHover={true}
                                       // menuActions={[
                                       //   {
                                       //     label: 'Delete',
@@ -694,6 +713,7 @@ class TableComponent extends React.Component {
                                       }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
+                                      Icon={getColumnIcon(item?.columnType)}
                                     />
                                   </div>
                                 </OverlayTrigger>
