@@ -3,13 +3,15 @@ id: transform-data
 title: Transforming Data
 ---
 
-In many internal tools, the data you need to display doesn’t always come neatly from a single source. You might want to:
-- Combine results from two different datasources.
-- Modify the structure of your API response before rendering.
-- Apply custom business logic like filtering, sorting, or grouping.
-- Format fields like dates, currencies, or nested JSON before displaying.
+The data you need will not always be in a ready-to-use format from a single source. Often, you’ll need to transform or combine data before displaying it in your application. Common use cases include:
+- Merging results from multiple data sources
+- Restructuring API responses before rendering
+- Applying business logic such as filtering, sorting, or grouping
+- Formatting fields like dates, currency values, or nested JSON objects
 
-This is where ToolJet’s Custom Code feature comes in handy. You can write JavaScript or Python queries to transform data from other queries or components without relying on changes to the backend. This doc explores practical use cases where transforming data becomes essential and shows how you can use ToolJet’s built-in scripting where you can write code to shape data the way your app needs.
+If you need to transform data from a single query, you can use the [transformation](/docs/app-builder/connecting-with-data-sources/transforming-data) option available directly within the query itself. However, if your use case involves combining data from multiple queries or components, you’ll need to use a custom transformation function.
+
+ToolJet allows you to write JavaScript or Python queries to perform these transformations without requiring changes to your backend. This doc explores practical use cases where transforming data becomes essential and shows how you can use ToolJet’s built-in scripting where you can write code to shape data the way your app needs.
 
 ## How it works?
 
@@ -24,9 +26,7 @@ With custom code queries, you can:
 
 You don’t need to modify your backend or write middleware, just write the logic where it’s needed.
 
-If you want to execute a query using custom code, you must first define the query in the **Queries** section. Then, add a new query that uses the `run()` method to trigger the original query. Then you can use the `.getData()` method to retrieve its result. 
-
-For example, if you have a query named `getUsers` and want to execute it via custom code, create a new query with the following code snippet:
+To execute a query using custom code, use the `run() `method. After the query has run, you can retrieve its result using the `.getData()` method. For example, if you have a query named `getUsers` and want to execute it, create a new RunJS query and add the following code snippet:
 
 ```js
 await queries.getUsers.run();
