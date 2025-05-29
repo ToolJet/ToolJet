@@ -1,24 +1,30 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { isEmpty, debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { LEGACY_ITEMS } from './constants';
+import { LEGACY_ITEMS, IGNORED_ITEMS } from './constants';
 import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
+import ComponentModuleTab from './ComponentModuleTab';
+import { ModuleManager } from '@/modules/Modules/components';
 
 // TODO: Hardcode all the component-section mapping in a constant file and just loop over it
 // TODO: styling
 // TODO: scrolling
 // TODO: searching
 
-export const ComponentsManagerTab = ({ darkMode }) => {
+export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const componentList = useMemo(() => {
-    return componentTypes.map((component) => component.component);
+    return componentTypes
+      .map((component) => component.component)
+      .filter((component) => !IGNORED_ITEMS.includes(component));
   }, [componentTypes]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState(1);
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
@@ -26,9 +32,14 @@ export const ComponentsManagerTab = ({ darkMode }) => {
   const handleSearchQueryChange = useCallback(
     debounce((e) => {
       const { value } = e.target;
-      filterComponents(value);
+      setSearchQuery(value);
+
+      if (activeTab === 1) {
+        filterComponents(value);
+      }
+      // No need to filter modules here as we pass searchQuery to ModuleManager
     }, 125),
-    []
+    [activeTab]
   );
 
   const filterComponents = useCallback((value) => {
@@ -160,24 +171,48 @@ export const ComponentsManagerTab = ({ darkMode }) => {
     }
   }
 
+  const handleChangeTab = (tab) => {
+    setActiveTab(tab);
+    // When changing tabs, we don't need to reset the search
+    // The search query will be applied to the new tab
+  };
+
+  const renderSection = () => {
+    if (activeTab === 1) {
+      return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
+    }
+    return <ModuleManager searchQuery={searchQuery} />;
+  };
+
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
-      <p className="widgets-manager-header">Components</p>
+      {isModuleEditor ? (
+        <p className="widgets-manager-header">Components</p>
+      ) : (
+        <ComponentModuleTab onChangeTab={handleChangeTab} />
+      )}
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}
           initialValue={''}
           callBack={(e) => handleSearchQueryChange(e)}
           onClearCallback={() => {
-            filterComponents('');
+            setSearchQuery('');
+            if (activeTab === 1) {
+              filterComponents('');
+            }
           }}
-          placeholder={t('globals.searchComponents', 'Search widgets')}
-          customClass={`tj-widgets-search-input  tj-text-xsm`}
+          placeholder={
+            activeTab === 1
+              ? t('globals.searchComponents', 'Search widgets')
+              : t('globals.searchModules', 'Search modules')
+          }
+          customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
           width={266}
         />
       </div>
-      <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+      {renderSection()}
     </div>
   );
 };

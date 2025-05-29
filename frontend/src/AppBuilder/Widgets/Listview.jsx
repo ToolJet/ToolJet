@@ -9,6 +9,7 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Listview = function Listview({
   id,
@@ -21,6 +22,7 @@ export const Listview = function Listview({
   darkMode,
   dataCy,
 }) {
+  const { moduleId } = useModuleContext();
   const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
@@ -231,7 +233,7 @@ export const Listview = function Listview({
       };
     });
     // Update the customResolvables with the new listItems
-    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem');
+    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId);
   }
 
   return (
