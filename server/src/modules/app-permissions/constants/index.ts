@@ -21,4 +21,8 @@ export enum FEATURE_KEY {
   CREATE_QUERY_PERMISSIONS = 'create_query_permissions',
   UPDATE_QUERY_PERMISSIONS = 'update_query_permissions',
   DELETE_QUERY_PERMISSIONS = 'delete_query_permissions',
+  FETCH_COMPONENT_PERMISSIONS = 'fetch_component_permissions',
+  CREATE_COMPONENT_PERMISSIONS = 'create_component_permissions',
+  UPDATE_COMPONENT_PERMISSIONS = 'update_component_permissions',
+  DELETE_COMPONENT_PERMISSIONS = 'delete_component_permissions',
 }
