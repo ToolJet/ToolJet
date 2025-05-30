@@ -115,8 +115,9 @@ const FilePicker = (props) => {
       color: darkMode ? '#c3c9d2' : '#5e6571',
       height: `${numericWidgetHeight}px`,
       overflowY: isSmallWidget ? 'auto' : 'visible',
+      opacity: disabledState ? 0.5 : 1,
     }),
-    [darkMode, numericWidgetHeight, isVisible, isSmallWidget]
+    [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState]
   );
 
   const dropzoneClasses = clsx('file-picker-dropzone', {
@@ -199,6 +200,7 @@ const FilePicker = (props) => {
               onBlur={handleBlur}
               borderRadius={borderRadius}
               height={height}
+              selectedFilesLength={selectedFiles.length}
             />
 
             <ValidationBar

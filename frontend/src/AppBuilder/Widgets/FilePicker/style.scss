@@ -12,6 +12,7 @@
 // File List Item
 .file-list-item {
   width: 100%;
+  min-width: 0;
   height: 32px;
   border-radius: 8px;
   padding: 0 10px;
@@ -66,11 +67,13 @@
 
   .delete-button {
     width: 20px;
+    flex-shrink: 0;
     padding: 0;
     opacity: 0;
     visibility: hidden;
     transform: translateX(-2px);
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out, transform 0.15s ease-in-out;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out,
+      transform 0.15s ease-in-out;
   }
 }
 
@@ -98,8 +101,9 @@
     border-color: var(--borders-strong);
     color: var(--file-picker-text-primary);
   }
-  
-  &:focus, &:active {
+
+  &:focus,
+  &:active {
     border-color: var(--file-picker-primary-brand);
     color: var(--file-picker-text-primary);
   }
@@ -120,7 +124,7 @@
     // border-style: solid;
     // border-color: var(--primary-accent-strong);
     box-shadow: 0 0 0 2px var(--surfaces-surface-01),
-                0 0 0 4px var(--interactive-overlays-focus-outline);
+      0 0 0 4px var(--interactive-overlays-focus-outline);
   }
 
   &.is-disabled {
@@ -129,7 +133,6 @@
     cursor: not-allowed;
     opacity: 0.6;
   }
-
 
   .dropzone {
     &-instruction,
@@ -144,7 +147,7 @@
       color: var(--file-picker-primary-brand);
       font-weight: 500;
       cursor: pointer;
-      
+
       &:hover {
         text-decoration: underline;
       }
@@ -225,7 +228,7 @@
   gap: 7px;
   margin-bottom: 0;
   color: var(--status-error-strong);
-  
+
   .error-icon {
     display: flex;
     align-items: center;
@@ -233,7 +236,7 @@
     flex-shrink: 0;
     color: var(--status-error-strong);
   }
-  
+
   .error-text {
     font-size: 14px;
     line-height: 20px;
