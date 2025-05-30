@@ -226,9 +226,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );
@@ -429,7 +429,6 @@ Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   });
 });
 
-
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {
     cy.get(commonEeSelectors.promoteButton).click();
@@ -549,7 +548,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -605,3 +604,20 @@ Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
       });
   });
 });
+
+Cypress.Commands.add(
+  "verifyRequiredFieldValidation",
+  (fieldName, expectedColor) => {
+    cy.get(commonSelectors.textField(fieldName)).should(
+      "have.css",
+      "border-color",
+      expectedColor
+    );
+    cy.get(commonSelectors.labelFieldValidation(fieldName))
+      .should("be.visible")
+      .and("have.text", `${fieldName} is required`);
+    cy.get(commonSelectors.labelFieldAlert(fieldName))
+      .should("be.visible")
+      .and("have.text", `${fieldName} is required`);
+  }
+);

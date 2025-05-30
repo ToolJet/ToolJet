@@ -189,17 +189,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         /* 
           Basic plan customer. lets update all environment options. 
           this will help us to run the queries successfully when the user buys enterprise plan 
-        */
-        await Promise.all(
-          allEnvs.map(async (envToUpdate) => {
-            dataSource.options = (
-              await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
-            ).options;
+          */
 
-            const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
-            await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
-          })
-        );
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
+        for (const env of allEnvs) {
+          dataSource.options = (
+            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
+          ).options;
+
+          await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
+        }
       }
       const updatableParams = {
         id: dataSourceId,

@@ -69,7 +69,16 @@ export default class Supabase implements QueryService {
     }
 
     if (error) {
-      throw new QueryError('Query could not be completed', error, {});
+			const errorMessage = error?.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+
+      const supabaseError = error as any;
+      const { code, hint } = supabaseError;
+
+      errorDetails.code = code;
+      errorDetails.hint = hint;
+		
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
