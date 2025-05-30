@@ -30,7 +30,6 @@ export const commonSelectors = {
   passwordLabel: '[data-cy="password-input-label"]',
   forgotPasswordLink: '[data-cy="forgot-password-link"]',
   passwordInputField: '[data-cy="password-input-input"]',
-  signInButton: "[data-cy=login-button]",
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
