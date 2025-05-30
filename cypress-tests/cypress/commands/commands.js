@@ -605,9 +605,7 @@ Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
       });
   });
 });
-Cypress.Commands.add("searchUser", (email) => {
-  cy.get(commonSelectors.searchUserInput).type(email);
-});
+
 
 
 Cypress.Commands.add("addUserWithMetadata", (name, email, metadata) => {
