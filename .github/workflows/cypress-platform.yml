@@ -187,6 +187,14 @@ jobs:
           config: "baseUrl=http://localhost:3000"
           config-file: cypress-platform.config.js
 
+      - name: Run Cypress tests
+        if: matrix.edition == 'ee'
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:3000"
+          config-file: cypress-ee-platform.config.js
+
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
         if: always()
