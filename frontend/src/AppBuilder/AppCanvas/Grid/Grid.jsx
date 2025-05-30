@@ -31,7 +31,7 @@ import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
-import { snapToGrid } from '../appCanvasUtils';
+import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -570,27 +570,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     }
   }, [draggingComponentId, resizingComponentId, isGroupDragging, selectedComponents]);
 
-  useEffect(() => {
-    const parentCanvasId = boxList.find((box) => box.id === groupedTargets?.[0]?.replace('.ele-', ''))?.parent;
-    const containerId = `canvas-${parentCanvasId}`;
-    const canvasContainer = document.getElementById(containerId);
-
-    const handleScroll = () => {
-      if (groupedTargets.length > 1 && moveableRef.current) {
-        moveableRef.current.updateRect();
-      }
-    };
-
-    if (canvasContainer) {
-      canvasContainer.addEventListener('scroll', handleScroll, { passive: true });
-    }
-
-    return () => {
-      if (canvasContainer) {
-        canvasContainer.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [groupedTargets.length, boxList]);
+  useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
 
   if (mode !== 'edit') return null;
 
