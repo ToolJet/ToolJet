@@ -4,7 +4,7 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { CreatePageDto, UpdatePageDto } from '@modules/apps/dto/page';
 
 export interface IPageService {
-  findPagesForVersion(appVersionId: string): Promise<Page[]>;
+  findPagesForVersion(appVersionId: string, mode?: string): Promise<Page[]>;
   findOne(id: string): Promise<Page>;
   createPage(page: CreatePageDto, appVersionId: string): Promise<Page>;
   clonePage(pageId: string, appVersionId: string): Promise<{ pages: Page[]; events: EventHandler[] }>;
