@@ -3,7 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { redisText } from "Texts/redis";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 
 import {
   fillDataSourceTextField,
@@ -96,7 +96,7 @@ describe("Data source Redis", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       redisText.errorMaxRetries
     );
@@ -137,7 +137,7 @@ describe("Data source Redis", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       redisText.errorInvalidUserOrPassword
     );
@@ -152,7 +152,7 @@ describe("Data source Redis", () => {
       "108299"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       redisText.errorPort
     );
@@ -170,7 +170,7 @@ describe("Data source Redis", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       redisText.errorInvalidUserOrPassword
     );
@@ -187,7 +187,7 @@ describe("Data source Redis", () => {
       "redis"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       redisText.errorInvalidUserOrPassword
     );

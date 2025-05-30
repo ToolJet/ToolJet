@@ -13,9 +13,9 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       fail-fast: false
@@ -24,7 +24,7 @@ jobs:
           - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && 'ce' || '' }}
           - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress') && 'ee' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' || '' }}
         exclude:
-          - edition: ''
+          - edition: ""
 
     steps:
       - name: Debug labels and matrix edition
@@ -79,7 +79,10 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/ee/ee-production.Dockerfile
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
+          file: cypress-test/cypress.Dockerfile
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
@@ -116,7 +119,6 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-          
           # Only add EE-specific env vars if edition is ee
           if [ "${{ matrix.edition }}" = "ee" ]; then
             echo "REDIS_HOST=redis" >> .env
@@ -168,6 +170,14 @@ jobs:
         with:
           name: "cypress.env.json"
           json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
+      - name: Create Cypress environment file
+        if: matrix.edition == 'ee'
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_EE_SECRETS }}
           dir: "./cypress-tests"
 
       - name: Run Cypress tests
