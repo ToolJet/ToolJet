@@ -12,7 +12,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 
 const FILE_TYPE_OPTIONS = [
-  { value: '', label: 'Any Files' },
+  { value: '*/*', label: 'Any Files' },
   { value: 'image/*', label: 'Image files' },
   { value: '.pdf,.doc,.docx,.ppt,.pptx', label: 'Document files' },
   { value: '.xls,.xlsx,.csv,.ods', label: 'Spreadsheet files' },
