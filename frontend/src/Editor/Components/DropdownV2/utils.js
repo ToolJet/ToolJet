@@ -4,7 +4,7 @@ export const getInputFocusedColor = ({ accentColor }) => {
   if (accentColor !== '#4368E3') {
     return accentColor;
   }
-  return 'var(--primary-accent-strong)';
+  return 'var(--cc-primary-brand)';
 };
 
 export const getInputBorderColor = ({
@@ -17,7 +17,7 @@ export const getInputBorderColor = ({
   userInteracted,
 }) => {
   if (userInteracted && !isValid) {
-    return 'var(--status-error-strong)';
+    return 'var(--cc-error-systemStatus)';
   }
 
   if (isFocused) {
@@ -29,26 +29,26 @@ export const getInputBorderColor = ({
   }
 
   if (isLoading || isDisabled) {
-    return '1px solid var(--borders-disabled-on-white)';
+    return '1px solid var(--cc-disabled-border)';
   }
 
-  return 'var(--borders-default)';
+  return 'var(--cc-default-border)';
 };
 
 export const getInputBackgroundColor = ({ fieldBackgroundColor, darkMode, isLoading, isDisabled }) => {
-  if (!['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)) {
+  if (!['#ffffff', '#ffffffff', '#fff', 'var(--cc-surface1-surface)'].includes(fieldBackgroundColor)) {
     return fieldBackgroundColor;
   }
 
   if (isLoading || isDisabled) {
     if (darkMode) {
-      return 'var(--surfaces-app-bg-default)';
+      return 'var(--cc-appBackground-surface)';
     } else {
-      return 'var(--surfaces-surface-03)';
+      return 'var(--cc-surface3-surface)';
     }
   }
 
-  return 'var(--surfaces-surface-01)';
+  return 'var(--cc-surface1-surface)';
 };
 
 export const highlightText = (text = '', highlight) => {

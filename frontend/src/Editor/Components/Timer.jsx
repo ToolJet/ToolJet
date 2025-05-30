@@ -186,7 +186,11 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
               Resume
             </a>
           )}
-          <a className={`btn${styles.disabledState ? ' disabled' : ''}`} onClick={onReset}>
+          <a
+            className={`btn${styles.disabledState ? ' disabled' : ''}`}
+            style={{ color: 'var(--cc-primary-text)' }}
+            onClick={onReset}
+          >
             Reset
           </a>
         </div>

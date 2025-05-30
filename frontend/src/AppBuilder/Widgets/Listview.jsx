@@ -247,8 +247,13 @@ export const Listview = function Listview({
       <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
         {filteredData.map((listItem, index) => (
           <div
-            className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder && mode == 'list' ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / positiveColumns}%` }}
+            className={`list-item ${mode == 'list' && 'w-100'}`}
+            style={{
+              position: 'relative',
+              height: `${rowHeight}px`,
+              width: `${100 / positiveColumns}%`,
+              ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
+            }}
             key={index}
             // data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClickCapture={(event) => {

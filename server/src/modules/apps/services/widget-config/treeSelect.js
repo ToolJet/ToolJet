@@ -70,8 +70,8 @@ export const treeSelectConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '' },
-      checkboxColor: { value: 'var(--primary-brand)' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      checkboxColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },

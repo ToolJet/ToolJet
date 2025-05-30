@@ -10,7 +10,14 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
   return (
     <div
       className="card"
-      style={{ display: visibility ? '' : 'none', height, overflow: 'auto', overflowWrap: 'normal', boxShadow }}
+      style={{
+        display: visibility ? '' : 'none',
+        height,
+        overflow: 'auto',
+        overflowWrap: 'normal',
+        boxShadow,
+        backgroundColor: 'var(--cc-surface1-surface)',
+      }}
       data-cy={dataCy}
     >
       <div className="card-body">

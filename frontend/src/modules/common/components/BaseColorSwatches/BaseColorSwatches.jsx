@@ -58,12 +58,20 @@ const BaseColorSwatches = ({
       <Popover
         className={classNames(
           { 'dark-theme': darkMode },
-          // This is fix when color picker don't have much space to open in bottom side
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
-        style={{ zIndex: 10000 }}
+        style={{
+          zIndex: 10000,
+          marginLeft: '-16px',
+        }}
       >
-        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'} style={{ padding: '0px' }}>
+        <Popover.Body
+          className={!asBoxShadowPopover && 'boxshadow-picker'}
+          style={{
+            padding: '0px',
+            marginLeft: '-16px',
+          }}
+        >
           <>{ColorPicker()}</>
         </Popover.Body>
       </Popover>
@@ -74,7 +82,23 @@ const BaseColorSwatches = ({
     return (
       <div className="codebuilder-color-picker">
         {SwatchesToggle()}
-        {showPicker && componentType === 'swatches' && CustomOptionList()}
+        {showPicker && componentType === 'swatches' && (
+          <div
+            style={{
+              maxHeight: '200px',
+              overflowY: 'auto',
+              padding: '8px',
+              paddingTop: '0px',
+              '&::-webkit-scrollbar': {
+                display: 'none',
+              },
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none',
+            }}
+          >
+            {CustomOptionList()}
+          </div>
+        )}
         {showPicker && componentType === 'color' && (
           <div>
             {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
@@ -101,9 +125,20 @@ const BaseColorSwatches = ({
       >
         <div className="color-icon" style={{ backgroundColor: value, marginLeft: '8px' }} />
 
-        <div className="col tj-text-xsm p-0 color-slate12" data-cy={`${String(cyLabel)}-value`}>
+        <div
+          className="col tj-text-xsm p-0 color-slate12"
+          data-cy={`${String(cyLabel)}-value`}
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {colorMap?.[value]
-            ? 'Brand/' + colorMap?.[value]?.charAt(0).toUpperCase() + colorMap?.[value]?.slice(1)
+            ? colorMap[value]
+                .split('/')
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('/')
             : value}
         </div>
       </div>
