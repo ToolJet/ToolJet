@@ -19,7 +19,6 @@ export const useGroupedTargetsScrollHandler = (groupedTargets, boxList, moveable
     if (!scrollRAF.current) {
       scrollRAF.current = requestAnimationFrame(() => {
         if (groupedTargets.length > 1 && moveableRef.current) {
-          console.log('i arrive');
           moveableRef.current.updateRect();
         }
         scrollRAF.current = null;
@@ -37,7 +36,6 @@ export const useGroupedTargetsScrollHandler = (groupedTargets, boxList, moveable
     if (!canvasContainer) {
       return;
     }
-    console.log(canvasContainer, 'canvas');
 
     canvasContainer.addEventListener('scroll', scrollHandler, { passive: true });
 
