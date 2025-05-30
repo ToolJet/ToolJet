@@ -24,6 +24,9 @@ import { Response } from 'express';
 import { UserCsvRow } from './interfaces';
 import { IOrganizationUsersService } from './interfaces/IService';
 import { UpdateOrgUserDto } from './dto';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { Organization } from '@entities/organization.entity';
 @Injectable()
 export class OrganizationUsersService implements IOrganizationUsersService {
   constructor(
@@ -38,7 +41,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
   async updateOrgUser(organizationUserId: string, user: User, updateOrgUserDto: UpdateOrgUserDto) {
     const { firstName, lastName, addGroups, role, userMetadata } = updateOrgUserDto;
-
     const organizationUser = await this.organizationUsersRepository.findOne({
       where: { id: organizationUserId, organizationId: user.organizationId },
     });
@@ -81,34 +83,83 @@ export class OrganizationUsersService implements IOrganizationUsersService {
   }
 
   async archive(id: string, organizationId: string, user?: User): Promise<void> {
-    const organizationUser = await this.organizationUsersRepository.findOneOrFail({
-      where: { id, organizationId },
-      relations: ['user'],
-    });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationUser = await manager.findOneOrFail(OrganizationUser, {
+        where: { id, organizationId },
+        relations: ['user'],
+      });
 
-    await this.organizationUsersUtilService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
-    await this.organizationUsersRepository.update(id, {
-      status: WORKSPACE_USER_STATUS.ARCHIVED,
-      invitationToken: null,
+      await this.organizationUsersUtilService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
+      await manager.update(OrganizationUser, id, {
+        status: WORKSPACE_USER_STATUS.ARCHIVED,
+        invitationToken: null,
+      });
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: organizationUser.user.email,
+        resourceData: {
+          archived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          archived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
 
-  async archiveFromAll(userId: string): Promise<void> {
+  async archiveFromAll(userId: string, user: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const archivedUserWorkspaces = await manager.find(OrganizationUser, {
+        where: { userId },
+        relations: ['user'],
+      });
       await manager.update(
         OrganizationUser,
         { userId },
         { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
       );
       await this.organizationUsersUtilService.updateUserStatus(userId, USER_STATUS.ARCHIVED, manager);
+      const organizationIds = archivedUserWorkspaces.map((user) => user.organizationId);
+      const auditLogEntry = {
+        userId: user.id,
+        organizationIds: organizationIds,
+        resourceId: user.id,
+        resourceName: archivedUserWorkspaces[0].user.email,
+        resourceData: {
+          archived_user: {
+            id: archivedUserWorkspaces[0].userId,
+            email: archivedUserWorkspaces[0].user.email,
+            first_name: archivedUserWorkspaces[0].user.firstName,
+            last_name: archivedUserWorkspaces[0].user.lastName,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
 
-  async unarchiveUser(userId: string): Promise<void> {
+  async unarchiveUser(userId: string, user: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const targetUser = await manager.findOneOrFail(User, {
         where: { id: userId },
         select: ['id', 'status', 'invitationToken', 'source'],
+      });
+      const unarchivedUserWorkspaces = await manager.find(OrganizationUser, {
+        where: { userId },
+        relations: ['user'],
       });
       const { status, invitationToken } = targetUser;
       /* Special case. what if the user is archived when the status is invited. we were changing status to active before */
@@ -117,6 +168,22 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       await this.organizationUsersUtilService.updateUserStatus(userId, updatedStatus, manager);
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);
+      const organizationIds = unarchivedUserWorkspaces.map((user) => user.organizationId);
+      const auditLogEntry = {
+        userId: user.id,
+        organizationIds: organizationIds,
+        resourceId: user.id,
+        resourceName: unarchivedUserWorkspaces[0].user.email,
+        resourceData: {
+          unarchived_user: {
+            id: unarchivedUserWorkspaces[0].userId,
+            email: unarchivedUserWorkspaces[0].user.email,
+            first_name: unarchivedUserWorkspaces[0].user.firstName,
+            last_name: unarchivedUserWorkspaces[0].user.lastName,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
 
@@ -144,6 +211,29 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
       await this.licenseUserService.validateUser(manager);
       await this.licenseOrganizationService.validateOrganization(manager);
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: organizationUser.user.email,
+        resourceData: {
+          unarchived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          unarchived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
 
     if (organizationUser.user.invitationToken) {
@@ -160,6 +250,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           sender: user.firstName,
         },
       });
+
       return;
     }
 

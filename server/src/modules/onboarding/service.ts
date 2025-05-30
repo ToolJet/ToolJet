@@ -120,7 +120,7 @@ export class OnboardingService implements IOnboardingService {
       const userParams = { email, password, firstName, lastName };
 
       // Find the default workspace
-      const defaultWorkspace = await this.organizationRepository.  getDefaultWorkspaceOfInstance();
+      const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
 
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
@@ -133,7 +133,7 @@ export class OnboardingService implements IOnboardingService {
           manager
         );
       } else {
-        if(defaultWorkspace && !signingUpOrganization) {
+        if (defaultWorkspace && !signingUpOrganization) {
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,
             defaultWorkspace,
@@ -263,7 +263,8 @@ export class OnboardingService implements IOnboardingService {
           throw new BadRequestException('Please enter password');
         }
 
-        const activateDefaultWorkspace = (defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId) || allowPersonalWorkspace;
+        const activateDefaultWorkspace =
+          (defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId) || allowPersonalWorkspace;
         if (activateDefaultWorkspace) {
           // Getting default workspace
           const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
@@ -277,11 +278,11 @@ export class OnboardingService implements IOnboardingService {
           // Activate default workspace
           await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
 
-          if(defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId){
+          if (defaultWorkspace && defaultWorkspace.id === user.defaultOrganizationId) {
             const personalWorkspaces = await this.organizationUsersUtilService.personalWorkspaces(user.id);
-            for(const personalWorkspace of personalWorkspaces){
+            for (const personalWorkspace of personalWorkspaces) {
               // if any personal workspace left. activate those
-              await this.organizationUsersUtilService.activateOrganization(personalWorkspace, manager);  
+              await this.organizationUsersUtilService.activateOrganization(personalWorkspace, manager);
             }
           }
 
@@ -362,6 +363,9 @@ export class OnboardingService implements IOnboardingService {
         organizationId: organization?.id,
         resourceId: user.id,
         resourceName: user.email,
+        resourceData: {
+          signup_method: 'self-signup',
+        },
       });
 
       await this.licenseUserService.validateUser(manager);
@@ -421,6 +425,13 @@ export class OnboardingService implements IOnboardingService {
       }
       const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
       await this.licenseUserService.validateUser(manager);
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: organization.id,
+        resourceId: user.id,
+        resourceName: user.email,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
       return this.sessionUtilService.generateLoginResultPayload(
         response,
         user,
@@ -534,6 +545,16 @@ export class OnboardingService implements IOnboardingService {
           Till now user doesn't have an organization.
         */
       await this.licenseUserService.validateUser(manager);
+      const auditLogsData = {
+        userId: signupUser.id,
+        organizationId: signupUser.organizationUsers[0].organizationId,
+        resourceId: signupUser.id,
+        resourceName: signupUser.email,
+        resourceData: {
+          signup_method: 'invite-redemption',
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return this.onboardingUtilService.processOrganizationSignup(
         response,
         signupUser,
@@ -566,7 +587,6 @@ export class OnboardingService implements IOnboardingService {
     if (user.status !== USER_STATUS.ACTIVE) {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
-
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: organizationUser.organizationId,

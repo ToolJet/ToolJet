@@ -12,6 +12,7 @@ export const userService = {
   getAvatar,
   updateAvatar,
   updateUserType,
+  updateUserTypeInstance,
   getUserLimits,
   changeUserPassword,
   generateUserPassword,
@@ -78,6 +79,16 @@ function updateUserType(userUpdateBody) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/users/user-type`, requestOptions).then(handleResponse);
+}
+
+function updateUserTypeInstance(userUpdateBody) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    body: JSON.stringify(userUpdateBody),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/users/user-type/instance`, requestOptions).then(handleResponse);
 }
 
 function changePassword(currentPassword, newPassword) {

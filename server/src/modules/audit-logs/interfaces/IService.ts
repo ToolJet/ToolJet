@@ -7,6 +7,6 @@ export interface IAuditLogService {
   perform(
     { userId, organizationId, resourceId, resourceType, actionType, resourceName, metadata }: AuditLogFields,
     manager?: EntityManager
-  ): Promise<AuditLog>;
+  ): Promise<AuditLog[]>;
   findPerPage(user: User, query: AuditLogsQuery): Promise<any>;
 }

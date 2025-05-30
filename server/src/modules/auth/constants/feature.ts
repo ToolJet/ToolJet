@@ -28,12 +28,15 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.FORGOT_PASSWORD]: {
       isPublic: true,
+      auditLogsKey: 'USER_PASSWORD_FORGOT',
     },
     [FEATURE_KEY.RESET_PASSWORD]: {
       isPublic: true,
+      auditLogsKey: 'USER_PASSWORD_RESET',
     },
     [FEATURE_KEY.OAUTH_SIGN_IN]: {
       isPublic: true,
+      auditLogsKey: 'USER_LOGIN',
     },
     [FEATURE_KEY.OAUTH_OPENID_CONFIGS]: {
       isPublic: true,
@@ -43,6 +46,7 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.OAUTH_COMMON_SIGN_IN]: {
       isPublic: true,
+      auditLogsKey: 'USER_LOGIN',
     },
     [FEATURE_KEY.OAUTH_SAML_RESPONSE]: {
       isPublic: true,
