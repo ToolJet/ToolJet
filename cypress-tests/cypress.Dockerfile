@@ -147,7 +147,7 @@ RUN echo "[supervisord] \n" \
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
-    PORT=80 \
+    PORT=3000 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
