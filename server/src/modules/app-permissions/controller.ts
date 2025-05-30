@@ -127,4 +127,50 @@ export class AppPermissionsController implements IAppPermissionsController {
   ): Promise<any> {
     throw new NotFoundException();
   }
+
+  @InitFeature(FEATURE_KEY.FETCH_COMPONENT_PERMISSIONS)
+  @Get(':appId/components/:componentId')
+  async fetchComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_COMPONENT_PERMISSIONS)
+  @Post(':appId/components/:componentId')
+  async createComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
+    @Body() body: CreatePermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_COMPONENT_PERMISSIONS)
+  @Put(':appId/components/:componentId')
+  async updateComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
+    @Body() body: CreatePermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_COMPONENT_PERMISSIONS)
+  @Delete(':appId/components/:componentId')
+  async deleteComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
 }

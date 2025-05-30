@@ -31,6 +31,7 @@ import { AiResponseVote } from './ai_response_vote.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { PageUser } from './page_users.entity';
 import { QueryUser } from './query_users.entity';
+import { ComponentUser } from './component_users.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -191,6 +192,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => QueryUser, (queryUser) => queryUser.user)
   queryUsers: QueryUser[];
+
+  @OneToMany(() => ComponentUser, (componentUser) => componentUser.user)
+  componentUsers: ComponentUser[];
 
   organizationId: string;
   invitedOrganizationId: string;

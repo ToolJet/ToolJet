@@ -78,8 +78,14 @@ export class ImportExportResourcesService {
           appParams = { ...appParams.appV2 };
           const pages = appParams?.pages;
           const queries = appParams?.dataQueries;
-          (pages?.length || queries?.length) &&
-            (await this.appImportExportService.checkIfGroupPermissionsExist(pages, queries, user.organizationId));
+          const components = appParams?.components;
+          (pages?.length || queries?.length || components?.length) &&
+            (await this.appImportExportService.checkIfGroupPermissionsExist(
+              pages,
+              queries,
+              components,
+              user.organizationId
+            ));
         }
       }
     }
