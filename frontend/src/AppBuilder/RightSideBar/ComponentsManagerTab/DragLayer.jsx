@@ -66,11 +66,11 @@ const CustomDragLayer = ({ size }) => {
       style={{
         position: 'fixed',
         pointerEvents: 'none',
-        zIndex: 1000,
         left: canvasBounds?.left || 0,
         top: canvasBounds?.top || 0,
         height: `${height}px`,
         width: `${width}px`,
+        zIndex: -1,
       }}
     >
       <div
