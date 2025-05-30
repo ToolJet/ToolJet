@@ -14,7 +14,6 @@ import {
 } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFactory';
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
-
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 
 export const ModalV2 = function Modal({
@@ -236,6 +235,7 @@ export const ModalV2 = function Modal({
           modalBodyHeight: computedCanvasHeight,
           modalWidth,
           onSelectModal: setSelectedComponentAsModal,
+          isFullScreen,
         }}
       />
     </div>
