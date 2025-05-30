@@ -44,7 +44,7 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     @Body() createGranularPermissionsDto: CreateGranularPermissionDto
   ) {
     createGranularPermissionsDto.groupId = groupId;
-    return await this.granularPermissionsService.create(user.organizationId, createGranularPermissionsDto);
+    return await this.granularPermissionsService.create(user, createGranularPermissionsDto);
   }
 
   @InitFeature(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS)
@@ -64,16 +64,12 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     @Param('id') granularPermissionsId: string,
     @Body() updateGranularPermissionDto: UpdateGranularPermissionDto<any>
   ) {
-    await this.granularPermissionsService.update(
-      granularPermissionsId,
-      user.organizationId,
-      updateGranularPermissionDto
-    );
+    await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_GRANULAR_PERMISSIONS)
   @Delete('granular-permissions/:id')
   async deleteGranularPermissions(@User() user: UserEntity, @Param('id') granularPermissionsId: string): Promise<void> {
-    await this.granularPermissionsService.delete(granularPermissionsId, user.organizationId);
+    await this.granularPermissionsService.delete(granularPermissionsId, user);
   }
 }

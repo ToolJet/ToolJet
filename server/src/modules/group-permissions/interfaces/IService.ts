@@ -11,7 +11,7 @@ import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permis
 import { User } from '@entities/user.entity';
 
 export interface IGranularPermissionsService {
-  create(organizationId: string, createGranularPermissionsDto: CreateGranularPermissionDto): Promise<void>;
+  create(user: User, createGranularPermissionsDto: CreateGranularPermissionDto): Promise<void>;
   getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]>;
   getAddableDataSources(organizationId: string): Promise<{ AddableResourceItem }[]>;
   getAll(
@@ -19,12 +19,8 @@ export interface IGranularPermissionsService {
     organizationId: string,
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]>;
-  update(
-    id: string,
-    organizationId: string,
-    updateGranularPermissionDto: UpdateGranularPermissionDto<any>
-  ): Promise<void>;
-  delete(id: string, organizationId: string): Promise<void>;
+  update(id: string, user: User, updateGranularPermissionDto: UpdateGranularPermissionDto<any>): Promise<void>;
+  delete(id: string, user: User): Promise<void>;
 }
 
 export interface IGroupPermissionsDuplicateService {
