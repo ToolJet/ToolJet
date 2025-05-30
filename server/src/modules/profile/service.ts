@@ -55,7 +55,14 @@ export class ProfileService implements IProfileService {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
-      await this.serviceUtils.updateUserPassword(userId, password, manager);
+      await manager.update(
+        User,
+        { id: userId },
+        {
+          password,
+          passwordRetryCount: 0,
+        }
+      );
       const auditLogEntry = {
         userId: user.id,
         organizationId: user.defaultOrganizationId,
@@ -71,7 +78,8 @@ export class ProfileService implements IProfileService {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
-      await this.serviceUtils.updateUserName(userId, updateUserDto, manager);
+      const { first_name: firstName, last_name: lastName } = updateUserDto;
+      await manager.update(User, { id: userId }, { firstName, lastName });
       const auditLogData = {
         userId: user.id,
         organizationId: user.defaultOrganizationId,
@@ -83,8 +91,8 @@ export class ProfileService implements IProfileService {
             last_name: user.lastName,
           },
           updated_user_details: {
-            first_name: updateUserDto.first_name,
-            last_name: updateUserDto.last_name,
+            first_name: firstName,
+            last_name: lastName,
           },
         },
       };

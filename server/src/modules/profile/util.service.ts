@@ -5,8 +5,6 @@ import { FilesRepository } from '@modules/files/repository';
 import { File } from '@entities/file.entity';
 import { IProfileUtilService } from '@modules/profile/interfaces/IService';
 import { CreateFileDto } from '@modules/files/dto/index';
-import { ProfileUpdateDto } from './dto';
-import { User } from '@entities/user.entity';
 
 @Injectable()
 export class ProfileUtilService implements IProfileUtilService {
@@ -35,21 +33,5 @@ export class ProfileUtilService implements IProfileUtilService {
     }
 
     return avatar;
-  }
-
-  async updateUserName(userId: string, updateUserDto: ProfileUpdateDto, manager: EntityManager): Promise<void> {
-    const { first_name: firstName, last_name: lastName } = updateUserDto;
-    await manager.update(User, { id: userId }, { firstName, lastName });
-  }
-
-  async updateUserPassword(userId: string, password: string, manager: EntityManager): Promise<void> {
-    await manager.update(
-      User,
-      { id: userId },
-      {
-        password,
-        passwordRetryCount: 0,
-      }
-    );
   }
 }
