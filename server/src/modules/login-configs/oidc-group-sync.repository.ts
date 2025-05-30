@@ -22,6 +22,8 @@ export class SsoConfigOidcGroupSyncRepository extends Repository<SsoConfigOidcGr
   ): Promise<SsoConfigOidcGroupSync[]> {
     const results = [];
     for (const groupSync of groupSyncArray) {
+      // remove id if it exists to avoid conflict
+      delete groupSync.id;
       const existingGroupSync = await this.findOne({
         where: {
           ssoConfigId,
