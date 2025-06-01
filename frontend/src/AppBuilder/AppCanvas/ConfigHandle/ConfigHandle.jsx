@@ -4,6 +4,7 @@ import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
+import { ToolTip } from '@/_components/ToolTip';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -47,7 +48,39 @@ export const ConfigHandle = ({
     );
   }, shallow);
 
+  const currentPageIndex = useStore((state) => state.currentPageIndex);
+  const component = useStore((state) => state.modules.canvas.pages[currentPageIndex].components[id]);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const isRestricted = component.permissions && component.permissions.length !== 0;
+
   let height = visibility === false ? 10 : widgetHeight;
+
+  const getTooltip = () => {
+    const permission = component.permissions?.[0];
+    if (!permission) return null;
+
+    const users = permission.groups || permission.users || [];
+    if (users.length === 0) return null;
+
+    const isSingle = permission.type === 'SINGLE';
+    const isGroup = permission.type === 'GROUP';
+
+    if (isSingle) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].user.email}`
+        : `Access restricted to ${users.length} users`;
+    }
+
+    if (isGroup) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].permission_group?.name || users[0].permissionGroup?.name} group`
+        : `Access restricted to ${users.length} user groups`;
+    }
+
+    return null;
+  };
+
   return (
     <div
       className={`config-handle ${customClassName}`}
@@ -71,6 +104,22 @@ export const ConfigHandle = ({
         }
       }}
     >
+      {licenseValid && isRestricted && (
+        <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
+          <span
+            style={{
+              background:
+                visibility === false ? '#c6cad0' : componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+              border: position === 'bottom' ? '1px solid white' : 'none',
+              color: visibility === false && 'var(--text-placeholder)',
+              marginRight: '4px',
+            }}
+            className="badge handle-content"
+          >
+            <SolidIcon width="12" name="lock" fill="var(--icon-on-solid)" />
+          </span>
+        </ToolTip>
+      )}
       <span
         style={{
           background:
