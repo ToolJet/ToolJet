@@ -43,6 +43,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
+import { ToolTip } from '@/_components/ToolTip';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
+import { appPermissionService } from '@/_services';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -59,6 +62,19 @@ const INSPECTOR_HEADER_OPTIONS = [
     label: 'Duplicate',
     value: 'duplicate',
     icon: <Copy width={16} />,
+  },
+  {
+    label: 'Component permission',
+    value: 'permission',
+    icon: (
+      <img
+        alt="permission-icon"
+        src="assets/images/icons/editor/left-sidebar/authorization.svg"
+        width="16"
+        height="16"
+      />
+    ),
+    trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
   },
   {
     label: 'Delete',
@@ -103,6 +119,11 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
+  const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
+  const setComponentPermission = useStore((state) => state.setComponentPermission);
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -375,6 +396,9 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     if (value === 'delete') {
       setWidgetDeleteConfirmation(true);
     }
+    if (value === 'permission' && licenseValid) {
+      toggleComponentPermissionModal(true);
+    }
     if (value === 'duplicate') {
       copyComponents({ isCloning: true });
     }
@@ -490,26 +514,42 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
               overlay={
                 <Popover id="list-menu" className={darkMode && 'dark-theme'}>
                   <Popover.Body bsPrefix="list-item-popover-body">
-                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
-                      <div
-                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                        className="list-item-popover-option"
-                        key={option?.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInspectorHeaderActions(option.value);
-                        }}
-                      >
-                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                    {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                      const optionBody = (
                         <div
-                          className={classNames('list-item-option-menu-label', {
-                            'color-tomato9': option.value === 'delete',
-                          })}
+                          data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                          className="list-item-popover-option"
+                          key={option?.value}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleInspectorHeaderActions(option.value);
+                          }}
                         >
-                          {option?.label}
+                          <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                          <div
+                            className={classNames('list-item-option-menu-label', {
+                              'color-tomato9': option.value === 'delete',
+                            })}
+                          >
+                            {option?.label}
+                          </div>
+                          {option.value === 'permission' && !licenseValid && option.trailingIcon && option.trailingIcon}
                         </div>
-                      </div>
-                    ))}
+                      );
+
+                      return option.value === 'permission' ? (
+                        <ToolTip
+                          key={option.value}
+                          message={'Component permissions are available only in paid plans'}
+                          placement="left"
+                          show={!licenseValid}
+                        >
+                          {optionBody}
+                        </ToolTip>
+                      ) : (
+                        optionBody
+                      );
+                    })}
                   </Popover.Body>
                 </Popover>
               }
@@ -519,6 +559,18 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
               </span>
             </OverlayTrigger>
           </div>
+          <AppPermissionsModal
+            modalType="component"
+            resourceId={selectedComponentId}
+            showModal={showComponentPermissionModal}
+            toggleModal={toggleComponentPermissionModal}
+            darkMode={darkMode}
+            fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
+            createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
+            updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+            deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
+            onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
+          />
         </div>
         <div className={`${shouldFreeze && 'disabled'}`}>
           <Tabs defaultActiveKey={'properties'} id="inspector">
