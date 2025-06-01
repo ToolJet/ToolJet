@@ -113,7 +113,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
       style={{
         width: currentLayout == 'mobile' ? '450px' : '100%',
         maxWidth: canvasMaxWidth,
-        margin: '0 auto',
+        // margin: '0 auto',
         transform: 'translateZ(0)',
       }}
     >
