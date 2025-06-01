@@ -6,6 +6,38 @@ const initialState = {};
 export const createFormComponentSlice = (set, get) => ({
   ...initialState,
 
+  getFormDataSectionData: (componentId, moduleId = 'canvas') => {
+    const { getComponentDefinition } = get();
+    const componentDefinition = getComponentDefinition(componentId, moduleId);
+    if (!componentDefinition) return null;
+    const { generateFormFrom = null, JSONData = null } = componentDefinition.component.definition.properties || {};
+    return { generateFormFrom, JSONData };
+  },
+  setFormDataSectionData: (componentId, data, fields, moduleId = 'canvas') => {
+    const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
+    const componentDefinition = getComponentDefinition(componentId, moduleId);
+    if (!componentDefinition) return;
+
+    set(
+      withUndoRedo((state) => {
+        const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
+        lodashSet(pageComponent, ['definition', 'properties', 'generateFormFrom'], data.generateFormFrom);
+        lodashSet(pageComponent, ['definition', 'properties', 'JSONData'], data.JSONData);
+        lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], fields);
+      }),
+      false,
+      'setFormDataSectionData'
+    );
+
+    saveComponentPropertyChanges(
+      componentId,
+      'generateFormFrom',
+      data.generateFormFrom,
+      'properties',
+      'value',
+      moduleId
+    );
+  },
   getFormFields: (componentId, moduleId = 'canvas') => {
     const { getComponentDefinition } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);

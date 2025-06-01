@@ -6,7 +6,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Input from '@/components/ui/Input/Index';
-import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from './utils';
+import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from './utils/utils';
 
 /**
  * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
@@ -21,6 +21,7 @@ const ColumnMappingRow = ({
   onCheckboxChange,
   index,
   darkMode = false,
+  disabled = false,
 }) => {
   if (!column) return null;
 
@@ -63,7 +64,7 @@ const ColumnMappingRow = ({
   return (
     <div className="tw-flex tw-items-center tw-w-full tw-py-3 tw-px-2 tw-border-b tw-border-border-lighter column-mapping-row">
       {/* Checkbox */}
-      <div className="tw-w-6">
+      <div className={cx(`tw-w-6`, { 'tw-invisible': disabled })}>
         <Checkbox
           checked={isTrueValue(column.selected.value)}
           onCheckedChange={onCheckboxChange}
@@ -104,16 +105,23 @@ const ColumnMappingRow = ({
           leadingIcon={inputTypeOptions[column.componentType || 'TextInput'].leadingIcon}
           onChange={handleInputTypeChange}
           width="140px"
+          disabled={disabled}
         />
       </div>
 
       {/* Input Label */}
       <div className="type-column rows tw-flex-1 hide-border">
-        <Input value={column.label} onChange={handleLabelChange} placeholder="Input label" size="small" />
+        <Input
+          value={column.label}
+          onChange={handleLabelChange}
+          placeholder="Input label"
+          size="small"
+          disabled={disabled}
+        />
       </div>
 
       {/* Mandatory Checkbox */}
-      <div className="mandatory-column rows tw-flex tw-justify-end">
+      <div className={cx(`mandatory-column rows tw-flex tw-justify-end`, { 'tw-invisible': disabled })}>
         <Checkbox
           checked={isTrueValue(column.mandatory.value)}
           onCheckedChange={handleMandatoryChange}
@@ -124,7 +132,14 @@ const ColumnMappingRow = ({
   );
 };
 
-const RenderSection = ({ mappedColumns = [], setMappedColumns, darkMode, sectionType, sectionDisplayName }) => {
+const RenderSection = ({
+  mappedColumns = [],
+  setMappedColumns,
+  darkMode,
+  sectionType,
+  sectionDisplayName,
+  disabled = false,
+}) => {
   // Ensure mappedColumns is always an array
   const columnsArray = Array.isArray(mappedColumns) ? mappedColumns : [];
 
@@ -226,7 +241,7 @@ const RenderSection = ({ mappedColumns = [], setMappedColumns, darkMode, section
   const renderHeader = () => {
     return (
       <div className="tw-flex tw-items-center tw-w-full tw-py-[10px] tw-px-2 header-row column-mapping-row">
-        <div className="tw-w-6 header-column">
+        <div className={cx(`tw-w-6 header-column`, { 'tw-invisible': disabled })}>
           <Checkbox
             checked={isAllSelected || isIntermediateSelected}
             onCheckedChange={handleSelectAll}
@@ -247,11 +262,13 @@ const RenderSection = ({ mappedColumns = [], setMappedColumns, darkMode, section
         </div>
         <div className="mandatory-column header-column tw-flex tw-justify-end">
           <span className="text-default small-medium tw-mr-2">Mandatory?</span>
-          <Checkbox
-            checked={isAllSelectedMandatory || isIntermediateMandatory}
-            onCheckedChange={handleSelectAllMandatory}
-            intermediate={!isAllSelectedMandatory && isIntermediateMandatory}
-          />
+          <div className={cx({ 'tw-invisible': disabled })}>
+            <Checkbox
+              checked={isAllSelectedMandatory || isIntermediateMandatory}
+              onCheckedChange={handleSelectAllMandatory}
+              intermediate={!isAllSelectedMandatory && isIntermediateMandatory}
+            />
+          </div>
         </div>
       </div>
     );
@@ -283,6 +300,7 @@ const RenderSection = ({ mappedColumns = [], setMappedColumns, darkMode, section
               onChange={(changes) => handleColumnChange(column.name, changes)}
               index={index}
               darkMode={darkMode}
+              disabled={disabled}
             />
           ))
         ) : (
@@ -324,8 +342,11 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         grouped[sectionType].push(col);
       });
 
-      // Get unique section types
-      const types = Object.keys(grouped);
+      // Define the custom order for section types
+      const preferredOrder = ['isNew', 'isRemoved', 'existing', 'isCustomField'];
+
+      // Filter the preferredOrder array to only include types that exist in grouped
+      const types = preferredOrder.filter((type) => grouped[type] && grouped[type].length > 0);
 
       setGroupedColumns(grouped);
       setSectionTypes(types);
@@ -346,7 +367,10 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
     setIsSaving(true);
 
     // Flatten all columns from all sections back into a single array
-    const combinedColumns = Object.values(groupedColumns).flat();
+    // Filter out columns from the 'isRemoved' section
+    const combinedColumns = Object.entries(groupedColumns)
+      .filter(([sectionType]) => sectionType !== 'isRemoved')
+      .flatMap(([_, columns]) => columns);
 
     onSubmit?.(combinedColumns);
   };
@@ -375,8 +399,8 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
       {/* Render each section dynamically */}
       {sectionTypes.length > 0 && (
         <>
-          {sectionTypes.map(
-            (sectionType) =>
+          {sectionTypes.map((sectionType) => {
+            return (
               groupedColumns[sectionType]?.length > 0 && (
                 <RenderSection
                   key={sectionType}
@@ -385,9 +409,11 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
                   darkMode={darkMode}
                   sectionType={sectionType}
                   sectionDisplayName={isFormGenerated ? getSectionDisplayName(sectionType) : ''}
+                  disabled={sectionType === 'isRemoved'}
                 />
               )
-          )}
+            );
+          })}
         </>
       )}
 

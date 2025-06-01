@@ -787,7 +787,7 @@ export const createComponentsSlice = (set, get) => ({
   addComponentToCurrentPage: (
     componentDefinitions,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true } = {}
+    { skipUndoRedo = false, saveAfterAction = true, skipFormUpdate = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -874,7 +874,7 @@ export const createComponentsSlice = (set, get) => ({
         );
 
         // Check if parent is a Form and add the component to form fields if needed
-        checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
+        !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
       });
       const selectedComponents = findHighestLevelofSelection(newComponents);
       get().setSelectedComponents(selectedComponents.map((component) => component.id));
@@ -1916,6 +1916,25 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    // setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+  },
+
+  /**
+   * Generates a unique component name from the base name by appending a number if necessary.
+   * @param {string} baseName - The base name for the component
+   * @returns {string} Unique component name
+   */
+  generateUniqueComponentName: (baseName, moduleId = 'canvas') => {
+    const { getComponentNameIdMapping } = get();
+    const componentNameIdMapping = getComponentNameIdMapping(moduleId);
+    let uniqueName = baseName;
+    let counter = 1;
+
+    while (Object.values(componentNameIdMapping).includes(uniqueName)) {
+      uniqueName = `${baseName}${counter}`;
+      counter++;
+    }
+
+    return uniqueName;
   },
 });

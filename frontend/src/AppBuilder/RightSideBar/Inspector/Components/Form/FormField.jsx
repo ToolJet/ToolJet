@@ -7,7 +7,8 @@ import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { isTrueValue, isPropertyFxControlled, updateFormFieldComponent } from './utils';
+import { isTrueValue, isPropertyFxControlled } from './utils/utils';
+import { updateFormFieldComponent } from './utils/fieldOperations';
 
 export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);

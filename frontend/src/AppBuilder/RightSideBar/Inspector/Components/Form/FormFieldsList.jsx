@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { FormField } from './FormField';
 import { Button } from '@/components/ui/Button/Button';
 
-export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsModalOpen }) => {
+export const FormFieldsList = ({
+  fields,
+  isFormGenerated,
+  onDeleteField,
+  setIsModalOpen,
+  columnMappingPopoverContentRef,
+}) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
   if (!isFormGenerated || fields.length === 0) {
@@ -28,7 +34,15 @@ export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsMo
       </div>
 
       <div className="tw-flex tw-justify-center tw-items-center tw-mt-3">
-        <Button fill="#ACB2B9" leadingIcon="sliders" variant="outline" onClick={() => setIsModalOpen(true)}>
+        <Button
+          fill="#ACB2B9"
+          leadingIcon="sliders"
+          variant="outline"
+          onClick={() => {
+            columnMappingPopoverContentRef.current = 'manageFields';
+            setIsModalOpen(true);
+          }}
+        >
           Manage fields
         </Button>
       </div>

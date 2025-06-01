@@ -3,7 +3,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Popover from 'react-bootstrap/Popover';
 import { Button } from '@/components/ui/Button/Button';
-import { getInputTypeOptions } from './utils';
+import { getInputTypeOptions } from './utils/utils';
 
 const FieldPopoverContent = ({
   field,

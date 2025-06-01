@@ -24,7 +24,7 @@ export const DropdownMenu = (props) => {
   const queryOptions = useMemo(() => {
     return dataQueries.map((query) => ({
       id: query.id,
-      value: `{{queries.${query.name}.data}}`,
+      value: `{{queries.${query.id}.data}}`,
       label: query.name,
       icon: <DataSourceIcon source={query} height={16} />,
       type: 'query',
@@ -32,11 +32,16 @@ export const DropdownMenu = (props) => {
   }, [dataQueries]);
 
   const getSelectedSource = (value) => {
+    if (!value) return null;
     const selectedItem = sourceOptions.find((option) => option.id === value);
     if (selectedItem) {
       return selectedItem;
     }
-    const selectedQuery = queryOptions.find((option) => option.value === value);
+    if (!value.startsWith('{{queries.')) {
+      return null;
+    }
+    const queryName = value.split('.')[1]?.replace('}}', '');
+    const selectedQuery = queryOptions.find((option) => option.label === queryName);
     if (selectedQuery) {
       return selectedQuery;
     }
