@@ -35,10 +35,22 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     return await this.granularPermissionsService.getAddableDataSources(user.organizationId);
   }
 
-  @InitFeature(FEATURE_KEY.CREATE_GRANULAR_PERMISSIONS)
+  @InitFeature(FEATURE_KEY.CREATE_GRANULAR_APP_PERMISSIONS)
   @UseGuards(GroupExistenceGuard)
-  @Post(':id/granular-permissions')
-  async createGranularPermissions(
+  @Post(':id/granular-permissions/app')
+  async createGranularAppPermissions(
+    @User() user: UserEntity,
+    @Param('id') groupId: string,
+    @Body() createGranularPermissionsDto: CreateGranularPermissionDto
+  ) {
+    createGranularPermissionsDto.groupId = groupId;
+    return await this.granularPermissionsService.create(user, createGranularPermissionsDto);
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_GRANULAR_DATA_PERMISSIONS)
+  @UseGuards(GroupExistenceGuard)
+  @Post(':id/granular-permissions/data-source')
+  async createGranularDataPermissions(
     @User() user: UserEntity,
     @Param('id') groupId: string,
     @Body() createGranularPermissionsDto: CreateGranularPermissionDto
@@ -57,9 +69,9 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     return await this.granularPermissionsService.getAll(groupId, user.organizationId, { filterDataSource: true });
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE_GRANULAR_PERMISSIONS)
-  @Put('granular-permissions/:id')
-  async updateGranularPermissions(
+  @InitFeature(FEATURE_KEY.UPDATE_GRANULAR_APP_PERMISSIONS)
+  @Put('granular-permissions/app/:id')
+  async updateGranularAppPermissions(
     @User() user: UserEntity,
     @Param('id') granularPermissionsId: string,
     @Body() updateGranularPermissionDto: UpdateGranularPermissionDto<any>
@@ -67,9 +79,31 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
   }
 
-  @InitFeature(FEATURE_KEY.DELETE_GRANULAR_PERMISSIONS)
-  @Delete('granular-permissions/:id')
-  async deleteGranularPermissions(@User() user: UserEntity, @Param('id') granularPermissionsId: string): Promise<void> {
+  @InitFeature(FEATURE_KEY.UPDATE_GRANULAR_DATA_PERMISSIONS)
+  @Put('granular-permissions/data-source/:id')
+  async updateGranularDataPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string,
+    @Body() updateGranularPermissionDto: UpdateGranularPermissionDto<any>
+  ) {
+    await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_GRANULAR_APP_PERMISSIONS)
+  @Delete('granular-permissions/app/:id')
+  async deleteGranularAppPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string
+  ): Promise<void> {
+    await this.granularPermissionsService.delete(granularPermissionsId, user);
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_GRANULAR_DATA_PERMISSIONS)
+  @Delete('granular-permissions/data-source/:id')
+  async deleteGranularDataPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string
+  ): Promise<void> {
     await this.granularPermissionsService.delete(granularPermissionsId, user);
   }
 }

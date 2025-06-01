@@ -22,16 +22,27 @@ export interface IGroupPermissionsControllerV2 {
 export interface IGranularPermissionsController {
   getAddableApps(user: UserEntity): Promise<{ AddableResourceItem }[]>;
   getAddableDs(user: UserEntity): Promise<{ AddableResourceItem }[]>;
-  createGranularPermissions(
+  createGranularAppPermissions(
+    user: UserEntity,
+    groupId: string,
+    createGranularPermissionsDto: CreateGranularPermissionDto
+  ): Promise<GranularPermissions>;
+  createGranularDataPermissions(
     user: UserEntity,
     groupId: string,
     createGranularPermissionsDto: CreateGranularPermissionDto
   ): Promise<GranularPermissions>;
   getAllGranularPermissions(user: UserEntity, groupId: string): Promise<GranularPermissions[]>;
-  updateGranularPermissions(
+  updateGranularAppPermissions(
     user: UserEntity,
     granularPermissionsId: string,
     updateGranularPermissionDto: UpdateGranularPermissionDto<any>
   ): Promise<void>;
-  deleteGranularPermissions(user: UserEntity, granularPermissionsId: string): Promise<void>;
+  updateGranularDataPermissions(
+    user: UserEntity,
+    granularPermissionsId: string,
+    updateGranularPermissionDto: UpdateGranularPermissionDto<any>
+  ): Promise<void>;
+  deleteGranularAppPermissions(user: UserEntity, granularPermissionsId: string): Promise<void>;
+  deleteGranularDataPermissions(user: UserEntity, granularPermissionsId: string): Promise<void>;
 }
