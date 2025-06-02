@@ -131,6 +131,14 @@ RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
     "user=root \n" \
     "\n" \
+    "[program:redis] \n" \
+    "command=redis-server /etc/redis/redis.conf \n" \
+    "user=redis \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/var/log/redis/redis-server.log \n" \
+    "stdout_logfile=/var/log/redis/redis-server.log \n" \
+    "\n" \
     "[program:postgrest] \n" \
     "command=/bin/postgrest \n" \
     "autostart=true \n" \
@@ -165,6 +173,10 @@ ENV TOOLJET_HOST=http://localhost \
     PGRST_DB_URI=postgres://postgres:postgres@localhost/tooljet_db \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_USER= \
+    REDIS_PASSWORD= \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \

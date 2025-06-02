@@ -122,9 +122,6 @@ jobs:
 
           # Only add EE-specific env vars if edition is ee
           if [ "${{ matrix.edition }}" = "ee" ]; then
-            echo "REDIS_HOST=redis" >> .env
-            echo "REDIS_USER=default" >> .env
-            echo "REDIS_PASSWORD=" >> .env
             echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
             echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
             echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
