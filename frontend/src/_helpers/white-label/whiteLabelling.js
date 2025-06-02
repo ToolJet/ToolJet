@@ -80,6 +80,7 @@ export async function fetchAndSetWindowTitle(pageDetails) {
   let pageTitle = '';
   let mode = pageDetails?.mode || '';
   let isPreview = !pageDetails?.isReleased || false;
+  const license = pageDetails?.licenseStatus;
   switch (pageTitleKey) {
     case pageTitles.VIEWER: {
       const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
@@ -101,7 +102,7 @@ export async function fetchAndSetWindowTitle(pageDetails) {
     }
   }
   if (!isPreview && mode === 'view') {
-    document.title = `${pageDetails?.appName}`;
+    document.title = `${pageDetails?.appName} ${license ? '' : '| Tooljet'}`;
     return;
   }
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;

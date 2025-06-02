@@ -122,6 +122,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
   const slug = pathParams?.slug;
+  const licenseStatus = useStore((state) => state.isLicenseValid());
 
   const match = useMatch('/applications/:slug/:pageHandle');
 
@@ -474,8 +475,9 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       appName: app.appName,
       mode: mode,
       isReleased: isReleasedVersionId,
+      licenseStatus: licenseStatus,
     });
-  }, [app.appName, isReleasedVersionId]);
+  }, [app.appName, isReleasedVersionId, licenseStatus, mode]);
 
   useEffect(() => {
     if (!themeAccess) return;
