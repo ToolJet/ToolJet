@@ -142,9 +142,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
 
   const pluginDeleteMessage = (
     <>
-      Deleting <strong>{capitalizeFirstLetter(name)}</strong> plugin will result in the permanent removal of all
-      associated datasources and its dataqueries. This action cannot be undone. Are you sure you wish to proceed with
-      the deletion?
+      Do you want to uninstall <strong>{capitalizeFirstLetter(name)}</strong>?
     </>
   );
 
