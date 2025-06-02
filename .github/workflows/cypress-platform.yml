@@ -155,6 +155,15 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
+      - name: sleep 2 minutes
+        run: sleep 120
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
+
       - name: docker logs
         run: sudo docker logs Tooljet-app
 
