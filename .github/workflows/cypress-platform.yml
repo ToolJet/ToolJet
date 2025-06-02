@@ -119,6 +119,7 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+
           # Only add EE-specific env vars if edition is ee
           if [ "${{ matrix.edition }}" = "ee" ]; then
             echo "REDIS_HOST=redis" >> .env
@@ -153,6 +154,15 @@ jobs:
 
       - name: Checking containers
         run: docker ps -a
+
+      - name: sleep 2 minutes
+        run: sleep 120
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
 
       - name: docker logs
         run: sudo docker logs Tooljet-app
