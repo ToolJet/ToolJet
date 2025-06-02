@@ -7,6 +7,7 @@ interface Features {
   [FEATURE_KEY.UPDATE_USER_TYPE]: FeatureConfig;
   [FEATURE_KEY.AUTO_UPDATE_USER_PASSWORD]: FeatureConfig;
   [FEATURE_KEY.CHANGE_USER_PASSWORD]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_USER_TYPE_INSTANCE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

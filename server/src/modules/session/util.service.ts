@@ -44,6 +44,7 @@ export class SessionUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
   ) {}
+
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(UserSessions, { userId });
@@ -333,7 +334,7 @@ export class SessionUtilService {
             })
         : null;
 
-      const noWorkspaceAttachedInTheSession = await this.checkUserWorkspaceStatus(user.id) && !isSuperAdmin(user);
+      const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);
       const isAllWorkspacesArchived = await this.#isAllWorkspacesArchivedBySuperAdmin(user.id);
       const onboardingFlags = await this.#onboardingFlags(user);
       const metadata = await this.metadataUtilService.fetchMetadata();
@@ -367,7 +368,7 @@ export class SessionUtilService {
 
   async #onboardingFlags(user: User) {
     let isFirstUserOnboardingCompleted = true;
-    let isOnboardingCompleted = true;
+    const isOnboardingCompleted = true;
     // const isOnboardingQuestionsEnabled =
     //   this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true';
 

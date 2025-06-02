@@ -8,7 +8,7 @@ import { CreateFileDto } from '@modules/files/dto/index';
 
 @Injectable()
 export class ProfileUtilService implements IProfileUtilService {
-  constructor(protected readonly filesRepository: FilesRepository, protected userRepository: UserRepository) {}
+  constructor(protected readonly filesRepository: FilesRepository, protected readonly userRepository: UserRepository) {}
 
   async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager): Promise<File> {
     const user = await this.userRepository.getUser({
@@ -31,6 +31,7 @@ export class ProfileUtilService implements IProfileUtilService {
     if (currentAvatarId) {
       await this.filesRepository.removeOne(currentAvatarId, manager);
     }
+
     return avatar;
   }
 }
