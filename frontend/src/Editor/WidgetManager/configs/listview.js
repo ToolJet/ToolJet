@@ -24,7 +24,7 @@ export const listviewConfig = {
         top: 50,
         left: 11,
         height: 30,
-        width: 3,
+        width: 4,
       },
       properties: ['text'],
       accessorKey: 'text',
@@ -128,7 +128,7 @@ export const listviewConfig = {
   },
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -136,7 +136,7 @@ export const listviewConfig = {
       },
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
