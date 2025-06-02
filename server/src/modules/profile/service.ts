@@ -55,13 +55,13 @@ export class ProfileService implements IProfileService {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
-      await manager.update(
-        User,
-        { id: userId },
+      await this.userRepository.updateOne(
+        userId,
         {
           password,
           passwordRetryCount: 0,
-        }
+        },
+        manager
       );
       const auditLogEntry = {
         userId: user.id,
@@ -79,7 +79,7 @@ export class ProfileService implements IProfileService {
         where: { id: userId },
       });
       const { first_name: firstName, last_name: lastName } = updateUserDto;
-      await manager.update(User, { id: userId }, { firstName, lastName });
+      await this.userRepository.updateOne(userId, { firstName, lastName }, manager);
       const auditLogData = {
         userId: user.id,
         organizationId: user.defaultOrganizationId,
