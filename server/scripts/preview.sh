@@ -15,6 +15,8 @@ fi
 echo "Starting PostgreSQL..."
 su - postgres -c "/usr/lib/postgresql/13/bin/pg_ctl -D /var/lib/postgresql/13/main -w start"
 
+redis-server /etc/redis/redis.conf &
+
 # Export the PORT variable to be used by the application
 export PORT=${PORT:-80}
 

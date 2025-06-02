@@ -56,8 +56,9 @@ RUN npm --prefix server run build
 FROM node:18.18.2-bullseye
 
 RUN apt-get update -yq \
-    && apt-get install curl gnupg zip -yq \
+    && apt-get install curl wget gnupg zip -yq \
     && apt-get install -yq build-essential \
+    && apt -y install redis \
     && apt-get clean -y
 
 # copy postgrest executable
