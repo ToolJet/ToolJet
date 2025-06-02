@@ -15,7 +15,7 @@ import { eeGroupsText } from "Texts/eeCommon";
 import {
     // verifyOnboardingQuestions,
     // verifyCloudOnboardingQuestions,
-    fetchAndVisitInviteLink
+    fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
@@ -195,7 +195,7 @@ export const addNewUserEE = (firstName, email) => {
         commonSelectors.toastMessage,
         usersText.userCreatedToast
     );
-    WorkspaceInvitationLink(email)
+    WorkspaceInvitationLink(email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.signUpButton).click();
     cy.wait(2000);
@@ -296,9 +296,9 @@ export const VerifyWorkspaceInvitePageElements = () => {
         "have.text",
         commonText.invitePageSubHeader
     );
-    cy.verifyLabel(commonText.userNameInputLabel)
+    cy.verifyLabel(commonText.userNameInputLabel);
     cy.get(commonSelectors.invitedUserName).should("be.visible");
-    cy.verifyLabel(commonText.emailInputLabel)
+    cy.verifyLabel(commonText.emailInputLabel);
     cy.get(commonSelectors.invitedUserEmail).should("be.visible");
     cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
         "have.text",
@@ -508,50 +508,6 @@ export const updateLicense = (key) => {
     });
 };
 
-export const insertGitSyncSSHSecondKey = (workspaceId) => {
-    const pvtKey =
-        "-----BEGIN PRIVATE KEY-----\n" +
-        "MC4CAQAwBQYDK2VwBCIEIArTDR1KzuLCjXQSNlk76Hj6TmcfqMfK0GwuHjdtal2o\n" +
-        "-----END PRIVATE KEY-----";
-
-    cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `
-      DELETE FROM organization_git_sync
-      WHERE ssh_public_key = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)';
-
-      INSERT INTO organization_git_sync (
-        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
-      )
-      SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)'
-      WHERE NOT EXISTS (
-        SELECT 1 FROM organization_git_sync
-        WHERE organization_id = '${workspaceId}'
-      );
-    `,
-    });
-};
-
-export const insertGitSyncSSHKey = (workspaceId) => {
-    const pvtKey =
-        "-----BEGIN PRIVATE KEY-----\n" +
-        "MC4CAQAwBQYDK2VwBCIEIFGXNAirYFsVnYzHaj6jvt4o7C0eNwCHMVO0Gaw+ir/X\n" +
-        "-----END PRIVATE KEY-----";
-
-    cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `
-      INSERT INTO organization_git_sync (
-        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
-      )
-      SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)'
-      WHERE NOT EXISTS (
-        SELECT 1 FROM organization_git_sync WHERE organization_id = '${workspaceId}'
-      );
-    `,
-    });
-};
-
 export const openInstanceSettings = () => {
     cy.get(commonSelectors.settingsIcon).click();
     cy.get(commonEeSelectors.instanceSettingIcon).click();
@@ -627,11 +583,9 @@ export const instanceSSOConfig = (allow = true) => {
     });
 };
 
-
 export const updateInstanceSettings = (key, value) => {
     cy.task("updateSetting", {
         dbconfig: Cypress.env("app_db"),
         sql: `UPDATE instance_settings SET value = ${value} WHERE key = ${key};`,
     });
-}
-
+};
