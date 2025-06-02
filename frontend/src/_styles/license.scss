@@ -195,6 +195,22 @@
     justify-content: flex-start !important;
     box-shadow: 0px 1px 1px 0px #3032331A;
 
+    .license-banner-close {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+
+      // If you need to style the Cross component specifically
+      svg {
+        width: 100%; // Override the 54% from parent if needed
+      }
+    }
     .message-wrapper {
         display: flex;
         flex-direction: column;
