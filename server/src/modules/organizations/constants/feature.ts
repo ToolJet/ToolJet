@@ -8,7 +8,12 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET]: {
       isPublic: true,
     },
-    [FEATURE_KEY.WORKSPACE_STATUS_UPDATE]: {},
+    [FEATURE_KEY.WORKSPACE_ARCHIVE]: {
+      auditLogsKey: 'WORKSPACE_ARCHIVE',
+    },
+    [FEATURE_KEY.WORKSPACE_UNARCHIVE]: {
+      auditLogsKey: 'WORKSPACE_UNARCHIVE',
+    },
     [FEATURE_KEY.UPDATE]: {
       auditLogsKey: 'WORKSPACE_UPDATE',
     },

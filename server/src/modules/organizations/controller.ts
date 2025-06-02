@@ -50,20 +50,7 @@ export class OrganizationsController implements IOrganizationsController {
     return;
   }
 
-  // Note : This endpoint is used for archive/unarchive workspaces.
-  @InitFeature(FEATURE_KEY.WORKSPACE_STATUS_UPDATE)
-  @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async updateById(
-    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
-    @Param('id') organizationId: string,
-    @User() user: UserEntity
-  ) {
-    await this.organizationsService.updateOrganizationStatus(organizationId, organizationUpdateDto, user);
-    return;
-  }
-
-  @InitFeature(FEATURE_KEY.WORKSPACE_STATUS_UPDATE)
+  @InitFeature(FEATURE_KEY.WORKSPACE_ARCHIVE)
   @UseGuards(JwtAuthGuard)
   @Patch('/archive/:id')
   async archiveOrganization(
@@ -75,7 +62,7 @@ export class OrganizationsController implements IOrganizationsController {
     return;
   }
 
-  @InitFeature(FEATURE_KEY.WORKSPACE_STATUS_UPDATE)
+  @InitFeature(FEATURE_KEY.WORKSPACE_UNARCHIVE)
   @UseGuards(JwtAuthGuard)
   @Patch('/unarchive/:id')
   async unarchiveOrganization(

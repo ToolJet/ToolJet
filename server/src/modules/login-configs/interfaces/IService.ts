@@ -1,3 +1,4 @@
+import { User } from '@entities/user.entity';
 import { OrganizationConfigsUpdateDto } from '../dto';
 
 export interface SSOConfig {
@@ -23,7 +24,7 @@ export interface ILoginConfigsService {
    * Update organization SSO configs
    */
   updateOrganizationSSOConfigs(
-    organizationId: string,
+    user: User,
     params: {
       type: string;
       configs: any;
@@ -34,7 +35,7 @@ export interface ILoginConfigsService {
   /**
    * Update general organization configs
    */
-  updateGeneralOrganizationConfigs(organizationId: string, params: OrganizationConfigsUpdateDto): Promise<any>;
+  updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto): Promise<any>;
 
   /**
    * Get instance SSO configs
@@ -49,5 +50,5 @@ export interface ILoginConfigsService {
   /**
    * Validate and update system parameters
    */
-  validateAndUpdateSystemParams(params: any): Promise<any>;
+  validateAndUpdateSystemParams(params: any, user: User): Promise<any>;
 }

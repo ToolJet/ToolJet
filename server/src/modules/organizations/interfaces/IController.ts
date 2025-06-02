@@ -6,7 +6,6 @@ export interface IOrganizationsController {
 
   updateOrganizationNameAndSlug(organizationUpdateDto: OrganizationUpdateDto, user: User): Promise<void>;
 
-  updateById(organizationUpdateDto: OrganizationStatusUpdateDto, organizationId: string, user: User): Promise<void>;
   archiveOrganization(
     organizationUpdateDto: OrganizationStatusUpdateDto,
     organizationId: string,

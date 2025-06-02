@@ -44,7 +44,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.UPDATE, FEATURE_KEY.GET, FEATURE_KEY.CHECK_UNIQUE], Organization);
     }
     if (superAdmin) {
-      can([FEATURE_KEY.WORKSPACE_STATUS_UPDATE, FEATURE_KEY.SET_DEFAULT], Organization);
+      can([FEATURE_KEY.WORKSPACE_ARCHIVE, FEATURE_KEY.SET_DEFAULT], Organization);
+      can([FEATURE_KEY.WORKSPACE_UNARCHIVE, FEATURE_KEY.SET_DEFAULT], Organization);
     }
   }
 }

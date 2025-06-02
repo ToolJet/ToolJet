@@ -9,6 +9,9 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { cleanObject } from '@helpers/utils.helper';
 import { OrganizationConfigsUpdateDto } from './dto';
+import { User } from '@entities/user.entity';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class LoginConfigsService implements ILoginConfigsService {
@@ -50,7 +53,8 @@ export class LoginConfigsService implements ILoginConfigsService {
     };
   }
 
-  async updateOrganizationSSOConfigs(organizationId: string, params: any): Promise<any> {
+  async updateOrganizationSSOConfigs(user: User, params: any): Promise<any> {
+    const organizationId = user.organizationId;
     const { type, configs, enabled } = params;
 
     if (
@@ -60,6 +64,15 @@ export class LoginConfigsService implements ILoginConfigsService {
     }
 
     await this.loginConfigsUtilService.encryptSecret(configs);
+    const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
+    //SSO_UPDATE audit
+    const auditLogsData = {
+      userId: user.id,
+      organizationId: organizationId,
+      resourceId: organizationId,
+      resourceName: organization.name,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
 
     return await this.ssoConfigsRepository.createOrUpdateSSOConfig({
       sso: type,
@@ -70,7 +83,8 @@ export class LoginConfigsService implements ILoginConfigsService {
     });
   }
 
-  async updateGeneralOrganizationConfigs(organizationId: string, params: OrganizationConfigsUpdateDto) {
+  async updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto) {
+    const organizationId = user.organizationId;
     const { domain, enableSignUp, inheritSSO, automaticSsoLogin } = params;
 
     const updatableParams = {
@@ -106,7 +120,17 @@ export class LoginConfigsService implements ILoginConfigsService {
 
     // removing keys with undefined values
     cleanObject(updatableParams);
+    const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
     await this.organizationsRepository.updateOne(organizationId, updatableParams);
+
+    //WORKSPACE_LOGIN_SETTINGS_UPDATE audit
+    const auditLogsData = {
+      userId: user.id,
+      organizationId: organizationId,
+      resourceId: organizationId,
+      resourceName: organization.name,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
   }
 
   async getInstanceSSOConfigs() {
@@ -136,7 +160,7 @@ export class LoginConfigsService implements ILoginConfigsService {
     throw new Error('Method not implemented.');
   }
 
-  public async validateAndUpdateSystemParams(params: any): Promise<void> {
+  public async validateAndUpdateSystemParams(params: any, user: User): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

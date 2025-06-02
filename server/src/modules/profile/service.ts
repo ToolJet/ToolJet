@@ -47,26 +47,6 @@ export class ProfileService implements IProfileService {
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogData);
       return avatar;
-      const user = await this.userRepository.getUser({
-        id: userId,
-      });
-      const avatar = await this.serviceUtils.addAvatar(userId, imageBuffer, filename, manager);
-      const auditLogData = {
-        userId: user.id,
-        organizationId: user.defaultOrganizationId,
-        resourceId: user.id,
-        resourceName: user.email,
-        resourceData: {
-          previous_user_details: {
-            avatar_id: user.avatarId,
-          },
-          updated_user_details: {
-            avatar_id: avatar.id,
-          },
-        },
-      };
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogData);
-      return avatar;
     });
   }
 

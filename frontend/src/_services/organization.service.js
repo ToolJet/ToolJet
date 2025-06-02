@@ -14,6 +14,7 @@ export const organizationService = {
   checkWorkspaceUniqueness,
   updateOrganization,
   setDefaultWorkspace,
+  updateOrganizationStatus,
 };
 
 function getUsersByValue(searchInput) {
@@ -33,17 +34,28 @@ function createOrganization(data) {
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
 }
 
-// Used for making API calls to update workspace name/slug and workspace status
-function updateOrganization(params, organizationId = '') {
+// Used for making API calls to update workspace name/slug
+function updateOrganization(params) {
   const requestOptions = {
     method: 'PATCH',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(params),
   };
-  return fetch(`${config.apiUrl}/organizations${organizationId ? `/${organizationId}` : ''}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
+}
+
+//used to update workspace status
+function updateOrganizationStatus(params, organizationId = '') {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(params),
+  };
+  console.log('params', params);
+  const status = params.status === 'active' ? 'unarchive' : 'archive';
+  return fetch(`${config.apiUrl}/organizations/${status}/${organizationId}`, requestOptions).then(handleResponse);
 }
 
 //  Used for making API calls to update details related to organization's SSO configurations

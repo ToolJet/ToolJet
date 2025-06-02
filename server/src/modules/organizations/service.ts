@@ -50,7 +50,7 @@ export class OrganizationsService implements IOrganizationsService {
         userId: user.id,
         organizationId: organizationId,
         resourceId: organizationId,
-        resourceName: updatableData.name,
+        resourceName: organization.name,
         resourceData: {
           previous_workspace_details: {
             id: organizationId,
@@ -75,7 +75,6 @@ export class OrganizationsService implements IOrganizationsService {
     user: User
   ): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log('updatable data', updatableData);
       const organization = await this.organizationRepository.findOne({ where: { id: organizationId } });
       if (organization.isDefault) {
         throw new NotAcceptableException('Default workspace cannot be archived');
@@ -85,6 +84,31 @@ export class OrganizationsService implements IOrganizationsService {
       if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
         await this.licenseOrganizationService.validateOrganization(manager); //Check for only unarchiving
       }
+
+      //WORKSPACE_ARCHIVE audit WORKSPACE_UNARCHIVE audit
+      const resourceData =
+        updatableData.status === WORKSPACE_STATUS.ACTIVE
+          ? {
+              unarchived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            }
+          : {
+              archived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            };
+
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: organizationId,
+        resourceName: organization.name,
+        resourceData: resourceData,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return;
     });
   }
