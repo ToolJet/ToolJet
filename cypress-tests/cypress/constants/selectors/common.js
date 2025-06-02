@@ -1,5 +1,5 @@
 export const cyParamName = (paramName = "") => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
+  return String(paramName).toLowerCase().replace(/\s+/g, "-");
 };
 
 export const commonSelectors = {
@@ -278,6 +278,16 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+
+  textField: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
+  },
+  labelFieldValidation: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-validation-label"]`;
+  },
+  labelFieldAlert: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
+  },
 };
 
 export const commonWidgetSelector = {

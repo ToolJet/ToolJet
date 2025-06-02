@@ -9,6 +9,8 @@ export const globalDatasourceService = {
   convertToGlobal,
   getDataSourceByEnvironmentId,
   getForApp,
+  getQueriesLinkedToDatasource,
+  getQueriesLinkedToMarketplacePlugin,
 };
 
 function getForApp(organizationId, appVersionId, environmentId) {
@@ -67,4 +69,16 @@ function getDataSourceByEnvironmentId(dataSourceId, environmentId) {
   return fetch(`${config.apiUrl}/data-sources/${dataSourceId}/environment/${environmentId}`, requestOptions).then(
     handleResponse
   );
+}
+
+function getQueriesLinkedToMarketplacePlugin(pluginId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/data-sources/dependent-queries/marketplace-plugin/${pluginId}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getQueriesLinkedToDatasource(dataSourceId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/data-sources/dependent-queries/${dataSourceId}`, requestOptions).then(handleResponse);
 }
