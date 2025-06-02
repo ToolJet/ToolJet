@@ -170,6 +170,7 @@ ENV TOOLJET_HOST=http://localhost \
     TOOLJET_DB_PASS=postgres \
     TOOLJET_DB=tooljet_db \
     PGRST_HOST=http://localhost:3001 \
+    PGRST_SERVER_PORT=3001 \
     PGRST_DB_URI=postgres://postgres:postgres@localhost/tooljet_db \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
