@@ -60,6 +60,8 @@ export const ssoEeSelector = {
     sslToggleInput: '[data-cy="ssl-toggle-input"]',
     ldapSSOText: '[data-cy="ldap-sso-button-text"]',
     userNameInputLabel: '[data-cy="user-name-input-label"]',
+    passwordInputLabel: '[data-cy="password-label"]',
+    passwordInputField: '[data-cy="password-input-field"]',
 
     samlModalElements: {
         toggleLabel: '[data-cy="saml-toggle-label"]',
