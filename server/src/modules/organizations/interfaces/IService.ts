@@ -1,6 +1,7 @@
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUpdateDto, OrganizationStatusUpdateDto } from '@modules/organizations/dto';
 import { EntityManager } from 'typeorm';
+import { User } from '@entities/user.entity';
 
 export interface IOrganizationsService {
   fetchOrganizations(
@@ -11,9 +12,13 @@ export interface IOrganizationsService {
     name?: string
   ): Promise<{ organizations: Organization[]; totalCount: number }>;
 
-  updateOrganizationNameAndSlug(organizationId: string, updatableData: OrganizationUpdateDto): Promise<Organization>;
+  updateOrganizationNameAndSlug(user: User, updatableData: OrganizationUpdateDto): Promise<Organization>;
 
-  updateOrganizationStatus(organizationId: string, updatableData: OrganizationStatusUpdateDto): Promise<Organization>;
+  updateOrganizationStatus(
+    organizationId: string,
+    updatableData: OrganizationStatusUpdateDto,
+    user: User
+  ): Promise<Organization>;
 
   checkWorkspaceUniqueness(name: string, slug: string): Promise<void>;
 

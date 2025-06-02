@@ -9,8 +9,12 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.WORKSPACE_STATUS_UPDATE]: {},
-    [FEATURE_KEY.UPDATE]: {},
-    [FEATURE_KEY.CREATE]: {},
+    [FEATURE_KEY.UPDATE]: {
+      auditLogsKey: 'WORKSPACE_UPDATE',
+    },
+    [FEATURE_KEY.CREATE]: {
+      auditLogsKey: 'WORKSPACE_CREATE',
+    },
     [FEATURE_KEY.CHECK_UNIQUE_ONBOARDING]: {
       isPublic: true,
     },
