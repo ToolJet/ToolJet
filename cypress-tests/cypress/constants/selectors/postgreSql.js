@@ -87,6 +87,8 @@ export const postgreSqlSelector = {
   recordsInputField: '[data-cy="records-input-field"]',
 
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
+  sslToggleInput: '[data-cy="ssl-enabled-toggle-input"]',
+  labelEncryptedText: '[data-cy="encrypted-text"]',
 };
 
 export const airTableSelector = {

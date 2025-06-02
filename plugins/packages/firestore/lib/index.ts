@@ -57,7 +57,18 @@ export default class FirestoreQueryService implements QueryService {
           break;
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.message, {});
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      if (error && error instanceof Error) {
+        const firestoreError = error as any;
+        const { code, name } = firestoreError;
+
+        errorDetails.code = code as string;
+        errorDetails.name = name;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {

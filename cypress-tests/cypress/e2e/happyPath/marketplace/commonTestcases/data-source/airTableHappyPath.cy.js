@@ -3,24 +3,15 @@ import { postgreSqlSelector, airTableSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { airtableText } from "Texts/airTable";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-
-import {
-  fillDataSourceTextField,
-  selectAndAddDataSource,
-} from "Support/utils/postgreSql";
-
-import {
-  deleteDatasource,
-  closeDSModal,
-  deleteAppandDatasourceAfterExecution,
-} from "Support/utils/dataSource";
-
+import { closeDSModal } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
-
 data.queryName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+const airTable_apiKey = Cypress.env("airTable_apikey");
+const airTable_baseId = Cypress.env("airtabelbaseId");
+const airTable_tableName = Cypress.env("airtable_tableName");
+const airTable_recordID = Cypress.env("airtable_recordId");
 
 describe("Data source Airtable", () => {
   beforeEach(() => {
@@ -54,18 +45,71 @@ describe("Data source Airtable", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
-
-    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dsName}-airtable`,
+      "airtable",
+      [
+        {
+          key: "personal_access_token",
+          value: `${Cypress.env("airTable_apikey")}`,
+          encrypted: true,
+        },
+      ]
+    );
+    cy.reload();
+    cy.get(
+      dataSourceSelector.dataSourceNameButton(`cypress-${data.dsName}-airtable`)
+    )
+      .should("be.visible")
+      .click();
+    cy.get(
+      dataSourceSelector.labelFieldName(airtableText.ApiKey)
+    ).verifyVisibleElement("have.text", `${airtableText.ApiKey}*`);
+    cy.get(postgreSqlSelector.labelEncryptedText).verifyVisibleElement(
       "have.text",
-      postgreSqlText.buttonTextSave
+      postgreSqlText.labelEncrypted
+    );
+    cy.get(dataSourceSelector.button(postgreSqlText.editButtonText)).should(
+      "be.visible"
+    );
+    cy.get(dataSourceSelector.button(postgreSqlText.editButtonText)).click();
+    cy.verifyRequiredFieldValidation(airtableText.ApiKey, "rgb(226, 99, 103)");
+    cy.get(dataSourceSelector.textField(airtableText.ApiKey)).should(
+      "be.visible"
+    );
+    cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.whiteListIpText
+    );
+    cy.get(postgreSqlSelector.buttonCopyIp).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.textCopy
     );
 
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      postgreSqlText.toastDSSaved
+    cy.get(postgreSqlSelector.linkReadDocumentation).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.readDocumentation
     );
-    deleteDatasource(`cypress-${data.dsName}-airtable`);
+    cy.get(postgreSqlSelector.buttonTestConnection)
+      .verifyVisibleElement(
+        "have.text",
+        postgreSqlText.buttonTextTestConnection
+      )
+      .click();
+    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.couldNotConnect
+    );
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .and("be.disabled");
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+      "have.text",
+      airtableText.invalidAccessToken
+    );
+
+    cy.apiDeleteGDS(`cypress-${data.dsName}-airtable`);
   });
 
   it("Should verify the functionality of AirTable connection form.", () => {
@@ -95,7 +139,7 @@ describe("Data source Airtable", () => {
 
     cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
-      "Authentication failed: Invalid personal access token"
+      airtableText.invalidAccessToken
     );
     cy.reload();
     cy.apiUpdateGDS({
@@ -123,11 +167,6 @@ describe("Data source Airtable", () => {
   });
 
   it("Should able to run the query with valid conection", () => {
-    const airTable_apiKey = Cypress.env("airTable_apikey");
-    const airTable_baseId = Cypress.env("airtabelbaseId");
-    const airTable_tableName = Cypress.env("airtable_tableName");
-    const airTable_recordID = Cypress.env("airtable_recordId");
-
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dsName}-airtable`,

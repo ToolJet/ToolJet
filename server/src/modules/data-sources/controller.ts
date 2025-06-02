@@ -111,7 +111,7 @@ export class DataSourcesController implements IDataSourcesController {
 
   @InitFeature(FEATURE_KEY.GET_OAUTH2_BASE_URL)
   @UseGuards(FeatureAbilityGuard)
-  @Get('fetch-oauth2-base-url')
+  @Post('fetch-oauth2-base-url')
   getAuthUrl(@Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
     return this.dataSourcesService.getAuthUrl(getDataSourceOauthUrlDto);
   }
@@ -127,6 +127,20 @@ export class DataSourcesController implements IDataSourcesController {
   ) {
     await this.dataSourcesService.authorizeOauth2(id, environmentId, authorizeDataSourceOauthDto, user);
     return;
+  }
+
+  @InitFeature(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN)
+  @UseGuards(FeatureAbilityGuard)
+  @Get('dependent-queries/marketplace-plugin/:plugin_id')
+  async findDatasourcesAndQueriesOfMarketplacePlugin(@User() user: UserEntity, @Param('plugin_id') pluginId) {
+    return await this.dataSourcesService.findDatasourcesAndQueriesOfMarketplacePlugin(pluginId);
+  }
+
+  @InitFeature(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE)
+  @UseGuards(FeatureAbilityGuard)
+  @Get('dependent-queries/:datasource_id')
+  async findQueriesLinkedToDatasource(@User() user: UserEntity, @Param('datasource_id') datasourceId: string) {
+    return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId);
   }
 
   @InitFeature(FEATURE_KEY.AUTHORIZE)
