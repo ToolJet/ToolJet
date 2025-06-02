@@ -621,3 +621,12 @@ Cypress.Commands.add(
       .and("have.text", `${fieldName} is required`);
   }
 );
+
+Cypress.Commands.add('ifEnv', (expectedEnvs, callback) => {
+  const actualEnv = Cypress.env("environment");
+  const envArray = Array.isArray(expectedEnvs) ? expectedEnvs : [expectedEnvs];
+
+  if (envArray.includes(actualEnv)) {
+    callback();
+  }
+});

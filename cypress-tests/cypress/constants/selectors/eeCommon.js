@@ -58,7 +58,7 @@ export const ssoEeSelector = {
     portInput: '[data-cy="port-input"]',
     baseDnInput: '[data-cy="base-dn-input"]',
     sslToggleInput: '[data-cy="ssl-toggle-input"]',
-    ldapSSOText: '[data-cy="ldap-sso-text"]',
+    ldapSSOText: '[data-cy="ldap-sso-button-text"]',
     userNameInputLabel: '[data-cy="user-name-input-label"]',
 
     samlModalElements: {
