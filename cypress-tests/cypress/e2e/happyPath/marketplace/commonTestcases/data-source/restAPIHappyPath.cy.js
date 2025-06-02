@@ -426,6 +426,7 @@ describe("Data source Rest API", () => {
         });
       }
     );
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-CURD-App`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for basic authentication type connection", () => {
@@ -488,6 +489,7 @@ describe("Data source Rest API", () => {
       method: "GET",
       urlSuffix: "/basic-auth/invaliduser/invalidpass",
     });
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-Basic-App`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for bearer authentication type connection", () => {
@@ -545,6 +547,7 @@ describe("Data source Rest API", () => {
       urlSuffix: "/bearer",
       expectedResponseShape: { authenticated: true, token: "my-token-123" },
     });
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-Bearer-App`);
     cy.intercept("GET", "api/data_sources?**").as("datasource");
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
@@ -597,6 +600,7 @@ describe("Data source Rest API", () => {
       method: "GET",
       urlSuffix: "/bearer",
     });
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-Bearer-invalid`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
   });
   it.skip("Should verify response for authentication code grant type connection", () => {
