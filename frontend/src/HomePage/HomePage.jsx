@@ -1241,7 +1241,7 @@ class HomePageComponent extends React.Component {
                               )}
                         </Button>
 
-                        {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
+                        {this.props.appType !== 'workflow' && (
                           <Dropdown.Toggle
                             disabled={
                               appsLimit?.percentage >= 100 || (this.props.appType === 'module' && invalidLicense)

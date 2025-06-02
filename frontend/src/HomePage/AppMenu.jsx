@@ -82,7 +82,7 @@ export const AppMenu = function AppMenu({
                     )}
                   </>
                 )}
-                {canUpdateApp && canCreateApp && appType !== 'workflow' && !isModuleApp && (
+                {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>
                     <Field
                       text={t('homePage.appCard.cloneApp', 'Clone app')}
