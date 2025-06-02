@@ -11,5 +11,6 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   serviceName: string;
+  jsonMessage: string;
   rpc: string;
 };
