@@ -9,7 +9,7 @@ For example, a Text component supports the `setText()` action, while a Radio But
 
 You can trigger these actions via event handlers or by using expressions in your queries. Refer to the individual [component guide](#) for a complete list of supported CSAs.
 
-## Controlling Component
+## Controlling Components
 
 Suppose you've built a feedback form and want to clear all inputs after the data is submitted to the database. ToolJet provides a `resetForm` function to help with this, which can be triggered in two ways:
 - [Using an Event Handler](#using-an-event-handler)
@@ -17,10 +17,10 @@ Suppose you've built a feedback form and want to clear all inputs after the data
 
 ### Using an Event Handler
 
-To clear the form using an event handler, add the following configuration to your **addData** query (the one used to insert form data into the database):
+Suppose you have a query named **addData**, which is being used to insert the form data into the database. To clear the form using an event handler, add the following configuration to your **addData** query:
 - Event: **Query Success**
 - Action: **Control Component**
-- Component: **feedbackForm** (Select the form component from the dropdown)
+- Component: **feedbackForm** (Select your component from the dropdown)
 - Actions: **Reset Form**
 
 ### Using a JavaScript Expression in a Query

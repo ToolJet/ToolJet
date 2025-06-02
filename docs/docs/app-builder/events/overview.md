@@ -7,8 +7,10 @@ In ToolJet, you can build dynamic, logic-driven applications using Events, Actio
 
 ## Events
 
-Events are triggers that respond when certain conditions are met — either through user interaction (for example, clicking a button or selecting a dropdown option) or system-level changes (for example, the completion of a query). You can configure events using event handlers on components or queries. Each handler defines the trigger and the actions that should follow. <br/>
-For example, when a user clicks a button, it can trigger a query to refresh data. Once that query completes, a second event can run to show a confirmation alert.
+Events are triggers that respond when certain conditions are met — either through user interaction (for example, clicking a **Button** component or selecting a **Dropdown** option) or system-level changes (for example, the completion of a query). You can configure events using event handlers on components or queries. Each handler defines the trigger and the actions that should follow. <br/>
+For example, when a user clicks a **Button**, it can trigger a query to refresh data. Once that query completes, a second event can run to show a confirmation alert.
+
+<img className="screenshot-full img-l" src="/img/app-builder/events/events.png" alt="Events Architecture Diagram"/>
 
 ## Actions
 
@@ -16,7 +18,7 @@ Actions define what should happen when an event is triggered. ToolJet supports a
 
 ## Component Specific Actions (CSAs)
 
-Component-Specific Actions (CSAs) are built-in functions that allow you to control a component state and behavior at runtime. Each component has its own set of CSAs based on its capabilities. For example, a Text component supports the `setText()` action, while a Radio Button component offers `selectOption()`.
+Component-Specific Actions (CSAs) are built-in functions that allow you to control a component state and behavior at runtime. Each component has its own set of CSAs based on its capabilities. For example, a **Text** component supports the `setText()` action, while a **Radio Button** component offers `selectOption()`.
 
 ## Variables
 

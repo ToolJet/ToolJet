@@ -164,7 +164,7 @@ const sidebars = {
               'label': 'Use Cases',
               'items': [
                 'app-builder/events/use-case/csa',
-                'app-builder/events/use-case/actions',
+                'app-builder/events/use-case/page-nav',
                 'app-builder/events/use-case/variables'
               ],
             },

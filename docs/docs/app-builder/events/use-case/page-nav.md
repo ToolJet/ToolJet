@@ -1,11 +1,11 @@
 ---
-id: actions
+id: page-nav
 title: Page Navigation Through Actions
 ---
 
-ToolJet enables seamless navigation between different pages of your app using event handlers and actions. You can also pass query parameters during navigation, making it easy to share context between pages. This is especially useful for building custom navigation components like navbars or sharing the relevant data with another page.
+ToolJet enables seamless navigation between different pages of your app using event handlers and actions. You can also pass query parameters during navigation, making it easy to share context between pages. This is especially useful when you don't want to use the built in navigation menu and build a custom navigation component or when you wish to share relevant data with another page.
 
-## Build Custom Navigation Menu
+## Building Custom Navigation Menu
 
 Follow these steps to build a custom navigation menu:
 
