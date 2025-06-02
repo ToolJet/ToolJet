@@ -12,91 +12,106 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') || 
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
-        contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
+      fail-fast: false
       matrix:
-        edition: >-
-          ${{ 
-            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && fromJson('["ee"]') ||
-            fromJson('[]')
-          }}
+        edition:
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && 'ce' || '' }}
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress') && 'ee' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' || '' }}
+        exclude:
+          - edition: ""
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.18.2
-
-      - name: Set up Git authentication for private submodules
+      - name: Debug labels and matrix edition
         run: |
-          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
 
-      - name: Checkout with Submodules
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Checking out the correct branch for submodules EE
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
+        run: |
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+          chmod a+x ~/.docker/cli-plugins/docker-buildx
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
+          docker buildx use mybuilder
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: use mybuilder buildx
+        run: docker buildx use mybuilder
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build CE Docker image
+        if: matrix.edition == 'ce'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/ce-production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        run: |
-          git submodule update --init --recursive
-          git submodule foreach --recursive '
-            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
-
-      - name: Set up Docker
-        uses: docker-practice/actions-setup-docker@master
-
-      - name: Install and build dependencies
-        run: |
-          npm cache clean --force
-          npm install
-          npm install --prefix server
-          npm install --prefix frontend
-          npm run build:plugins
-
-      - name: Local development setup
-        run: |
-          sudo docker network create tooljet
-          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
-
-      - name: Run PostgREST Docker Container
-        run: |
-          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@localhost:5432/tooljet" \
-          -e PGRST_DB_ANON_ROLE="postgres" \
-          -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
-          postgrest/postgrest:v12.2.0
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
+          file: cypress-tests/cypress.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
-          echo "TOOLJET_HOST=http://localhost:8082" >> .env
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
           echo "PG_DB=tooljet_development" >> .env
           echo "PG_USER=postgres" >> .env
-          echo "PG_HOST=localhost" >> .env
+          echo "PG_HOST=postgres" >> .env
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_HOST=localhost" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
-          echo "PGRST_DB_URI=postgres://postgres:postgres@localhost:5432/tooljet" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
@@ -105,27 +120,56 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
 
-      - name: Set up database
-        run: |
-          npm run --prefix server db:create
-          npm run --prefix server db:reset
-          sleep 5
+          # Only add EE-specific env vars if edition is ee
+          if [ "${{ matrix.edition }}" = "ee" ]; then
+            echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+            echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+            echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+            echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
+            echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          fi
 
-      - name: Start services
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Update docker-compose file
         run: |
-          cd plugins && npm start &
-          cd server && npm run start:dev &
-          cd frontend && npm start &
+          # Update docker-compose.yaml with the appropriate image based on edition
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          fi
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
+
+      - name: sleep 2 minutes
+        run: sleep 120
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
 
       - name: Wait for the server to be ready
         run: |
-          timeout 300 bash -c '
-          until curl --silent --fail http://localhost:8082; do
+          timeout 500 bash -c '
+          until curl --silent --fail http://localhost:3000; do
             sleep 5
           done'
-
-      - name: Postgres logs
-        run: docker logs postgrest
 
       - name: Create Cypress environment file
         id: create-json
@@ -135,12 +179,28 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
+      - name: Create Cypress environment file
+        if: matrix.edition == 'ee'
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_EE_SECRETS }}
+          dir: "./cypress-tests"
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:8082"
+          config: "baseUrl=http://localhost:3000"
           config-file: cypress-platform.config.js
+
+      - name: Run Cypress tests
+        if: matrix.edition == 'ee'
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:3000"
+          config-file: cypress-ee-platform.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
