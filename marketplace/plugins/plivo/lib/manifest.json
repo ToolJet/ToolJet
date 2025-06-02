@@ -30,7 +30,7 @@
   },
   "properties": {
     "authToken": {
-      "label": "Auth Token",
+      "label": "Auth token",
       "key": "authToken",
       "type": "password",
       "description": "Auth Token for plivo",

@@ -29,25 +29,25 @@
       "description": "443"
     },
     "http_path": {
-      "label": "HTTP Path",
+      "label": "HTTP path",
       "key": "http_path",
       "type": "text",
       "description": "/sql/2.0/warehouse/id"
     },
     "default_catalog": {
-      "label": "Default Catalog",
+      "label": "Default catalog",
       "key": "default_catalog",
       "type": "text",
       "description": "tooljet_metastore"
     },
     "default_schema": {
-      "label": "Default Schema",
+      "label": "Default schema",
       "key": "default_schema",
       "type": "text",
       "description": "default"
     },
     "personal_access_token": {
-      "label": "Personal Access Token",
+      "label": "Personal access token",
       "key": "personal_access_token",
       "type": "password",
       "description": "default"

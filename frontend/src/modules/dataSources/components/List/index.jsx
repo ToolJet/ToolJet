@@ -9,6 +9,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { SearchBox } from '@/_components/SearchBox';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
+import Modal from '@/HomePage/Modal';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -28,6 +29,7 @@ export const List = ({ updateSelectedDatasource }) => {
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [filteredData, setFilteredData] = useState(dataSources);
   const [showInput, setShowInput] = useState(false);
+  const [showDependentQueriesInfo, setShowDependentQueriesInfo] = useState(false);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -50,7 +52,7 @@ export const List = ({ updateSelectedDatasource }) => {
     setCurrentEnvironment(environments[0]);
     toggleDataSourceManagerModal(true);
     updateSelectedDatasource(selectedSource?.name);
-    setDeleteModalVisibility(true);
+    getQueriesLinkedToDatasource(selectedSource);
   };
 
   const executeDataSourceDeletion = () => {
@@ -70,6 +72,21 @@ export const List = ({ updateSelectedDatasource }) => {
         setDeletingDatasource(false);
         setSelectedDataSource(null);
         setLoading(false);
+        toast.error(error);
+      });
+  };
+
+  const getQueriesLinkedToDatasource = (selectedSource) => {
+    globalDatasourceService
+      .getQueriesLinkedToDatasource(selectedSource.id)
+      .then((data) => {
+        if (data?.dependent_queries) {
+          setShowDependentQueriesInfo(true);
+        } else {
+          setDeleteModalVisibility(true);
+        }
+      })
+      .catch(({ error }) => {
         toast.error(error);
       });
   };
@@ -171,6 +188,16 @@ export const List = ({ updateSelectedDatasource }) => {
           )}
         </div>
       </div>
+      <Modal
+        title="Dependent queries found!"
+        show={showDependentQueriesInfo}
+        closeModal={() => setShowDependentQueriesInfo(false)}
+      >
+        <div className="mt-3 mb-3">
+          Cannot delete <b>{selectedDataSource?.name ? selectedDataSource.name : 'datasource'}</b> as it is used in the
+          apps
+        </div>
+      </Modal>
       <ConfirmDialog
         show={isDeleteModalVisible}
         message={'You will lose all the queries created from this data source. Do you really want to delete?'}
