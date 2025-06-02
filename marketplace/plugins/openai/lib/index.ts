@@ -27,7 +27,19 @@ export default class Openai implements QueryService {
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error?.message, {});
+      const errorMessage = error?.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      if (error && error instanceof Error) {
+        const openaiError = error as any;
+        const { status, type, code } = openaiError;
+
+        errorDetails.status = status;
+        errorDetails.type = type;
+        errorDetails.code = code;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
