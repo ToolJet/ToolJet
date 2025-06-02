@@ -109,7 +109,7 @@ jobs:
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=postgrest" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
