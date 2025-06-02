@@ -150,3 +150,33 @@ Learn more about [Event Handlers and Actions](/docs/widgets/overview#component-e
 <img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/events-v2.png" alt="Query Editor" />
 
 </div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Additional Details
+
+### Query Manager
+
+The Query Manager is a powerful tool for organizing and managing your queries. It allows you to easily add, edit, copy, delete, sort, and filter queries. This helps in maintaining a clean and efficient workflow, especially when dealing with multiple queries in a complex application.
+
+### Query Editor
+
+The Query Editor provides a flexible interface for constructing queries. Whether you prefer a low-code approach or writing queries manually, the Query Editor accommodates both. It also offers features like custom parameters, preview, run, and transformation to enhance the query-building experience.
+
+### Custom Parameters
+
+Custom parameters are essential for creating dynamic queries. They allow you to pass variables to your queries, making them more flexible and reusable. This is particularly useful when dealing with user inputs or dynamic data.
+
+### Transformation
+
+Transformations enable you to modify the results of your queries using JavaScript or Python. This feature is useful for data manipulation, formatting, and applying business logic to the query results.
+
+### Settings
+
+The settings in the Query Editor provide additional control over the query execution. You can configure the query to run on application load, request confirmation before running, and show notifications on success. These settings help in managing the query behavior and user experience.
+
+### Events
+
+Event handlers in queries allow you to define actions based on the success or failure of the query. This is useful for creating a seamless user experience by linking related actions and ensuring that the application responds appropriately to different scenarios.
+
+</div>
