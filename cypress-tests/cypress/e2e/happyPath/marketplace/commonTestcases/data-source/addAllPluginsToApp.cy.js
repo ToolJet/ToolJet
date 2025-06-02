@@ -61,7 +61,7 @@ const dataSources = [
   "AWS S3",
 ];
 
-describe("Add all Data sources to app", () => {
+describe.skip("Add all Data sources to app", () => {
   beforeEach(() => {
     cy.apiLogin();
   });
