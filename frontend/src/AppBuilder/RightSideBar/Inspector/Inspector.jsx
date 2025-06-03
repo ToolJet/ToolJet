@@ -396,12 +396,14 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     if (value === 'delete') {
       setWidgetDeleteConfirmation(true);
     }
-    if (value === 'permission' && licenseValid) {
+    if (value === 'permission') {
+      if (!licenseValid) return;
       toggleComponentPermissionModal(true);
     }
     if (value === 'duplicate') {
       copyComponents({ isCloning: true });
     }
+    setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
     if (!componentMeta?.definition?.generalStyles) {
@@ -467,7 +469,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
 
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showHeaderActionsMenu && event.target.closest('.list-menu') === null) {
+      if (showHeaderActionsMenu && event.target.closest('#list-menu') === null) {
         setShowHeaderActionsMenu(false);
       }
     };
@@ -529,6 +531,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                           <div
                             className={classNames('list-item-option-menu-label', {
                               'color-tomato9': option.value === 'delete',
+                              'color-disabled': option.value === 'permission' && !licenseValid,
                             })}
                           >
                             {option?.label}

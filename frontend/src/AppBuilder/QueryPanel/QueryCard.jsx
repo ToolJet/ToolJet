@@ -276,6 +276,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                         <div
                           className={classNames('list-item-option-menu-label', {
                             'color-tomato9': option.value === 'delete',
+                            'color-disabled': option.value === 'permission' && !licenseValid,
                           })}
                         >
                           {option?.label}
