@@ -200,7 +200,7 @@ export const daterangepickerConfig = {
   styles: {
     labelColor: {
       type: 'colorSwatches',
-      displayName: 'colorSwatches',
+      displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
@@ -292,7 +292,7 @@ export const daterangepickerConfig = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#6A727C',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'field',
     },
@@ -381,7 +381,7 @@ export const daterangepickerConfig = {
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
-      iconColor: { value: '#6A727C' },
+      iconColor: { value: 'var(--cc-default-icon)' },
     },
   },
 };

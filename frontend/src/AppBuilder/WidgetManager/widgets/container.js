@@ -106,13 +106,13 @@ export const containerConfig = {
     },
     borderRadius: {
       type: 'numberInput',
-      displayName: 'Border',
+      displayName: 'Border radius',
       validation: {
         schema: {
           type: 'union',
           schemas: [{ type: 'string' }, { type: 'number' }],
         },
-        defaultValue: 4,
+        defaultValue: 6,
       },
       accordian: 'container',
     },
@@ -161,7 +161,7 @@ export const containerConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderRadius: { value: '4' },
+      borderRadius: { value: '6' },
       headerHeight: { value: '{{80}}' },
       borderColor: { value: '#fff' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

@@ -175,7 +175,7 @@ export const passinputConfig = {
     iconColor: {
       type: 'colorSwatches',
       displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
       accordian: 'field',
       visibility: false,
       showLabel: false,
@@ -281,7 +281,7 @@ export const passinputConfig = {
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       textColor: { value: 'var(--cc-primary-text)' },
-      iconColor: { value: '#CFD3D859' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },

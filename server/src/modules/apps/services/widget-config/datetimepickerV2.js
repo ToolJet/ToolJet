@@ -215,7 +215,7 @@ export const datetimePickerV2Config = {
   styles: {
     labelColor: {
       type: 'colorSwatches',
-      displayName: 'colorSwatches',
+      displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
@@ -307,7 +307,7 @@ export const datetimePickerV2Config = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-secondary-text)',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'field',
     },
@@ -401,7 +401,7 @@ export const datetimePickerV2Config = {
       fieldBorderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
-      iconColor: { value: 'var(--cc-secondary-text)' },
+      iconColor: { value: 'var(--cc-default-icon)' },
     },
   },
 };

@@ -171,7 +171,7 @@ export const emailinputConfig = {
     iconColor: {
       type: 'colorSwatches',
       displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
       accordian: 'field',
       visibility: false,
       showLabel: false,
@@ -277,7 +277,7 @@ export const emailinputConfig = {
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      iconColor: { value: '#CCD1D5' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },

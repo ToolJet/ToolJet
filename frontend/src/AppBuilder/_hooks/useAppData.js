@@ -112,7 +112,8 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const themeAccess = useThemeAccess();
-
+  const themeChanged = useStore((state) => state.themeChanged);
+  const detectThemeChange = useStore((state) => state.detectThemeChange);
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
   const setConversationZeroState = useStore((state) => state.ai?.setConversationZeroState);
@@ -122,6 +123,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
   const slug = pathParams?.slug;
+
 
   const match = useMatch('/applications/:slug/:pageHandle');
 
@@ -481,6 +483,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         });
       });
     });
+    detectThemeChange();
   }, [darkMode, selectedTheme, themeAccess]);
 
   useEffect(() => {

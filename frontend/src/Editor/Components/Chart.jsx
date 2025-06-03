@@ -6,6 +6,8 @@ import { isStringValidJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 import { getCssVarValue } from './utils';
 
 var tinycolor = require('tinycolor2');
@@ -23,6 +25,8 @@ export const Chart = function Chart({
 }) {
   const isInitialRender = useRef(true);
   const [loadingState, setLoadingState] = useState(false);
+  const themeChanged = useStore((state) => state.themeChanged);
+
 
   const getColor = (color) => {
     if (tinycolor(color).getBrightness() > 128) return '#000';
@@ -35,6 +39,10 @@ export const Chart = function Chart({
 
   const modifiedBackgroundColor = getCssVarValue(document.documentElement, backgroundColor);
   const modifiedMarkerColor = getCssVarValue(document.documentElement, markerColor);
+  const modifiedGridLines = getCssVarValue(document.documentElement, 'var(--cc-weak-border)');
+  const modifiedTextColor = getCssVarValue(document.documentElement, 'var(--cc-primary-text)');
+  const modifiedAxisColor = getCssVarValue(document.documentElement, 'var(--cc-default-border)');
+  console.log('modifiedAxisColor', modifiedAxisColor);
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -104,7 +112,7 @@ export const Chart = function Chart({
     title: {
       text: chartTitle,
       font: {
-        color: fontColor,
+        color: modifiedTextColor,
       },
     },
     showlegend: chartLayout.showlegend ?? false,
@@ -121,6 +129,16 @@ export const Chart = function Chart({
       color: fontColor,
       automargin: true,
       visible: showAxes,
+      gridcolor: modifiedGridLines,
+      linecolor: modifiedAxisColor,
+      title: {
+        font: {
+          color: modifiedTextColor,
+        },
+      },
+      tickfont: {
+        color: modifiedTextColor,
+      },
       ...chartLayout.xaxis,
     },
     yaxis: {
@@ -129,6 +147,16 @@ export const Chart = function Chart({
       color: fontColor,
       automargin: true,
       visible: showAxes,
+      gridcolor: modifiedGridLines,
+      linecolor: modifiedAxisColor,
+      title: {
+        font: {
+          color: modifiedTextColor,
+        },
+      },
+      tickfont: {
+        color: modifiedTextColor,
+      },
       ...chartLayout.yaxis,
     },
     margin: {

@@ -5,6 +5,7 @@ import { MultiSelect } from 'react-multi-select-component';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
+import './multiselect.scss';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>

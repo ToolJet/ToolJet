@@ -20,12 +20,14 @@ const initialState = {
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
   isComponentLayoutReady: false,
+  themeChanged: false,
 };
 
 export const createAppSlice = (set, get) => ({
   ...initialState,
   setIsViewer: (isViewer) => set(() => ({ isViewer }), false, 'setIsViewer'),
   setApp: (app) => set(() => ({ app }), false, 'setApp'),
+  detectThemeChange: () => set((state) => ({ themeChanged: !state.themeChanged })),
   setAppName: (name) => set((state) => ({ app: { ...state.app, appName: name } }), false, 'setAppName'),
   setAppHomePageId: (homePageId) => set((state) => ({ app: { ...state.app, homePageId } }), false, 'setAppHomePageId'),
   setIsComponentLayoutReady: (isReady) =>

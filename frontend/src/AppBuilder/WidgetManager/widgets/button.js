@@ -223,7 +223,7 @@ export const buttonConfig = {
       loaderColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
-      iconColor: { value: '#FFFFFF' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },

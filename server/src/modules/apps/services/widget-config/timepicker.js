@@ -257,7 +257,7 @@ export const timePickerConfig = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#6A727C',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'field',
     },
@@ -347,7 +347,7 @@ export const timePickerConfig = {
       fieldBorderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
-      iconColor: { value: '#6A727C' },
+      iconColor: { value: 'var(--cc-default-icon)' },
     },
   },
 };
