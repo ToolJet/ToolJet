@@ -79,6 +79,10 @@ button:focus:not(:focus-visible) {
     .color-tomato9 {
       color: var(--tomato9)
     }
+
+    .color-disabled {
+      color: var(--text-disabled);
+    }
   }
 }
 
