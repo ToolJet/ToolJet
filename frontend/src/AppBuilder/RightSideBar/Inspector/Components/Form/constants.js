@@ -11,3 +11,9 @@ export const JSON_DIFFERENCE = {
   isNew: [],
   isRemoved: [],
 };
+
+export const FORM_STATUS = {
+  MANAGE_FIELDS: 'manageFields',
+  GENERATE_FIELDS: 'generateFields',
+  REFRESH_FIELDS: 'refreshFields',
+};

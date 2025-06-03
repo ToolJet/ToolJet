@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FormField } from './FormField';
 import { Button } from '@/components/ui/Button/Button';
+import { FORM_STATUS } from './constants';
 
 export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsModalOpen, currentStatusRef }) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
@@ -33,7 +34,7 @@ export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsMo
           leadingIcon="sliders"
           variant="outline"
           onClick={() => {
-            currentStatusRef.current = 'manageFields';
+            currentStatusRef.current = FORM_STATUS.MANAGE_FIELDS;
             setIsModalOpen(true);
           }}
         >

@@ -18,13 +18,7 @@ import {
 } from './utils/utils';
 import { createFormFieldComponents, updateFormFieldComponent } from './utils/fieldOperations';
 import { merge } from 'lodash';
-
-const STATUS = {
-  MANAGE_FIELDS: 'manageFields',
-  GENERATE_FIELDS: 'generateFields',
-  REFRESH_FIELDS: 'refreshFields',
-  REGENERATE_FIELDS: 'regenerateFields',
-};
+import { FORM_STATUS } from './constants';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -34,7 +28,7 @@ const STATUS = {
                For example: field.label, field.name, field.value, etc.
 */
 
-const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSection }) => {
+const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSection, currentStatusRef }) => {
   const {
     resolveReferences,
     getChildComponents,
@@ -65,8 +59,6 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   const existingData = getFormDataSectionData(component?.id);
   const isFormGenerated = getFormDataSectionData(component.id).generateFormFrom?.value ?? false;
 
-  const currentStatusRef = useRef(null);
-
   const formFields = useMemo(() => getFormFields(component.id) || [], [getFormFields, component.id]);
   const formFieldsWithComponentDefinition = useMemo(
     () => mergeFieldsWithComponentDefinition(formFields, getComponentDefinition),
@@ -81,8 +73,6 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   const newResolvedJsonData = resolveReferences('canvas', JSONData);
   if (existingData?.generateFormFrom?.value === 'rawJson')
     existingResolvedJsonData = resolveReferences('canvas', existingResolvedJsonData);
-
-  console.log('here--- newResolvedJsonData--- ', newResolvedJsonData);
 
   if (newResolvedJsonData) {
     try {
@@ -109,9 +99,9 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   }, [JSON.stringify(formattedJson), JSON.stringify(formFields), isFormGenerated]);
 
   const buildColumns = () => {
-    if (currentStatusRef.current === STATUS.MANAGE_FIELDS) {
+    if (currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS) {
       return formFieldsWithComponentDefinition;
-    } else if (currentStatusRef.current === STATUS.REFRESH_FIELDS) {
+    } else if (currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS) {
       const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
       const mergedJsonData = merge({}, existingResolvedJsonData, newResolvedJsonData);
       const parsedFields = parseDataAndBuildFields(mergedJsonData, jsonDifferences);
@@ -120,6 +110,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
         mergedFields,
         getComponentDefinition
       );
+
       return enhancedFieldsWithComponentDefinition;
     }
     const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
@@ -255,11 +246,9 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       <div className="tw-flex tw-justify-center tw-items-center form-generate-form-btn">
         <Button
           fill={buttonDetails.disabled ? '#E4E7EB' : '#4368E3'}
-          leadingIcon={buttonDetails.text === 'Generate form' ? 'plus' : 'arrowdirectionloop'}
+          leadingIcon={currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS ? 'plus' : 'arrowdirectionloop'}
           variant={buttonDetails.disabled ? 'outline' : 'secondary'}
           onClick={() => {
-            currentStatusRef.current =
-              buttonDetails.text === 'Generate form' ? STATUS.GENERATE_FIELDS : STATUS.REFRESH_FIELDS;
             setIsModalOpen(true);
           }}
           disabled={buttonDetails.disabled}
@@ -285,13 +274,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           darkMode={darkMode}
-          columns={buildColumns()} // Build columns based on current status
-          // currentStatusRef.current === 'generateFields'
-          //   ? formattedJson
-          //   : currentStatusRef.current === 'refreshFields'
-          //   ? formattedJson
-          //   : formFieldsWithComponentDefinition
-          // } // Use enhanced fields with component data
+          columns={buildColumns()}
           isFormGenerated={isFormGenerated}
           onSubmit={(columns) => {
             try {
