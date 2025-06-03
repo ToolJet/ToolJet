@@ -1,17 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import LabeledDivider from './LabeledDivider';
 import ColumnMappingComponent from './ColumnMappingComponent';
 import { FormFieldsList } from './FormFieldsList';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from './hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { parseDataAndBuildFields, findLastElementPosition, analyzeJsonDifferences } from './utils/utils';
+import {
+  parseDataAndBuildFields,
+  findLastElementPosition,
+  analyzeJsonDifferences,
+  mergeFieldsWithComponentDefinition,
+  mergeFormFieldsWithNewData,
+} from './utils/utils';
 import { createFormFieldComponents, updateFormFieldComponent } from './utils/fieldOperations';
+import { merge } from 'lodash';
+
+const STATUS = {
+  MANAGE_FIELDS: 'manageFields',
+  GENERATE_FIELDS: 'generateFields',
+  REFRESH_FIELDS: 'refreshFields',
+  REGENERATE_FIELDS: 'regenerateFields',
+};
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -21,51 +34,7 @@ import { createFormFieldComponents, updateFormFieldComponent } from './utils/fie
                For example: field.label, field.name, field.value, etc.
 */
 
-/**
- * Retrieves field data from a component definition in the store
- * @param {string} componentId - Component ID to fetch definition for
- * @param {Function} getComponentDefinition - Function to get component definition
- * @returns {Object} Field data with merged component definition values
- */
-const getFieldDataFromComponent = (componentId, getComponentDefinition) => {
-  if (!componentId) {
-    return null;
-  }
-
-  const component = getComponentDefinition(componentId);
-  if (!component) return null;
-
-  const componentType = component.component.component;
-  const definition = component.component.definition;
-
-  // Get values from component definition
-  const label = definition.properties?.label?.value || '';
-  const name = component.component.name;
-
-  // Different components store values in different properties
-  let value;
-  if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
-    value = definition.properties?.defaultValue?.value;
-  } else {
-    value = definition.properties?.value?.value;
-  }
-
-  const mandatory = definition.validation?.mandatory;
-  const selected = definition.properties?.visibility;
-  const placeholder = definition.properties?.placeholder?.value || '';
-
-  return {
-    label,
-    name,
-    value,
-    mandatory,
-    selected,
-    placeholder,
-    componentType,
-  };
-};
-
-const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetails, saveDataSection }) => {
+const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSection }) => {
   const {
     resolveReferences,
     getChildComponents,
@@ -73,7 +42,6 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
     deleteComponents,
     addComponentToCurrentPage,
     getComponentDefinition,
-    setComponentPropertyByComponentIds,
     performBatchComponentOperations,
     getFormFields,
     setFormFields,
@@ -86,7 +54,6 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
       deleteComponents: state.deleteComponents,
       addComponentToCurrentPage: state.addComponentToCurrentPage,
       getComponentDefinition: state.getComponentDefinition,
-      setComponentPropertyByComponentIds: state.setComponentPropertyByComponentIds,
       performBatchComponentOperations: state.performBatchComponentOperations,
       getFormFields: state.getFormFields,
       setFormFields: state.setFormFields,
@@ -95,31 +62,33 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
     shallow
   );
 
-  // const generateFormFrom = component.component.definition.properties['generateFormFrom']?.value || null;
-  // const generatedFields = component.component.definition.properties['fields']?.value || [];
-  const generatedFields = getFormFields(component.id) || [];
   const existingData = getFormDataSectionData(component?.id);
   const isFormGenerated = getFormDataSectionData(component.id).generateFormFrom?.value ?? false;
 
-  const columnMappingPopoverContentRef = useRef(null);
+  const currentStatusRef = useRef(null);
+
+  const formFields = useMemo(() => getFormFields(component.id) || [], [getFormFields, component.id]);
+  const formFieldsWithComponentDefinition = useMemo(
+    () => mergeFieldsWithComponentDefinition(formFields, getComponentDefinition),
+    [formFields, getComponentDefinition]
+  );
 
   let JSONData = null,
-    formattedJson = [];
-
-  // if (generateFormFrom?.value === 'rawJson') {
+    formattedJson = [],
+    existingResolvedJsonData = existingData?.JSONData?.value;
 
   JSONData = component.component.definition.properties['JSONData']?.value;
-  const resolvedJsonData = resolveReferences('canvas', JSONData);
+  const newResolvedJsonData = resolveReferences('canvas', JSONData);
+  if (existingData?.generateFormFrom?.value === 'rawJson')
+    existingResolvedJsonData = resolveReferences('canvas', existingResolvedJsonData);
 
-  // Analyze differences between the current JSON data and the existing data
-  const jsonDifferences = analyzeJsonDifferences(resolvedJsonData, existingData?.JSONData?.value);
+  console.log('here--- newResolvedJsonData--- ', newResolvedJsonData);
 
-  if (resolvedJsonData) {
+  if (newResolvedJsonData) {
     try {
-      formattedJson = parseDataAndBuildFields(
-        { ...existingData?.JSONData?.value, ...resolvedJsonData },
-        jsonDifferences
-      );
+      // Analyze differences between the current JSON data and the existing data
+      const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
+      formattedJson = parseDataAndBuildFields({ ...existingResolvedJsonData, ...newResolvedJsonData }, jsonDifferences);
     } catch (e) {
       console.error('Error parsing JSON data:', e);
     }
@@ -129,50 +98,42 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAddFieldPopover, setShowAddFieldPopover] = useState(false);
   const addFieldButtonRef = useRef(null);
-  const [fields, setFields] = useState(isFormGenerated ? generatedFields : formattedJson || []);
-
-  const enhancedGeneratedFields = generatedFields
-    .map((field) => {
-      if (field.componentId) {
-        const componentData = getFieldDataFromComponent(field.componentId, getComponentDefinition);
-
-        if (!componentData) {
-          return null; // Return null if no component data is found
-        }
-
-        return {
-          ...field,
-          // Merge component definition data for UI rendering
-          label: componentData?.label || field.label || '',
-          name: componentData?.name || field.name || '',
-          value: componentData?.value || field.value || '',
-          mandatory: componentData?.mandatory || field.mandatory || false,
-          selected: componentData?.selected || field.selected || false,
-          placeholder: componentData?.placeholder || field.placeholder || '',
-          componentType: componentData?.componentType || field.componentType || 'TextInput',
-        };
-      }
-      return field;
-    })
-    .filter((field) => field !== null);
+  const [fields, setFields] = useState(isFormGenerated ? formFields : formattedJson || []);
 
   useEffect(() => {
     if (isFormGenerated) {
-      setFields(generatedFields);
+      setFields(formFields);
     } else if (formattedJson) {
       setFields(formattedJson);
     }
-  }, [JSON.stringify(formattedJson), JSON.stringify(generatedFields), isFormGenerated]);
+  }, [JSON.stringify(formattedJson), JSON.stringify(formFields), isFormGenerated]);
+
+  const buildColumns = () => {
+    if (currentStatusRef.current === STATUS.MANAGE_FIELDS) {
+      return formFieldsWithComponentDefinition;
+    } else if (currentStatusRef.current === STATUS.REFRESH_FIELDS) {
+      const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
+      const mergedJsonData = merge({}, existingResolvedJsonData, newResolvedJsonData);
+      const parsedFields = parseDataAndBuildFields(mergedJsonData, jsonDifferences);
+      const mergedFields = mergeFormFieldsWithNewData(formFieldsWithComponentDefinition, parsedFields);
+      const enhancedFieldsWithComponentDefinition = mergeFieldsWithComponentDefinition(
+        mergedFields,
+        getComponentDefinition
+      );
+      return enhancedFieldsWithComponentDefinition;
+    }
+    const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
+    return parseDataAndBuildFields(newResolvedJsonData, jsonDifferences);
+  };
 
   const handleDeleteField = (field) => {
-    const updatedFields = enhancedGeneratedFields.filter((f) => f.componentId !== field.componentId);
+    const updatedFields = formFieldsWithComponentDefinition.filter((f) => f.componentId !== field.componentId);
     deleteComponents([field.componentId], 'canvas', {
       skipUndoRedo: false,
       saveAfterAction: true,
       skipFormUpdate: true,
     });
     setFormFields(component.id, updatedFields);
-    // paramUpdated({ name: 'fields' }, 'value', updatedFields, 'properties');
   };
 
   const createComponentsFromColumns = (columns, isSingleField = false) => {
@@ -181,21 +142,21 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
       // Get the last position of the child components
       const lastPosition = findLastElementPosition(childComponents, currentLayout);
       // Create form field components from columns
-      const { updatedColumns, formFields } = createFormFieldComponents(
+      const { updatedColumns, updatedFormFields } = createFormFieldComponents(
         columns,
         component.id,
         currentLayout,
         lastPosition
       );
       // Add the components to the canvas
-      if (formFields.length > 0) {
-        addComponentToCurrentPage(formFields, 'canvas', {
+      if (updatedFormFields.length > 0) {
+        addComponentToCurrentPage(updatedFormFields, 'canvas', {
           skipUndoRedo: false,
           saveAfterAction: true,
           skipFormUpdate: true,
         });
       }
-      saveDataSection(isSingleField ? [...generatedFields, ...updatedColumns] : updatedColumns);
+      saveDataSection(isSingleField ? [...formFields, ...updatedColumns] : updatedColumns);
     }
   };
 
@@ -256,49 +217,6 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
     setShowAddFieldPopover(false);
   };
 
-  const renderRefreshButton = () => (
-    <div className="tw-flex tw-justify-center tw-items-center">
-      <Button
-        fill={'#ACB2B9'}
-        leadingIcon="arrowdirectionloop"
-        variant={'outline'}
-        onClick={() => setIsModalOpen(true)}
-      >
-        Refresh data
-      </Button>
-    </div>
-  );
-
-  const renderRefreshDataSection = () => {
-    return (
-      <div className="tw-p-3 tw-flex tw-flex-col tw-gap-3 refresh-data-section">
-        <div className="tw-flex tw-items-center tw-gap-[6px]">
-          <SolidIcon name="warning" width="18px" height="18px" fill="#4368E3" />
-          <span className="base-medium neutral-light-color">Json has been updated</span>
-        </div>
-        <Button
-          fill="#4368E3"
-          leadingIcon="arrowdirectionloop"
-          variant="secondary"
-          className="refresh-data-button tw-my-2"
-        >
-          Refresh form data
-        </Button>
-      </div>
-    );
-  };
-
-  const renderCustomSchemaSection = () => {
-    return (
-      <div className="tw-p-3 tw-flex tw-flex-col tw-gap-3 custom-schema-fields-section">
-        <div className="tw-flex tw-items-center tw-gap-[6px]">
-          <SolidIcon name="warning" width="18px" height="18px" fill="#BF4F03" />
-          <span className="base-medium neutral-light-color">Custom fields can’t be added</span>
-        </div>
-      </div>
-    );
-  };
-
   const renderAddCustomFieldButton = () => {
     return (
       <OverlayTrigger
@@ -332,29 +250,6 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
     );
   };
 
-  // {isFormGenerated ? (
-  //   <>
-  //     {renderRefreshButton()}
-
-  //     {/* Uncomment these sections if needed in the future */}
-
-  //     {/* {renderRefreshDataSection()}
-  //     {renderCustomSchemaSection()} */}
-  //   </>
-  // ) : (
-  //   <div className="tw-flex tw-justify-center tw-items-center form-generate-form-btn">
-  //     <Button
-  //       fill={generateFormFrom === null ? '#E4E7EB' : '#4368E3'}
-  //       leadingIcon="plus"
-  //       variant={generateFormFrom === null ? 'outline' : 'secondary'}
-  //       onClick={() => setIsModalOpen(true)}
-  //       disabled={generateFormFrom === null}
-  //     >
-  //       Generate form
-  //     </Button>
-  //   </div>
-  // )}
-
   return (
     <>
       <div className="tw-flex tw-justify-center tw-items-center form-generate-form-btn">
@@ -363,8 +258,8 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
           leadingIcon={buttonDetails.text === 'Generate form' ? 'plus' : 'arrowdirectionloop'}
           variant={buttonDetails.disabled ? 'outline' : 'secondary'}
           onClick={() => {
-            columnMappingPopoverContentRef.current =
-              buttonDetails.text === 'Generate form' ? 'generateFields' : 'refreshFields';
+            currentStatusRef.current =
+              buttonDetails.text === 'Generate form' ? STATUS.GENERATE_FIELDS : STATUS.REFRESH_FIELDS;
             setIsModalOpen(true);
           }}
           disabled={buttonDetails.disabled}
@@ -380,23 +275,23 @@ const DataSectionUI = ({ component, paramUpdated, darkMode = false, buttonDetail
       </div>
       <FormFieldsList
         isFormGenerated={isFormGenerated}
-        fields={enhancedGeneratedFields} // Use enhanced fields with component data
+        fields={formFieldsWithComponentDefinition} // Use enhanced fields with component data
         onDeleteField={handleDeleteField}
         setIsModalOpen={setIsModalOpen}
-        columnMappingPopoverContentRef={columnMappingPopoverContentRef}
+        currentStatusRef={currentStatusRef}
       />
       {isModalOpen && (
         <ColumnMappingComponent
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           darkMode={darkMode}
-          columns={
-            columnMappingPopoverContentRef.current === 'generateFields'
-              ? formattedJson
-              : columnMappingPopoverContentRef.current === 'refreshFields'
-              ? formattedJson
-              : enhancedGeneratedFields
-          } // Use enhanced fields with component data
+          columns={buildColumns()} // Build columns based on current status
+          // currentStatusRef.current === 'generateFields'
+          //   ? formattedJson
+          //   : currentStatusRef.current === 'refreshFields'
+          //   ? formattedJson
+          //   : formFieldsWithComponentDefinition
+          // } // Use enhanced fields with component data
           isFormGenerated={isFormGenerated}
           onSubmit={(columns) => {
             try {

@@ -37,7 +37,10 @@ export const Form = ({
     fxActive: component.component.definition.properties?.generateFormFrom?.fxActive,
   });
 
-  const resolvedSource = resolveReferences('canvas', component.component.definition.properties?.generateFormFrom.value);
+  const resolvedSource = resolveReferences(
+    'canvas',
+    component.component.definition.properties?.generateFormFrom?.value
+  );
 
   const [JSONData, setJSONData] = useState({
     value: resolvedSource === 'rawJson' ? component.component.definition.properties?.JSONData?.value : resolvedSource,

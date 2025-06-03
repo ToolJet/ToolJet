@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { FormField } from './FormField';
 import { Button } from '@/components/ui/Button/Button';
 
-export const FormFieldsList = ({
-  fields,
-  isFormGenerated,
-  onDeleteField,
-  setIsModalOpen,
-  columnMappingPopoverContentRef,
-}) => {
+export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsModalOpen, currentStatusRef }) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
   if (!isFormGenerated || fields.length === 0) {
@@ -39,7 +33,7 @@ export const FormFieldsList = ({
           leadingIcon="sliders"
           variant="outline"
           onClick={() => {
-            columnMappingPopoverContentRef.current = 'manageFields';
+            currentStatusRef.current = 'manageFields';
             setIsModalOpen(true);
           }}
         >

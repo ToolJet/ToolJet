@@ -148,7 +148,7 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
     columns[index] = simplifiedColumn; // Replace with simplified structure
   });
 
-  return { updatedColumns: columns, formFields: formFieldComponents };
+  return { updatedColumns: columns, updatedFormFields: formFieldComponents };
 };
 
 /**
@@ -371,4 +371,48 @@ const setValuesBasedOnType = (column, componentType, formField) => {
   ) {
     set(formField.component.definition.properties, 'placeholder.value', column.placeholder);
   }
+};
+
+/**
+ * Retrieves field data from a component definition in the store
+ * @param {string} componentId - Component ID to fetch definition for
+ * @param {Function} getComponentDefinition - Function to get component definition
+ * @returns {Object} Field data with merged component definition values
+ */
+export const getFieldDataFromComponent = (componentId, getComponentDefinition) => {
+  if (!componentId) {
+    return null;
+  }
+
+  const component = getComponentDefinition(componentId);
+  if (!component) return null;
+
+  const componentType = component.component.component;
+  const definition = component.component.definition;
+
+  // Get values from component definition
+  const label = definition.properties?.label?.value || '';
+  const name = component.component.name;
+
+  // Different components store values in different properties
+  let value;
+  if (componentType === 'Checkbox' || componentType === 'DatePickerV2') {
+    value = definition.properties?.defaultValue?.value;
+  } else {
+    value = definition.properties?.value?.value;
+  }
+
+  const mandatory = definition.validation?.mandatory;
+  const selected = definition.properties?.visibility;
+  const placeholder = definition.properties?.placeholder?.value || '';
+
+  return {
+    label,
+    name,
+    value,
+    mandatory,
+    selected,
+    placeholder,
+    componentType,
+  };
 };

@@ -1,7 +1,8 @@
 import React from 'react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
-import { DATATYPE_TO_COMPONENT } from '../constants';
-import { startCase } from 'lodash';
+import { DATATYPE_TO_COMPONENT, JSON_DIFFERENCE } from '../constants';
+import { startCase, omit } from 'lodash';
+import { getFieldDataFromComponent } from './fieldOperations';
 
 /**
  * Builds options array for dropdown, multiselect, and radio button components
@@ -71,6 +72,7 @@ export const getDataType = (value) => {
 
 export const buildFieldObject = (key, value, label, jsonDifferences) => {
   const dataType = getDataType(value);
+
   return {
     key,
     name: key,
@@ -92,7 +94,7 @@ export const buildFieldObject = (key, value, label, jsonDifferences) => {
  * @param {Object} data - The input data to parse
  * @returns {Array} Parsed data in expected format
  */
-export const parseDataAndBuildFields = (data, jsonDifferences = []) => {
+export const parseDataAndBuildFields = (data, jsonDifferences = JSON_DIFFERENCE) => {
   const obj = data || {};
   const result = [];
 
@@ -276,13 +278,7 @@ const extractKeys = (json, parentKey = '') => {
  * @returns {Object} Object containing arrays of keys categorized by status
  */
 export const analyzeJsonDifferences = (newJson, existingJson) => {
-  if (!newJson || !existingJson) {
-    return {
-      isExisting: [],
-      isNew: [],
-      isRemoved: [],
-    };
-  }
+  if (!newJson) return JSON_DIFFERENCE;
 
   const newKeys = extractKeys(newJson);
   const existingKeys = extractKeys(existingJson);
@@ -295,4 +291,64 @@ export const analyzeJsonDifferences = (newJson, existingJson) => {
     // Keys that only exist in old object (removed)
     isRemoved: existingKeys.filter((key) => !newKeys.includes(key)),
   };
+};
+
+// Function to merge field data with relavant component definition
+export const mergeFieldsWithComponentDefinition = (fields, getComponentDefinition) => {
+  return fields
+    .map((field) => {
+      if (field.componentId) {
+        const componentData = getFieldDataFromComponent(field.componentId, getComponentDefinition);
+
+        if (!componentData) {
+          return null; // Return null if no component data is found
+        }
+
+        return {
+          ...field,
+          // Merge component definition data for UI rendering
+          label: componentData?.label || field.label || '',
+          name: componentData?.name || field.name || '',
+          value: componentData?.value || field.value || '',
+          mandatory: componentData?.mandatory || field.mandatory || false,
+          selected: componentData?.selected || field.selected || false,
+          placeholder: componentData?.placeholder || field.placeholder || '',
+          componentType: componentData?.componentType || field.componentType || 'TextInput',
+        };
+      }
+      return field;
+    })
+    .filter((field) => field !== null);
+};
+
+// Add this utility function after imports and before the STATUS object
+export const mergeFormFieldsWithNewData = (existingFields, newFields) => {
+  // If there are no existing fields, just return the new fields
+  if (!existingFields || existingFields.length === 0) return newFields;
+
+  // Create a map of existing fields by name for quick lookups
+  const existingFieldsMap = {};
+  existingFields.forEach((field) => {
+    // Use the field name as the unique identifier
+    if (field.name) {
+      existingFieldsMap[field.name] = field;
+    }
+  });
+
+  // Process new fields
+  return newFields.map((newField) => {
+    // If the field is marked as new or doesn't exist in existing fields, keep it as is
+    if (newField.isNew || !existingFieldsMap[newField.name]) {
+      return newField;
+    }
+
+    // Merge the existing field with the new field data
+    // Preserve component IDs and other properties from the existing field
+    return {
+      ...newField,
+      ...omit(existingFieldsMap[newField.name], ['isNew']),
+      // Ensure we keep track of fields that were updated
+      isUpdated: true,
+    };
+  });
 };
