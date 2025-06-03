@@ -574,8 +574,8 @@ export class AppsUtilService implements IAppsUtilService {
     return this.appRepository.findByAppName(name, organizationId);
   }
 
-  async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  findByAppId(appId: string, manager?: EntityManager): Promise<App> {
+    return dbTransactionWrap((manager: EntityManager) => {
       return this.appRepository.findByAppId(appId, manager);
     }, manager);
   }
