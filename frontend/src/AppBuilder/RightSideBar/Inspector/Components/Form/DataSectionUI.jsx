@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import LabeledDivider from './LabeledDivider';
 import ColumnMappingComponent from './ColumnMappingComponent';
@@ -127,29 +127,41 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
     setFormFields(component.id, updatedFields);
   };
 
-  const createComponentsFromColumns = (columns, isSingleField = false) => {
-    const childComponents = getChildComponents(component?.id);
-    if (childComponents) {
-      // Get the last position of the child components
-      const lastPosition = findLastElementPosition(childComponents, currentLayout);
-      // Create form field components from columns
-      const { updatedColumns, updatedFormFields } = createFormFieldComponents(
-        columns,
-        component.id,
-        currentLayout,
-        lastPosition
-      );
-      // Add the components to the canvas
-      if (updatedFormFields.length > 0) {
-        addComponentToCurrentPage(updatedFormFields, 'canvas', {
-          skipUndoRedo: false,
-          saveAfterAction: true,
-          skipFormUpdate: true,
-        });
+  const createComponentsFromColumns = useCallback(
+    (columns, isSingleField = false) => {
+      const childComponents = getChildComponents(component?.id);
+      if (childComponents) {
+        // Get the last position of the child components
+        const lastPosition = findLastElementPosition(childComponents, currentLayout);
+        // Create form field components from columns
+        const { updatedColumns, updatedFormFields } = createFormFieldComponents(
+          columns,
+          component.id,
+          currentLayout,
+          lastPosition
+        );
+        // Add the components to the canvas
+        if (updatedFormFields.length > 0) {
+          addComponentToCurrentPage(updatedFormFields, 'canvas', {
+            skipUndoRedo: false,
+            saveAfterAction: true,
+            skipFormUpdate: true,
+          });
+        }
+        saveDataSection(isSingleField ? [...formFields, ...updatedColumns] : updatedColumns);
       }
-      saveDataSection(isSingleField ? [...formFields, ...updatedColumns] : updatedColumns);
-    }
-  };
+      closeModal();
+    },
+    [
+      addComponentToCurrentPage,
+      closeModal,
+      component.id,
+      currentLayout,
+      formFields,
+      getChildComponents,
+      saveDataSection,
+    ]
+  );
 
   // Function to create a single custom field and update the fields property
   const createComponentAndUpdateFields = (columns) => {
@@ -241,6 +253,14 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
     );
   };
 
+  const openModal = useCallback(() => {
+    setIsModalOpen(true);
+  }, [setIsModalOpen]);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, [setIsModalOpen]);
+
   return (
     <>
       <div className="tw-flex tw-justify-center tw-items-center form-generate-form-btn">
@@ -248,9 +268,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
           fill={buttonDetails.disabled ? '#E4E7EB' : '#4368E3'}
           leadingIcon={currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS ? 'plus' : 'arrowdirectionloop'}
           variant={buttonDetails.disabled ? 'outline' : 'secondary'}
-          onClick={() => {
-            setIsModalOpen(true);
-          }}
+          onClick={openModal}
           disabled={buttonDetails.disabled}
         >
           {buttonDetails.text}
@@ -272,19 +290,11 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       {isModalOpen && (
         <ColumnMappingComponent
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeModal}
           darkMode={darkMode}
           columns={buildColumns()}
           isFormGenerated={isFormGenerated}
-          onSubmit={(columns) => {
-            try {
-              createComponentsFromColumns(columns);
-            } catch (error) {
-              console.error('Error processing form fields:', error);
-            }
-
-            setIsModalOpen(false);
-          }}
+          onSubmit={createComponentsFromColumns}
         />
       )}
     </>
