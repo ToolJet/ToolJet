@@ -486,7 +486,7 @@ export const createEventsSlice = (set, get) => ({
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
       if (event?.runOnlyIf) {
-        const shouldRun = getResolvedValue(event.runOnlyIf, customVariables);
+        const shouldRun = getResolvedValue(event.runOnlyIf, customVariables, moduleId);
         if (!shouldRun) {
           return false;
         }
@@ -496,7 +496,8 @@ export const createEventsSlice = (set, get) => ({
         //! TODO run only if conditions
         switch (event.actionId) {
           case 'show-alert': {
-            let message = getResolvedValue(event.message, customVariables);
+            let message = getResolvedValue(event.message, customVariables, moduleId);
+
             if (typeof message === 'object') message = JSON.stringify(message);
 
             switch (event.alertType) {
@@ -573,7 +574,7 @@ export const createEventsSlice = (set, get) => ({
               const resolvedParams = {};
               if (params) {
                 Object.keys(params).map(
-                  (param) => (resolvedParams[param] = getResolvedValue(params[param], undefined))
+                  (param) => (resolvedParams[param] = getResolvedValue(params[param], undefined, moduleId))
                 );
               }
               // !Todo tackle confirm query part once done
@@ -601,7 +602,7 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'open-webpage': {
             //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
-            const resolvedValue = getResolvedValue(event.url, customVariables);
+            const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
             // const url = resolveReferences(event.url, undefined, customVariables);
             window.open(resolvedValue, event?.windowTarget === 'newTab' ? '_blank' : '_self');
             return Promise.resolve();
@@ -611,7 +612,7 @@ export const createEventsSlice = (set, get) => ({
               if (!event.slug) {
                 throw new Error('No application slug provided');
               }
-              const resolvedValue = getResolvedValue(event.slug, customVariables);
+              const resolvedValue = getResolvedValue(event.slug, customVariables, moduleId);
               const slug = resolvedValue;
               const queryParams = event.queryParams?.reduce(
                 (result, queryParam) => ({
@@ -649,23 +650,23 @@ export const createEventsSlice = (set, get) => ({
           case 'close-modal':
             return get().eventsSlice.showModal(event.modal, false, eventObj);
           case 'copy-to-clipboard': {
-            const contentToCopy = getResolvedValue(event.contentToCopy, customVariables);
+            const contentToCopy = getResolvedValue(event.contentToCopy, customVariables, moduleId);
             copyToClipboard(contentToCopy);
 
             return Promise.resolve();
           }
           case 'set-localstorage-value': {
-            const key = getResolvedValue(event.key, customVariables);
-            const value = getResolvedValue(event.value, customVariables);
+            const key = getResolvedValue(event.key, customVariables, moduleId);
+            const value = getResolvedValue(event.value, customVariables, moduleId);
             localStorage.setItem(key, value);
 
             return Promise.resolve();
           }
           case 'generate-file': {
             // const fileType = event.fileType;
-            const data = getResolvedValue(event.data, customVariables) || [];
-            const fileName = getResolvedValue(event.fileName, customVariables) || 'data.txt';
-            const fileType = getResolvedValue(event.fileType, customVariables) || 'csv';
+            const data = getResolvedValue(event.data, customVariables, moduleId) || [];
+            const fileName = getResolvedValue(event.fileName, customVariables, moduleId) || 'data.txt';
+            const fileType = getResolvedValue(event.fileType, customVariables, moduleId) || 'csv';
             const fileData = {
               csv: generateCSV,
               plaintext: (plaintext) => plaintext,
@@ -676,14 +677,18 @@ export const createEventsSlice = (set, get) => ({
           }
 
           case 'set-table-page': {
-            get().eventsSlice.setTablePageIndex(event.table, getResolvedValue(event.pageIndex), eventObj);
+            get().eventsSlice.setTablePageIndex(
+              event.table,
+              getResolvedValue(event.pageIndex, undefined, moduleId),
+              eventObj
+            );
             break;
           }
 
           case 'set-custom-variable': {
             const { setVariable } = get();
-            const key = getResolvedValue(event.key, customVariables);
-            const value = getResolvedValue(event.value, customVariables);
+            const key = getResolvedValue(event.key, customVariables, moduleId);
+            const value = getResolvedValue(event.value, customVariables, moduleId);
             setVariable(key, value);
             return Promise.resolve();
             // customAppVariables[key] = value;
@@ -705,7 +710,7 @@ export const createEventsSlice = (set, get) => ({
 
           case 'get-custom-variable': {
             const { getVariable } = get();
-            const key = getResolvedValue(event.key, customVariables);
+            const key = getResolvedValue(event.key, customVariables, moduleId);
             return getVariable(key);
           }
 
@@ -717,7 +722,7 @@ export const createEventsSlice = (set, get) => ({
 
           case 'unset-custom-variable': {
             const { unsetVariable } = get();
-            const key = getResolvedValue(event.key, customVariables);
+            const key = getResolvedValue(event.key, customVariables, moduleId);
             unsetVariable(key);
             return Promise.resolve();
             // const customAppVariables = { ...getCurrentState().variables };
@@ -735,8 +740,8 @@ export const createEventsSlice = (set, get) => ({
 
           case 'set-page-variable': {
             const { setPageVariable } = get();
-            const key = getResolvedValue(event.key, customVariables);
-            const value = getResolvedValue(event.value, customVariables);
+            const key = getResolvedValue(event.key, customVariables, moduleId);
+            const value = getResolvedValue(event.value, customVariables, moduleId);
             setPageVariable(key, value);
             return Promise.resolve();
             // const customPageVariables = {
@@ -767,7 +772,7 @@ export const createEventsSlice = (set, get) => ({
 
           case 'get-page-variable': {
             const { getPageVariable } = get();
-            const key = getResolvedValue(event.key, customVariables);
+            const key = getResolvedValue(event.key, customVariables, moduleId);
             return getPageVariable(key);
           }
 
@@ -779,7 +784,7 @@ export const createEventsSlice = (set, get) => ({
 
           case 'unset-page-variable': {
             const { unsetPageVariable } = get();
-            const key = getResolvedValue(event.key, customVariables);
+            const key = getResolvedValue(event.key, customVariables, moduleId);
             unsetPageVariable(key);
             return Promise.resolve();
 
@@ -847,7 +852,7 @@ export const createEventsSlice = (set, get) => ({
               // }));
               // console.log('actionArguments', event.componentSpecificActionParams);
               const actionArguments = event.componentSpecificActionParams.map((param) => {
-                const value = getResolvedValue(param.value, customVariables);
+                const value = getResolvedValue(param.value, customVariables, moduleId);
                 return {
                   ...param,
                   value: value,
@@ -879,8 +884,8 @@ export const createEventsSlice = (set, get) => ({
                 const resolvedQueryParams = [];
                 queryParams.forEach((param) => {
                   resolvedQueryParams.push([
-                    getResolvedValue(param[0], customVariables),
-                    getResolvedValue(param[1], customVariables),
+                    getResolvedValue(param[0], customVariables, moduleId),
+                    getResolvedValue(param[1], customVariables, moduleId),
                   ]);
                 });
                 const currentUrlParams = new URLSearchParams(window.location.search);
