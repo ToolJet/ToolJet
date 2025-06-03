@@ -11,7 +11,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import {
   parseDataAndBuildFields,
-  findLastElementPosition,
+  findNextElementTop,
   analyzeJsonDifferences,
   mergeFieldsWithComponentDefinition,
   mergeFormFieldsWithNewData,
@@ -132,14 +132,15 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       const childComponents = getChildComponents(component?.id);
       if (childComponents) {
         // Get the last position of the child components
-        const lastPosition = findLastElementPosition(childComponents, currentLayout);
+        const nextElementsTop = findNextElementTop(childComponents, currentLayout);
         // Create form field components from columns
         const { updatedColumns, updatedFormFields } = createFormFieldComponents(
           columns,
           component.id,
           currentLayout,
-          lastPosition
+          nextElementsTop
         );
+
         // Add the components to the canvas
         if (updatedFormFields.length > 0) {
           addComponentToCurrentPage(updatedFormFields, 'canvas', {

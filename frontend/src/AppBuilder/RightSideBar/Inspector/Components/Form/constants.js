@@ -17,3 +17,10 @@ export const FORM_STATUS = {
   GENERATE_FIELDS: 'generateFields',
   REFRESH_FIELDS: 'refreshFields',
 };
+
+export const COMPONENT_LAYOUT_DETAILS = {
+  spacing: 10,
+  defaultWidth: 37,
+  defaultHeight: 30,
+  defaultLeft: 3,
+};

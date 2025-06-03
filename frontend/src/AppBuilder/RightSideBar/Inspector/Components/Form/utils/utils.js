@@ -132,9 +132,9 @@ export const parseDataAndBuildFields = (data, jsonDifferences = JSON_DIFFERENCE)
 /**
  * Find the last element's position in child components
  * @param {Object} childComponents - Object containing child components
- * @returns {Object} Position data including top, left, width, height
+ * @returns {number} - Top position of the next element
  */
-export const findLastElementPosition = (childComponents, currentLayout = 'desktop') => {
+export const findNextElementTop = (childComponents, currentLayout = 'desktop') => {
   // Default position if no valid components found
   const defaultPosition = { top: 0, left: 0, width: 0, height: 0 };
 
@@ -171,12 +171,7 @@ export const findLastElementPosition = (childComponents, currentLayout = 'deskto
       const { top = 0, left = 0, width = 0, height = 0 } = lastComponent.component.layouts[currentLayout];
 
       // Calculate next position (typically below the last element with some margin)
-      return {
-        top: top + height + 10, // Add some margin
-        left,
-        width,
-        height,
-      };
+      return top + height;
     }
 
     return defaultPosition;
