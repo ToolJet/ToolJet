@@ -2,40 +2,23 @@
 id: runjs
 title: Using RunJS
 ---
-<div style={{paddingBottom:'24px'}}>
+
 
 ToolJet allows you to integrate external JavaScript libraries into your application using RunJS queries. This guide walks you through the process of importing and utilizing these libraries effectively.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Choosing Libraries
 
 You can import various JavaScript libraries using their Content Delivery Network (CDN) links. Find the CDN links for your desired open-source projects on [jsDelivr](https://www.jsdelivr.com/). 
 
-</div>
+## How to Import Libraries
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+For example, let's consider two popular libraries: [FlattenJS](https://github.com/davidfig/flattenjs) and [MathJS](https://mathjs.org/) which are used for flattening JSON objects and performing mathematical computations respectively. Let’s walk through importing external libraries step-by-step.
 
-## Creating a New App and RunJS Query
+### Create a RunJS Query
 
-- Create a new app from the ToolJet Dashboard.
-- Once the app is ready, choose ToolJet's deafult **JavaScript** Data Source from the query panel. 
+Open the query panel and create a new **RunJS** query.
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/create-new-query-v2.png" alt="Create a new RunJS query" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Importing Libraries
-
-Once the query is created, add the following code:
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+### Add this script loader
 
 ```js
 // Function to add script dynamically
@@ -63,70 +46,72 @@ try {
 }
 ```
 
-</div>
-
 After adding the code, click on the **Run** button in the query panel, an alert should pop up with the message "Mathjs and Flatten imported."
 
 :::tip
 Enable the **Run this query on application load?** option to make the libraries available throughout the application as soon as the app is loaded.
 :::
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/import-successful-v2.png" alt="Import Successful" />
-</div>
+ <img className="screenshot-full img-full" src="/img/app-builder/custom-code/import_library.png" alt="Use FlattenJS" />
 
-</div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Examples
 
-</div>
+## Use cases
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+Now that we have successfully imported both libraries, let's explore some use cases where they can be applied.
 
-### 1. Flattening JSON Objects using FlattenJS
 
-- Create a new *RunJS* query using the Flatten library (imported earlier) to flatten a JSON object.
-- In the code section of the query, add the following code:
+### Flattening JSON Objects using FlattenJS
+
+Let’s say you have deeply nested API data and need to show it in a flat table UI.
+
+Here’s how to flatten it using flatten():
 
 ```js
 return flatten({
-    key1: {
-        keyA: 'valueI'
-    },
-    key2: {
-        keyB: 'valueII'
-    },
-    key3: { a: { b: { c: 2 } } }
+  user: {
+    name: 'John',
+    address: {
+      city: 'San Francisco',
+      zip: 94105
+    }
+  },
+  roles: ['admin', 'editor']
 });
 ```
 
-- Preview the output in the query manager or click **Run** in the query panel to see the flattened JSON.
+Preview the output in the query manager or click **Run** in the query panel to see the flattened JSON.
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flatten-js-v2.png" alt="Use FlattenJS" />
-</div>
 
-</div>
+ <img className="screenshot-full img-full" src="/img/app-builder/custom-code/flaten_library.png" alt="Use FlattenJS" />
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+###  Calculating Monthly Loan EMI 
 
-### 2. Computation using MathJS
+Let's say you're building a **loan management dashboard** where users input loan details and get the monthly EMI instantly. Instead of manually coding the formula, use **MathJS** to handle the math cleanly and accurately.
 
-- Create another *RunJS* query utilizing the MathJS library for a calculation.
-- In the code section of the query, add the following code:
+#### EMI Formula
+
+ <img className="screenshot-full img-s" src="/img/app-builder/custom-code/emi.png" alt="Use FlattenJS" />
+
+Where:
+- P = Principal loan amount  
+- r = Monthly interest rate  
+- n = Loan tenure in months
 
 ```js
-return math.atan2(3, -3) / math.pi;
+const principal = 500000; // Loan amount
+const annualRate = 10;    // Annual interest rate in %
+const tenure = 60;        // Loan tenure in months
+
+const r = annualRate / 12 / 100; // Monthly interest rate
+
+const numerator = principal * r * math.pow(1 + r, tenure);
+const denominator = math.pow(1 + r, tenure) - 1;
+
+const emi = math.round(numerator / denominator, 2);
+
+return `Monthly EMI: ₹${emi}`;
 ```
 
-- Preview the output in the query manager or click **Run** in the query panel to see the result of the calculation.
-
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/math-js-v2.png" alt="Use MathJs" />
-</div>
-
-</div>
-
-This guide provides a clear and detailed walkthrough for importing external JavaScript libraries into your ToolJet application.
+With ToolJet's import library feature, you can easily use popular JavaScript libraries—like MathJS for calculations or Day.js for working with dates—right in your apps. This saves you from having to write complex code from scratch.

@@ -2,67 +2,36 @@
 id: runpy
 title: Using RunPy
 ---
-<div style={{paddingBottom:'24px'}}>
 
 ToolJet allows you to utilize python packages in your app by importing them using the [RunPy query](/docs/data-sources/run-py). 
 In this how-to guide, we will import a few packages and use them in the application.
-
-</div>
 
 :::caution Unsupported modules
 Modules with C/C++ extensions needing system libraries won't work in Pyodide, as it runs in a web browser without system library access. Pyodide, based on WebAssembly-compiled Python, also doesn't support certain system calls.
 :::
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+## Installing Python Packages
 
-- Start by creating a new application in ToolJet.
-- From the Query Panel, add a new RunPy query - it will be named *runpy1* by default.
+Let’s say you’re building a dashboard that processes CSV uploads, runs statistical simulations, or formats large datasets. ToolJet supports Python natively, but for certain data processing tasks, Python packages like pandas and NumPy offer more faster and more reliable logic. Here’s how to make the most of it.
 
-<div style={{textAlign: 'left', marginBotton: '15px'}}>
-    <img className="screenshot-full" src="/img/how-to/import-python/runpy.png" alt="Import external libraries using RunPy" />
-</div>
 
-- Use micropip to install packages like Pandas and NumPy. **Run** the query to complete installation.
+Use micropip to install packages like Pandas and NumPy. **Run** the query to complete installation.
 
 ```python
 import micropip
 await micropip.install('pandas')
 await micropip.install('numpy')
 ```
-    
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/import-python/installing.png" alt="Import external libraries using RunPy"/>
-</div>
 
-- Enable `Run this query on application load?` to make these packages available every time the application loads.
+ <img className="screenshot-full img-full" src="/img/app-builder/custom-code/install_py.png" alt="Installing py modules" />
 
-</div>
+Enable `Run this query on application load?` in query settings to make these packages available every time the application loads.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+## Use cases
 
-## Generating Random Numbers with NumPy
+### Parse CSV data
 
-- Create a RunPy query using NumPy's random module to generate random numbers.
-
-```python
-from numpy import random
-x = random.binomial(n=10, p=0.5, size=10)
-print(x)
-```
-
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/import-python/random.gif" alt="Import external libraries using RunPy"/>
-</div>
-
-*You can check the output on the browser's console.*
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Parse CSV data
-
-- Create a RunPy query to parse CSV data using `StringIO`, `csv`, and `Pandas` module.
+Say you want users to upload a CSV and view the parsed output. Here’s how you can use pandas and Python’s csv module. Create a RunPy query to parse CSV data using `StringIO`, `csv`, and `Pandas` module.
 
 ```python
 from io import StringIO
@@ -80,23 +49,43 @@ print(df.info())
 print(df)
 ```
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/import-python/csvparse.png" alt="Import external libraries using RunPy"/>
-</div>
+ <img className="screenshot-full img-full" src="/img/app-builder/custom-code/parseCSV.png" alt="Installing py modules" />
 
-- Add a **File Picker** component on the canvas
-- Select  `On File Loaded` as the Event and Run Query as the Action.
-- Select the query we just created as the Query. 
+- Add a File Picker to your app and change the file type to CSV.
+- In the File Picker’s event settings:
+    - Event: On File Loaded
+    - Action: Run Query → choose your RunPy script
+- Upload a CSV file. Now when you run the python script, it will parse the data and output it in the browser console.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/import-python/event.png" alt="Import external libraries using RunPy"/>
-</div>
 
-- Finally, load a csv file on the File Picker component, **Run** related RunPy query and check the output on the browser console.
+### Prompt Preprocessing for AI APIs
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/import-python/console.gif" alt="Import external libraries using RunPy"/>
-</div>
-    
+When building appsthat integrate with AI APIs (like OpenAI, Cohere, or HuggingFace), you often need to send long-form text inputs—like meeting transcripts, user feedback, or document excerpts to the API. However, many AI APIs have input size limitations (e.g., 4,096 tokens for GPT-3.5), and they often work best when the input is clean and concise.
 
-</div>
+So, before sending the data, you may want to:
+- Clean and normalize the text (remove line breaks, extra spaces, non-ASCII characters)
+- Chunk the text into API-safe sizes (e.g., 500 characters or 300 words)
+- Optionally, remove irrelevant sections (like headers, boilerplate, or disclaimers)
+
+Here's an example of how to do this preprocessing step using regular expressions (`re`):
+
+```python
+import re
+
+# Get raw text from a multi-line input component (like a long form or a textarea)
+raw_text = components.textarea1.text
+
+# 1. Clean the text:
+# - `\s+` matches all whitespace sequences (spaces, newlines, tabs)
+# - Replace them with a single space
+# - Strip leading/trailing whitespace
+cleaned = re.sub(r"\s+", " ", raw_text).strip()
+
+# 2. Chunk the cleaned text into slices of 500 characters each
+chunks = [cleaned[i:i+500] for i in range(0, len(cleaned), 500)]
+
+# Output the cleaned and chunked data
+print({"chunks": chunks})
+```
+
+RunPy lets you use Python code inside your ToolJet apps. By installing supported libraries with micropip, you can add more functionality to your applications without needing a full backend.

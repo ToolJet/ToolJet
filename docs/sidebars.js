@@ -178,6 +178,14 @@ const sidebars = {
             'app-builder/custom-code/control-components',
             'app-builder/custom-code/transform-data',
             'app-builder/custom-code/managing-variables',
+            {
+              'type': 'category',
+              'label': 'Using External Libraries',
+              'items': [
+                'app-builder/import-libraries/runjs',
+                'app-builder/import-libraries/runpy',
+              ],
+            },
             'app-builder/custom-code/using-libraries',
             'app-builder/custom-code/constants-secrets',
           ],
