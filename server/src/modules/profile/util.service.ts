@@ -14,17 +14,6 @@ import { User } from '@entities/user.entity';
 export class ProfileUtilService implements IProfileUtilService {
   constructor(protected readonly filesRepository: FilesRepository, protected readonly userRepository: UserRepository) {}
 
-  private async setAuditLogForUser(user: User, resourceData?: any): Promise<void> {
-    const auditLogEntry = {
-      userId: user.id,
-      organizationId: user.defaultOrganizationId,
-      resourceId: user.id,
-      resourceName: user.email,
-      resourceData: resourceData,
-    };
-    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
-  }
-
   async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager): Promise<File> {
     const user = await this.userRepository.getUser({
       id: userId,
@@ -47,15 +36,6 @@ export class ProfileUtilService implements IProfileUtilService {
       await this.filesRepository.removeOne(currentAvatarId, manager);
     }
 
-    const resourceData = {
-      previous_user_details: {
-        avatar_id: currentAvatarId,
-      },
-      updated_user_details: {
-        avatar_id: avatar.id,
-      },
-    };
-    await this.setAuditLogForUser(user, resourceData);
     return avatar;
   }
 

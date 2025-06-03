@@ -88,7 +88,6 @@ function updateUserTypeInstance(userUpdateBody) {
     body: JSON.stringify(userUpdateBody),
     credentials: 'include',
   };
-  console.log('usertypebody', userUpdateBody);
   return fetch(`${config.apiUrl}/users/user-type/instance`, requestOptions).then(handleResponse);
 }
 

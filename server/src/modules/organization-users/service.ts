@@ -41,7 +41,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
   async updateOrgUser(organizationUserId: string, user: User, updateOrgUserDto: UpdateOrgUserDto) {
     const { firstName, lastName, addGroups, role, userMetadata } = updateOrgUserDto;
-    console.log('user metadata', userMetadata);
     const organizationUser = await this.organizationUsersRepository.findOne({
       where: { id: organizationUserId, organizationId: user.organizationId },
     });

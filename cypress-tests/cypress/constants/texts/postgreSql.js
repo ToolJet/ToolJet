@@ -17,13 +17,17 @@ export const postgreSqlText = {
   allCloudStorage: "Cloud Storages (4)",
 
   postgreSQL: "PostgreSQL",
+  labelConnectionType: "Connection type",
+  manualConnectionOption: "Manual connection",
+  connectionStringOption: "Connection string",
   labelHost: "Host",
   labelPort: "Port",
   labelSSL: "SSL",
   labelDbName: "Database name",
   labelUserName: "Username",
   labelPassword: "Password",
-  label: "Encrypted",
+  labelEncrypted: "Encrypted",
+  labelConnectionOptions: "Connection options",
   sslCertificate: "SSL certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",
@@ -74,6 +78,8 @@ export const postgreSqlText = {
 
   guiOptionBulkUpdate: "Bulk update using primary key",
   buttonTextTestConnection: "Test connection",
+  editButtonText: "Edit",
+  unableAcquireConnectionAlertText: "Unable to acquire a connection",
 
   tabAdvanced: "Advanced",
   labelNoEventhandler: "No event handlers",
