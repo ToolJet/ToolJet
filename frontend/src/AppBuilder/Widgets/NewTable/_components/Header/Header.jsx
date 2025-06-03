@@ -51,11 +51,11 @@ export const Header = memo(
         <div className="position-relative">
           <Tooltip id="tooltip-for-filter-data" className="tooltip" />
           <ButtonSolid
-            variant="tertiary"
+            variant="ghostBlack"
             customStyles={{ minWidth: '32px' }}
             className={`tj-text-xsm ${showFilter && 'always-active-btn'}`}
             leftIcon="filter"
-            fill={`var(--icons-default)`}
+            fill={`var(--cc-table-action-icon-color)`}
             iconWidth="16"
             onClick={(e) => {
               if (showFilter) {

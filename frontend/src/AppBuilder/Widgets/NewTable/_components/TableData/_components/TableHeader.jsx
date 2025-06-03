@@ -10,6 +10,7 @@ import { CSS } from '@dnd-kit/utilities';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
@@ -18,6 +19,8 @@ const DraggableHeader = ({ header, darkMode, id }) => {
 
   const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
+  const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
+  const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
 
   const getResolvedValue = useStore.getState().getResolvedValue;
 
@@ -32,6 +35,10 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     whiteSpace: 'nowrap',
     width: header.column.getSize(),
     zIndex: isDragging ? 1 : 0,
+    backgroundColor: columnBackgroundColor,
+    color: columnTitleColor,
+    '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 'hover'),
+    '--cc-table-header-active': getModifiedColor(columnBackgroundColor, 'active'),
   };
 
   return (
