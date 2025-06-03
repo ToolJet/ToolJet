@@ -125,7 +125,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    // cy.get('[data-cy="connection-alert-text"]').should("be.visible")
+    // cy.get(dataSourceSelector.connectionAlertText).should("be.visible")
     deleteDatasource(`cypress-${data.dataSourceName}-mariadb`);
   });
 
