@@ -1,0 +1,105 @@
+{
+    "title": "Woocommerce datasource",
+    "description": "A schema defining Woocommerce datasource",
+    "type": "api",
+    "defaults": {},
+    "properties": {
+        "resource": {
+            "label": "Resource",
+            "key": "resource",
+            "className": "col-md-4",
+            "type": "dropdown-component-flip",
+            "description": "Resource select",
+            "list": [
+                { "value": "product", "name": "Product" },
+                { "value": "customer", "name": "Customer" },
+                { "value": "order", "name": "Order" },
+                { "value": "coupon", "name": "Coupon" }
+            ]
+        },
+        "customer": {
+            "operation": {
+                "label": "Operation",
+                "key": "operation",
+                "type": "dropdown-component-flip",
+                "description": "Single select dropdown for operation",
+                "list": [
+                    { "value": "list_customer", "name": "List all customers" },
+                    { "value": "update_customer", "name": "Update a customer" },
+                    { "value": "delete_customer", "name": "Delete a customer" },
+                    { "value": "batch_update_customer", "name": "Batch update customers" },
+                    { "value": "create_customer", "name": "Create a customer" },
+                    { "value": "retrieve_customer", "name": "Retrieve a customer" }
+                ]
+            },
+            "list_customer": {
+                "page": {
+                    "label": "Page",
+                    "key": "page",
+                    "type": "codehinter",
+                    "description": "Enter page",
+                    "width": "320px",
+                    "height": "36px",
+                    "className": "codehinter-plugins",
+                    "placeholder": "",
+                    "lineNumbers": false
+                },
+                "context": {
+                    "label": "Context",
+                    "key": "context",
+                    "type": "codehinter",
+                    "description": "Enter context",
+                    "width": "320px",
+                    "height": "36px",
+                    "className": "codehinter-plugins",
+                    "placeholder": "",
+                    "lineNumbers": false
+                }
+            }
+        },
+        "product": {
+            "operation": {
+                "label": "Operation",
+                "key": "operation",
+                "type": "dropdown-component-flip",
+                "description": "Single select dropdown for operation",
+                "list": [
+                    { "value": "list_product", "name": "List all products" },
+                    { "value": "update_product", "name": "Update a product" },
+                    { "value": "delete_product", "name": "Delete a product" },
+                    { "value": "batch_update_product", "name": "Batch update products" },
+                    { "value": "create_product", "name": "Create a product" },
+                    { "value": "retrieve_product", "name": "Retrieve a product" }
+                ]
+            }
+        },
+        "order": {
+            "operation": {
+                "label": "Operation",
+                "key": "operation",
+                "type": "dropdown-component-flip",
+                "description": "Single select dropdown for operation",
+                "list": [
+                    { "value": "list_order", "name": "List all orders" },
+                    { "value": "update_order", "name": "Update an order" },
+                    { "value": "delete_order", "name": "Delete an order" },
+                    { "value": "batch_update_order", "name": "Batch update orders" },
+                    { "value": "create_order", "name": "Create an order" },
+                    { "value": "retrieve_order", "name": "Retrieve an order" }
+                ]
+            }
+        },
+        "coupon": {
+            "operation": {
+                "label": "Operation",
+                "key": "operation",
+                "type": "dropdown-component-flip",
+                "description": "Single select dropdown for operation",
+                "list": [
+                    { "value": "list_coupon", "name": "List all coupons" },
+                    { "value": "create_coupon", "name": "Create a coupon" }
+                ]
+            }
+        }
+    }
+}
