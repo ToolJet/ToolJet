@@ -1,3 +1,5 @@
+// frontend/src/Editor/CodeEditor/CodeHinter.jsx
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useResolveStore } from '@/_stores/resolverStore';
@@ -115,7 +117,7 @@ const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => 
   );
 };
 
-const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+const DeprecatedAlertForWorkspaceVariable = ({ text }) => {
   return (
     <Alert
       svg="tj-info-warning"
@@ -125,7 +127,7 @@ const DepericatedAlertForWorkspaceVariable = ({ text }) => {
       imgWidth={18}
     >
       <div className="d-flex align-items-center">
-        <div class="">{text}</div>
+        <div className="">{text}</div>
       </div>
     </Alert>
   );
@@ -133,7 +135,7 @@ const DepericatedAlertForWorkspaceVariable = ({ text }) => {
 
 CodeHinter.Portal = Portal;
 CodeHinter.PopupIcon = PopupIcon;
-CodeHinter.DepericatedAlert = DepericatedAlertForWorkspaceVariable;
+CodeHinter.DeprecatedAlert = DeprecatedAlertForWorkspaceVariable;
 
 CodeHinter.propTypes = {
   type: PropTypes.string.isRequired,
