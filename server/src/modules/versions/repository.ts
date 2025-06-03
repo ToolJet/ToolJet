@@ -176,8 +176,8 @@ export class VersionRepository extends Repository<AppVersion> {
   }
 
   async updateVersion(versionId: string, editableParams: Partial<AppVersion>, manager?: EntityManager): Promise<void> {
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(
+    await dbTransactionWrap((manager: EntityManager) => {
+      return manager.update(
         AppVersion,
         { id: versionId },
         {
