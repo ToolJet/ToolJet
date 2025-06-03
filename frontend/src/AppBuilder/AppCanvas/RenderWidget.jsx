@@ -34,6 +34,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'VerticalDivider',
   'Link',
   'Form',
+  'FilePicker',
 ];
 
 const RenderWidget = ({

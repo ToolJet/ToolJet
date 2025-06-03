@@ -30,7 +30,10 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'Tabs',
+  'RangeSlider',
   'Link',
+  'FilePicker',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -46,6 +49,8 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Divider: 'Data',
   VerticalDivider: 'Data',
   ModalV2: 'Data',
+  Tabs: 'Data',
+  RangeSlider: 'Data',
   Link: 'Data',
 };
 
@@ -144,9 +149,11 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'RangeSlider',
       'Divider',
       'VerticalDivider',
       'Link',
+      'FilePicker',
     ],
     Layout: [],
   };

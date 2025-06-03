@@ -100,7 +100,7 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
+    "react-dropzone": "^14.3.8",
     "react-hot-toast": "^2.4.0",
     "react-hotkeys-hook": "^4.3.5",
     "react-i18next": "^12.1.5",
