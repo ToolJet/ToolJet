@@ -5,10 +5,6 @@ import { FilesRepository } from '@modules/files/repository';
 import { File } from '@entities/file.entity';
 import { IProfileUtilService } from '@modules/profile/interfaces/IService';
 import { CreateFileDto } from '@modules/files/dto/index';
-import { ProfileUpdateDto } from './dto';
-import { RequestContext } from '@modules/request-context/service';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-import { User } from '@entities/user.entity';
 
 @Injectable()
 export class ProfileUtilService implements IProfileUtilService {
@@ -37,40 +33,5 @@ export class ProfileUtilService implements IProfileUtilService {
     }
 
     return avatar;
-  }
-
-  async updateUserName(userId: string, updateUserDto: ProfileUpdateDto, manager: EntityManager): Promise<void> {
-    const { first_name: firstName, last_name: lastName } = updateUserDto;
-    const user = await manager.findOneOrFail(User, {
-      where: { id: userId },
-    });
-
-    await manager.update(User, { id: userId }, { firstName, lastName });
-    const resourceData = {
-      previous_user_details: {
-        first_name: user.firstName,
-        last_name: user.lastName,
-      },
-      updated_user_details: {
-        first_name: firstName,
-        last_name: lastName,
-      },
-    };
-    await this.setAuditLogForUser(user, resourceData);
-  }
-
-  async updateUserPassword(userId: string, password: string, manager: EntityManager): Promise<void> {
-    const user = await manager.findOneOrFail(User, {
-      where: { id: userId },
-    });
-    await manager.update(
-      User,
-      { id: userId },
-      {
-        password,
-        passwordRetryCount: 0,
-      }
-    );
-    await this.setAuditLogForUser(user);
   }
 }
