@@ -9,7 +9,7 @@ export class AddSSHBranchColumn1748501592120 implements MigrationInterface {
         new TableColumn({
           name: 'git_branch',
           type: 'varchar',
-          default: "'master'",
+          default: "'main'",
           isNullable: false,
         })
       );
