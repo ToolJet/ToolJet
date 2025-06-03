@@ -3,13 +3,13 @@ id: transforming-data
 title: Transforming Data
 ---
 
-Transformations help you shape backend data into a frontend-friendly format, keeping your UI logic simple and your app easier to maintain. While buliding apps, the raw data you fetch from an API or database often needs customization before displaying it in the components. You might need to:
+Transformations help you reshape, clean, or filter your data before passing it to UI components. While buliding apps, the raw data you fetch from an API or database often needs customization before displaying it in the components. You might need to:
 -	 Convert raw ISO timestamps into DD/MM/YYYY.
 -	 Flatten deeply nested objects for use in tables or dropdowns.
 -	 Convert currency, distance, or temperature values before display.
 -	 Adjust field names to match component expectations.
 
-That’s where data transformations come in. You can use the it to reshape, clean, or filter your data before passing it to UI components. 
+That’s where data transformations come in. It helps you to shape your backend data into a frontend-friendly format, keeping your UI logic simple and your app easier to maintain.
 
 You can write transformation code in JavaScript or Python. Let’s say you’re building an employee management dashboard, and your getEmployees API returns a lot of extra data:
 

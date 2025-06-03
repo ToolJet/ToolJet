@@ -5,10 +5,8 @@ title: Binding data to components
 
 In this section, you’ll learn how to connect and bind data to components within ToolJet, whether the data comes from a datasource or other components in your app.
 
-Certain components have a data property which can be filled with static/hardcoded data like text, button, etc or dynamic data like table, statistics, etc. You can fetch the dynamic data by binding a query to a component. You can bind data to a component by using the `{{ }}` syntax. 
-
-If you want to fetch the data from a query, you can use the following syntax:  
-`{{queries.<query-name>.data}}`
+You can display data from your datasource queries in the components like tables, charts, dropdowns etc., using the 
+`{{ }}` syntax. You can use the following format: `{{ queries.<query-name>.data }}`
 
 For example, you are working on a Employee Directory app where you want to show all employees in a table. If you have a query named *listEmployees*, that returns an array of employee objects, you can pass its data to a Table component by setting the table's data property to `{{queries.listEmployees.data}}`.
 
