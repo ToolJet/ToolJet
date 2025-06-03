@@ -80,7 +80,6 @@ export const createComponentsSlice = (set, get) => ({
         state.currentPageId = id;
         state.containerChildrenMapping = { canvas: [] };
         Object.entries(currentPageComponents).forEach(([componentId, component]) => {
-          if (state.currentMode === 'view' && component.restricted) return;
           const parentId = component.component.parent || 'canvas';
           if (!state.containerChildrenMapping[parentId]) {
             state.containerChildrenMapping[parentId] = [];

@@ -53,6 +53,7 @@ export const ConfigHandle = ({
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = component.permissions && component.permissions.length !== 0;
+  const draggingComponentId = useStore((state) => state.draggingComponentId);
 
   let height = visibility === false ? 10 : widgetHeight;
 
@@ -105,7 +106,7 @@ export const ConfigHandle = ({
       }}
     >
       {licenseValid && isRestricted && (
-        <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
+        <ToolTip message={getTooltip()} show={licenseValid && isRestricted && !draggingComponentId}>
           <span
             style={{
               background:
