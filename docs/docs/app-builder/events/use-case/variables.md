@@ -14,16 +14,18 @@ ToolJet supports two types of variables:
 
 ### App Level Variable
 
-Suppose you are building a multi-page app where, on the first page, you ask the user for their name and want to use it throughout the entire app. Here’s how to do it:
+Suppose you are building a multi-page app where, on the first page, you ask the user for their name and want to use it in the other pages. Here’s how to do it:
 1. Add a **Text Input** component to collect the user’s name.
 2. Add a **Button** component to submit the name.
-3. Set up this event handler on the button:
+3. Set up this event handler on the **Button** component:
     - Event: **On Click**
     - Action: **Set variable**
-    - Key: `username`
-    - Value: `{{components.usernameinput.value}}` 
+    - Key: `username` *(Variable name of your choice.)*
+    - Value: `{{components.usernameinput.value}}` *(Refer to the user input in the **Text Input** component.)*
 
-When the user clicks the button, their name will be stored in the app-level variable `username`. You can access this variable anywhere in your app with this syntax:
+<img className="screenshot-full img-full" src="/img/app-builder/events/variables/username.png" alt="Events Architecture Diagram"/> <br/><br/>
+
+When the user clicks the **Button** component, their name will be stored in the app-level variable `username`. You can access this variable anywhere in your app with this syntax:
 
 ```js
 {{variables.username}}
@@ -31,14 +33,14 @@ When the user clicks the button, their name will be stored in the app-level vari
 
 ### Page Level Variable
 
-Now, suppose you have a form in your application and want to store the user’s contact number only on that page when they submit the form. To do this, set this event handler on the submit button:
+Now, suppose you have a **Form** in your application and want to store the user’s contact number only on that page when they submit the **Form**. To do this, set this event handler on the **Button** component:
 
 - Event: **On Click**
 - Action: **Set page variable**
-- Key: `contact`
-- Value: `{{components.feedbackForm.data.contact.value}}` 
+- Key: `contact` *(Variable name of your choice.)*
+- Value: `{{components.feedbackForm.data.contact.value}}`  *(Refer to the user input in the **Number Input** component.)*
 
-When the user clicks submit, their contact number will be saved in a page-level variable named `contact`. This variable can only be used on that specific page with this syntax:
+When the user clicks on the **Button** component, their contact number will be saved in a page-level variable named `contact`. This variable can only be used on that specific page with this syntax:
 
 ```js
 {{page.variables.contact}}
@@ -48,17 +50,17 @@ When the user clicks submit, their contact number will be saved in a page-level 
 
 ### App Level Variables
 
-In your multi-page app, you may want to clear (unset) the `username` variable when the user clicks the **Finish** button on the last page. To do this, set the following event handler on the Finish button:
+In your multi-page app, you may want to clear (unset) the `username` variable when the user clicks the **Button** component named "Finish" on the last page. To do this, set the following event handler on the **Button** component:
 
 - Event: **On Click**
 - Action: **Unset variable**
-- Key: `username`
+- Key: `username` *(Variable name you want to unset.)*
 
 ### Page Level Variables
 
-In your form app, you might want to clear the page-level `contact` variable when the user clicks the **Next Page** button. To do this, set this event handler on the Next Page button:
+In your **Form** app, you might want to clear the page-level `contact` variable when the user clicks the **Button** component named "Next Page". To do this, set this event handler on the **Button** component:
 
 - Event: **On Click**
 - Action: **Unset page variable**
-- Key: `contact`
+- Key: `contact` *(Variable name you want to unset.)*
 

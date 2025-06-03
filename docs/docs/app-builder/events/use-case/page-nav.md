@@ -10,7 +10,7 @@ ToolJet enables seamless navigation between different pages of your app using ev
 Follow these steps to build a custom navigation menu:
 
 1. Add a container to serve as your navigation wrapper.
-2. Place icons or text components inside the container for each page you want to link to.
+2. Place icons, text or button components inside the container for each page you want to link to.
 3. For each navigation item:
     - Select the component (icon or text).
     - Add a event handler.
@@ -18,7 +18,11 @@ Follow these steps to build a custom navigation menu:
         - Action: **Switch page**
         - Page: *Select the target page from the dropdown.*
 
+<img className="screenshot-full img-full" src="/img/app-builder/events/page-nav/nav-bar.png" alt="Events Architecture Diagram"/> <br/><br/>
+
 Once configured, clicking on a navigation item will take the user to the corresponding page.
+
+<img className="screenshot-full img-full" src="/img/app-builder/events/page-nav/nav-dig.png" alt="Events Architecture Diagram"/>
 
 ## Passing Data Between Pages
 
