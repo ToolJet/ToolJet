@@ -44,8 +44,8 @@ describe("Editor title", () => {
   });
   it("should verify titles", () => {
     cy.url().should("include", "/tooljets-workspace");
-    // cy.title().should("eq", "Dashboard | ToolJet");
-    cy.title().should("eq", "ToolJet");
+    cy.title().should("eq", "Dashboard | ToolJet");
+    // cy.title().should("eq", "ToolJet");
 
     cy.log(data.appName);
 
