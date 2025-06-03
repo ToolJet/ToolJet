@@ -171,7 +171,8 @@ jobs:
             sleep 5
           done'
 
-      - name: Create Cypress environment file
+      - name: Create Cypress environment file CE
+        if: matrix.edition == 'ce'
         id: create-json
         uses: jsdaniell/create-json@1.1.2
         with:
@@ -179,7 +180,15 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Create Cypress environment file
+      - name: Run Cypress tests CE
+        if: matrix.edition == 'ce'
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:3000"
+          config-file: cypress-platform.config.js
+
+      - name: Create Cypress environment file for EE
         if: matrix.edition == 'ee'
         uses: jsdaniell/create-json@1.1.2
         with:
@@ -187,14 +196,7 @@ jobs:
           json: ${{ secrets.CYPRESS_EE_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000"
-          config-file: cypress-platform.config.js
-
-      - name: Run Cypress tests
+      - name: Run Cypress tests for EE
         if: matrix.edition == 'ee'
         uses: cypress-io/github-action@v6
         with:
