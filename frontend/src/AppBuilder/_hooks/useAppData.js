@@ -475,6 +475,9 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         Object.keys(propertyObj).forEach((type) => {
           const color = propertyObj[type][darkMode ? 'dark' : 'light'];
           root.style.setProperty(`--cc-${type}-${category}`, `${color}`);
+          if (type === 'placeholder' && category === 'text') {
+            root.style.setProperty(`--cc-default-icon`, `${color}`);
+          }
         });
       });
     });

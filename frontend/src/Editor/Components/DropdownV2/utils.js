@@ -35,18 +35,18 @@ export const getInputBorderColor = ({
   return 'var(--cc-default-border)';
 };
 
-export const getInputBackgroundColor = ({ fieldBackgroundColor, darkMode, isLoading, isDisabled }) => {
+export const getInputBackgroundColor = ({ fieldBackgroundColor }) => {
   if (!['#ffffff', '#ffffffff', '#fff', 'var(--cc-surface1-surface)'].includes(fieldBackgroundColor)) {
     return fieldBackgroundColor;
   }
 
-  if (isLoading || isDisabled) {
-    if (darkMode) {
-      return 'var(--cc-appBackground-surface)';
-    } else {
-      return 'var(--cc-surface3-surface)';
-    }
-  }
+  // if (isLoading || isDisabled) {
+  //   if (darkMode) {
+  //     return 'var(--cc-appBackground-surface)';
+  //   } else {
+  //     return 'var(--cc-surface3-surface)';
+  //   }
+  // }
 
   return 'var(--cc-surface1-surface)';
 };

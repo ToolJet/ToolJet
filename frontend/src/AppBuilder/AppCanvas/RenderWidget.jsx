@@ -144,6 +144,9 @@ const RenderWidget = ({
   }, []);
   if (!componentDefinition?.component) return null;
 
+  const disabledState = resolvedProperties?.disabledState;
+  const loadingState = resolvedProperties?.loadingState;
+
   return (
     <ErrorBoundary>
       <OverlayTrigger
@@ -179,7 +182,7 @@ const RenderWidget = ({
           role={'Box'}
           className={`canvas-component ${
             inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          }`} //required for custom CSS
+          } ${disabledState ? 'disabled' : ''}  ${loadingState ? 'loading' : ''}`} //required for custom CSS
         >
           <ComponentToRender
             id={id}

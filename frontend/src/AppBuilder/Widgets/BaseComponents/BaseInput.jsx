@@ -211,7 +211,7 @@ export const BaseInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           onKeyUp={handleKeyUp}
-          disabled={disable || loading}
+          // disabled={disable || loading}
           placeholder={placeholder}
           style={finalStyles}
           {...additionalInputProps}

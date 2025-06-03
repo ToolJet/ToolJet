@@ -3847,7 +3847,11 @@ input[type="text"] {
 
 .disabled {
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.5;
+}
+
+.loading {
+  pointer-events: none;
 }
 
 .enable-edit-fields {
