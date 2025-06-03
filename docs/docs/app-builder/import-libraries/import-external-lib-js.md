@@ -4,7 +4,9 @@ title: Using RunJS
 ---
 
 
-ToolJet allows you to integrate external JavaScript libraries into your application using RunJS queries. This guide walks you through the process of importing and utilizing these libraries effectively.
+ToolJet allows you to use external JavaScript libraries such as MathJS for calculations or Day.js for working with dates into your application using RunJS queries. This saves you from having to write complex code from scratch. 
+
+This guide walks you through the process of importing and utilizing these libraries effectively.
 
 ## Choosing Libraries
 
@@ -18,7 +20,7 @@ For example, let's consider two popular libraries: [FlattenJS](https://github.co
 
 Open the query panel and create a new **RunJS** query.
 
-### Add this script loader
+### Add the code snippet below 
 
 ```js
 // Function to add script dynamically
@@ -48,19 +50,14 @@ try {
 
 After adding the code, click on the **Run** button in the query panel, an alert should pop up with the message "Mathjs and Flatten imported."
 
-:::tip
-Enable the **Run this query on application load?** option to make the libraries available throughout the application as soon as the app is loaded.
-:::
-
  <img className="screenshot-full img-full" src="/img/app-builder/custom-code/import_library.png" alt="Use FlattenJS" />
-
-
-
+:::tip
+Enable the **Run this query on application load?** option in the query settings to make the libraries available throughout the application as soon as the app is loaded.
+:::
 
 ## Use cases
 
 Now that we have successfully imported both libraries, let's explore some use cases where they can be applied.
-
 
 ### Flattening JSON Objects using FlattenJS
 
@@ -114,4 +111,3 @@ const emi = math.round(numerator / denominator, 2);
 return `Monthly EMI: ₹${emi}`;
 ```
 
-With ToolJet's import library feature, you can easily use popular JavaScript libraries—like MathJS for calculations or Day.js for working with dates—right in your apps. This saves you from having to write complex code from scratch.

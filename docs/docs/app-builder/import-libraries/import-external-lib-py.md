@@ -3,8 +3,7 @@ id: runpy
 title: Using RunPy
 ---
 
-ToolJet allows you to utilize python packages in your app by importing them using the [RunPy query](/docs/data-sources/run-py). 
-In this how-to guide, we will import a few packages and use them in the application.
+RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries with micropip, you can add more functionality to your applications without needing a full backend. In this how-to guide, we will import a few packages and use them in the application.
 
 :::caution Unsupported modules
 Modules with C/C++ extensions needing system libraries won't work in Pyodide, as it runs in a web browser without system library access. Pyodide, based on WebAssembly-compiled Python, also doesn't support certain system calls.
@@ -25,7 +24,9 @@ await micropip.install('numpy')
 
  <img className="screenshot-full img-full" src="/img/app-builder/custom-code/install_py.png" alt="Installing py modules" />
 
-Enable `Run this query on application load?` in query settings to make these packages available every time the application loads.
+:::tip
+Enable the **Run this query on application load?** option in the query settings to make the libraries available throughout the application as soon as the app is loaded.
+:::
 
 ## Use cases
 
@@ -87,5 +88,3 @@ chunks = [cleaned[i:i+500] for i in range(0, len(cleaned), 500)]
 # Output the cleaned and chunked data
 print({"chunks": chunks})
 ```
-
-RunPy lets you use Python code inside your ToolJet apps. By installing supported libraries with micropip, you can add more functionality to your applications without needing a full backend.
