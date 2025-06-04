@@ -50,7 +50,19 @@ export default class S3QueryService implements QueryService {
           break;
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.message, {});
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      if (error && error instanceof Error) {
+        const s3Error = error as any;
+        const { name, $fault, $metadata } = s3Error;
+
+        errorDetails.name = name;
+        errorDetails.fault = $fault;
+        errorDetails.code = $metadata.httpStatusCode;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
