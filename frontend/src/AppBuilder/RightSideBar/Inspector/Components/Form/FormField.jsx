@@ -10,9 +10,8 @@ import { shallow } from 'zustand/shallow';
 import { isTrueValue, isPropertyFxControlled } from './utils/utils';
 import { updateFormFieldComponent } from './utils/fieldOperations';
 
-export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode = false }) => {
+export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, darkMode = false }) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
-  const setComponentPropertyByComponentIds = useStore((state) => state.setComponentPropertyByComponentIds, shallow);
   const performBatchComponentOperations = useStore((state) => state.performBatchComponentOperations, shallow);
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState(field);
@@ -31,37 +30,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
 
   const handleFieldChange = (updatedField) => {
     setFieldData(updatedField);
-
-    // Only update component in the store if we have a componentId
-    if (field.componentId) {
-      const operations = {
-        updated: {},
-        added: {},
-        deleted: [],
-      };
-      const { updated, added = {}, deleted = false } = updateFormFieldComponent(updatedField, field);
-
-      if (Object.keys(updated).length !== 0) {
-        operations.updated[field.componentId] = updated;
-      }
-      if (Object.keys(added).length !== 0) {
-        operations.added[field.componentId] = added;
-      }
-      if (deleted) {
-        operations.deleted.push(field.componentId);
-      }
-
-      if (
-        operations.updated[field.componentId] ||
-        Object.keys(operations.added).length > 0 ||
-        operations.deleted.length > 0
-      ) {
-        // Update the component in the store
-        performBatchComponentOperations(operations);
-        // setComponentPropertyByComponentIds(operations);
-        setShowPopover(false);
-      }
-    }
+    onSave([updatedField], true);
   };
 
   // Check if mandatory property is fx controlled

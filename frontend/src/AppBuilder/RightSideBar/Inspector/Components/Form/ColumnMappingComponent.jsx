@@ -7,6 +7,7 @@ import Modal from 'react-bootstrap/Modal';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Input from '@/components/ui/Input/Index';
 import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from './utils/utils';
+import { FORM_STATUS } from './constants';
 
 /**
  * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
@@ -311,7 +312,7 @@ const RenderSection = ({
   );
 };
 
-const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = false, onSubmit, isFormGenerated }) => {
+const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = false, onSubmit, currentStatusRef }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [groupedColumns, setGroupedColumns] = useState({});
   const [sectionTypes, setSectionTypes] = useState([]);
@@ -408,7 +409,9 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
                   setMappedColumns={(updatedColumns) => updateSectionColumns(sectionType, updatedColumns)}
                   darkMode={darkMode}
                   sectionType={sectionType}
-                  sectionDisplayName={isFormGenerated ? getSectionDisplayName(sectionType) : ''}
+                  sectionDisplayName={
+                    currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? getSectionDisplayName(sectionType) : ''
+                  }
                   disabled={sectionType === 'isRemoved'}
                 />
               )
@@ -423,11 +426,11 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
           variant="primary"
           onClick={handleSubmit}
           disabled={isSaving || allSectionsEmpty}
-          leadingIcon={isFormGenerated ? 'save' : 'plus'}
+          leadingIcon={currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'save' : 'plus'}
           isLoading={isSaving}
-          loaderText={isFormGenerated ? 'Saving' : 'Generating'}
+          loaderText={currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'Saving' : 'Generating'}
         >
-          {isFormGenerated ? 'Save' : 'Generate form'}
+          {currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'Save' : 'Generate form'}
         </Button>
       </div>
     </div>
@@ -439,7 +442,7 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         <div className="column-mapping-modal-header tw-flex tw-p-4 tw-flex-col tw-items-start tw-gap-2 tw-self-stretch tw-border-b bg-white">
           <div className="tw-flex tw-justify-between tw-items-center tw-w-full" style={{ height: '28px' }}>
             <h4 className="text-default tw-font-ibmplex tw-font-medium tw-leading-5 tw-m-0">
-              {isFormGenerated ? 'Manage fields' : 'Map columns'}
+              {currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'Manage fields' : 'Map columns'}
             </h4>
             <button
               className="tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer hover:tw-opacity-70"

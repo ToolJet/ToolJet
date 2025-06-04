@@ -6,14 +6,13 @@ import useStore from '@/AppBuilder/_stores/store';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { ensureHandlebars, buildOptions } from './utils';
-import { COMPONENT_LAYOUT_DETAILS } from '../constants';
+import { COMPONENT_LAYOUT_DETAILS, COMPONENT_WITH_OPTIONS } from '../constants';
 
 export const createNewComponentFromMeta = (column, parentId, nextTop) => {
   const currentLayout = useStore.getState().currentLayout;
   const componentType = column.componentType || 'TextInput';
   const fieldId = uuidv4();
 
-  // Get component metadata to access default values and properties
   const componentMeta = componentTypes.find((comp) => comp.component === componentType);
 
   if (!componentMeta) {
@@ -21,14 +20,11 @@ export const createNewComponentFromMeta = (column, parentId, nextTop) => {
     return;
   }
 
-  // Get the default height from component metadata
   const defaultHeight = componentMeta.defaultSize?.height || COMPONENT_LAYOUT_DETAILS.defaultHeight;
 
-  // Create a deep clone of the component definition to avoid reference issues
   const componentData = deepClone(componentMeta);
-  const componentName = useStore.getState().generateUniqueComponentName(column.name);
+  const componentName = useStore.getState().generateUniqueComponentNameFromBaseName(column.name);
 
-  // Initialize the form field with default component properties
   const formField = {
     id: fieldId,
     name: componentName,
@@ -73,7 +69,7 @@ export const createNewComponentFromMeta = (column, parentId, nextTop) => {
     },
   };
 
-  setValuesBasedOnType(column, componentType, formField);
+  setValuesBasedOnType(column, componentType, formField, false);
 
   return {
     deleted: false,
@@ -93,8 +89,8 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
   const componentId = updatedField?.componentId;
 
   if (!componentId) {
-    return createNewComponentFromMeta(updatedField, parentId, nextTop);
     // componentId is not available, create a new component
+    return createNewComponentFromMeta(updatedField, parentId, nextTop);
   }
 
   // Get the current component from the store
@@ -106,7 +102,7 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
   }
 
   if (updatedField.componentType !== componentToUpdate.component.component) {
-    return handleComponentTypeChange(componentToUpdate, updatedField, componentId);
+    return handleComponentTypeChange(componentToUpdate, updatedField);
   }
 
   // Create a deep clone of the component to avoid reference issues
@@ -130,20 +126,21 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
   // Update component type specific properties
   const componentType = updatedField.componentType || componentToUpdate.component.component;
 
-  setValuesBasedOnType(updatedField, componentType, updatedComponent);
+  setValuesBasedOnType(updatedField, componentType, updatedComponent, false);
 
   return { updated: diff(componentToUpdate, updatedComponent) };
 };
 
-const handleComponentTypeChange = (componentToUpdate, updatedField, componentId) => {
-  // Generate a new ID for the component
+const handleComponentTypeChange = (componentToUpdate, updatedField) => {
   const newComponentId = uuidv4();
 
-  // Get the current layout
+  const addOptions =
+    COMPONENT_WITH_OPTIONS.includes(updatedField.componentType) &&
+    COMPONENT_WITH_OPTIONS.includes(componentToUpdate.component.component);
+
   const currentLayout = useStore.getState().currentLayout;
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
 
-  // Get component metadata for the new type
   const componentMeta = componentTypes.find((comp) => comp.component === updatedField.componentType);
 
   if (!componentMeta) {
@@ -151,18 +148,14 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
     return null;
   }
 
-  // Extract existing layout information
   const existingLayouts = componentToUpdate.layouts || {};
 
-  // Preserve the component name or generate a new one if needed
   const componentName = useStore
     .getState()
-    .generateUniqueComponentName(updatedField.name || componentToUpdate.component.name);
+    .generateUniqueComponentNameFromBaseName(updatedField.name || componentToUpdate.component.name);
 
-  // Create a deep clone of the component definition to avoid reference issues
   const componentData = deepClone(componentMeta);
 
-  // Initialize the new form field with preserved properties from the old one
   const newComponent = {
     id: newComponentId,
     name: componentName,
@@ -177,6 +170,7 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
             value: updatedField.label || componentToUpdate.component.definition.properties.label?.value,
           },
           visibility: updatedField.selected || componentToUpdate.component.definition.properties.visibility,
+          ...(addOptions && { options: componentToUpdate.component.definition.properties.options }),
         },
         validation: {
           mandatory: updatedField.mandatory || componentToUpdate.component.definition.validation.mandatory,
@@ -193,10 +187,7 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
     },
   };
 
-  setValuesBasedOnType(updatedField, updatedField.componentType, newComponent);
-
-  // Update the updatedField with the new component ID
-  updatedField.componentId = newComponentId;
+  setValuesBasedOnType(updatedField, updatedField.componentType, newComponent, true);
 
   // Return an object that indicates to:
   // 1. Delete the old component
@@ -208,7 +199,7 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
   };
 };
 
-const setValuesBasedOnType = (column, componentType, formField) => {
+const setValuesBasedOnType = (column, componentType, formField, isTypeChange = false) => {
   if (column.value !== undefined && column.value !== null) {
     if (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'TextArea') {
       set(formField.component.definition.properties, 'value.value', column.value);
@@ -222,7 +213,15 @@ const setValuesBasedOnType = (column, componentType, formField) => {
       componentType === 'MultiselectV2' ||
       componentType === 'RadioButtonV2'
     ) {
-      set(formField.component.definition.properties, 'options.value', buildOptions(column.value));
+      if (!isTypeChange) {
+        set(formField.component.definition.properties, 'options.value', buildOptions(column.value));
+      } else if (Array.isArray(formField.component.definition.properties?.options)) {
+        set(
+          formField.component.definition.properties,
+          'options.value',
+          buildOptions(formField.component.definition.properties.options)
+        );
+      }
     }
   }
 

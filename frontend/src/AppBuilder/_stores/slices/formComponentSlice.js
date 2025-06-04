@@ -13,7 +13,7 @@ export const createFormComponentSlice = (set, get) => ({
     const { generateFormFrom = null, JSONData = null } = componentDefinition.component.definition.properties || {};
     return { generateFormFrom, JSONData };
   },
-  setFormDataSectionData: (componentId, data, fields, moduleId = 'canvas') => {
+  saveFormDataSectionData: (componentId, data, fields, moduleId = 'canvas') => {
     const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return;
@@ -26,7 +26,7 @@ export const createFormComponentSlice = (set, get) => ({
         lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], fields);
       }),
       false,
-      'setFormDataSectionData'
+      'saveFormDataSectionData'
     );
 
     saveComponentPropertyChanges(
@@ -44,7 +44,7 @@ export const createFormComponentSlice = (set, get) => ({
     if (!componentDefinition) return [];
     return componentDefinition?.component?.definition?.properties?.fields?.value || [];
   },
-  setFormFields: (componentId, fields, moduleId = 'canvas') => {
+  saveFormFields: (componentId, fields, moduleId = 'canvas') => {
     if (!componentId) return;
 
     const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
@@ -57,7 +57,7 @@ export const createFormComponentSlice = (set, get) => ({
         lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], fields);
       }),
       false,
-      'setFormFields'
+      'saveFormFields'
     );
 
     saveComponentPropertyChanges(componentId, 'fields', fields, 'properties', 'value', moduleId);
@@ -65,7 +65,7 @@ export const createFormComponentSlice = (set, get) => ({
 
   // Check if the parent component is a Form and delete the form fields if it has the componentId
   checkIfParentIsFormAndDeleteField: (componentId, moduleId = 'canvas', skipSettingProperty = false) => {
-    const { getParentComponentType, getComponentDefinition, setFormFields, getFormFields } = get();
+    const { getParentComponentType, getComponentDefinition, saveFormFields, getFormFields } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     const parentId = componentDefinition?.component?.parent;
     if (!parentId) return;
@@ -78,7 +78,7 @@ export const createFormComponentSlice = (set, get) => ({
 
       const updatedFields = fields.filter((field) => field.componentId !== componentId);
 
-      setFormFields(parentId, updatedFields, moduleId);
+      saveFormFields(parentId, updatedFields, moduleId);
     }
   },
   // Check if the parent component is a Form and add the form fields
@@ -89,7 +89,7 @@ export const createFormComponentSlice = (set, get) => ({
     moduleId = 'canvas',
     skipSettingProperty = false
   ) => {
-    const { getParentComponentType, getFormFields, setFormFields } = get();
+    const { getParentComponentType, getFormFields, saveFormFields } = get();
     if (!parentId) return;
     const componentType = component?.component?.component;
 
@@ -121,7 +121,7 @@ export const createFormComponentSlice = (set, get) => ({
         return newField;
       }
       const fields = getFormFields(parentId, moduleId);
-      setFormFields(parentId, [...fields, newField], moduleId);
+      saveFormFields(parentId, [...fields, newField], moduleId);
     }
   },
 
@@ -132,7 +132,7 @@ export const createFormComponentSlice = (set, get) => ({
       getComponentDefinition,
       checkIfParentIsFormAndAddField,
       checkIfParentIsFormAndDeleteField,
-      setFormFields,
+      saveFormFields,
     } = get();
 
     const newParentType = getParentComponentType(newParentId, moduleId);
@@ -175,8 +175,8 @@ export const createFormComponentSlice = (set, get) => ({
     const updatedFields = fields.filter((field) => !removedComponentIds.includes(field.componentId));
     const newParentComponentDefinition = getComponentDefinition(newParentId, moduleId);
     const newParentFields = newParentComponentDefinition?.component?.definition?.properties?.fields?.value || [];
-    setFormFields(newParentId, [...newParentFields, ...addedFields], moduleId);
-    setFormFields(currentParentId, updatedFields, moduleId);
+    saveFormFields(newParentId, [...newParentFields, ...addedFields], moduleId);
+    saveFormFields(currentParentId, updatedFields, moduleId);
   },
   setComponentPropertyByComponentIds: (
     componentDiffs,
@@ -305,7 +305,7 @@ export const createFormComponentSlice = (set, get) => ({
 
     // Process create operations
     const handleCreate = () => {
-      if (!operations.added || Object.keys(operations.added).length === 0) return null;
+      if (!operations.added || Object.keys(operations.added).length === 0) return {};
 
       // Convert create operations format to match addComponentToCurrentPage expectations
       const componentsToCreate = Object.entries(operations.added).map(([id, component]) => ({

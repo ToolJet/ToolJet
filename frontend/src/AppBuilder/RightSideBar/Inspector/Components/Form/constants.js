@@ -6,6 +6,8 @@ export const DATATYPE_TO_COMPONENT = {
   array: 'DropdownV2',
 };
 
+export const COMPONENT_WITH_OPTIONS = ['DropdownV2', 'MultiselectV2', 'RadioButtonV2'];
+
 export const JSON_DIFFERENCE = {
   isExisting: [],
   isNew: [],

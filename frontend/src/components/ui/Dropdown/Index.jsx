@@ -35,7 +35,7 @@ const DropdownComponent = ({ options = {}, ...props }) => {
         <SelectTrigger open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
-        <SelectContent zIndex={props.zIndex}>
+        <SelectContent>
           <SelectGroup>
             {Object.keys(options).map((key) => (
               <SelectItem
@@ -85,7 +85,6 @@ DropdownComponent.propTypes = {
   leadingIcon: PropTypes.bool,
   trailingAction: PropTypes.oneOf(['icon', 'counter']),
   helperText: PropTypes.string,
-  zIndex: PropTypes.number,
 };
 
 DropdownComponent.defaultProps = {
@@ -102,5 +101,4 @@ DropdownComponent.defaultProps = {
   leadingIcon: false,
   trailingAction: '',
   helperText: '',
-  zIndex: 50,
 };

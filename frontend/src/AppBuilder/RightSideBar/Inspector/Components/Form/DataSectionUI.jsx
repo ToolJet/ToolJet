@@ -17,7 +17,7 @@ import {
   mergeFormFieldsWithNewData,
 } from './utils/utils';
 import { updateFormFieldComponent } from './utils/fieldOperations';
-import { merge } from 'lodash';
+import { merge, isEqual } from 'lodash';
 import { FORM_STATUS, COMPONENT_LAYOUT_DETAILS } from './constants';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
@@ -38,7 +38,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
     getComponentDefinition,
     performBatchComponentOperations,
     getFormFields,
-    setFormFields,
+    saveFormFields,
     getFormDataSectionData,
   } = useStore(
     (state) => ({
@@ -50,7 +50,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       getComponentDefinition: state.getComponentDefinition,
       performBatchComponentOperations: state.performBatchComponentOperations,
       getFormFields: state.getFormFields,
-      setFormFields: state.setFormFields,
+      saveFormFields: state.saveFormFields,
       getFormDataSectionData: state.getFormDataSectionData,
     }),
     shallow
@@ -113,21 +113,22 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
 
       return enhancedFieldsWithComponentDefinition;
     }
-    const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
-    return parseDataAndBuildFields(newResolvedJsonData, jsonDifferences);
+    // const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
+    return parseDataAndBuildFields(newResolvedJsonData);
   };
 
   const handleDeleteField = (field) => {
-    const updatedFields = formFieldsWithComponentDefinition.filter((f) => f.componentId !== field.componentId);
-    deleteComponents([field.componentId], 'canvas', {
-      skipUndoRedo: false,
-      saveAfterAction: true,
-      skipFormUpdate: true,
-    });
-    setFormFields(component.id, updatedFields);
+    const updatedFields = formFields.filter((f) => f.componentId !== field.componentId);
+    let operations = {
+      updated: {},
+      added: {},
+      deleted: [field.componentId],
+    };
+    performBatchComponentOperations(operations);
+    saveFormFields(component.id, updatedFields);
   };
 
-  const createComponentsFromColumns = useCallback(
+  const performColumnMapping = useCallback(
     (columns, isSingleField = false) => {
       let operations = {
         updated: {},
@@ -140,60 +141,50 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       // Create form field components from columns
 
       if (columns && Array.isArray(columns) && columns.length > 0) {
-        const formFieldComponents = [];
         let nextTop = nextElementsTop + COMPONENT_LAYOUT_DETAILS.spacing;
 
         columns.forEach((column, index) => {
-          const { added, updated, deleted } = updateFormFieldComponent(column, {}, component.id, nextTop);
-          nextTop = nextTop + added.layouts['desktop'].height + COMPONENT_LAYOUT_DETAILS.spacing;
+          if (
+            currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS &&
+            isEqual(column, formFieldsWithComponentDefinition[index])
+          ) {
+            return; // Skip if the column is unchanged in manage fields mode
+          }
 
-          formFieldComponents.push(added);
-
-          // Create simplified column structure with only the required fields
-          // This will allow DataSectionUI to use componentId to fetch detailed info from the store
-          const simplifiedColumn = {
-            componentId: added.id,
-            isCustomField: column.isCustomField ?? false,
-            dataType: column.dataType,
-            key: column.key || column.name,
-          };
-
-          columns[index] = simplifiedColumn; // Replace with simplified structure
+          const {
+            added = {},
+            updated = {},
+            deleted = false,
+          } = updateFormFieldComponent(column, {}, component.id, nextTop);
 
           if (Object.keys(updated).length !== 0) {
-            operations.updated[added.id] = updated;
+            operations.updated[column.componentId] = updated;
           }
           if (Object.keys(added).length !== 0) {
             operations.added[added.id] = added;
+            nextTop = nextTop + added.layouts['desktop'].height + COMPONENT_LAYOUT_DETAILS.spacing;
+
+            // Create simplified column structure with only the required fields
+            // This will allow DataSectionUI to use componentId to fetch detailed info from the store
+            const simplifiedColumn = {
+              componentId: added.id,
+              isCustomField: column.isCustomField ?? false,
+              dataType: column.dataType,
+              key: column.key || column.name,
+            };
+
+            columns[index] = simplifiedColumn; // Replace with simplified structure
           }
           if (deleted) {
-            operations.deleted.push(added.id);
+            operations.deleted.push(column.componentId);
           }
         });
-        // const { updatedColumns, updatedFormFields } = createFormFieldComponents(
-        //   columns,
-        //   component.id,
-        //   nextElementsTop
-        // );
-
-        // // Add the components to the canvas
-        // if (updatedFormFields.length > 0) {
-        //   addComponentToCurrentPage(updatedFormFields, 'canvas', {
-        //     skipUndoRedo: false,
-        //     saveAfterAction: true,
-        //     skipFormUpdate: true,
-        //   });
-        // }
-
-        console.log('here--- operations--- ', operations);
 
         if (
           Object.keys(operations.updated).length > 0 ||
           Object.keys(operations.added).length > 0 ||
           operations.deleted.length > 0
         ) {
-          // Update the component properties in the store
-          // setComponentPropertyByComponentIds(operations);
           performBatchComponentOperations(operations);
           saveDataSection(isSingleField ? [...formFields, ...columns] : columns);
         }
@@ -204,53 +195,14 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       closeModal,
       component.id,
       currentLayout,
+      currentStatusRef,
       formFields,
+      formFieldsWithComponentDefinition,
       getChildComponents,
       performBatchComponentOperations,
       saveDataSection,
     ]
   );
-
-  // Function to create a single custom field and update the fields property
-  const createComponentAndUpdateFields = (columns) => {
-    let operations = {
-      updated: {},
-      added: {},
-      deleted: [],
-    };
-    columns.forEach((column) => {
-      const {
-        updated,
-        added = {},
-        deleted = false,
-      } = updateFormFieldComponent(
-        column,
-        fields.find((f) => f.componentId === column.componentId),
-        component.id
-      );
-
-      if (Object.keys(updated).length !== 0) {
-        operations.updated[column.componentId] = updated;
-      }
-      if (Object.keys(added).length !== 0) {
-        operations.added[column.componentId] = added;
-      }
-      if (deleted) {
-        operations.deleted.push(column.componentId);
-      }
-    });
-
-    if (
-      Object.keys(operations.updated).length > 0 ||
-      Object.keys(operations.added).length > 0 ||
-      operations.deleted.length > 0
-    ) {
-      // Update the component properties in the store
-      // setComponentPropertyByComponentIds(operations);
-      performBatchComponentOperations(operations);
-      saveDataSection(columns);
-    }
-  };
 
   const handleAddField = (newField) => {
     const updatedFields = {
@@ -263,7 +215,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       selected: { value: `{{true}}` },
       isCustomField: true,
     };
-    createComponentsFromColumns([updatedFields], true);
+    performColumnMapping([updatedFields], true);
     // Close the popover after adding the field
     setShowAddFieldPopover(false);
   };
@@ -334,6 +286,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
         onDeleteField={handleDeleteField}
         setIsModalOpen={setIsModalOpen}
         currentStatusRef={currentStatusRef}
+        onSave={performColumnMapping}
       />
       {isModalOpen && (
         <ColumnMappingComponent
@@ -341,8 +294,8 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
           onClose={closeModal}
           darkMode={darkMode}
           columns={buildColumns()}
-          isFormGenerated={isFormGenerated}
-          onSubmit={createComponentsFromColumns}
+          currentStatusRef={currentStatusRef}
+          onSubmit={performColumnMapping}
         />
       )}
     </>

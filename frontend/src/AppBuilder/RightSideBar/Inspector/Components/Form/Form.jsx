@@ -28,7 +28,7 @@ export const Form = ({
 }) => {
   const resolveReferences = useStore((state) => state.resolveReferences, shallow);
   const getFormDataSectionData = useStore((state) => state.getFormDataSectionData, shallow);
-  const setFormDataSectionData = useStore((state) => state.setFormDataSectionData, shallow);
+  const saveFormDataSectionData = useStore((state) => state.saveFormDataSectionData, shallow);
   const componentNameIdMapping = useStore((state) => state.modules.canvas.componentNameIdMapping, shallow);
   const queryNameIdMapping = useStore((state) => state.modules.canvas.queryNameIdMapping, shallow);
 
@@ -133,7 +133,7 @@ export const Form = ({
   };
 
   const saveDataSection = (fields) => {
-    setFormDataSectionData(
+    saveFormDataSectionData(
       component?.id,
       {
         generateFormFrom: source,

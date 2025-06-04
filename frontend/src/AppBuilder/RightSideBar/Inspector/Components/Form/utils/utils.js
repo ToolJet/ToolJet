@@ -9,10 +9,10 @@ import { getFieldDataFromComponent } from './fieldOperations';
  * @param {Array} options - Array of string values to convert to option objects
  * @returns {Array} Array of option objects with label, value, and state properties
  */
-export const buildOptions = (options) =>
+export const buildOptions = (options = []) =>
   options.map((option, index) => ({
     label: option,
-    value: `${index + 1}`,
+    value: index,
     disable: { value: false },
     visible: { value: true },
     default: { value: false },

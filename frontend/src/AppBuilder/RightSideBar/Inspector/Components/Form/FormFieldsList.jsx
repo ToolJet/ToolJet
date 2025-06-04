@@ -3,7 +3,14 @@ import { FormField } from './FormField';
 import { Button } from '@/components/ui/Button/Button';
 import { FORM_STATUS } from './constants';
 
-export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsModalOpen, currentStatusRef }) => {
+export const FormFieldsList = ({
+  fields,
+  isFormGenerated,
+  onDeleteField,
+  setIsModalOpen,
+  currentStatusRef,
+  onSave,
+}) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
   if (!isFormGenerated || fields.length === 0) {
@@ -22,8 +29,12 @@ export const FormFieldsList = ({ fields, isFormGenerated, onDeleteField, setIsMo
             key={field.name}
             field={field}
             activeMenu={activeMenuField}
-            onMenuToggle={(fieldName) => setActiveMenuField(fieldName)}
+            onMenuToggle={(fieldName) => {
+              currentStatusRef.current = null;
+              setActiveMenuField(fieldName);
+            }}
             onDelete={onDeleteField}
+            onSave={onSave}
           />
         ))}
       </div>

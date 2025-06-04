@@ -1899,13 +1899,14 @@ export const createComponentsSlice = (set, get) => ({
    * @param {string} baseName - The base name for the component
    * @returns {string} Unique component name
    */
-  generateUniqueComponentName: (baseName, moduleId = 'canvas') => {
+  generateUniqueComponentNameFromBaseName: (baseName, moduleId = 'canvas') => {
     const { getComponentNameIdMapping } = get();
     const componentNameIdMapping = getComponentNameIdMapping(moduleId);
+
     let uniqueName = baseName;
     let counter = 1;
 
-    while (Object.values(componentNameIdMapping).includes(uniqueName)) {
+    while (Object.keys(componentNameIdMapping).includes(uniqueName)) {
       uniqueName = `${baseName}${counter}`;
       counter++;
     }
