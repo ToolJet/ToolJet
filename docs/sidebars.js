@@ -194,7 +194,8 @@ const sidebars = {
           'type': 'category',
           'label': 'Debugging',
           'items': [
-            'app-builder/import-libraries/runjs',
+            'app-builder/debugging/inspector',
+            'app-builder/debugging/error-logs'
           ],
         },
         {
