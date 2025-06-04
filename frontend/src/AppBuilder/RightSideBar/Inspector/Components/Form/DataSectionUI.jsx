@@ -16,7 +16,7 @@ import {
   mergeFieldsWithComponentDefinition,
   mergeFormFieldsWithNewData,
 } from './utils/utils';
-import { updateFormFieldComponent } from './utils/fieldOperations';
+import { updateFormFieldComponent, createNewComponentFromMeta } from './utils/fieldOperations';
 import { merge, isEqual } from 'lodash';
 import { FORM_STATUS, COMPONENT_LAYOUT_DETAILS } from './constants';
 
@@ -66,7 +66,6 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   );
 
   let JSONData = null,
-    formattedJson = [],
     existingResolvedJsonData = existingData?.JSONData?.value;
 
   JSONData = component.component.definition.properties['JSONData']?.value;
@@ -74,29 +73,10 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   if (existingData?.generateFormFrom?.value === 'rawJson')
     existingResolvedJsonData = resolveReferences('canvas', existingResolvedJsonData);
 
-  if (newResolvedJsonData) {
-    try {
-      // Analyze differences between the current JSON data and the existing data
-      const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
-      formattedJson = parseDataAndBuildFields({ ...existingResolvedJsonData, ...newResolvedJsonData }, jsonDifferences);
-    } catch (e) {
-      console.error('Error parsing JSON data:', e);
-    }
-  }
-
   const { handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAddFieldPopover, setShowAddFieldPopover] = useState(false);
   const addFieldButtonRef = useRef(null);
-  const [fields, setFields] = useState(isFormGenerated ? formFields : formattedJson || []);
-
-  useEffect(() => {
-    if (isFormGenerated) {
-      setFields(formFields);
-    } else if (formattedJson) {
-      setFields(formattedJson);
-    }
-  }, [JSON.stringify(formattedJson), JSON.stringify(formFields), isFormGenerated]);
 
   const buildColumns = () => {
     if (currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS) {
@@ -113,7 +93,6 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
 
       return enhancedFieldsWithComponentDefinition;
     }
-    // const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
     return parseDataAndBuildFields(newResolvedJsonData);
   };
 
@@ -128,8 +107,40 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
     saveFormFields(component.id, updatedFields);
   };
 
+  const handleAddField = (newField) => {
+    const updatedFields = {
+      componentType: newField.componentType,
+      name: 'custom',
+      mandatory: newField.mandatory,
+      label: newField.label,
+      value: '',
+      placeholder: newField.placeholder,
+      selected: { value: `{{true}}` },
+      isCustomField: true,
+    };
+    const childComponents = getChildComponents(component?.id);
+    // Get the last position of the child components
+    const nextElementsTop = findNextElementTop(childComponents, currentLayout);
+    const { added = {} } = createNewComponentFromMeta(
+      updatedFields,
+      component.id,
+      nextElementsTop + COMPONENT_LAYOUT_DETAILS.spacing
+    );
+    let operations = {
+      updated: {},
+      added: {},
+      deleted: [],
+    };
+    operations.added[added.id] = added;
+
+    performBatchComponentOperations(operations);
+    saveFormFields(component.id, [...formFields, { componentId: added.id, isCustomField: true }]);
+    setShowAddFieldPopover(false);
+  };
+
   const performColumnMapping = useCallback(
     (columns, isSingleField = false) => {
+      const newColumns = formFields.length > 0 ? [...formFields] : [...columns];
       let operations = {
         updated: {},
         added: {},
@@ -203,22 +214,6 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       saveDataSection,
     ]
   );
-
-  const handleAddField = (newField) => {
-    const updatedFields = {
-      componentType: newField.componentType,
-      name: 'custom',
-      mandatory: newField.mandatory,
-      label: newField.label,
-      value: '',
-      placeholder: newField.placeholder,
-      selected: { value: `{{true}}` },
-      isCustomField: true,
-    };
-    performColumnMapping([updatedFields], true);
-    // Close the popover after adding the field
-    setShowAddFieldPopover(false);
-  };
 
   const renderAddCustomFieldButton = () => {
     return (

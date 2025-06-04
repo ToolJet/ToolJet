@@ -49,6 +49,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
         onDropdownOpen={handleDropdownOpen}
         onDropdownClose={handleDropdownClose}
         shouldPreventPopoverClose={shouldPreventPopoverClose}
+        setSelectedComponents={setSelectedComponents}
       />
     </Popover>
   );

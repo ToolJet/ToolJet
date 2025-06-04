@@ -3,7 +3,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Popover from 'react-bootstrap/Popover';
 import { Button } from '@/components/ui/Button/Button';
-import { getInputTypeOptions } from './utils/utils';
+import { getInputTypeOptions, isPropertyFxControlled, isTrueValue } from './utils/utils';
 
 const FieldPopoverContent = ({
   field,
@@ -13,9 +13,12 @@ const FieldPopoverContent = ({
   mode = 'edit',
   onDropdownOpen,
   onDropdownClose,
+  setSelectedComponents,
 }) => {
   // Initialize local state with the provided field
   const [localField, setLocalField] = useState(field ?? {});
+  const isSelectedFxControlled = mode === 'edit' ? isPropertyFxControlled(localField.selected) : false;
+  const isCurrentlySelected = mode === 'edit' ? isTrueValue(localField.selected.value) : false;
 
   // Update local state if external field prop changes
   useEffect(() => {
@@ -94,11 +97,27 @@ const FieldPopoverContent = ({
         <div className="tw-flex">
           {mode === 'edit' ? (
             <>
-              <Button iconOnly leadingIcon="inspect" variant="ghost" size="medium" />
-              <Button iconOnly leadingIcon="eyedisable" variant="ghost" size="medium" />
+              <Button
+                iconOnly
+                leadingIcon="inspect"
+                variant="ghost"
+                size="medium"
+                onClick={() => setSelectedComponents([field.componentId])}
+              />
+              <Button
+                iconOnly
+                leadingIcon={isCurrentlySelected ? 'eyedisable' : 'eye'}
+                variant="ghost"
+                size="medium"
+                disabled={isSelectedFxControlled}
+                className={`${isSelectedFxControlled ? 'tw-opacity-50' : ''}`}
+                onClick={() => {
+                  handleFieldChange('selected', `{{${!isCurrentlySelected}}}`);
+                }}
+              />
             </>
           ) : (
-            <Button iconOnly leadingIcon="remove" variant="ghost" size="medium" />
+            <Button iconOnly leadingIcon="remove" variant="ghost" size="medium" onClick={onClose} />
           )}
         </div>
       </Popover.Header>
