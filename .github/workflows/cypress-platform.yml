@@ -152,15 +152,6 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
-      - name: sleep 2 minutes
-        run: sleep 120
-
-      - name: docker logs
-        run: sudo docker logs Tooljet-app
-
-      - name: docker logs
-        run: sudo docker logs Tooljet-app
-
       - name: docker logs
         run: sudo docker logs Tooljet-app
 
@@ -171,7 +162,7 @@ jobs:
             sleep 5
           done'
 
-      - name: Create Cypress environment file CE
+      - name: Create Cypress environment file for CE
         if: matrix.edition == 'ce'
         id: create-json
         uses: jsdaniell/create-json@1.1.2
@@ -180,7 +171,7 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Run Cypress tests CE
+      - name: Run Cypress tests for CE
         if: matrix.edition == 'ce'
         uses: cypress-io/github-action@v6
         with:
