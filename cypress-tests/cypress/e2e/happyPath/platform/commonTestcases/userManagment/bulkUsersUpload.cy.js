@@ -7,9 +7,10 @@ import { bulkUserUpload } from "Support/utils/manageUsers";
 
 // Helper to resolve correct test data based on env
 const getFile = (fileGroup) => {
-  const env = Cypress.env("envVar");
-  return env === "Enterprise" || env === "Cloud" ? fileGroup.default : fileGroup.alt;
+  const env = Cypress.env("environment");
+  return env === "Community" ? fileGroup.default : fileGroup.alt;
 };
+
 
 describe("Bulk User Upload", () => {
   const TEST_FILES = {
@@ -17,24 +18,28 @@ describe("Bulk User Upload", () => {
       default: {
         path: "cypress/fixtures/bulkUser/missing_name.csv",
         fileName: "missing_name",
-        error: "Missing first_name,last_name,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing first_name,last_name,groups information in 2 row(s);. No users were uploaded, please update and try again.",
       },
       alt: {
         path: "cypress/fixtures/bulkUser/missing_name_ee.csv",
         fileName: "missing_name_ee",
-        error: "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
       },
     },
     MISSING_EMAIL: {
       default: {
         path: "cypress/fixtures/bulkUser/missing_email.csv",
         fileName: "missing_email",
-        error: "Missing email,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing email,groups information in 2 row(s);. No users were uploaded, please update and try again.",
       },
       alt: {
         path: "cypress/fixtures/bulkUser/missing_email_ee.csv",
         fileName: "missing_email_ee",
-        error: "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
       },
     },
     DUPLICATE_EMAIL: {
@@ -55,12 +60,14 @@ describe("Bulk User Upload", () => {
       default: {
         path: "cypress/fixtures/bulkUser/empty_names.csv",
         fileName: "empty_names",
-        error: "Missing first_name,last_name,groups information in 1 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing first_name,last_name,groups information in 1 row(s);. No users were uploaded, please update and try again.",
       },
       alt: {
         path: "cypress/fixtures/bulkUser/empty_names_ee.csv",
         fileName: "empty_names_ee",
-        error: "Missing first_name,last_name,groups,metadata,userMetadata information in 1 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing first_name,last_name,groups,metadata,userMetadata information in 1 row(s);. No users were uploaded, please update and try again.",
       },
     },
     LIMIT_EXCEEDED: {
@@ -79,12 +86,14 @@ describe("Bulk User Upload", () => {
       default: {
         path: "cypress/fixtures/bulkUser/missing_role.csv",
         fileName: "missing_role",
-        error: "Missing user_role,groups information in 2 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing user_role,groups information in 2 row(s);. No users were uploaded, please update and try again.",
       },
       alt: {
         path: "cypress/fixtures/bulkUser/missing_role_ee.csv",
         fileName: "missing_role_ee",
-        error: "Missing user_role,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
+        error:
+          "Missing user_role,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
       },
     },
     NONEXISTENT_GROUP: {
