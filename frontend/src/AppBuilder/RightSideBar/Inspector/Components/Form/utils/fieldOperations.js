@@ -8,10 +8,10 @@ import { diff } from 'deep-object-diff';
 import { ensureHandlebars, buildOptions } from './utils';
 import { COMPONENT_LAYOUT_DETAILS } from '../constants';
 
-const createNewComponentFromMeta = (currentLayout, column, parentId, nextTop) => {
+export const createNewComponentFromMeta = (column, parentId, nextTop) => {
+  const currentLayout = useStore.getState().currentLayout;
   const componentType = column.componentType || 'TextInput';
   const fieldId = uuidv4();
-  const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
 
   // Get component metadata to access default values and properties
   const componentMeta = componentTypes.find((comp) => comp.component === componentType);
@@ -34,7 +34,7 @@ const createNewComponentFromMeta = (currentLayout, column, parentId, nextTop) =>
     name: componentName,
     component: {
       ...componentData,
-      component: componentType,
+      type: componentType,
       name: componentName,
       parent: parentId,
       definition: merge({}, componentData.definition, {
@@ -58,13 +58,13 @@ const createNewComponentFromMeta = (currentLayout, column, parentId, nextTop) =>
       }),
     },
     layouts: {
-      [currentLayout]: {
+      desktop: {
         top: nextTop,
         left: COMPONENT_LAYOUT_DETAILS.defaultLeft,
         width: COMPONENT_LAYOUT_DETAILS.defaultWidth,
         height: defaultHeight,
       },
-      [nonActiveLayout]: {
+      mobile: {
         top: nextTop,
         left: COMPONENT_LAYOUT_DETAILS.defaultLeft,
         width: COMPONENT_LAYOUT_DETAILS.defaultWidth,
@@ -74,44 +74,12 @@ const createNewComponentFromMeta = (currentLayout, column, parentId, nextTop) =>
   };
 
   setValuesBasedOnType(column, componentType, formField);
-  return formField;
-};
 
-/**
- * Creates form field components from selected columns
- * @param {Array} columns - Array of columns selected for form generation
- * @param {string} parentId - ID of the parent Form component
- * @param {string} currentLayout - Current layout (desktop or mobile)
- * @param {Object} lastPosition - Position data for placement of components
- * @returns {Array} Array of form field components
- */
-export const createFormFieldComponents = (columns, parentId, currentLayout, lastPositionTop = 0) => {
-  if (!columns || !Array.isArray(columns) || columns.length === 0) {
-    return { updatedColumns: [], formFields: [] };
-  }
-
-  const formFieldComponents = [];
-  let nextTop = lastPositionTop + COMPONENT_LAYOUT_DETAILS.spacing;
-
-  columns.forEach((column, index) => {
-    const formField = createNewComponentFromMeta(currentLayout, column, parentId, nextTop);
-    nextTop = nextTop + formField.layouts[currentLayout].height + COMPONENT_LAYOUT_DETAILS.spacing;
-
-    formFieldComponents.push(formField);
-
-    // Create simplified column structure with only the required fields
-    // This will allow DataSectionUI to use componentId to fetch detailed info from the store
-    const simplifiedColumn = {
-      componentId: formField.id,
-      isCustomField: column.isCustomField ?? false,
-      dataType: column.dataType,
-      key: column.key || column.name,
-    };
-
-    columns[index] = simplifiedColumn; // Replace with simplified structure
-  });
-
-  return { updatedColumns: columns, updatedFormFields: formFieldComponents };
+  return {
+    deleted: false,
+    added: formField,
+    updated: {},
+  };
 };
 
 /**
@@ -121,7 +89,14 @@ export const createFormFieldComponents = (columns, parentId, currentLayout, last
  * @param {Object} currentField - Current field data
  * @returns {Object} Updated component definition
  */
-export const updateFormFieldComponent = (componentId, updatedField, currentField) => {
+export const updateFormFieldComponent = (updatedField, currentField, parentId, nextTop = 0) => {
+  const componentId = updatedField?.componentId;
+
+  if (!componentId) {
+    return createNewComponentFromMeta(updatedField, parentId, nextTop);
+    // componentId is not available, create a new component
+  }
+
   // Get the current component from the store
   const componentToUpdate = useStore.getState().getComponentDefinition(componentId);
 
@@ -193,7 +168,7 @@ const handleComponentTypeChange = (componentToUpdate, updatedField, componentId)
     name: componentName,
     component: {
       ...componentData,
-      component: updatedField.componentType,
+      type: updatedField.componentType,
       name: componentName,
       parent: componentToUpdate.component.parent,
       definition: merge({}, componentData.definition, {

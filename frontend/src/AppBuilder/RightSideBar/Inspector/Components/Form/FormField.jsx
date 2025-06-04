@@ -39,7 +39,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, darkMode 
         added: {},
         deleted: [],
       };
-      const { updated, added = {}, deleted = false } = updateFormFieldComponent(field.componentId, updatedField, field);
+      const { updated, added = {}, deleted = false } = updateFormFieldComponent(updatedField, field);
 
       if (Object.keys(updated).length !== 0) {
         operations.updated[field.componentId] = updated;

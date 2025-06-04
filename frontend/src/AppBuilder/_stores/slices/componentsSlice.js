@@ -798,6 +798,7 @@ export const createComponentsSlice = (set, get) => ({
       getComponentNameFromId,
       deleteComponentNameIdMapping,
       checkIfParentIsFormAndAddField,
+      buildComponentDefinition,
     } = get();
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
     return new Promise((resolve) => {
@@ -810,34 +811,7 @@ export const createComponentsSlice = (set, get) => ({
       ) {
         return false;
       }
-      const newComponents = componentDefinitions.reduce((acc, componentDefinition) => {
-        const currentComponents = {
-          ...getCurrentPageComponents(),
-          ...Object.fromEntries(acc.map((component) => [component.id, component])),
-        };
-        const componentName =
-          componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
-        const newComponent = {
-          id: componentDefinition.id,
-          name: componentName,
-          component: {
-            component: componentDefinition.component.component,
-            definition: {
-              general: componentDefinition.component.definition?.general,
-              generalStyles: componentDefinition.component.definition?.generalStyles,
-              others: componentDefinition.component.definition?.others,
-              properties: componentDefinition.component.definition?.properties,
-              styles: componentDefinition.component.definition?.styles,
-              validation: componentDefinition.component.definition?.validation,
-            },
-            name: componentName,
-            parent: componentDefinition.component.parent,
-          },
-          layouts: componentDefinition.layouts,
-        };
-
-        return [...acc, newComponent];
-      }, []);
+      const newComponents = buildComponentDefinition(componentDefinitions, moduleId);
 
       const diff = newComponents.reduce((acc, newComponent) => {
         acc[newComponent.id] = {
@@ -890,6 +864,7 @@ export const createComponentsSlice = (set, get) => ({
           });
         get().multiplayer.broadcastUpdates(newComponents, 'components', 'create');
       }
+      if (skipFormUpdate) resolve(diff);
     });
   },
 
@@ -1936,5 +1911,37 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     return uniqueName;
+  },
+  buildComponentDefinition: (componentDefinitions, moduleId = 'canvas') => {
+    const { getCurrentPageComponents } = get();
+    return componentDefinitions.reduce((acc, componentDefinition) => {
+      const currentComponents = {
+        ...getCurrentPageComponents(moduleId),
+        ...Object.fromEntries(acc.map((component) => [component.id, component])),
+      };
+
+      const componentName =
+        componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
+      const newComponent = {
+        id: componentDefinition.id,
+        name: componentName,
+        component: {
+          component: componentDefinition.component.component,
+          definition: {
+            general: componentDefinition.component.definition?.general,
+            generalStyles: componentDefinition.component.definition?.generalStyles,
+            others: componentDefinition.component.definition?.others,
+            properties: componentDefinition.component.definition?.properties,
+            styles: componentDefinition.component.definition?.styles,
+            validation: componentDefinition.component.definition?.validation,
+          },
+          name: componentName,
+          parent: componentDefinition.component.parent,
+        },
+        layouts: componentDefinition.layouts,
+      };
+
+      return [...acc, newComponent];
+    }, []);
   },
 });

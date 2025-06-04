@@ -136,11 +136,11 @@ export const parseDataAndBuildFields = (data, jsonDifferences = JSON_DIFFERENCE)
  */
 export const findNextElementTop = (childComponents, currentLayout = 'desktop') => {
   // Default position if no valid components found
-  const defaultPosition = { top: 0, left: 0, width: 0, height: 0 };
+  const defaultTop = 0;
 
   // Safety check - ensure childComponents is an object and not empty
   if (!childComponents || typeof childComponents !== 'object' || Object.keys(childComponents).length === 0) {
-    return defaultPosition;
+    return defaultTop;
   }
 
   try {
@@ -168,16 +168,16 @@ export const findNextElementTop = (childComponents, currentLayout = 'desktop') =
       lastComponent.component.layouts &&
       lastComponent.component.layouts[currentLayout]
     ) {
-      const { top = 0, left = 0, width = 0, height = 0 } = lastComponent.component.layouts[currentLayout];
+      const { top = 0, height = 0 } = lastComponent.component.layouts[currentLayout];
 
       // Calculate next position (typically below the last element with some margin)
       return top + height;
     }
 
-    return defaultPosition;
+    return defaultTop;
   } catch (error) {
     console.error('Error finding last element position:', error);
-    return defaultPosition;
+    return defaultTop;
   }
 };
 

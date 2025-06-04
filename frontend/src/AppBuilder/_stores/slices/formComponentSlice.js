@@ -290,20 +290,21 @@ export const createFormComponentSlice = (set, get) => ({
    * @param {Object} options - Additional options { skipUndoRedo, saveAfterAction }
    * @returns {Promise} - Promise that resolves when all operations are complete
    */
-  performBatchComponentOperations: (operations = {}, moduleId = 'canvas', options = {}) => {
+  performBatchComponentOperations: async (operations = {}, moduleId = 'canvas', options = {}) => {
     const {
       currentPageId,
       addComponentToCurrentPage,
       setComponentPropertyByComponentIds,
       deleteComponents,
       saveComponentChanges,
+      buildComponentDefinition,
     } = get();
 
     const { skipUndoRedo = false, saveAfterAction = true } = options;
     let upatedDiff = {};
 
     // Process create operations
-    const handleCreate = async () => {
+    const handleCreate = () => {
       if (!operations.added || Object.keys(operations.added).length === 0) return null;
 
       // Convert create operations format to match addComponentToCurrentPage expectations
@@ -317,8 +318,9 @@ export const createFormComponentSlice = (set, get) => ({
       // Use existing addComponentToCurrentPage but with saveAfterAction=false
       // We'll save all changes together at the end
       return addComponentToCurrentPage(componentsToCreate, moduleId, {
-        skipUndoRedo: false, // We'll handle undo/redo for the entire batch
+        skipUndoRedo: true, // We'll handle undo/redo for the entire batch
         saveAfterAction: false,
+        skipFormUpdate: true,
       });
     };
 
@@ -328,7 +330,7 @@ export const createFormComponentSlice = (set, get) => ({
 
       // Use existing setComponentPropertyByComponentIds function
       upatedDiff = setComponentPropertyByComponentIds(operations.updated, moduleId, {
-        skipUndoRedo: false, // We'll handle undo/redo for the entire batch
+        skipUndoRedo: true, // We'll handle undo/redo for the entire batch
         saveAfterAction: false, // We'll save all changes together at the end
       });
     };
@@ -339,7 +341,7 @@ export const createFormComponentSlice = (set, get) => ({
 
       // Use existing deleteComponents function but with saveAfterAction=false
       deleteComponents(operations.deleted, moduleId, {
-        skipUndoRedo: false, // We'll handle undo/redo for the entire batch
+        skipUndoRedo: true, // We'll handle undo/redo for the entire batch
         saveAfterAction: false,
         isCut: false,
         skipFormUpdate: true, // Skip form updates to avoid conflicts
@@ -351,14 +353,13 @@ export const createFormComponentSlice = (set, get) => ({
       // This avoids potential conflicts
       handleDelete();
       handleUpdate();
-      handleCreate();
+      const diff = await handleCreate();
 
       // Save all changes together if requested
       if (saveAfterAction) {
-        // Construct a combined diff for backend saving
         let combinedDiff = {
           create: {
-            diff: operations.added || {},
+            diff: diff,
             pageId: currentPageId,
           },
           update: {

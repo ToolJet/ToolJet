@@ -16,9 +16,9 @@ import {
   mergeFieldsWithComponentDefinition,
   mergeFormFieldsWithNewData,
 } from './utils/utils';
-import { createFormFieldComponents, updateFormFieldComponent } from './utils/fieldOperations';
+import { updateFormFieldComponent } from './utils/fieldOperations';
 import { merge } from 'lodash';
-import { FORM_STATUS } from './constants';
+import { FORM_STATUS, COMPONENT_LAYOUT_DETAILS } from './constants';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -129,37 +129,84 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
 
   const createComponentsFromColumns = useCallback(
     (columns, isSingleField = false) => {
+      let operations = {
+        updated: {},
+        added: {},
+        deleted: [],
+      };
       const childComponents = getChildComponents(component?.id);
-      if (childComponents) {
-        // Get the last position of the child components
-        const nextElementsTop = findNextElementTop(childComponents, currentLayout);
-        // Create form field components from columns
-        const { updatedColumns, updatedFormFields } = createFormFieldComponents(
-          columns,
-          component.id,
-          currentLayout,
-          nextElementsTop
-        );
+      // Get the last position of the child components
+      const nextElementsTop = findNextElementTop(childComponents, currentLayout);
+      // Create form field components from columns
 
-        // Add the components to the canvas
-        if (updatedFormFields.length > 0) {
-          addComponentToCurrentPage(updatedFormFields, 'canvas', {
-            skipUndoRedo: false,
-            saveAfterAction: true,
-            skipFormUpdate: true,
-          });
+      if (columns && Array.isArray(columns) && columns.length > 0) {
+        const formFieldComponents = [];
+        let nextTop = nextElementsTop + COMPONENT_LAYOUT_DETAILS.spacing;
+
+        columns.forEach((column, index) => {
+          const { added, updated, deleted } = updateFormFieldComponent(column, {}, component.id, nextTop);
+          nextTop = nextTop + added.layouts['desktop'].height + COMPONENT_LAYOUT_DETAILS.spacing;
+
+          formFieldComponents.push(added);
+
+          // Create simplified column structure with only the required fields
+          // This will allow DataSectionUI to use componentId to fetch detailed info from the store
+          const simplifiedColumn = {
+            componentId: added.id,
+            isCustomField: column.isCustomField ?? false,
+            dataType: column.dataType,
+            key: column.key || column.name,
+          };
+
+          columns[index] = simplifiedColumn; // Replace with simplified structure
+
+          if (Object.keys(updated).length !== 0) {
+            operations.updated[added.id] = updated;
+          }
+          if (Object.keys(added).length !== 0) {
+            operations.added[added.id] = added;
+          }
+          if (deleted) {
+            operations.deleted.push(added.id);
+          }
+        });
+        // const { updatedColumns, updatedFormFields } = createFormFieldComponents(
+        //   columns,
+        //   component.id,
+        //   nextElementsTop
+        // );
+
+        // // Add the components to the canvas
+        // if (updatedFormFields.length > 0) {
+        //   addComponentToCurrentPage(updatedFormFields, 'canvas', {
+        //     skipUndoRedo: false,
+        //     saveAfterAction: true,
+        //     skipFormUpdate: true,
+        //   });
+        // }
+
+        console.log('here--- operations--- ', operations);
+
+        if (
+          Object.keys(operations.updated).length > 0 ||
+          Object.keys(operations.added).length > 0 ||
+          operations.deleted.length > 0
+        ) {
+          // Update the component properties in the store
+          // setComponentPropertyByComponentIds(operations);
+          performBatchComponentOperations(operations);
+          saveDataSection(isSingleField ? [...formFields, ...columns] : columns);
         }
-        saveDataSection(isSingleField ? [...formFields, ...updatedColumns] : updatedColumns);
       }
       closeModal();
     },
     [
-      addComponentToCurrentPage,
       closeModal,
       component.id,
       currentLayout,
       formFields,
       getChildComponents,
+      performBatchComponentOperations,
       saveDataSection,
     ]
   );
@@ -177,9 +224,9 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
         added = {},
         deleted = false,
       } = updateFormFieldComponent(
-        column.componentId,
         column,
-        fields.find((f) => f.componentId === column.componentId)
+        fields.find((f) => f.componentId === column.componentId),
+        component.id
       );
 
       if (Object.keys(updated).length !== 0) {
