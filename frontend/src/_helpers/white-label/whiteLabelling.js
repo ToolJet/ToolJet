@@ -54,7 +54,8 @@ export async function setFaviconAndTitle(location) {
     'data-sources': 'Data sources',
     'audit-logs': 'Audit logs',
     'account-settings': 'Profile settings',
-    settings: 'Profile settings',
+    settings: 'Settings',
+    'profile-settings': 'Profile settings',
     login: '',
     signUp: '',
     error: '',
@@ -68,10 +69,14 @@ export async function setFaviconAndTitle(location) {
     '/': 'Dashboard',
   };
 
-  const pageTitleKey = Object.keys(pageTitles).find((path) => location?.pathname.includes(path));
+
+  const pageTitleKey = Object.keys(pageTitles)
+  .sort((a, b) => b.length - a.length) // Sort by length descending
+  .find((path) => location?.pathname.includes(path));
   const pageTitle = pageTitles[pageTitleKey] || '';
 
   document.title = pageTitle ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${decodeEntities(whiteLabelText)}`;
+
 }
 
 export async function fetchAndSetWindowTitle(pageDetails) {
