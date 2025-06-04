@@ -3,7 +3,7 @@ id: runpy
 title: Using RunPy
 ---
 
-RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries with micropip, you can add more functionality to your applications without needing a full backend. In this how-to guide, we will import a few packages and use them in the application.
+RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries with micropip, you can add more functionality to your applications without needing a full backend. In this guide, we will learn to import external python packages and use them in the application.
 
 :::caution Unsupported modules
 Modules with C/C++ extensions needing system libraries won't work in Pyodide, as it runs in a web browser without system library access. Pyodide, based on WebAssembly-compiled Python, also doesn't support certain system calls.
@@ -11,7 +11,7 @@ Modules with C/C++ extensions needing system libraries won't work in Pyodide, as
 
 ## Installing Python Packages
 
-Let’s say you’re building a dashboard that processes CSV uploads, runs statistical simulations, or formats large datasets. ToolJet supports Python natively, but for certain data processing tasks, Python packages like pandas and NumPy offer more faster and more reliable logic. Here’s how to make the most of it.
+In ToolJet you can write Python code, but for certain data processing tasks you can use Python packages like pandas and NumPy. Here’s how to you can use it.
 
 
 Use micropip to install packages like Pandas and NumPy. **Run** the query to complete installation.
@@ -56,12 +56,12 @@ print(df)
 - In the File Picker’s event settings:
     - Event: On File Loaded
     - Action: Run Query → choose your RunPy script
-- Upload a CSV file. Now when you run the python script, it will parse the data and output it in the browser console.
+- Upload a CSV file. Now when you trigger the RunPy query, it will parse the data and output it in the browser console.
 
 
 ### Prompt Preprocessing for AI APIs
 
-When building appsthat integrate with AI APIs (like OpenAI, Cohere, or HuggingFace), you often need to send long-form text inputs—like meeting transcripts, user feedback, or document excerpts to the API. However, many AI APIs have input size limitations (e.g., 4,096 tokens for GPT-3.5), and they often work best when the input is clean and concise.
+When building apps that integrate with AI APIs (like OpenAI, Cohere, or HuggingFace), you often need to send long-form text inputs—like meeting transcripts, user feedback, or document excerpts to the API. However, many AI APIs have input size limitations (e.g., 4,096 tokens for GPT-3.5), and they often work best when the input is clean and concise.
 
 So, before sending the data, you may want to:
 - Clean and normalize the text (remove line breaks, extra spaces, non-ASCII characters)
@@ -76,10 +76,7 @@ import re
 # Get raw text from a multi-line input component (like a long form or a textarea)
 raw_text = components.textarea1.text
 
-# 1. Clean the text:
-# - `\s+` matches all whitespace sequences (spaces, newlines, tabs)
-# - Replace them with a single space
-# - Strip leading/trailing whitespace
+# 1. Clean the text
 cleaned = re.sub(r"\s+", " ", raw_text).strip()
 
 # 2. Chunk the cleaned text into slices of 500 characters each
