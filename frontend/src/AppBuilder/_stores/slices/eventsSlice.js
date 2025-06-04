@@ -689,7 +689,10 @@ export const createEventsSlice = (set, get) => ({
             const { setVariable } = get();
             const key = getResolvedValue(event.key, customVariables, moduleId);
             const value = getResolvedValue(event.value, customVariables, moduleId);
-            setVariable(key, value);
+
+            console.log('here--- set-custom-variable', key, value, moduleId);
+
+            setVariable(key, value, moduleId);
             return Promise.resolve();
             // customAppVariables[key] = value;
             // const resp = useCurrentStateStore.getState().actions.setCurrentState({
@@ -711,19 +714,19 @@ export const createEventsSlice = (set, get) => ({
           case 'get-custom-variable': {
             const { getVariable } = get();
             const key = getResolvedValue(event.key, customVariables, moduleId);
-            return getVariable(key);
+            return getVariable(key, moduleId);
           }
 
           case 'unset-all-custom-variables': {
             const { unsetAllVariables } = get();
-            unsetAllVariables();
+            unsetAllVariables(moduleId);
             return Promise.resolve();
           }
 
           case 'unset-custom-variable': {
             const { unsetVariable } = get();
             const key = getResolvedValue(event.key, customVariables, moduleId);
-            unsetVariable(key);
+            unsetVariable(key, moduleId);
             return Promise.resolve();
             // const customAppVariables = { ...getCurrentState().variables };
             // delete customAppVariables[key];
@@ -742,7 +745,7 @@ export const createEventsSlice = (set, get) => ({
             const { setPageVariable } = get();
             const key = getResolvedValue(event.key, customVariables, moduleId);
             const value = getResolvedValue(event.value, customVariables, moduleId);
-            setPageVariable(key, value);
+            setPageVariable(key, value, moduleId);
             return Promise.resolve();
             // const customPageVariables = {
             //   ...getCurrentState().page.variables,
@@ -773,19 +776,19 @@ export const createEventsSlice = (set, get) => ({
           case 'get-page-variable': {
             const { getPageVariable } = get();
             const key = getResolvedValue(event.key, customVariables, moduleId);
-            return getPageVariable(key);
+            return getPageVariable(key, moduleId);
           }
 
           case 'unset-all-page-variables': {
             const { unsetAllPageVariables } = get();
-            unsetAllPageVariables();
+            unsetAllPageVariables(moduleId);
             return Promise.resolve();
           }
 
           case 'unset-page-variable': {
             const { unsetPageVariable } = get();
             const key = getResolvedValue(event.key, customVariables, moduleId);
-            unsetPageVariable(key);
+            unsetPageVariable(key, moduleId);
             return Promise.resolve();
 
             // useStore.getState().unsetPageVariable(key);

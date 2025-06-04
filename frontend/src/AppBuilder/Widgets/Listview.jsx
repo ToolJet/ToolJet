@@ -24,7 +24,7 @@ export const Listview = function Listview({
 }) {
   const { moduleId } = useModuleContext();
   const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
-  const childComponents = useStore((state) => state.getChildComponents(id), shallow);
+  const childComponents = useStore((state) => state.getChildComponents(id, moduleId), shallow);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -71,7 +71,7 @@ export const Listview = function Listview({
   const onOptionChange = useCallback(
     (optionName, value, componentId, index) => {
       setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId);
+        const componentName = getComponentNameFromId(componentId, moduleId);
         const changedData = { [componentName]: { [optionName]: value } };
         const existingDataAtIndex = prevData[index] ?? {};
         const newDataAtIndex = {
@@ -86,13 +86,13 @@ export const Listview = function Listview({
         return { ...prevData, ...newChildrenData };
       });
     },
-    [getComponentNameFromId, setChildrenData]
+    [getComponentNameFromId, setChildrenData, moduleId]
   );
 
   const onOptionsChange = useCallback(
     (exposedVariables, componentId, index) => {
       setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId);
+        const componentName = getComponentNameFromId(componentId, moduleId);
         const existingDataAtIndex = prevData[index] ?? {};
         const changedData = {};
         Object.keys(exposedVariables).forEach((key) => {
@@ -110,7 +110,7 @@ export const Listview = function Listview({
         return { ...prevData, ...newChildrenData };
       });
     },
-    [getComponentNameFromId, setChildrenData]
+    [getComponentNameFromId, setChildrenData, moduleId]
   );
 
   function onRecordOrRowClicked(index) {
