@@ -604,7 +604,8 @@ const sidebars = {
           'type': 'category',
           'label': 'Group Sync',
           'items': [
-            'user-management/group-sync/oidc'
+            'user-management/group-sync/oidc',
+            'user-management/group-sync/saml'
           ]
         },
         {
