@@ -1,11 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { updateQuerySuggestions } from '@/_helpers/appUtils';
 // import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
-import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
@@ -13,17 +12,10 @@ import useStore from '@/AppBuilder/_stores/store';
 //TODO: Remove this
 import { Confirm } from '@/Editor/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
-import { debounce } from 'lodash';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
-import Edit from '@/_ui/Icon/bulkIcons/Edit';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
-import classNames from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
-  const appId = useStore((state) => state.app.appId);
-
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
@@ -31,11 +23,16 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const isDeletingQueryInProcess = useStore((state) => state.dataQuery.isDeletingQueryInProcess);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
-  const duplicateQuery = useStore((state) => state.dataQuery.duplicateQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
-  const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [showQueryMenu, setShowQueryMenu] = useState(false);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+
+  const renamingQueryId = useStore((state) => state.queryPanel.renamingQueryId);
+  const deletingQueryId = useStore((state) => state.queryPanel.deletingQueryId);
+  const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
+  const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
+  const isRenaming = renamingQueryId === dataQuery.id;
+  const isDeleting = deletingQueryId === dataQuery.id;
+
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(dataQuery?.data_source_id) ||
@@ -43,103 +40,34 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         canDeleteDataSource()
       : true;
 
+  const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = dataQuery.permissions && dataQuery.permissions.length !== 0;
 
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
-
-  const QUERY_MENU_OPTIONS = [
-    {
-      label: 'Rename',
-      value: 'rename',
-      icon: <Edit width={16} />,
-      showTooltip: false,
-    },
-    {
-      label: 'Duplicate',
-      value: 'duplicate',
-      icon: <Copy width={16} />,
-      showTooltip: false,
-    },
-    {
-      label: 'Query permission',
-      value: 'permission',
-      icon: (
-        <img
-          alt="permission-icon"
-          src="assets/images/icons/editor/left-sidebar/authorization.svg"
-          width="16"
-          height="16"
-        />
-      ),
-      trailingIcon: !licenseValid ? <SolidIcon width={16} name="enterprisecrown" className="mx-1" /> : undefined,
-      tooltipText: 'Query permissions are available only in paid plans',
-      showTooltip: !licenseValid,
-    },
-    {
-      label: 'Delete',
-      value: 'delete',
-      icon: <Trash width={16} fill={'#E54D2E'} />,
-      showTooltip: false,
-    },
-  ];
-
-  const handleQueryMenuActions = (value) => {
-    if (value === 'rename') {
-      setRenamingQuery(true);
-    }
-    if (value === 'duplicate') {
-      debouncedDuplicateQuery(dataQuery?.id, appId);
-    }
-    if (value === 'permission') {
-      if (!licenseValid) return;
-      toggleQueryPermissionModal(true);
-    }
-    if (value === 'delete') {
-      deleteDataQuery();
-    }
-    setShowQueryMenu(false);
-  };
-
-  const [renamingQuery, setRenamingQuery] = useState(false);
-
-  const deleteDataQuery = () => {
-    setShowDeleteConfirmation(true);
-  };
-
   const updateQueryName = (dataQuery, newName) => {
     const { name } = dataQuery;
     if (name === newName) {
-      return setRenamingQuery(false);
+      return setRenamingQuery(null);
     }
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
       renameQuery(dataQuery?.id, newName);
-      setRenamingQuery(false);
+      setRenamingQuery(null);
       updateQuerySuggestions(name, newName);
     } else {
       if (isNewQueryNameAlreadyExists) {
         toast.error('Query name already exists');
       }
-      setRenamingQuery(false);
+      setRenamingQuery(null);
     }
   };
 
   const executeDataQueryDeletion = () => {
-    setShowDeleteConfirmation(false);
+    deleteDataQuery(null);
     deleteDataQueries(dataQuery?.id);
     setPreviewData(null);
   };
-
-  // To prevent user clicking from continuous clicks
-  const debouncedDuplicateQuery = useCallback(
-    debounce((queryId, appId) => {
-      duplicateQuery(queryId, appId);
-      setPreviewData(null);
-    }, 500),
-    [duplicateQuery]
-  );
 
   const getTooltip = () => {
     const permission = dataQuery.permissions?.[0];
@@ -171,10 +99,18 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
       <div
         className={`row query-row pe-2 ${darkMode && 'dark-theme'}` + (isQuerySelected ? ' query-row-selected' : '')}
         key={dataQuery.id}
-        onClick={() => {
+        onClick={(e) => {
           if (isQuerySelected) return;
-          setSelectedQuery(dataQuery?.id);
-          setPreviewData(null);
+          const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
+          if (menuBtn.contains(e.target)) {
+            e.stopPropagation();
+          } else {
+            toggleQueryHandlerMenu(false);
+          }
+          setTimeout(() => {
+            setSelectedQuery(dataQuery?.id);
+            setPreviewData(null);
+          }, 0);
         }}
         role="button"
       >
@@ -182,7 +118,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           <DataSourceIcon source={dataQuery} height={16} />
         </div>
         <div className="col query-row-query-name">
-          {renamingQuery ? (
+          {isRenaming ? (
             <input
               data-cy={`query-edit-input-field`}
               className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
@@ -237,75 +173,23 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           )}
         </div>
         <div className={`col-auto query-rename-delete-btn ${!shouldFreeze && isQuerySelected ? 'd-flex' : 'd-none'}`}>
-          <OverlayTrigger
-            trigger={'click'}
-            placement={'bottom-start'}
-            rootClose
-            onHide={() => setShowQueryMenu(false)}
-            show={showQueryMenu && isQuerySelected}
-            popperConfig={{
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, 3],
-                  },
-                },
-              ],
-            }}
-            overlay={
-              <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                <Popover.Body bsPrefix="list-item-popover-body">
-                  {QUERY_MENU_OPTIONS.map((option) => (
-                    <ToolTip
-                      key={option?.value}
-                      message={option?.tooltipText}
-                      placement="right"
-                      show={option?.showTooltip}
-                    >
-                      <div
-                        data-cy={`query-menu-${String(option?.value).toLowerCase()}-button`}
-                        className="list-item-popover-option"
-                        key={option?.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleQueryMenuActions(option.value);
-                        }}
-                      >
-                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                        <div
-                          className={classNames('list-item-option-menu-label', {
-                            'color-tomato9': option.value === 'delete',
-                            'color-disabled': option.value === 'permission' && !licenseValid,
-                          })}
-                        >
-                          {option?.label}
-                        </div>
-                        {option.trailingIcon && option.trailingIcon}
-                      </div>
-                    </ToolTip>
-                  ))}
-                </Popover.Body>
-              </Popover>
-            }
-          >
-            <ButtonComponent
-              iconOnly
-              leadingIcon="morevertical01"
-              onClick={() => setShowQueryMenu(!showQueryMenu)}
-              size="small"
-              variant="outline"
-              className=""
-            />
-          </OverlayTrigger>
+          <ButtonComponent
+            iconOnly
+            leadingIcon="morevertical01"
+            onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
+            size="small"
+            variant="outline"
+            className=""
+            id={`query-handler-menu-${dataQuery?.id}`}
+          />
         </div>
       </div>
       <Confirm
-        show={showDeleteConfirmation}
+        show={isDeleting}
         message={'Do you really want to delete this query?'}
         confirmButtonLoading={isDeletingQueryInProcess}
         onConfirm={executeDataQueryDeletion}
-        onCancel={() => setShowDeleteConfirmation(false)}
+        onCancel={() => deleteDataQuery(null)}
         darkMode={darkMode}
       />
     </>

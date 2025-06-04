@@ -19,6 +19,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
+import QueryCardMenu from './QueryCardMenu';
 
 export const QueryDataPane = ({ darkMode }) => {
   const { t } = useTranslation();
@@ -180,6 +181,7 @@ export const QueryDataPane = ({ darkMode }) => {
               {filteredQueries.map((query) => (
                 <QueryCard key={query.id} dataQuery={query} darkMode={darkMode} localDs={!!isDataSourceLocal(query)} />
               ))}
+              <QueryCardMenu darkMode={darkMode} />
               {licenseValid && (
                 <AppPermissionsModal
                   modalType="query"
