@@ -49,6 +49,7 @@ import {
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
+import './styles/homepage.scss';
 
 const { iconList, defaultIcon } = configs;
 
@@ -1543,12 +1544,7 @@ class HomePageComponent extends React.Component {
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>
 
-            <div
-              className={cx('col home-page-content', {
-                'bg-light-gray': !this.props.darkMode,
-              })}
-              data-cy="home-page-content"
-            >
+            <div className={cx('col home-page-content')} data-cy="home-page-content">
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
