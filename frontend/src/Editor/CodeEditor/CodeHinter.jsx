@@ -125,7 +125,7 @@ const DepericatedAlertForWorkspaceVariable = ({ text }) => {
       imgWidth={18}
     >
       <div className="d-flex align-items-center">
-        <div class="">{text}</div>
+        <div className="">{text}</div>
       </div>
     </Alert>
   );
