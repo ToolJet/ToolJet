@@ -1,3 +1,4 @@
+import { ProviderConfigDTO } from '@ee/git-sync/providers/dto/provider-config.dto';
 import { OrganizationGitCreateDto, OrganizationGitUpdateDto, OrganizationGitStatusUpdateDto } from '../dto';
 
 export interface IGitSyncService {
@@ -18,7 +19,13 @@ export interface IGitSyncService {
     updateOrgGitDto: OrganizationGitStatusUpdateDto
   ): Promise<void>;
 
-  setFinalizeConfig(userId: string, organizationId: string, organizationGitId: string, gitType: string): Promise<void>;
+  setFinalizeConfig(
+    userId: string,
+    organizationId: string,
+    organizationGitId: string,
+    gitType: string,
+    configDate: ProviderConfigDTO
+  ): Promise<void>;
 
   getOrganizationById(userOrganizationId: string, organizationId: string, gitType: string): Promise<any>;
 

@@ -7,6 +7,7 @@ import {
 } from '@dto/organization_git.dto';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { IGitSyncController } from './Interfaces/IController';
+import { ProviderConfigDTO } from './dto/provider-config.dto';
 
 @Controller('git-sync')
 export class GitSyncController implements IGitSyncController {
@@ -40,6 +41,7 @@ export class GitSyncController implements IGitSyncController {
   async setFinalizeConfig(
     @User() user: UserEntity,
     @Param('id') organizationGitId: string,
+    @Body() configDto: ProviderConfigDTO,
     @Query('gitType') gitType: string
   ) {
     throw new NotFoundException();
