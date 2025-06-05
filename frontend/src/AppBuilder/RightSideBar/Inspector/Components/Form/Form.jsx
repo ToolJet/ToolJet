@@ -50,7 +50,7 @@ export const Form = ({
       if (INPUT_COMPONENTS_FOR_FORM.includes(childComponents[childId].component.component.component)) {
         newFields.push({
           componentId: childId,
-          isCustom: true,
+          isCustomField: true,
         });
       }
     });
