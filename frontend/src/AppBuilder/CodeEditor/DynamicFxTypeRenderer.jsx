@@ -17,6 +17,7 @@ import { Visibility } from '../CodeBuilder/Elements/Visibility';
 import { NumberInput } from '../CodeBuilder/Elements/NumberInput';
 import { Datepicker } from '../CodeBuilder/Elements/Datepicker';
 import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
+import DropdownMenu from '../CodeBuilder/Elements/DropdownMenu';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 
@@ -40,6 +41,7 @@ const AllElements = {
   TableRowHeightInput,
   Datepicker,
   TimePicker,
+  DropdownMenu,
 };
 
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {

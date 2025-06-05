@@ -7,79 +7,79 @@ export const formConfig = {
     height: 450,
   },
   defaultChildren: [
-    {
-      componentName: 'Text',
-      slotName: 'header',
-      layout: {
-        top: 10,
-        left: 1,
-        height: 40,
-      },
-      properties: ['text'],
-      accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor'],
-      defaultValue: {
-        text: 'Form title',
-        textSize: 16,
-        textColor: '#000',
-        fontWeight: 'bold',
-      },
-    },
-    {
-      componentName: 'Button',
-      slotName: 'footer',
-      layout: {
-        top: 12,
-        left: 29,
-        height: 36,
-        width: 13,
-      },
-      properties: ['text'],
-      defaultValue: {
-        text: 'Submit',
-        padding: 'none',
-      },
-    },
-    {
-      componentName: 'TextInput',
-      layout: {
-        top: 20,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: ['placeholder', 'label'],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
-      defaultValue: {
-        placeholder: 'Enter your name',
-        label: 'Name',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-      },
-    },
-    {
-      componentName: 'NumberInput',
-      layout: {
-        top: 80,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: ['placeholder', 'label'],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
-      defaultValue: {
-        placeholder: 'Age',
-        label: 'Age',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-      },
-    },
+    // {
+    //   componentName: 'Text',
+    //   slotName: 'header',
+    //   layout: {
+    //     top: 10,
+    //     left: 1,
+    //     height: 40,
+    //   },
+    //   properties: ['text'],
+    //   accessorKey: 'text',
+    //   styles: ['fontWeight', 'textSize', 'textColor'],
+    //   defaultValue: {
+    //     text: 'Form title',
+    //     textSize: 16,
+    //     textColor: '#000',
+    //     fontWeight: 'bold',
+    //   },
+    // },
+    // {
+    //   componentName: 'Button',
+    //   slotName: 'footer',
+    //   layout: {
+    //     top: 12,
+    //     left: 29,
+    //     height: 36,
+    //     width: 13,
+    //   },
+    //   properties: ['text'],
+    //   defaultValue: {
+    //     text: 'Submit',
+    //     padding: 'none',
+    //   },
+    // },
+    // {
+    //   componentName: 'TextInput',
+    //   layout: {
+    //     top: 20,
+    //     left: 1,
+    //     height: 40,
+    //     width: 41,
+    //   },
+    //   properties: ['placeholder', 'label'],
+    //   styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
+    //   defaultValue: {
+    //     placeholder: 'Enter your name',
+    //     label: 'Name',
+    //     width: '{{60}}',
+    //     direction: 'left',
+    //     alignment: 'side',
+    //     auto: '{{false}}',
+    //     padding: 'default',
+    //   },
+    // },
+    // {
+    //   componentName: 'NumberInput',
+    //   layout: {
+    //     top: 80,
+    //     left: 1,
+    //     height: 40,
+    //     width: 41,
+    //   },
+    //   properties: ['placeholder', 'label'],
+    //   styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
+    //   defaultValue: {
+    //     placeholder: 'Age',
+    //     label: 'Age',
+    //     width: '{{60}}',
+    //     direction: 'left',
+    //     alignment: 'side',
+    //     auto: '{{false}}',
+    //     padding: 'default',
+    //   },
+    // },
   ],
   component: 'Form',
   others: {
@@ -98,6 +98,49 @@ export const formConfig = {
       conditionallyRender: {
         key: 'advanced',
         value: false,
+      },
+    },
+    generateFormFrom: {
+      type: 'dropdownMenu',
+      displayName: 'Generate form from',
+      options: [{ name: 'Raw JSON', value: 'rawJson' }],
+      section: 'data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
+      newLine: true,
+    },
+    JSONData: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'rawJson',
+      },
+      section: 'data',
+      showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    fields: {
+      type: 'array',
+      displayName: 'Table Columns',
+    },
+    validateOnSubmit: {
+      type: 'toggle',
+      displayName: 'Validate all fields on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    resetOnSubmit: {
+      type: 'toggle',
+      displayName: 'Reset form on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
       },
     },
     loadingState: {
@@ -265,6 +308,13 @@ export const formConfig = {
       disabledState: { value: '{{false}}' },
       headerHeight: { value: 60 },
       footerHeight: { value: 60 },
+      validateOnSubmit: { value: '{{true}}' },
+      resetOnSubmit: { value: '{{true}}' },
+      // JSONData: {
+      //   value:
+      //     "{{{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }}}",
+      // },
+      // fields: { value: [] },
     },
     events: [],
     styles: {
