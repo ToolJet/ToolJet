@@ -136,7 +136,7 @@ export const parseDataAndBuildFields = (data, jsonDifferences = JSON_DIFFERENCE)
  * @param {Object} childComponents - Object containing child components
  * @returns {number} - Top position of the next element
  */
-export const findNextElementTop = (childComponents, currentLayout = 'desktop') => {
+export const findNextElementTop = (childComponents, currentLayout = 'desktop', componentsToBeIgnored = []) => {
   // Default position if no valid components found
   const defaultTop = 0;
 
@@ -146,22 +146,22 @@ export const findNextElementTop = (childComponents, currentLayout = 'desktop') =
   }
 
   try {
-    // Convert object to array of components
-    const componentsArray = Object.values(childComponents);
-
     // Find component with highest top value (lowest on the screen)
     let highestTop = -1;
     let lastComponent = null;
 
-    // Iterate through the components
-    for (const component of componentsArray) {
+    Object.entries(childComponents).forEach(([componentId, component]) => {
+      if (componentsToBeIgnored.includes(componentId)) {
+        return; // Skip ignored components
+      }
+
       const currentTop = component?.component?.layouts?.[currentLayout]?.top || 0;
 
       if (currentTop > highestTop) {
         highestTop = currentTop;
         lastComponent = component;
       }
-    }
+    });
 
     // If we found a valid component with layout data
     if (
@@ -346,4 +346,13 @@ export const mergeFormFieldsWithNewData = (existingFields, newFields) => {
       ...omit(existingFieldsMap[newField.name], ['isNew']),
     };
   });
+};
+
+export const cleanupFormFields = (fields) => {
+  return fields.map((field) => ({
+    componentId: field.componentId,
+    isCustomField: field.isCustomField,
+    dataType: field.dataType,
+    key: field.key,
+  }));
 };

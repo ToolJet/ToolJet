@@ -1,4 +1,5 @@
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { cleanupFormFields } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/utils/utils';
 import { set as lodashSet } from 'lodash';
 
 const initialState = {};
@@ -23,7 +24,7 @@ export const createFormComponentSlice = (set, get) => ({
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
         lodashSet(pageComponent, ['definition', 'properties', 'generateFormFrom'], data.generateFormFrom);
         lodashSet(pageComponent, ['definition', 'properties', 'JSONData'], data.JSONData);
-        lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], fields);
+        lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], cleanupFormFields(fields));
       }),
       false,
       'saveFormDataSectionData'
@@ -54,7 +55,7 @@ export const createFormComponentSlice = (set, get) => ({
     set(
       withUndoRedo((state) => {
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
-        lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], fields);
+        lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], cleanupFormFields(fields));
       }),
       false,
       'saveFormFields'

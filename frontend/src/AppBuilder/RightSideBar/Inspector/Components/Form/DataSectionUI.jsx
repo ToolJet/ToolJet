@@ -139,16 +139,38 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   };
 
   const performColumnMapping = useCallback(
-    (columns, isSingleField = false) => {
-      const newColumns = formFields.length > 0 ? [...formFields] : [...columns];
+    (columns, isSingleUpdate = false) => {
+      const newColumns = isSingleUpdate
+        ? formFields.filter((field) => field.componentId !== columns[0].componentId)
+        : [];
       let operations = {
-        updated: {},
-        added: {},
-        deleted: [],
-      };
+          updated: {},
+          added: {},
+          deleted: [],
+        },
+        componentsToBeRemoved = [];
+
+      const isFormRegeneration = isFormGenerated && currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS;
+      if (isFormRegeneration) {
+        formFields.forEach((field) => {
+          if (!field.isCustomField) {
+            componentsToBeRemoved.push(field.componentId);
+            operations.deleted.push(field.componentId);
+          }
+        });
+      } else if (currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS) {
+        newColumns.push(...formFields);
+      } else {
+        columns.forEach((column) => {
+          if (column.isRemoved) {
+            componentsToBeRemoved.push(column.componentId);
+          }
+        });
+      }
+
       const childComponents = getChildComponents(component?.id);
       // Get the last position of the child components
-      const nextElementsTop = findNextElementTop(childComponents, currentLayout);
+      const nextElementsTop = findNextElementTop(childComponents, currentLayout, componentsToBeRemoved);
       // Create form field components from columns
 
       if (columns && Array.isArray(columns) && columns.length > 0) {
@@ -162,7 +184,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
             delete column.isNew;
             delete column.isExisting;
             if (isEqual(column, formFieldsWithComponentDefinition[index])) {
-              return;
+              return newColumns.push(column);
             }
           }
 
@@ -170,7 +192,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
             currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS &&
             isEqual(column, formFieldsWithComponentDefinition[index])
           ) {
-            return;
+            return newColumns.push(column);
           }
 
           const {
@@ -181,6 +203,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
 
           if (Object.keys(updated).length !== 0) {
             operations.updated[column.componentId] = updated;
+            newColumns.push(column);
           }
           if (Object.keys(added).length !== 0) {
             operations.added[added.id] = added;
@@ -196,6 +219,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
             };
 
             columns[index] = simplifiedColumn; // Replace with simplified structure
+            newColumns.push(simplifiedColumn);
           }
           if (deleted) {
             operations.deleted.push(column.componentId);
@@ -208,7 +232,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
           operations.deleted.length > 0
         ) {
           performBatchComponentOperations(operations);
-          saveDataSection(isSingleField ? [...formFields, ...columns] : columns);
+          saveDataSection(newColumns);
         }
       }
       closeModal();
@@ -221,6 +245,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       formFields,
       formFieldsWithComponentDefinition,
       getChildComponents,
+      isFormGenerated,
       performBatchComponentOperations,
       saveDataSection,
     ]
