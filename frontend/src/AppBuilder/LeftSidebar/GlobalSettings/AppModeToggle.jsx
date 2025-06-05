@@ -6,7 +6,7 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-const APP_MODES = [
+export const APP_MODES = [
   { label: 'Auto', value: 'auto' },
   { label: 'Light', value: 'light' },
   { label: 'Dark', value: 'dark' },

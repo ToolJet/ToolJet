@@ -490,6 +490,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
     'logInfo',
     'log',
     'logError',
+    'toggleAppMode',
   ];
 
   const suggestionList = [];
