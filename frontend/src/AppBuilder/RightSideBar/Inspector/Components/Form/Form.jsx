@@ -12,6 +12,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
+import { INPUT_COMPONENTS_FOR_FORM } from './constants';
 
 export const Form = ({
   componentMeta,
@@ -31,11 +32,30 @@ export const Form = ({
   const saveFormDataSectionData = useStore((state) => state.saveFormDataSectionData, shallow);
   const componentNameIdMapping = useStore((state) => state.modules.canvas.componentNameIdMapping, shallow);
   const queryNameIdMapping = useStore((state) => state.modules.canvas.queryNameIdMapping, shallow);
+  const getChildComponents = useStore((state) => state.getChildComponents, shallow);
+  const saveFormFields = useStore((state) => state.saveFormFields, shallow);
 
   const [source, setSource] = useState({
     value: component.component.definition.properties?.generateFormFrom?.value,
     fxActive: component.component.definition.properties?.generateFormFrom?.fxActive,
   });
+
+  const fields = component.component.definition.properties?.fields;
+
+  // Added this to backfill fields if not present
+  if (fields === undefined) {
+    const newFields = [];
+    const childComponents = getChildComponents(component.id);
+    Object.keys(childComponents).forEach((childId) => {
+      if (INPUT_COMPONENTS_FOR_FORM.includes(childComponents[childId].component.component.component)) {
+        newFields.push({
+          componentId: childId,
+          isCustom: true,
+        });
+      }
+    });
+    saveFormFields(component.id, newFields);
+  }
 
   const resolvedSource = resolveReferences(
     'canvas',

@@ -33,8 +33,6 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
     resolveReferences,
     getChildComponents,
     currentLayout,
-    deleteComponents,
-    addComponentToCurrentPage,
     getComponentDefinition,
     performBatchComponentOperations,
     getFormFields,
@@ -45,8 +43,6 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       resolveReferences: state.resolveReferences,
       getChildComponents: state.getChildComponents,
       currentLayout: state.currentLayout,
-      deleteComponents: state.deleteComponents,
-      addComponentToCurrentPage: state.addComponentToCurrentPage,
       getComponentDefinition: state.getComponentDefinition,
       performBatchComponentOperations: state.performBatchComponentOperations,
       getFormFields: state.getFormFields,
@@ -307,9 +303,9 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       </div>
       <div className="tw-flex tw-justify-between tw-items-center tw-gap-1.5">
         <div className="tw-flex-1">
-          <LabeledDivider label="Fields" isFormGenerated={isFormGenerated} />
+          <LabeledDivider label="Fields" />
         </div>
-        {isFormGenerated && renderAddCustomFieldButton()}
+        {renderAddCustomFieldButton()}
       </div>
       <FormFieldsList
         isFormGenerated={isFormGenerated}
