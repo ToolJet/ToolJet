@@ -458,7 +458,7 @@ export const EventManager = ({
     if (data.label === 'run-action') return;
     return (
       <div
-        className="tw-border-x-0 tw-border-t-0 tw-border-b-[0.5px] tw-border-solid tw-my-[4px]"
+        className="tw-border-x-0 tw-border-t-0 tw-border-b-[1px] tw-border-solid tw-my-[4px]"
         style={{ borderColor: 'var(--border-weak)' }}
       ></div>
     );
