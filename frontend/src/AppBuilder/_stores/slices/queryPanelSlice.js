@@ -27,6 +27,11 @@ const initialState = {
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
   showQueryPermissionModal: false,
+  targetBtnForMenu: null,
+  showQueryHandlerMenu: false,
+  showDeleteConfirmation: false,
+  renamingQueryId: null,
+  deletingQueryId: null,
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -1141,5 +1146,19 @@ export const createQueryPanelSlice = (set, get) => ({
         state.queryPanel.showQueryPermissionModal = show;
       });
     },
+    toggleQueryHandlerMenu: (show, id) => {
+      set((state) => {
+        if (show) state.queryPanel.targetBtnForMenu = id;
+        state.queryPanel.showQueryHandlerMenu = show;
+      });
+    },
+    setRenamingQuery: (queryId) =>
+      set((state) => {
+        state.queryPanel.renamingQueryId = queryId;
+      }),
+    deleteDataQuery: (queryId) =>
+      set((state) => {
+        state.queryPanel.deletingQueryId = queryId;
+      }),
   },
 });
