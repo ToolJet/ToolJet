@@ -194,11 +194,11 @@ export const toggleSwitchV2Config = {
     },
     events: [],
     styles: {
-      textColor: { value: '#1B1F24' },
-      toggleSwitchColor: { value: 'var(--primary-brand)' }, //keeping same key for backward comopatibility
-      uncheckedColor: { value: '#E4E7EB' },
-      borderColor: { value: '#E4E7EB' },
-      handleColor: { value: '#FFFFFF' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      toggleSwitchColor: { value: 'var(--cc-primary-brand)' }, //keeping same key for backward comopatibility
+      uncheckedColor: { value: 'var(--cc-surface3-surface)' },
+      borderColor: { value: 'var(--cc-default-border)' },
+      handleColor: { value: 'var(--cc-surface1-surface)' },
       alignment: { value: 'right' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       padding: { value: 'default' },

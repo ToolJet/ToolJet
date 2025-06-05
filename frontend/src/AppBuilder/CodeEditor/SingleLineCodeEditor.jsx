@@ -28,6 +28,7 @@ import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { getCssVarValue } from '@/Editor/Components/utils';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
@@ -272,7 +273,10 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [isInsideQueryManager, paramHints]);
+  const overRideFunction = React.useCallback(
+    (context) => autoCompleteExtensionConfig(context),
+    [isInsideQueryManager, paramHints]
+  );
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
@@ -449,11 +453,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                    javascript({ jsx: lang === 'jsx' }),
-                    autoCompleteConfig,
-                    keymap.of([...customKeyMaps]),
-                    customTabKeymap,
-                  ]
+                      javascript({ jsx: lang === 'jsx' }),
+                      autoCompleteConfig,
+                      keymap.of([...customKeyMaps]),
+                      customTabKeymap,
+                    ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -485,9 +489,9 @@ const EditorInput = ({
               }}
             />
           </div>
-        </ErrorBoundary >
-      </CodeHinter.Portal >
-    </div >
+        </ErrorBoundary>
+      </CodeHinter.Portal>
+    </div>
   );
 };
 
@@ -523,6 +527,11 @@ const DynamicEditorBridge = (props) => {
   }, [component, fxActive]);
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
+  let modifiedValue = initialValue;
+  if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
+    modifiedValue = getCssVarValue(document.documentElement, initialValue);
+  }
+
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
@@ -531,8 +540,9 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-                }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
           </div>
         )}
@@ -540,8 +550,9 @@ const DynamicEditorBridge = (props) => {
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div
-                className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
-                  }`}
+                className={`col-auto pt-0 fx-common fx-button-container ${
+                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
+                }`}
               >
                 <FxButton
                   active={codeShow}
@@ -549,6 +560,9 @@ const DynamicEditorBridge = (props) => {
                     if (codeShow) {
                       setForceCodeBox(false);
                       onFxPress(false);
+                      if (paramType === 'colorSwatches') {
+                        onChange(modifiedValue);
+                      }
                     } else {
                       setForceCodeBox(true);
                       onFxPress(true);
@@ -583,7 +597,7 @@ const DynamicEditorBridge = (props) => {
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <SingleLineCodeEditor initialValue {...props} />
+              <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
             </div>
           </div>
         </div>

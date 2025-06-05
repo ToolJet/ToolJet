@@ -74,7 +74,6 @@ export const stepsConfig = {
         defaultValue: 1,
       },
     },
-
   },
   defaultSize: {
     width: 22,
@@ -170,7 +169,7 @@ export const stepsConfig = {
       displayName: 'Completed accent',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
       accordian: 'steps',
     },
