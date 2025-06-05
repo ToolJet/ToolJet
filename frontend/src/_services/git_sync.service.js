@@ -172,7 +172,7 @@ function importGitApp(body) {
   return fetch(`${config.apiUrl}/app-git/gitpull/app`, requestOptions).then(handleResponse);
 }
 
-function setFinalizeConfig(organizationGitId, gitType, body) {
+function setFinalizeConfig(organizationGitId, body) {
   const controller = new AbortController();
   const timeOut = 2500;
   const id = setTimeout(() => controller.abort(), timeOut);
@@ -183,10 +183,9 @@ function setFinalizeConfig(organizationGitId, gitType, body) {
     signal: controller.signal,
     body: JSON.stringify(body),
   };
-  const response = fetch(
-    `${config.apiUrl}/git-sync/finalize/${organizationGitId}?gitType=${gitType}`,
-    requestOptions
-  ).then(handleResponse);
+  const response = fetch(`${config.apiUrl}/git-sync/finalize/${organizationGitId}`, requestOptions).then(
+    handleResponse
+  );
   clearTimeout(id);
   return response;
 }
