@@ -588,11 +588,11 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
-          if(resizingComponentId !== e.target.id) {
+          if (resizingComponentId !== e.target.id) {
             useGridStore.getState().actions.setResizingComponentId(e.target.id);
             showGridLines();
           }
-          
+
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
           if (currentWidget.component?.parent) {
