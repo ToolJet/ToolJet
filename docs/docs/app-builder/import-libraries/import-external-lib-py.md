@@ -5,22 +5,26 @@ title: Using RunPy
 
 RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries with micropip, you can add more functionality to your applications without needing a full backend. In this guide, we will learn to import external python packages and use them in the application.
 
+If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy.
+
 :::caution Unsupported modules
 Modules with C/C++ extensions needing system libraries won't work in Pyodide, as it runs in a web browser without system library access. Pyodide, based on WebAssembly-compiled Python, also doesn't support certain system calls.
 :::
 
 ## Installing Python Packages
 
-In ToolJet you can write Python code, but for certain data processing tasks you can use Python packages like pandas and NumPy. Here’s how to you can use it.
+In ToolJet, you can write Python code for custom logic, and for intensive data processing tasks, you can use Python packages like pandas and NumPy without needing to write complex code from scratch. Here’s how you can use them:
 
 
-Use micropip to install packages like Pandas and NumPy. **Run** the query to complete installation.
+You can use micropip to install packages like Pandas and NumPy as follows:
 
 ```python
 import micropip
 await micropip.install('pandas')
 await micropip.install('numpy')
 ```
+
+Trigger this RunPy query once to install these packages.
 
  <img className="screenshot-full img-full" src="/img/app-builder/custom-code/install_py.png" alt="Installing py modules" />
 
@@ -85,3 +89,44 @@ chunks = [cleaned[i:i+500] for i in range(0, len(cleaned), 500)]
 # Output the cleaned and chunked data
 print({"chunks": chunks})
 ```
+
+<details id="tj-dropdown">
+
+<summary>Input - Meenting notes</summary>
+
+We discussed the Q3 roadmap and agreed to prioritize performance improvements. There were also suggestions to improve the onboarding experience.
+
+Action items:
+ - Alice will investigate caching issues and report back by next Monday.
+ - Bob will look into UI responsiveness across different screen sizes.
+ - Carol will start planning for the user feedback survey in Q4.
+
+Additional Discussion:
+- A proposal was made to reduce build times by moving to a newer CI/CD system.
+- Concerns were raised about backend API reliability and latency issues.
+- Data team mentioned they are behind on setting up the new dashboard pipeline.
+
+Next Steps:
+- Weekly check-ins will resume starting next Tuesday.
+- Each team will submit a biweekly progress report.
+- Planning for the product demo scheduled for November 15th will start next week.
+
+</details>
+
+
+<details id="tj-dropdown">
+
+<summary>Output - Chunked data</summary>
+
+```json
+{
+  "chunks": [
+    "We discussed the Q3 roadmap and agreed to prioritize performance improvements. There were also suggestions to improve the onboarding experience. Action items: - Alice will investigate caching issues and report back by next Monday. - Bob will look into UI responsiveness across different screen sizes. - Carol will start planning for the user feedback survey in Q4.",
+    
+    "Additional Discussion: - A proposal was made to reduce build times by moving to a newer CI/CD system. - Concerns were raised about backend API reliability and latency issues. - Data team mentioned they are behind on setting up the new dashboard pipeline. Next Steps: - Weekly check-ins will resume starting next Tuesday. - Each team will submit a biweekly progress report. - Planning for the product demo scheduled for November 15th will start next week."
+  ]
+}
+```
+
+</details>
+
