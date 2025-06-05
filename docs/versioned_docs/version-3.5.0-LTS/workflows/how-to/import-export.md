@@ -1,6 +1,6 @@
 ---
 id: import-export
-title: Import Export Workflows
+title: Import or Export Workflows
 ---
 
 ToolJet supports exporting workflows as JSON files and importing them into any ToolJet workspace.
@@ -22,8 +22,7 @@ To import a workflow from your ToolJet workspace:
 2. Click on the kebab menu (three vertical dots) next to the **Create new workflow** button and select **Import from device**.
     <img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/workflows/import-export/import.png" alt="Navigate to Workflow Section" />
 3. Choose the `.json` file of the workflow you want to import from your local system.
-4. In the modal that appears, you can update the workflow name if needed.
-5. Click **Import workflow** button to complete the import process.
+4. Click **Import workflow** button to complete the import process.
     <img style={{marginTop:'15px'}} className="screenshot-full img-s" src="/img/workflows/import-export/import-modal.png" alt="Navigate to Workflow Section" />
 
 Once imported, the workflow will appear in your workspace and can be edited or triggered like any other workflow.
