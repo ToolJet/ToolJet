@@ -135,6 +135,7 @@
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "tinycolor2": "^1.6.0",
+    "tooljet": "file:..",
     "url-join": "^5.0.0",
     "use-react-router-breadcrumbs": "^4.0.1",
     "uuid": "9.0.0",
