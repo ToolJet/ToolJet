@@ -565,6 +565,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
           <AppPermissionsModal
             modalType="component"
             resourceId={selectedComponentId}
+            resourceName={allComponents[selectedComponentId]?.component?.name}
             showModal={showComponentPermissionModal}
             toggleModal={toggleComponentPermissionModal}
             darkMode={darkMode}

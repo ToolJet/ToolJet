@@ -29,6 +29,7 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
   const closePageEditPopover = useStore((state) => state.closePageEditPopover);
   const editingPageId = useStore((state) => state.editingPage?.id);
+  const editingPageName = useStore((state) => state.editingPage?.name);
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
@@ -105,6 +106,7 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
               <AppPermissionsModal
                 modalType="page"
                 resourceId={editingPageId}
+                resourceName={editingPageName}
                 showModal={showPagePermissionModal}
                 toggleModal={togglePagePermissionModal}
                 darkMode={darkMode}
