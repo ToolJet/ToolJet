@@ -633,6 +633,8 @@ class TableComponent extends React.Component {
                               return 'JSON';
                             case 'markdown':
                               return 'Markdown';
+                            case 'html':
+                              return 'HTML';
                             default:
                               capitalize(text ?? '');
                           }
