@@ -12,6 +12,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { DefaultCopyIcon } from '../../DefaultCopyIcon';
 import { copyToClipboard, extractComponentName } from '../../utils';
 import WidgetIcon from '@/../assets/images/icons/widgets';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const renderNodeIcons = (node, iconsList, darkMode) => {
   const icon = iconsList.filter((icon) => icon?.iconName === node)[0];
@@ -76,13 +77,19 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
                 />
               ))}
           </div>
-          <div className="json-viewer-label-container">
+          <div
+            className="json-viewer-label-container"
+            data-cy={`inspector-${generateCypressDataCy(label || '')}-label`}
+          >
             <OverflowTooltip style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
               {renderNodeIcons(label, iconsList, darkMode)}
               {label}
             </OverflowTooltip>
           </div>
-          <div className="json-viewer-value-container">
+          <div
+            className="json-viewer-value-container"
+            data-cy={`inspector-${generateCypressDataCy(label || '')}-value`}
+          >
             <Node />
           </div>
           <div className="json-viewer-actions-container">

@@ -73,7 +73,7 @@ export const Node = (props) => {
     const { isBranch, element } = node || {};
     const { metadata } = element || {};
     const { path, type } = metadata || {};
-    if (type) {
+    if (type && level !== 1) {
       setSelectedNodePath(path);
     }
   };
@@ -115,6 +115,7 @@ export const Node = (props) => {
             variant="ghost"
             fill="var(--icon-default,#ACB2B9)"
             size="small"
+            data-cy={`inspector-${type}-expand-button`}
           />
         )}
       </div>
@@ -128,7 +129,7 @@ export const Node = (props) => {
         })}
       >
         {nodeIcon && <div className="node-icon">{nodeIcon}</div>}
-        <div className="node-label">
+        <div className="node-label" data-cy={`inspector-${type}-node`}>
           <OverflowTooltip whiteSpace="normal" placement="top" style={{ height: '100%', width: '80%' }}>
             <Highlighter
               highlightClassName="node-highlight"

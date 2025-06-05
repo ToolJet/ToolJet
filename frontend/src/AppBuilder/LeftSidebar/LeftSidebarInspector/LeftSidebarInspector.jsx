@@ -71,38 +71,43 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
         {
           id: 'queries',
           name: 'Queries',
+
           children: sortedQueries,
-          metadata: { path: 'queries' },
+          metadata: { type: 'queries', path: 'queries' },
         },
         {
           id: 'components',
           name: 'Components',
+
           children: sortedComponents,
-          metadata: { path: 'components' },
+          metadata: { type: 'components', path: 'components' },
         },
         {
           id: 'globals',
           name: 'Globals',
+
           children: sortedGlobalVariables,
-          metadata: { path: 'globals' },
+          metadata: { type: 'globals', path: 'globals' },
         },
         {
           id: 'variables',
           name: 'Variables',
+
           children: sortedVariables,
-          metadata: { path: 'variables' },
+          metadata: { type: 'variables', path: 'variables' },
         },
         {
           id: 'page',
           name: 'Page',
+
           children: sortedPageVariables,
-          metadata: { path: 'page' },
+          metadata: { type: 'page', path: 'page' },
         },
         {
           id: 'constants',
           name: 'Constants',
           children: sortedConstants,
-          metadata: { path: 'constants' },
+          metadata: { type: 'constants', path: 'constants' },
         },
       ],
     };
@@ -117,7 +122,15 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
     }
 
     return jsontreeData;
-  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables, sortedModuleInputs]);
+  }, [
+    sortedComponents,
+    sortedQueries,
+    sortedVariables,
+    sortedConstants,
+    sortedPageVariables,
+    sortedGlobalVariables,
+    sortedModuleInputs,
+  ]);
 
   return (
     <div
@@ -134,6 +147,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
               variant="ghost"
               fill="var(--icon-strong,#6A727C)"
               size="medium"
+              data-cy="left-sidebar-pin-button"
             />
           </div>
         </HeaderSection.PanelHeader>

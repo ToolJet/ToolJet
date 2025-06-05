@@ -8,6 +8,7 @@ import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DefaultCopyIcon } from './DefaultCopyIcon';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const TreeViewHeader = (props) => {
   const { path, backFn, darkMode, data, nodeSpecificActions, type, generalActions } = props;
@@ -54,6 +55,7 @@ export const TreeViewHeader = (props) => {
               closeMenu();
             }}
             className="option"
+            data-cy="inspector-copy-path"
           >
             <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
             <span> Copy path</span>
@@ -65,6 +67,7 @@ export const TreeViewHeader = (props) => {
               closeMenu();
             }}
             className="option"
+            data-cy="inspector-copy-value"
           >
             <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
             <span> Copy value</span>
@@ -75,7 +78,11 @@ export const TreeViewHeader = (props) => {
           const { name, icon, src, iconName, dispatchAction, width = 16, height = 16 } = actionOption;
           if (icon) {
             return (
-              <div className="menu-options mb-0" key={`${name}-${index}`}>
+              <div
+                className="menu-options mb-0"
+                key={`${name}-${index}`}
+                data-cy={`inspector-${generateCypressDataCy(name || '')}-action`}
+              >
                 <span
                   style={{ display: 'flex', alignItems: 'center' }}
                   onClick={(event) => {
@@ -140,6 +147,7 @@ export const TreeViewHeader = (props) => {
             border: 'none',
             boxShadow: 'none',
           }}
+          data-cy="inspector-menu-icon"
         >
           <SolidIcon data-cy={'menu-icon'} name="morevertical" width="18" fill={'var(--icon-strong)'} />
         </div>

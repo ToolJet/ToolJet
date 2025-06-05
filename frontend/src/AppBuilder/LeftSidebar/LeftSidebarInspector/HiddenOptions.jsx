@@ -6,6 +6,7 @@ import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { DefaultCopyIcon } from './DefaultCopyIcon';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const HiddenOptions = (props) => {
   const { nodeSpecificFilteredActions, generalActionsFiltered, darkMode, setActionClicked, data } = props;
@@ -48,7 +49,11 @@ export const HiddenOptions = (props) => {
       const { name, icon, src, iconName, dispatchAction, width = 12, height = 12 } = actionOption;
       if (icon) {
         return (
-          <div className="node-action-icon" key={`${name}-${index}`}>
+          <div
+            className="node-action-icon"
+            key={`${name}-${index}`}
+            data-cy={`inspector-${generateCypressDataCy(name || '')}-action`}
+          >
             <ToolTip message={`${name}`}>
               {/* ${name === 'Go to component' ? '' : currentNode} */}
               <span
@@ -92,6 +97,7 @@ export const HiddenOptions = (props) => {
                     closeMenu();
                   }}
                   className="option"
+                  data-cy="inspector-copy-path"
                 >
                   <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
                   <span> Copy path</span>
@@ -103,6 +109,7 @@ export const HiddenOptions = (props) => {
                     closeMenu();
                   }}
                   className="option"
+                  data-cy="inspector-copy-value"
                 >
                   <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
                   <span> Copy value</span>

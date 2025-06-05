@@ -157,6 +157,7 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
               placeholder="Search"
               value={searchValue}
               {...(searchValue && { trailingAction: 'clear' })}
+              data-cy="inspector-search-input"
             />
           </div>
           <div className="json-tree-view">
