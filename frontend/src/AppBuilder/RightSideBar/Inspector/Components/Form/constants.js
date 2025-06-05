@@ -8,6 +8,23 @@ export const DATATYPE_TO_COMPONENT = {
 
 export const COMPONENT_WITH_OPTIONS = ['DropdownV2', 'MultiselectV2', 'RadioButtonV2'];
 
+export const INPUT_COMPONENTS_FOR_FORM = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'DropdownV2',
+  'MultiselectV2',
+  'RadioButtonV2',
+  'DatetimePickerV2',
+  'DaterangePicker',
+  'DatePickerV2',
+  'TimePicker',
+  'TextArea',
+];
+
 export const JSON_DIFFERENCE = {
   isExisting: [],
   isNew: [],

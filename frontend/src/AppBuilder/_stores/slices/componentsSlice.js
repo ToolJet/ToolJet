@@ -24,6 +24,7 @@ import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/re
 import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
@@ -1813,24 +1814,7 @@ export const createComponentsSlice = (set, get) => ({
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (
-      ![
-        'TextInput',
-        'PasswordInput',
-        'EmailInput',
-        'PhoneInput',
-        'CurrencyInput',
-        'NumberInput',
-        'DropdownV2',
-        'MultiselectV2',
-        'RadioButtonV2',
-        'DatetimePickerV2',
-        'DaterangePicker',
-        'DatePickerV2',
-        'TimePicker',
-        'TextArea',
-      ].includes(componentType)
-    ) {
+    if (!INPUT_COMPONENTS_FOR_FORM.includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
