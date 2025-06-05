@@ -154,6 +154,7 @@ export const manageUsersElements = () => {
   cy.get(usersSelector.buttonUploadUsers).verifyVisibleElement(
     "have.text",
     usersText.buttonUploadUsers
+
   );
 };
 
@@ -261,6 +262,7 @@ export const copyInvitationLink = (firstName, email) => {
     usersText.inviteCopiedToast
   );
   cy.get("@copyToClipboardPrompt").then((prompt) => {
+
     common.logout();
     cy.visit(prompt.args[0][1]);
   });
@@ -401,3 +403,4 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
 };
+
