@@ -28,7 +28,12 @@ Refer to the [Binding Data with Component](/docs/app-builder/connecting-with-dat
 
 ## Components
 
-Using the inspector element you can check all the available state of a component 
+Each component in ToolJet maintains a state — a collection of values that represent its current data and configuration. You can check this states and component specific actions (CSAs) using the inspector. Each component has a different set of states and CSAs based on it's functionality. Such as a Text component offers text state and setText CSA, while a Checkbox component offers a label state and setValue CSA. For detailed information on any specific component and its exposed variables, refer to the individual component guide.
+
+Refer
+
+
+Using the inspector element you can check all the available states and component specific actions of a component 
 
 
 
