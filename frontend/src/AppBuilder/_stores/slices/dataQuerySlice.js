@@ -1,4 +1,4 @@
-import { dataqueryService } from '@/_services';
+import { dataqueryService, appPermissionService } from '@/_services';
 import { getDefaultOptions } from '@/_stores/storeHelper';
 import { v4 as uuidv4 } from 'uuid';
 import _, { isEmpty, throttle } from 'lodash';
@@ -256,7 +256,6 @@ export const createDataQuerySlice = (set, get) => ({
         )
         .then((data) => {
           set((state) => {
-            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = [
               {
                 ...data,
@@ -289,6 +288,42 @@ export const createDataQuerySlice = (set, get) => ({
               index: event.index,
             };
             createAppVersionEventHandlers(newEvent, moduleId);
+          });
+
+          if (queryToClone.permissions && queryToClone.permissions.length !== 0) {
+            const body = {
+              type: queryToClone.permissions[0]?.type,
+              ...(queryToClone.permissions[0]?.type === 'GROUP'
+                ? {
+                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                      (group) => group.permissionGroupsId || group.permission_groups_id
+                    ),
+                  }
+                : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
+            };
+            appPermissionService
+              .createQueryPermission(appId, data.id, body)
+              .then((newQuery) => {
+                const dataQueries = get().dataQuery.queries.modules[moduleId];
+                const updatedDataQueries = dataQueries.map((query) => {
+                  if (query.id === data.id) {
+                    return {
+                      ...query,
+                      permissions: newQuery.length === 0 || newQuery.length === undefined ? [] : [newQuery[0]],
+                    };
+                  }
+                  return query;
+                });
+                get().dataQuery.setQueries(updatedDataQueries);
+              })
+              .catch(() => {
+                toast.error('Permission could not be created. Please try again!', {
+                  className: 'text-nowrap w-auto mw-100',
+                });
+              });
+          }
+          set((state) => {
+            state.dataQuery.creatingQueryInProcessId = null;
           });
         })
         .catch((error) => {
