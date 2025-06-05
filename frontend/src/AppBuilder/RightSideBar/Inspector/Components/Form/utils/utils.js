@@ -9,14 +9,16 @@ import { getFieldDataFromComponent } from './fieldOperations';
  * @param {Array} options - Array of string values to convert to option objects
  * @returns {Array} Array of option objects with label, value, and state properties
  */
-export const buildOptions = (options = []) =>
-  options.map((option, index) => ({
-    label: option,
-    value: index,
-    disable: { value: false },
-    visible: { value: true },
-    default: { value: false },
-  }));
+export const buildOptions = (options = []) => {
+  if (Array.isArray(options))
+    return options.map((option, index) => ({
+      label: option,
+      value: index,
+      disable: { value: false },
+      visible: { value: true },
+      default: { value: false },
+    }));
+};
 
 /**
  * Ensures a value is wrapped in handlebars if it's not already

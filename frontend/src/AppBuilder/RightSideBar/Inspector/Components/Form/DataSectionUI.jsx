@@ -157,11 +157,20 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
         columns.forEach((column, index) => {
           if (column.isRemoved) return operations.deleted.push(column.componentId);
 
+          if (currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS) {
+            delete column.isRemoved;
+            delete column.isNew;
+            delete column.isExisting;
+            if (isEqual(column, formFieldsWithComponentDefinition[index])) {
+              return;
+            }
+          }
+
           if (
             currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS &&
             isEqual(column, formFieldsWithComponentDefinition[index])
           ) {
-            return; // Skip if the column is unchanged in manage fields mode
+            return;
           }
 
           const {
