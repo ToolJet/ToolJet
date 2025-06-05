@@ -17,7 +17,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_ONE]: {},
     [FEATURE_KEY.GET_BY_SLUG]: {},
     [FEATURE_KEY.RELEASE]: {
-      auditLogsKey: FEATURE_KEY.UPDATE,
+      auditLogsKey: 'APP_RELEASE',
     },
   },
 };
