@@ -369,9 +369,7 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
 
     // Flatten all columns from all sections back into a single array
     // Filter out columns from the 'isRemoved' section
-    const combinedColumns = Object.entries(groupedColumns)
-      .filter(([sectionType]) => sectionType !== 'isRemoved')
-      .flatMap(([_, columns]) => columns);
+    const combinedColumns = Object.entries(groupedColumns).flatMap(([_, columns]) => columns);
 
     onSubmit?.(combinedColumns);
   };

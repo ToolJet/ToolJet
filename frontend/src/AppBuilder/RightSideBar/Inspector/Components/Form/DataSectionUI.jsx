@@ -155,6 +155,8 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
         let nextTop = nextElementsTop + COMPONENT_LAYOUT_DETAILS.spacing;
 
         columns.forEach((column, index) => {
+          if (column.isRemoved) return operations.deleted.push(column.componentId);
+
           if (
             currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS &&
             isEqual(column, formFieldsWithComponentDefinition[index])

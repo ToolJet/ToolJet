@@ -342,8 +342,6 @@ export const mergeFormFieldsWithNewData = (existingFields, newFields) => {
     return {
       ...newField,
       ...omit(existingFieldsMap[newField.name], ['isNew']),
-      // Ensure we keep track of fields that were updated
-      isUpdated: true,
     };
   });
 };
