@@ -15,6 +15,7 @@ export const organizationService = {
   updateOrganization,
   setDefaultWorkspace,
   updateOrganizationStatus,
+  updateInheritSSO,
 };
 
 function getUsersByValue(searchInput) {
@@ -70,6 +71,16 @@ function editOrganization(params, organizationId = '') {
     `${config.apiUrl}/login-configs/organization-general${organizationId ? `/${organizationId}` : ''}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function updateInheritSSO(params) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(params),
+  };
+  return fetch(`${config.apiUrl}/login-configs/organization-general/inherit-sso`, requestOptions).then(handleResponse);
 }
 
 function getOrganizations(status = 'active', currentPage = undefined, perPageCount = undefined, name = undefined) {

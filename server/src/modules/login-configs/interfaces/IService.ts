@@ -51,4 +51,6 @@ export interface ILoginConfigsService {
    * Validate and update system parameters
    */
   validateAndUpdateSystemParams(params: any, user: User): Promise<any>;
+
+  updateInheritSSO(user: User, param: boolean): Promise<void>;
 }

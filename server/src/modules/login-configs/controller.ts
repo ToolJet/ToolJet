@@ -81,4 +81,13 @@ export class LoginConfigsController implements ILoginConfigsController {
     await this.loginConfigsService.updateGeneralOrganizationConfigs(user, organizationConfigsUpdateDto);
     return;
   }
+
+  @InitFeature(FEATURE_KEY.INSTANCE_SSO_INHERIT)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/organization-general/inherit-sso')
+  async updateInheritSSO(@Body() organizationConfigsUpdateDto: OrganizationConfigsUpdateDto, @User() user: UserEntity) {
+    const inheritSso = organizationConfigsUpdateDto.inheritSSO;
+    await this.loginConfigsService.updateInheritSSO(user, inheritSso);
+    return;
+  }
 }

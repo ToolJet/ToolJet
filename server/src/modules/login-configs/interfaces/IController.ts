@@ -44,4 +44,6 @@ export interface ILoginConfigsController {
    * PATCH '/organization-general'
    */
   updateOrganizationGeneralConfigs(body: OrganizationConfigsUpdateDto, user: UserEntity): Promise<any>;
+
+  updateInheritSSO(body: OrganizationConfigsUpdateDto, user: User);
 }

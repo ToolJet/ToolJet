@@ -133,6 +133,21 @@ export class LoginConfigsService implements ILoginConfigsService {
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
   }
 
+  async updateInheritSSO(user: User, param: boolean): Promise<void> {
+    const organizationId = user.organizationId;
+    const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
+    await this.organizationsRepository.update({ id: organizationId }, { inheritSSO: param });
+
+    //INSTANCE_SSO_INHERIT audit
+    const auditLogsData = {
+      userId: user.id,
+      organizationId: organizationId,
+      resourceId: organizationId,
+      resourceName: organization.name,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+  }
+
   async getInstanceSSOConfigs() {
     return {
       google: {
