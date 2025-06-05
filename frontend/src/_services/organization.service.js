@@ -54,7 +54,6 @@ function updateOrganizationStatus(params, organizationId = '') {
     credentials: 'include',
     body: JSON.stringify(params),
   };
-  console.log('params', params);
   const status = params.status === 'active' ? 'unarchive' : 'archive';
   return fetch(`${config.apiUrl}/organizations/${status}/${organizationId}`, requestOptions).then(handleResponse);
 }
