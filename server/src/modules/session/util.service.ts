@@ -29,7 +29,6 @@ import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class SessionUtilService {
