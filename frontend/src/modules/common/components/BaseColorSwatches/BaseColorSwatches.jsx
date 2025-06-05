@@ -60,10 +60,7 @@ const BaseColorSwatches = ({
           { 'dark-theme': darkMode },
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
-        style={{
-          zIndex: 10000,
-          marginLeft: '-16px',
-        }}
+        style={{ zIndex: 999999 }}
       >
         <Popover.Body
           className={!asBoxShadowPopover && 'boxshadow-picker'}

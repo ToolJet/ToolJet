@@ -77,12 +77,15 @@ export default function generateColumnsData({
             options?.map((option) => ({
               label: option.label,
               value: option.value,
+              optionColor: option.optionColor,
+              labelColor: option.labelColor,
             })) ?? [];
         }
       }
 
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
+      const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
 
       if (!isVisible) return null;
 
@@ -222,6 +225,7 @@ export default function generateColumnsData({
                       ? true
                       : false
                   }
+                  autoAssignColors={autoAssignColors}
                   isEditable={isEditable}
                   isMulti={columnType === 'newMultiSelect'}
                   className="select-search table-select-search"
