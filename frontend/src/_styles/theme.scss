@@ -19157,3 +19157,9 @@ section.ai-message-prompt-input-wrapper {
   }
 
 }
+.table-component-footer, .table-card-header {
+ .tj-ghost-black-btn:hover {
+  background-color: var(--cc-table-footer-action-hover, #ECEEF0) !important;
+ }
+
+}

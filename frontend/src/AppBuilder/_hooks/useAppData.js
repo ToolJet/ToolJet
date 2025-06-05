@@ -480,6 +480,12 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
           if (type === 'placeholder' && category === 'text') {
             root.style.setProperty(`--cc-default-icon`, `${color}`);
           }
+          if (category === 'text' && type === 'placeholder') {
+            root.style.setProperty(`--cc-default-icon-light`, `${propertyObj[type]['light']}`);
+            root.style.setProperty(`--cc-default-icon-dark`, `${propertyObj[type]['dark']}`);
+            root.style.setProperty(`--cc-placeholder-text-light`, `${propertyObj[type]['light']}`);
+            root.style.setProperty(`--cc-placeholder-text-dark`, `${propertyObj[type]['dark']}`);
+          }
         });
       });
     });

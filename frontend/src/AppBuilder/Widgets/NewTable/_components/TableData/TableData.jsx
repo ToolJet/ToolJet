@@ -8,6 +8,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 export const TableData = ({
   id,
@@ -29,6 +30,10 @@ export const TableData = ({
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const contentWrap = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
+  const containerBackgroundColor = useTableStore(
+    (state) => state.getTableStyles(id)?.containerBackgroundColor,
+    shallow
+  );
 
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
   const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
@@ -49,6 +54,8 @@ export const TableData = ({
     let styles = {
       minHeight: cellHeight === 'condensed' ? '39px' : '45px',
       display: 'flex',
+      '--cc-table-row-hover': getModifiedColor(containerBackgroundColor, 'hover'),
+      '--cc-table-row-active': getModifiedColor(containerBackgroundColor, 'active'),
     };
 
     let cellMaxHeight;
@@ -62,7 +69,7 @@ export const TableData = ({
       styles.height = `${calculatedCellHeight}px`;
     }
     return styles;
-  }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue]);
+  }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue, containerBackgroundColor]);
 
   // Setup virtualizer
   const rowVirtualizer = useVirtualizer({

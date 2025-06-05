@@ -15,6 +15,17 @@ export const getCssVarValue = (element, cssVarExpression) => {
   return cssVariableValue ?? null;
 };
 
+export const getColorModeFromLuminance = (color, element = document.documentElement) => {
+  // If color is a CSS variable, get its value
+  const colorValue = color?.startsWith('var(') ? getCssVarValue(element, color) : color;
+  // Use tinycolor to get the luminance
+  const colorObj = tinycolor(colorValue);
+  const luminance = colorObj.getLuminance();
+  // Return 'dark' for light backgrounds and 'light' for dark backgrounds
+  // Using 0.5 as the threshold (standard practice)
+  return luminance > 0.5 ? 'dark' : 'light';
+};
+
 const defaultModificationAmountMappingByState = {
   hover: 8,
   active: 15,
