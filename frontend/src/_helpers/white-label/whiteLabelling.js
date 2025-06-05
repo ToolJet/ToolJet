@@ -69,14 +69,12 @@ export async function setFaviconAndTitle(location) {
     '/': 'Dashboard',
   };
 
-
   const pageTitleKey = Object.keys(pageTitles)
-  .sort((a, b) => b.length - a.length) // Sort by length descending
-  .find((path) => location?.pathname.includes(path));
+    .sort((a, b) => b.length - a.length) // Sort by length descending
+    .find((path) => location?.pathname.includes(path));
   const pageTitle = pageTitles[pageTitleKey] || '';
 
   document.title = pageTitle ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${decodeEntities(whiteLabelText)}`;
-
 }
 
 export async function fetchAndSetWindowTitle(pageDetails) {
@@ -107,7 +105,7 @@ export async function fetchAndSetWindowTitle(pageDetails) {
     }
   }
   if (!isPreview && mode === 'view') {
-    document.title = `${pageDetails?.appName} ${license ? '' : '| Tooljet'}`;
+    document.title = `${pageDetails?.appName} ${license ? '' : '| ToolJet'}`;
     return;
   }
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
