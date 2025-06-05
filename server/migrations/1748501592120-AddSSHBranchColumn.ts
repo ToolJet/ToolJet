@@ -14,12 +14,16 @@ export class AddSSHBranchColumn1748501592120 implements MigrationInterface {
         })
       );
     }
-    // need to test the env migrations -> pending
+    // For older users: if the GITSYNC_TARGET_BRANCH environment variable is configured, use the branch from .env variable in all the workspaces of that instance
+    // Otherwise, we default to 'master' since it was the default branch used previously.
     const branch_name = process.env.GITSYNC_TARGET_BRANCH;
     if (branch_name && branch_name !== 'master') {
       await queryRunner.query(`UPDATE organization_git_ssh SET git_branch = '${branch_name}'`);
+    } else {
+      await queryRunner.query(`UPDATE organization_git_ssh SET git_branch = 'master'`);
     }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
 }
+// Migration Dev testing pending
