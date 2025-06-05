@@ -5,15 +5,17 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import './workflows-query.scss';
 import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 
 export function Workflows({ options, optionsChanged, currentState }) {
+  const { moduleId } = useModuleContext();
   const [workflowOptions, setWorkflowOptions] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
 
-  const appId = useStore((state) => state.app.appId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   usePopoverObserver(
     document.getElementsByClassName('query-details')[0],

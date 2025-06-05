@@ -10,12 +10,12 @@ import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { debounce } from 'lodash';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
-  const moduleId = useModuleId();
+  const { moduleId } = useModuleContext();
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
   const previewQuery = useStore((state) => state.queryPanel.previewQuery);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
@@ -152,8 +152,8 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-      canReadDataSource(selectedQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
   const inputRef = useRef();
 
@@ -275,8 +275,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-      canReadDataSource(selectedQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const { t } = useTranslation();

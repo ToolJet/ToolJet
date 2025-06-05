@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { authenticationService, tooljetService } from '@/_services';
+import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
@@ -42,7 +42,6 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
-import { licenseService } from '@/_services';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -295,6 +294,15 @@ class AppComponent extends React.Component {
                 ></Route>
                 <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
                 <Route path="/:workspaceId/settings/*" element={<Settings {...this.props} />}></Route>
+                <Route
+                  exact
+                  path="/:workspaceId/modules"
+                  element={
+                    <PrivateRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
+                    </PrivateRoute>
+                  }
+                />
 
                 {getAuditLogsRoutes(this.props)}
                 <Route

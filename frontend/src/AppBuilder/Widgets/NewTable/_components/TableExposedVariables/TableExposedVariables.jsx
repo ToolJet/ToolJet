@@ -7,6 +7,7 @@ import { filterFunctions } from '../Header/_components/Filter/filterUtils';
 import { isArray, debounce } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { usePrevious } from '@dnd-kit/utilities';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -19,6 +20,7 @@ export const TableExposedVariables = ({
   pageIndex = 1,
   lastClickedRow,
 }) => {
+  const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
   const editedFields = useTableStore((state) => state.getAllEditedFields(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
@@ -314,7 +316,7 @@ export const TableExposedVariables = ({
   // Create debounced function using useRef to persist between renders
   const debouncedSetProperty = useRef(
     debounce((sizing) => {
-      setComponentProperty(id, 'columnSizes', sizing, 'properties');
+      setComponentProperty(id, 'columnSizes', sizing, 'properties', 'value', false, moduleId);
     }, 300)
   ).current;
 

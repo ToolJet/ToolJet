@@ -14,7 +14,7 @@ class DependencyGraph {
   }
 
   addDependency(fromPath, toPath, nodeData = '') {
-    if (fromPath.startsWith('variables.')) {
+    if (fromPath.startsWith('variables.') || fromPath.startsWith('input.')) {
       if (!this.hasNode(fromPath)) {
         const parts = fromPath.split('.');
         fromPath = parts.slice(0, 2).join('.');

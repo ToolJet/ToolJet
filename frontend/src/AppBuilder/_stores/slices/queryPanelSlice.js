@@ -66,13 +66,13 @@ export const createQueryPanelSlice = (set, get) => ({
         'setQueryPanelHeight'
       );
     }, // updateQueryPanelHeight
-    setSelectedQuery: (queryId) => {
+    setSelectedQuery: (queryId, moduleId = 'canvas') => {
       set((state) => {
         if (queryId === null) {
           state.queryPanel.selectedQuery = null;
           return;
         }
-        const query = get().dataQuery.queries.modules.canvas.find((query) => query.id === queryId);
+        const query = get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId);
         state.queryPanel.selectedQuery = query;
         return;
       });
@@ -162,7 +162,7 @@ export const createQueryPanelSlice = (set, get) => ({
         'setLoadingDataQueries'
       ),
 
-    onQueryConfirmOrCancel: (queryConfirmationData, isConfirm = false, mode = 'edit') => {
+    onQueryConfirmOrCancel: (queryConfirmationData, isConfirm = false, mode = 'edit', moduleId = 'canvas') => {
       const { queryPanel, dataQuery, setResolvedQuery } = get();
       const { runQuery } = queryPanel;
       const { queryConfirmationList } = dataQuery;
@@ -185,13 +185,21 @@ export const createQueryPanelSlice = (set, get) => ({
           true,
           mode,
           queryConfirmationData.parameters,
-          queryConfirmationData.shouldSetPreviewData
+          undefined,
+          undefined,
+          queryConfirmationData.shouldSetPreviewData,
+          false,
+          moduleId
         );
 
       !isConfirm &&
-        setResolvedQuery(queryConfirmationData.queryId, {
-          isLoading: false,
-        });
+        setResolvedQuery(
+          queryConfirmationData.queryId,
+          {
+            isLoading: false,
+          },
+          moduleId
+        );
     },
 
     runQuery: (
@@ -211,7 +219,7 @@ export const createQueryPanelSlice = (set, get) => ({
         dataQuery: dataQuerySlice,
         queryPanel,
         setResolvedQuery,
-        app,
+        appStore,
         selectedEnvironment,
         isPublicAccess,
         currentVersionId,
@@ -265,14 +273,18 @@ export const createQueryPanelSlice = (set, get) => ({
       let dataQuery = {};
 
       //for viewer we will only get the environment id from the url
-      const { currentAppEnvironmentId, environmentId } = app;
+      const { currentAppEnvironmentId, environmentId } = appStore.modules[moduleId].app;
 
       if (shouldSetPreviewData) {
         setPreviewPanelExpanded(true);
         setPreviewLoading(true);
-        setResolvedQuery(queryId, {
-          isLoading: true,
-        });
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: true,
+          },
+          moduleId
+        );
 
         queryPreviewData && setPreviewData('');
       }
@@ -293,10 +305,11 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       //   const queryState = { ...getCurrentState(), parameters };
-      const queryState = { ...get().getAllExposedValues('canvas'), parameters };
+      const queryState = { ...get().getAllExposedValues(moduleId), parameters };
+
       const options = getQueryVariables(dataQuery.options, queryState, {
-        components: get().getComponentNameIdMapping(),
-        queries: get().getQueryNameIdMapping(),
+        components: get().getComponentNameIdMapping(moduleId),
+        queries: get().getQueryNameIdMapping(moduleId),
       });
       if (dataQuery.options?.requestConfirmation) {
         const queryConfirmation = {
@@ -326,18 +339,22 @@ export const createQueryPanelSlice = (set, get) => ({
           queryPreviewData && setPreviewData('');
         }
 
-        setResolvedQuery(queryId, {
-          isLoading: true,
-          data: [],
-          rawData: [],
-          id: queryId,
-        });
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: true,
+            data: [],
+            rawData: [],
+            id: queryId,
+          },
+          moduleId
+        );
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
-          queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters);
+          queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters, moduleId);
         } else if (query.kind === 'runpy') {
-          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState);
+          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState, moduleId);
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = executeWorkflow(
             moduleId,
@@ -347,11 +364,16 @@ export const createQueryPanelSlice = (set, get) => ({
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
         } else {
+          let versionId = currentVersionId;
+          // IMPORTANT: This logic needs to be changed when we implement the module versioning
+          if (moduleId !== 'canvas') {
+            versionId = get().resolvedStore.modules.canvas.components[moduleId].properties.moduleVersionId;
+          }
           queryExecutionPromise = dataqueryService.run(
             queryId,
             options,
             query?.options,
-            currentVersionId,
+            versionId,
             !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
         }
@@ -421,17 +443,21 @@ export const createQueryPanelSlice = (set, get) => ({
                 isQuerySuccessLog: false,
               });
 
-              setResolvedQuery(queryId, {
-                isLoading: false,
-                ...(query.kind === 'restapi'
-                  ? {
-                      metadata: data.metadata,
-                      request: data.data.requestObject,
-                      response: data.data.responseObject,
-                      responseHeaders: data.data.responseHeaders,
-                    }
-                  : {}),
-              });
+              setResolvedQuery(
+                queryId,
+                {
+                  isLoading: false,
+                  ...(query.kind === 'restapi'
+                    ? {
+                        metadata: data.metadata,
+                        request: data.data.requestObject,
+                        response: data.data.responseObject,
+                        responseHeaders: data.data.responseHeaders,
+                      }
+                    : {}),
+                },
+                moduleId
+              );
 
               resolve(data);
               onEvent('onDataQueryFailure', queryEvents);
@@ -445,12 +471,17 @@ export const createQueryPanelSlice = (set, get) => ({
                   query.options.transformation,
                   query.options.transformationLanguage,
                   query,
-                  'edit'
+                  'edit',
+                  moduleId
                 );
-                if (finalData?.status === 'failed') {
-                  setResolvedQuery(queryId, {
-                    isLoading: false,
-                  });
+                if (finalData.status === 'failed') {
+                  setResolvedQuery(
+                    queryId,
+                    {
+                      isLoading: false,
+                    },
+                    moduleId
+                  );
 
                   resolve(finalData);
                   onEvent('onDataQueryFailure', queryEvents);
@@ -482,14 +513,18 @@ export const createQueryPanelSlice = (set, get) => ({
                 errorTarget: 'Queries',
               });
 
-              setResolvedQuery(queryId, {
-                isLoading: false,
-                data: finalData,
-                rawData,
-                metadata: data?.metadata,
-                request: data?.metadata?.request,
-                response: data?.metadata?.response,
-              });
+              setResolvedQuery(
+                queryId,
+                {
+                  isLoading: false,
+                  data: finalData,
+                  rawData,
+                  metadata: data?.metadata,
+                  request: data?.metadata?.request,
+                  response: data?.metadata?.response,
+                },
+                moduleId
+              );
 
               resolve({ status: 'ok', data: finalData });
               onEvent('onDataQuerySuccess', queryEvents, mode);
@@ -557,7 +592,7 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       // const queryState = { ...getCurrentState(), parameters };
-      const queryState = { ...get().getAllExposedValues(), parameters };
+      const queryState = { ...get().getAllExposedValues(moduleId), parameters };
       const options = getQueryVariables(query.options, queryState, {
         components: get().getComponentNameIdMapping(),
         queries: get().getQueryNameIdMapping(),
@@ -649,7 +684,8 @@ export const createQueryPanelSlice = (set, get) => ({
                     query.options.transformation,
                     query.options.transformationLanguage,
                     query,
-                    'edit'
+                    'edit',
+                    moduleId
                   );
                   if (finalData?.status === 'failed') {
                     onEvent('onDataQueryFailure', queryEvents);
@@ -709,32 +745,32 @@ export const createQueryPanelSlice = (set, get) => ({
       let result = {};
 
       try {
-        const resolvedState = get().getResolvedState();
+        const resolvedState = get().getResolvedState(moduleId);
         const queriesInCurentState = deepClone(resolvedState.queries);
         const appStateVars = deepClone(resolvedState.variables) ?? {};
         if (!isEmpty(query)) {
-          const actions = generateAppActions(query.id, mode, isPreview);
+          const actions = generateAppActions(query.id, mode, isPreview, moduleId);
 
           for (const key of Object.keys(queriesInCurentState)) {
             queriesInCurentState[key] = {
               ...queriesInCurentState[key],
               run: () => {
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-                return actions.runQuery(query.name);
+                return actions.runQuery(query.name, undefined, moduleId);
               },
 
               getData: () => {
-                const resolvedState = get().getResolvedState();
+                const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].data;
               },
 
               getRawData: () => {
-                const resolvedState = get().getResolvedState();
+                const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].rawData;
               },
 
               getloadingState: () => {
-                const resolvedState = get().getResolvedState();
+                const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].isLoading;
               },
             };
@@ -776,14 +812,21 @@ export const createQueryPanelSlice = (set, get) => ({
       return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
     },
 
-    runTransformation: async (rawData, transformation, transformationLanguage = 'javascript', query, mode = 'edit') => {
+    runTransformation: async (
+      rawData,
+      transformation,
+      transformationLanguage = 'javascript',
+      query,
+      mode = 'edit',
+      moduleId = 'canvas'
+    ) => {
       const data = rawData;
       const {
         queryPanel: { runPythonTransformation, createProxy },
         getResolvedState,
       } = get();
       let result = {};
-      const currentState = getResolvedState();
+      const currentState = getResolvedState(moduleId);
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -903,12 +946,10 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
-    executeWorkflow: async (moduleId, workflowId, _blocking = false, params = {}, appEnvId) => {
-      const {
-        app: { appId },
-        getAllExposedValues,
-      } = get();
-      const currentState = getAllExposedValues();
+    executeWorkflow: async (moduleId = 'canvas', workflowId, _blocking = false, params = {}, appEnvId) => {
+      const { getAppId, getAllExposedValues } = get();
+      const appId = getAppId('canvas');
+      const currentState = getAllExposedValues(moduleId);
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
 
       try {
@@ -947,7 +988,7 @@ export const createQueryPanelSlice = (set, get) => ({
         return isValidCode;
       }
 
-      const currentState = getAllExposedValues();
+      // const currentState = getAllExposedValues();
 
       let result = {},
         error = null;
@@ -957,7 +998,7 @@ export const createQueryPanelSlice = (set, get) => ({
         parameters = {};
       }
 
-      const actions = generateAppActions(queryId, mode, isPreview);
+      const actions = generateAppActions(queryId, mode, isPreview, moduleId);
 
       const queryDetails = dataQuery.queries.modules?.[moduleId].find((q) => q.id === queryId);
 
@@ -980,7 +1021,7 @@ export const createQueryPanelSlice = (set, get) => ({
         //this will handle the preview case where you cannot find the queryDetails in state.
         formattedParams = { ...parameters };
       }
-      const resolvedState = get().getResolvedState();
+      const resolvedState = get().getResolvedState(moduleId);
       const queriesInResolvedState = deepClone(resolvedState.queries);
       for (const key of Object.keys(resolvedState.queries)) {
         queriesInResolvedState[key] = {
@@ -992,21 +1033,21 @@ export const createQueryPanelSlice = (set, get) => ({
             const processedParams = {};
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
-            return actions.runQuery(query.name, processedParams);
+            return actions.runQuery(query.name, processedParams, moduleId);
           },
 
           getData: () => {
-            const resolvedState = get().getResolvedState();
+            const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].data;
           },
 
           getRawData: () => {
-            const resolvedState = get().getResolvedState();
+            const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].rawData;
           },
 
           getloadingState: () => {
-            const resolvedState = get().getResolvedState();
+            const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].isLoading;
           },
         };

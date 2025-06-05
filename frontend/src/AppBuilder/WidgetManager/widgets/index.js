@@ -58,6 +58,8 @@ import { kanbanBoardConfig } from './kanbanBoard';
 import { datetimePickerV2Config } from './datetimepickerV2';
 import { datePickerV2Config } from './datepickerV2';
 import { timePickerConfig } from './timepicker';
+import { moduleContainerConfig } from './moduleContainer';
+import { moduleViewerConfig } from './moduleViewer';
 import { emailinputConfig } from './emailinput';
 import { phoneinputConfig } from './phoneinput';
 import { currencyinputConfig } from './currencyinput';
@@ -126,4 +128,6 @@ export {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  moduleContainerConfig,
+  moduleViewerConfig,
 };
