@@ -1,7 +1,7 @@
 @import "./colors.scss";
 @import "./designtheme.scss";
 .left-sidebar {
-  background: var(--page-default) !important;
+  background: var(--page-weak) !important;
   display: flex;
   gap: 16px;
 
@@ -749,7 +749,7 @@
   align-items: center;
   padding-top: 0px;
   width: 48px;
-  border-right: 1px solid var(--slate5);
+  border-right: 1px solid var(--border-weak);
 }
 
 .tj-leftsidebar-icon-wrap {

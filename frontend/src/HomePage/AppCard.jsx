@@ -179,7 +179,7 @@ export default function AppCard({
     const AppName = (
       <h3
         ref={tooltipRef}
-        className="app-card-name font-weight-500 tj-text-md"
+        className="app-card-name font-weight-500 tj-text-sm"
         data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
       >
         {decodeEntities(app.name)}
@@ -196,7 +196,7 @@ export default function AppCard({
   }
 
   return (
-    <div className="card homepage-app-card" ref={cardRef}>
+    <div className="homepage-app-card" ref={cardRef}>
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">

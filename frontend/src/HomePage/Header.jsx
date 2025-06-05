@@ -12,17 +12,15 @@ export default function HomeHeader({ onSearchSubmit, darkMode, appType }) {
       : t('globals.workflowsSearchItem', 'Search workflows in this workspace');
 
   return (
-    <div className="row">
-      <div className="home-search-holder">
-        <SearchBox
-          dataCy={`home-page`}
-          className="border-0 homepage-search"
-          onSubmit={onSearchSubmit}
-          darkMode={darkMode}
-          placeholder={placeholderText}
-          width={'100%'}
-        />
-      </div>
+    <div className="home-search-holder">
+      <SearchBox
+        dataCy={'home-page'}
+        className="border-0 homepage-search"
+        onSubmit={onSearchSubmit}
+        darkMode={darkMode}
+        placeholder={placeholderText}
+        width={'100%'}
+      />
     </div>
   );
 }

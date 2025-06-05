@@ -4,10 +4,10 @@
 .global-datasources-sidebar {
     height: calc(100vh - 64px);
     max-width: 288px;
-    background: var(--page-default);
+    background: var(--page-weak);
     display: grid;
     grid-template-rows: auto 1fr auto;
-    border-right: 1px solid var(--slate5);
+    border-right: 1px solid var(--border-weak);
 
     .add-datasource-btn {
         height: 40px;
@@ -109,7 +109,7 @@
 
 .datasource-modal-container {
     position: relative;
-    background: var(--page-default);
+    background: var(--page-weak);
 
     .modal-header {
         background-color: var(--slate3) !important;
@@ -118,12 +118,12 @@
     .modal {
         position: absolute;
         z-index: 1050;
-        background: var(--slate2);
+        background: var(--page-weak);
     }
 
     .modal-content {
-        border: 1px solid var(--slate5);
-        background-color: var(--base) !important;
+        border: 1px solid var(--border-weak);
+        background-color: var(--page-weak) !important;
 
         .input-icon {
             &:hover {
@@ -185,7 +185,7 @@
     overflow-y: auto;
     padding-left: 20px;
     max-height: calc(100vh - 64px);
-    border-left: 1px solid var(--slate5);
+
     .datasource-list {
         width: 976px;
         margin: 0 auto;

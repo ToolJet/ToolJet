@@ -892,70 +892,6 @@ button {
   }
 }
 
-.home-search-holder {
-  height: 20px;
-  width: 100%;
-  margin-top: 32px;
-
-  .search-box-wrapper {
-    .input-icon {
-      .input-icon-addon {
-        padding-right: 6px;
-      }
-    }
-  }
-
-  .homepage-search {
-    background: none !important;
-    color: var(--slate12);
-    height: 20px;
-    border: none !important;
-
-    &:focus {
-      background: none !important;
-      border: none !important;
-    }
-
-    &:hover {
-      background: none !important;
-      border: none !important;
-      color: var(--slate12);
-    }
-  }
-}
-
-.homepage-app-card-list-item-wrap {
-  row-gap: 16px;
-  column-gap: 32px;
-  display: flex;
-  margin-top: 22px;
-}
-
-.homepage-app-card-list-item {
-  max-width: 272px;
-  flex-basis: 33%;
-  padding: 0 !important;
-}
-
-.homepage-dropdown-style {
-  min-width: 11rem;
-  display: block;
-  align-items: center;
-  margin: 0;
-  line-height: 1.4285714;
-  width: 100%;
-  padding: 0.5rem 0.75rem !important;
-  font-weight: 400;
-  white-space: nowrap;
-  border: 0;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.homepage-dropdown-style:hover {
-  background: rgba(101, 109, 119, 0.06);
-}
-
 .card-skeleton-container {
   border: 0.5px solid #b4bbc6;
   padding: 1rem;
@@ -7838,16 +7774,6 @@ tbody {
   color: var(--tblr-breadcrumb-item-active-color);
 }
 
-.app-icon-main {
-  background: var(--indigo3) !important;
-  border-radius: 6px !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 48px;
-  height: 48px;
-}
-
 .settings-nav-item,
 .audit-log-nav-item,
 .notification-center-nav-item {
@@ -7875,7 +7801,7 @@ tbody {
 
 .workspace-content-wrapper,
 .database-page-content-wrap {
-  background-color: var(--page-default);
+  background-color: var(--page-weak);
   height: calc(100vh - 64px) !important;
 }
 
@@ -7901,8 +7827,8 @@ tbody {
 .organization-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
-  background-color: var(--page-default);
-  border-right: 1px solid var(--slate5) !important;
+  background-color: var(--page-weak);
+  border-right: 1px solid var(--border-weak) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
   position: relative;
@@ -7922,8 +7848,8 @@ tbody {
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 272px;
-  background-color: var(--page-default);
-  border-right: 1px solid var(--slate5) !important;
+  background-color: var(--page-weak);
+  border-right: 1px solid var(--border-weak) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
   position: fixed;
@@ -7931,8 +7857,8 @@ tbody {
 
 .home-page-sidebar {
   max-width: 288px;
-  background-color: var(--page-default);
-  border-right: 1px solid var(--slate5);
+  background-color: var(--page-weak);
+  border-right: 1px solid var(--border-weak);
   display: grid;
   grid-template-rows: auto 1fr auto;
 
@@ -7956,8 +7882,8 @@ tbody {
 
 .tooljet-database-sidebar {
   max-width: 288px;
-  background: var(--page-default);
-  border-right: 1px solid var(--slate5);
+  background: var(--page-weak);
+  border-right: 1px solid var(--border-weak);
   height: calc(100vh - 64px) !important;
 
 
@@ -8371,11 +8297,11 @@ tbody {
   right: 0;
   left: 48px;
   z-index: 1;
-  background: var(--base);
+  background: var(--page-weak);
   height: 64px;
 
   @media only screen and (max-width: 767px) {
-    border-bottom: 1px solid var(--slate5);
+    border-bottom: 1px solid var(--border-weak);
 
     .row {
       display: flex;
@@ -8644,19 +8570,19 @@ tbody {
 
 
 .tj-dashboard-section-header {
-  background-color: var(--page-default);
+  background-color: var(--page-weak);
   max-width: 288px;
   max-height: 64px;
   padding-top: 20px;
   padding-left: 20px;
   padding-bottom: 24px;
-  border-right: 1px solid var(--slate5);
+  border-right: 1px solid var(--border-weak);
 
   &[data-name="Audit logs"],
   &[data-name="Workspace constants"],
   &[data-name="Profile settings"] {
     border-right: none;
-    border-bottom: 1px solid var(--slate5);
+    border-bottom: 1px solid var(--border-weak);
 
     .paid-feature-banner {
       margin-left: 15px;
@@ -8983,7 +8909,7 @@ tbody {
 }
 
 .home-page-content {
-  background-color: var(--page-default);
+  background-color: var(--page-weak);
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
   position: relative;
@@ -9056,76 +8982,6 @@ tbody {
   height: 52px;
   background: var(--page-default) !important;
   width: calc(100vw - 48px);
-}
-
-.home-app-card-header {
-  margin-bottom: 32px;
-}
-
-.homepage-app-card {
-  height: 166px;
-  outline: 1px solid var(--slate3);
-  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
-  border-radius: 6px;
-  padding: 16px;
-  background-color: var(--base) !important;
-
-  .appcard-buttons-wrap {
-    display: none;
-  }
-
-  .home-app-card-header {
-    .menu-ico {
-      visibility: hidden !important;
-    }
-  }
-
-  &:hover {
-    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
-
-    .home-app-card-header {
-      margin-bottom: 12px;
-
-      .menu-ico {
-        visibility: visible !important;
-      }
-    }
-
-    .app-creation-time-container {
-      margin-bottom: 0px;
-    }
-
-    .app-card-name {
-      margin-bottom: 0px;
-    }
-
-    .app-creation-time {
-      display: none;
-    }
-
-
-    .appcard-buttons-wrap {
-      display: flex;
-      padding: 0px;
-      gap: 12px;
-      width: 240px;
-      height: 28px;
-      flex-direction: row;
-
-      div {
-        a {
-          text-decoration: none;
-        }
-      }
-
-    }
-
-    .app-icon-main {
-      width: 36px;
-      height: 36px;
-
-    }
-  }
 }
 
 .app-creation-time-container {
@@ -9616,7 +9472,7 @@ tbody {
   color: var(--slate11);
 
   .with-border {
-    border-bottom: 1px solid var(--slate5) !important;
+    border-bottom: 1px solid var(--border-weak) !important;
   }
 
   a {
@@ -9667,12 +9523,12 @@ tbody {
 }
 
 .tj-dashboard-header-wrap {
-  background-color: var(--page-default);
+  background-color: var(--page-weak);
   padding-top: 22px;
   padding-bottom: 22px;
   padding-left: 40px;
   height: 64px;
-  border-bottom: 1px solid var(--slate5);
+  border-bottom: 1px solid var(--border-weak);
 
   @media only screen and (max-width: 768px) {
     border-bottom: none;
@@ -12574,8 +12430,10 @@ tbody {
 }
 
 .workspace-nav-list-wrap {
-  padding: 20px 20px 20px 20px;
+  padding: 12px 24px;
   height: calc(100vh - 116px) !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .upload-user-form span.file-upload-error {
@@ -12855,12 +12713,12 @@ tbody {
 }
 
 .profile-page-content-wrap {
-  background-color: var(--page-default);
+  background-color: var(--page-weak);
   padding-top: 40px;
 }
 
 .profile-page-card {
-  background-color: var(--base);
+  background-color: var(--page-weak);
   border-radius: 6px;
 }
 
@@ -13016,51 +12874,6 @@ tbody {
   }
 }
 
-@media only screen and (max-width: 992px) {
-  .homepage-app-card-list-item-wrap {
-    display: flex;
-    justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-    margin-top: 22px;
-  }
-
-  .homepage-app-card-list-item {
-    max-width: 304px !important;
-    flex-basis: 100%;
-
-    .edit-button,
-    .launch-button {
-      width: 129px !important;
-    }
-  }
-}
-
-@media only screen and (min-width: 993px) and (max-width: 1311px) {
-  .home-page-content-container {
-    max-width: 568px;
-  }
-
-  .homepage-app-card-list-item-wrap {
-    row-gap: 20px;
-  }
-
-  .homepage-app-card-list-item {
-    max-width: 269px;
-    flex-basis: 100%;
-
-    .edit-button,
-    .launch-button {
-      width: 111.5px !important;
-    }
-  }
-
-  .liner {
-    width: 568px;
-  }
-}
-
 .tj-docs-link {
   color: var(--indigo9) !important;
   text-decoration: none;
@@ -13086,9 +12899,9 @@ tbody {
   .modal-body-content,
   .modal-sidebar,
   .card {
-    background-color: var(--base) !important;
+    background-color: var(--page-weak) !important;
     color: var(--slate12) !important;
-    border-color: var(--slate5) !important;
+    border-color: var(--border-weak) !important;
   }
 
   .datasource-modal-sidebar-footer {
@@ -13139,7 +12952,7 @@ tbody {
 .marketplace-body {
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
-  background-color: var(--page-default);
+  background-color: var(--page-weak);
 }
 
 .plugins-card {
