@@ -46,7 +46,7 @@ export const Code = ({
 
   if (isHidden) return null;
   return (
-    <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
+    <div className={`field tw-mb-2 last:tw-mb-0 ${options.className ?? ''}`}>
       <CodeEditor
         type="fxEditor"
         initialValue={initialValue}
