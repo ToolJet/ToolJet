@@ -7,18 +7,10 @@ let inMemoryPatToken = null;
 
 export function setPatToken(patObj) {
   inMemoryPatToken = patObj;
-  // Also persist in localStorage
-  //localStorage.setItem('tj_embed_auth', JSON.stringify(patObj));
 }
 
 export function getPatToken() {
   if (inMemoryPatToken) return inMemoryPatToken;
-  // const stored = localStorage.getItem('tj_embed_auth');
-  // if (stored) {
-  //   inMemoryPatToken = JSON.parse(stored);
-  //   return inMemoryPatToken;
-  // }
-  // return null;
 }
 
 export default function EmbedAppRedirect() {
