@@ -20,6 +20,8 @@ import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
+// import { FEATURE_KEY } from './constants';
+import { OrganizationsService } from '@modules/organizations/service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
@@ -30,7 +32,8 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly abilityService: AbilityService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector
+    protected readonly pluginsServiceSelector: PluginsServiceSelector,
+    protected readonly organizationsService: OrganizationsService
   ) {}
 
   async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
@@ -42,7 +45,6 @@ export class DataSourcesService implements IDataSourcesService {
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
     let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
-
 
     if (!shouldIncludeWorkflows) {
       // remove workflowsdefault data source from static data sources
@@ -176,6 +178,12 @@ export class DataSourcesService implements IDataSourcesService {
     if (dataSource.type === DataSourceTypes.SAMPLE) {
       throw new BadRequestException('Cannot delete sample data source');
     }
+
+    const result = await this.findQueriesLinkedToDatasource(dataSourceId);
+    if (result.dependent_queries) {
+      throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
+    }
+
     await this.dataSourcesRepository.delete(dataSourceId);
 
     // Setting data for audit logs
@@ -242,5 +250,31 @@ export class DataSourcesService implements IDataSourcesService {
 
     await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;
+  }
+
+  async findQueriesLinkedToDatasource(datasourceId: string) {
+    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId);
+    if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
+
+    const queries = [];
+    dataSourceDetails.forEach((datasourceDetail) => {
+      const { dataQueries = [] } = datasourceDetail;
+      if (dataQueries.length) queries.push(...dataQueries);
+    });
+
+    return { datasources: dataSourceDetails.length, dependent_queries: queries.length };
+  }
+
+  async findDatasourcesAndQueriesOfMarketplacePlugin(pluginId: string) {
+    const dataSourcesByMarketplacePlugin = await this.dataSourcesRepository.getDatasourceByPluginId(pluginId);
+    if (!dataSourcesByMarketplacePlugin.length) return { dependent_queries: 0 };
+
+    const queries = [];
+    dataSourcesByMarketplacePlugin?.forEach((datasource) => {
+      if (datasource.dataQueries.length) queries.push(...datasource.dataQueries);
+    });
+    return {
+      dependent_queries: queries.length,
+    };
   }
 }

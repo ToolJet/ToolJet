@@ -44,6 +44,7 @@ export class SessionUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
   ) {}
+
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(UserSessions, { userId });
