@@ -111,21 +111,6 @@ export class SessionUtilService {
       }
 
       response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
-      // On successful PAT-based login:
-      // Store token as: localStorage.setItem('tj_embed_auth_token', token)
-      // localStorage.setItem('tj_embed_auth', JSON.stringify({
-      //   token: '<encrypted_pat_token>',
-      //   userId: '<uuid>',
-      //   workspaceId: '<uuid>',
-      //   appId: '<uuid>',
-      //   scope: 'app', // or 'workspace'
-      //   sessionType: 'pat'
-      // }));
-      // For each request, send Authorization: Bearer <embed-token> if present
-      // Backend should:
-      // First check for tj_embed_auth_token
-      // Fallback to tj_auth_token (standard user login cookie) if not found
-      // This enables parallel sessions without cookie conflicts — especially useful for iframes.
 
       const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
 
