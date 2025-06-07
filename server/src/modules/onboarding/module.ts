@@ -5,7 +5,7 @@ import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { SessionModule } from '@modules/session/module';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { RolesModule } from '@modules/roles/module';
 import { FeatureAbilityFactory } from './ability';

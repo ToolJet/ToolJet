@@ -32,4 +32,5 @@ export interface JWTPayload {
   isSSOLogin: boolean;
   isPasswordLogin: boolean;
   invitedOrganizationId?: string;
+  isPatLogin?: boolean;
 }

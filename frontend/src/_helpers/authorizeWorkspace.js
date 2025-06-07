@@ -30,7 +30,8 @@ export const authorizeWorkspace = () => {
       updateCurrentSession({
         triggeredOnce: true,
       });
-      const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
+      const isApplicationsPath =
+        getPathname(null, true).startsWith('/applications/') || getPathname(null, true).startsWith('/embed-apps/');
       const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
       /* CASE-1 */
       sessionService

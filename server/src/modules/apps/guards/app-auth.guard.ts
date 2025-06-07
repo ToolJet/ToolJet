@@ -54,7 +54,6 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    // Throw a custom exception with workspace ID if the app is not public
     try {
       const authResult = await super.canActivate(context);
       return authResult;

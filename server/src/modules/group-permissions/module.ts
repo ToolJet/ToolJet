@@ -1,6 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { RolesRepository } from '@modules/roles/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';

@@ -7,7 +7,7 @@ import { RolesModule } from '@modules/roles/module';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { OnboardingModule } from '@modules/onboarding/module';
 import { ProfileModule } from '@modules/profile/module';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { RolesRepository } from '@modules/roles/repository';

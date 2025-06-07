@@ -17,7 +17,7 @@ import { EMAIL_EVENTS } from '@modules/email/constants';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { OrganizationUsersUtilService } from './util.service';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { MAX_ROW_COUNT } from './constants';
 import { isPlural } from '@helpers/utils.helper';
 import { Response } from 'express';

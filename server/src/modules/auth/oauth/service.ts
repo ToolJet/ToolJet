@@ -29,7 +29,7 @@ import { LoginConfigsUtilService } from '@modules/login-configs/util.service';
 import { AuthUtilService } from '@modules/auth/util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { OrganizationUsersUtilService } from '@modules/organization-users/util.service';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
