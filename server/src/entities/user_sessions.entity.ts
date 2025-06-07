@@ -33,7 +33,7 @@ export class UserSessions extends BaseEntity {
   lastLoggedIn: Date;
 
   @Column({ name: 'session_type', type: 'enum', enum: SessionType, default: 'user' })
-  sessionType: 'user' | 'pat';
+  sessionType: SessionType.USER | SessionType.PAT;
 
   @ManyToOne(() => UserPersonalAccessToken, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'pat_id' })
