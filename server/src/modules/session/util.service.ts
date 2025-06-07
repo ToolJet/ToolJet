@@ -13,7 +13,7 @@ import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
 import { JWTPayload } from '@modules/session/interfaces/IService';
 import { Response } from 'express';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import * as _ from 'lodash';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -63,8 +63,7 @@ export class SessionUtilService {
     loggedInUser?: User,
     manager?: EntityManager,
     invitedOrganizationId?: string,
-    extraData?: any,
-    isPatLogin?: boolean
+    extraData?: any
   ): Promise<any> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const request = RequestContext?.currentContext?.req;
@@ -72,8 +71,8 @@ export class SessionUtilService {
         ...(loggedInUser?.id === user.id ? loggedInUser?.organizationIds || [] : []),
         ...(organization ? [organization.id] : []),
       ]);
-      let sessionId = isPatLogin ? user.sessionId : loggedInUser?.sessionId; // logged in user and new user are different -> creating session
-      if (loggedInUser?.id !== user.id && !isPatLogin) {
+      let sessionId = loggedInUser?.sessionId; // logged in user and new user are different -> creating session
+      if (loggedInUser?.id !== user.id) {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
@@ -90,10 +89,9 @@ export class SessionUtilService {
         username: user.id,
         sub: user.email,
         organizationIds: [...organizationIds],
-        isSSOLogin: isPatLogin ? false : loggedInUser?.isSSOLogin || isInstanceSSO,
-        isPasswordLogin: isPatLogin ? false : loggedInUser?.isPasswordLogin || isPasswordLogin,
+        isSSOLogin: loggedInUser?.isSSOLogin || isInstanceSSO,
+        isPasswordLogin: loggedInUser?.isPasswordLogin || isPasswordLogin,
         ...(invitedOrganizationId ? { invitedOrganizationId } : {}),
-        ...(isPatLogin ? { isPATLogin: true } : {}),
       };
 
       if (organization) user.organizationId = organization.id;
@@ -101,8 +99,8 @@ export class SessionUtilService {
       const cookieOptions: CookieOptions = {
         secure: isHttpsEnabled(),
         httpOnly: true,
-        sameSite: isPatLogin ? 'none' : 'strict',
-        maxAge: isPatLogin ? 5 * 60 * 1000 : 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
+        sameSite: 'strict',
+        maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
       };
 
       if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
@@ -110,9 +108,8 @@ export class SessionUtilService {
         cookieOptions.sameSite = 'none';
         cookieOptions.secure = true;
       }
-      isPatLogin
-        ? response.cookie('tj_embed_auth_token', this.sign(JWTPayload), cookieOptions)
-        : response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
+
+      response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
       // On successful PAT-based login:
       // Store token as: localStorage.setItem('tj_embed_auth_token', token)
       // localStorage.setItem('tj_embed_auth', JSON.stringify({

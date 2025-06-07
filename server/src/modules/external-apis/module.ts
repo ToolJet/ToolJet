@@ -8,10 +8,10 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { VersionModule } from '@modules/versions/module';
-import { UserPersonalAccessTokenRepository } from './repositories/UserPersonalAccessTokens.repository';
+import { UserPersonalAccessTokenRepository } from '../users/repositories/UserPersonalAccessTokens.repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { SessionModule } from '@modules/session/module';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { UsersModule } from '@modules/users/module';
 export class ExternalApiModule {

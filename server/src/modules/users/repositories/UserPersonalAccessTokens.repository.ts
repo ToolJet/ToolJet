@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
+import { UserPersonalAccessToken, PersonalAccessTokenScope } from '@entities/user_personal_access_tokens.entity';
 import * as bcrypt from 'bcrypt';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 const defaultPatExpiry = 10; //in days
-const defaultPatSessionExpiry = 60; //in minutes
+const defaultPatSessionExpiry = 10; //in days
 
 @Injectable()
 export class UserPersonalAccessTokenRepository extends Repository<UserPersonalAccessToken> {
@@ -36,24 +36,24 @@ export class UserPersonalAccessTokenRepository extends Repository<UserPersonalAc
     user: User,
     rawToken: string,
     app: App,
-    options?: { patExpiryMinutes?: number; sessionExpiryMinutes?: number }
+    options?: { scope: PersonalAccessTokenScope; patExpiryMinutes?: number; sessionExpiryMinutes?: number }
   ): Promise<UserPersonalAccessToken> {
     const patExpiry = options?.patExpiryMinutes ?? (parseInt(process.env?.PAT_EXPIRY) || defaultPatExpiry) * 24 * 60; // default: 10 days
-    //defaultPatSessionExpiry should be equal to user session expiry
     const sessionExpiry =
-      options?.sessionExpiryMinutes ?? (parseInt(process.env?.PAT_SESSION_EXPIRY) || defaultPatSessionExpiry); // default: 60 minutes
+      options?.sessionExpiryMinutes ?? (parseInt(process.env?.PAT_SESSION_EXPIRY) || defaultPatSessionExpiry) * 24 * 60; // default: 10 days
 
     const token = this.create({
       user,
       app,
       tokenHash: rawToken,
+      scope: options.scope,
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + patExpiry * 60 * 1000),
       sessionExpiryMinutes: sessionExpiry,
     });
 
     // Upsert using unique app constraint
-    const result = await this.upsert(token, ['app']);
+    const result = await this.insert(token);
 
     return (result.identifiers?.[0]?.id &&
       (await this.findOne({

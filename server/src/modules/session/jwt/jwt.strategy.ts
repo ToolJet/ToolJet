@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { Request } from 'express';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { ForbiddenException } from '@nestjs/common';
@@ -20,8 +20,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     protected readonly sessionRepository: UserSessionRepository
   ) {
     super({
-      jwtFromRequest: (request) => {
-        return request.cookies['tj_auth_token'] || request.cookies['tj_embed_auth_token'];
+      jwtFromRequest: (request: Request) => {
+        return request.cookies['tj_auth_token'];
       },
       ignoreExpiration: true,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),
@@ -37,32 +37,60 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     /* User is going through invite flow */
     const isInviteSession = !!req['isInviteSession'];
 
-    if (isUserMandatory || isGetUserSession || isInviteSession) {
-      await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId);
-    }
+    //Pat validation for embed app
+    const patHeader = req.headers['x-embed-pat'];
+    if (typeof patHeader === 'string') {
+      let patPayload: {
+        token: string;
+        userId: string;
+        workspaceId: string;
+        appId: string;
+        scope: 'app' | 'workspace';
+        sessionType: 'pat';
+      };
 
-    // 🛡️ Check for PAT session and PAT expiry
-    if (payload.isPatLogin) {
+      try {
+        patPayload = JSON.parse(patHeader);
+      } catch {
+        throw new ForbiddenException('Malformed PAT header');
+      }
+
       const session = await this.sessionRepository.findOne({
-        where: { id: payload.sessionId },
-        relations: ['pat'], // includes UserPersonalAccessToken
+        where: {
+          pat: {
+            tokenHash: patPayload.token,
+            user: { id: patPayload.userId },
+            app: { id: patPayload.appId },
+          },
+        },
+        relations: ['pat'],
       });
 
-      if (session?.sessionType === 'pat') {
-        const now = new Date();
-
-        if (!session.pat) {
-          throw new ForbiddenException('Invalid PAT session: token missing');
-        }
-
-        if (session.pat.expiresAt < now) {
-          throw new ForbiddenException('PAT has expired');
-        }
-
-        if (session.expiry < now) {
-          throw new ForbiddenException('Session has expired');
-        }
+      if (!session || !session.pat) {
+        throw new ForbiddenException('Invalid or expired PAT session');
       }
+
+      const now = new Date();
+      if (session.pat.expiresAt < now) throw new ForbiddenException('PAT has expired');
+      if (session.expiry < now) throw new ForbiddenException('Session has expired');
+
+      const user = await this.userRepository.getUser({ id: patPayload.userId }, undefined, [
+        'organizationUsers',
+        'organizationUsers.organization',
+      ]);
+
+      const orgIds = user.organizationUsers.map((ou) => ou.organizationId);
+      user.organizationIds = patPayload.scope === 'app' ? [patPayload.workspaceId] : orgIds;
+      user.organizationId = patPayload.workspaceId;
+      user.sessionId = session.id;
+      user.isPasswordLogin = false;
+      user.isSSOLogin = false;
+
+      return user;
+    }
+
+    if (isUserMandatory || isGetUserSession || isInviteSession) {
+      await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId);
     }
 
     if (isGetUserSession) {

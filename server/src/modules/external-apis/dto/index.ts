@@ -12,7 +12,6 @@ import {
   IsNotEmpty,
   IsDefined,
   IsObject,
-  IsBoolean,
   IsInt,
   Min,
 } from 'class-validator';
@@ -218,6 +217,7 @@ export class GeneratePATDto {
   email?: string;
 
   @IsUUID()
+  @IsOptional()
   appId: string;
 
   @IsOptional()

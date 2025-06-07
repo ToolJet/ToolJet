@@ -11,16 +11,21 @@ import {
 } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
-import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+
+export enum PersonalAccessTokenScope {
+  APP = 'app',
+  WORKSPACE = 'workspace',
+}
 
 @Entity({ name: 'user_personal_access_tokens' })
 export class UserPersonalAccessToken extends BaseEntity {
   @BeforeInsert()
   @BeforeUpdate()
-  // need to remove this, use normal encryption (md5)
   hashToken(): void {
-    if (this.tokenHash) {
-      this.tokenHash = bcrypt.hashSync(this.tokenHash, 10);
+    if (this.tokenHash && !this.tokenHash.startsWith('md5:')) {
+      const hash = crypto.createHash('md5').update(this.tokenHash).digest('hex');
+      this.tokenHash = `md5:${hash}`;
     }
   }
 
@@ -37,6 +42,13 @@ export class UserPersonalAccessToken extends BaseEntity {
 
   @Column({ name: 'token_hash', type: 'varchar', length: 256 })
   tokenHash: string;
+
+  @Column({
+    name: 'scope',
+    type: 'enum',
+    enum: PersonalAccessTokenScope,
+  })
+  scope: PersonalAccessTokenScope;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

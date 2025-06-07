@@ -10,6 +10,7 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import * as passport from 'passport';
 
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
@@ -54,7 +55,30 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    // Throw a custom exception with workspace ID if the app is not public
+    // const patHeader = request.headers['x-embed-pat'];
+    // // ✅ If PAT is present, use custom strategy flow
+    // if (typeof patHeader === 'string') {
+    //   const user = await new Promise((resolve, reject) => {
+    //     passport.authenticate('jwt', {}, async (err, user, info) => {
+    //       if (err || !user) {
+    //         const organizationSlug = organization?.slug || organization?.id || '';
+    //         return reject(
+    //           new UnauthorizedException(
+    //             JSON.stringify({
+    //               organizationId: organizationSlug,
+    //               message: 'Authentication is required to access this app.',
+    //             })
+    //           )
+    //         );
+    //       }
+    //       request.user = user;
+    //       resolve(user);
+    //     })(request, context.switchToHttp().getResponse(), () => {});
+    //   });
+
+    //   return !!user;
+    // }
+    // ✅ Else fallback to cookie-based JWT auth
     try {
       const authResult = await super.canActivate(context);
       return authResult;

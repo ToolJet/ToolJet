@@ -47,7 +47,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { EMAIL_EVENTS } from '@modules/email/constants';
 import { OnboardingCompletedDto } from '@modules/onboarding/dto';
-import { UserRepository } from '../users/repository';
+import { UserRepository } from '../users/repositories/repository';
 import { OnboardingUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';

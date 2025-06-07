@@ -1,7 +1,25 @@
-import { useEffect } from 'react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import useRouter from '@/_hooks/use-router';
 import config from 'config';
+
+// In-memory PAT token store
+let inMemoryPatToken = null;
+
+export function setPatToken(patObj) {
+  inMemoryPatToken = patObj;
+  // Also persist in localStorage
+  //localStorage.setItem('tj_embed_auth', JSON.stringify(patObj));
+}
+
+export function getPatToken() {
+  if (inMemoryPatToken) return inMemoryPatToken;
+  // const stored = localStorage.getItem('tj_embed_auth');
+  // if (stored) {
+  //   inMemoryPatToken = JSON.parse(stored);
+  //   return inMemoryPatToken;
+  // }
+  // return null;
+}
 
 export default function EmbedAppRedirect() {
   const router = useRouter();
@@ -28,6 +46,11 @@ export default function EmbedAppRedirect() {
           parent.postMessage({ error: res.status, message: 'unauthorized' }, '*');
           return;
         }
+
+        const patObj = await res.json();
+        // ✅ Store PAT in memory
+        setPatToken(patObj);
+        window.name = JSON.stringify(patObj);
         window.location.href = `applications/${appId}`;
       } catch (error) {
         console.log(error, 'error');

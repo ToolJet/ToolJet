@@ -31,6 +31,12 @@ export class CreateUserPersonalAccessTokensTable1746727457618 implements Migrati
             isNullable: false,
           },
           {
+            name: 'scope',
+            type: 'enum',
+            enum: ['app', 'workspace'],
+            isNullable: false,
+          },
+          {
             name: 'session_expiry_minutes',
             type: 'int',
             isNullable: false,
@@ -49,8 +55,8 @@ export class CreateUserPersonalAccessTokensTable1746727457618 implements Migrati
         ],
         uniques: [
           {
-            name: 'UQ_app_id_unique',
-            columnNames: ['app_id'],
+            name: 'UQ_app_id_user_id_unique',
+            columnNames: ['app_id', 'user_id'],
           },
         ],
       }),

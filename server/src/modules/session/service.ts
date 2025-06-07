@@ -12,7 +12,7 @@ import { UserSessions } from 'src/entities/user_sessions.entity';
 import { Response } from 'express';
 import { User } from 'src/entities/user.entity';
 import { Organization } from '@entities/organization.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from './util.service';
 import { AppsRepository } from '@modules/apps/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';

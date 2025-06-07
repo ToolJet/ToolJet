@@ -26,7 +26,7 @@ import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from './constants/granular_permissi
 import { RolesUtilService } from '@modules/roles/util.service';
 import { GroupUsers } from '../../entities/group_users.entity';
 import { RolesRepository } from '@modules/roles/repository';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { IGroupPermissionsUtilService } from './interfaces/IUtilService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';

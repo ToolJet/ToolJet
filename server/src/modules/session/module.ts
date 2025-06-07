@@ -7,7 +7,7 @@ import { MetaModule } from '@modules/meta/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionModule } from '@modules/encryption/module';
 import { SessionScheduler } from './scheduler';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
