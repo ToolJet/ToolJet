@@ -239,6 +239,7 @@ import EnterpriseCrown from './EnterrpiseCrown.jsx';
 import FileCode from './FileCode.jsx';
 import Corners from './Corners.jsx';
 import Moon from './Moon.jsx';
+import RemoveFolder from './RemoveFolder.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -504,6 +505,8 @@ const Icon = (props) => {
       return <Remove {...props} />;
     case 'remove01':
       return <Remove01 {...props} />;
+    case 'removefolder':
+      return <RemoveFolder {...props} />;
     case 'removerectangle':
       return <RemoveRectangle {...props} />;
     case 'rightarrrow':
