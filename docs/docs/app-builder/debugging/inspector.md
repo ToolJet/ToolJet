@@ -14,16 +14,19 @@ Inspector is accessible via the left sidebar in the App Builder. It is divided i
 - [Page](#page)
 - [Constants](#constants)
 
+## Accessing Inspector
 
-<!-- Add content on how any value of the inspector can be referred and what's the purpose of using those value such as adding dynamic values, defining actions, etc. -->
+Values inside the inspector can be referenced in other components and queries to create responsive and interactive applications. You can access the current state of components, queries, variables, page handle, and more directly from the inspector.
 
-You can hover over any property to copy its reference path. This path can then be used to bind the value to components or expressions in your app. 
+You can refer to a value using the dot notation (e.g., `{{components.numberInput1.value}}`), or hover over any property in the inspector to copy its reference path. This makes it easy to connect components, reuse data, and configure logic throughout your application without writing extra code.
+
+For example, to refer the selected value from a **Dropdown** component, use `{{components.dropdown1.selectedOption.value}}`. Similarly, to show the output of a query in a **Table** component, use `{{queries.fetchData.data}}`.
 
 <img className="screenshot-full img-s" src="/img/app-builder/debugging/inspector/copy-path.png" alt="Events Architecture Diagram"/>
 
-## Queries
+### Queries
 
-You can use the Inspector to view the current state of any query in your app. This is helpful to understand how a query behaves and the data fetched. The Inspector exposes the following properties for each query:
+Under the Queries section, you can inspect the specifics of any query you’ve created. The data for a query is only visible after the query has been executed or triggered. This allows you to verify the output and troubleshoot any issues with data retrieval or manipulation. The Inspector exposes the following properties for each query:
 - **isLoading** – A boolean indicating whether the query is currently in progress.
 - **data** – The transformed data returned by the query. If no transformation is applied, data will be the same as rawData.
 - **rawData** – The original response fetched from the data source, before any transformation is applied.
@@ -33,7 +36,7 @@ Refer to the [Binding Data with Component](/docs/app-builder/connecting-with-dat
 
 ## Components
 
-Each component in ToolJet maintains a state — a collection of values that represent its current data and configuration. You can use the Inspector to view these states, along with Component Specific Actions (CSAs) that allow you to programmatically update them.
+The Components section provides a detailed view of each component present on your app’s canvas. You can see the current state, properties, and values of each component, helping you understand how data flows through your application and how components interact with each other
 
 Each component exposes a different set of states and CSAs based on its functionality. For example:
 - A **Text** component exposes a `text` state and a `setText` CSA.
@@ -54,7 +57,7 @@ By using the Globals properties in the Inspector, you can view various details a
 
 ## Variables
 
-The Variables property in the Inspector lets you view all app-level variables available within the current application. These variables can be used to store and share data across components and queries. You can inspect their current values here, making it easier to debug and manage dynamic behavior in your app.
+The Variables section in the Inspector lets you view all app-level variables available within the current application. These variables can be used to store and share data across components and queries. You can inspect their current values here, making it easier to debug and manage dynamic behavior in your app.
 
 ## Page
 
