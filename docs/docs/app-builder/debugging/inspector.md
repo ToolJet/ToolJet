@@ -3,7 +3,9 @@ id: inspector
 title: Using Inspector
 ---
 
-Inspector in ToolJet is a built-in utility that helps you inspect and understand your application’s state at runtime. You can use these states to display data or trigger actions, such as showing a loading indicator or conditionally setting the visibility of components, etc. It gives you real-time visibility into:
+ToolJet's Inspector is a built-in utility that provides real-time visibility into the data and state of your application. With Inspector, developers can quickly diagnose issues, understand the flow of data, and ensure that all components, queries, and variables are functioning as intended.
+ 
+Inspector is accessible via the left sidebar in the App Builder. It is divided into six main sections, each offering a different perspective into your application’s runtime environment:
 
 - [Queries](#queries)
 - [Components](#components)
@@ -64,3 +66,5 @@ Page-specific properties (page handle and page name) and page variables are visi
 - **variables** - List of page level variables in the key-value pair.
 
 ## Constants
+
+Workspace Constants are predefined values that you can use across different applications within your workspace. They are useful for storing frequently used data such as API URLs, configuration settings, or sensitive information like API keys and database credentials. In the inspector, you can view all constants as key-value pairs, secret constant values are masked for security.
