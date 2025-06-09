@@ -46,6 +46,7 @@ import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
+import { AppVersionRenameModule } from '@modules/app-version-rename/module';
 
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -104,6 +105,7 @@ export class AppModule implements OnModuleInit {
       await ExternalApiModule.register(configs),
       await GitSyncModule.register(configs),
       await AppGitModule.register(configs),
+      await AppVersionRenameModule.register(configs),
     ];
 
     return {

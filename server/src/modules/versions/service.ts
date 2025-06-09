@@ -21,6 +21,7 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { IVersionService } from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -33,7 +34,8 @@ export class VersionService implements IVersionService {
     protected readonly appUtilService: AppsUtilService,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
-    protected readonly versionsUtilService: VersionUtilService
+    protected readonly versionsUtilService: VersionUtilService,
+    protected readonly eventEmitter: EventEmitter2
   ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
@@ -157,8 +159,17 @@ export class VersionService implements IVersionService {
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
-    } else {
-      await this.versionsUtilService.handleVersionRenameCommit(app.id, appVersion, appVersionUpdateDto);
+    } else if (appVersion.name !== appVersionUpdateDto.name) {
+      const versionRenameCommit = {
+        user: user,
+        appVersion: appVersion,
+        appId: app.id,
+        appVersionUpdateDto: appVersionUpdateDto,
+        organizationId: user?.organizationId,
+      };
+      await this.eventEmitter.emit('version-rename-commit', versionRenameCommit);
+
+      // await this.versionsUtilService.handleVersionRenameCommit(app.id, appVersion, appVersionUpdateDto);
     }
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
