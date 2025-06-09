@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useLayoutEffect, useRef } from 'react';
 import { openapiService } from '@/_services';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
@@ -110,7 +110,7 @@ const ApiEndpointInput = (props) => {
     if (isEmpty(paths)) return [];
 
     const pathGroups = Object.keys(paths).reduce((acc, path) => {
-      const operations = Object.keys(paths[path]);
+      const operations = Object.keys(paths[path]).filter((op) => Object.keys(operationColorMapping).includes(op));
       const category = path.split('/')[2];
       operations.forEach((operation) => categorizeOperations(operation, path, acc, category));
       return acc;
@@ -135,7 +135,7 @@ const ApiEndpointInput = (props) => {
       {loadingSpec && (
         <div className="p-3">
           <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          {props.t('stripe', 'Please wait while we load the OpenAPI specification.')}
+          <span>Please wait while we load the OpenAPI specification.</span>
         </div>
       )}
       {options && !loadingSpec && (
@@ -227,57 +227,64 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   }
 
   const paramLabelWithDescription = (param) => {
+    const label = type === 'request' ? param : param.name;
+    const description = type === 'request' ? parameters[param]?.description : param.description;
+
     return (
-      <ToolTip message={type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description}>
-        <div className="cursor-help">
-          <input
-            type="text"
-            value={type === 'request' ? param : param.name}
-            className="form-control form-control-underline"
-            placeholder="key"
-            disabled
-          />
+      <ToolTip message={DOMPurify.sanitize(description)}>
+        <div className="cursor-help d-flex align-items-center">
+          <AutoWidthText value={label} className="form-control form-control-underline" />
         </div>
       </ToolTip>
     );
   };
 
   const paramLabelWithoutDescription = (param) => {
-    return (
-      <input
-        type="text"
-        value={type === 'request' ? param : param.name}
-        className="form-control"
-        placeholder="key"
-        disabled
-      />
-    );
-  };
+    const label = type === 'request' ? param : param.name;
 
-  const paramType = (param) => {
     return (
-      <div className="p-2 text-muted">
-        {type === 'query' &&
-          param?.schema?.anyOf &&
-          param?.schema?.anyOf.map((type, i) =>
-            i < param.schema?.anyOf.length - 1
-              ? type.type.substring(0, 3).toUpperCase() + '|'
-              : type.type.substring(0, 3).toUpperCase()
-          )}
-        {(type === 'path' || (type === 'query' && !param?.schema?.anyOf)) &&
-          param?.schema?.type?.substring(0, 3).toUpperCase()}
-        {type === 'request' && parameters[param].type?.substring(0, 3).toUpperCase()}
+      <div className="d-flex align-items-center" style={{ gap: '4px' }}>
+        <AutoWidthText value={label} className="form-control" />
       </div>
     );
   };
 
+  const paramType = (param) => {
+    let paramTypeValue;
+
+    if (type === 'query') {
+      if (param?.schema?.anyOf) {
+        return (
+          <div className="p-2 text-muted">
+            {param.schema.anyOf.map((typeObj, i) =>
+              i < param.schema.anyOf.length - 1
+                ? (typeObj.type || '').toString().substring(0, 3).toUpperCase() + '|'
+                : (typeObj.type || '').toString().substring(0, 3).toUpperCase()
+            )}
+          </div>
+        );
+      }
+      paramTypeValue = param?.schema?.type;
+    } else if (type === 'path') {
+      paramTypeValue = param?.schema?.type;
+    } else if (type === 'request') {
+      paramTypeValue = parameters[param]?.type;
+    }
+
+    const displayType = Array.isArray(paramTypeValue) ? paramTypeValue[0] : paramTypeValue;
+
+    return <div className="p-2 text-muted">{displayType?.toString().substring(0, 3).toUpperCase() || ''}</div>;
+  };
+
   const paramDetails = (param) => {
     return (
-      <div className="col-auto d-flex field field-width-179 align-items-center">
-        {(type === 'request' && parameters[param].description) || param?.description
-          ? paramLabelWithDescription(param)
-          : paramLabelWithoutDescription(param)}
-        {param.required && <span className="text-danger fw-bold">*</span>}
+      <div className="col-auto d-flex field field-width-179 align-items-center justify-content-between">
+        <div className="d-inline-flex align-items-center gap-3">
+          {(type === 'request' && parameters[param].description) || param?.description
+            ? paramLabelWithDescription(param)
+            : paramLabelWithoutDescription(param)}
+          {param.required && <span className="text-danger fw-bold">*</span>}
+        </div>
         {paramType(param)}
       </div>
     );
@@ -358,4 +365,35 @@ RenderParameterFields.propTypes = {
   changeParam: PropTypes.func,
   removeParam: PropTypes.func,
   darkMode: PropTypes.bool,
+};
+
+const AutoWidthText = ({ value, className }) => {
+  const spanRef = useRef(null);
+  const [width, setWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    if (spanRef.current) {
+      setWidth(spanRef.current.offsetWidth);
+    }
+  }, [value]);
+
+  return (
+    <div className={className} style={{ display: 'inline-block', width: width ? `${width}px` : 'auto' }}>
+      <span
+        ref={spanRef}
+        style={{
+          position: 'absolute',
+          visibility: 'hidden',
+          whiteSpace: 'pre',
+          fontSize: '12px',
+          fontFamily: 'inherit',
+          fontWeight: 400,
+          lineHeight: '20px',
+        }}
+      >
+        {value}
+      </span>
+      {value}
+    </div>
+  );
 };
