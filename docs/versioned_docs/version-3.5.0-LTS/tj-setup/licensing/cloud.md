@@ -83,7 +83,7 @@ If you've decided to move forward with Pro or customized Enterprise plan, please
 
 ## Updated Limits in New Pricing Plan
 
-Starting from version `v3.5.34-cloud-lts`, which was released on April 3rd, 2025, the new pricing plan will have the following limitations and the old users will be impacted in the following ways:
+Starting from version `v3.5.34-cloud-lts`, which was released on May 27th, 2025, the new pricing plan will have the following limitations and the old users will be impacted in the following ways:
 
 | Resource | Allowed Limit | Impact on Existing Users |
 |----------|:-------------:|--------------------------|
