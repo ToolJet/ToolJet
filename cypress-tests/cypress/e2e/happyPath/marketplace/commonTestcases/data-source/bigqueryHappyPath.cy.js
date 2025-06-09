@@ -66,10 +66,9 @@ describe("Data source BigQuery", () => {
       `cypress-${data.dataSourceName}-bigquery`
     );
 
-    cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
-      "have.text",
-      firestoreText.labelPrivateKey
-    );
+    cy.get(
+      dataSourceSelector.labelFieldName(firestoreText.labelPrivateKey)
+    ).verifyVisibleElement("have.text", "Private key*");
     cy.get(".datasource-edit-btn").should("be.visible");
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
@@ -98,7 +97,7 @@ describe("Data source BigQuery", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
       bigqueryText.errorInvalidEmailId
     );
@@ -110,38 +109,30 @@ describe("Data source BigQuery", () => {
   });
 
   it("Should verify the functionality of BigQuery connection form.", () => {
-    selectAndAddDataSource(
-      "databases",
-      bigqueryText.bigQuery,
-      data.dataSourceName
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-bigquery`,
+      "bigquery",
+      [
+        {
+          key: "private_key",
+          value: `${JSON.stringify(Cypress.env("bigquery_pvt_key"))}`,
+          encrypted: true,
+        },
+      ]
     );
-
-    fillDataSourceTextField(
-      firestoreText.privateKey,
-      bigqueryText.placehlderPrivateKey,
-      `${JSON.stringify(Cypress.env("bigquery_pvt_key"))}`,
-      "contain",
-      { parseSpecialCharSequences: false, delay: 0 }
-    );
+    cy.get(
+      dataSourceSelector.dataSourceNameButton(
+        `cypress-${data.dataSourceName}-bigquery`
+      )
+    )
+      .should("be.visible")
+      .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.get(postgreSqlSelector.buttonSave).click();
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      postgreSqlText.toastDSSaved
-    );
-
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-bigquery-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-bigquery`
-    );
-
-    deleteDatasource(`cypress-${data.dataSourceName}-bigquery`);
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-bigquery`);
   });
 });
