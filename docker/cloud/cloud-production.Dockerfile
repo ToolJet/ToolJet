@@ -1,46 +1,38 @@
-FROM node:18.18.2-buster as builder
+FROM node:18.18.2-buster AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm i -g npm@9.8.1
-RUN npm install -g @nestjs/cli
-
 RUN mkdir -p /app
+# RUN npm cache clean --force
+
 WORKDIR /app
 
-ARG CUSTOM_GITHUB_TOKEN
-ARG BRANCH_NAME=main
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-
-RUN git config --global http.version HTTP/1.1
-RUN git config --global http.postBuffer 524288000
-RUN git clone https://github.com/ToolJet/ToolJet.git .
-
-# The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout ${BRANCH_NAME}
-
-RUN git submodule update --init --recursive
-
-# Checkout the same branch in submodules if it exists, otherwise stay on default branch
-RUN git submodule foreach 'git checkout ${BRANCH_NAME} || true'
-
+# Scripts for building
 COPY ./package.json ./package.json
 
-# Building ToolJet plugins
+# Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-ENV NODE_ENV=production
-RUN npm --prefix plugins run build
+RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
-# Building ToolJet server
+# Build frontend
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
+RUN npm --prefix frontend install
+COPY ./frontend/ ./frontend/
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
+
+ENV NODE_ENV=production
+
+# Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install --only=production
+RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN npm install -g @nestjs/cli 
 RUN npm --prefix server run build
 
 FROM debian:11
@@ -49,6 +41,7 @@ RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
+
 
 RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
     && tar -xf node-v18.18.2-linux-x64.tar.xz \
@@ -60,10 +53,15 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
+RUN apt-get update && \
+    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
+    apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
+    apt-get -y autoremove && \
+    apt-get -y autoclean
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
+
 RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
     wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
     unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
@@ -73,6 +71,7 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 # Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
+
 
 WORKDIR /
 
