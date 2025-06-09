@@ -420,7 +420,10 @@ export const createDataQuerySlice = (set, get) => ({
       const queries = get().dataQuery.queries.modules.canvas;
       try {
         for (const query of queries) {
-          if ((query.options.runOnPageLoad || query.options.run_on_page_load) && isQueryRunnable(query)) {
+          if (
+            (query.options.runOnPageLoad || query.options.run_on_page_load) &&
+            (query.restricted || isQueryRunnable(query))
+          ) {
             await get().queryPanel.runQuery(query.id, query.name, undefined, undefined, {}, false, true, 'canvas');
           }
         }
