@@ -81,6 +81,22 @@ Role Required: **Admin**
 
 If you've decided to move forward with Pro or customized Enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
 
+## Updated Limits in New Pricing Plan
+
+With the new pricing plan the free subscription will have the following limitations and the old users, will be impacted in the following ways:
+
+| Resource | Allowed Limit | Impact on Existing Users |
+|----------|:-------------:|--------------------------|
+| Builder | 2 | All builders will be automatically archived, except for two random builders (including 1 Admin). |
+| End User | 50 | All users beyond 50 will be archived automatically. |
+| Applications | 2 | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
+
+### Retrieving Desired Users Affected Due to New Pricing Plan
+
+If an user is archived automatically due to the new pricing plan then to retrieve the desired Builder or End User, the Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) the current active builder/end-user and [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired users.
+
+If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
+
 ## FAQs
 
 <details id="tj-dropdown">
