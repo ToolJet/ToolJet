@@ -93,9 +93,9 @@ Starting from version `v3.5.34-cloud-lts`, which was released on May 27th, 2025,
 
 ### Retrieving Desired Users Affected Due to New Pricing Plan
 
-If an user is archived automatically due to the new pricing plan then to retrieve the desired Builder or End User, the Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) the current active builder/end-user and [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired users.
+If a user is automatically archived due to the new pricing plan, the Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
-If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
+If you have any questions, feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
 
 ## FAQs
 
