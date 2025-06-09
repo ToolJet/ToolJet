@@ -13,7 +13,7 @@ title: SAML
  <span>Paid feature</span>
 </div>
 
-ToolJet supports group synchronization at the workspace level, allowing user roles and custom groups to be automatically updated from your identity provider. This guide covers how to set up SAML group synchronization with Okta as identity provider.
+ToolJet supports group synchronization at the workspace level, allowing user roles and custom groups to be automatically updated from your identity provider. This guide covers how to set up SAML group synchronization with Okta as identity provider as an example. This can be used as a reference for other IdPs configuration.
 
 Group synchronization occurs at every login. Users must log out and log back in for changes to be reflected. Manual editing of groups in ToolJet is not recommended as changes will be overwritten upon subsequent logins.
 
@@ -32,6 +32,10 @@ Please make sure to add the *group attribute* while setting up SAML to your Tool
 
 To map groups between your Okta account and ToolJet, you'll need to create groups in ToolJet with the same names as those in Okta. Refer to the [custom group](/docs/user-management/role-based-access/custom-groups/) documentation to learn more about creating custom groups.
 
-For example, if you have an *Support* group in Okta, you should also create an *Support* group in ToolJet. Group names are case-sensitive, so make sure they match exactly. 
-
+For example, if you have an *Support* group in Okta, you should also create an *Support* group in ToolJet. 
 Once SAML is configured and the groups are created in ToolJet, the next time the respective user logs in, the group mapping will occur, and their role and custom groups will be updated accordingly.
+
+
+:::note
+Group names are case-sensitive, so make sure group names in ToolJet and Okta match exactly. 
+:::
