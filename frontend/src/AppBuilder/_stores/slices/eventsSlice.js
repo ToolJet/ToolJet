@@ -557,7 +557,7 @@ export const createEventsSlice = (set, get) => ({
               }
               // Check and replace the module input dummy queries with the linked query id
               /* Logic starts here */
-              const moduleInputDummyQueries = get()?.getModuleInputDummyQueries() || {};
+              const moduleInputDummyQueries = get()?.getModuleInputDummyQueries?.() || {};
               let updatedQueryId = queryId,
                 updatedQueryName = queryName,
                 updatedModuleId = moduleId;

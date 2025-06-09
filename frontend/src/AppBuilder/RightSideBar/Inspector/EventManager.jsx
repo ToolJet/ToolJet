@@ -54,7 +54,7 @@ export const EventManager = ({
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
-  const moduleInputDummyQueries = useStore((state) => state.getModuleInputDummyQueries(), shallow);
+  const moduleInputDummyQueries = useStore((state) => state?.getModuleInputDummyQueries?.(), shallow) || {};
 
   const dataQueries = useStore((state) => {
     const queries = state.dataQuery?.queries?.modules?.canvas || [];
@@ -437,8 +437,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-        })
+            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+          })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -462,7 +462,7 @@ export const EventManager = ({
     const queries = dataQueries.filter((qry) => isQueryRunnable(qry)).map((qry) => ({ name: qry.name, value: qry.id }));
     const moduleInputs = Object.entries(moduleInputDummyQueries).map(([key, value]) => ({ name: value, value: key }));
     return [...moduleInputs, ...queries];
-  }
+  };
   const formatGroupLabel = (data) => {
     if (data.label === 'run-action') return;
     return (
@@ -1010,8 +1010,9 @@ export const EventManager = ({
                         </div>
                       ) : (
                         <div
-                          className={`${param?.type ? '' : 'fx-container-eventmanager-code'
-                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                          className={`${
+                            param?.type ? '' : 'fx-container-eventmanager-code'
+                          } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                           data-cy="action-options-text-input-field"
                         >
                           <CodeHinter
