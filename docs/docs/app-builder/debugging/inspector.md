@@ -10,7 +10,10 @@ Inspector in ToolJet is a built-in utility that helps you inspect and understand
 - [Globals](#globals)
 - [Variables](#variables)
 - [Page](#page)
-- Constants
+- [Constants](#constants)
+
+
+<!-- Add content on how any value of the inspector can be referred and what's the purpose of using those value such as adding dynamic values, defining actions, etc. -->
 
 You can hover over any property to copy its reference path. This path can then be used to bind the value to components or expressions in your app. 
 
@@ -41,11 +44,11 @@ Refer to the [Accessing Component State](#) guide to learn how to use component 
 ## Globals
 
 By using the Globals properties in the Inspector, you can view various details about your application and its environment, such as:
-- **Current User**: Information about the logged-in user, including email, name, avatar, groups, roles, and SSO details. Useful for building role-based UI or showing personalized content.
-- **Environment**: Indicates the current ToolJet environment — development, staging, or production.
-- **Mode**: Signify whether the app is opened in the editor or not.
-- **Theme**: Refers to the active UI theme (light or dark). You can use this to dynamically style components based on the selected theme.
-- **URL Params**: These are query parameters appended to the page URL, commonly used to pass data between pages.
+- **Current User** - Information about the logged-in user, including email, name, avatar, groups, roles, and SSO details. Useful for building role-based UI or showing personalized content.
+- **Environment** - Indicates the current ToolJet environment — development, staging, or production.
+- **Mode** - Signify whether the app is opened in the editor or not.
+- **Theme** - Refers to the active UI theme (light or dark). You can use this to dynamically style components based on the selected theme.
+- **URL Params** - These are query parameters appended to the page URL, commonly used to pass data between pages.
 
 ## Variables
 
@@ -53,3 +56,11 @@ The Variables property in the Inspector lets you view all app-level variables av
 
 ## Page
 
+Page-specific properties (page handle and page name) and page variables are visible in the Page section. Unlike app-level variables, page-level variables are only accessible within their respective pages.
+
+- **handle** - The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL.
+- **id** - A unique identifier automatically assigned to every page in ToolJet.
+- **name** - The display name of the page, shown in the app's navigation menu. Set by the user.
+- **variables** - List of page level variables in the key-value pair.
+
+## Constants
