@@ -64,9 +64,9 @@ export default class Awsredshift implements QueryService {
         notSelectQueryResult = describeResult;
         status = describeResult.Status;
         const error = describeResult.Error;
-        if (status === 'FAILED' || (status === 'ABORTED' && describeResult.ResultSize === -1)) {
+        /*if (status === 'FAILED' || (status === 'ABORTED' && describeResult.ResultSize === -1)) {
           throw new Error(error);
-        }
+        }*/
         await new Promise((resolve) => setTimeout(resolve, pollingInterval));
         pollingTime += pollingInterval;
       }
@@ -90,39 +90,16 @@ export default class Awsredshift implements QueryService {
         };
       }
     } catch (error) {
-      let errorMessage = 'An unknown error occurred';
-      let errorDetails = {};
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      if (error && error instanceof Error) {
+        const redshiftError = error as any;
+        const { name, $fault, $metadata } = redshiftError;
 
-      if (error instanceof Error) {
-        errorMessage = error.message || errorMessage;
-
-        if (errorMessage.includes('error:')) {
-          const detailLines = errorMessage.split('\n').map((line) => line.trim());
-          errorDetails = {
-            name: error.name,
-            code:
-              detailLines
-                .find((line) => line.startsWith('code:'))
-                ?.split('code:')[1]
-                ?.trim() || null,
-            context:
-              detailLines
-                .find((line) => line.startsWith('context:'))
-                ?.split('context:')[1]
-                ?.trim() || null,
-            location:
-              detailLines
-                .find((line) => line.startsWith('location:'))
-                ?.split('location:')[1]
-                ?.trim() || null,
-            process:
-              detailLines
-                .find((line) => line.startsWith('process:'))
-                ?.split('process:')[1]
-                ?.trim() || null,
-          };
-          errorMessage = detailLines[0];
-        }
+        errorDetails.name = name;
+        errorDetails.fault = $fault;
+        errorDetails.httpStatusCode = $metadata.httpStatusCode;
       }
 
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
