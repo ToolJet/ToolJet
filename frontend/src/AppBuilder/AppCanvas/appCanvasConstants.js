@@ -24,6 +24,18 @@ export const SUBCONTAINER_CANVAS_BORDER_WIDTH = 1;
 
 export const BOX_PADDING = 2;
 
+export const DROPPABLE_PARENTS = new Set([
+  'Calendar',
+  'Kanban',
+  'Form',
+  'Tabs',
+  'Modal',
+  'ModalV2',
+  'Listview',
+  'Container',
+  'Table',
+  'ModuleContainer',
+]);
 export const TAB_CANVAS_PADDING = 7.5;
 
 export const MODAL_CANVAS_PADDING = 5;
