@@ -38,6 +38,7 @@ import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -52,7 +53,8 @@ export class AppsService implements IAppsService {
     protected readonly pageService: PageService,
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
-    protected readonly aiUtilService: AiUtilService
+    protected readonly aiUtilService: AiUtilService,
+    protected readonly eventEmitter: EventEmitter2
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
@@ -148,7 +150,13 @@ export class AppsService implements IAppsService {
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
-      await this.appsUtilService.handleAppRenameCommit(app.id, app, appUpdateDto);
+      const appRenameDto = {
+        user: user,
+        organizationId: organizationId,
+        app: app,
+        appUpdateDto: appUpdateDto,
+      };
+      await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,

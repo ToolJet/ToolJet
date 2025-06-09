@@ -46,7 +46,6 @@ import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
-
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
