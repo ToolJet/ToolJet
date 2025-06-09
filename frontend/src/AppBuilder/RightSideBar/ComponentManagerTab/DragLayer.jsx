@@ -8,10 +8,11 @@ import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { noop } from 'lodash';
 
 export const DragLayer = ({ index, component, isModuleTab = false }) => {
   const { isModuleEditor } = useModuleContext();
-  const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow);
+  const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
