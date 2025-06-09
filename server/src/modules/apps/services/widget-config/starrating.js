@@ -70,7 +70,7 @@ export const starratingConfig = {
       displayName: 'Label color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     visibility: {
@@ -122,7 +122,7 @@ export const starratingConfig = {
     events: [],
     styles: {
       textColor: { value: '#ffb400' },
-      labelColor: { value: '' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       padding: { value: 'default' },

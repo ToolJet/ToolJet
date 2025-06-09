@@ -74,8 +74,8 @@ export const toggleswitchConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '' },
-      toggleSwitchColor: { value: 'var(--primary-brand)' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      toggleSwitchColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },
