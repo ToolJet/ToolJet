@@ -186,6 +186,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 <AppPermissionsModal
                   modalType="query"
                   resourceId={selectedQuery?.id}
+                  resourceName={selectedQuery?.name}
                   showModal={showQueryPermissionModal}
                   toggleModal={toggleQueryPermissionModal}
                   darkMode={darkMode}
