@@ -155,6 +155,7 @@ h3 {
   margin-bottom: 1rem;
   background-color: #ECF0FE;
   color: #4368E3;
+  padding: 6px 8px;
 }
 
 .badge img {
@@ -499,11 +500,11 @@ img {
 
 .navbar-signin,
 .navbar-signin:hover {
-  padding: 6px 9px !important;  
+  padding: 6px 9px !important;
 }
 
 .navbar-signin:hover,
-.navbar-website:hover{
+.navbar-website:hover {
   background-color: #F0F1F2;
 }
 
@@ -941,6 +942,6 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   color: #4368E3;
 }
 
-.footer{
+.footer {
   padding: 0px 70px !important;
 }
