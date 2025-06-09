@@ -70,6 +70,7 @@ export class VersionService implements IVersionService {
 
       await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
 
+      //APP_VERSION_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -102,7 +103,13 @@ export class VersionService implements IVersionService {
 
       await this.versionRepository.deleteById(app.appVersions[0].id, manager);
 
-      // TODO: Add audit logs
+      //APP_VERSION_DELETE audit
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: app.id,
+        resourceName: app.name,
+      });
       return;
     }, manager);
   }
@@ -245,6 +252,7 @@ export class VersionService implements IVersionService {
         await this.versionRepository.update(version.id, editableParams);
         const environments = await this.appEnvironmentUtilService.getAll(user.organizationId, app.id, manager);
 
+        //APP_PROMOTE audit
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
           userId: user.id,
           organizationId: user.organizationId,
