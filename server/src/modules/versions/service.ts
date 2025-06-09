@@ -168,8 +168,6 @@ export class VersionService implements IVersionService {
         organizationId: user?.organizationId,
       };
       await this.eventEmitter.emit('version-rename-commit', versionRenameCommit);
-
-      // await this.versionsUtilService.handleVersionRenameCommit(app.id, appVersion, appVersionUpdateDto);
     }
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
