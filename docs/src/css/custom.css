@@ -11,7 +11,7 @@
 
 :root {
   --ifm-color-primary: #4d72fa;
-  --ifm-color-primary-dark: rgb(33, 175, 144);
+  --ifm-color-primary-dark: rgb(33, 175, 144);  
   --ifm-color-primary-darker: rgb(31, 165, 136);
   --ifm-color-primary-darkest: rgb(26, 136, 112);
   --ifm-color-primary-light: rgb(70, 203, 174);
@@ -66,7 +66,6 @@
 
 [data-theme='dark'] .theme-doc-markdown a:not(.home-page a) {
   color: white;
-
 }
 
 
@@ -114,6 +113,10 @@
 
 .pagination-nav__label {
   color: #1B1F24;
+}
+
+[data-theme='dark'] .pagination-nav__label {
+  color: white;
 }
 
 .pagination-nav__link--prev .pagination-nav__sublabel::before {
@@ -413,7 +416,10 @@ img {
   padding: 2px 4px;
 }
 
-
+[data-theme='dark'] .alert.alert--info a {
+  color: #1b1f24 !important;
+  text-decoration: underline !important;
+}
 
 /* Warning Alert box */
 
@@ -432,6 +438,10 @@ img {
   padding: 2px 4px;
 }
 
+[data-theme='dark'] .alert.alert--warning a {
+  color: #000000 !important;
+  text-decoration: underline !important;
+}
 
 /* Tip Alert box */
 
@@ -450,6 +460,10 @@ img {
   padding: 2px 4px;
 }
 
+[data-theme='dark'] .alert.alert--success a {
+  color: #1b1f24 !important;
+  text-decoration: underline !important;
+}
 
 /* Danger Alert box */
 
@@ -468,6 +482,10 @@ img {
   padding: 2px 4px;
 }
 
+[data-theme='dark'] .alert.alert--danger a {
+  color: #1b1f24 !important;
+  text-decoration: underline !important;
+}
 
 
 .admonition-heading .menu {
@@ -910,7 +928,11 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 .breadcrumbs__item .breadcrumbs__link {
   padding-right: 4px;
   padding-left: 4px;
-  color: #2D343B;
+  color: #1B1F24;
+}
+
+[data-theme='dark'] .breadcrumbs__item .breadcrumbs__link {
+  color: white;
 }
 
 .breadcrumbs__item:first-child .breadcrumbs__link {
