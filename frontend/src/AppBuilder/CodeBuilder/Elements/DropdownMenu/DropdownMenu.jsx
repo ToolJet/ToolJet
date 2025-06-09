@@ -3,7 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import DataSourceIcon from '@/AppBuilder/QueryManager/Components/DataSourceIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import LabeledDivider from '@/AppBuilder/RightSideBar/Inspector/Components/Form/LabeledDivider';
+import LabeledDivider from '@/AppBuilder/RightSideBar/Inspector/Components/Form/_components/LabeledDivider';
 import cx from 'classnames';
 import './styles.scss';
 
