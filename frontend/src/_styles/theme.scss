@@ -320,7 +320,7 @@ button {
 }
 
 .accordion-item {
-  border: solid var(--border-weak);
+  border:none;
   border-width: 0px 0px 1px 0px;
 }
 
@@ -329,6 +329,13 @@ button {
 .accordion-button {
   background-color: inherit;
 }
+
+.editor-sidebar{
+  .accordion-button {
+    border-radius: 0px !important;
+  }
+}
+
 
 .accordion-button {
   font-size: 14px;
@@ -19147,9 +19154,9 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .components-container {
-  .accordion-header {
-    height: 32px;
-  }
+  // .accordion-header {
+  //   height: 32px;
+  // }
 
   .accordion-body {
     padding: 4px 0px 0px 0px !important;

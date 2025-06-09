@@ -26,8 +26,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
 
   const handleSearchQueryChange = useCallback(
-    debounce((e) => {
-      const { value } = e.target;
+    debounce((value) => {
       filterComponents(value);
     }, 125),
     []
@@ -95,6 +94,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
             className=" btn-sm tj-tertiary-btn mt-3"
             onClick={() => {
               setFilteredComponents([]);
+              handleSearchQueryChange('');
             }}
           >
             {t('widgetManager.clearQuery', 'clear query')}
@@ -125,7 +125,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
 
     return (
       <div className="mt-3">
-        <Accordion items={items} />
+        <Accordion items={items} isTitleCase={false} />
       </div>
     );
   }
@@ -138,7 +138,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
           <SearchBox
             dataCy={`widget-search-box`}
             initialValue={''}
-            callBack={(e) => handleSearchQueryChange(e)}
+            callBack={(e) => handleSearchQueryChange(e.target.value)}
             onClearCallback={() => {
               filterComponents('');
             }}

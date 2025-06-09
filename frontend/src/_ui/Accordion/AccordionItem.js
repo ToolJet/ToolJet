@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import cx from 'classnames';
 
-const AccordionItem = ({ open = true, index, title, children }) => {
+const AccordionItem = ({ open = true, index, title, isTitleCase = true, children }) => {
   const [show, setShow] = React.useState(open);
   const [newChildren, setNewChildren] = React.useState([]);
 
@@ -29,16 +29,22 @@ const AccordionItem = ({ open = true, index, title, children }) => {
       return input;
     }
   }
+  console.log('title', title);
   return (
-    <div className="accordion-item" onClick={() => setShow((prev) => !prev)}>
+    <div className="accordion-item" >
       <h2
         className="accordion-header"
         id={`heading-${index}`}
         data-cy={`widget-accordion-${String(title).toLowerCase().replace(/\s+/g, '-')}`}
+        onClick={() => setShow((prev) => !prev)}
+        style={{
+          cursor: 'pointer',
+          ...(!show ? { border: 'solid var(--border-weak)', borderWidth: '0px 0px 1px 0px' } : {}),
+        }}
       >
         <div className={cx('accordion-button inspector')}>
           <span
-            className="text-capitalize accordion-title-text tw-text-sm tw-text-text-default"
+            className={`${isTitleCase ? 'text-capitalize' : ''} accordion-title-text tw-text-sm tw-text-text-default`}
             data-cy={`label-${String(title).toLowerCase().replace(/\s+/g, '-')}`}
           >
             {title}
