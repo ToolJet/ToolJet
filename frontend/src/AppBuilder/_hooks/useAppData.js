@@ -122,12 +122,20 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
   const slug = pathParams?.slug;
+  const licenseStatus = useStore((state) => state.isLicenseValid());
 
   const match = useMatch('/applications/:slug/:pageHandle');
 
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+
+  const { isReleasedVersionId } = useStore(
+    (state) => ({
+      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const fetchAndInjectCustomStyles = async (isPublicAccess = false) => {
     try {
@@ -462,8 +470,14 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   }, [isComponentLayoutReady]);
 
   useEffect(() => {
-    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: app.appName });
-  }, [app.appName]);
+    fetchAndSetWindowTitle({
+      page: pageTitles.EDITOR,
+      appName: app.appName,
+      mode: mode,
+      isReleased: isReleasedVersionId,
+      licenseStatus: licenseStatus,
+    });
+  }, [app.appName, isReleasedVersionId, licenseStatus, mode]);
 
   useEffect(() => {
     if (!themeAccess) return;
