@@ -91,7 +91,7 @@ Starting from version `v3.5.34-cloud-lts`, which was released on May 27th, 2025,
 | End User | 50 | All users beyond 50 will be archived automatically. |
 | Applications | 2 | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
 
-### Retrieving Desired Users Affected Due to New Pricing Plan
+### Unarchiving Desired Users Affected Due to New Pricing Plan
 
 If a user is automatically archived due to the new pricing plan, the Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
