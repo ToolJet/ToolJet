@@ -150,13 +150,13 @@ export class AppsService implements IAppsService {
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
-      const appRenameEntry = {
+      const appRenameDto = {
         user: user,
         organizationId: organizationId,
         app: app,
         appUpdateDto: appUpdateDto,
       };
-      await this.eventEmitter.emit('app-rename-commit', appRenameEntry);
+      await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,

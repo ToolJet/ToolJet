@@ -16,8 +16,9 @@ import { VersionRepository } from '@modules/versions/repository';
 
 export class AppVersionRenameModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { AppVersionRenameListener } = await import(`${importPath}/app-version-rename/listener`);
+    const { AppVersionRenameListener } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-version-rename/listener`
+    );
     const { SourceControlProviderService } = await import(
       `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/source-control-provider`
     );

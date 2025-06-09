@@ -160,14 +160,14 @@ export class VersionService implements IVersionService {
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
     } else if (appVersion.name !== appVersionUpdateDto.name) {
-      const versionRenameCommit = {
+      const versionRenameDto = {
         user: user,
         appVersion: appVersion,
         appId: app.id,
         appVersionUpdateDto: appVersionUpdateDto,
         organizationId: user?.organizationId,
       };
-      await this.eventEmitter.emit('version-rename-commit', versionRenameCommit);
+      await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
