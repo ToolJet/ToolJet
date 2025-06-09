@@ -310,6 +310,9 @@ export class ComponentsService implements IComponentsService {
             (objValue, srcValue) => {
               if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
                 return srcValue;
+              } else if (componentData.type === 'Form' && _.isObject(srcValue)) {
+                // Handle Form component with object srcValue like JSONData & JSONSchema
+                return srcValue;
               } else if (
                 (componentData.type === 'DropdownV2' ||
                   componentData.type === 'MultiselectV2' ||

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import LabeledDivider from './LabeledDivider';
 import ColumnMappingComponent from './ColumnMappingComponent';
@@ -15,6 +15,7 @@ import {
   analyzeJsonDifferences,
   mergeFieldsWithComponentDefinition,
   mergeFormFieldsWithNewData,
+  cleanupFormFields,
 } from './utils/utils';
 import { updateFormFieldComponent, createNewComponentFromMeta } from './utils/fieldOperations';
 import { merge, isEqual } from 'lodash';
@@ -160,6 +161,13 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
       } else if (currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS) {
         newColumns.push(...formFields);
       } else {
+        if (currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS) {
+          formFields.forEach((field) => {
+            if (field.isCustomField) {
+              newColumns.push(field);
+            }
+          });
+        }
         columns.forEach((column) => {
           if (column.isRemoved) {
             componentsToBeRemoved.push(column.componentId);
@@ -231,7 +239,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
           operations.deleted.length > 0
         ) {
           performBatchComponentOperations(operations);
-          saveDataSection(newColumns);
+          saveDataSection(cleanupFormFields(newColumns));
         }
       }
       closeModal();
