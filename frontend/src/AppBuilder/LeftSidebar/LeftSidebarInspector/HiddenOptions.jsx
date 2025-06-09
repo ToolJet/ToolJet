@@ -17,7 +17,7 @@ export const HiddenOptions = (props) => {
   };
 
   const copyPath = () => {
-    generalActionsFiltered[0].dispatchAction(data?.selectedNodePath);
+    generalActionsFiltered[0].dispatchAction(`{{${data?.selectedNodePath}}}`, false);
   };
 
   const copyValue = () => {

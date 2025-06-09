@@ -195,6 +195,7 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
         component: {
           ...componentData,
           parent: _parent,
+          name: widgetName,
         },
         layouts: {
           [currentLayout]: {
