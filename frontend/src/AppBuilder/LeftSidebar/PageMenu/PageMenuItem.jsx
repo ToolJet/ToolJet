@@ -18,6 +18,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const PageMenuItem = withRouter(
   memo(({ darkMode, page, navigate }) => {
@@ -153,6 +154,36 @@ export const PageMenuItem = withRouter(
       [popoverRef.current, page]
     );
 
+    function getTooltip() {
+      const permission = page?.permissions?.length ? page?.permissions[0] : null;
+      if (!permission) return '';
+      const users = permission.users || [];
+      const isSingle = permission.type === 'SINGLE';
+      const isGroup = permission.type === 'GROUP';
+
+      if (users.length === 0) return null;
+
+      if (isSingle) {
+        if (users.length === 1) {
+          const email = users[0].user.email;
+          return `Access restricted to ${email}`;
+        } else {
+          return `Access restricted to ${users.length} users`;
+        }
+      }
+
+      if (isGroup) {
+        if (users.length === 1) {
+          const groupName = users[0].permissionGroup?.name ?? 'Group';
+          return `Access restricted to ${groupName} group`;
+        } else {
+          return `Access restricted to ${users.length} groups`;
+        }
+      }
+
+      return '';
+    }
+
     return (
       <div
         onMouseEnter={() => setIsHovered(true)}
@@ -202,7 +233,13 @@ export const PageMenuItem = withRouter(
                   </span>
                 </div>
                 <div style={{ marginLeft: '8px', marginRight: 'auto' }}>
-                  {licenseValid && restricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
+                  {licenseValid && restricted && (
+                    <ToolTip message={getTooltip()}>
+                      <div>
+                        <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />
+                      </div>
+                    </ToolTip>
+                  )}
                 </div>
                 <div className={cx('right', { 'handler-menu-open': showEditingPopover })}>
                   {!shouldFreeze && (

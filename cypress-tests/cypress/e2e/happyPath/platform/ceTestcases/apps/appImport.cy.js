@@ -34,6 +34,7 @@ describe("App Import Functionality", () => {
     cy.apiLogin();
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.apiLogout();
+    cy.skipWalkthrough()
   });
 
   it("should verify app import functionality", () => {
@@ -100,12 +101,13 @@ describe("App Import Functionality", () => {
       .and("have.text", importText.appImportedToastMessage);
 
     // Verify imported app
-    cy.get(".driver-close-btn").click();
+    cy.get(commonSelectors.toastCloseButton).click();
     cy.wait(500);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
       "three-versions"
     );
+    cy.get(appVersionSelectors.currentVersionField("v3")).should("be.visible");
 
     // Configure app
     cy.skipEditorPopover();

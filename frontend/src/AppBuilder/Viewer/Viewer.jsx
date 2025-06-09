@@ -116,8 +116,8 @@ export const Viewer = ({
   }, []);
 
   useEffect(() => {
-    updateCanvasHeight(currentPageComponents);
-  }, [currentPageComponents, updateCanvasHeight]);
+    updateCanvasHeight(currentPageComponents, moduleId);
+  }, [currentPageComponents, moduleId, updateCanvasHeight]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);
@@ -164,6 +164,7 @@ export const Viewer = ({
             showViewerNavigation={!hideSidebar}
             handleAppEnvironmentChanged={handleAppEnvironmentChanged}
             changeToDarkMode={changeToDarkMode}
+            switchPage={switchPage}
           />
         )}
       </>
@@ -269,11 +270,11 @@ export const Viewer = ({
                   </div>
                 </ModuleProvider>
               </DndProvider>
-            </div>
-          </Suspense>
+            </div >
+          </Suspense >
           <Popups darkMode={darkMode} />
-        </ErrorBoundary>
-      </div>
+        </ErrorBoundary >
+      </div >
     );
   }
 };

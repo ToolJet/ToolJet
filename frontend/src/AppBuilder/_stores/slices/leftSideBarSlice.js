@@ -30,8 +30,15 @@ export const createLeftSideBarSlice = (set, get) => ({
     ),
   setPathToBeInspected: (pathToBeInspected) => set(() => ({ pathToBeInspected }), false, 'setPathToBeInspected'),
   setComponentToInspect: (componentToInspect) => {
-    const { setPathToBeInspected, setSelectedSidebarItem, toggleLeftSidebar, selectedSidebarItem } = get();
-    setPathToBeInspected(['components', componentToInspect]);
+    const {
+      setPathToBeInspected,
+      setSelectedSidebarItem,
+      toggleLeftSidebar,
+      selectedSidebarItem,
+      setSelectedNodePath,
+    } = get();
+    // setPathToBeInspected(['components', componentToInspect]);
+    setSelectedNodePath(`components.${componentToInspect}`);
     if (selectedSidebarItem !== 'inspect') {
       setSelectedSidebarItem('inspect');
       toggleLeftSidebar(true);

@@ -58,18 +58,10 @@ const normalizeQueryTransformationOptions = (query) => {
   return query;
 };
 
-const useAppData = (
-  appId,
-  moduleId,
-  darkMode,
-  mode = 'edit',
-  { environmentId, versionId } = {},
-  moduleMode = false
-) => {
+const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, versionId } = {}, moduleMode = false) => {
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules, shallow);
   moduleMode && !mounted && initModules(moduleId);
-
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
   const setEditorLoading = useStore((state) => state.setEditorLoading);
@@ -130,6 +122,7 @@ const useAppData = (
   const setModuleDefinition = useStore((state) => state.setModuleDefinition);
   const getModuleDefinition = useStore((state) => state.getModuleDefinition);
   const deleteModuleDefinition = useStore((state) => state.deleteModuleDefinition);
+
   const themeAccess = useThemeAccess();
 
   const setConversation = useStore((state) => state.ai?.setConversation);
@@ -184,7 +177,6 @@ const useAppData = (
   }, [pageSwitchInProgress, currentPageId, moduleMode]);
 
   useEffect(() => {
-    // if (moduleMode) return;
     const subscription = authenticationService.currentSession
       .pipe(
         distinctUntilChanged((prev, curr) => {
@@ -224,13 +216,12 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
-
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess = moduleMode
       ? false
       : (currentSession?.load_app && currentSession?.authentication_failed) ||
-        (!queryParams.version && mode !== 'edit');
+      (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
@@ -253,277 +244,263 @@ const useAppData = (
     }
 
     // const appDataPromise = appService.fetchApp(appId);
-    appDataPromise
-      .then(async (result) => {
-        let appData = { ...result };
-        let editorEnvironment = result.editorEnvironment;
-        if (isPreviewForVersion) {
-          const rawDataQueries = appData?.data_queries;
-          const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
-          appData = convertAllKeysToSnakeCase(appData);
+    appDataPromise.then(async (result) => {
+      let appData = { ...result };
+      let editorEnvironment = result.editorEnvironment;
+      if (isPreviewForVersion) {
+        const rawDataQueries = appData?.data_queries;
+        const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
+        appData = convertAllKeysToSnakeCase(appData);
 
-          appData.data_queries = rawDataQueries;
-          if (appData.editing_version && rawEditingVersionDataQueries) {
-            appData.editing_version.data_queries = rawEditingVersionDataQueries;
-          }
+        appData.data_queries = rawDataQueries;
+        if (appData.editing_version && rawEditingVersionDataQueries) {
+          appData.editing_version.data_queries = rawEditingVersionDataQueries;
+        }
 
+        editorEnvironment = {
+          id: environmentId,
+          name: queryParams.env,
+        };
+      }
+
+      let constantsResp;
+      if (mode !== 'edit') {
+        try {
+          const queryParams = { slug: slug };
+          const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
           editorEnvironment = {
-            id: environmentId,
-            name: queryParams.env,
+            id: viewerEnvironment?.environment?.id,
+            name: viewerEnvironment?.environment?.name,
           };
+          constantsResp =
+            isPublicAccess && appData.is_public
+              ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug, viewerEnvironment?.environment?.id)
+              : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
+        } catch (error) {
+          console.error('Error fetching viewer environment:', error);
         }
+      }
 
-        let constantsResp;
-        if (mode !== 'edit') {
-          try {
-            const queryParams = { slug: slug };
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
-            editorEnvironment = {
-              id: viewerEnvironment?.environment?.id,
-              name: viewerEnvironment?.environment?.name,
-            };
-            constantsResp =
-              isPublicAccess && appData.is_public
-                ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
-                : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
-          } catch (error) {
-            console.error('Error fetching viewer environment:', error);
-          }
-        }
+      if (mode === 'edit') {
+        constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
+      }
+      // get the constants for specific environment
+      constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+        constantsResp?.constants,
+        editorEnvironment?.name
+      );
 
-        if (mode === 'edit') {
-          constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
-        }
-        // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
+      !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
-        !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
+      fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
 
-        fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
+      const pages = appData.pages.map((page) => {
+        return page;
+      });
+      const conversation = appData.ai_conversation;
+      const docsConversation = appData.ai_conversation_learn;
+      if (setConversation && setDocsConversation) {
+        setConversation(conversation);
+        setDocsConversation(docsConversation);
+        // important to control ai inputs
+        getCreditBalance();
+      }
 
-        const pages = appData.pages.map((page) => {
-          return page;
-        });
-        const conversation = appData.ai_conversation;
-        const docsConversation = appData.ai_conversation_learn;
-        if (setConversation && setDocsConversation) {
-          setConversation(conversation);
-          setDocsConversation(docsConversation);
-          // important to control ai inputs
-          getCreditBalance();
-        }
+      let showWalkthrough = true;
+      // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
 
-        let showWalkthrough = true;
-        // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
+      // handles the getappdataby slug api call. Gets the homePageId from the appData.
+      const homePageId =
+        appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
 
-        // handles the getappdataby slug api call. Gets the homePageId from the appData.
-        const homePageId =
-          appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
+      appTypeRef.current = appData.type;
 
-        appTypeRef.current = appData.type;
-
-        setApp(
-          {
-            appName: appData.name,
-            appId: appData.id,
-            slug: appData.slug,
-            currentAppEnvironmentId: editorEnvironment.id,
-            isMaintenanceOn:
-              'is_maintenance_on' in result
-                ? result.is_maintenance_on
-                : 'isMaintenanceOn' in result
+      setApp(
+        {
+          appName: appData.name,
+          appId: appData.id,
+          slug: appData.slug,
+          currentAppEnvironmentId: editorEnvironment.id,
+          isMaintenanceOn:
+            'is_maintenance_on' in result
+              ? result.is_maintenance_on
+              : 'isMaintenanceOn' in result
                 ? result.isMaintenanceOn
                 : false,
-            organizationId: appData.organizationId || appData.organization_id,
-            homePageId: homePageId,
-            isPublic: appData.is_public,
-            creationMode: appData.creation_mode,
-          },
-          moduleId
+          organizationId: appData.organizationId || appData.organization_id,
+          homePageId: homePageId,
+          isPublic: appData.is_public,
+          creationMode: appData.creation_mode,
+        },
+        moduleId
+      );
+      if (!moduleMode) {
+        setIsEditorFreezed(appData.should_freeze_editor);
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings || appData.global_settings,
+          (value, key) => camelCase(key)
         );
-
-        if (!moduleMode) {
-          setIsEditorFreezed(appData.should_freeze_editor);
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
         }
+        setGlobalSettings(global_settings);
+      }
+      setPages(pages, moduleId);
+      setPageSettings(
+        computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
+      );
 
-        setPages(pages, moduleId);
-        setPageSettings(
-          computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
-        );
+      // set starting page as homepage initially
+      let startingPage = appData.pages.find((page) => page.id === homePageId);
 
-        // set starting page as homepage initially
-        let startingPage = appData.pages.find((page) => page.id === homePageId);
+      //no access to homepage, set to the next available page
+      if (startingPage?.restricted) {
+        startingPage = appData.pages.find((page) => !page?.restricted);
+      }
 
-        //no access to homepage, set to the next available page
-        if (startingPage?.restricted) {
-          startingPage = appData.pages.find((page) => !page?.restricted);
-        }
+      if (initialLoadRef.current && !moduleMode) {
+        // if initial load, check if the path has a page handle and set that as the starting page
+        const initialLoadPath = location.pathname.split('/').pop();
 
-        if (initialLoadRef.current && !moduleMode) {
-          // if initial load, check if the path has a page handle and set that as the starting page
-          const initialLoadPath = location.pathname.split('/').pop();
-          const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
-          if (page) {
-            const shouldRedirect = page?.restricted || (mode !== 'edit' && page?.disabled);
+        const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
+        if (page) {
+          // if page is disabled, and not editing redirect to home page
+          const shouldRedirect = page?.restricted || (mode !== 'edit' && page?.disabled);
 
-            if (shouldRedirect) {
-              const newUrl = window.location.href.replace(initialLoadPath, startingPage.handle);
-              window.history.replaceState(null, null, newUrl);
+          if (shouldRedirect) {
+            const newUrl = window.location.href.replace(initialLoadPath, startingPage.handle);
+            window.history.replaceState(null, null, newUrl);
 
-              if (page?.restricted) {
-                toast.error('Access to this page is restricted. Contact admin to know more.', {
-                  className: 'text-nowrap w-auto mw-100',
-                });
-              }
-            } else {
-              startingPage = page;
+            if (page?.restricted) {
+              toast.error('Access to this page is restricted. Contact admin to know more.', {
+                className: 'text-nowrap w-auto mw-100',
+              });
             }
+          } else {
+            startingPage = page;
           }
-
-          // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
         }
 
-        // Add page id and handle to the state on initial load
-        const currentState = window.history.state || {};
-        const pageInfo = {
-          id: startingPage.id,
-          handle: startingPage.handle,
-        };
-        const newState = { ...currentState, ...pageInfo };
-        window.history.replaceState(newState, '', window.location.href);
-        setCurrentPageHandle(startingPage.handle, moduleId);
-        setCurrentPageId(startingPage.id, moduleId);
-        setResolvedPageConstants(
-          {
-            id: startingPage?.id,
-            handle: startingPage?.handle,
-            name: startingPage?.name,
-          },
+        // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
+      }
+
+      // Add page id and handle to the state on initial load
+      const currentState = window.history.state || {};
+      const pageInfo = {
+        id: startingPage.id,
+        handle: startingPage.handle,
+      };
+      const newState = { ...currentState, ...pageInfo };
+      window.history.replaceState(newState, '', window.location.href);
+
+      setCurrentPageHandle(startingPage.handle, moduleId);
+      setCurrentPageId(startingPage.id, moduleId);
+      setResolvedPageConstants(
+        {
+          id: startingPage?.id,
+          handle: startingPage?.handle,
+          name: startingPage?.name,
+        },
+        moduleId
+      );
+      setComponentNameIdMapping(moduleId);
+      updateEventsField('events', appData.events, moduleId);
+      if (!moduleMode) {
+        updateFeatureAccess();
+        setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+      }
+      setAppHomePageId(homePageId, moduleId);
+      if (!moduleMode && appData.modules) {
+        setModuleDefinition(appData.modules);
+      }
+
+      const queryData =
+        isPublicAccess || (mode !== 'edit' && appData.is_public)
+          ? appData
+          : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
+      const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
+      dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+      setQueries(dataQueries, moduleId);
+      if (dataQueries?.length > 0) {
+        !moduleMode && setSelectedQuery(dataQueries[0]?.id);
+        initialiseResolvedQuery(
+          dataQueries.map((query) => query.id),
           moduleId
         );
-        setComponentNameIdMapping(moduleId);
-        updateEventsField('events', appData.events, moduleId);
-        if (!moduleMode) {
-          updateFeatureAccess();
-          setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
-        }
-        setAppHomePageId(homePageId, moduleId);
-        if (!moduleMode && appData.modules) {
-          setModuleDefinition(appData.modules);
-        }
+      }
+      const constants = constantsResp?.constants;
 
-        const queryData =
-          isPublicAccess || (mode !== 'edit' && appData.is_public)
-            ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
-        const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
-        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
-        setQueries(dataQueries, moduleId);
-        if (dataQueries?.length > 0) {
-          !moduleMode && setSelectedQuery(dataQueries[0]?.id);
-          initialiseResolvedQuery(
-            dataQueries.map((query) => query.id),
-            moduleId
-          );
-        }
-        const constants = constantsResp?.constants;
+      if (constants) {
+        const orgConstants = {};
+        const orgSecrets = {};
+        constants.map((constant) => {
+          if (constant.type !== 'Secret') {
+            orgConstants[constant.name] = constant.value;
+          } else {
+            orgSecrets[constant.name] = constant.value;
+          }
+        });
+        setResolvedConstants(orgConstants, moduleId);
+        setSecrets(orgSecrets, moduleId);
+      }
+      setQueryMapping(moduleId);
 
-        if (constants) {
-          const orgConstants = {};
-          const orgSecrets = {};
-          constants.map((constant) => {
-            if (constant.type !== 'Secret') {
-              orgConstants[constant.name] = constant.value;
-            } else {
-              orgSecrets[constant.name] = constant.value;
-            }
-          });
-          setResolvedConstants(orgConstants, moduleId);
-          setSecrets(orgSecrets, moduleId);
-        }
-        setQueryMapping(moduleId);
-
-        setResolvedGlobals('environment', editorEnvironment, moduleId);
-        setResolvedGlobals('mode', { value: mode }, moduleId);
-        setResolvedGlobals(
-          'currentUser',
-          {
-            ...user,
-            groups: currentSession?.groups,
-            role: currentSession?.role?.name,
-            ssoUserInfo: currentSession?.ssoUserInfo,
-            ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
-              ? { metadata: currentSession?.currentUser?.metadata }
-              : {}),
-          },
-          moduleId
+      setResolvedGlobals('environment', editorEnvironment, moduleId);
+      setResolvedGlobals('mode', { value: mode }, moduleId);
+      setResolvedGlobals('currentUser', {
+        ...user,
+        groups: currentSession?.groups,
+        role: currentSession?.role?.name,
+        ssoUserInfo: currentSession?.ssoUserInfo,
+        ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
+          ? { metadata: currentSession?.currentUser?.metadata }
+          : {}),
+      }, moduleId);
+      setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
+      initDependencyGraph(moduleId);
+      setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
+      if (
+        !moduleMode &&
+        state.ai &&
+        state?.prompt &&
+        initialLoadRef.current &&
+        (conversation?.aiConversationMessages || []).length === 0
+      ) {
+        setSelectedSidebarItem('tooljetai');
+        toggleLeftSidebar('true');
+        sendMessage(state.prompt);
+        setConversationZeroState(true);
+        showWalkthrough = false;
+      }
+      // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
+      if (!isPublicAccess && !moduleMode) {
+        const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
+        useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
+        fetchGlobalDataSources(
+          appData.organization_id,
+          appData.editing_version?.id || appData.current_version_id,
+          editorEnvironment.id
         );
-        setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
-        initDependencyGraph(moduleId);
-        setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
-        if (
-          !moduleMode &&
-          state.ai &&
-          state?.prompt &&
-          initialLoadRef.current &&
-          (conversation?.aiConversationMessages || []).length === 0
-        ) {
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar('true');
-          sendMessage(state.prompt);
-          setConversationZeroState(true);
-          showWalkthrough = false;
-        }
-        // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
-        if (!isPublicAccess && !moduleMode) {
-          const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
-          fetchGlobalDataSources(
-            appData.organization_id,
-            appData.editing_version?.id || appData.current_version_id,
-            editorEnvironment.id
-          );
-        }
-        if (!moduleMode) {
-          useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
-          updateReleasedVersionId(appData.current_version_id);
-        }
+      }
+      if (!moduleMode) {
+        useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
+        updateReleasedVersionId(appData.current_version_id);
+      }
 
+      setEditorLoading(false, moduleId);
+      initialLoadRef.current = false;
+      // only show if app is not created from prompt
+      if (showWalkthrough && !moduleMode) initEditorWalkThrough();
+      !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
+      return () => {
+        document.title = retrieveWhiteLabelText();
+      };
+    }).catch((error) => {
+      if (moduleMode) {
         setEditorLoading(false, moduleId);
-        initialLoadRef.current = false;
-        // only show if app is not created from prompt
-        if (showWalkthrough && !moduleMode) initEditorWalkThrough();
-        !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
-        return () => {
-          document.title = retrieveWhiteLabelText();
-        };
-      })
-      .catch((error) => {
-        console.log('error--- ', error);
-
-        if (isPublicAccess) {
-          if (mode !== 'edit') {
-            handleError('view', error);
-          }
-        } else if (moduleMode) {
-          setEditorLoading(false, moduleId);
-          toast.error('Error fetching module data');
-        }
-      });
+        toast.error('Error fetching module data');
+      }
+    });
   }, [setApp, setEditorLoading, currentSession]);
 
   useEffect(() => {
@@ -539,9 +516,9 @@ const useAppData = (
   }, [isComponentLayoutReady, moduleId]);
 
   useEffect(() => {
-    if (moduleMode) return;
+    if (moduleId) return;
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: app.appName });
-  }, [app.appName, moduleMode]);
+  }, [app.appName, moduleId]);
 
   useEffect(() => {
     if (!themeAccess) return;
@@ -586,8 +563,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
@@ -658,7 +635,7 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
-        setEditorLoading(false, moduleId);
+        setEditorLoading(false, false);
       });
     }
   }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);

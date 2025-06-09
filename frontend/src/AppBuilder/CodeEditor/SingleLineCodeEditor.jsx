@@ -1,12 +1,18 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
 import { camelCase, isEmpty, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { autocompletion, completionKeymap, completionStatus, acceptCompletion } from '@codemirror/autocomplete';
+import {
+  autocompletion,
+  completionKeymap,
+  completionStatus,
+  acceptCompletion,
+  startCompletion,
+} from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
@@ -23,6 +29,8 @@ import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
@@ -75,6 +83,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
+
   //! Re render the component when the componentName changes as the initialValue is not updated
 
   // const { variablesExposedForPreview } = useContext(EditorContext) || {};
@@ -201,9 +210,14 @@ const EditorInput = ({
   wrapperRef,
   showSuggestions,
 }) => {
-  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+  const codeHinterContext = useContext(CodeHinterContext);
+  const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
 
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const [codeMirrorView, setCodeMirrorView] = useState(undefined);
+
+  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
   const isInsideQueryManager = useMemo(
@@ -211,15 +225,15 @@ const EditorInput = ({
     [wrapperRef.current]
   );
   function autoCompleteExtensionConfig(context) {
-    const hints = getSuggestions();
+    const hintsWithoutParamHints = getSuggestions();
     const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
 
-    const allHints = {
-      ...hints,
-      appHints: [...hints.appHints, ...serverHints],
-    };
-
     let word = context.matchBefore(/\w*/);
+
+    const hints = {
+      ...hintsWithoutParamHints,
+      appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
+    };
 
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
 
@@ -249,17 +263,18 @@ const EditorInput = ({
       queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, allHints, totalReferences, originalQueryInput);
+    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
 
     return {
       from: word.from,
       options: completions,
       validFor: /^\{\{.*\}\}$/,
+      filter: false,
     };
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [isInsideQueryManager]);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [isInsideQueryManager, paramHints]);
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
@@ -426,6 +441,9 @@ const EditorInput = ({
             ref={previewRef}
           >
             <CodeMirror
+              onCreateEditor={(view) => {
+                setCodeMirrorView(view);
+              }}
               value={currentValue}
               placeholder={placeholder}
               height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
@@ -433,11 +451,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                      javascript({ jsx: lang === 'jsx' }),
-                      autoCompleteConfig,
-                      keymap.of([...customKeyMaps]),
-                      customTabKeymap,
-                    ]
+                    javascript({ jsx: lang === 'jsx' }),
+                    autoCompleteConfig,
+                    keymap.of([...customKeyMaps]),
+                    customTabKeymap,
+                  ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -462,11 +480,16 @@ const EditorInput = ({
               theme={theme}
               indentWithTab={false}
               readOnly={disabled}
+              onKeyDown={(event) => {
+                if (event.key === 'Backspace') {
+                  startCompletion(codeMirrorView);
+                }
+              }}
             />
           </div>
-        </ErrorBoundary>
-      </CodeHinter.Portal>
-    </div>
+        </ErrorBoundary >
+      </CodeHinter.Portal >
+    </div >
   );
 };
 
@@ -507,9 +530,8 @@ const DynamicEditorBridge = (props) => {
     }
     return (
       <div
-        className={`col-auto pt-0 fx-common fx-button-container ${
-          (isEventManagerParam || codeShow) && 'show-fx-button-container'
-        }`}
+        className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
+          }`}
       >
         <FxButton
           active={codeShow}
@@ -537,9 +559,8 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
-                darkMode && 'color-whitish-darkmode'
-              }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
+                }`}
             />
           </div>
         )}

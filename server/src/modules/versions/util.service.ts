@@ -72,4 +72,13 @@ export class VersionUtilService implements IVersionUtilService {
     await this.versionRepository.update(appVersion.id, editableParams);
     return;
   }
+
+  async fetchVersions(appId: string): Promise<AppVersion[]> {
+    return await this.versionRepository.find({
+      where: { appId },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
 }

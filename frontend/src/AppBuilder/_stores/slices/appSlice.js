@@ -88,7 +88,8 @@ export const createAppSlice = (set, get) => ({
       'setCanvasHeight'
     ),
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, currentMode, setCanvasHeight } = get();
+    const { currentLayout, getCurrentMode, setCanvasHeight } = get();
+    const currentMode = getCurrentMode(moduleId);
     const maxHeight = Object.values(components).reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
       if (!layout) {

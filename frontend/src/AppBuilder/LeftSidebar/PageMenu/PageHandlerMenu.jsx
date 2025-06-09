@@ -166,7 +166,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                       >
                         <div className="d-flex align-items-center">
                           <div>Page permission</div>
-                          {!licenseValid && <SolidIcon name="enterprisesmall" />}
+                          {!licenseValid && <SolidIcon name="enterprisecrown" />}
                         </div>
                       </ToolTip>
                     );

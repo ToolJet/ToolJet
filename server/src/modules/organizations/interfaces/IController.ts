@@ -11,4 +11,6 @@ export interface IOrganizationsController {
   checkWorkspaceUnique(name: string, slug: string): Promise<void>;
 
   checkUniqueWorkspaceName(name: string): Promise<void>;
+
+  setDefaultWorkspace(id: string): Promise<void>;
 }

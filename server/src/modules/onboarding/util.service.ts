@@ -151,6 +151,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     signingUpOrganization: Organization,
     userParams: { firstName: string; lastName: string; password: string },
     redirectTo?: string,
+    defaultWorkspace?: Organization,
     manager?: EntityManager
   ) => {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -251,19 +252,28 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         case hasWorkspaceInviteButUserWantsInstanceSignup: {
           const firstTimeSignup = ![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(existingUser.source as SOURCE);
           if (firstTimeSignup) {
+            if(defaultWorkspace) {
+              return this.updateExistingUserDefaultWorkspace({
+                password,
+                firstName,
+                lastName
+              },existingUser, defaultWorkspace, manager);
+            }
+
             /* Invite user doing instance signup. So reset name fields and set password */
             let defaultOrganizationId = existingUser.defaultOrganizationId;
             const isPersonalWorkspaceAllowed =
               (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
               'true';
-            if (!existingUser.defaultOrganizationId && isPersonalWorkspaceAllowed) {
+
+          if (!existingUser.defaultOrganizationId && isPersonalWorkspaceAllowed) {
               const personalWorkspaces = await this.organizationUsersUtilService.personalWorkspaces(existingUser.id);
               if (personalWorkspaces.length) {
                 defaultOrganizationId = personalWorkspaces[0].organizationId;
               } else {
                 /* Create a personal workspace for the user */
                 const { name, slug } = generateNextNameAndSlug('My workspace');
-                const defaultOrganization = await this.organizationRepository.createOne(name, slug, manager);
+                const defaultOrganization = await this.organizationRepository.createOne({ name, slug }, manager);
                 defaultOrganizationId = defaultOrganization.id;
                 await this.organizationUserRepository.createOne(existingUser, defaultOrganization, true, manager);
               }
@@ -272,7 +282,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
                 userId: existingUser.id,
               });
             }
-
             await this.userRepository.updateOne(
               existingUser.id,
               {
@@ -398,7 +407,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       let personalWorkspace: Organization;
       if (isPersonalWorkspaceEnabled) {
         const { name, slug } = generateNextNameAndSlug('My workspace');
-        personalWorkspace = await this.setupOrganizationsUtilService.create(name, slug, null, manager);
+        personalWorkspace = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
       }
       const organizationRole = personalWorkspace ? USER_ROLE.ADMIN : USER_ROLE.END_USER;
 
@@ -604,4 +613,130 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       manager
     );
   }
+
+  createUserInDefaultWorkspace = async (
+    userParams: { email: string; password: string; firstName: string; lastName: string },
+    defaultWorkspace: Organization,
+    redirectTo?: string,
+    manager?: EntityManager
+  ) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { email, password, firstName, lastName } = userParams;
+
+      if (!defaultWorkspace) {
+        throw new Error('No default workspace found in the instance');
+      }
+
+      // Create user with end-user role in default workspace
+      const lifeCycleParms = getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP);
+      
+      const user = await this.create(
+        {
+          email,
+          password,
+          ...(firstName && { firstName }),
+          ...(lastName && { lastName }),
+          ...lifeCycleParms,
+        },
+        defaultWorkspace.id,
+        USER_ROLE.END_USER,
+        null,
+        true,
+        null,
+        manager,
+        false
+      );
+
+      // Create organization user entry
+      await this.organizationUserRepository.createOne(
+        user,
+        defaultWorkspace,
+        true,
+        manager,
+        WORKSPACE_USER_SOURCE.SIGNUP
+      );
+
+      // Validate license
+      await this.licenseUserService.validateUser(manager);
+
+      // Send welcome email
+      this.eventEmitter.emit('emailEvent', {
+          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+          payload: {
+          to: user.email,
+          name: user.firstName,
+          invitationtoken: user.invitationToken,
+        },
+      });
+
+      return {};
+    }, manager);
+  };
+
+  updateExistingUserDefaultWorkspace = async (
+    userParams: { password: string; firstName: string; lastName: string },
+    existingUser: User,
+    defaultWorkspace: Organization,
+    manager?: EntityManager
+  ) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { password, firstName, lastName } = userParams;
+      // Create organization user entry if not exists
+      const existingOrgUser = await this.organizationUserRepository.findOne({
+        where: {
+          userId: existingUser.id,
+          organizationId: defaultWorkspace.id,
+        }
+      });
+
+      if(existingOrgUser){ 
+        throw new NotAcceptableException(
+          'The user is already registered. Please check your inbox for the activation link'
+        );
+      }
+
+      // Update user's default organization ID
+      await this.userRepository.updateOne(
+        existingUser.id,
+        {
+          password,
+          firstName,
+          lastName,
+          source: SOURCE.SIGNUP,
+          defaultOrganizationId: defaultWorkspace.id,
+        },
+        manager
+      );
+
+        await this.organizationUserRepository.createOne(
+          existingUser,
+          defaultWorkspace,
+          true,
+          manager,
+          WORKSPACE_USER_SOURCE.SIGNUP
+        );
+
+        // Add end-user role in default workspace if not already present
+        await this.rolesUtilService.addUserRole(
+          defaultWorkspace.id,
+          { role: USER_ROLE.END_USER, userId: existingUser.id },
+          manager
+        );
+
+      // Validate license
+      await this.licenseUserService.validateUser(manager);
+
+      // send welcome email
+      this.eventEmitter.emit('emailEvent', {
+        type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+        payload: {
+          to: existingUser.email,
+          name: existingUser.firstName,
+          invitationtoken: existingUser.invitationToken,
+        },
+      });
+
+      return {};
+    }, manager);
+  };
 }

@@ -860,3 +860,19 @@
   min-height: 300px;
   position: relative;
 }
+
+.left-sidebar-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    margin-right: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--interactive-default) !important;
+    border-radius: 3px;
+  }
+}

@@ -26,7 +26,7 @@ export class LoginConfigsService implements ILoginConfigsService {
       throw new NotFoundException();
     }
     if (!organizationId) {
-      const result = this.loginConfigsUtilService.constructSSOConfigs();
+      const result = await this.loginConfigsUtilService.constructSSOConfigs();
       return result;
     }
 
