@@ -3812,10 +3812,8 @@ input[type="text"] {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .invitation-page {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 .show {
@@ -7560,6 +7558,14 @@ color: var(--cc-primary-text) !important;
 
   .table-cell {
     padding: 0;
+    input[type="checkbox"]{
+      accent-color: var(--cc-primary-brand);
+      background-color: var(--cc-surface1-surface);
+    }
+
+    input[type="checkbox"]:checked::before {
+      background-color: var(--cc-surface1-surface);
+    }
   }
 
   .add-more-columns-btn {
@@ -12642,17 +12648,14 @@ color: var(--cc-primary-text) !important;
                 color: #6b6b6b !important;
               }
             }
-
           }
 
           &:hover {
             background-color: #2b2f31;
           }
-
         }
       }
     }
-
   }
 
   .react-tel-input .country-list .country.highlight {
@@ -12670,7 +12673,6 @@ color: var(--cc-primary-text) !important;
   box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
   border-radius: 6px;
   margin-top: -13px;
-
 
   .input-with-icon {
     justify-content: flex-end
@@ -12709,8 +12711,6 @@ color: var(--cc-primary-text) !important;
   font-size: 12px;
   line-height: 20px;
   color: #11181C;
-
-
 }
 
 .maximum-canvas-width-input-select {
@@ -12733,8 +12733,6 @@ color: var(--cc-primary-text) !important;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
   border-right: none !important;
-
-
 }
 
 .canvas-background-holder {
@@ -12790,12 +12788,10 @@ color: var(--cc-primary-text) !important;
 }
 
 .export-table-button {
-
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 
 #global-settings-popover.theme-dark {
   background-color: $bg-dark-light !important;
@@ -12850,7 +12846,6 @@ color: var(--cc-primary-text) !important;
   }
 
   @keyframes shake {
-
     10%,
     90% {
       transform: translate3d(-1px, 0, 0);
@@ -12872,7 +12867,6 @@ color: var(--cc-primary-text) !important;
       transform: translate3d(4px, 0, 0);
     }
   }
-
 }
 
 .profile-page-content-wrap {
@@ -12913,7 +12907,6 @@ color: var(--cc-primary-text) !important;
   .workspace-constant-card-body {
     min-height: calc(100vh - 408px);
     background: var(--base);
-
   }
 
   .constant-table-wrapper {
@@ -12942,8 +12935,6 @@ color: var(--cc-primary-text) !important;
     width: 148px
   }
 }
-
-
 
 .variables-table-wrapper {
   tr {
@@ -12983,7 +12974,6 @@ color: var(--cc-primary-text) !important;
 
         .card-skeleton-container {
           width: 304px;
-
         }
       }
     }
@@ -12995,17 +12985,13 @@ color: var(--cc-primary-text) !important;
 }
 
 @media only screen and (min-width: 1584px) and (max-width: 1727px) {
-
   .edit-button,
   .launch-button {
     width: 113px !important;
   }
 }
 
-
-
 @media only screen and (max-width: 1583px) and (min-width: 1312px) {
-
   .homepage-app-card-list-item {
     max-width: 264px;
 
@@ -13014,11 +13000,9 @@ color: var(--cc-primary-text) !important;
       width: 109px !important;
     }
   }
-
 }
 
 @media only screen and (min-width: 1728px) {
-
   .homepage-app-card-list-item {
     max-width: 304px;
 
@@ -13099,7 +13083,6 @@ color: var(--cc-primary-text) !important;
 }
 
 .datasource-edit-modal {
-
   .modal-content,
   .modal-body,
   .modal-header,
@@ -13154,8 +13137,6 @@ color: var(--cc-primary-text) !important;
     width: 14px;
   }
 }
-
-
 
 .marketplace-body {
   height: calc(100vh - 64px) !important;
@@ -13249,7 +13230,6 @@ color: var(--cc-primary-text) !important;
   }
 }
 
-
 .gitsync-modal-body {
   align-items: center;
   justify-content: center;
@@ -13261,14 +13241,11 @@ color: var(--cc-primary-text) !important;
 
   .loader {
     border: 4px solid #f3f3f3;
-    /* Light gray border */
     border-top: 4px solid #3498db;
-    /* Blue border on top */
     border-radius: 50%;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
-    /* Rotation animation */
   }
 
   @keyframes spin {
@@ -18942,8 +18919,14 @@ section.ai-message-prompt-input-wrapper {
 .table-cell {
   input[type="checkbox"]{
     accent-color: var(--cc-primary-brand);
+    background-color: var(--cc-surface1-surface);
+  }
+
+  input[type="checkbox"]:checked::before {
+    background-color: var(--cc-surface1-surface);
   }
 }
+
 
 
 .canvas-component {

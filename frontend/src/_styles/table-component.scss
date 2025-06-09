@@ -8,6 +8,7 @@
   padding: 8px;
   background-color: 'red !important';
 
+
   &.jet-table {
     background-color: var(--surfaces-surface-01);
     box-shadow: var(--elevation-200-box-shadow);
@@ -322,6 +323,7 @@
     .jet-data-table {
       overflow-x: auto;
       overflow-y: auto;
+      scrollbar-color: var(--cc-table-scroll-bar-color) transparent;
 
       .th:first-child,
       td:first-child {
@@ -490,7 +492,8 @@
 
   .jet-data-table {
     td {
-      border-bottom: 1px solid #656d7729;
+      // border-bottom: 1px solid #656d7729;
+      border-bottom: none;
 
       // overflow: hidden;
       &:hover {
@@ -764,32 +767,32 @@
 .jet-table.table-component {
   .pagination-container {
     input {
-      color: var(--slate12) !important;
       border: 1px solid var(--slate7, #D7DBDF) !important;
-      background: var(--base, #FFF) !important;
+      background-color: var(--cc-surface1-surface)!important;
+      color: var(--cc-primary-text) !important;
 
-      &:hover {
-        border: 1px solid var(--slate8, #C1C8CD) !important;
-        background: var(--slate1, #FBFCFD) !important;
-      }
+      // &:hover {
+      //   border: 1px solid var(--slate8, #C1C8CD) !important;
+      //   background: var(--slate1, #FBFCFD) !important;
+      // }
 
       &:focus-visible {
         border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--base, #FFF) !important;
+        // background: var(--base, #FFF) !important;
         /* Focus rings/Gray/light */
         box-shadow: 0px 0px 0px 4px var(--slate6) !important;
       }
 
-      &:active {
-        border: 1px solid var(--indigo9, #3E63DD) !important;
-        background: var(--indigo2, #F8FAFF) !important;
-        /* Focus rings/Indigo/light */
-        box-shadow: 0px 0px 0px 4px var(--indigo6) !important;
-      }
+      // &:active {
+      //   border: 1px solid var(--indigo9, #3E63DD) !important;
+      //   background: var(--indigo2, #F8FAFF) !important;
+      //   /* Focus rings/Indigo/light */
+      //   box-shadow: 0px 0px 0px 4px var(--indigo6) !important;
+      // }
     }
 
     .total-page-number {
-      color: var(--slate11) !important
+      // color: var(--slate11) !important
     }
   }
 }
@@ -808,7 +811,6 @@
   .tr {
     .th {
       background: var(--cc-surface2-surface);
-      border-bottom: 1px solid var(--slate5, #E6E8EB) !important;
       border-top: 0 !important;
       padding: 6px 12px;
       align-items: center;
@@ -1548,3 +1550,10 @@
     width: 120px !important;
   }
 }
+
+.table-cell {
+  .react-datepicker__month, .react-datepicker__month-container, .react-datepicker, .tj-datepicker-widget-month-selector, .tj-datepicker-widget-year-selector{
+    background-color: var(--cc-surface1-surface) !important;
+  }
+}
+

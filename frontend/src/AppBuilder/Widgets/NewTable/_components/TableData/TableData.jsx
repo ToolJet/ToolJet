@@ -8,7 +8,6 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getModifiedColor } from '@/Editor/Components/utils';
 
 export const TableData = ({
   id,
@@ -54,8 +53,6 @@ export const TableData = ({
     let styles = {
       minHeight: cellHeight === 'condensed' ? '39px' : '45px',
       display: 'flex',
-      '--cc-table-row-hover': getModifiedColor(containerBackgroundColor, 'hover'),
-      '--cc-table-row-active': getModifiedColor(containerBackgroundColor, 'active'),
     };
 
     let cellMaxHeight;
@@ -118,9 +115,11 @@ export const TableData = ({
   }
 
   return (
-    <div className={`table-responsive jet-data-table`} style={{ maxHeight: '100%' }} ref={tableBodyRef}>
+    <div className={`table-responsive jet-data-table`} style={{ maxHeight: '100%', position: 'relative' }} ref={tableBodyRef}>
       <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        {renderTableHeader()}
+        <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: containerBackgroundColor }}>
+          {renderTableHeader()}
+        </thead>
         <tbody
           style={{
             position: 'relative',

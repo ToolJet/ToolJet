@@ -38,11 +38,13 @@ export const Table = memo(
     );
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
+    const themeChanged = useStore((state) => state.themeChanged);
 
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
     const hoverColor = getModifiedColor(containerBackgroundColor, 'hover');
+    const activeColor = getModifiedColor(containerBackgroundColor, 'active');
 
     const {
       columns,
@@ -137,6 +139,9 @@ export const Table = memo(
           '--cc-table-record-text-color': textColor,
           '--cc-table-action-icon-color': iconColor,
           '--cc-table-footer-action-hover': hoverColor,
+          '--cc-table-row-hover': hoverColor,
+          '--cc-table-row-active': activeColor,
+          '--cc-table-scroll-bar-color': activeColor, 
         }}
       >
         <TableContainer

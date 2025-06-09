@@ -307,7 +307,7 @@ export const formConfig = {
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '0' },
-      borderColor: { value: '#fff' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };
