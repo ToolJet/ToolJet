@@ -3,7 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import DataSectionUI from './DataSectionUI';
 import { isEqual } from 'lodash';
-import { FORM_STATUS } from './constants';
+import { FORM_STATUS } from '../constants';
 
 const DataSectionWrapper = ({ source, JSONData, component, ...restProps }) => {
   const getFormDataSectionData = useStore((state) => state.getFormDataSectionData, shallow);

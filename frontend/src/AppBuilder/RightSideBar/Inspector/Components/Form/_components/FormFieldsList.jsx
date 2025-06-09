@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
 import { FormField } from './FormField';
 import { Button } from '@/components/ui/Button/Button';
-import { FORM_STATUS } from './constants';
+import { FORM_STATUS } from '../constants';
 
-export const FormFieldsList = ({
-  fields,
-  isFormGenerated,
-  onDeleteField,
-  setIsModalOpen,
-  currentStatusRef,
-  onSave,
-}) => {
+export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen, currentStatusRef, onSave }) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
   if (fields.length === 0) {
@@ -24,7 +17,7 @@ export const FormFieldsList = ({
   return (
     <>
       <div className="tw-flex tw-flex-col tw-gap-1">
-        {fields.map((field, index) => (
+        {fields.map((field) => (
           <FormField
             key={field.name}
             field={field}

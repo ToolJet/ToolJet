@@ -6,8 +6,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Input from '@/components/ui/Input/Index';
-import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from './utils/utils';
-import { FORM_STATUS } from './constants';
+import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from '../utils/utils';
+import { FORM_STATUS } from '../constants';
 
 /**
  * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
@@ -16,14 +16,7 @@ import { FORM_STATUS } from './constants';
  *
  */
 
-const ColumnMappingRow = ({
-  column, // column now contains both database info and form config
-  onChange,
-  onCheckboxChange,
-  index,
-  darkMode = false,
-  disabled = false,
-}) => {
+const ColumnMappingRow = ({ column, onChange, onCheckboxChange, index, darkMode = false, disabled = false }) => {
   if (!column) return null;
 
   const inputTypeOptions = getInputTypeOptions(darkMode);
@@ -141,7 +134,6 @@ const RenderSection = ({
   sectionDisplayName,
   disabled = false,
 }) => {
-  // Ensure mappedColumns is always an array
   const columnsArray = Array.isArray(mappedColumns) ? mappedColumns : [];
 
   const selectableColumns = columnsArray.filter((col) => !isPropertyFxControlled(col.selected));
@@ -287,10 +279,8 @@ const RenderSection = ({
         {sectionDisplayName}
       </div>
 
-      {/* Header Row */}
       {renderHeader()}
 
-      {/* Rows */}
       <div className="tw-max-h-[400px] tw-overflow-y-auto">
         {columnsArray.length > 0 ? (
           columnsArray.map((column, index) => (
@@ -320,12 +310,10 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
   // Group columns by section type on component load or when columns change
   useEffect(() => {
     const groupBySection = () => {
-      // Create a map to hold columns by section
       const grouped = {};
 
-      // Group columns by their section type
       columns.forEach((col) => {
-        let sectionType = 'existing'; // Default to 'existing' if no section property found
+        let sectionType = 'existing';
 
         if (col.isNew) {
           sectionType = 'isNew';
@@ -334,7 +322,7 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         } else if (col.isCustomField) {
           sectionType = 'isCustomField';
         } else {
-          sectionType = 'existing'; // Default to 'existing' if no other type matches
+          sectionType = 'existing';
         }
 
         if (!grouped[sectionType]) {
@@ -343,10 +331,8 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         grouped[sectionType].push(col);
       });
 
-      // Define the custom order for section types
       const preferredOrder = ['isNew', 'isRemoved', 'existing', 'isCustomField'];
 
-      // Filter the preferredOrder array to only include types that exist in grouped
       const types = preferredOrder.filter((type) => grouped[type] && grouped[type].length > 0);
 
       setGroupedColumns(grouped);
@@ -356,7 +342,6 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
     groupBySection();
   }, [columns]);
 
-  // Update a specific section's columns
   const updateSectionColumns = (sectionType, updatedColumns) => {
     setGroupedColumns((prev) => ({
       ...prev,
@@ -366,9 +351,6 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
 
   const handleSubmit = () => {
     setIsSaving(true);
-
-    // Flatten all columns from all sections back into a single array
-    // Filter out columns from the 'isRemoved' section
     const combinedColumns = Object.entries(groupedColumns).flatMap(([_, columns]) => columns);
 
     onSubmit?.(combinedColumns);
@@ -386,16 +368,12 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
     return displayNames[sectionType];
   };
 
-  // Check if all sections have no selected items
-  // Fix: Make sure we're only calling .every on arrays, and add safety checks
   const allSectionsEmpty = Object.values(groupedColumns).every((sectionColumns) => {
-    // Check if sectionColumns is an array before calling .every
     return Array.isArray(sectionColumns) ? sectionColumns.every((col) => !col.selected) : true;
   });
 
   const modalBody = (
     <div className="tw-w-full column-mapping-modal-body-container">
-      {/* Render each section dynamically */}
       {sectionTypes.length > 0 && (
         <>
           {sectionTypes.map((sectionType) => {
@@ -418,7 +396,6 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         </>
       )}
 
-      {/* Footer */}
       <div className="tw-flex tw-justify-end tw-mt-4">
         <Button
           variant="primary"

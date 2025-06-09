@@ -6,7 +6,7 @@ import { FormFieldsList } from './FormFieldsList';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import FieldPopoverContent from './FieldPopoverContent';
-import { useDropdownState } from './hooks/useDropdownState';
+import { useDropdownState } from '../_hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import {
@@ -16,10 +16,10 @@ import {
   mergeFieldsWithComponentDefinition,
   mergeFormFieldsWithNewData,
   cleanupFormFields,
-} from './utils/utils';
-import { updateFormFieldComponent, createNewComponentFromMeta } from './utils/fieldOperations';
+} from '../utils/utils';
+import { updateFormFieldComponent, createNewComponentFromMeta } from '../utils/fieldOperations';
 import { merge, isEqual } from 'lodash';
-import { FORM_STATUS, COMPONENT_LAYOUT_DETAILS } from './constants';
+import { FORM_STATUS, COMPONENT_LAYOUT_DETAILS } from '../constants';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -319,8 +319,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
         {renderAddCustomFieldButton()}
       </div>
       <FormFieldsList
-        isFormGenerated={isFormGenerated}
-        fields={formFieldsWithComponentDefinition} // Use enhanced fields with component data
+        fields={formFieldsWithComponentDefinition}
         onDeleteField={handleDeleteField}
         setIsModalOpen={setIsModalOpen}
         currentStatusRef={currentStatusRef}

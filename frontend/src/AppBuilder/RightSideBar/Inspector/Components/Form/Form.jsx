@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../../EventManager';
 import { renderElement } from '../../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import DataSectionUI from './DataSectionUI';
-import DataSectionWrapper from './DataSectionWrapper';
+import DataSectionWrapper from './_components/DataSectionWrapper';
 import './styles.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { INPUT_COMPONENTS_FOR_FORM } from './constants';
 

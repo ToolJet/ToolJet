@@ -4,20 +4,17 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import FieldPopoverContent from './FieldPopoverContent';
-import { useDropdownState } from './hooks/useDropdownState';
+import { useDropdownState } from '../_hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { isTrueValue, isPropertyFxControlled } from './utils/utils';
-import { updateFormFieldComponent } from './utils/fieldOperations';
+import { isTrueValue, isPropertyFxControlled } from '../utils/utils';
 
 export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, darkMode = false }) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
-  const performBatchComponentOperations = useStore((state) => state.performBatchComponentOperations, shallow);
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState(field);
   const { handleDropdownOpen, handleDropdownClose, shouldPreventPopoverClose } = useDropdownState();
 
-  // Close main popover when another field's menu opens
   useEffect(() => {
     if (activeMenu && activeMenu !== fieldData.name) {
       setShowPopover(false);
@@ -33,10 +30,8 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
     onSave([updatedField], true);
   };
 
-  // Check if mandatory property is fx controlled
   const isMandatoryFxControlled = isPropertyFxControlled(fieldData.mandatory);
 
-  // Determine if the field is currently mandatory
   const isCurrentlyMandatory = isTrueValue(fieldData.mandatory?.value);
 
   const mainPopover = (
@@ -62,7 +57,6 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
             variant="ghost"
             size="default"
             onClick={() => {
-              // Toggle mandatory status if not fx controlled
               const newValue = !isCurrentlyMandatory;
               handleFieldChange({
                 ...fieldData,
@@ -73,7 +67,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
               });
               onMenuToggle(null);
             }}
-            disabled={isMandatoryFxControlled} // Disable button if mandatory is fx controlled
+            disabled={isMandatoryFxControlled}
             className={`base-regular ${isMandatoryFxControlled ? 'tw-opacity-50' : ''}`}
             leadingIcon="asterix"
             fill="#CCD1D5"
@@ -97,7 +91,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
             variant="ghost"
             size="default"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent closing the main popover
+              e.stopPropagation();
               onDelete(fieldData);
               onMenuToggle(null);
             }}
@@ -120,7 +114,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
         show={showPopover}
         onToggle={(show) => {
           if (!show && shouldPreventPopoverClose) {
-            return; // Prevent closing when dropdown is being interacted with or just closed
+            return;
           }
           if (show) onMenuToggle(null);
           setShowPopover(show);
@@ -141,7 +135,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
             placement="bottom-start"
             show={activeMenu === fieldData.name}
             onToggle={(show) => {
-              setShowPopover(false); // Always close main popover when clicking three dots
+              setShowPopover(false);
               if (show) {
                 onMenuToggle(fieldData.name);
               } else {
