@@ -13,7 +13,7 @@ import {
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
-import { camelCase, cloneDeep, isEmpty, kebabCase, mapKeys, rest } from 'lodash';
+import { camelCase, cloneDeep, isEmpty, kebabCase, mapKeys, noop, rest } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
@@ -124,11 +124,11 @@ const useAppData = (
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
 
-  const setModulesIsLoading = useStore((state) => state.setModulesIsLoading, shallow);
-  const setModulesList = useStore((state) => state.setModulesList, shallow);
-  const setModuleDefinition = useStore((state) => state.setModuleDefinition);
-  const getModuleDefinition = useStore((state) => state.getModuleDefinition);
-  const deleteModuleDefinition = useStore((state) => state.deleteModuleDefinition);
+  const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop, shallow);
+  const setModulesList = useStore((state) => state?.setModulesList ?? noop, shallow);
+  const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
+  const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
+  const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
 
   const themeAccess = useThemeAccess();
 
