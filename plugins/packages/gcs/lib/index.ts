@@ -31,7 +31,18 @@ export default class GcsQueryService implements QueryService {
           break;
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.message, {});
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      if (error) {
+        const gcsError = error as any;
+        const { code, errors } = gcsError;
+
+        errorDetails.code = code;
+        errorDetails.errors = errors;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
