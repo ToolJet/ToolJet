@@ -52,15 +52,15 @@ export class GitSyncModule {
         BaseGitUtilService,
         BaseGitSyncService,
         GitSyncService,
-        SourceControlProviderService,
         SSHGitSyncService,
         HTTPSGitSyncService,
         GitLabGitSyncService,
         HTTPSGitSyncUtilityService,
         SSHGitSyncUtilityService,
         GitLabGitSyncUtilityService,
+        SourceControlProviderService,
       ],
-      exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService],
+      // exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService],
     };
   }
 }
