@@ -147,11 +147,14 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
         componentsToBeRemoved = [];
 
       const isFormRegeneration = isFormGenerated && currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS;
+
       if (isFormRegeneration) {
         formFields.forEach((field) => {
           if (!field.isCustomField) {
             componentsToBeRemoved.push(field.componentId);
             operations.deleted.push(field.componentId);
+          } else {
+            newColumns.push(field);
           }
         });
       } else if (currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS) {
