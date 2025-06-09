@@ -119,36 +119,4 @@ export class VersionUtilService implements IVersionUtilService {
       return;
     }, manager);
   }
-  async handleVersionRenameCommit(appId: string, appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto) {
-    const prevName = appVersion.name;
-    const renameAppDto = new RenameAppOrVersionDto();
-    renameAppDto.prevName = appVersion.name;
-    renameAppDto.updatedName = appVersionUpdateDto.name;
-    const request = RequestContext.getRequest();
-    const { name } = appVersionUpdateDto;
-    if (name && name != prevName) {
-      const headers = {
-        'Content-Type': 'application/json',
-        Cookie: request.headers['cookie'],
-        'tj-workspace-id': request.headers['tj-workspace-id'],
-      };
-      const host = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.TOOLJET_HOST;
-      const renameAppDto = new RenameAppOrVersionDto();
-      renameAppDto.prevName = prevName;
-      renameAppDto.updatedName = name;
-      renameAppDto.renameVersionFlag = true;
-      // TO DO : Review if we can make it asynchronous
-      try {
-        await got.put(`${host}/api/app-git/app/${appId}/rename`, {
-          json: renameAppDto,
-          headers,
-          responseType: 'json',
-        });
-      } catch (err) {
-        console.log('Version rename commit failed with error', err);
-        // Don't throw the error here as this failure is related to the commit, but the version rename itself has been successful.
-        // This ensures the rest of the process continues, even though the commit may have failed
-      }
-    }
-  }
 }
