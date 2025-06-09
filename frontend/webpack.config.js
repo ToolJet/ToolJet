@@ -89,7 +89,7 @@ module.exports = {
           keep_fnames: true,
           compress: {
             drop_debugger: true,
-            drop_console: false,
+            drop_console: true,
           },
         },
         parallel: environment === 'production',
