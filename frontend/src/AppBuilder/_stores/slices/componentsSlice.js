@@ -833,6 +833,8 @@ export const createComponentsSlice = (set, get) => ({
         }
         updateComponentDependencyGraph(moduleId, newComponent);
         const parentId = newComponent.component.parent || 'canvas';
+        // Check if parent is a Form and add the component to form fields if needed
+        !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
         set(
           withUndoRedo((state) => {
             if (!state.containerChildrenMapping[parentId]) {
@@ -847,9 +849,6 @@ export const createComponentsSlice = (set, get) => ({
           false,
           'addComponentToCurrentPage'
         );
-
-        // Check if parent is a Form and add the component to form fields if needed
-        !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
       });
       const selectedComponents = findHighestLevelofSelection(newComponents);
       get().setSelectedComponents(selectedComponents.map((component) => component.id));

@@ -4,7 +4,7 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import _, { debounce, omit } from 'lodash';
 import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
@@ -18,6 +18,7 @@ import { HorizontalSlot } from './Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
 
 import './form.scss';
 
@@ -37,7 +38,7 @@ const FormComponent = (props) => {
     dataCy,
     onComponentClick,
   } = props;
-  const childComponents = useStore((state) => state.getChildComponents(id), shallow);
+  const childComponents = useStore((state) => state.getChildComponents(id), checkDiff);
   const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
   const {
     buttonToSubmit,
