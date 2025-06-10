@@ -60,7 +60,7 @@ export class GitSyncModule {
         GitLabGitSyncUtilityService,
         SourceControlProviderService,
       ],
-      // exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService],
+      exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService],
     };
   }
 }
