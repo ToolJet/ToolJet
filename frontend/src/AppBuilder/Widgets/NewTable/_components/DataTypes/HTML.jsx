@@ -108,7 +108,7 @@ export const HTMLColumn = ({
           e.stopPropagation();
         }}
       >
-        <div>{isEditing ? cellValue : <span dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }} />}</div>
+        {isEditing ? cellValue : <span dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }} />}
       </div>
     );
   };

@@ -29,7 +29,7 @@ const AccordionItem = ({ open = true, index, title, isTitleCase = true, children
       return input;
     }
   }
-  console.log('title', title);
+
   return (
     <div className="accordion-item" >
       <h2
