@@ -34,7 +34,7 @@ Under the Queries section, you can inspect the specifics of any query you’ve c
 
 Refer to the [Binding Data with Component](/docs/app-builder/connecting-with-data-sources/binding-data-to-components) guide to learn how to bind the query data to the component.
 
-## Components
+### Components
 
 The Components section provides a detailed view of each component present on your app’s canvas. You can see the current state, properties, and values of each component, helping you understand how data flows through your application and how components interact with each other
 
@@ -46,7 +46,7 @@ To learn more about a specific component and its exposed properties, refer to th
 
 Refer to the [Accessing Component State](#) guide to learn how to use component state.
 
-## Globals
+### Globals
 
 By using the Globals properties in the Inspector, you can view various details about your application and its environment, such as:
 - **Current User** - Information about the logged-in user, including email, name, avatar, groups, roles, and SSO details. Useful for building role-based UI or showing personalized content.
@@ -55,11 +55,11 @@ By using the Globals properties in the Inspector, you can view various details a
 - **Theme** - Refers to the active UI theme (light or dark). You can use this to dynamically style components based on the selected theme.
 - **URL Params** - These are query parameters appended to the page URL, commonly used to pass data between pages.
 
-## Variables
+### Variables
 
 The Variables section in the Inspector lets you view all app-level variables available within the current application. These variables can be used to store and share data across components and queries. You can inspect their current values here, making it easier to debug and manage dynamic behavior in your app.
 
-## Page
+### Page
 
 Page-specific properties (page handle and page name) and page variables are visible in the Page section. Unlike app-level variables, page-level variables are only accessible within their respective pages.
 
@@ -68,6 +68,6 @@ Page-specific properties (page handle and page name) and page variables are visi
 - **name** - The display name of the page, shown in the app's navigation menu. Set by the user.
 - **variables** - List of page level variables in the key-value pair.
 
-## Constants
+### Constants
 
 Workspace Constants are predefined values that you can use across different applications within your workspace. They are useful for storing frequently used data such as API URLs, configuration settings, or sensitive information like API keys and database credentials. In the inspector, you can view all constants as key-value pairs, secret constant values are masked for security.
