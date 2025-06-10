@@ -186,7 +186,6 @@ const sidebars = {
                 'app-builder/import-libraries/runpy',
               ],
             },
-            'app-builder/custom-code/using-libraries',
             'app-builder/custom-code/constants-secrets',
           ],
         },

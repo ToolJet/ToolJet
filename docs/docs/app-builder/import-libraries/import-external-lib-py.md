@@ -3,13 +3,10 @@ id: runpy
 title: Using RunPy
 ---
 
-RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries with micropip, you can add more functionality to your applications without needing a full backend. In this guide, we will learn to import external python packages and use them in the application.
+RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries, you can add more functionality to your applications without needing a full backend. In this guide, we will learn to import external python packages and use them in the application.
 
-If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy.
+If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy. ToolJet supports installing libraries using micropip only. Checkout [this](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) documentation for a list of supported libraries.
 
-:::caution Unsupported modules
-Modules with C/C++ extensions needing system libraries won't work in Pyodide, as it runs in a web browser without system library access. Pyodide, based on WebAssembly-compiled Python, also doesn't support certain system calls.
-:::
 
 ## Installing Python Packages
 
