@@ -60,6 +60,13 @@ export class AppGitPullDto {
 
   @IsString()
   gitVersionName: string;
+
+  @IsString()
+  appName: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowEditing: boolean;
 }
 
 export class AppGitPullUpdateDto {
