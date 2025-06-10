@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards, Post, Param, Body, NotFoundException, Put } from '@nestjs/common';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
-import { AppGitPullDto, AppGitPullUpdateDto, AppGitPushDto, RenameAppOrVersionDto } from '@modules/app-git/dto';
+import { AppGitPullDto, AppGitPullUpdateDto, AppGitPushDto, AppGitUpdateDto, RenameAppOrVersionDto } from '@modules/app-git/dto';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
@@ -77,6 +77,14 @@ export class AppGitController {
     @User() user: UserEntity,
     @Param('appId') appId: string,
     @Body() renameAppOrVersionDto: RenameAppOrVersionDto
+  ) {
+    throw new NotFoundException();
+  }
+  @Put('appGit/:appId')
+  async updateAppGitConfigs(
+    @User() user: UserEntity,
+    @Param('appId') appId: string,
+    @Body() updateAppGitDto: AppGitUpdateDto
   ) {
     throw new NotFoundException();
   }
