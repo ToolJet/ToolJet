@@ -116,7 +116,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
    ```env
     PGRST_LOG_LEVEL=info
     PGRST_DB_PRE_CONFIG=postgrest.pre_config
-    PGRST_SERVER_PORT=3001
+    PGRST_SERVER_PORT=3002
     PGRST_DB_URI=
     PGRST_JWT_SECRET=
    ```
