@@ -23,7 +23,7 @@ import {
   resizeQueryPanel,
   verifypreview
 } from "Support/utils/dataSource";
-import { openNode, verifyValue } from "Support/utils/inspector";
+import { openNode, verifyNodeData } from "Support/utils/inspector";
 
 describe("RunJS", () => {
   beforeEach(() => {
@@ -42,15 +42,15 @@ describe("RunJS", () => {
 
     selectQueryFromLandingPage("runjs", "JavaScript");
     addInputOnQueryField("runjs", "return true");
-    query("preview");
+    query("run");
     verifypreview("raw", "true");
     query("run");
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     openNode("queries");
     openNode("runjs1");
-    verifyValue("data", "Boolean", "true");
-    verifyValue("rawData", "Boolean", "true");
+    verifyNodeData("data", "Boolean", "true");
+    verifyNodeData("rawData", "Boolean", "true");
     cy.apiDeleteApp();
   });
 
@@ -60,11 +60,11 @@ describe("RunJS", () => {
 
     selectQueryFromLandingPage("runjs", "JavaScript");
     addInputOnQueryField("runjs", "return [page.handle,page.name]");
-    query("preview");
+    query("run");
     verifypreview("raw", `["home","Home"]`);
 
     addInputOnQueryField("runjs", "return globals.theme");
-    query("preview");
+    query("run");
     verifypreview("raw", `{"name":"light"}`);
 
     // addInputOnQueryField("runjs", "return globals.currentUser");
