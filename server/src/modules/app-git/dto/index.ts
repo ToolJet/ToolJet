@@ -16,6 +16,10 @@ export class AppGitCreateDto {
   @IsString()
   @IsNotEmpty()
   gitAppName: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowEditing: boolean;
 }
 
 export class AppGitPushDto {
