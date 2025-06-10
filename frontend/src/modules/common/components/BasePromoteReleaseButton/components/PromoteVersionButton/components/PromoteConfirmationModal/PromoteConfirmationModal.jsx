@@ -36,6 +36,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     onClose();
     setShow(false);
   }, [promotingEnvironment, onClose]);
+  const allowAppEdit = useStore((state) => state.allowEditing);
 
   const handleConfirm = () => {
     setPromotingEnvironment(true);
@@ -44,7 +45,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
       currentVersionId,
       async (response) => {
         toast.success(`${selectedVersion.name} has been promoted to ${data.target.name}!`);
-        if (data?.current?.name == 'development' && creationMode !== 'GIT') {
+        if (
+          data?.current?.name == 'development' &&
+          (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
+        ) {
           try {
             const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersion?.id);
             const appGit = gitData?.app_git;

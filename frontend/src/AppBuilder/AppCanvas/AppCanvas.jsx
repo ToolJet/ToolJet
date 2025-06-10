@@ -66,8 +66,9 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
       id="main-editor-canvas"
       onMouseUp={handleCanvasContainerMouseUp}
     >
-      {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
-      {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
+      {/* <AppCanvasBanner/> */}
+      {/* {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
+      {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />} */}
       <div
         ref={canvasContainerRef}
         className={cx(

@@ -39,13 +39,7 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
-import {
-  ImportAppMenu,
-  AppActionModal,
-  OrganizationList,
-  UserGroupMigrationBanner,
-  ConsultationBanner,
-} from '@/modules/dashboard/components';
+import { ImportAppMenu, AppActionModal, OrganizationList, ConsultationBanner } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 
 const { iconList, defaultIcon } = configs;
@@ -116,6 +110,8 @@ class HomePageComponent extends React.Component {
       shouldAutoImportPlugin: false,
       dependentPlugins: [],
       dependentPluginsDetail: {},
+      importedAppName: {},
+      isAppImportEditable: false,
     };
   }
 
@@ -586,6 +582,8 @@ class HomePageComponent extends React.Component {
       lastCommitUser: last_commit_user,
       lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
+      appName: this.state.importedAppName,
+      allowEditing: this.state.isAppImportEditable,
     };
     gitSyncService
       .importGitApp(body)
@@ -843,6 +841,25 @@ class HomePageComponent extends React.Component {
       appType !== 'workflow'
     );
   };
+  handleAppNameChange = (e) => {
+    const newAppName = e.target.value;
+    const { appsFromRepos } = this.state;
+    let validationMessage = {};
+    if (!newAppName.trim()) {
+      validationMessage = { message: 'App name cannot be empty' };
+    } else if (newAppName.length > 50) {
+      validationMessage = { message: 'App name cannot exceed 50 characters' };
+    } else {
+      const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
+      if (matchingApp?.app_name_exist === 'EXIST') {
+        validationMessage = { message: 'App name already exists' };
+      }
+    }
+    this.setState({
+      importedAppName: newAppName,
+      importingGitAppOperations: validationMessage,
+    });
+  };
   render() {
     const {
       apps,
@@ -1025,13 +1042,16 @@ class HomePageComponent extends React.Component {
                       options={this.generateOptionsForRepository()}
                       disabled={importingApp}
                       onChange={(newVal) => {
-                        this.setState({ selectedAppRepo: newVal }, () => {
-                          if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                            this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
-                          } else {
-                            this.setState({ importingGitAppOperations: {} });
+                        this.setState(
+                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
+                          () => {
+                            if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
+                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
+                            } else {
+                              this.setState({ importingGitAppOperations: {} });
+                            }
                           }
-                        });
+                        );
                       }}
                       width={'100%'}
                       value={selectedAppRepo}
@@ -1050,12 +1070,11 @@ class HomePageComponent extends React.Component {
                       <div className="tj-app-input">
                         <input
                           type="text"
-                          disabled={true}
-                          value={appsFromRepos[selectedAppRepo].git_app_name}
-                          className={cx('form-control font-weight-400 disabled', {
+                          value={this.state.importedAppName}
+                          className={cx('form-control font-weight-400', {
                             'tj-input-error-state': importingGitAppOperations?.message,
                           })}
-                          data-cy="app-name-field"
+                          onChange={this.handleAppNameChange}
                         />
                       </div>
                       <div>
@@ -1066,9 +1085,24 @@ class HomePageComponent extends React.Component {
                           )}
                           data-cy="app-name-helper-text"
                         >
-                          {importingGitAppOperations?.message
-                            ? importingGitAppOperations?.message
-                            : 'App name is inherited from git repository and cannot be edited'}
+                          {importingGitAppOperations?.message && importingGitAppOperations?.message}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="application-editable-checkbox-container">
+                      <input
+                        className="form-check-input"
+                        checked={this.state.isAppImportEditable}
+                        type="checkbox"
+                        onChange={() =>
+                          this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                        }
+                      />
+                      Make application editable
+                      <div className="helper-text">
+                        <div className="tj-text tj-text-xsm"></div>
+                        <div className="tj-text-xxsm">
+                          Enabling this allows editing and git sync push/pull access in development.
                         </div>
                       </div>
                     </div>
@@ -1288,12 +1322,6 @@ class HomePageComponent extends React.Component {
                     classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
                   />
                 )}
-              {this.shouldShowMigrationBanner() && (
-                <UserGroupMigrationBanner
-                  classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
-                  closeBanner={this.setShowGroupMigrationBanner}
-                />
-              )}
 
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>

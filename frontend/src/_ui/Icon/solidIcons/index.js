@@ -235,6 +235,9 @@ import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
 import Moon from './Moon.jsx';
+import SourceControl from './SourceControl.jsx';
+import Push from './PushIcon.jsx';
+import Pull from './PullIcon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -710,6 +713,12 @@ const Icon = (props) => {
       return <Play01 {...props} />;
     case 'moon':
       return <Moon {...props} />;
+    case 'source-control':
+      return <SourceControl {...props} />;
+    case 'push-changes':
+      return <Push {...props} />;
+    case 'pull-changes':
+      return <Pull {...props} />;
     default:
       return <Apps {...props} />;
   }
