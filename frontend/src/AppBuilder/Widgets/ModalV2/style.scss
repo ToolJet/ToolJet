@@ -6,6 +6,41 @@
 
 .modal-content.modal-component.tj-modal-widget-content {
   border: 0;
+  position: relative;
+  overflow: visible;
+
+  // Pseudo-elements for corner indicators
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid var(--background-accent-strong);
+    bottom: -4px; // Positions the center of the circle on the bottom edge
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 11; // Ensure they are above the handle's z-index if it overlaps, or adjust as needed
+  }
+
+  &::before {
+    left: -4px; // Positions the center of the circle on the left edge
+  }
+
+  &::after {
+    right: -4px; // Positions the center of the circle on the right edge
+  }
+
+  // Show indicators when the child resize handle is hovered
+  &:has(> .resize-handle.modal-resize-handle-bottom:hover) {
+    &::before,
+    &::after {
+      opacity: 1;
+    }
+  }
 
   .tj-modal-close-button {
     padding: 8px;
@@ -63,4 +98,55 @@
     overflow-x: hidden;
     width: 100%;
   }
+}
+
+// Add hover state for the modal content itself using box-shadow
+.modal-component.is-editing:hover {
+  box-shadow: 0 0px 0 1.5px var(--border-accent-weak);
+}
+.modal-component.is-editing.dragging:hover {
+  box-shadow: 0 0px 0 2px var(--border-accent-strong);
+}
+
+// Default state for the modal resize handle
+.modal-component > .resize-handle.modal-resize-handle-bottom {
+  width: 100%;
+  height: 10px;
+  cursor: ns-resize;
+  position: absolute;
+  transform: none;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  border: 0;
+
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, border-color 0.2s ease-in-out,
+    visibility 0.2s ease-in-out;
+}
+
+// Show handle if the modal content (its direct parent) is being edited
+.modal-component.is-editing > .resize-handle.modal-resize-handle-bottom {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+// Style handle when it is being dragged (modal content has .dragging class)
+.modal-component.dragging > .resize-handle.modal-resize-handle-bottom {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  border-bottom: 1px solid var(--primary-brand);
+}
+
+// Fallback: Show handle if the main .real-canvas (portal target) containing the modal is hovered.
+.real-canvas:hover
+  .modal-component
+  > .resize-handle.modal-resize-handle-bottom {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
 }
