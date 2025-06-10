@@ -101,7 +101,7 @@ export class AppsUtilService implements IAppsUtilService {
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: '#edeff5',
+        canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
         appMode: 'auto',
       };
