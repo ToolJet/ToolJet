@@ -47,9 +47,8 @@
 }
 
 .constant-page-wrapper {
-  background-color: #ffffff;
-  border: 1px solid #e9ecef;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--page-weak);
+  border: 1px solid var(--border-weak);
   overflow: hidden;
   width: 920px;
   height: 620px;

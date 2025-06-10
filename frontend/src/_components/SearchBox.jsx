@@ -4,6 +4,7 @@ import cx from 'classnames';
 import useDebounce from '@/_hooks/useDebounce';
 import { useMounted } from '@/_hooks/use-mount';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import './_styles/search-box.scss';
 
 export const SearchBox = forwardRef(
   (
@@ -65,7 +66,7 @@ export const SearchBox = forwardRef(
     }, [initialValue]);
 
     return (
-      <div className={`search-box-wrapper ${customClass}`}>
+      <div className={`ghost-search-box-wrapper ${customClass}`}>
         <div className="input-icon">
           {!isFocused && (
             <span className="input-icon-addon">
@@ -77,7 +78,7 @@ export const SearchBox = forwardRef(
             type="text"
             value={searchText}
             onChange={handleChange}
-            className={cx('form-control', {
+            className={cx('form-control ghost-search', {
               'dark-theme-placeholder': darkMode,
               [className]: !!className,
             })}

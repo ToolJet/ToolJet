@@ -2,12 +2,13 @@
 @import "./designtheme.scss";
 
 .global-datasources-sidebar {
-    height: calc(100vh - 64px);
+    height: calc(100vh - 48px);
     max-width: 288px;
     background: var(--page-weak);
     display: grid;
     grid-template-rows: auto 1fr auto;
     border-right: 1px solid var(--border-weak);
+    gap: 30px;
 
     .add-datasource-btn {
         height: 40px;
@@ -28,7 +29,7 @@
         padding: 6px 15px;
         width: 248px;
         height: 32px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
 
         &:focus-visible {
             box-shadow: 0px 0px 0px 4px #dfe3e6;
@@ -70,6 +71,7 @@
 
     .datasources-list-item {
         background-color: var(--indigo3);
+        color: var(--text-black-000);
     }
 }
 
@@ -165,6 +167,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
+
+            svg {
+                top: 1px;
+                left: 1px;
+                position: relative;
+            }
         }
     }
 
@@ -184,26 +192,24 @@
 .datasource-list-container {
     overflow-y: auto;
     padding-left: 20px;
-    max-height: calc(100vh - 64px);
+    max-height: calc(100vh - 48px);
+
 
     .datasource-list {
         width: 976px;
         margin: 0 auto;
-        max-height: calc(100vh - 70px);
+        padding-bottom: 48px;
 
         .datasource-search-holder {
             width: 100%;
-            margin-top: 22px;
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
 
-            .liner {
-                margin-top: 5px;
-                width: 100% !important;
-            }
-
-            input {
-                background: none !important;
-                border: none !important;
-            }
+        .ghost-search-box-wrapper .form-control.ghost-search {
+            padding-top: 16px;
+            padding-bottom: 16px;
+            height: 64px;
         }
     }
 
