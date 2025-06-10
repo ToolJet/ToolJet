@@ -209,6 +209,7 @@ const sidebars = {
                     'widgets/code-editor',
                     'widgets/color-picker',
                     'widgets/container',
+                    'widgets/currency-input',
                     'widgets/custom-component',
                     'widgets/date-range-picker',
                     'widgets/datepicker',
