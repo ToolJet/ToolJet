@@ -28,13 +28,14 @@ export function renderCustomStyles(
   components = {},
   accordian,
   darkMode = false,
-  placeholder = ''
+  placeholder = '',
+  customMeta
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
-  const meta = componentMeta[paramType]?.[accordian]?.[param];
+  const meta = customMeta ?? componentMeta[paramType]?.[accordian]?.[param];
 
   if (
     componentConfig.component == 'DropDown' ||
@@ -96,7 +97,7 @@ export function renderCustomStyles(
   return (
     <>
       <Code
-        param={{ name: param, ...component.component.properties[param] }}
+        param={{ name: param, ...component.component.properties?.[param] }}
         definition={definition}
         dataQueries={dataQueries}
         onChange={paramUpdated}
@@ -113,6 +114,7 @@ export function renderCustomStyles(
         component={component}
         accordian={accordian}
         placeholder={placeholder}
+        customMeta={customMeta}
       />
     </>
   );
@@ -129,7 +131,8 @@ export function renderElement(
   components = {},
   darkMode = false,
   placeholder = '',
-  validationFn
+  validationFn,
+  customMeta
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -160,7 +163,7 @@ export function renderElement(
 
   return (
     <Code
-      param={{ name: param, ...component.component.properties[param] }}
+      param={{ name: param, ...component.component.properties?.[param] }}
       definition={definition}
       dataQueries={dataQueries}
       onChange={paramUpdated}
@@ -178,6 +181,7 @@ export function renderElement(
       placeholder={placeholder}
       validationFn={validationFn}
       isHidden={isHidden}
+      customMeta={customMeta}
     />
   );
 }

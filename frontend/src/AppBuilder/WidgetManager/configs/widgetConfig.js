@@ -58,6 +58,8 @@ import {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  moduleContainerConfig,
+  moduleViewerConfig,
   emailinputConfig,
   phoneinputConfig,
   currencyinputConfig,
@@ -151,4 +153,8 @@ export const widgets = [
   toggleswitchConfig,
   dropdownConfig,
   multiselectConfig,
+
+  //Module
+  moduleContainerConfig,
+  moduleViewerConfig,
 ];

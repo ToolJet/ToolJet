@@ -10,9 +10,11 @@ import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/Editor/Components/utils';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Table = memo(
   ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {
+    const { moduleId } = useModuleContext();
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
     const removeComponent = useTableStore((state) => state.removeComponent, shallow);
@@ -95,7 +97,8 @@ export const Table = memo(
         firstRowOfTable,
         autogenerateColumns,
         columnDeletionHistory,
-        shouldAutogenerateColumns.current
+        shouldAutogenerateColumns.current,
+        moduleId
       );
       shouldAutogenerateColumns.current = false;
     }, [
@@ -106,6 +109,7 @@ export const Table = memo(
       setColumnDetails,
       firstRowOfTable,
       autogenerateColumns,
+      moduleId,
       columnDeletionHistory,
     ]);
 

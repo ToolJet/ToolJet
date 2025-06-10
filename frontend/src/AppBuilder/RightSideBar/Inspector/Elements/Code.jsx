@@ -20,14 +20,23 @@ export const Code = ({
   placeholder,
   validationFn,
   isHidden = false,
+  customMeta,
 }) => {
   const currentState = useCurrentState();
 
-  let initialValue = !_.isEmpty(definition)
-    ? definition.value
-    : getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
+  function getInitialValue() {
+    if (customMeta && customMeta.defaultValue) {
+      return customMeta.defaultValue;
+    }
+    return !_.isEmpty(definition)
+      ? definition.value
+      : getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
+  }
 
-  const paramMeta = accordian ? componentMeta[paramType]?.[param.name] : componentMeta[paramType][param.name];
+  let initialValue = getInitialValue();
+  const paramMeta = accordian
+    ? customMeta ?? componentMeta[paramType]?.[param.name]
+    : customMeta ?? componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
 
   function handleCodeChanged(value) {

@@ -29,11 +29,13 @@ import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue } from '@/Editor/Components/utils';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
+  const { moduleId } = useModuleContext();
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
   const [showPreview, setShowPreview] = useState(false);
@@ -43,7 +45,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const validationFn = restProps?.validationFn;
-  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow);
+  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId, moduleId), shallow);
   const parentId = componentDefinition?.component?.parent;
   const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
 
@@ -526,11 +528,43 @@ const DynamicEditorBridge = (props) => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
-  const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   let modifiedValue = initialValue;
   if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
     modifiedValue = getCssVarValue(document.documentElement, initialValue);
   }
+
+  const renderFx = () => {
+    if (paramType === 'query' || (paramLabel !== 'Type' && isFxNotRequired === undefined)) {
+      return null;
+    }
+
+    return (
+      <div
+        className={`col-auto pt-0 fx-common fx-button-container ${
+          (isEventManagerParam || codeShow) && 'show-fx-button-container'
+        }`}
+      >
+        <FxButton
+          active={codeShow}
+          onPress={() => {
+            if (codeShow) {
+              setForceCodeBox(false);
+              onFxPress(false);
+              if (paramType === 'colorSwatches') {
+                onChange(modifiedValue);
+              }
+            } else {
+              setForceCodeBox(true);
+              onFxPress(true);
+            }
+          }}
+          dataCy={cyLabel}
+        />
+      </div>
+    );
+  };
+
+  const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
 
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
@@ -548,30 +582,7 @@ const DynamicEditorBridge = (props) => {
         )}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
-            {paramLabel !== 'Type' && isFxNotRequired === undefined && (
-              <div
-                className={`col-auto pt-0 fx-common fx-button-container ${
-                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
-                }`}
-              >
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                      if (paramType === 'colorSwatches') {
-                        onChange(modifiedValue);
-                      }
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              </div>
-            )}
+            {renderFx()}
           </div>
         </div>
         {!codeShow && (
