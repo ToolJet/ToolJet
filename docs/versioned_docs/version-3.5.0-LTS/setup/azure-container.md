@@ -71,7 +71,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
    :::
 
 
-   Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
+   Additionally, for **PostgREST**, the following **mandatory** environment variables must be set in Tooljet container:
 
    :::tip
     If you have openssl installed, you can run the 
@@ -81,20 +81,8 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
    :::
 
    ```env
-    PGRST_HOST=localhost:3001
-    PGRST_LOG_LEVEL=info
-    PGRST_DB_PRE_CONFIG=postgrest.pre_config
-    PGRST_SERVER_PORT=3001
-    PGRST_DB_URI=
+    PGRST_HOST=127.0.0.1:3002
     PGRST_JWT_SECRET=
-   ```
-
-   The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
-
-   #### Format:
-
-   ```env
-    PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
    ```
 
    **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
@@ -112,8 +100,36 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 10. Once the container is deployed, you can verify its status under revision management.
     <img className="screenshot-full" src="/img/setup/azure-container/step6.png" alt="Deploying ToolJet on Azure container apps" />
 
-    You can access ToolJet via the application URL provided in the overview tab.
+## Deploying Postgrest container
 
+11. To enable PostgREST functionality alongside ToolJet, you must `create new container` within your deployment configuration. This container will run PostgREST as a sidecar service, which is essential for enabling RESTful access to your PostgreSQL database.
+    <img className="screenshot-full" src="/img/setup/azure-container/step10a.png" alt="Deploying ToolJet on Azure container apps" />
+    Without this setup, you may encounter connection errors `ERR ::1 ECONNREFUSED`
+
+    After selecting `Create new container`, configure the container to run PostgREST using the appropriate image and environment variables.
+
+    Use the official PostgREST image:`postgrest/postgrest:12.2.0`
+    <img className="screenshot-full" src="/img/setup/azure-container/step10b.png" alt="Deploying ToolJet on Azure container apps" />
+
+    Under `Environment variables` section ensure the following variables are set within the PostgREST container:
+
+    ```env
+    PGRST_LOG_LEVEL=info
+    PGRST_DB_PRE_CONFIG=postgrest.pre_config
+    PGRST_SERVER_PORT=3002
+    PGRST_DB_URI=
+    PGRST_JWT_SECRET=
+    ```
+
+    The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality. Also ensure `PGRST_JWT_SECRET` value is same in both the containers.
+
+    #### Format:
+
+    ```env
+    PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+    ```
+
+    Once the new container is created and deployed, ToolJet can interact with PostgREST, and you can access the application using the URL shown in the Overview tab of Azure Container Apps.
 
 ## ToolJet Database
 
