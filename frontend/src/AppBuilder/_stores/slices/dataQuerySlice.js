@@ -456,7 +456,7 @@ export const createDataQuerySlice = (set, get) => ({
       try {
         for (const query of queries) {
           if (
-            (query.options.runOnPageLoad || query.options.run_on_page_load) &&
+            (query.options?.runOnPageLoad || query.options?.run_on_page_load) &&
             (query.restricted || isQueryRunnable(query))
           ) {
             await get().queryPanel.runQuery(query.id, query.name, undefined, undefined, {}, false, true, 'canvas');

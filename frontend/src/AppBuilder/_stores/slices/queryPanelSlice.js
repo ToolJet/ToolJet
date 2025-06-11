@@ -342,14 +342,15 @@ export const createQueryPanelSlice = (set, get) => ({
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
-          queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters);
+          queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters);
         } else if (query.kind === 'runpy') {
-          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState);
+          queryExecutionPromise = executeRunPycode(query.options?.code, query, false, mode, queryState);
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = executeWorkflow(
             moduleId,
-            query.options.workflowId,
-            query.options.blocking,
+            query,
+            query.options?.workflowId,
+            query.options?.blocking,
             query.options?.params,
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
@@ -695,6 +696,28 @@ export const createQueryPanelSlice = (set, get) => ({
       const {
         queryPanel: { evaluatePythonCode },
       } = get();
+
+      if (query.restricted) {
+        return {
+          status: 'failed',
+          message: 'Unauthorized Access',
+          description: '',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
+
       return { data: await evaluatePythonCode({ code, query, isPreview, mode, currentState }) };
     },
 
@@ -911,13 +934,34 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
-    executeWorkflow: async (moduleId, workflowId, _blocking = false, params = {}, appEnvId) => {
+    executeWorkflow: async (moduleId, query, workflowId, _blocking = false, params = {}, appEnvId) => {
       const {
         app: { appId },
         getAllExposedValues,
       } = get();
       const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      if (query.restricted) {
+        return {
+          status: 'failed',
+          message: 'Unauthorized Access',
+          description: '',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
 
       try {
         const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
@@ -968,6 +1012,27 @@ export const createQueryPanelSlice = (set, get) => ({
       const actions = generateAppActions(queryId, mode, isPreview);
 
       const queryDetails = dataQuery.queries.modules?.[moduleId].find((q) => q.id === queryId);
+
+      if (queryDetails.restricted) {
+        return {
+          status: 'failed',
+          message: 'Unauthorized Access',
+          description: '',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
 
       const defaultParams =
         queryDetails?.options?.parameters?.reduce(
