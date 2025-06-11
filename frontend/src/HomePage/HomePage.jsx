@@ -1085,7 +1085,7 @@ class HomePageComponent extends React.Component {
                           )}
                           data-cy="app-name-helper-text"
                         >
-                          {importingGitAppOperations?.message && importingGitAppOperations?.message}
+                          {importingGitAppOperations?.message}
                         </div>
                       </div>
                     </div>
