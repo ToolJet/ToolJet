@@ -36,10 +36,11 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
 
   const sortedComponents = useMemo(() => {
     return Object.entries(componentIdNameMapping)
+      .filter(([key]) => exposedComponentsVariables[key] !== undefined)
       .map(([key, name]) => ({
         key,
         name: name || key,
-        value: exposedComponentsVariables[key] ?? { id: key },
+        value: exposedComponentsVariables[key],
       }))
       .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
       .reduce((acc, { key, name, value }) => {

@@ -14,6 +14,8 @@ const DropdownComponent = ({ options = {}, ...props }) => {
 
   const handleOpenChange = () => {
     setOpen(!open);
+    if (!open) props.onOpen?.();
+    else props.onClose?.();
   };
 
   const handleChange = (e) => {
@@ -39,6 +41,7 @@ const DropdownComponent = ({ options = {}, ...props }) => {
               <SelectItem
                 {...props}
                 value={options[key].value}
+                leadingIcon={options[key].leadingIcon}
                 avatarSrc={options[key].avatarSrc}
                 avatarAlt={options[key].avatarAlt}
                 avatarFall={options[key].avatarFall}
