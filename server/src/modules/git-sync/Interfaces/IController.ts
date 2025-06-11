@@ -1,4 +1,4 @@
-import { User as UserEntity } from '../../../entities/user.entity';
+import { User as UserEntity } from '@entities/user.entity';
 import { OrganizationGitCreateDto, OrganizationGitStatusUpdateDto, OrganizationGitUpdateDto } from '../dto';
 import { ProviderConfigDTO } from '../dto/provider-config.dto';
 

@@ -42,7 +42,7 @@ export class AppGitModule {
       `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git.service`
     );
     const { AppVersionRenameListener } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-version-rename/listener`
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/listener`
     );
     return {
       module: AppGitModule,
