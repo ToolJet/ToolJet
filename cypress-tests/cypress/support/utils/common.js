@@ -101,11 +101,14 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   cy.wait(1000);
-  cy.reloadAppForTheElement(appName);
+  cy.get(commonSelectors.appCard(appName))
+    .realHover()
+    .find(commonSelectors.appCardOptionsButton)
+    .realHover()
   cy.contains("div", appName)
     .parent()
     .within(() => {
-      cy.get(commonSelectors.appCardOptionsButton).invoke("click");
+      cy.get(commonSelectors.appCardOptionsButton).click();
     });
 };
 
@@ -185,8 +188,9 @@ export const searchUser = (email) => {
 };
 
 export const selectAppCardOption = (appName, appCardOption) => {
+  cy.wait(1000);
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").click({ force: true });
+  cy.get(appCardOption).should("be.visible").click();
 };
 
 export const navigateToDatabase = () => {

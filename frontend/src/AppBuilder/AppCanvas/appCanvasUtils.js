@@ -232,6 +232,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       const childTabId = componentParentId.split('-').at(-1);
       if (componentParentId === `${parentId}-${childTabId}`) {
         childComponent.isParentTabORCalendar = true;
+        childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
         childComponents.push(childComponent);
         // Recursively find children of the current child component
         const childrenOfChild = getAllChildComponents(allComponents, componentId);
@@ -242,6 +243,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
     if (componentParentId === parentId) {
       let childComponent = deepClone(allComponents[componentId]);
       childComponent.id = componentId;
+      childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
       childComponents.push(childComponent);
 
       // Recursively find children of the current child component

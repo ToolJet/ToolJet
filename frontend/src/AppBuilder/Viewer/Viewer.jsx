@@ -168,6 +168,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       showViewerNavigation={!isPagesSidebarHidden}
                       handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
+                      switchPage={switchPage}
                     />
                   )}
                   <div className="sub-section">

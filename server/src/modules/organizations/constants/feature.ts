@@ -14,5 +14,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CHECK_UNIQUE_ONBOARDING]: {
       isPublic: true,
     },
+    [FEATURE_KEY.SET_DEFAULT]: {},
   },
 };

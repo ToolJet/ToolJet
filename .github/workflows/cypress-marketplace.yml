@@ -15,16 +15,18 @@ jobs:
     runs-on: ubuntu-22.04
 
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-      contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-marketplace') ||
-      contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-marketplace')
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       matrix:
         edition: >-
           ${{ 
             contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-marketplace') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-marketplace') && fromJson('["ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && fromJson('["ee"]') ||
             fromJson('[]')
           }}
 

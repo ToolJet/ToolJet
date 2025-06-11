@@ -78,14 +78,16 @@ describe("Manage Groups", () => {
         cy.createApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.appCreatedToast
+            commonText.appCreatedToast,
+            false
         );
         cy.backToApps();
 
         cy.deleteApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.appDeletedToast
+            commonText.appDeletedToast,
+            false
         );
 
         // Folder operations
@@ -115,7 +117,8 @@ describe("Manage Groups", () => {
         cy.get(commonSelectors.cloneAppButton).click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            dashboardText.appClonedToast
+            dashboardText.appClonedToast,
+            false
         );
         // cy.get(commonSelectors.cancelButton).click();
         cy.apiLogout();
@@ -177,14 +180,16 @@ describe("Manage Groups", () => {
         cy.createApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.appCreatedToast
+            commonText.appCreatedToast,
+            false
         );
         cy.backToApps();
 
         cy.deleteApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.appDeletedToast
+            commonText.appDeletedToast,
+            false
         );
 
         // Folder operations

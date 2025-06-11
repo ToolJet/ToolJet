@@ -1,12 +1,13 @@
 export const cyParamName = (paramName = "") => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
+  return String(paramName).toLowerCase().replace(/\s+/g, "-");
 };
 
 export const commonSelectors = {
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
-  newToastMessage: '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
+  newToastMessage:
+    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   workspaceConstantNameInput: '[data-cy="name-input-field"]',
@@ -18,7 +19,7 @@ export const commonSelectors = {
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
   nameInputFieldd: "[data-cy=name-input-field]",
-  valueInputFieldd: '[data-cy=value-input-field]',
+  valueInputFieldd: "[data-cy=value-input-field]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
@@ -277,6 +278,16 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+
+  textField: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
+  },
+  labelFieldValidation: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-validation-label"]`;
+  },
+  labelFieldAlert: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
+  },
 };
 
 export const commonWidgetSelector = {
@@ -395,7 +406,7 @@ export const commonWidgetSelector = {
   modalCloseButton: '[data-cy="modal-close-button"]',
   iframeLinkLabel: '[data-cy="iframe-link-label"]',
   ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
-  appSlugLabel: '[data-cy="input-field-label"]',
+  appSlugLabel: '[data-cy="unique-app-slug-field-label"]',
   appSlugInput: '[data-cy="app-slug-input-field"]',
   appSlugInfoLabel: '[data-cy="helper-text"]',
   appLinkLabel: '[data-cy="app-link-label"]',

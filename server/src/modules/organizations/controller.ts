@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards, Query, Param } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards, Query, Param, NotImplementedException } from '@nestjs/common';
 import { OrganizationsService } from '@modules/organizations/service';
 import { decamelizeKeys } from 'humps';
 import { User } from '@modules/app/decorators/user.decorator';
@@ -17,7 +17,7 @@ import { OrganizationAuthGuard } from '@modules/session/guards/organization-auth
 @Controller('organizations')
 @InitModule(MODULES.ORGANIZATIONS)
 export class OrganizationsController implements IOrganizationsController {
-  constructor(private organizationsService: OrganizationsService) {}
+  constructor(protected organizationsService: OrganizationsService) {}
 
   @InitFeature(FEATURE_KEY.GET)
   // TODO: Change to jwt auth guard - check why we need OrganizationAuthGuard here
@@ -41,6 +41,15 @@ export class OrganizationsController implements IOrganizationsController {
     await this.organizationsService.updateOrganizationNameAndSlug(user.organizationId, organizationUpdateDto);
     return;
   }
+
+  @InitFeature(FEATURE_KEY.SET_DEFAULT)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch(':id/set-default')
+  async setDefaultWorkspace(@Param('id') id: string) {
+    await this.organizationsService.setDefaultWorkspace(id);
+    return;
+  }
+
   // Note : This endpoint is used for archive/unarchive workspaces.
   @InitFeature(FEATURE_KEY.WORKSPACE_STATUS_UPDATE)
   @UseGuards(JwtAuthGuard)

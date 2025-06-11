@@ -19,7 +19,8 @@
         "type": "string"
       },
       "password": {
-        "type": "string"
+        "type": "string",
+        "encrypted": true
       },
       "connectionLimit": {
         "type": "string"
@@ -83,7 +84,8 @@
           "label": "Password",
           "key": "password",
           "type": "password",
-          "description": "Enter password"
+          "description": "Enter password",
+          "encrypted": true
         },
         "connectionLimit": {
           "label": "Connection Limit",

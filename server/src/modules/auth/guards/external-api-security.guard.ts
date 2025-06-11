@@ -14,7 +14,7 @@ export class ExternalApiSecurityGuard implements CanActivate {
       throw new ForbiddenException('External API is disabled');
     }
 
-    // Check the authorization header
+    // // Check the authorization header
     const authHeader = request.headers['authorization'];
     const externalApiAccessToken = this.configService.get<string>('EXTERNAL_API_ACCESS_TOKEN');
 
