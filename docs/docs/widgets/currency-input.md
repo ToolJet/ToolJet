@@ -3,16 +3,16 @@ id: currency-input
 title: Currency Input
 ---
 
-The **Currency Input** component allows users to enter currency-formatted values. It’s especially useful for forms and financial applications where numerical values need to be presented with currency symbols, decimal places, and thousand separators.
+The **Currency Input** component allows users to enter currency-formatted values. It’s especially useful for forms and financial applications where numerical values need to be formatted with currency symbols, decimal places, and thousand separators.
 
-This component ensures consistent formatting of monetary values, prevents invalid input, and supports a range of customization options such as currency type, precision, etc.
+This component ensures consistent formatting of monetary values, prevents invalid input, and supports a range of customization options, such as currency type and precision.
 
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |------------------------|------------------------------------------------------|----------------|
 | Label                  | Text to display as the label for the field. | String (e.g. `Reimbursement Amount`). |
-| Placeholder            | A hint displayed to guide the user on what to enter. | String (e.g. `Enter amount in USD`). |
+| Placeholder            | A hint displayed to guide the user on what to enter. | String (e.g. `Enter the amount in USD`). |
 | Default value          | The default value that the component will hold when the app is loaded. | Number (e.g. `83.67`). |
 | Decimal places         | Number of decimal places to show after the decimal point. | Integer (e.g. `2`). |
 | Default Currency       | Sets the currency format to use by default.  | Select the default currency from the dropdown or update it dynamically using **fx**. |
@@ -22,7 +22,7 @@ This component ensures consistent formatting of monetary values, prevents invali
 
 | Event            | Description                                                       | 
 |:-----------------|:------------------------------------------------------------------|
-| On change        | Triggers whenever the user types something in the input field.    |
+| On change        | Triggers when the user types in the input field.    |
 | On enter pressed | Triggers whenever the user presses the enter key on the keyboard. |
 | On focus         | Triggers whenever the user clicks inside the input field.         |
 | On blur          | Triggers whenever the user clicks outside the input field.        |
@@ -33,7 +33,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 ## Component Specific Actions (CSA)
 
-Following actions of component can be controlled using the component specific actions (CSA), you can trigger it using an event or employ a RunJS query.
+The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div>|
 | :------------ | :---------- | :------------ |
@@ -41,15 +41,11 @@ Following actions of component can be controlled using the component specific ac
 | setText( )      | Sets the value of the **Currency Input** field.       | `components.currencyinput1.setText(value)`  |
 | clear( )        | Clears the input field.                               | `components.currencyinput1.clear()`         |
 | setFocus( )     | Sets the focus of the cursor on the input field.      | `components.currencyinput1.setFocus()`      |
-| setBlur( )      | Removes the focus of the cursor from the input field. | `components.currencyinput1.setBlur()`       |
+| setBlur( )      | Removes focus from the input field.                    . | `components.currencyinput1.setBlur()`       |
 | setVisibility( )| Sets the visibility of the component.                 | `components.currencyinput1.setVisibility(false)` |
 | setLoading( )   | Sets the loading state of the component.              | `components.currencyinput1.setLoading(true)` |
 | setDisable( )   | Disables the component.                               | `components.currencyinput1.setDisable(true)` |
-| setCountryCode ( ) | Sets the country code programmatically.            | `{{components.currencyinput1.setCountryCode("US")}}` |
-
-:::info
-Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
-:::
+| setCountryCode ( ) | Programmatically sets the country code.            | `{{components.currencyinput1.setCountryCode("US")}}` |
 
 ## Exposed Variables
 
@@ -87,17 +83,17 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress.    | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility         | Controls component visibility.                                                  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable            | Enables or disables the component.                                              | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter amount in USD` ).                       |
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress.    | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
+| Visibility         | Controls component visibility.                                                  | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component.                                              | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
+| Tooltip            | Provides additional information on hover. Set a display string.                                 | String (e.g., `Enter the amount in USD` ).                       |
 
 ## Devices
 
 |<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
 |:---------- |:----------- |:----------|
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 
 ## Styles
 
@@ -115,9 +111,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 |:----------------|:------------|:--------------|
 | Background  | Sets the background color of the component.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code.  |
 | Border  | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.  |
-| Text  | Sets the text color of the text entered in the component.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Error text | Sets the text color of validation message that displays.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Icon | Allows you to select an icon for the component.  | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using **fx**.  |
+| Text  | Sets the text color of the text entered in the component.  | Select the color or click on **fx** and input code that programmatically returns a hex color code. |
+| Error text | Sets the text color of the validation message that is displayed.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Icon | Allows you to select an icon for the component.  | Enable the icon visibility, and select the icon and icon color. Alternatively, set it programmatically using **fx**. |
 | Border radius   | Modifies the border radius of the component.  | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.  |
 | Box shadow      | Sets the box shadow properties of the component.  | Select the box shadow color and adjust the related properties or set it programmatically using **fx**.  |
 
