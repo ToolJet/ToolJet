@@ -7,4 +7,5 @@ export enum FEATURE_KEY {
   GIT_SYNC_APP = 'git_sync_app', // Corresponds to gitSyncApp (POST 'gitpush/:appGitId/:versionId')
   GIT_APP_VERSION_RENAME = 'git_app_version_rename', // Corresponds to gitSyncApp (POST 'gitpush/:appGitId/:versionId')
   GIT_APP_CONFIGS_UPDATE = 'git_app_configs_update',
+  GIT_FETCH_APP_CONFIGS = 'get_app_git_configs',
 }

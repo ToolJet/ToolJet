@@ -67,7 +67,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
       id="main-editor-canvas"
       onMouseUp={handleCanvasContainerMouseUp}
     >
-      <AppCanvasBanner />
+      <AppCanvasBanner appId={appId} />
       <div
         ref={canvasContainerRef}
         className={cx(
