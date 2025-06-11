@@ -3,8 +3,6 @@ import { Request, Response } from 'express';
 
 export class RequestContext {
   static cls = new AsyncLocalStorage<RequestContext>();
-  static storage: any;
-
   static get currentContext() {
     return this.cls.getStore();
   }
