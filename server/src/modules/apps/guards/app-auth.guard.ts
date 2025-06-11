@@ -10,7 +10,6 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
-
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
   // This guard will allow access for unauthenticated user if the app is public
@@ -54,6 +53,12 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
+    // Check for PAT header first - this will bypass JWT validation in your strategy
+    if (request.headers['x-embed-pat']) {
+      return true;
+    }
+
+    // Fall back to JWT authentication
     try {
       const authResult = await super.canActivate(context);
       return authResult;

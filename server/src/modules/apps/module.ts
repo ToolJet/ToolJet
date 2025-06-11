@@ -24,6 +24,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { UsersModule } from '@modules/users/module';
 import { SessionModule } from '@modules/session/module';
 import { UserSessionRepository } from '@modules/session/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 @Module({})
 export class AppsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -79,6 +80,7 @@ export class AppsModule {
         AppImportExportService,
         RolesRepository,
         UserSessionRepository,
+        UserRepository,
       ],
       exports: [AppsUtilService, AppImportExportService],
     };

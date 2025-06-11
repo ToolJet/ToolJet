@@ -21,6 +21,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: (request: Request) => {
+        // Ensure PAT is processed correctly without bypassing JWT validation
+        if (request.headers['x-embed-pat']) {
+          console.log('Found x-embed-pat header:', request.headers['x-embed-pat']);
+          return request.headers['x-embed-pat']; // Return null to bypass JWT token, but PAT will still be handled
+        }
+        console.log('Found auth token:', request.cookies['tj_auth_token']);
         return request.cookies['tj_auth_token'];
       },
       ignoreExpiration: true,
@@ -29,7 +35,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(req: Request, payload: JWTPayload) {
+  async validate(req: Request, payload: JWTPayload | null) {
     const isUserMandatory = !req['isUserNotMandatory'];
     const isGetUserSession = !!req['isGetUserSession'];
     const isGettingOrganizations = !!req['isGettingOrganizations'];

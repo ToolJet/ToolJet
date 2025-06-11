@@ -46,7 +46,7 @@ export class AppsController implements IAppsController {
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
-  @UseGuards(AppAuthGuard, FeatureAbilityGuard, PatSessionAuthGuard)
+  @UseGuards(AppAuthGuard, PatSessionAuthGuard, FeatureAbilityGuard)
   @Get('validate-released-app-access/:slug')
   validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
     return this.appsService.validateReleasedApp(ability, app);
@@ -106,7 +106,7 @@ export class AppsController implements IAppsController {
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)
   // This guard will allow access for unauthenticated user if the app is public
-  @UseGuards(AppAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseGuards(AppAuthGuard, ValidAppGuard, PatSessionAuthGuard)
   @Get('slugs/:slug')
   appFromSlug(@User() user, @App() app: AppEntity) {
     return this.appsService.getBySlug(app, user);

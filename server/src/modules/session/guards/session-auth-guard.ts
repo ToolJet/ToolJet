@@ -10,7 +10,7 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
     const hasJwtCookie = !!request.cookies['tj_auth_token'];
     const hasPatHeader = !!request.headers['x-embed-pat'];
 
-  if (!hasJwtCookie && !hasPatHeader) {
+    if (!hasJwtCookie && !hasPatHeader) {
       throw new UnauthorizedException('Missing authentication token');
     }
 
