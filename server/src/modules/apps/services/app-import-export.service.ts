@@ -44,7 +44,6 @@ interface AppResourceMappings {
   componentsMapping: Record<string, string>;
 }
 
-type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
 type DefaultDataSourceName =
   | 'restapidefault'
   | 'runjsdefault'
@@ -71,7 +70,6 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'tooljetdbdefault',
   'workflowsdefault',
 ];
-const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 const NewRevampedComponents: NewRevampedComponent[] = [
   'Text',
   'TextInput',
@@ -92,7 +90,6 @@ export class AppImportExportService {
     protected dataSourcesRepository: DataSourcesRepository,
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
-    protected readonly entityManager: EntityManager,
     protected componentsService: ComponentsService
   ) {}
 
@@ -238,54 +235,58 @@ export class AppImportExportService {
     externalResourceMappings = {},
     isGitApp = false,
     tooljetVersion = '',
-    cloning = false
+    cloning = false,
+    manager?: EntityManager
   ): Promise<App> {
-    if (typeof appParamsObj !== 'object') {
-      throw new BadRequestException('Invalid params for app import');
-    }
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (typeof appParamsObj !== 'object') {
+        throw new BadRequestException('Invalid params for app import');
+      }
 
-    let appParams = appParamsObj;
+      let appParams = appParamsObj;
 
-    if (appParams?.appV2) {
-      appParams = { ...appParams.appV2 };
-    }
+      if (appParams?.appV2) {
+        appParams = { ...appParams.appV2 };
+      }
 
-    if (!appParams?.name) {
-      throw new BadRequestException('Invalid params for app import');
-    }
+      if (!appParams?.name) {
+        throw new BadRequestException('Invalid params for app import');
+      }
 
-    const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
-      ? appParams
-      : convertSinglePageSchemaToMultiPageSchema(appParams);
-    schemaUnifiedAppParams.name = appName;
+      const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
+        ? appParams
+        : convertSinglePageSchemaToMultiPageSchema(appParams);
+      schemaUnifiedAppParams.name = appName;
 
-    const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
-    const isNormalizedAppDefinitionSchema = cloning
-      ? true
-      : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
+      const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
+      const isNormalizedAppDefinitionSchema = cloning
+        ? true
+        : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const currentTooljetVersion = !cloning ? tooljetVersion : null;
+      const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
+      const importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user, isGitApp);
 
-    const resourceMapping = await this.setupImportedAppAssociations(
-      this.entityManager,
-      importedApp,
-      schemaUnifiedAppParams,
-      user,
-      externalResourceMappings,
-      isNormalizedAppDefinitionSchema,
-      currentTooljetVersion
-    );
-    await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
+      const resourceMapping = await this.setupImportedAppAssociations(
+        manager,
+        importedApp,
+        schemaUnifiedAppParams,
+        user,
+        externalResourceMappings,
+        isNormalizedAppDefinitionSchema,
+        currentTooljetVersion
+      );
+      await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
 
-    // NOTE: App slug updation callback doesn't work while wrapped in transaction
-    // hence updating slug explicitly
-    await importedApp.reload();
-    importedApp.slug = importedApp.id;
-    await this.entityManager.save(importedApp);
+      // NOTE: App slug updation callback doesn't work while wrapped in transaction
+      // hence updating slug explicitly
+      //await importedApp.reload(); -> this will not work as we are using transaction
+      const newApp = await manager.findOne(App, { where: { id: importedApp.id } });
+      newApp.slug = importedApp.id;
+      await manager.save(newApp);
 
-    return importedApp;
+      return newApp;
+    }, manager);
   }
 
   async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
@@ -725,7 +726,6 @@ export class AppImportExportService {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
           manager,
           importingDataSource,
-          appResourceMappings.appVersionMapping[importingAppVersion.id],
           user
         );
 
@@ -1164,12 +1164,7 @@ export class AppImportExportService {
     user: User,
     appResourceMappings: AppResourceMappings
   ) {
-    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user?.organizationId,
-      appResourceMappings.appVersionMapping[appVersion.id],
-      DefaultDataSourceKinds,
-      manager
-    );
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);
     appResourceMappings.defaultDataSourceIdMapping[appVersion.id] = defaultDataSourceIds;
 
     return appResourceMappings;
@@ -1178,7 +1173,6 @@ export class AppImportExportService {
   async findOrCreateDataSourceForAppVersion(
     manager: EntityManager,
     dataSource: DataSource,
-    appVersionId: string,
     user: User
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
@@ -1187,10 +1181,10 @@ export class AppImportExportService {
     if (isDefaultDatasource) {
       const createdDefaultDatasource = await manager.findOne(DataSource, {
         where: {
-          appVersionId,
+          organizationId: user.organizationId,
           kind: dataSource.kind,
           type: DataSourceTypes.STATIC,
-          scope: 'local',
+          scope: DataSourceScopes.GLOBAL,
         },
       });
 
@@ -1203,8 +1197,8 @@ export class AppImportExportService {
           id: dataSource.id,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: 'global',
-          organizationId: user?.organizationId,
+          scope: DataSourceScopes.GLOBAL,
+          organizationId: user.organizationId,
         },
       });
     };
@@ -1214,8 +1208,8 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
-          scope: 'global',
-          organizationId: user?.organizationId,
+          scope: DataSourceScopes.GLOBAL,
+          organizationId: user.organizationId,
         },
       });
     };
@@ -1237,7 +1231,7 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: 'global', // No appVersionId for global data sources
+          scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
           pluginId: plugin.id,
         });
         await manager.save(newDataSource);
@@ -1252,7 +1246,7 @@ export class AppImportExportService {
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
-        scope: 'global', // No appVersionId for global data sources
+        scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
         pluginId: null,
       });
       await manager.save(newDataSource);
@@ -1398,19 +1392,12 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
-  async createDefaultDataSourceForVersion(
-    organizationId: string,
-    versionId: string,
-    kinds: DefaultDataSourceKind[],
-    manager: EntityManager
-  ): Promise<any> {
-    const response = {};
-    for (const defaultSource of kinds) {
-      const dataSource = await this.dataSourcesRepository.createDefaultDataSource(defaultSource, versionId, manager);
-      response[defaultSource] = dataSource.id;
-      await this.dataSourcesUtilService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
-    }
-    return response;
+  async createDefaultDataSourceForVersion(organizationId: string, manager: EntityManager): Promise<any> {
+    const dataSources = await this.dataSourcesRepository.getStaticDataSources(organizationId, manager);
+    return dataSources?.reduce<Record<string, string>>((acc, source) => {
+      acc[source.kind] = source.id;
+      return acc;
+    }, {});
   }
 
   async setEditingVersionAsLatestVersion(manager: EntityManager, appVersionMapping: any, appVersions: Array<any>) {
@@ -1556,12 +1543,7 @@ export class AppImportExportService {
     await manager.save(version);
 
     // Create default data sources
-    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user?.organizationId,
-      version.id,
-      DefaultDataSourceKinds,
-      manager
-    );
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);
     let envIdArray: string[] = [];
 
     const organization: Organization = await manager.findOne(Organization, {
