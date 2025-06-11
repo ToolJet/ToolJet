@@ -3,47 +3,53 @@ id: constants-secrets
 title: Referring Constants and Secrets 
 ---
 
-When building apps in ToolJet, you often need to reuse fixed values (such as currency codes, URLs, or environment flags) or securely handle sensitive information (such as API keys or database credentials). Workspace Constants and Secrets make this process easy, safe, and maintainable, especially when working across multiple apps or with larger teams. 
+When building apps in ToolJet, you often need to reuse fixed values (such as URLs, or environment flags) or securely handle sensitive information (such as API keys or database credentials). Workspace Constants and Secrets make this process easy, safe, and maintainable, especially when working across multiple apps or with larger teams. 
 
 In this guide, we’ll walk you through how to use Workspace Constants and Secrets within your ToolJet apps.
 
-You can create a global constant or secret directly from the ToolJet UI, or by visiting `https://app.corp.com/your-workspace/workspace-constants`. Once created, these values are accessible to all users within the workspace.
+You can create a global constant or secret directly from the ToolJet Dashboard. Once created, buliders can reference them within app-bulider.
 
 <img className="screenshot-full img-full" style={{marginBottom:"15px"}} src="/img/security/constants/constants-secret/env-specific-const-v2.png" alt=" CMS Page"/>
 
-To use them in your app, reference them directly in the app builder using the following syntax:
+## Characteristics and Usage
 
-- For Global Constants: `{{constants.constant_name}}`
-- For Secrets: `{{secrets.secret_name}}`
+Both constants and secrets allow you to store reusable values for your apps. However, they serve different purposes and have distinct characteristics as shown below:
 
-For more details on creating, managing, and using constants and secrets, check out the [Constants & Secrets documentation](/docs/security/constants/).
+|   Characteristic        |       Global Constants        |         Secrets           |
+|-------------------------|:-----------------------------:|:-------------------------:|
+| Components              |             ✅                |           ❌              |
+| Data Queries *          |             ✅                |           ✅              |
+| Encrypted in DB         |             ✅                |           ✅              |
+| Masked in Frontend      |             ❌                |           ✅              |
+| Resolved on Client Side |             ✅                |           ❌              |
+| Resolved on Server Side |             ❌                |           ✅              |
+| Naming Convention       | `{{constants.constant_name}}` | `{{secrets.secret_name}}` |
 
 ## Access Control
 
 To maintain security and governance:
 - Only Admins can create, edit, or delete Constants and Secrets.
-- Builders can use them in their applications but cannot modify them.
+- Builders can reference them in their applications but cannot modify them.
 
 ## Use Cases
 
 ### Avoiding Hardcoding with Global Constants
 
-Imagine you’re building an app that fetches product prices from an API. The base URL of your API is the same across multiple queries:
+Imagine you’re building an app that fetches product prices from an API. The base URL of your API is the same across multiple queries
 
-```js 
-https://api.example.com/v1/products
-```
+Instead of hardcoding this URL everywhere, define a Global Constant. Now, if the base URL ever changes, you only need to update it in one place, reducing errors and improving maintainability.
 
-Instead of hardcoding this URL everywhere, define a Global Constant:
 - Name: `API_BASE_URL`
 - Value: `https://api.example.com/v1`
+
+
 
 Now in your custom code or queries, use:
 
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/constants_usecase.png" alt="constant usecase"/>
 
 
-This way, if the base URL ever changes, you only need to update it in one place, reducing errors and improving maintainability.
+
 
 ### Handling Sensitive Credentials with Secrets
 
