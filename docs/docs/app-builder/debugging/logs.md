@@ -30,7 +30,8 @@ This information helps you identify what went wrong and where to start troublesh
 
 ### Troubleshooting Component Related Issues
 
-Imagine you're building an app that includes a table component displaying user data fetched from a database. However, the table isn't showing any data even though the query executed successfully. In such cases, you can check the debugger's logs to see if there are any errors related to the component itself.
-For example, if you're using a table component and encounter an issue like "Table component not rendering correctly," you can investigate further by checking the logs for any relevant error messages or warnings. These logs may provide clues as to what's causing the problem and offer suggestions for resolving it.
+Let’s say you’ve fetched user data from a database using a query, and connected it to a table component. The query runs without errors, but the table still appears empty. To investigate this, open the debugger and head to the Error Logs tab. Here, you’ll find error logs related to the component’s behavior, including:
+- Errors related to misconfigured properties
+- Invalid expressions used in bindings
 
-// change this to table component
+These logs help you understand if the issue lies in how the component is configured or how it interacts with the query result, allowing you to quickly fix misconfigurations and get your UI working as expected.
