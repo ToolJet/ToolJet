@@ -15,8 +15,6 @@ export function withEditionSpecificComponent(BaseComponent, moduleName) {
     // Use the editions registry instead of dynamic imports
     const Component = editions[edition]?.[moduleName]?.components?.[componentName];
     const EditionComponent = Component?.default ?? Component;
-    console.log('component', Component);
-    console.log('EditionComponent', EditionComponent);
 
     if (!EditionComponent) {
       console.warn(`Component ${componentName} not found in ${moduleName} for ${edition} edition`);
