@@ -7,7 +7,7 @@ sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-u
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm install 22.15.0
+nvm install 22.15.1
 sudo ln -s "$(which node)" /usr/bin/node
 sudo ln -s "$(which npm)" /usr/bin/npm
 

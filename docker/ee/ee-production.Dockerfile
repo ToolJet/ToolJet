@@ -1,4 +1,4 @@
-FROM node:22.15.0 AS builder
+FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -113,12 +113,12 @@ exec /bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"\n\
     chmod +x /bin/postgrest
 
 
-RUN curl -O https://nodejs.org/dist/v22.15.0/node-v22.15.0-linux-x64.tar.xz \
-    && tar -xf node-v22.15.0-linux-x64.tar.xz \
-    && mv node-v22.15.0-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
+    && tar -xf node-v22.15.1-linux-x64.tar.xz \
+    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v22.15.0-linux-x64.tar.xz
+    && rm node-v22.15.1-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
