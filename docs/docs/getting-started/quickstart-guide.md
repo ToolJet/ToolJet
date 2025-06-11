@@ -140,7 +140,7 @@ Now, when you click the **+ (Add new row)** button on the Table component, enter
 The preview, release and share buttons are at the top-right of the App-Builder.
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/yY8UAC4FK44?si=fTdYYvUI3TK_NIWq &rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/yY8UAC4FK44?si=fTdYYvUI3TK_NIWq&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
