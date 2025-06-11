@@ -13,7 +13,7 @@ import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
 import { JWTPayload } from '@modules/session/interfaces/IService';
 import { Response } from 'express';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import * as _ from 'lodash';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -109,6 +109,7 @@ export class SessionUtilService {
         cookieOptions.sameSite = 'none';
         cookieOptions.secure = true;
       }
+
       response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
 
       const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
@@ -454,18 +455,46 @@ export class SessionUtilService {
             status: USER_STATUS.ACTIVE,
           },
         },
-        relations: ['user'],
+        relations: ['user', 'pat'], // Include PAT relation
       });
 
       if (!session) {
         throw new UnauthorizedException();
       }
 
-      // extending expiry asynchronously
-      session.expiry = this.getSessionExpiry();
-      //Updating last_logged_in
+      const now = new Date();
+
+      // ✅ Check for PAT session
+      if (session.sessionType === 'pat') {
+        if (!session.pat) {
+          throw new UnauthorizedException('Invalid PAT session');
+        }
+
+        if (session.pat.expiresAt < now) {
+          throw new UnauthorizedException('PAT token expired');
+        }
+
+        if (session.expiry < now) {
+          throw new UnauthorizedException('PAT session expired');
+        }
+
+        // Extend PAT session expiry
+        session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+      } else {
+        // Regular session extension
+        if (session.expiry < now) {
+          throw new UnauthorizedException('User session expired');
+        }
+
+        session.expiry = this.getSessionExpiry();
+      }
+
+      // Update last_logged_in
       session.lastLoggedIn = new Date();
-      manager.save(session).catch((err) => console.error('error while extending user session expiry', err));
+
+      manager.save(session).catch((err) => {
+        console.error('error while extending session expiry', err);
+      });
     });
   }
 

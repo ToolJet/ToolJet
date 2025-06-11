@@ -4,7 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getImportPath } from '@modules/app/constants';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { User } from '@entities/user.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { WorkflowExecutionEdge } from '@entities/workflow_execution_edge.entity';

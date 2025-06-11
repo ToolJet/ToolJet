@@ -15,6 +15,7 @@ import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import { getPatToken, setPatToken } from '@/Editor/Components/EmbedApp';
 
 export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, environmentId, versionId } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
@@ -101,6 +102,17 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   // ---remove
   const handleAppEnvironmentChanged = useCallback((environment) => {
     console.log('setAppVersionCurrentEnvironment', environment);
+  }, []);
+
+  useEffect(() => {
+    if (window.name && !getPatToken()) {
+      try {
+        const patObj = JSON.parse(window.name);
+        setPatToken(patObj); // restore it in memory
+      } catch (e) {
+        console.error('Invalid PAT in window.name');
+      }
+    }
   }, []);
 
   useEffect(() => {

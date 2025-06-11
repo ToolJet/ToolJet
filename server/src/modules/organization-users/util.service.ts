@@ -26,7 +26,7 @@ import { GroupPermissionsUtilService } from '../group-permissions/util.service';
 import { RolesRepository } from '../roles/repository';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { UserDetailsService } from './services/user-details.service';
 import { FetchUserResponse, InvitedUserType, RoleUpdate, UserFilterOptions } from './types';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
