@@ -8,7 +8,7 @@ const pdf = require("pdf-parse");
 
 const environments = {
     'run-cypress-platform': {
-        baseUrl: "http://localhost:8082",
+        baseUrl: "http://localhost:3000",
         configFile: "cypress-platform.config.js"
     },
     'run-cypress-platform-subpath': {

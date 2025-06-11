@@ -6527,6 +6527,7 @@ div#driver-page-overlay {
 // steps-widget
 a.step-item-disabled {
   text-decoration: none;
+  opacity: 0.5;
 }
 
 .steps {
@@ -6536,34 +6537,45 @@ a.step-item-disabled {
 
 .step-item.active~.step-item:after,
 .step-item.active~.step-item:before {
-  background: #f3f5f5 !important;
+  background: var(--incompletedAccent) !important;
 }
 
 .step-item.active:before {
-  background: #ffffff !important;
+  background: transparent !important;
 }
 
 .steps .step-item.active:before {
-  border-color: #b4b2b2 !important;
+  border-color: var(--completedAccent) !important;
 }
 
 .steps-item {
   color: var(--textColor) !important;
 }
 
+
+.step-item {
+  &.completed-label {
+    color: var(--completedLabel) !important;
+  }
+
+  &.incompleted-label {
+    color: var(--incompletedLabel) !important;
+  }
+
+  &.active-label {
+    color: var(--currentStepLabel) !important;
+  }
+}
+
 .step-item:before {
-  background: var(--bgColor) !important;
+  background-color: var(--completedAccent) !important;
   // remaining code
 }
 
 .step-item:after {
-  background: var(--bgColor) !important;
+  background: var(--completedAccent) !important;
 }
 
-.step-item.active~.step-item {
-  color: var(--textColor) !important;
-  ;
-}
 
 .notification-center-badge {
 
@@ -10710,6 +10722,10 @@ tbody {
   width: 660px;
 }
 
+.org-users-page-animation-fade {
+  height: 100%;
+}
+
 .org-users-page {
   .nav-tabs .nav-link.active {
     background-color: transparent !important;
@@ -10873,6 +10889,25 @@ tbody {
 
   path {
     fill: var(--indigo9);
+  }
+}
+
+.default-group-wrap-small {
+  gap: 4px;
+  width: 121px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--indigo3);
+  border-radius: 6px;
+  padding: 5px 10px;
+  
+  p {
+    font-weight: 500 !important;
+    line-height: 18px !important;
+    color: var(--indigo9);
+    font-family: 'IBM Plex Sans', sans-serif;
   }
 }
 
@@ -18379,6 +18414,10 @@ section.ai-message-prompt-input-wrapper {
   &:hover {
     background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
   }
+}
+
+.codehinter-copilot-btn {
+  z-index: 1000;
 }
 
 #copilot-menu {
