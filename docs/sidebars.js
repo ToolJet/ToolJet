@@ -194,7 +194,7 @@ const sidebars = {
           'label': 'Debugging',
           'items': [
             'app-builder/debugging/inspector',
-            'app-builder/debugging/error-logs'
+            'app-builder/debugging/understanding-logs'
           ],
         },
         {
