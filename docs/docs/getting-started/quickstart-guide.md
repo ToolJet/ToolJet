@@ -3,7 +3,6 @@ id: quickstart-guide
 title: Quickstart Guide
 ---
 
-<!-- <div style={{paddingTop:'24px', paddingBottom:'24px'}}> -->
 
 This quickstart guide walks you through the process of creating an employee directory app using ToolJet. The application lets users track and update employee details while working with core features of the platform, all within a user-friendly interface. Here are the step-by-step instructions:
 
@@ -17,23 +16,17 @@ This quickstart guide walks you through the process of creating an employee dire
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-<!-- </div> -->
-
 ### 1. Create Your First Application
 
 To begin, create a free **[ToolJet](https://www.tooljet.ai/signup)** account and follow the steps below.
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/Cdi9XW-0rkA?si=ue3XS5986NZiaoLC&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/3opM-aL_ct4?si=ubFBF7SpneufFb0s&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
 - Click on the **Create new app** button on the dashboard. Name your application as "Employee Directory". 
 - Click and drag a **[Table](/docs/widgets/table)** component on the canvas. Optionally, you can also design a header by adding more components.  
-
-<!-- <div style={{textAlign: 'center'}}>
-    <img style={{marginBottom:'15px', borderRadius: '6px' }} className="screenshot-full" src="/img/quickstart-guide/header-design-v3.png" alt="Database Preview" />
-</div> -->
 
 </div>
 
@@ -43,11 +36,11 @@ To begin, create a free **[ToolJet](https://www.tooljet.ai/signup)** account and
 Now, create a new table in **[ToolJet’s Database](/docs/tooljet-db/tooljet-database/)** to store employee records. 
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/GKOZsWcOxgI?si=qXGYetr1u9KLdl1Z&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/a7qWJajVQ2o?si=KtppkSMB7JK4ANd1&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
-- Name the table *employees*, then add the following columns: firstname, lastname, email, phone, department, position, joining, and status. 
+- Name the table *employees*, then add the following columns: first_name, last_name, email, phone, department, position, joining, and status. 
 - Add a few employee records in the database table as placeholder data.
 
 </div>
@@ -59,16 +52,16 @@ Now, create a new table in **[ToolJet’s Database](/docs/tooljet-db/tooljet-dat
 To display employees in the application, you will first have to fetch the data from the database using a query.
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/cE_hGYDeb_s?si=W_zB3iJn9qBf-AU5&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/IGuka14FHbs?si=3CNbMwP4w-D9t9kW&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
 - Click on the **Add** button in the **[Query Panel](/docs/app-builder/query-panel/)** to create a new query.
 - Select **ToolJet Database** as the data source for the query.
 - Rename the query to *getEmployees*.
-- Choose *employees* as the Table name, and List rows as the Operation.
-- To automatically run the query when the app starts, enable the toggle for Run this query on application load? setting.
+- Choose *employees* as the Table name, and *List rows* as the Operation.
 - Click on the **Run** button to fetch data.
+- To automatically run the query when the app starts, enable the toggle for *Run this query on application load* from the query setting.
 
 </div>
 
@@ -79,7 +72,7 @@ To display employees in the application, you will first have to fetch the data f
 Now, you need to bind the data returned by the *getEmployees* query with the Table created in the first step. 
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/nh-LgW4uhWU?si=ZL_X5tKB3O6oU2ct&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/fmLeeheFHsM?si=YzO-V_NHTyKHYkC5&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
@@ -101,7 +94,7 @@ Now the Table component is filled with the data returned by the *getEmployees* q
 In the bottom-right corner of the Table component, there is a **+(Add new row)** button that opens an auto-generated form to add new data to the Table. Follow the steps below to create an *addEmployees* query and execute it when you click the **Save** button on the auto-generated form.
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/xOihuO1w6Oc?si=CiHstXOao6hQlVtC&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/mbvygFJYY9c?si=sEpqNlR36P8wlHBN&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
@@ -109,11 +102,11 @@ In the bottom-right corner of the Table component, there is a **+(Add new row)**
 - Select *employees* as the Table name, and Create row as the Operation.
 - Rename the query to *addEmployees*.
 - Click on **Add Column** to add the required columns.
-- Enter the code below for **email** and **firstname** column keys:
+- Enter the code below for **first_name** and **email** column keys:
 
 ```js
+{{components.table1.newRows[0].first_name}}
 {{components.table1.newRows[0].email}}
-{{components.table1.newRows[0].firstname}}
 ...
 ```
 
@@ -127,14 +120,14 @@ Frame all the remaining keys in the same format.
 The *addEmployees* query should run when you click the **Save** button on the auto-generated form. The Table component should then reload and display the updated data whenever a new employee is added. Follow the steps below to set up this functionality using events.
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/ceMHaJeXASY?si=YC7jOJm5sJSa1p4K&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/UJ3FyUqhhjE?si=pPun7LM7Rbs0g35C&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
-- In the *addEmployees* query's configuration, scroll down and click on **New event handler** to add a new event.
-- Select Query Success as the Event, Run Query as the Action, and *getEmployees* as the Query.
 - Click on the Table component, and click on **New event handler** in the properties panel.
 - Choose Add new rows as the Event, Run Query as the Action, and *addEmployees* as the Query.
+- In the *addEmployees* query's configuration, under the settings tab,  click on **New event handler** to add a new event.
+- Select Query Success as the Event, Run Query as the Action, and *getEmployees* as the Query.
 
 Now, when you click the **+ (Add new row)** button on the Table component, enter the employee details, and click **Save**, the data will be added to the database and automatically reflected in the Table component on the UI.
 
@@ -146,9 +139,10 @@ Now, when you click the **+ (Add new row)** button on the Table component, enter
 
 The preview, release and share buttons are at the top-right of the App-Builder.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/preview-share-v2.png" alt="Preview And Share" />
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/yY8UAC4FK44?si=fTdYYvUI3TK_NIWq&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
+<br/>
 
 - Click on the **Preview** button on the top-right of app builder to review how your application is coming along during development.
 - Once the development is done and you are ready to use the application, click on the **Release** button to deploy the app.
