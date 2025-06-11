@@ -31,7 +31,7 @@ export function authHeader(isMultipartData = false, current_organization_id) {
   if (!isLoginOrLogout) {
     const pat = getPatToken();
     if (pat) {
-      headers['x-embed-pat'] = JSON.stringify(pat);
+      headers['tj_auth_token'] = pat;
     }
   }
 

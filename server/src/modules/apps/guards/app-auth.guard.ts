@@ -53,11 +53,6 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    // Check for PAT header first - this will bypass JWT validation in your strategy
-    if (request.headers['x-embed-pat']) {
-      return true;
-    }
-
     // Fall back to JWT authentication
     try {
       const authResult = await super.canActivate(context);

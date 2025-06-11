@@ -64,7 +64,8 @@ export class SessionUtilService {
     loggedInUser?: User,
     manager?: EntityManager,
     invitedOrganizationId?: string,
-    extraData?: any
+    extraData?: any,
+    isPatLogin?: boolean
   ): Promise<any> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const request = RequestContext?.currentContext?.req;
@@ -72,8 +73,8 @@ export class SessionUtilService {
         ...(loggedInUser?.id === user.id ? loggedInUser?.organizationIds || [] : []),
         ...(organization ? [organization.id] : []),
       ]);
-      let sessionId = loggedInUser?.sessionId; // logged in user and new user are different -> creating session
-      if (loggedInUser?.id !== user.id) {
+      let sessionId = isPatLogin ? user.sessionId : loggedInUser?.sessionId; // logged in user and new user are different -> creating session
+      if (loggedInUser?.id !== user.id && !isPatLogin) {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
@@ -90,9 +91,12 @@ export class SessionUtilService {
         username: user.id,
         sub: user.email,
         organizationIds: [...organizationIds],
-        isSSOLogin: loggedInUser?.isSSOLogin || isInstanceSSO,
-        isPasswordLogin: loggedInUser?.isPasswordLogin || isPasswordLogin,
+        isSSOLogin: isPatLogin ? false : loggedInUser?.isSSOLogin || isInstanceSSO,
+        isPasswordLogin: isPatLogin ? false : loggedInUser?.isPasswordLogin || isPasswordLogin,
         ...(invitedOrganizationId ? { invitedOrganizationId } : {}),
+        ...(isPatLogin ? { isPATLogin: true } : {}),
+        ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
+        ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
       };
 
       if (organization) user.organizationId = organization.id;
@@ -109,9 +113,12 @@ export class SessionUtilService {
         cookieOptions.sameSite = 'none';
         cookieOptions.secure = true;
       }
-
-      response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
-
+      let signedPat;
+      if (isPatLogin) {
+        signedPat = this.sign(JWTPayload);
+      } else {
+        response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
+      }
       const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
 
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
@@ -127,6 +134,7 @@ export class SessionUtilService {
         ...permissionData,
         noActiveWorkspaces,
         ...(extraData ? extraData : {}),
+        ...(isPatLogin ? { signedPat } : {}),
       };
 
       return decamelizeKeys(responsePayload);

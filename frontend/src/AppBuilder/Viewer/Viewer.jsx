@@ -107,8 +107,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   useEffect(() => {
     if (window.name && !getPatToken()) {
       try {
-        const patObj = JSON.parse(window.name);
-        setPatToken(patObj); // restore it in memory
+        const patToken = window.name;
+        setPatToken(patToken); // restore it in memory
       } catch (e) {
         console.error('Invalid PAT in window.name');
       }

@@ -5,8 +5,8 @@ import config from 'config';
 // In-memory PAT token store
 let inMemoryPatToken = null;
 
-export function setPatToken(patObj) {
-  inMemoryPatToken = patObj;
+export function setPatToken(patToken) {
+  inMemoryPatToken = patToken;
 }
 
 export function getPatToken() {
@@ -33,16 +33,18 @@ export default function EmbedAppRedirect() {
           credentials: 'include',
           body: JSON.stringify({ appId, accessToken: token }),
         });
-
+        console.log('result', res);
         if (!res.ok) {
           parent.postMessage({ error: res.status, message: 'unauthorized' }, '*');
           return;
         }
 
-        const patObj = await res.json();
+        const result = await res.json();
+        console.log('Response data:', result);
         // ✅ Store PAT in memory
-        setPatToken(patObj);
-        window.name = JSON.stringify(patObj);
+        setPatToken(result.signedPat);
+        window.name = result.signedPat;
+        console.log('patToken', result.signedPat);
         window.location.href = `applications/${appId}`;
       } catch (error) {
         console.log(error, 'error');

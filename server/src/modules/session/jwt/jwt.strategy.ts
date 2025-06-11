@@ -22,9 +22,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: (request: Request) => {
         // Ensure PAT is processed correctly without bypassing JWT validation
-        if (request.headers['x-embed-pat']) {
-          console.log('Found x-embed-pat header:', request.headers['x-embed-pat']);
-          return request.headers['x-embed-pat']; // Return null to bypass JWT token, but PAT will still be handled
+        if (request.headers['tj_auth_token']) {
+          console.log('Found tj_auth_token header:', request.headers['tj_auth_token']);
+          return request.headers['tj_auth_token']; // Return null to bypass JWT token, but PAT will still be handled
         }
         console.log('Found auth token:', request.cookies['tj_auth_token']);
         return request.cookies['tj_auth_token'];
@@ -35,7 +35,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(req: Request, payload: JWTPayload | null) {
+  async validate(req: Request, payload: JWTPayload) {
     const isUserMandatory = !req['isUserNotMandatory'];
     const isGetUserSession = !!req['isGetUserSession'];
     const isGettingOrganizations = !!req['isGettingOrganizations'];
@@ -44,56 +44,40 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const isInviteSession = !!req['isInviteSession'];
 
     //Pat validation for embed app
-    const patHeader = req.headers['x-embed-pat'];
-    if (typeof patHeader === 'string') {
-      let patPayload: {
-        token: string;
-        userId: string;
-        workspaceId: string;
-        appId: string;
-        scope: 'app' | 'workspace';
-        sessionType: 'pat';
-      };
+    // if (payload?.isPatLogin) {
+    //   const session = await this.sessionRepository.findOne({
+    //     where: {
+    //       pat: {
+    //         tokenHash: payload.token,
+    //         user: { id: payload.username },
+    //         app: { id: payload.appId },
+    //       },
+    //     },
+    //     relations: ['pat'],
+    //   });
 
-      try {
-        patPayload = JSON.parse(patHeader);
-      } catch {
-        throw new ForbiddenException('Malformed PAT header');
-      }
+    //   if (!session || !session.pat) {
+    //     throw new ForbiddenException('Invalid or expired PAT session');
+    //   }
 
-      const session = await this.sessionRepository.findOne({
-        where: {
-          pat: {
-            tokenHash: patPayload.token,
-            user: { id: patPayload.userId },
-            app: { id: patPayload.appId },
-          },
-        },
-        relations: ['pat'],
-      });
+    //   const now = new Date();
+    //   if (session.pat.expiresAt < now) throw new ForbiddenException('PAT has expired');
+    //   if (session.expiry < now) throw new ForbiddenException('Session has expired');
 
-      if (!session || !session.pat) {
-        throw new ForbiddenException('Invalid or expired PAT session');
-      }
+    //   const user = await this.userRepository.getUser({ id: payload.username }, undefined, [
+    //     'organizationUsers',
+    //     'organizationUsers.organization',
+    //   ]);
 
-      const now = new Date();
-      if (session.pat.expiresAt < now) throw new ForbiddenException('PAT has expired');
-      if (session.expiry < now) throw new ForbiddenException('Session has expired');
+    //   const orgIds = user.organizationUsers.map((ou) => ou.organizationId);
+    //   user.organizationIds = payload.appId ? [payload.organizationId] : orgIds;
+    //   user.organizationId = payload.organizationId;
+    //   user.sessionId = session.id;
+    //   user.isPasswordLogin = false;
+    //   user.isSSOLogin = false;
 
-      const user = await this.userRepository.getUser({ id: patPayload.userId }, undefined, [
-        'organizationUsers',
-        'organizationUsers.organization',
-      ]);
-
-      const orgIds = user.organizationUsers.map((ou) => ou.organizationId);
-      user.organizationIds = patPayload.scope === 'app' ? [patPayload.workspaceId] : orgIds;
-      user.organizationId = patPayload.workspaceId;
-      user.sessionId = session.id;
-      user.isPasswordLogin = false;
-      user.isSSOLogin = false;
-
-      return user;
-    }
+    //   return user;
+    // }
 
     if (isUserMandatory || isGetUserSession || isInviteSession) {
       await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId);
@@ -103,16 +87,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const user: User = await this.userRepository.findByEmail(payload.sub);
       user.organizationIds = payload.organizationIds;
       user.sessionId = payload.sessionId;
-      if (payload.isPatLogin) {
-        (user as any).embedToken = req.cookies['tj_embed_auth_token'];
-      }
       return user;
     }
 
-    const organizationId =
+    let organizationId =
       typeof req.headers['tj-workspace-id'] === 'object'
         ? req.headers['tj-workspace-id'][0]
         : req.headers['tj-workspace-id'];
+
+    if (!organizationId && payload?.isPATLogin && payload?.appId) {
+      organizationId = payload.organizationIds[0];
+    }
 
     if (isUserMandatory) {
       // header does not exist
