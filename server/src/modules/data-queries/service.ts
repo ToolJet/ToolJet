@@ -139,7 +139,7 @@ export class DataQueriesService implements IDataQueriesService {
       dataQuery['options'] = options;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId);
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode);
   }
 
   async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response) {
@@ -159,12 +159,20 @@ export class DataQueriesService implements IDataQueriesService {
     dataQuery: DataQuery,
     resolvedOptions: object,
     response: Response,
-    environmentId?: string
+    environmentId?: string,
+    mode?: string
   ): Promise<object> {
     let result = {};
 
     try {
-      result = await this.dataQueryUtilService.runQuery(user, dataQuery, resolvedOptions, response, environmentId);
+      result = await this.dataQueryUtilService.runQuery(
+        user,
+        dataQuery,
+        resolvedOptions,
+        response,
+        environmentId,
+        mode
+      );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
