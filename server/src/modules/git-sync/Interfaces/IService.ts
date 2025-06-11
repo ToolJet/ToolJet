@@ -1,4 +1,4 @@
-import { ProviderConfigDTO } from '@ee/git-sync/providers/dto/provider-config.dto';
+import { ProviderConfigDTO } from '@modules/git-sync/dto/provider-config.dto';
 import { OrganizationGitCreateDto, OrganizationGitUpdateDto, OrganizationGitStatusUpdateDto } from '../dto';
 
 export interface IGitSyncService {
