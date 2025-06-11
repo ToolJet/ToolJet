@@ -30,6 +30,7 @@ function ListItem({
   showCopyColumnOption = false,
   showVisibilityIcon = false,
   isColumnVisible = true,
+  showIconOnHover = false,
   columnType,
   isDeprecated,
   ...restProps
@@ -47,8 +48,8 @@ function ListItem({
         <div className="row">
           {(Icon || isDraggable) && (
             <div className="col-auto d-flex align-items-center">
-              {!isHovered && Icon && <Icon />}
               <SortableList.DragHandle show={isDraggable} />
+              <div className="draggable-icon-container">{(!isHovered || showIconOnHover) && Icon && <Icon />}</div>
             </div>
           )}
           <div

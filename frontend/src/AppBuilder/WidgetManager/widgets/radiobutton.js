@@ -57,7 +57,7 @@ export const radiobuttonConfig = {
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     activeColor: {
@@ -65,7 +65,7 @@ export const radiobuttonConfig = {
       displayName: 'Active color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     visibility: {
@@ -112,8 +112,8 @@ export const radiobuttonConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '' },
-      activeColor: { value: 'var(--primary-brand)' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      activeColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },

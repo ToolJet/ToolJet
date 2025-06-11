@@ -59,7 +59,7 @@ export const DatepickerInput = forwardRef(
               }
             }
           }}
-          disabled={disable || loading}
+          // disabled={disable || loading}
         />
         <span className="cell-icon-display">
           <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" />

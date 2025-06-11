@@ -30,7 +30,7 @@ export const ControlButtons = memo(
               minWidth: '32px',
             }}
             leftIcon={icon}
-            fill={`var(--icons-default)`}
+            fill={`var(--cc-table-action-icon-color)`}
             iconWidth="16"
             size="md"
             data-tooltip-id={tooltipId}
@@ -161,7 +161,7 @@ export const ControlButtons = memo(
             <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
             <ButtonSolid
               variant="ghostBlack"
-              fill={`var(--icons-default)`}
+              fill={`var(--cc-table-action-icon-color)`}
               className={'tj-text-xsm'}
               customStyles={{ minWidth: '32px' }}
               leftIcon="plus"

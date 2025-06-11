@@ -281,7 +281,7 @@ export const RadioButtonV2 = ({
       <div
         className={`${isValid ? 'd-none' : visibility ? 'd-flex' : 'd-none'}`}
         style={{
-          color: 'var(--status-error-strong)',
+          color: 'var(--cc-error-systemStatus)',
           justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
           fontSize: '11px',
           fontWeight: '400',

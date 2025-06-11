@@ -200,7 +200,7 @@ export const daterangepickerConfig = {
   styles: {
     labelColor: {
       type: 'colorSwatches',
-      displayName: 'colorSwatches',
+      displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
@@ -264,7 +264,7 @@ export const daterangepickerConfig = {
     accentColor: {
       type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
     selectedTextColor: {
@@ -292,7 +292,7 @@ export const daterangepickerConfig = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#6A727C',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'field',
     },
@@ -372,7 +372,7 @@ export const daterangepickerConfig = {
       auto: { value: '{{true}}' },
       fieldBackgroundColor: { value: '#fff' },
       fieldBorderColor: { value: '#CCD1D5' },
-      accentColor: { value: '#4368E3' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
       selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
       icon: { value: 'IconCalendarMonth' },
@@ -381,7 +381,7 @@ export const daterangepickerConfig = {
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
-      iconColor: { value: '#6A727C' },
+      iconColor: { value: 'var(--cc-default-icon)' },
     },
   },
 };

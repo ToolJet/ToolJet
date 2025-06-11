@@ -131,7 +131,8 @@ const useAppData = (
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
 
   const themeAccess = useThemeAccess();
-
+  const themeChanged = useStore((state) => state.themeChanged);
+  const detectThemeChange = useStore((state) => state.detectThemeChange);
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
   const setConversationZeroState = useStore((state) => state.ai?.setConversationZeroState);
@@ -142,6 +143,7 @@ const useAppData = (
   const pathParams = useParams();
   const slug = moduleMode ? '' : pathParams?.slug;
   const licenseStatus = useStore((state) => state.isLicenseValid());
+
 
   const match = useMatch('/applications/:slug/:pageHandle');
 
@@ -550,13 +552,28 @@ const useAppData = (
   }, [app.appName, isReleasedVersionId, licenseStatus, mode, moduleId]);
 
   useEffect(() => {
-    if (!themeAccess) return;
     const root = document.documentElement;
-    const brandColors = selectedTheme?.definition?.brand?.colors || {};
-    Object.keys(brandColors).forEach((colorType) => {
-      const color = brandColors[colorType][darkMode ? 'dark' : 'light'];
-      root.style.setProperty(`--${colorType}-brand`, `${color}`);
+    const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
+    Object.keys(themeObj).forEach((category) => {
+      const categoryObj = themeObj[category];
+      Object.keys(categoryObj).forEach((property) => {
+        const propertyObj = categoryObj[property];
+        Object.keys(propertyObj).forEach((type) => {
+          const color = propertyObj[type][darkMode ? 'dark' : 'light'];
+          root.style.setProperty(`--cc-${type}-${category}`, `${color}`);
+          if (type === 'placeholder' && category === 'text') {
+            root.style.setProperty(`--cc-default-icon`, `${color}`);
+          }
+          if (category === 'text' && type === 'placeholder') {
+            root.style.setProperty(`--cc-default-icon-light`, `${propertyObj[type]['light']}`);
+            root.style.setProperty(`--cc-default-icon-dark`, `${propertyObj[type]['dark']}`);
+            root.style.setProperty(`--cc-placeholder-text-light`, `${propertyObj[type]['light']}`);
+            root.style.setProperty(`--cc-placeholder-text-dark`, `${propertyObj[type]['dark']}`);
+          }
+        });
+      });
     });
+    detectThemeChange();
   }, [darkMode, selectedTheme, themeAccess]);
 
   useEffect(() => {

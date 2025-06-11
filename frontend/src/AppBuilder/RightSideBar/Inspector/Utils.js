@@ -55,7 +55,8 @@ export function renderCustomStyles(
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'Button' ||
     componentConfig.component == 'Image' ||
-    componentConfig.component == 'ModalV2'
+    componentConfig.component == 'ModalV2' ||
+    componentConfig.component == 'RangeSlider'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -144,7 +145,8 @@ export function renderElement(
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
-    componentConfig.component == 'Image'
+    componentConfig.component == 'Image' ||
+    componentConfig.component == 'RangeSlider'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table } from './Components/Table/Table.jsx';
+import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
 import { renderElement, renderCustomStyles } from './Utils';
@@ -81,6 +82,9 @@ const NEW_REVAMPED_COMPONENTS = [
   'ToggleSwitchV2',
   'Checkbox',
   'DatetimePickerV2',
+  'DatePickerV2',
+  'TimePicker',
+  'DaterangePicker',
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
@@ -91,6 +95,8 @@ const NEW_REVAMPED_COMPONENTS = [
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'Tabs',
+  'RangeSlider',
   'Link',
   'Steps',
 ];
@@ -726,6 +732,9 @@ const GetAccordion = React.memo(
     switch (componentName) {
       case 'Table':
         return <Table {...restProps} />;
+
+      case 'Tabs':
+        return <TabsLayout {...restProps} />;
 
       case 'Chart':
         return <Chart {...restProps} />;

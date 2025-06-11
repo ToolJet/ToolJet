@@ -9,6 +9,7 @@ import { useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const tinycolor = require('tinycolor2');
 
@@ -149,7 +150,7 @@ export const PhoneInput = (props) => {
       : disabledState
       ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor

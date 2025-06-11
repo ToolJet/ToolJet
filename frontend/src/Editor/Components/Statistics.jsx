@@ -15,7 +15,7 @@ export const Statistics = function Statistics({ width, height, properties, style
 
   const baseStyle = {
     borderRadius: 4,
-    backgroundColor: darkMode ? '#47505D' : '#ffffff',
+    backgroundColor: 'var(--cc-surface1-surface)',
     alignItems: 'center',
     flexDirection: 'column',
     margin: '0px auto',

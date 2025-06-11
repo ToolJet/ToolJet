@@ -2379,7 +2379,7 @@ export const buildAppDefinition = (data) => {
     canvasMaxWidth: 100,
     canvasMaxWidthType: '%',
     canvasMaxHeight: 2400,
-    canvasBackgroundColor: '#edeff5',
+    canvasBackgroundColor: 'var(--cc-appBackground-surface)',
     backgroundFxQuery: '',
   };
 
