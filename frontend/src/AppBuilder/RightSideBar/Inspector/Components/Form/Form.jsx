@@ -11,6 +11,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { INPUT_COMPONENTS_FOR_FORM } from './constants';
+import { findFirstKeyValuePairWithPath } from './utils/utils';
 
 export const Form = ({
   componentMeta,
@@ -120,14 +121,19 @@ export const Form = ({
     // Saving will happen when they either click the Generate Form button or Refresh data button
     if (param?.name === 'generateFormFrom') {
       const res = extractAndReplaceReferencesFromString(value, componentNameIdMapping, queryNameIdMapping);
+      let { valueWithId: selectedQuery } = res;
       if (attr === 'value') {
         const { generateFormFrom, JSONData } = getFormDataSectionData(component?.id);
-        setSource((prev) => ({ ...prev, value: res.valueWithId }));
         if (value === generateFormFrom?.value) {
           return setJSONData({ value: JSONData.value });
         }
         if (value !== 'rawJson') {
           const resolvedValue = resolveReferences('canvas', value);
+          if (!source?.fxActive) {
+            const transformedData = findFirstKeyValuePairWithPath(resolvedValue, selectedQuery);
+            setJSONData({ value: transformedData.value });
+            return setSource((prev) => ({ ...prev, value: transformedData.path }));
+          }
           setJSONData({ value: resolvedValue });
         } else {
           setJSONData({
@@ -135,6 +141,7 @@ export const Form = ({
               "{{{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }}}",
           });
         }
+        setSource((prev) => ({ ...prev, value: selectedQuery }));
       } else if (attr === 'fxActive') {
         setSource((prev) => ({ ...prev, fxActive: value }));
       }

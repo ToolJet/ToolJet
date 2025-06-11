@@ -296,3 +296,39 @@ export const cleanupFormFields = (fields) => {
     key: field.key,
   }));
 };
+
+export const findFirstKeyValuePairWithPath = (data, basePath = '') => {
+  let current = data;
+  let pathSegments = [];
+
+  if (data === null || data === undefined || data?.length === 0) {
+    return {
+      value: data,
+      path: basePath,
+    };
+  }
+
+  while (Array.isArray(current) && current.length > 0) {
+    pathSegments.push('[0]');
+    current = current[0];
+  }
+
+  if (current && typeof current === 'object' && !Array.isArray(current)) {
+    // Inject path segments before the closing "}}"
+    const insertAt = basePath.lastIndexOf('}}');
+    const fullPath =
+      insertAt !== -1
+        ? basePath.slice(0, insertAt) + pathSegments.join('') + basePath.slice(insertAt)
+        : basePath + pathSegments.join('');
+
+    return {
+      value: current,
+      path: fullPath,
+    };
+  }
+
+  return {
+    value: null,
+    path: null,
+  };
+};
