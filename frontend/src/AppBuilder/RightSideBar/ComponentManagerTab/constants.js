@@ -7,3 +7,5 @@ export const LEGACY_ITEMS = [
   'Modal',
   'TextArea',
 ];
+
+export const IGNORED_ITEMS = ['ModuleContainer', 'ModuleViewer'];

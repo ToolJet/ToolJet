@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ToolTip } from '@/_components';
 
-export default function OverflowTooltip({ children, className, whiteSpace = 'nowrap', placement = 'bottom', ...rest }) {
+export default function OverflowTooltip({
+  children,
+  className,
+  whiteSpace = 'nowrap',
+  placement = 'bottom',
+  maxLetters,
+  ...rest
+}) {
   const [isOverflowed, setIsOverflow] = useState(false);
   const textElementRef = useRef();
 
@@ -11,6 +18,11 @@ export default function OverflowTooltip({ children, className, whiteSpace = 'now
         textElementRef.current.clientHeight < textElementRef.current.scrollHeight - 4
     );
   }, [children]);
+
+  const displayText =
+    maxLetters && typeof children === 'string' && children.length > maxLetters
+      ? `${children.substring(0, maxLetters)}...`
+      : children;
 
   return (
     <ToolTip
@@ -32,7 +44,7 @@ export default function OverflowTooltip({ children, className, whiteSpace = 'now
           ...rest.style,
         }}
       >
-        {children}
+        {displayText}
       </div>
     </ToolTip>
   );

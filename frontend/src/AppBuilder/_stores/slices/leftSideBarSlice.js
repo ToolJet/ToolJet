@@ -30,16 +30,23 @@ export const createLeftSideBarSlice = (set, get) => ({
     ),
   setPathToBeInspected: (pathToBeInspected) => set(() => ({ pathToBeInspected }), false, 'setPathToBeInspected'),
   setComponentToInspect: (componentToInspect) => {
-    const { setPathToBeInspected, setSelectedSidebarItem, toggleLeftSidebar, selectedSidebarItem } = get();
-    setPathToBeInspected(['components', componentToInspect]);
+    const {
+      setPathToBeInspected,
+      setSelectedSidebarItem,
+      toggleLeftSidebar,
+      selectedSidebarItem,
+      setSelectedNodePath,
+    } = get();
+    // setPathToBeInspected(['components', componentToInspect]);
+    setSelectedNodePath(`components.${componentToInspect}`);
     if (selectedSidebarItem !== 'inspect') {
       setSelectedSidebarItem('inspect');
       toggleLeftSidebar(true);
     }
   },
-  getComponentIdToAutoScroll: (componentId) => {
+  getComponentIdToAutoScroll: (componentId, moduleId = 'canvas') => {
     const { getCurrentPageComponents, getAllExposedValues, modalsOpenOnCanvas } = get();
-    const currentPageComponents = getCurrentPageComponents();
+    const currentPageComponents = getCurrentPageComponents(moduleId);
 
     let targetComponentId = componentId;
     let current = componentId;
@@ -66,7 +73,7 @@ export const createLeftSideBarSlice = (set, get) => ({
 
         const tabId = parentId.replace(regForTabs, ''); // Extract tab id from parent id
 
-        const { currentTab } = getAllExposedValues().components?.[tabId] || {};
+        const { currentTab } = getAllExposedValues(moduleId).components?.[tabId] || {};
         const activeTabIndex = Number(currentTab);
 
         nextPossibleCandidate = tabId;

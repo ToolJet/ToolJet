@@ -182,9 +182,17 @@
   }
 }
 
+.page {
+  .leftsidebar-panel-header {
+    margin-bottom: 8px;
+  }
+
+}
+
 .debugger {
   .leftsidebar-panel-header {
     border-bottom: none;
+    margin-bottom: 8px;
   }
 
   .text-slate-12 {
@@ -207,7 +215,7 @@
   }
 
   .nav-item .nav-link {
-    background-color: var(--slate3) !important;
+    background-color: var(--base) !important;
     color: var(--slate11) !important;
   }
 
@@ -859,4 +867,20 @@
   height: calc(100% - 48px);
   min-height: 300px;
   position: relative;
+}
+
+.left-sidebar-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    margin-right: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--interactive-default) !important;
+    border-radius: 3px;
+  }
 }

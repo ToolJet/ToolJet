@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional, IsString, IsDefined, ValidateNested } from 'class-validator';
+import { IsUUID, IsOptional, IsString, IsDefined, ValidateNested, IsBoolean } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ValidateTooljetDatabaseSchema } from './validators/tooljet-database.validator';
 import { TjdbSchemaToLatestVersion } from './transformers/resource-transformer';
@@ -28,6 +28,10 @@ export class ImportResourcesDto {
   // and instantiated data
   @ValidateTooljetDatabaseSchema({ each: true })
   tooljet_database: ImportTooljetDatabaseDto[];
+
+  @IsOptional()
+  @IsBoolean()
+  skip_page_permissions_group_check?: boolean;
 }
 
 export class ImportAppDto {

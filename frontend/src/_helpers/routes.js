@@ -21,6 +21,7 @@ export const getPrivateRoute = (page, params = {}) => {
     workflows: '/workflows',
     workspace_constants: '/workspace-constants',
     profile_settings: '/profile-settings',
+    modules: '/modules',
   };
 
   let url = routes[page];

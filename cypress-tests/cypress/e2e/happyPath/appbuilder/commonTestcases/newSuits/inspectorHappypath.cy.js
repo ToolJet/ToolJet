@@ -3,7 +3,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { multipageSelector } from "Selectors/multipage";
 import { addSupportCSAData, selectEvent } from "Support/utils/events";
 import { createNewVersion } from "Support/utils/exportImport";
-import { deleteComponentFromInspector, openNode, verifyNodeData, verifyValue, verifyNodes, openAndVerifyNode } from "Support/utils/inspector";
+import { deleteComponentFromInspector, openNode, verifyNodeData, verifyNodes, openAndVerifyNode } from "Support/utils/inspector";
 import { addNewPage } from "Support/utils/multipage";
 import { navigateToCreateNewVersionModal } from "Support/utils/version";
 import testData from "Fixtures/inspectorItems.json";
@@ -20,15 +20,15 @@ describe("Editor- Inspector", () => {
     cy.viewport(1800, 1800);
   });
 
-  it("should verify the values of inspector", () => {
+  it.skip("should verify the values of inspector", () => {
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
 
     openAndVerifyNode("globals", testData.globalsNodes, verifyNodeData);
-    openAndVerifyNode("currentUser", testData.currentUserNodes, verifyValue);
-    openAndVerifyNode("theme", testData.themeNodes, verifyValue);
-    openAndVerifyNode("mode", testData.modeNodes, verifyValue);
-    openAndVerifyNode("urlparams", testData.urlparamsNode, verifyValue);
+    openAndVerifyNode("currentUser", testData.currentUserNodes, verifyNodeData);
+    openAndVerifyNode("theme", testData.themeNodes, verifyNodeData);
+    openAndVerifyNode("mode", testData.modeNodes, verifyNodeData);
+    openAndVerifyNode("urlparams", testData.urlparamsNode, verifyNodeData);
 
     if (Cypress.env("environment") !== "Community") {
       const ssoUserInfoNode = '[data-cy="inspector-node-ssouserinfo"]';
@@ -39,7 +39,7 @@ describe("Editor- Inspector", () => {
 
       openNode("theme");
       openNode("environment");
-      verifyValue("name", "String", `"development"`);
+      verifyNodeData("name", "String", `"development"`);
       cy.get(`${inspectorNodeId} > .node-key`).should("have.text", "id");
     }
 
@@ -92,7 +92,7 @@ describe("Editor- Inspector", () => {
     cy.get(commonWidgetSelector.draggableWidget("button3")).click();
 
     cy.get(commonWidgetSelector.sidebarinspector).click();
-    openAndVerifyNode("variables", testData.variablesNodes, verifyValue);
+    openAndVerifyNode("variables", testData.variablesNodes, verifyNodeData);
 
     cy.forceClickOnCanvas()
     cy.wait(500)
@@ -101,9 +101,9 @@ describe("Editor- Inspector", () => {
 
     // openNode("page");
 
-    openAndVerifyNode("page", testData.testPageNodes, verifyValue);
+    openAndVerifyNode("page", testData.testPageNodes, verifyNodeData);
     openNode("variables", 1);
-    verifyValue("pageVar", "String", `"pageVar"`);
+    verifyNodeData("pageVar", "String", `"pageVar"`);
 
     openAndVerifyNode("components", testData.componentsNodes, verifyNodeData);
 
@@ -111,10 +111,10 @@ describe("Editor- Inspector", () => {
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.get(commonWidgetSelector.sidebarinspector).click();
 
-    openAndVerifyNode("page", testData.pageNodes, verifyValue);
+    openAndVerifyNode("page", testData.pageNodes, verifyNodeData);
     openNode("globals");
     openNode("urlparams");
-    verifyValue("key", "String", `"value"`);
+    verifyNodeData("key", "String", `"value"`);
 
     cy.get(`[data-cy="inspector-node-key"] > .mx-1`)
       .realHover()

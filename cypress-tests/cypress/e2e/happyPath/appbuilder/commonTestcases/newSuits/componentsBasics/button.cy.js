@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
 describe('Button Component Tests', () => {
@@ -75,22 +75,21 @@ describe('Button Component Tests', () => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Button-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Button", 50, 50);
+        cy.dragAndDropWidget("Button", 500, 500);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.get(".tooltip-inner").invoke("hide");
-
         openNode("components");
-        openAndVerifyNode("button1", exposedValues, verifyValue);
-        verifyNodes(functions, verifyfunctions);
+        openAndVerifyNode("button1", exposedValues, verifyNodeData);
+        verifyNodes(functions, verifyNodeData);
         //id is pending
 
     });
 
-    it.skip('should verify all the events from the button', () => {
+    it('should verify all the events from the button', () => {
         const events = [
             { event: "On hover", message: "On hover Event" },
             { event: "On Click", message: "On Click Event" },

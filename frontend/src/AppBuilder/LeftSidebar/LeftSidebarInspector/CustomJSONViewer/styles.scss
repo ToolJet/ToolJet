@@ -1,0 +1,93 @@
+.custom-json-viewer {
+    margin-left: 16px;
+    margin-right: 16px;
+    font-family: "IBM Plex Sans";
+    font-size: 12px;
+    color: var(--text-default, #1B1F24);
+    overflow-x: auto;
+    min-width: 0;
+    
+    // Hide scrollbar for Chrome, Safari and Opera
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    
+    // Hide scrollbar for IE, Edge and Firefox
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+
+    .json-viewer-row-container {
+        min-width: max-content;
+        width: 100%;
+        position: relative;
+        &:hover {
+            background-color: var(--interactive-overlays-fill-hover);
+            width: 100%;
+
+            .json-viewer-actions-container {
+                display: flex;
+            }
+        }
+    }
+
+    .json-viewer-row {
+        width: 100%;
+        display: flex;
+        height: 20px;
+        align-items: center;
+        overflow: hidden;
+        cursor: pointer;
+        
+        .json-viewer-expand-icon {
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .json-viewer-label-container  {
+            margin-right: 4px;
+            flex-shrink: 0; /* don't shrink */
+            white-space: nowrap;
+        }
+
+        .json-viewer-value-container {
+            flex: 1; /* take available space */
+            min-width: 0; /* allow shrinkage */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 70px; /* Add padding to prevent text from going under actions */
+        }
+
+        .json-viewer-actions-container {
+            display: none;
+            margin-left: auto;
+            height: 12px;
+            width: 40px;
+            align-items: center;
+            flex-shrink: 0;
+            position: absolute;
+            right: 16px; /* Align with the parent container's margin */
+            background: var(--bg-default); /* Add background to ensure text doesn't show through */
+            z-index: 1; /* Ensure actions stay on top */
+
+            .json-viewer-action-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 20px;
+                width: 20px;
+
+                &:hover {
+                    cursor: pointer;
+                    background-color: var(--button-outline-hover);
+                    border-radius: 4px;
+                }
+            }
+        }
+
+    }
+}

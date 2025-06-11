@@ -243,7 +243,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
         const versionIsAvailableInEnvironment = environment?.priority <= get().currentAppVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
-          const appId = useStore.getState().app.appId;
+          const { appId } = useStore.getState().appStore.modules.canvas.app;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
             appId,
             editorEnvironmentId: environmentId,
@@ -285,7 +285,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
     try {
-      const appId = useStore.getState().app.appId; // Correct way to access appId
+      const { appId } = useStore.getState().appStore.modules.canvas.app;
 
       const response = await appVersionService.promoteEnvironment(appId, versionId, get().selectedEnvironment.id);
       set((state) => ({

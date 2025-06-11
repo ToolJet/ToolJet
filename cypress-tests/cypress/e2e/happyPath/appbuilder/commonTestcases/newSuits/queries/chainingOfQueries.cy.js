@@ -104,6 +104,7 @@ describe("Chaining of queries", () => {
     cy.wait(1000)
     cy.get('[data-cy="query-tab-setup"]').click();
 
+    cy.wait(1500);
     openEditorSidebar(buttonText.defaultWidgetName);
     selectEvent("On Click", "Run Query", 0, `[data-cy="add-event-handler"]`, 0);
     cy.wait(500);
@@ -122,7 +123,7 @@ describe("Chaining of queries", () => {
     // cy.verifyToastMessage(commonSelectors.toastMessage, "Hello World");
   });
 
-  it.skip("should verify query duplication", () => {
+  it("should verify query duplication", () => {
 
     const data = {};
     let dsName = fake.companyName;
@@ -146,6 +147,7 @@ describe("Chaining of queries", () => {
     chainQuery("runjs", "runpy");
     addSuccessNotification("runjs");
 
+    cy.wait(1500);
     openEditorSidebar(buttonText.defaultWidgetName);
     selectEvent("On Click", "Run Query", 0, `[data-cy="add-event-handler"]`, 0);
     cy.wait(500);
@@ -170,6 +172,8 @@ describe("Chaining of queries", () => {
       "have.text",
       "runjs_copy "
     );
+
+    cy.get('[data-cy="query-tab-settings"]').click();
     cy.get('[data-cy="notification-on-success-toggle-switch"]').should(
       "have.value",
       "on"
@@ -184,7 +188,7 @@ describe("Chaining of queries", () => {
     });
     cy.get(
       `[data-cy="action-selection"] > .select-search > .react-select__control > .react-select__value-container > `
-    ).should("have.text", "Run Query");
+    ).should("have.text", "Run query");
     cy.get('[data-cy="query-selection-field"]').should("have.text", "runpy");
   });
 });

@@ -10,7 +10,7 @@ import {
   selectColourFromColourPicker,
   verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
-import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
+// import { verifyNodeData, openNode, verifyNodeData } from "Support/utils/inspector";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonText,

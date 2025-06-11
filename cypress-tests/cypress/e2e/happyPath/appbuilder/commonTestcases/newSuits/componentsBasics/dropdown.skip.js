@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
 describe('Dropdown Component Tests', () => {
@@ -101,7 +101,7 @@ describe('Dropdown Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("dropdown1", exposedValues, verifyValue);
+        openAndVerifyNode("dropdown1", exposedValues, verifyNodeData);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
