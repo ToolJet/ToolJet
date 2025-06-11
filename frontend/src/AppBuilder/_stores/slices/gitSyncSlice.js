@@ -3,6 +3,8 @@ import { gitSyncService } from '@/_services';
 
 const initialState = {
   showGitSyncModal: false,
+  allowEditing: false,
+  appLoading: false,
 };
 
 export const createGitSyncSlice = (set, get) => ({
