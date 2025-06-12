@@ -17,6 +17,7 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
+import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 
 export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const canvasContainerRef = useRef();
@@ -66,8 +67,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
       id="main-editor-canvas"
       onMouseUp={handleCanvasContainerMouseUp}
     >
-      {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
-      {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
+      <AppCanvasBanner appId={appId} />
       <div
         ref={canvasContainerRef}
         className={cx(

@@ -210,7 +210,7 @@ function updateAppEditState(appId, allowEditing) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/appGit/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/${appId}/configs`, requestOptions).then(handleResponse);
 }
 function getAppGitConfigs(workspaceId, versionId) {
   const requestOptions = {
@@ -219,8 +219,6 @@ function getAppGitConfigs(workspaceId, versionId) {
     credentials: 'include',
   };
 
-  return fetch(`${config.apiUrl}/git-sync/${workspaceId}/app/${versionId}/configs`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/app-git/${workspaceId}/app/${versionId}/configs`, requestOptions).then(handleResponse);
 }
 // Remove all app-git api's to separate service from here.

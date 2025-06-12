@@ -28,6 +28,9 @@ export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> 
     const isAllAppsCreatable = !!userPermission?.appCreate;
     const isAllAppsViewable = !!userAppGitPermissions?.isAllViewable;
 
+    // Fetch app-git configs is available for all users
+    can(FEATURE_KEY.GIT_FETCH_APP_CONFIGS, App);
+
     // Grant feature-level access based on resource actions
     if (isAdmin || superAdmin || isBuilder) {
       // Admin or Super Admin gets full access to all features
@@ -38,6 +41,7 @@ export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> 
       can(FEATURE_KEY.GIT_GET_APP_CONFIG, App);
       can(FEATURE_KEY.GIT_SYNC_APP, App);
       can(FEATURE_KEY.GIT_APP_VERSION_RENAME, App);
+      can(FEATURE_KEY.GIT_APP_CONFIGS_UPDATE, App);
       return;
     }
 

@@ -10,6 +10,8 @@ interface Features {
   [FEATURE_KEY.GIT_SYNC_APP]: FeatureConfig;
   [FEATURE_KEY.GIT_UPDATE_APP]: FeatureConfig;
   [FEATURE_KEY.GIT_APP_VERSION_RENAME]: FeatureConfig;
+  [FEATURE_KEY.GIT_APP_CONFIGS_UPDATE]: FeatureConfig;
+  [FEATURE_KEY.GIT_FETCH_APP_CONFIGS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

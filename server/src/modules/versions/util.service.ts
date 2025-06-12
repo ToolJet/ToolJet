@@ -7,9 +7,6 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
-import { RenameAppOrVersionDto } from '@modules/app-git/dto';
-import { RequestContext } from '@modules/request-context/service';
-import got from 'got';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {

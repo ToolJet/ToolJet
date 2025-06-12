@@ -15303,7 +15303,9 @@ tbody {
 
   .create-commit-container,
   .commit-info,
-  .pull-container {
+  .pull-container,
+  .pushpull-container {
+    height: 260px !important;
     .form-control {
       font-weight: 400;
       font-size: 12px;
@@ -18891,4 +18893,33 @@ section.ai-message-prompt-input-wrapper {
   .cm-editor {
     max-height: 100px !important;
   }
+}
+
+.application-editable-checkbox-container {
+  .form-check-input {
+    margin-right: 9px !important;
+    margin-bottom: 5px !important;
+    font-size: 12px !important;
+  }
+
+  .helper-text {
+    margin-left: 25px !important;
+    margin-bottom: 10px !important;
+  }
+}
+
+.git-sync-modal {
+  width: 400px !important;
+  height: 484px !important;
+}
+
+.dark-theme.git-sync-modal {
+  .modal-header {
+    border-bottom: 1px solid var(--slate5) !important;
+  }
+}
+
+.git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-push.active,
+.git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-pull.active {
+  border-bottom: 2px solid var(--indigo9) !important;
 }

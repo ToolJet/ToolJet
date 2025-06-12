@@ -142,7 +142,6 @@ function EditAppName() {
           value={name}
           maxLength={50}
           data-cy="app-name-input"
-          disabled={appCreationMode === 'GIT'}
         />
       </ToolTip>
       <InfoOrErrorBox
