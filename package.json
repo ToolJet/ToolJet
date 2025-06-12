@@ -19,11 +19,11 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
-    "eslint": "^8.56.0",
-    "eslint-plugin-jest": "^28.6.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "husky": "^8.0.3",
-    "lint-staged": "^13.1.2"
+    "eslint": "^9.28.0",
+    "eslint-plugin-jest": "^28.13.3",
+    "eslint-plugin-prettier": "^5.4.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0"
   },
   "scripts": {
     "prebuild:plugins": "npm run install:plugins",
@@ -56,7 +56,7 @@
     "update-version": "node update-version.js"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.12.0",
-    "eslint-config-prettier": "^9.1.0"
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "eslint-config-prettier": "^10.1.5"
   }
 }
