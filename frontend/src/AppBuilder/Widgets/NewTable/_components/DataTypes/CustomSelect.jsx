@@ -254,14 +254,17 @@ export const CustomSelectColumn = ({
         borderRadius: '8px',
         boxShadow: 'var(--elevation-400-box-shadow)',
       }),
-      singleValue: (provided) => ({
-        ...provided,
-        padding: '2px 6px',
-        background: 'var(--surfaces-surface-03)',
-        borderRadius: '6px',
-        color: cellTextColor || 'var(--text-primary)',
-        fontSize: '12px',
-      }),
+      singleValue: (provided, state) => {
+        const option = state.data;
+        return {
+          ...provided,
+          padding: '2px 6px',
+          background: optionColors?.[option.value] || 'var(--surfaces-surface-03)',
+          borderRadius: '6px',
+          color: option?.labelColor || cellTextColor || 'var(--text-primary)',
+          fontSize: '12px',
+        };
+      },
     }),
     [darkMode, isMulti, horizontalAlignment, cellTextColor, autoAssignColors]
   );
