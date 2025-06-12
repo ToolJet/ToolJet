@@ -12,6 +12,7 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { AiModule } from '@modules/ai/module';
 import { AppsRepository } from '@modules/apps/repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { FeatureAbilityFactory } from './ability';
 @Module({})
 export class ModulesModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -48,6 +49,7 @@ export class ModulesModule {
         PageHelperService,
         OrganizationRepository,
         DataSourcesRepository,
+        FeatureAbilityFactory,
       ],
     };
   }
