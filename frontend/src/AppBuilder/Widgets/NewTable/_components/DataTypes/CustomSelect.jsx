@@ -16,7 +16,12 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
-    <div className="table-select-custom-menu-list" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="table-select-custom-menu-list"
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
       <div className="table-select-column-type-search-box-wrapper">
         {!inputValue && (
           <span>
@@ -83,7 +88,14 @@ const CustomMultiValueContainer = ({ children }) => (
 );
 
 const DropdownIndicator = ({ selectProps }) => (
-  <div className="cell-icon-display">
+  <div
+    className="cell-icon-display"
+    onMouseDown={() => {
+      if (selectProps.handleRowClick) {
+        selectProps.handleRowClick();
+      }
+    }}
+  >
     <SolidIcon
       name={selectProps.menuIsOpen ? 'arrowUpTriangle' : 'arrowDownTriangle'}
       width="16"
@@ -138,9 +150,9 @@ export const CustomSelectColumn = ({
   column,
   isNewRow,
   id,
+  handleRowClick,
 }) => {
   const validateWidget = useStore((state) => state.validateWidget, shallow);
-
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
@@ -309,6 +321,7 @@ export const CustomSelectColumn = ({
             darkMode={darkMode}
             menuIsOpen={isFocused || undefined}
             isFocused={isFocused || undefined}
+            handleRowClick={handleRowClick}
           />
         </div>
         <div

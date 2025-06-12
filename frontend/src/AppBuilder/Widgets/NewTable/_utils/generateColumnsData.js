@@ -109,11 +109,10 @@ export default function generateColumnsData({
           ...column,
         },
 
-        cell: ({ cell, row }) => {
+        cell: ({ cell, row, handleRowClick }) => {
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedRowFromIndex(id, row.index);
-
           let cellValue = changeSet ? changeSet[cell.column.columnDef?.meta?.name] ?? cell.getValue() : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
@@ -229,6 +228,7 @@ export default function generateColumnsData({
                   horizontalAlignment={column?.horizontalAlignment}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   id={id}
+                  handleRowClick={handleRowClick}
                 />
               );
 

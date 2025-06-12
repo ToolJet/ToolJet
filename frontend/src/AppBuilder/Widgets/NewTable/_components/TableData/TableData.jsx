@@ -75,6 +75,7 @@ export const TableData = ({
 
   // Handles row click for row selection
   const handleRowClick = (row) => {
+    console.log('handleRowClick', row);
     if (!allowSelection) return;
     lastClickedRowRef.current = row.original;
 
