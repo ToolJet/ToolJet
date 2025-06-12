@@ -25,7 +25,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     gitSync: false,
     comments: false,
     customThemes: false,
-    serverSideGlobal: false,
+    serverSideGlobalResolve: false,
   },
   domains: [],
   workflows: {
