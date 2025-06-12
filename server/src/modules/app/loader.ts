@@ -122,6 +122,6 @@ export class AppModuleLoader {
       console.error('Error loading dynamic modules:', error);
     }
 
-    return [...staticModules, ...dynamicModules];
+    return [...staticModules, ...dynamicModules] as (Type<any> | DynamicModule)[];
   }
 }
