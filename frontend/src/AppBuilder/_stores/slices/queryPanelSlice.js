@@ -700,8 +700,8 @@ export const createQueryPanelSlice = (set, get) => ({
       if (query.restricted) {
         return {
           status: 'failed',
-          message: 'Unauthorized Access',
-          description: '',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
           data: {
             type: 'tj-401',
             responseObject: {
@@ -945,8 +945,8 @@ export const createQueryPanelSlice = (set, get) => ({
       if (query.restricted) {
         return {
           status: 'failed',
-          message: 'Unauthorized Access',
-          description: '',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
           data: {
             type: 'tj-401',
             responseObject: {
@@ -1016,8 +1016,8 @@ export const createQueryPanelSlice = (set, get) => ({
       if (queryDetails.restricted) {
         return {
           status: 'failed',
-          message: 'Unauthorized Access',
-          description: '',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
           data: {
             type: 'tj-401',
             responseObject: {
