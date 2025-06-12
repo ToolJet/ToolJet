@@ -106,7 +106,7 @@ const UsersTable = ({
                     {translator('header.organization.menus.manageUsers.workspaces', 'Workspaces')}
                   </th>
                 )}
-                <th className="w-1 tw-w-16 tw-max-w-16 tw-min-w-16"></th>
+                <th className="w-1 !tw-w-16 !tw-max-w-16 !tw-min-w-16"></th>
               </tr>
             </thead>
             {isLoading ? (
@@ -159,7 +159,7 @@ const UsersTable = ({
                         </td>
                       )}
                       {isLoadingAllUsers && (
-                        <td className="text-muted">
+                        <td className="text-muted !tw-w-[230px] tw-max-w-[230px]">
                           <span
                             className="text-muted user-type"
                             data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-type`}
@@ -174,7 +174,7 @@ const UsersTable = ({
                       {!isLoadingAllUsers && <GroupChipTD groups={user.groups.map((group) => group.name)} />}
                       {user.status && (
                         <td
-                          className="text-muted"
+                          className="text-muted !tw-w-[230px] tw-max-w-[230px]"
                           data-name={wsSettings ? 'status-header' : ''}
                           style={{ marginRight: wsSettings ? '6px' : '0px' }}
                         >
@@ -221,7 +221,7 @@ const UsersTable = ({
                         </td>
                       )}
                       {isLoadingAllUsers && (
-                        <td className="text-muted">
+                        <td className="text-muted !tw-w-[230px] tw-max-w-[230px]">
                           <a
                             className="px-2 text-muted workspaces"
                             onClick={

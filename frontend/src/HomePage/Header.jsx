@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchBox } from '@/_components/SearchBox';
+import { SearchBox } from '@/_components/PageSearchBox';
 import { useTranslation } from 'react-i18next';
 
 export default function HomeHeader({ onSearchSubmit, darkMode, appType }) {

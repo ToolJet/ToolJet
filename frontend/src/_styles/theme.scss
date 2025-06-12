@@ -3669,7 +3669,7 @@ input:focus-visible {
   position: relative;
   min-height: 100%;
   min-width: 100%;
-  background-color: #2b394b;
+  background-color: var(--page-weak);
 }
 
 .jet-table {
@@ -4679,7 +4679,7 @@ input[type="text"] {
  * Folder List
  */
 .folder-list {
-  overflow-y: scroll;
+  overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #888 transparent;
 
@@ -8901,7 +8901,7 @@ tbody {
 
 .home-page-content {
   background-color: var(--page-weak);
-  height: calc(100vh - 64px) !important;
+  height: calc(100vh - 48px) !important;
   overflow-y: auto;
   position: relative;
 
@@ -12515,7 +12515,7 @@ tbody {
 }
 
 .profile-page-card {
-  background-color: var(--page-weak);
+  background-color: var(--surfaces-surface-01);
   border-radius: 6px;
 }
 
@@ -13018,16 +13018,14 @@ tbody {
 .instance-settings-page {
   width: 880px;
   margin: 0 auto;
-  background: var(--base);
+  background: var(--surfaces-surface-01);
 
   .page-wrapper {
     margin-bottom: 50px !important;
   }
 
   .card {
-    background: var(--base);
-    border: 1px solid var(--slate7) !important;
-    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05) !important;
+    background: var(--surfaces-surface-01);
     width: 880px;
 
     .card-header {
@@ -13059,8 +13057,8 @@ tbody {
       align-items: center;
       padding: 24px 32px;
       gap: 8px;
-      border-top: 1px solid var(--slate5) !important;
-      background: var(--base);
+      border-top: 1px solid var(--border-weak) !important;
+      background: var(--surfaces-surface-01);
       margin-top: 0px !important;
       align-Self: 'stretch';
       height: 88px;
@@ -13184,7 +13182,7 @@ tbody {
 }
 
 .audit-log {
-  background-color: var(--slate2);
+  background-color: var(--page-weak);
   width: unset;
 
   .tj-ms {
