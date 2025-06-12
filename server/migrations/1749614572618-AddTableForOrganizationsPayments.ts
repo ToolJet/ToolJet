@@ -1,7 +1,13 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+const isCloudEdition = process.env.TOOLJET_EDITION === 'cloud';
 
 export class AddTableForOrganizationsPayments1749614572618 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // If edition is not cloud, skip this migration
+    if (!isCloudEdition) {
+      console.log('Migration is only restricted for cloud edition.');
+      return; // Exit the migration early
+    }
     await queryRunner.createTable(
       new Table({
         name: 'organizations_payments',

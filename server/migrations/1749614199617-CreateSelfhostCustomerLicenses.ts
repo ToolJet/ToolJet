@@ -1,8 +1,14 @@
 import { LICENSE_TYPE } from '@modules/licensing/constants';
 import { MigrationInterface, QueryRunner, Table, TableUnique } from 'typeorm';
+const isCloudEdition = process.env.TOOLJET_EDITION === 'cloud';
 
 export class CreateSelfhostCustomerLicenses1749614199617 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // If edition is cloud, skip this migration
+    if (!isCloudEdition) {
+      console.log('Migration is only restricted for cloud edition.');
+      return; // Exit the migration early
+    }
     await queryRunner.createTable(
       new Table({
         name: 'selfhost_customer_licenses',
