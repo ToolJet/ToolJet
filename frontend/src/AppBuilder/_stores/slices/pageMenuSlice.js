@@ -100,10 +100,6 @@ export const createPageMenuSlice = (set, get) => {
     pageSettingSelected: false,
     pageSettings: {},
     showPagePermissionModal: false,
-    permissionPage: null,
-    selectedUserGroups: [],
-    selectedUsers: [],
-    pagePermission: null,
 
     toggleSearch: (show) =>
       set((state) => {
@@ -432,26 +428,12 @@ export const createPageMenuSlice = (set, get) => {
       }
     },
 
-    setPagePermission: (pagePermission) =>
-      set((state) => {
-        state.pagePermission = pagePermission;
-      }),
-
     togglePagePermissionModal: (show) => {
       set((state) => {
         state.showPagePermissionModal = show;
       });
     },
 
-    setSelectedUserGroups: (groups) =>
-      set((state) => {
-        state.selectedUserGroups = groups;
-      }),
-
-    setSelectedUsers: (users) =>
-      set((state) => {
-        state.selectedUsers = users;
-      }),
     setEditingPage: (page) =>
       set((state) => {
         state.editingPage = page;

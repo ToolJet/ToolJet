@@ -39,6 +39,8 @@ import { PAGE_PERMISSION_TYPE } from '@modules/app-permissions/constants';
 import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { UsersUtilService } from '@modules/users/util.service';
+import { QueryPermission } from '@entities/query_permissions.entity';
+import { QueryUser } from '@entities/query_users.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -164,6 +166,9 @@ export class AppImportExportService {
       if (dataSources?.length) {
         dataQueries = await manager
           .createQueryBuilder(DataQuery, 'data_queries')
+          .leftJoinAndSelect('data_queries.permissions', 'permission')
+          .leftJoinAndSelect('permission.users', 'queryUser')
+          .leftJoinAndSelect('queryUser.permissionGroup', 'permissionGroup')
           .where('data_queries.dataSourceId IN(:...dataSourceId)', {
             dataSourceId: dataSources?.map((v) => v.id),
           })
@@ -216,6 +221,21 @@ export class AppImportExportService {
         };
       });
 
+      const queriesWithPermissionGroups = dataQueries.map((query) => {
+        const groupPermission = query.permissions.find((perm) => perm.type === 'GROUP');
+
+        return {
+          ...query,
+          permissions: groupPermission
+            ? {
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
+            : undefined,
+        };
+      });
+
       const components =
         pages.length > 0
           ? await manager
@@ -239,7 +259,7 @@ export class AppImportExportService {
       appToExport['components'] = components;
       appToExport['pages'] = pagesWithPermissionGroups;
       appToExport['events'] = events;
-      appToExport['dataQueries'] = dataQueries;
+      appToExport['dataQueries'] = queriesWithPermissionGroups;
       appToExport['dataSources'] = dataSources;
       appToExport['appVersions'] = appVersions;
       appToExport['appEnvironments'] = appEnvironments;
@@ -1116,7 +1136,15 @@ export class AppImportExportService {
       });
 
       await manager.save(newQuery);
+
+      if (importingQuery.permissions) {
+        newQuery.permissions = importingQuery.permissions;
+      }
+
       appResourceMappings.dataQueryMapping[importingQuery.id] = newQuery.id;
+
+      //create query permissions of query if flag enabled in dto
+      await this.createQueryPermissionsForGroups(newQuery, organizationId, manager);
     }
 
     return appResourceMappings;
@@ -1358,13 +1386,22 @@ export class AppImportExportService {
     return pageSettings;
   }
 
-  async checkIfGroupPermissionsExist(pages, organizationId) {
+  async checkIfGroupPermissionsExist(pages, queries, organizationId) {
     const allGroupNames = new Set<string>();
 
     for (const page of pages) {
       const groupNames = page.permissions?.permissionGroup || [];
       for (const name of groupNames) {
         allGroupNames.add(name);
+      }
+    }
+
+    for (const query of queries) {
+      const groupNames = query.permissions?.permissionGroup || [];
+      for (const name of groupNames) {
+        if (!allGroupNames.has(name)) {
+          allGroupNames.add(name);
+        }
       }
     }
 
@@ -1426,6 +1463,41 @@ export class AppImportExportService {
     );
 
     await manager.save(pageUsers);
+  }
+
+  async createQueryPermissionsForGroups(query, organizationId: string, manager: EntityManager) {
+    const groupNames = query.permissions?.permissionGroup || [];
+    if (!groupNames.length) return;
+
+    const existingGroups = await manager
+      .createQueryBuilder(GroupPermissions, 'gp')
+      .where('gp.name IN (:...names)', { names: groupNames })
+      .andWhere('gp.organizationId = :organizationId', { organizationId })
+      .getMany();
+
+    const groupMap = new Map(existingGroups.map((g) => [g.name, g]));
+
+    // Filter to only existing group names
+    const validGroupNames = groupNames.filter((name) => groupMap.has(name));
+
+    // If no valid group names exist, do not create permissions
+    if (!validGroupNames.length) return;
+
+    const permission = manager.create(QueryPermission, {
+      queryId: query.id,
+      type: PAGE_PERMISSION_TYPE.GROUP,
+    });
+
+    const savedPermission = await manager.save(permission);
+
+    const queryUsers = validGroupNames.map((name) =>
+      manager.create(QueryUser, {
+        queryPermissionsId: savedPermission.id,
+        permissionGroupsId: groupMap.get(name).id,
+      })
+    );
+
+    await manager.save(queryUsers);
   }
 
   async createAppVersionsForImportedApp(

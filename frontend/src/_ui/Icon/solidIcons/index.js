@@ -239,6 +239,7 @@ import EnterpriseCrown from './EnterrpiseCrown.jsx';
 import FileCode from './FileCode.jsx';
 import Corners from './Corners.jsx';
 import Moon from './Moon.jsx';
+import MoreVertical01 from './MoreVertical01.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
 
 const Icon = (props) => {
@@ -725,6 +726,8 @@ const Icon = (props) => {
       return <Play01 {...props} />;
     case 'moon':
       return <Moon {...props} />;
+    case 'morevertical01':
+      return <MoreVertical01 {...props} />;
     default:
       return <Apps {...props} />;
   }

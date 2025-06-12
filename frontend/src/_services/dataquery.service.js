@@ -13,9 +13,9 @@ export const dataqueryService = {
   bulkUpdateQueryOptions,
 };
 
-function getAll(appVersionId) {
+function getAll(appVersionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-queries/${appVersionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${appVersionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
 function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
@@ -72,7 +72,7 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -80,7 +80,7 @@ function run(queryId, resolvedOptions, options, versionId, environmentId) {
 
   let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
     environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
-  }`;
+  }?mode=${mode}`;
 
   //For public/released apps
   if (!environmentId || !versionId) {

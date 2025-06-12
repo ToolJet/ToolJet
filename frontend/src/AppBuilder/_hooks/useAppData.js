@@ -632,7 +632,7 @@ const useAppData = (
           setSecrets(orgSecrets);
         }
 
-        const queryData = await dataqueryService.getAll(currentVersionId);
+        const queryData = await dataqueryService.getAll(currentVersionId, mode);
         const dataQueries = queryData.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
