@@ -10,9 +10,11 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { debounce } from 'lodash';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const QueryCardMenu = ({ darkMode }) => {
-  const appId = useStore((state) => state.app.appId);
+  const { moduleId } = useModuleContext();
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
