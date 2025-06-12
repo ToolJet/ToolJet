@@ -238,6 +238,7 @@ export const ModalV2 = function Modal({
           modalBodyHeight: computedCanvasHeight,
           modalWidth,
           onSelectModal: setSelectedComponentAsModal,
+          darkMode,
         }}
       />
     </div>
