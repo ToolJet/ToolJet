@@ -168,4 +168,26 @@ export class DataSourcesRepository extends Repository<DataSource> {
       });
     }, manager || this.manager);
   }
+
+  getDatasourceByPluginId(pluginId: string) {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.find(DataSource, {
+        where: {
+          pluginId: pluginId,
+        },
+        relations: ['dataQueries'],
+      });
+    });
+  }
+
+  getQueriesByDatasourceId(datasourceId) {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.find(DataSource, {
+        where: {
+          id: datasourceId,
+        },
+        relations: ['dataQueries'],
+      });
+    });
+  }
 }

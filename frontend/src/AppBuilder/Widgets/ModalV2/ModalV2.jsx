@@ -16,6 +16,7 @@ import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFa
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const ModalV2 = function Modal({
   id,
@@ -29,6 +30,7 @@ export const ModalV2 = function Modal({
   dataCy,
   height,
 }) {
+  const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -56,7 +58,7 @@ export const ModalV2 = function Modal({
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
-  const mode = useStore((state) => state.currentMode, shallow);
+  const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
 
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);

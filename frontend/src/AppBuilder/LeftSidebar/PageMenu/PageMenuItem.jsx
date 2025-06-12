@@ -16,14 +16,16 @@ import { RenameInput } from './RenameInput';
 import IconSelector from './IconSelector';
 import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 
 export const PageMenuItem = withRouter(
   memo(({ darkMode, page, navigate }) => {
-    const homePageId = useStore((state) => state.app.homePageId);
+    const { moduleId } = useModuleContext();
+    const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
     const isHomePage = page.id === homePageId;
-    const currentPageId = useStore((state) => state.currentPageId);
+    const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
     const isSelected = page.id === currentPageId;
     const isHidden = page?.hidden ?? false;
     const isDisabled = page?.disabled ?? false;
@@ -140,9 +142,9 @@ export const PageMenuItem = withRouter(
       if (currentPageId === page.id) {
         return;
       }
-      switchPage(page.id, page.handle);
-      setCurrentPageHandle(page.handle);
-    }, [currentPageId, page.id, page.handle, switchPage, setCurrentPageHandle]);
+      switchPage(page.id, page.handle, [], moduleId);
+      setCurrentPageHandle(page.handle, moduleId);
+    }, [currentPageId, page.id, page.handle, switchPage, setCurrentPageHandle, moduleId]);
 
     const handlePageMenuSettings = useCallback(
       (event) => {
