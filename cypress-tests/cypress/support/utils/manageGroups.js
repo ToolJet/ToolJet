@@ -658,7 +658,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions/app`,
         headers: headers,
         body: {
           name: "Apps",
@@ -676,7 +676,6 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
             ],
           },
         },
-
       }).then((response) => {
         expect(response.status).to.equal(201);
       });
@@ -727,7 +726,7 @@ export const duplicateMultipleGroups = (groupNames) => {
     cy.get(commonSelectors.duplicateOption).click(); // Click on the duplicate option
     cy.get(commonSelectors.confirmDuplicateButton).click(); // Confirm duplication if needed
   });
-}
+};
 
 export const verifyGroupCardOptions = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
@@ -865,7 +864,7 @@ export const addUserInGroup = (groupName, email) => {
     commonSelectors.toastMessage,
     groupsText.userAddedToast
   );
-}
+};
 
 export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fillUserInviteForm(firstName, email);
@@ -891,7 +890,13 @@ export const verifyBasicPermissions = (canCreate = true) => {
   );
 };
 
-export const setupWorkspaceAndInviteUser = (workspaceName, workspaceSlug, firstName, email, role = "end-user") => {
+export const setupWorkspaceAndInviteUser = (
+  workspaceName,
+  workspaceSlug,
+  firstName,
+  email,
+  role = "end-user"
+) => {
   cy.apiCreateWorkspace(workspaceName, workspaceSlug);
   cy.visit(workspaceSlug);
   cy.wait(1000);
@@ -907,7 +912,10 @@ export const verifySettingsAccess = (shouldExist = true) => {
   );
 };
 
-export const verifyUserPrivileges = (expectedButtonState, shouldHaveWorkspaceSettings) => {
+export const verifyUserPrivileges = (
+  expectedButtonState,
+  shouldHaveWorkspaceSettings
+) => {
   cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
   cy.get(commonSelectors.settingsIcon).click();
 

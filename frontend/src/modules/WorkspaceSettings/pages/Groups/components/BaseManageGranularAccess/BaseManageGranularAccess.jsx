@@ -120,7 +120,7 @@ class BaseManageGranularAccess extends React.Component {
       deleteGranularPermissions: true,
     });
     groupPermissionV2Service
-      .deleteGranularPermission(currentEditingPermissions.id)
+      .deleteGranularPermission(currentEditingPermissions)
       .then(() => {
         toast.success('Deleted permission successfully');
         this.fetchGranularPermissions(this.props.groupPermissionId);
@@ -309,7 +309,7 @@ class BaseManageGranularAccess extends React.Component {
       allowRoleChange,
     };
     groupPermissionV2Service
-      .updateGranularPermission(permission.id, body)
+      .updateGranularPermission(permission, body)
       .then(() => {
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
@@ -399,7 +399,7 @@ class BaseManageGranularAccess extends React.Component {
     };
 
     groupPermissionV2Service
-      .updateGranularPermission(currentEditingPermissions.id, body)
+      .updateGranularPermission(currentEditingPermissions, body)
       .then(() => {
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
@@ -597,7 +597,6 @@ class BaseManageGranularAccess extends React.Component {
 
     const currentGroupPermission = this.props?.groupPermission;
     const isRoleGroup = currentGroupPermission.name == 'admin';
-    const defaultGroup = currentGroupPermission.type === 'default';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'

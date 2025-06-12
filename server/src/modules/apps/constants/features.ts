@@ -6,6 +6,9 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.APP]: {
     [FEATURE_KEY.CREATE]: {},
     [FEATURE_KEY.UPDATE]: {},
+    [FEATURE_KEY.APP_PUBLIC_UPDATE]: {
+      auditLogsKey: 'APP_PUBLIC_UPDATE',
+    },
     [FEATURE_KEY.UPDATE_ICON]: {
       auditLogsKey: FEATURE_KEY.UPDATE,
     },
@@ -17,7 +20,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_ONE]: {},
     [FEATURE_KEY.GET_BY_SLUG]: {},
     [FEATURE_KEY.RELEASE]: {
-      auditLogsKey: FEATURE_KEY.UPDATE,
+      auditLogsKey: 'APP_RELEASE',
     },
   },
 };

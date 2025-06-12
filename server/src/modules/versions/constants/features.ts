@@ -21,6 +21,7 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.PROMOTE]: {
       license: LICENSE_FIELD.VALID,
+      auditLogsKey: 'APP_PROMOTE',
     },
     [FEATURE_KEY.CREATE_COMPONENTS]: {},
     [FEATURE_KEY.UPDATE_COMPONENTS]: {},
@@ -35,5 +36,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CREATE_EVENT]: {},
     [FEATURE_KEY.UPDATE_EVENT]: {},
     [FEATURE_KEY.DELETE_EVENT]: {},
+    [FEATURE_KEY.APP_VERSION_CREATE]: {},
+    [FEATURE_KEY.APP_VERSION_DELETE]: {},
+    [FEATURE_KEY.APP_VERSION_UPDATE]: {},
   },
 };

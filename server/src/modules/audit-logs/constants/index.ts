@@ -11,4 +11,5 @@ export const PER_PAGE_DEFAULT_COUNT = '10';
 
 export enum FEATURE_KEY {
   VIEW_LOGS = 'viewLogs',
+  VIEW_RESOURCES = 'viewResoures',
 }

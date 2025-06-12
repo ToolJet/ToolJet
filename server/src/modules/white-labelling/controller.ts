@@ -7,6 +7,8 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY } from './constant';
 import { WhiteLabellingService } from './service';
+import { User as UserEntity } from '@entities/user.entity';
+import { User } from '@modules/app/decorators/user.decorator';
 
 @Controller('white-labelling')
 @InitModule(MODULES.WHITE_LABELLING)
@@ -21,7 +23,7 @@ export class WhiteLabellingController implements IWhiteLabellingController {
 
   @Put()
   @InitFeature(FEATURE_KEY.UPDATE)
-  async update(@Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto) {
+  async update(@Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 
@@ -35,7 +37,8 @@ export class WhiteLabellingController implements IWhiteLabellingController {
   @InitFeature(FEATURE_KEY.UPDATE_WORKSPACE_SETTINGS)
   async updateWorkspaceSettings(
     @Param('organizationId') organizationId: string,
-    @Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto
+    @Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto,
+    @User() user: UserEntity
   ) {
     throw new NotFoundException();
   }

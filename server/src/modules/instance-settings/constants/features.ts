@@ -14,6 +14,7 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.UPDATE]: {
       license: LICENSE_FIELD.VALID,
+      auditLogsKey: 'INSTANCE_SETTINGS_UPDATE',
     },
   },
 };
