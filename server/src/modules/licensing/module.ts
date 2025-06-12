@@ -4,6 +4,7 @@ import { UserRepository } from '@modules/users/repository';
 import { LicenseRepository } from './repository';
 import { LicenseInitService, LicenseTermsService } from './interfaces/IService';
 import { FeatureAbilityFactory } from './ability';
+import { OrganizationRepository } from '@modules/organizations/repository';
 export class LicenseModule {
   static async forRoot(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -55,6 +56,7 @@ export class LicenseModule {
         LicenseDecryptService,
         LicenseWorkflowsService,
         FeatureAbilityFactory,
+        OrganizationRepository,
       ],
       controllers: [
         LicenseController,
