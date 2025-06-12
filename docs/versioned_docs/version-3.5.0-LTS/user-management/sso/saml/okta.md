@@ -44,7 +44,7 @@ Okta can be configured as the Identity Provider for SAML, which is an authentica
 
     | Name | Name format | Filter | Value |
     | --- | --- | --- | --- |
-    | groups | Unspecified | Matches regex | "*" |
+    | groups | Unspecified | Matches regex | ".*" |
 
     <img className="screenshot-full img-l" src="/img/user-management/sso/saml/okta-grp-attribute.png" alt="Okta Configure SAML ATTRIBUTE STATEMENTS" />
 
