@@ -379,7 +379,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       await Promise.all(
         groups.map(async (group) => {
-          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, manager);
+          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, group?.organizationId, manager);
           builderLevelRole = builderLevelRole || isBuilderGroup;
         })
       );
