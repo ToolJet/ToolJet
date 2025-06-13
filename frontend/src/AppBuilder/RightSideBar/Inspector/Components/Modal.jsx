@@ -43,7 +43,9 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     return accordionItems;
   };
 
-  const properties = Object.keys(componentMeta.properties);
+  const properties = Object.keys(componentMeta.properties || {}).filter(
+    (key) => componentMeta.properties[key].section !== 'additionalActions'
+  );
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
 
@@ -64,7 +66,8 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     apps,
     allComponents,
     validations,
-    darkMode
+    darkMode,
+    undefined
   );
 
   accordionItems.splice(1, 0, ...conditionalAccordionItems(component));

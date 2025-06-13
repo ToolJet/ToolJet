@@ -19,6 +19,7 @@ export const AppMenu = function AppMenu({
   appCreationMode,
 }) {
   const { t } = useTranslation();
+  const isModuleApp = appType === 'module';
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
       document.body.click();
@@ -81,7 +82,7 @@ export const AppMenu = function AppMenu({
                     )}
                   </>
                 )}
-                {canUpdateApp && canCreateApp && appType !== 'workflow' && (
+                {canUpdateApp && canCreateApp && appType !== 'workflow' && !isModuleApp && (
                   <>
                     <Field
                       text={t('homePage.appCard.cloneApp', 'Clone app')}

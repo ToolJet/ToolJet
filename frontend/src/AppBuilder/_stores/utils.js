@@ -6,7 +6,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 
-import _ from 'lodash';
+var _ = require('lodash');
 
 const resetters = [];
 
@@ -148,6 +148,7 @@ export const resolveCode = (
           'queries',
           'globals',
           'page',
+          'input',
           'client',
           'server',
           'constants',
@@ -165,6 +166,7 @@ export const resolveCode = (
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
         isJsCode ? state?.page : undefined,
+        isJsCode ? state?.input : undefined,
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
@@ -679,6 +681,15 @@ export function convertAllKeysToSnakeCase(o) {
 
 //   return { suggestionList, hintsMap, resolvedRefs };
 // }
+
+export const isProperNumber = (str) => {
+  try {
+    const num = Number(str);
+    return !isNaN(num) && isFinite(num);
+  } catch (e) {
+    return false;
+  }
+};
 
 export const hasArrayNotation = (property) => {
   // Regular expression to match array notation pattern
