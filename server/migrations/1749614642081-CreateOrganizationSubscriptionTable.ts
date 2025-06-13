@@ -1,14 +1,6 @@
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique } from 'typeorm';
 export class CreateOrganizationSubscriptionTable1749614642081 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
-    // If edition is not cloud, skip this migration
-    if (edition !== 'cloud') {
-      console.log('Migration is only restricted for cloud edition.');
-      return; // Exit the migration early
-    }
     await queryRunner.createTable(
       new Table({
         name: 'organization_subscriptions',
