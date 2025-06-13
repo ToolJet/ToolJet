@@ -27,4 +27,4 @@ export class AddIsDefaultToOrganizations1740401000000 implements MigrationInterf
     // Then drop the column
     await queryRunner.dropColumn('organizations', 'is_default');
   }
-} 
+}
