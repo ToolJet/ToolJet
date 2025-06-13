@@ -11,7 +11,18 @@ export const datasourceService = {
   save,
   fetchOauth2BaseUrl,
   testSampleDb,
+  getDecryptedOptions,
 };
+
+function getDecryptedOptions(options) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(options),
+  };
+  return fetch(`${config.apiUrl}/data-sources/decrypt`, requestOptions).then(handleResponse);
+}
 
 function getAll(appVersionId, environment_id, includeStaticSources = false) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -87,7 +98,7 @@ function setOauth2Token(dataSourceId, body, current_organization_id) {
 function fetchOauth2BaseUrl(provider, plugin_id = null, source_options = {}) {
   const payload = { provider, ...(plugin_id && { plugin_id }), ...(source_options && { source_options }) };
   const requestOptions = {
-    method: 'GET',
+    method: 'POST',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(payload),

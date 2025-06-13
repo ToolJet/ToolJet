@@ -146,7 +146,7 @@
         "height": "36px"
       },
       "withPayload": {
-        "label": "Include metadata",
+        "label": "Include payload",
         "key": "withPayload",
         "type": "codehinter",
         "description": "Whether to return payload values.",

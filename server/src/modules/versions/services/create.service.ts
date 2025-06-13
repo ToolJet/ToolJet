@@ -6,7 +6,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { EventHandler, Target } from '@entities/event_handler.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { Credential } from 'src/entities/credential.entity';
 import * as uuid from 'uuid';
 import { Page } from '@entities/page.entity';
@@ -22,8 +22,6 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
-import { PagePermission } from '@entities/page_permissions.entity';
-import { PageUser } from '@entities/page_users.entity';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
@@ -402,44 +400,6 @@ export class VersionsCreateService implements IVersionsCreateService {
       if (page.id === prevHomePagePage) {
         homePageId = savedPage.id;
       }
-
-      const oldPermissions = await manager.find(PagePermission, {
-        where: { pageId: page.id },
-      });
-
-      const newPermissions = oldPermissions.map((permission) => {
-        return manager.create(PagePermission, {
-          ...permission,
-          id: undefined,
-          pageId: oldPageToNewPageMapping[permission.pageId],
-        });
-      });
-
-      await manager.save(PagePermission, newPermissions);
-
-      const permissionIdMap = new Map<string, string>();
-      oldPermissions.forEach((oldPerm, index) => {
-        const newPerm = newPermissions[index];
-        permissionIdMap.set(oldPerm.id, newPerm.id);
-      });
-
-      const oldPermissionIds = oldPermissions.map((p) => p.id);
-
-      const oldPageUsers = await manager.find(PageUser, {
-        where: {
-          pagePermissionsId: In(oldPermissionIds),
-        },
-      });
-
-      const newPageUsers = oldPageUsers.map((pu) =>
-        manager.create(PageUser, {
-          ...pu,
-          id: undefined,
-          pagePermissionsId: permissionIdMap.get(pu.pagePermissionsId),
-        })
-      );
-
-      await manager.save(PageUser, newPageUsers);
 
       const pageEvents = allEvents.filter((event) => event.sourceId === page.id);
 

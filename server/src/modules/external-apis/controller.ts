@@ -1,8 +1,8 @@
 import { Controller, Get, Param, UseGuards, Body, Patch, Post, Put, NotFoundException } from '@nestjs/common';
-import { ExternalApiSecurityGuard } from './guards/external-api-security.guard';
 import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto } from './dto';
 import { IExternalApisController } from './Interfaces/IController';
 import { EditUserRoleDto } from '@modules/roles/dto';
+import { ExternalApiSecurityGuard } from '@modules/auth/guards/external-api-security.guard';
 
 @Controller('ext')
 export class ExternalApisController implements IExternalApisController {

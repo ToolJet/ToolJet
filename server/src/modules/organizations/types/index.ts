@@ -9,6 +9,7 @@ interface Features {
   [FEATURE_KEY.CREATE]: FeatureConfig;
   [FEATURE_KEY.CHECK_UNIQUE_ONBOARDING]: FeatureConfig;
   [FEATURE_KEY.WORKSPACE_STATUS_UPDATE]: FeatureConfig;
+  [FEATURE_KEY.SET_DEFAULT]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

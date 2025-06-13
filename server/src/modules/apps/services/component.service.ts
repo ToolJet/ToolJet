@@ -97,7 +97,9 @@ export class ComponentsService implements IComponentsService {
                 } else if (
                   (componentData.type === 'DropdownV2' ||
                     componentData.type === 'MultiselectV2' ||
-                    componentData.type === 'Tabs') &&
+                    componentData.type === 'ModuleContainer' ||
+                    componentData.type === 'Tabs' ||
+                    componentData.type === 'Steps') &&
                   _.isArray(objValue)
                 ) {
                   return _.isArray(srcValue) ? srcValue : Object.values(srcValue);

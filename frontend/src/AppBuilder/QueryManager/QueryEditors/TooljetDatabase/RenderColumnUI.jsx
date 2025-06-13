@@ -1,5 +1,4 @@
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { resolveReferences } from '@/Editor/CodeEditor/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import React from 'react';
@@ -43,8 +42,7 @@ const RenderColumnUI = ({
               placeholder="key"
               onChange={(newValue) => {
                 if (isJSonTypeColumn) {
-                  const [_, __, resolvedValue] = resolveReferences(`{{${newValue}}}`);
-                  handleValueChange(resolvedValue);
+                  handleValueChange(newValue);
                 } else {
                   handleValueChange(newValue);
                 }

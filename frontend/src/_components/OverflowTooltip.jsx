@@ -7,6 +7,7 @@ export default function OverflowTooltip({
   whiteSpace = 'nowrap',
   placement = 'bottom',
   boxWidth,
+  maxLetters,
   ...rest
 }) {
   const [isOverflowed, setIsOverflow] = useState(false);
@@ -18,6 +19,11 @@ export default function OverflowTooltip({
         textElementRef.current.clientHeight < textElementRef.current.scrollHeight - 4
     );
   }, [children, boxWidth]);
+
+  const displayText =
+    maxLetters && typeof children === 'string' && children.length > maxLetters
+      ? `${children.substring(0, maxLetters)}...`
+      : children;
 
   return (
     <ToolTip
@@ -39,7 +45,7 @@ export default function OverflowTooltip({
           ...rest.style,
         }}
       >
-        {children}
+        {displayText}
       </div>
     </ToolTip>
   );

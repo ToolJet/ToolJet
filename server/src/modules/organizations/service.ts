@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { ConflictException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -51,6 +51,11 @@ export class OrganizationsService implements IOrganizationsService {
     updatableData: OrganizationStatusUpdateDto
   ): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organization = await this.organizationRepository.findOne({ where: { id: organizationId } });
+      if (organization.isDefault) {
+        throw new NotAcceptableException('Default workspace cannot be archived');
+      }
+
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
       if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
         await this.licenseOrganizationService.validateOrganization(manager); //Check for only unarchiving
@@ -84,5 +89,9 @@ export class OrganizationsService implements IOrganizationsService {
     });
     if (result) throw new ConflictException('Workspace name must be unique');
     return;
+  }
+
+  async setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
+    throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
 }

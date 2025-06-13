@@ -10,6 +10,7 @@ import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Table = memo(
   ({
@@ -25,6 +26,7 @@ export const Table = memo(
     adjustComponentPositions,
     currentLayout,
   }) => {
+    const { moduleId } = useModuleContext();
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
     const removeComponent = useTableStore((state) => state.removeComponent, shallow);
@@ -96,7 +98,8 @@ export const Table = memo(
         firstRowOfTable,
         autogenerateColumns,
         columnDeletionHistory,
-        shouldAutogenerateColumns.current
+        shouldAutogenerateColumns.current,
+        moduleId
       );
       shouldAutogenerateColumns.current = false;
     }, [
@@ -107,6 +110,7 @@ export const Table = memo(
       setColumnDetails,
       firstRowOfTable,
       autogenerateColumns,
+      moduleId,
       columnDeletionHistory,
     ]);
 

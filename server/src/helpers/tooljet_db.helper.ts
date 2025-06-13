@@ -226,11 +226,28 @@ export function modifyTjdbErrorObject(error) {
  * @returns - Column names with invalid JSON data.
  */
 export function validateTjdbJSONBColumnInputs(jsonbColumnList: Array<string>, inputValues) {
+  const body = { ...inputValues };
   const inValidValueColumnsList = [];
+
   Object.entries(inputValues).forEach(([key, value]) => {
     if (jsonbColumnList.includes(key)) {
-      if (typeof value !== 'object') inValidValueColumnsList.push(key);
+      try {
+        const parsedValue = typeof value === 'string' ? JSON.parse(value) : value;
+        const isJson =
+          typeof parsedValue === 'object' &&
+          parsedValue !== null &&
+          !Array.isArray(parsedValue) &&
+          Object.prototype.toString.call(parsedValue) === '[object Object]';
+
+        if (isJson || Array.isArray(parsedValue) || value === null) {
+          body[key] = parsedValue;
+        } else {
+          inValidValueColumnsList.push(key);
+        }
+      } catch (error) {
+        inValidValueColumnsList.push(key);
+      }
     }
   });
-  return inValidValueColumnsList;
+  return { inValidValueColumnsList, updatedRequestBody: body };
 }

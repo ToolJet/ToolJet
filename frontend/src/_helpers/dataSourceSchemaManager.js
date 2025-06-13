@@ -1,3 +1,4 @@
+import { datasourceService } from '@/_services';
 import Ajv2020 from 'ajv';
 
 const ajvOptions = {
@@ -18,13 +19,18 @@ export default class DataSourceSchemaManager {
     this.validate = this.ajv.compile(this.schema);
   }
 
-  validateData(options) {
-    const data = this._convertDataSourceOptionsToData(options);
-    const valid = this.validate(data);
-    if (!valid) {
-      return { valid: false, errors: this.validate.errors };
+  async validateData(options) {
+    const decryptedOptions = await datasourceService.getDecryptedOptions(options);
+    const data = this._convertDataSourceOptionsToData(decryptedOptions);
+    try {
+      const valid = this.validate(data);
+      if (!valid) {
+        return { valid: false, errors: this.validate.errors };
+      }
+      return { valid: true, errors: [] };
+    } catch (error) {
+      console.log('Validtion error: ', error);
     }
-    return { valid: true, errors: [] };
   }
 
   getDefaults(options = {}) {
@@ -95,10 +101,6 @@ export default class DataSourceSchemaManager {
         result[key] = value;
       }
 
-      // Add a dummy value to pass validation for encrypted keys
-      if (this.getEncryptedProperties().includes(key)) {
-        result[key] = 'REDACTED';
-      }
       return result;
     }, {});
   }
