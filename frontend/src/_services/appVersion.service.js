@@ -36,9 +36,9 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
 }
-function getAppVersionData(appId, versionId) {
+function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
 function create(appId, versionName, versionFromId, currentEnvironmentId) {

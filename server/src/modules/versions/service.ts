@@ -107,7 +107,7 @@ export class VersionService implements IVersionService {
     }, manager);
   }
 
-  async getVersion(app: App, user: User): Promise<any> {
+  async getVersion(app: App, user: User, mode?: string): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
         updatedVersionId = versionId;

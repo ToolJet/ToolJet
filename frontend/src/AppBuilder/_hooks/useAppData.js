@@ -252,7 +252,7 @@ const useAppData = (
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
         appDataPromise = isPreviewForVersion
-          ? appVersionService.getAppVersionData(appId, versionId)
+          ? appVersionService.getAppVersionData(appId, versionId, mode)
           : appService.fetchApp(appId);
       }
     }
@@ -573,7 +573,7 @@ const useAppData = (
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
-      appVersionService.getAppVersionData(appId, selectedVersion?.id).then(async (appData) => {
+      appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
         cleanUpStore(false);
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
