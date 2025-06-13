@@ -30,8 +30,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     dataSourceCreate: true,
     dataSourceDelete: true,
     isBuilderLevel: true,
-    promoteApp: true,
-    releaseApp: true,
+    appPromote: true,
+    appRelease: true,
   },
   BUILDER: {
     name: USER_ROLE.BUILDER,
@@ -43,8 +43,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     dataSourceCreate: true,
     dataSourceDelete: true,
     isBuilderLevel: true,
-    promoteApp: true,
-    releaseApp: true,
+    appPromote: true,
+    appRelease: true,
   },
   END_USER: {
     name: USER_ROLE.END_USER,
@@ -56,8 +56,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     dataSourceCreate: false,
     dataSourceDelete: false,
     isBuilderLevel: false,
-    promoteApp: false,
-    releaseApp: false,
+    appPromote: false,
+    appRelease: false,
   },
 } as Record<string, CreateDefaultGroupObject>;
 

@@ -6,13 +6,13 @@ export class AddPromoteAndReleaseAppColumn1749810303901 implements MigrationInte
     const manager = queryRunner?.manager;
     await queryRunner.addColumns('permission_groups', [
       new TableColumn({
-        name: 'promote_app',
+        name: 'app_promote',
         type: 'boolean',
         default: false,
         isNullable: false,
       }),
       new TableColumn({
-        name: 'release_app',
+        name: 'app_release',
         type: 'boolean',
         default: false,
         isNullable: false,
@@ -30,23 +30,23 @@ export class AddPromoteAndReleaseAppColumn1749810303901 implements MigrationInte
       if (type === 'default') {
         switch (name) {
           case 'admin':
-            group.promoteApp = true;
-            group.releaseApp = true;
+            group.appPromote = true;
+            group.appRelease = true;
             break;
           case 'end-user':
-            group.promoteApp = false;
-            group.releaseApp = false;
+            group.appPromote = false;
+            group.appRelease = false;
             break;
           case 'builder':
-            group.promoteApp = hasAppPermissions;
-            group.releaseApp = hasAppPermissions;
+            group.appPromote = hasAppPermissions;
+            group.appRelease = hasAppPermissions;
             break;
           default:
             break;
         }
       } else if (type === 'custom') {
-        group.promoteApp = hasAppPermissions;
-        group.releaseApp = hasAppPermissions;
+        group.appPromote = hasAppPermissions;
+        group.appRelease = hasAppPermissions;
       }
 
       await manager.save(group);
