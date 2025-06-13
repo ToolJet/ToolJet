@@ -21,6 +21,7 @@ export class ExternalApiModule {
     const { ExternalApisController } = await import(`${importPath}/external-apis/controller`);
     const { ExternalApisService } = await import(`${importPath}/external-apis/service`);
     const { ExternalApiUtilService } = await import(`${importPath}/external-apis/util.service`);
+    const { ExternalApisAppsController } = await import(`${importPath}/external-apis/controllers/apps.controller`);
 
     return {
       module: ExternalApiModule,
@@ -45,7 +46,7 @@ export class ExternalApiModule {
         VersionRepository,
         AppGitRepository,
       ],
-      controllers: [ExternalApisController],
+      controllers: [ExternalApisController, ExternalApisAppsController],
       exports: [ExternalApiUtilService],
     };
   }
