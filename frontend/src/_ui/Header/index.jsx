@@ -155,7 +155,7 @@ function Header({
               data-cy="version-label"
             >
               <LicenseNavBarActions
-                licenseStatus="trial-expired"
+                licenseStatus="unlicensed"
                 trialDaysRemaining={10}
                 onStartTrial={() => {}}
                 onGetConsultation={() => {}}

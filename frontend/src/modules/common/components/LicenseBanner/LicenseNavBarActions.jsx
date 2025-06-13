@@ -1,7 +1,30 @@
 import React from 'react';
-import StartTrialButton from './components/StartTrialButton';
-import ConsultationButton from './components/FreeConsultation';
-import TrialEndsButton from './components/ExpiredTrialButton';
+import { Button } from '@/components/ui/Button/Button';
+import './styles/style.scss';
+
+const StartTrialButton = ({ text = 'Start Trial', onClick = () => {} }) => {
+  return (
+    <Button variant="outline" leadingIcon="premium-plan" onClick={onClick}>
+      {text}
+    </Button>
+  );
+};
+
+const ConsultationButton = ({ text = 'Start Trial', onClick = () => {} }) => {
+  return (
+    <Button variant="outline" leadingIcon="bookdemo" onClick={onClick} className="tw-consultation-btn">
+      {text}
+    </Button>
+  );
+};
+
+const TrialEndsButton = ({ text = 'License expires today', onClick = () => {} }) => {
+  return (
+    <Button variant="outline" leadingIcon="premium-plan" onClick={onClick} className="tw-expired-trial-btn">
+      {text}
+    </Button>
+  );
+};
 
 // licenseStatus: 'unlicensed' | 'trial' | 'trial-ending' | 'trial-expired' | 'licensed'
 export default function LicenseNavBarActions({
@@ -17,7 +40,7 @@ export default function LicenseNavBarActions({
         return (
           <>
             <StartTrialButton text="Start 14-day trial" onClick={onStartTrial} />
-            <ConsultationButton text="Get a demo" onClick={onGetConsultation} />
+            <ConsultationButton text="Get a free consultation" onClick={onGetConsultation} />
           </>
         );
       case 'trial': {
@@ -25,7 +48,6 @@ export default function LicenseNavBarActions({
         return (
           <>
             <StartTrialButton text={daysText} onClick={onTrialAction} />
-            <ConsultationButton text="Upgrade now" onClick={onGetConsultation} />
           </>
         );
       }
@@ -33,18 +55,16 @@ export default function LicenseNavBarActions({
         return (
           <>
             <TrialEndsButton text="Trial ends today" onClick={onTrialAction} />
-            <ConsultationButton text="Upgrade now" onClick={onGetConsultation} />
           </>
         );
       case 'trial-expired':
         return (
           <>
-            <TrialEndsButton text="Trial expired" onClick={onTrialAction} />
-            <ConsultationButton text="Contact sales" onClick={onGetConsultation} />
+            <StartTrialButton text="Upgrade" onClick={onTrialAction} />
           </>
         );
-      case 'licensed':
-        return <ConsultationButton text="Get support" onClick={onGetConsultation} />;
+      // case 'licensed':
+      //   return <ConsultationButton text='Uport' onClick={onGetConsultation} />;
       default:
         return null;
     }
