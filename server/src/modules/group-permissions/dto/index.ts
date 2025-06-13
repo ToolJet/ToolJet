@@ -41,6 +41,14 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
+  appPromote: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  appRelease: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   allowRoleChange: boolean;
 }
 
