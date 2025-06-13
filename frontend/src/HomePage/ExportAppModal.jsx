@@ -118,6 +118,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        toast.success('Module has been exported successfully!');
         closeModal();
       })
       .catch((error) => {
