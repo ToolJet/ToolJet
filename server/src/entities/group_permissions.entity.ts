@@ -53,11 +53,11 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'data_source_delete', default: false })
   dataSourceDelete: boolean;
 
-  @Column({ name: 'promote_app', default: false })
-  promoteApp: boolean;
+  @Column({ name: 'app_promote', default: false })
+  appPromote: boolean;
 
-  @Column({ name: 'release_app', default: false })
-  releaseApp: boolean;
+  @Column({ name: 'app_release', default: false })
+  appRelease: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

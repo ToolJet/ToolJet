@@ -79,6 +79,7 @@ class BaseManageGroupPermissionResources extends React.Component {
 
   fetchGroupPermission = (groupPermissionId) => {
     groupPermissionV2Service.getGroup(groupPermissionId).then(({ group, isBuilderLevel }) => {
+      console.log('group permissions', group);
       this.setState((prevState) => {
         return {
           isRoleGroup: group.type === 'default',
@@ -953,6 +954,61 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           data-cy="app-delete-helper-text"
                                         >
                                           Delete any app in this workspace
+                                        </span>
+                                      </label>
+
+                                      {/* promote and release app permissions */}
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              appPromote: !groupPermission.appPromote,
+                                            });
+                                            this.setState({
+                                              updateParam: { appPromote: !groupPermission.appPromote },
+                                            });
+                                          }}
+                                          checked={groupPermission.appPromote}
+                                          disabled={disablePermissionUpdate}
+                                          data-cy="app-promote-checkbox"
+                                        />
+                                        <span className="form-check-label" data-cy="app-promote-label">
+                                          {this.props.t('globals.promote', 'Promote')}
+                                        </span>
+                                        <span
+                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          data-cy="app-promote-helper-text"
+                                        >
+                                          Promote any app in this workspace
+                                        </span>
+                                      </label>
+
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              appRelease: !groupPermission.appRelease,
+                                            });
+                                            this.setState({
+                                              updateParam: { appRelease: !groupPermission.appRelease },
+                                            });
+                                          }}
+                                          checked={groupPermission.appRelease}
+                                          disabled={disablePermissionUpdate}
+                                          data-cy="app-release-checkbox"
+                                        />
+                                        <span className="form-check-label" data-cy="app-release-label">
+                                          {this.props.t('globals.release', 'Release')}
+                                        </span>
+                                        <span
+                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          data-cy="app-release-helper-text"
+                                        >
+                                          Release any app in this workspace
                                         </span>
                                       </label>
                                     </div>
