@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import LicenseBanner, { LicenseNavBarActions } from '@/modules/common/components/LicenseBanner';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 
@@ -109,7 +109,7 @@ function Header({
                       iconWidth="14"
                       size="md"
                       onClick={toggleCollapsibleSidebar}
-                    ></ButtonSolid>
+                    />
                   </div>
                 </ToolTip>
               )}
@@ -140,20 +140,27 @@ function Header({
                     iconWidth="14"
                     size="md"
                     onClick={toggleCollapsibleSidebar}
-                  ></ButtonSolid>
+                  />
                 </div>
               </ToolTip>
             )}
-            <div className="app-header-label" data-cy="app-header-label">
+            <div className="app-header-label tw-flex tw-items-center " data-cy="app-header-label">
               <Breadcrumbs darkMode={darkMode} />
             </div>
             <div
-              className={cx('ms-auto tj-version tj-text-xsm', {
+              className={cx('tw-ml-auto tj-version tj-text-xsm tw-flex tw-items-center tw-gap-3', {
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
               data-cy="version-label"
             >
+              <LicenseNavBarActions
+                licenseStatus="trial-expired"
+                trialDaysRemaining={10}
+                onStartTrial={() => {}}
+                onGetConsultation={() => {}}
+                onTrialAction={() => {}}
+              />
               Version {currentVersion}
             </div>
           </div>
