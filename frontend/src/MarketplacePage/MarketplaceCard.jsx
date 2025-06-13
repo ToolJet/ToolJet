@@ -17,6 +17,11 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
   }, [isInstalled]);
 
   const installPlugin = async () => {
+    if (installed) {
+      toast.error(`${capitalizeFirstLetter(name)} is already installed.`);
+      return;
+    }
+
     const body = {
       id,
       name,

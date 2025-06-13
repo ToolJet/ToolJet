@@ -54,7 +54,8 @@ export async function setFaviconAndTitle(location) {
     'data-sources': 'Data sources',
     'audit-logs': 'Audit logs',
     'account-settings': 'Profile settings',
-    settings: 'Profile settings',
+    settings: 'Settings',
+    'profile-settings': 'Profile settings',
     login: '',
     signUp: '',
     error: '',
@@ -65,9 +66,12 @@ export async function setFaviconAndTitle(location) {
     'reset-password': '',
     'workspace-constants': 'Workspace constants',
     setup: '',
+    '/': 'Dashboard',
   };
 
-  const pageTitleKey = Object.keys(pageTitles).find((path) => location?.pathname.includes(path));
+  const pageTitleKey = Object.keys(pageTitles)
+    .sort((a, b) => b.length - a.length) // Sort by length descending
+    .find((path) => location?.pathname.includes(path));
   const pageTitle = pageTitles[pageTitleKey] || '';
 
   document.title = pageTitle ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${decodeEntities(whiteLabelText)}`;
@@ -77,6 +81,9 @@ export async function fetchAndSetWindowTitle(pageDetails) {
   const whiteLabelText = retrieveWhiteLabelText();
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
+  let mode = pageDetails?.mode || '';
+  let isPreview = !pageDetails?.isReleased || false;
+  const license = pageDetails?.licenseStatus;
   switch (pageTitleKey) {
     case pageTitles.VIEWER: {
       const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
@@ -85,13 +92,21 @@ export async function fetchAndSetWindowTitle(pageDetails) {
     }
     case pageTitles.EDITOR:
     case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
+      if (mode == 'edit') {
+        pageTitle = `${pageDetails?.appName}`;
+      } else {
+        pageTitle = `Preview - ${pageDetails?.appName}` || 'My App';
+      }
       break;
     }
     default: {
       pageTitle = pageTitleKey;
       break;
     }
+  }
+  if (!isPreview && mode === 'view') {
+    document.title = `${pageDetails?.appName} ${license ? '' : '| ToolJet'}`;
+    return;
   }
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
 }

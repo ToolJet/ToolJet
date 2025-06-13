@@ -118,7 +118,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
       "Invalid URL"
     );

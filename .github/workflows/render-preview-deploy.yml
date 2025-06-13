@@ -1,7 +1,9 @@
 name: Render review deploy
 on:
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled, unlabeled, closed, synchronize, opened]
+  issue_comment:
+    types: [created, edited, deleted]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -1153,3 +1155,234 @@ jobs:
   #           } catch (e) {
   #             console.log(e)
   #           }
+
+  redeploy-review-app:
+    if: ${{ github.event.action == 'synchronize' || github.event.action == 'opened' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR labels
+        id: get_labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            return labels.data.map(l => l.name);
+
+      - name: Redeploy CE review app if active
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
+        id: redeploy_ce
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+          DEPLOY_RESPONSE=$(curl --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" \
+            --data '{"clearCache":"clear"}')
+          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+
+
+      - name: Redeploy EE review app if active
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
+        id: redeploy_ee
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+          DEPLOY_RESPONSE=$(curl --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" \
+            --data '{"clearCache":"clear"}')
+          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+
+
+  render-bot-check-deployment:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
+    steps:
+      - name: Get PR labels
+        id: get_labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            return labels.data.map(l => l.name);
+
+      - name: Fetch CE service and deploy ID
+        run: |
+          response=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+          SERVICE_ID=$(echo "$response" | jq -r 'if type=="array" and length > 0 then .[0].service.id else empty end')
+
+          if [[ -z "$SERVICE_ID" ]]; then
+            echo "No CE service found for PR #$PR_NUMBER. Skipping deployment ID fetch."
+            exit 0
+          fi
+
+          response_deploy=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+          DEPLOY_ID=$(echo "$response_deploy" | jq -r 'if type=="array" and length > 0 then .[0].deploy.id else empty end')
+
+          echo "CE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "CE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+      - name: Comment CE deployment details
+        uses: actions/github-script@v6
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const apiKey = process.env.RENDER_API_KEY;
+
+            const ceServiceRes = await fetch(`https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${prNumber}&limit=1`, {
+              headers: {
+                'accept': 'application/json',
+                'authorization': `Bearer ${apiKey}`
+              }
+            });
+            const ceServices = await ceServiceRes.json();
+            const ceServiceId = ceServices[0]?.service?.id || null;
+
+            let ceInfo = 'No active CE review app deployment found.';
+            if (ceServiceId) {
+              const deployRes = await fetch(`https://api.render.com/v1/services/${ceServiceId}/deploys?limit=1`, {
+                headers: {
+                  'accept': 'application/json',
+                  'authorization': `Bearer ${apiKey}`
+                }
+              });
+              const deployData = await deployRes.json();
+              const deploy = deployData[0]?.deploy || {};
+              const ceCommit = deploy.commit || {};
+              const status = deploy.status || 'unknown';
+              ceInfo = `### Community Edition\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${ceServiceId}\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}\n- Status: ${status}`;
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: ceInfo
+            });
+
+      - name: Fetch EE service and deploy ID
+        run: |
+          response=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+          SERVICE_ID=$(echo "$response" | jq -r 'if type=="array" and length > 0 then .[0].service.id else empty end')
+
+          if [[ -z "$SERVICE_ID" ]]; then
+            echo "No EE service found for PR #$PR_NUMBER. Skipping deployment ID fetch."
+            exit 0
+          fi
+
+          response_deploy=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+          DEPLOY_ID=$(echo "$response_deploy" | jq -r 'if type=="array" and length > 0 then .[0].deploy.id else empty end')
+
+          echo "EE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "EE_DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+      - name: Comment EE deployment details
+        uses: actions/github-script@v6
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const apiKey = process.env.RENDER_API_KEY;
+
+            const eeServiceRes = await fetch(`https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${prNumber}&limit=1`, {
+              headers: {
+                'accept': 'application/json',
+                'authorization': `Bearer ${apiKey}`
+              }
+            });
+            const eeServices = await eeServiceRes.json();
+            const eeServiceId = eeServices[0]?.service?.id || null;
+
+            let eeInfo = 'No active EE review app deployment found.';
+            if (eeServiceId) {
+              const deployRes = await fetch(`https://api.render.com/v1/services/${eeServiceId}/deploys?limit=1`, {
+                headers: {
+                  'accept': 'application/json',
+                  'authorization': `Bearer ${apiKey}`
+                }
+              });
+              const deployData = await deployRes.json();
+              const deploy = deployData[0]?.deploy || {};
+              const eeCommit = deploy.commit || {};
+              const status = deploy.status || 'unknown';
+              eeInfo = `### Enterprise Edition\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${eeServiceId}\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}\n- Status: ${status}`;
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: eeInfo
+            });
+
+      - name: Remove label
+        if: contains(steps.get_labels.outputs.result, 'render-check-deployment')
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'render-check-deployment'
+              })
+            } catch (e) {
+              console.log(e)
+            }

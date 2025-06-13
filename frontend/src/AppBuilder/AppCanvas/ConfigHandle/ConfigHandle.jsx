@@ -5,6 +5,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import { ToolTip } from '@/_components/ToolTip';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -19,10 +21,12 @@ export const ConfigHandle = ({
   showHandle,
   componentType,
   visibility,
+  isModuleContainer,
   subContainerIndex,
 }) => {
+  const { moduleId } = useModuleContext();
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
-  const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
+  const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
     shallow
@@ -44,6 +48,7 @@ export const ConfigHandle = ({
     return (
       (subContainerIndex === 0 || subContainerIndex === null) &&
       (isWidgetHovered ||
+        isModuleContainer ||
         (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered))
     );
   }, shallow);
@@ -101,7 +106,9 @@ export const ConfigHandle = ({
         if (componentType === 'Tabs') {
           setFocusedParentId(`${id}-${currentTab}`);
         } else {
-          setFocusedParentId(id);
+          if (DROPPABLE_PARENTS.has(componentType)) {
+            setFocusedParentId(id);
+          }
         }
       }}
     >
@@ -175,20 +182,22 @@ export const ConfigHandle = ({
               data-cy={`${componentName.toLowerCase()}-inspect-button`}
               className="config-handle-inspect"
             />
-            <span
-              style={{ cursor: 'pointer', marginLeft: '5px' }}
-              onClick={() => {
-                deleteComponents([id]);
-              }}
-              data-cy={`${componentName.toLowerCase()}-delete-button`}
-            >
-              <SolidIcon
-                name="trash"
-                width="12"
-                height="12"
-                fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
-              />
-            </span>
+            {!isModuleContainer && (
+              <span
+                style={{ cursor: 'pointer', marginLeft: '5px' }}
+                onClick={() => {
+                  deleteComponents([id]);
+                }}
+                data-cy={`${componentName.toLowerCase()}-delete-button`}
+              >
+                <SolidIcon
+                  name="trash"
+                  width="12"
+                  height="12"
+                  fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
+                />
+              </span>
+            )}
           </div>
         )}
       </span>
