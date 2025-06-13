@@ -180,7 +180,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       // this is to denote that the user has tried editing the slug -- so now slug and name are independent of each other
       isSlugSet.current = true;
     }
-  }, [name.value, slug.value, slugProgress, workspaceNameProgress, isSlugSet]);
+  }, [name.value, slugProgress, workspaceNameProgress, isSlugSet]);
 
   const isDisabled =
     isCreating ||
