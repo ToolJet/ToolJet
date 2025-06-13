@@ -26,12 +26,12 @@ export class CreateSsoConfigOidcGroupSync1752624000000 implements MigrationInter
           {
             name: 'claim_name',
             type: 'varchar',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'group_mapping',
             type: 'jsonb',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'enable_group_sync',

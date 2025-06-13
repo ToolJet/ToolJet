@@ -35,7 +35,7 @@ export class MigrateGroupSyncData1752624000001 implements MigrationInterface {
         groupMapping: groupMapping || null,
         enableGroupSync: enableGroupSync || false,
       });
-      entityManager.save(SsoConfigOidcGroupSync, enrty);
+      await entityManager.save(SsoConfigOidcGroupSync, enrty);
     }
   }
 
