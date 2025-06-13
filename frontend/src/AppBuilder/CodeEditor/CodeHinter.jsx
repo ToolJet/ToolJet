@@ -20,7 +20,7 @@ const CODE_EDITOR_TYPE = {
   tjdbHinter: TJDBCodeEditor,
 };
 
-const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, ...restProps }) => {
+const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, helpText, ...restProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [isOpen, setIsOpen] = React.useState(false);
@@ -58,20 +58,23 @@ const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, ...
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 
   return (
-    <RenderCodeEditor
-      type={type}
-      initialValue={initialValue}
-      darkMode={darkMode}
-      portalProps={{
-        isOpen,
-        setIsOpen,
-        handleTogglePopupExapand,
-        forceUpdate,
-      }}
-      componentName={componentName}
-      disabled={disabled}
-      {...restProps}
-    />
+    <>
+      <RenderCodeEditor
+        type={type}
+        initialValue={initialValue}
+        darkMode={darkMode}
+        portalProps={{
+          isOpen,
+          setIsOpen,
+          handleTogglePopupExapand,
+          forceUpdate,
+        }}
+        componentName={componentName}
+        disabled={disabled}
+        {...restProps}
+      />
+      {helpText && <span className="codehinter-helper-text">{helpText}</span>}
+    </>
   );
 };
 
