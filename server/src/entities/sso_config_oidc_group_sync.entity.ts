@@ -28,10 +28,10 @@ export class SsoConfigOidcGroupSync {
   @Column({ name: 'organization_id', type: 'uuid', nullable: true })
   organizationId: string | null;
 
-  @Column({ name: 'claim_name', type: 'varchar' })
+  @Column({ name: 'claim_name', type: 'varchar', nullable: true })
   claimName: string;
 
-  @Column({ name: 'group_mapping', type: 'jsonb' })
+  @Column({ name: 'group_mapping', type: 'jsonb', nullable: true })
   groupMapping: Record<string, string>;
 
   @Column({ name: 'enable_group_sync', type: 'boolean', nullable: true })
