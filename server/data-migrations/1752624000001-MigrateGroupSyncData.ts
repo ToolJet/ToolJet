@@ -26,6 +26,9 @@ export class MigrateGroupSyncData1752624000001 implements MigrationInterface {
   private async processUpdates(entityManager: EntityManager, ssoConfigs: SSOConfigs[]) {
     for (const config of ssoConfigs) {
       const { id: ssoConfigId, configs } = config;
+      if (!configs) {
+        continue; // Skip if configs are not set or missing required fields
+      }
       const { claimName, groupMapping, enableGroupSync } = configs as any;
 
       const enrty = entityManager.create(SsoConfigOidcGroupSync, {
