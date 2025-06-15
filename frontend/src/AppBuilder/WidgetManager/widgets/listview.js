@@ -134,10 +134,10 @@ export const listviewConfig = {
     },
     borderColor: {
       type: 'colorSwatches',
-      displayName: 'Border color',
+      displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#dadcde',
+        defaultValue: 'var(--cc-default-border)',
       },
     },
     visibility: {
@@ -194,7 +194,7 @@ export const listviewConfig = {
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: '#dadcde' },
+      borderColor: { value: 'var(--cc-default-border)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{4}}' },

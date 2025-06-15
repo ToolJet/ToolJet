@@ -17,12 +17,13 @@ export const formConfig = {
       },
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
       defaultValue: {
         text: 'Form title',
         textSize: 16,
         textColor: 'var(--cc-primary-text)',
         fontWeight: 'bold',
+        boxShadow: '0px 0px 0px 0px #00000090',
       },
     },
     {
@@ -59,7 +60,7 @@ export const formConfig = {
         'backgroundColor',
         'color',
       ],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
+      styles: ['alignment', 'width', 'auto', 'padding', 'direction', 'boxShadow'],
       defaultValue: {
         placeholder: 'Enter your name',
         label: 'Name',
@@ -75,6 +76,7 @@ export const formConfig = {
         color: 'var(--cc-primary-text)',
         borderRadius: '{{6}}',
         backgroundColor: 'var(--cc-surface1-surface)',
+        boxShadow: '0px 0px 0px 0px #00000090',
       },
     },
     {
@@ -98,6 +100,7 @@ export const formConfig = {
         'textColor',
         'color',
         'backgroundColor',
+        'boxShadow',
       ],
       defaultValue: {
         placeholder: 'Age',
@@ -113,6 +116,7 @@ export const formConfig = {
         textColor: 'var(--cc-primary-text)',
         color: 'var(--cc-primary-text)',
         backgroundColor: 'var(--cc-surface1-surface)',
+        boxShadow: '0px 0px 0px 0px #00000090',
       },
     },
   ],

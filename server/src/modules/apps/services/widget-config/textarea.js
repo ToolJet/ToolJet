@@ -171,7 +171,7 @@ export const textareaConfig = {
     iconColor: {
       type: 'colorSwatches',
       displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
       accordian: 'field',
       visibility: false,
       showLabel: false,
@@ -287,7 +287,7 @@ export const textareaConfig = {
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      iconColor: { value: '#CFD3D859' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },

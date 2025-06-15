@@ -141,16 +141,16 @@ export const passinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
-    accentColor: {
-      type: 'colorSwatches',
-      displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
-      accordian: 'field',
-    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
+      accordian: 'field',
+    },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Accent',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
     textColor: {
