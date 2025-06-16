@@ -13,6 +13,7 @@ import { AiModule } from '@modules/ai/module';
 import { AppsRepository } from '@modules/apps/repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { FeatureAbilityFactory } from './ability';
+import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 @Module({})
 export class ModulesModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -36,6 +37,7 @@ export class ModulesModule {
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
+        await ImportExportResourcesModule.register(configs),
       ],
       controllers: [ModulesController],
       providers: [

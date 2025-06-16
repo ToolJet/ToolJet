@@ -87,6 +87,21 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [versionId]);
 
+  async function autoExportModule() {
+    try {
+      exportApp(app, null, versionId, allTables);
+    } catch (error) {
+      closeModal();
+    }
+  }
+
+  // Auto-export for modules
+  useEffect(() => {
+    if (app.type === 'module' && show && allTables && currentVersion && !loading) {
+      autoExportModule();
+    }
+  }, [app, show, allTables, currentVersion, loading]);
+
   const exportApp = (app, versionId, exportTjDb, exportTables) => {
     const appOpts = {
       app: [
@@ -104,7 +119,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     };
 
     appsService
-      .exportResource(requestBody)
+      .exportResource(requestBody, app.type)
       .then((data) => {
         const appName = (app.appName || app.name).replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
@@ -118,16 +133,21 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success('Module has been exported successfully!');
+        toast.success(`${app?.type === 'module' ? 'Module' : 'App'} has been exported successfully!`);
         closeModal();
       })
       .catch((error) => {
-        toast.error(`Could not export app: ${error.data.message}`, {
+        toast.error(`Could not export ${app.type === 'module' ? 'module' : 'app'}: ${error.data.message}`, {
           position: 'top-center',
         });
         closeModal();
       });
   };
+
+  // Don't render modal for modules - they auto-export
+  if (app.type === 'module') {
+    return null;
+  }
 
   return (
     <BootstrapModal

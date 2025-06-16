@@ -14,11 +14,20 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
-    const { superAdmin, userPermission, isAdmin } = UserAllPermissions;
-    const isAllAppsCreatable = !!userPermission?.appCreate;
+    const { superAdmin, isAdmin, isBuilder } = UserAllPermissions;
 
-    if (superAdmin || isAdmin || isAllAppsCreatable) {
-      can([FEATURE_KEY.CREATE_MODULE], User);
+    if (superAdmin || isAdmin || isBuilder) {
+      can(
+        [
+          FEATURE_KEY.CREATE_MODULE,
+          FEATURE_KEY.DELETE_MODULE,
+          FEATURE_KEY.CLONE_MODULE,
+          FEATURE_KEY.EXORT_MODULE,
+          FEATURE_KEY.IMPORT_MODULE,
+          FEATURE_KEY.UPDATE_MODULE,
+        ],
+        User
+      );
     }
   }
 }

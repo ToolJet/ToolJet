@@ -271,7 +271,7 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName });
+      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
@@ -293,10 +293,13 @@ class HomePageComponent extends React.Component {
   cloneApp = async (appName, appId) => {
     this.setState({ isCloningApp: true });
     try {
-      const data = await appsService.cloneResource({
-        app: [{ id: appId, name: appName }],
-        organization_id: this.state.currentUser?.organization_id,
-      });
+      const data = await appsService.cloneResource(
+        {
+          app: [{ id: appId, name: appName }],
+          organization_id: this.state.currentUser?.organization_id,
+        },
+        this.props.appType
+      );
       toast.success('App cloned successfully!');
       this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`, {
         state: { commitEnabled: this.state.commitEnabled },
@@ -397,7 +400,18 @@ class HomePageComponent extends React.Component {
         ));
       }
 
-      const data = await appsService.importResource(requestBody);
+      if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
+        toast.error(
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
+          } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
+          { style: { maxWidth: '425px' } }
+        );
+        this.setState({ isImportingApp: false });
+        return;
+      }
+
+      const data = await appsService.importResource(requestBody, this.props.appType);
       toast.success(`${this.props.appType === 'module' ? 'Module' : 'App'} imported successfully.`);
       this.setState({ isImportingApp: false });
 
@@ -523,7 +537,7 @@ class HomePageComponent extends React.Component {
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
     appsService
-      .deleteApp(this.state.appToBeDeleted.id)
+      .deleteApp(this.state.appToBeDeleted.id, this.props.appType)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
         toast.success(`${this.getAppType()} deleted successfully.`);
@@ -919,7 +933,7 @@ class HomePageComponent extends React.Component {
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
     const deleteModuleText =
-      'This action will permanently delete the module from all connected applications This cannot be reversed. Confirm deletion?';
+      'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
@@ -1347,17 +1361,19 @@ class HomePageComponent extends React.Component {
                           }
                           data-cy="create-new-app-button"
                         >
-                          {isImportingApp && (
-                            <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                          )}
-                          {this.props.appType === 'module'
-                            ? 'Create new module'
-                            : this.props.t(
-                                `${
-                                  this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                }.header.createNewApplication`,
-                                'Create new app'
-                              )}
+                          <>
+                            {isImportingApp && (
+                              <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
+                            )}
+                            {this.props.appType === 'module'
+                              ? 'Create new module'
+                              : this.props.t(
+                                  `${
+                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                  }.header.createNewApplication`,
+                                  'Create new app'
+                                )}
+                          </>
                         </Button>
 
                         {this.props.appType !== 'workflow' && (
@@ -1386,19 +1402,25 @@ class HomePageComponent extends React.Component {
                   </LicenseTooltip>
                 </div>
               )}
-              <Folders
-                foldersLoading={this.state.foldersLoading}
-                folders={this.state.folders}
-                currentFolder={currentFolder}
-                folderChanged={this.folderChanged}
-                foldersChanged={this.foldersChanged}
-                canCreateFolder={this.canCreateFolder()}
-                canDeleteFolder={this.canDeleteFolder()}
-                canUpdateFolder={this.canUpdateFolder()}
-                darkMode={this.props.darkMode}
-                canCreateApp={this.canCreateApp()}
-                appType={this.props.appType}
-              />
+              {this.props.appType === 'module' ? (
+                <div>
+                  <p></p>
+                </div>
+              ) : (
+                <Folders
+                  foldersLoading={this.state.foldersLoading}
+                  folders={this.state.folders}
+                  currentFolder={currentFolder}
+                  folderChanged={this.folderChanged}
+                  foldersChanged={this.foldersChanged}
+                  canCreateFolder={this.canCreateFolder()}
+                  canDeleteFolder={this.canDeleteFolder()}
+                  canUpdateFolder={this.canUpdateFolder()}
+                  darkMode={this.props.darkMode}
+                  canCreateApp={this.canCreateApp()}
+                  appType={this.props.appType}
+                />
+              )}
               {this.props.appType === 'front-end' && (
                 <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
               )}
@@ -1449,16 +1471,15 @@ class HomePageComponent extends React.Component {
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
-                    <AppTypeTab
-                      appType={this.props.appType}
-                      navigate={this.props.navigate}
-                      darkMode={this.props.darkMode}
-                    />
-
                     <LicenseBanner
                       classes="mt-3"
                       limits={featureAccess}
                       type={featureAccess?.licenseStatus?.licenseType}
+                    />
+                    <AppTypeTab
+                      appType={this.props.appType}
+                      navigate={this.props.navigate}
+                      darkMode={this.props.darkMode}
                     />
                   </>
                 ) : (
