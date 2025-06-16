@@ -17,6 +17,10 @@ import IconSelector from './IconSelector';
 import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { shallow } from 'zustand/shallow';
+import { Overlay, Popover } from 'react-bootstrap';
+import PageOptions from './PageOptions';
+import { AddEditPagePopup } from './AddNewPagePopup';
+import { ToolTip } from '@/_components';
 
 export const PageMenuItem = withRouter(
   memo(({ darkMode, page, navigate }) => {
@@ -31,6 +35,9 @@ export const PageMenuItem = withRouter(
     const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
     const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
     const showEditingPopover = useStore((state) => state.showEditingPopover);
+    const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
+    const setEditingPage = useStore((state) => state.setEditingPage);
+    const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
     const restricted = page?.permissions && page?.permissions?.length > 0;
     const {
       definition: { styles, properties },
@@ -46,25 +53,27 @@ export const PageMenuItem = withRouter(
       }
     );
     const editingPageName = useStore((state) => state.showEditPageNameInput);
+    const [showPageOptions, toggleShowPageOptions] = useState(false);
+    const [showEditPopover, setShowEditPopover] = useState(false);
     const popoverRef = useRef(null);
 
     const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const toggleEditPageNameInput = useStore((state) => state.toggleEditPageNameInput);
 
+    const optionBtnRef = useRef(null);
+    const moreBtnRef = useRef(null);
+
     const isEditingPage = editingPage?.id === page?.id;
     const icon = () => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-      if (!isDisabled && !isHidden) {
-        return <IconSelector iconColor={computedStyles?.icon?.color} iconName={iconName} pageId={page.id} />;
-      }
-      if (isDisabled || (isDisabled && isHidden)) {
-        return (
-          <FileRemove fill={computedStyles?.icon?.fill} className=" " width={16} height={16} viewBox={'0 0 16 16'} />
-        );
-      }
-      if (isHidden && !isDisabled) {
-        return <EyeDisable className="" width={16} height={16} />;
-      }
+      // if (!isDisabled && !isHidden) {
+      return <IconSelector iconColor={computedStyles?.icon?.color} iconName={iconName} pageId={page.id} />;
+      // }
+      // if (isDisabled || (isDisabled && isHidden)) {
+      //   return (
+      //     <FileRemove fill={computedStyles?.icon?.fill} className=" " width={16} height={16} viewBox={'0 0 16 16'} />
+      //   );
+      // }
     };
 
     const computeStyles = useCallback(() => {
@@ -151,6 +160,14 @@ export const PageMenuItem = withRouter(
       [popoverRef.current, page]
     );
 
+    const handleOpenPopup = (type, page) => {
+      // openPageEditPopover(page);
+      setEditingPage(page);
+      toggleShowPageOptions(false);
+      setShowEditPopover(true);
+      setNewPagePopupConfig({ type, mode: 'edit' });
+    };
+
     return (
       <div
         onMouseEnter={() => setIsHovered(true)}
@@ -183,7 +200,7 @@ export const PageMenuItem = withRouter(
             ) : (
               <>
                 {' '}
-                <div className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
+                <div ref={optionBtnRef} className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
                   {icon()}
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
                     {page.name}
@@ -194,34 +211,104 @@ export const PageMenuItem = withRouter(
                     }}
                     className="color-slate09 meta-text"
                   >
-                    {isHomePage && 'Home'}
+                    {isHomePage && (
+                      <ToolTip message="Home page" placement="bottom">
+                        <div>
+                          <Home fill="var(--icon-default)" className="" width={16} height={16} />
+                        </div>
+                      </ToolTip>
+                    )}
+
                     {isDisabled && 'Disabled'}
-                    {isHidden && !isDisabled && 'Hidden'}
+                    {isHidden && !isDisabled && (
+                      <ToolTip message="Hidden page" placement="bottom">
+                        <div>
+                          <EyeDisable fill="var(--icon-default)" className="" width={16} height={16} />
+                        </div>
+                      </ToolTip>
+                    )}
                   </span>
                 </div>
                 <div style={{ marginLeft: '8px', marginRight: 'auto' }}>
                   {licenseValid && restricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
                 </div>
-                <div className={cx('right', { 'handler-menu-open': showEditingPopover })}>
+                <div>
                   {!shouldFreeze && (
-                    <button
-                      style={{
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: 'var(--color-slate12)',
-                        cursor: 'pointer',
-                        padding: '0',
-                        ...((isEditingPage || currentPageId === page?.id) && {
-                          opacity: 1,
-                        }),
-                      }}
-                      className="edit-page-overlay-toggle"
-                      onClick={handlePageMenuSettings}
-                      ref={popoverRef}
-                      id={`edit-popover-${page.id}`}
-                    >
-                      <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
-                    </button>
+                    // <button
+                    //   style={{
+                    //     backgroundColor: 'transparent',
+                    //     border: 'none',
+                    //     color: 'var(--color-slate12)',
+                    //     cursor: 'pointer',
+                    //     padding: '0',
+                    //     ...((isEditingPage || currentPageId === page?.id) && {
+                    //       opacity: 1,
+                    //     }),
+                    //   }}
+                    //   className="edit-page-overlay-toggle"
+                    //   onClick={handlePageMenuSettings}
+                    //   ref={popoverRef}
+                    //   id={`edit-popover-${page.id}`}
+                    // >
+                    //   <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
+                    // </button>
+                    <div className="action-btn-wrapper">
+                      <div className="icon-btn">
+                        <SolidIcon name="arrowright01" width="12" viewBox="0 0 12 12" />
+                      </div>
+                      <div
+                        ref={moreBtnRef}
+                        onClick={() => {
+                          toggleShowPageOptions(true);
+                        }}
+                        className="icon-btn"
+                      >
+                        <SolidIcon name="morevertical01" width="12" viewBox="0 0 12 12" />
+                      </div>
+
+                      <Overlay
+                        target={moreBtnRef.current}
+                        show={showPageOptions}
+                        placement="bottom-end"
+                        rootClose
+                        onHide={() => toggleShowPageOptions(false)}
+                      >
+                        <Popover id="edit-page-popover">
+                          <div className="menu-options mb-0">
+                            <PageOptions
+                              text="Edit group details"
+                              icon="rename"
+                              darkMode={darkMode}
+                              onClick={() => handleOpenPopup('page', page)}
+                            />
+                            <PageOptions
+                              text="Duplicate group"
+                              icon="copy"
+                              darkMode={darkMode}
+                              // onClick={() => handleOpenPopup('app')}
+                            />
+                            <PageOptions
+                              text="Delete group"
+                              icon="trash"
+                              darkMode={darkMode}
+                              // onClick={() => handleOpenPopup('group')}
+                            />
+                          </div>
+                        </Popover>
+                      </Overlay>
+                      <Overlay
+                        target={optionBtnRef.current}
+                        show={showEditPopover && newPagePopupConfig?.mode == 'edit'}
+                        placement="left-start"
+                        rootClose
+                        onHide={() => {
+                          setNewPagePopupConfig({ show: false, mode: null, type: null });
+                          setShowEditPopover(false);
+                        }}
+                      >
+                        <AddEditPagePopup darkMode={darkMode} />
+                      </Overlay>
+                    </div>
                   )}
                 </div>
               </>

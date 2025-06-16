@@ -23,7 +23,6 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
   const toggleShowAddNewPageInput = useStore((state) => state.toggleShowAddNewPageInput);
   const showSearch = useStore((state) => state.showSearch);
   const handleSearch = useStore((state) => state.handleSearch);
-  const togglePageSettingMenu = useStore((state) => state.togglePageSettingMenu);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
   const closePageEditPopover = useStore((state) => state.closePageEditPopover);
@@ -50,45 +49,34 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
         }}
         className="card-body p-0 pb-5"
       >
-        <HeaderSection title={'Pages'} darkMode={darkMode}>
-          <HeaderSection.PanelHeader title="Pages" darkMode={darkMode}>
-            <div className="d-flex justify-content-end" style={{ gap: '4px' }}>
-              <button
-                onClick={shouldFreeze ? enableReleasedVersionPopupState : togglePageSettingMenu}
-                disabled={shouldFreeze}
-                className={`page-menu-action-buttons ${darkMode ? 'dark-theme' : ''}`}
-              >
-                <SolidIcon name="settings" width="25" />
-              </button>
-              <button
-                onClick={() => setPinned(!pinned)}
-                className={`page-menu-action-buttons ${darkMode ? 'dark-theme' : ''}`}
-              >
-                <SolidIcon name={pinned ? 'unpin01' : 'pin'} width="16" />
-              </button>
-              <PageGroupMenu
-                isLicensed={isLicensed}
-                title={'Add Page'}
-                onClick={() => (shouldFreeze ? enableReleasedVersionPopupState() : toggleShowAddNewPageInput(true))}
-                className="left-sidebar-header-btn"
-                fill={`var(--slate12)`}
-                darkMode={darkMode}
-                leftIcon="plus"
-                iconWidth="14"
-                variant="tertiary"
-                disabled={shouldFreeze}
-              ></PageGroupMenu>
-            </div>
-          </HeaderSection.PanelHeader>
-          {showSearch && (
-            <HeaderSection.SearchBoxComponent
-              onChange={handleSearch}
-              placeholder={'Search'}
-              placeholderIcon={''}
-              darkMode={darkMode}
-            />
-          )}
-        </HeaderSection>
+        <div className="d-flex justify-content-end" style={{ gap: '4px' }}>
+          <button
+            onClick={() => setPinned(!pinned)}
+            className={`page-menu-action-buttons ${darkMode ? 'dark-theme' : ''}`}
+          >
+            <SolidIcon name={pinned ? 'unpin01' : 'pin'} width="16" />
+          </button>
+          <PageGroupMenu
+            isLicensed={isLicensed}
+            title={'Add Page'}
+            onClick={() => (shouldFreeze ? enableReleasedVersionPopupState() : toggleShowAddNewPageInput(true))}
+            className="left-sidebar-header-btn"
+            fill={`var(--slate12)`}
+            darkMode={darkMode}
+            leftIcon="plus"
+            iconWidth="14"
+            variant="tertiary"
+            disabled={shouldFreeze}
+          ></PageGroupMenu>
+        </div>
+        {showSearch && (
+          <HeaderSection.SearchBoxComponent
+            onChange={handleSearch}
+            placeholder={'Search'}
+            placeholderIcon={''}
+            darkMode={darkMode}
+          />
+        )}
         <div
           className={`${darkMode && 'dark-theme'} page-selector-panel-body`}
           style={{ borderRight: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '' }}

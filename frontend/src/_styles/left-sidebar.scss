@@ -623,16 +623,16 @@
   .tj-list-item-selected {
     .custom-icon {
         svg {
-            color: #4368E3;
-            stroke: #4368E3;
+            color: var(--icon-accent);
+            stroke: var(--icon-accent);
             
         }
     }
   }
     .custom-icon {
         svg {
-          color: #6A727C;
-          stroke: #6A727C;
+          color: var(--icon-default);
+          stroke: var(--icon-default);
       }
     }
 
@@ -649,30 +649,42 @@
 
 
 .viewer-page-handler {
-  height: 32px;
-  padding: 0;
+  height: 40px;
 
   .card {
     background: none;
     border: none;
     box-shadow: none;
     display: flex;
+    height: 40px !important;
+    padding: 8px 12px !important;
+    color: var(--text-placeholder) !important;
+    font-weight: 400 !important;
+    font-size: 14px !important;
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     margin-right: 5px;
+    stroke: var(--icon-weak);
   }
 
-  .card,
   .card-body {
-    padding: 3px;
-    height: 32px;
+    padding: 0px !important;
+    display: flex;
+    gap: 6px;
+    align-items: center;
   }
 
   .card.active {
     background: #fff;
+    font-weight: 500 !important;
+    color: var(--text-default) !important;
+
+    svg {
+      stroke: var(--icon-accent);
+    }
   }
 }
 
@@ -688,17 +700,29 @@
 
 .mobile-header {
   width: 100%;
+  .navbar {
+    border-bottom: 0px !important;
+  }
+}
+
+.bm-item {
+  &:last-child {
+    width: 78% !important;
+    position: fixed;
+    bottom: 0px;
+    background: var(--background-surface-layer-01);
+  }
 }
 
 .bm-item .pages-container {
   width: 100% !important;
-  padding: 6px 0.3rem;
 
   .card.active {
     width: inherit;
     background-color: var(--slate5);
     color: var(--slate12);
     border: none;
+    padding: 0px
   }
 }
 

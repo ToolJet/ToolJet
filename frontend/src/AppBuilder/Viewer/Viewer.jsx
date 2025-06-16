@@ -11,7 +11,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import AppCanvas from '@/AppBuilder/AppCanvas';
 import DesktopHeader from './DesktopHeader';
 import MobileHeader from './MobileHeader';
-import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
@@ -88,6 +87,9 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
   }, [isSidebarPinned]);
 
+  const { definition: { properties = {} } = {} } = pageSettings ?? {};
+  const { position, hideHeader } = properties ?? {};
+
   const canvasRef = useRef(null);
   const isLoading = false;
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
@@ -145,7 +147,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
             >
               <DndProvider backend={HTML5Backend}>
                 <ModuleProvider moduleId={moduleId}>
-                  {currentLayout !== 'mobile' && (
+                  {/* {currentLayout !== 'mobile' && (
                     <DesktopHeader
                       showHeader={showHeader}
                       isAppLoaded={isAppLoaded}
@@ -157,8 +159,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
                     />
-                  )}
-                  {currentLayout === 'mobile' && !isMobilePreviewMode && (
+                  )} */}
+                  {currentLayout === 'mobile' && !hideHeader && (
                     <MobileHeader
                       showHeader={showHeader}
                       appName={appName}
@@ -180,8 +182,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                         }}
                       >
                         <div className={`areas d-flex flex-rows app-${appId}`}>
-                          {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
-                            <ViewerSidebarNavigation
+                          {/* {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
+                            <PagesSidebarNavigation
                               showHeader={showHeader}
                               isMobileDevice={currentLayout === 'mobile'}
                               pages={pages}
@@ -191,7 +193,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                               toggleSidebarPinned={toggleSidebarPinned}
                               switchPage={switchPage}
                             />
-                          )}
+                          )} */}
 
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
@@ -199,7 +201,12 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                             })}
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
-                              marginLeft: isPagesSidebarHidden || currentLayout === 'mobile' ? 'auto' : '210px',
+                              marginLeft:
+                                isPagesSidebarHidden || currentLayout === 'mobile'
+                                  ? 'auto'
+                                  : position === 'top'
+                                  ? '0px'
+                                  : '226px',
                             }}
                           >
                             <div
@@ -213,7 +220,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                 position: 'relative',
                               }}
                             >
-                              {currentLayout === 'mobile' && isMobilePreviewMode && (
+                              {/* {currentLayout === 'mobile' && isMobilePreviewMode && (
                                 <MobileHeader
                                   showHeader={showHeader && isAppLoaded}
                                   appName={appName}
@@ -225,8 +232,12 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                 />
-                              )}
-                              <AppCanvas moduleId={moduleId} isViewerSidebarPinned={isSidebarPinned} />
+                              )} */}
+                              <AppCanvas
+                                moduleId={moduleId}
+                                isViewerSidebarPinned={isSidebarPinned}
+                                toggleSidebarPinned={toggleSidebarPinned}
+                              />
                             </div>
                             {/* {!licenseValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />} */}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}

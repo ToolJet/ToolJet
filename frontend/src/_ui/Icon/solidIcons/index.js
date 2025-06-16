@@ -8,6 +8,7 @@ import ArrowReturn from './ArrowReturn.jsx';
 import ArrowRight from './ArrowRight.jsx';
 import ArrowSort from './ArrowSort.jsx';
 import ArrowSortRectangle from './ArrowSortRectangle.jsx';
+import AddNavItemURL from './AddNavItemURL.jsx';
 import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
 import BookSearch from './BookSearch.jsx';
@@ -74,6 +75,7 @@ import Minus01 from './Minus01.jsx';
 import Mobile from './Mobile.jsx';
 import MoreHorizontal from './MoreHorizontal.jsx';
 import MoreVertical from './MoreVertical.jsx';
+import MoreVertical01 from './MoreVertical01.jsx';
 import Notification from './Notification.jsx';
 import NotificationRinging from './NotificationRinging.jsx';
 import NotificationSide from './NotificationSide.jsx';
@@ -95,6 +97,7 @@ import Read from './Read.jsx';
 import ReloadError from './ReloadError.jsx';
 import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
+import Remove03 from './Remove03.jsx';
 import RemoveRectangle from './RemoveRectangle.jsx';
 import RightArrow from './RightArrow.jsx';
 import RightOuterJoin from './RightOuterJoin.jsx';
@@ -235,6 +238,10 @@ import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
 import Moon from './Moon.jsx';
+import NoPageEvents from './NoPageEvents.jsx';
+import ArrowRight01 from './ArrowRight01.jsx';
+import DuplicatePage from './DuplicatePage.jsx';
+import Delete01 from './Delete01.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -246,6 +253,8 @@ const Icon = (props) => {
       return <DarkIcon {...props} />;
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'addnavitemurl':
+      return <AddNavItemURL {...props} />;
     case 'alignleftinspector':
       return <AlignLeftinspector {...props} />;
     case 'alignrightinspector':
@@ -268,6 +277,8 @@ const Icon = (props) => {
       return <ArrowBack {...props} />;
     case 'arrowbackdown':
       return <ArrowBackDown {...props} />;
+    case 'arrowright01':
+      return <ArrowRight01 {...props} />;
     case 'arrowdown':
       return <ArrowDown {...props} />;
     case 'arroweft':
@@ -340,16 +351,22 @@ const Icon = (props) => {
       return <DangerDark {...props} />;
     case 'delete':
       return <Delete {...props} />;
+    case 'delete01':
+      return <Delete01 {...props} />;
     case 'diamond':
       return <Diamond {...props} />;
     case 'downarrow':
       return <DownArrow {...props} />;
+    case 'duplicatepage':
+      return <DuplicatePage {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
     case 'enterprise':
       return <Enterprise {...props} />;
     case 'enterpriseGradient':
       return <EnterpriseGradient {...props} />;
+    case 'nopageevents':
+      return <NoPageEvents {...props} />;
     case 'enterprisesmall':
       return <EnterpriseSmall {...props} />;
     case 'enterprise-new':
@@ -450,6 +467,8 @@ const Icon = (props) => {
       return <MoreHorizontal {...props} />;
     case 'morevertical':
       return <MoreVertical {...props} />;
+    case 'morevertical01':
+      return <MoreVertical01 {...props} />;
     case 'notification':
       return <Notification {...props} />;
     case 'notificationringing':
@@ -686,6 +705,8 @@ const Icon = (props) => {
       return <ReplaceAll {...props} />;
     case 'remove02':
       return <Remove02 {...props} />;
+    case 'remove03':
+      return <Remove03 {...props} />;
     case 'bookdemo':
       return <BookDemo {...props} />;
     case 'contactv3':

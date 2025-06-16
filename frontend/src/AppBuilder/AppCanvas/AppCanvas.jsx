@@ -17,8 +17,10 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
+import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
+import { resolveReferences } from '@/_helpers/utils';
 
-export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
+export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinned, toggleSidebarPinned }) => {
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.canvasHeight);
@@ -43,6 +45,25 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned, shallow);
+  const { currentPageId, globalSettings, pages, pageSettings, homePageId, switchPage } = useStore(
+    (state) => ({
+      currentPageId: state.currentPageId,
+      globalSettings: state.globalSettings,
+      pages: state.modules.canvas.pages,
+      pageSettings: state.pageSettings,
+      homePageId: state.homePageId,
+      switchPage: state.switchPage,
+    }),
+    shallow
+  );
+
+  const showHeader = !globalSettings?.hideHeader;
+  const { definition: { styles = {}, properties = {} } = {} } = pageSettings ?? {};
+  const { position, disableMenu } = properties ?? {};
+  const resolvedDisableMenu = resolveReferences(disableMenu?.value);
+
+  console.log({ isViewerSidebarPinned, isPagesSidebarHidden, pageSidebarStyle, position, pageSettings });
+
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
@@ -69,72 +90,88 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
     >
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
-      <div
-        ref={canvasContainerRef}
-        className={cx(
-          'canvas-container align-items-center page-container',
-          { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
-          {
-            'overflow-x-auto':
-              (currentMode === 'edit' && (isSidebarOpen || (isRightSidebarOpen && !isRightSidebarPinned))) ||
-              currentMode === 'view',
-          }
+      <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
+        {!resolvedDisableMenu && (
+          <PagesSidebarNavigation
+            showHeader={showHeader}
+            isMobileDevice={currentLayout === 'mobile'}
+            pages={pages}
+            currentPageId={currentPageId ?? homePageId}
+            switchPage={switchPage}
+            height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
+            switchDarkMode={switchDarkMode}
+            isSidebarPinned={isViewerSidebarPinned}
+            toggleSidebarPinned={toggleSidebarPinned}
+          />
         )}
-        style={{
-          // transform: `scale(1)`,
-          width: '100%',
-          borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
-          height: currentMode === 'edit' ? canvasContainerHeight : '100%',
-          background:
-            currentMode === 'view'
-              ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
-              : !isAppDarkMode
-              ? '#EBEBEF'
-              : '#2F3C4C',
-          marginLeft:
-            isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && currentMode !== 'edit'
-              ? pageSidebarStyle === 'icon'
-                ? '65px'
-                : '210px'
-              : 'auto',
-          // borderRight:
-          //   !isRightSidebarPinned && currentMode === 'edit' && isRightSidebarOpen ? '388px solid' : undefined,
-          // right: isRightSidebarPinned ? '380px' : '40px',
-        }}
-      >
         <div
-          style={
+          ref={canvasContainerRef}
+          className={cx(
+            'canvas-container align-items-center page-container',
+            { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
             {
-              // minWidth: `calc((100vw - 300px) - 48px)`,
+              'overflow-x-auto':
+                (currentMode === 'edit' && (isSidebarOpen || (isRightSidebarOpen && !isRightSidebarPinned))) ||
+                currentMode === 'view',
             }
-          }
-          className={`app-${appId} _tooljet-page-${getPageId()}`}
-        >
-          {currentMode === 'edit' && (
-            <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
           )}
-          <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-          <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
-            {environmentLoadingState !== 'loading' && (
-              <div>
-                <Container
-                  id="canvas"
-                  gridWidth={gridWidth}
-                  canvasWidth={canvasWidth}
-                  canvasHeight={canvasHeight}
-                  darkMode={isAppDarkMode}
-                  canvasMaxWidth={canvasMaxWidth}
-                  isViewerSidebarPinned={isViewerSidebarPinned}
-                  pageSidebarStyle={pageSidebarStyle}
-                />
-                <div id="component-portal" />
-              </div>
+          style={{
+            // transform: `scale(1)`,
+            width: '100%',
+            borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
+            height: currentMode === 'edit' ? canvasContainerHeight : '100%',
+            background:
+              currentMode === 'view'
+                ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
+                : !isAppDarkMode
+                ? '#EBEBEF'
+                : '#2F3C4C',
+            marginLeft:
+              isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
+                ? pageSidebarStyle === 'icon' && position !== 'side'
+                  ? '44px'
+                  : '200px'
+                : 'auto',
+            // borderRight:
+            //   !isRightSidebarPinned && currentMode === 'edit' && isRightSidebarOpen ? '388px solid' : undefined,
+            // right: isRightSidebarPinned ? '380px' : '40px',
+          }}
+        >
+          <div
+            style={
+              {
+                // minWidth: `calc((100vw - 300px) - 48px)`,
+              }
+            }
+            className={`app-${appId} _tooljet-page-${getPageId()}`}
+          >
+            {currentMode === 'edit' && (
+              <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
             )}
+            <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+            <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
+              {environmentLoadingState !== 'loading' && (
+                <div>
+                  <Container
+                    id="canvas"
+                    gridWidth={gridWidth}
+                    canvasWidth={canvasWidth}
+                    canvasHeight={canvasHeight}
+                    darkMode={isAppDarkMode}
+                    canvasMaxWidth={canvasMaxWidth}
+                    isViewerSidebarPinned={isViewerSidebarPinned}
+                    pageSidebarStyle={pageSidebarStyle}
+                    pagePositionType={position}
+                  />
+                  <div id="component-portal" />
+                </div>
+              )}
 
-            {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-              <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
-            )}
-          </HotkeyProvider>
+              {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
+                <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+              )}
+            </HotkeyProvider>
+          </div>
         </div>
       </div>
       {currentMode === 'edit' && <EditorSelecto />}

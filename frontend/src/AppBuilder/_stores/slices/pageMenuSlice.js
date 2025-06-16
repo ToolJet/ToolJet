@@ -73,6 +73,9 @@ export const createPageMenuSlice = (set, get) => {
   });
 
   const updatePageIcon = createPageUpdateCommand(['icon']);
+  const updatePageURL = createPageUpdateCommand(['url']);
+  const updatePageTarget = createPageUpdateCommand(['openIn']);
+  const updatePageAppId = createPageUpdateCommand(['appId']);
 
   const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
 
@@ -96,22 +99,24 @@ export const createPageMenuSlice = (set, get) => {
     showSearch: false,
     pageSearchResults: null,
     isPageGroup: false,
-    pageSettingSelected: false,
     pageSettings: {},
     showPagePermissionModal: false,
     permissionPage: null,
     selectedUserGroups: [],
     selectedUsers: [],
     pagePermission: null,
+    newPagePopupConfig: {
+      show: false,
+      type: null,
+    },
+    navRef: null,
+    moreNavBtnRef: null,
+    linkRefs: null,
 
     toggleSearch: (show) =>
       set((state) => {
         state.showSearch = show;
         if (!show) state.pageSearchResults = null;
-      }),
-    togglePageSettingMenu: (val) =>
-      set((state) => {
-        state.pageSettingSelected = typeof val === 'boolean' ? val : !state.pageSettingSelected;
       }),
     openPageEditPopover: (page, ref) =>
       set((state) => {
@@ -121,7 +126,13 @@ export const createPageMenuSlice = (set, get) => {
           state.showEditingPopover = true;
         }
       }),
-
+    setNewPagePopupConfig: (config) =>
+      set((state) => {
+        state.newPagePopupConfig = {
+          ...state.newPagePopupConfig,
+          ...config,
+        };
+      }),
     closePageEditPopover: () =>
       set((state) => {
         state.showEditingPopover = false;
@@ -166,6 +177,7 @@ export const createPageMenuSlice = (set, get) => {
     // page actions
     updatePageVisibility: (pageId, value) => updatePageVisibility(pageId, [value])(set, get),
     disableOrEnablePage: (pageId, value) => disableOrEnablePage(pageId, [value])(set, get),
+    updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
       const pages = get().modules.canvas.pages;
@@ -185,6 +197,8 @@ export const createPageMenuSlice = (set, get) => {
       }
       updatePageName(pageId, [value])(set, get);
     },
+    updatePageURL: (pageId, value) => updatePageURL(pageId, [value])(set, get),
+    updatePageTarget: (pageId, value) => updatePageTarget(pageId, [value])(set, get),
     updatePageIcon: (pageId, value) => updatePageIcon(pageId, [value])(set, get),
     updatePageHandle: (pageId, value) => {
       const pageWithSameHandle = get().modules.canvas.pages.some((page) => page.handle === value);
@@ -317,8 +331,6 @@ export const createPageMenuSlice = (set, get) => {
 
       set((state) => {
         state.app.homePageId = pageId;
-        state.showEditingPopover = false;
-        state.editingPage = null;
       });
       await savePageChanges(app.appId, currentVersionId, editingPage.id, diff, 'update', null);
     },
@@ -340,7 +352,7 @@ export const createPageMenuSlice = (set, get) => {
       await savePageChanges(app.appId, currentVersionId, currentPageId, diff, 'update', 'pages/reorder');
     },
 
-    addNewPage: async (name, handle, isPageGroup = false) => {
+    addNewPage: async (name, handle, isPageGroup = false, pageObj) => {
       const pages = get().modules.canvas.pages;
       const pageWithSameName = pages.some((page) => page.name === name && !page.isPageGroup);
       const pageGroupWithSameName = pages.some((page) => page.name === name && page.isPageGroup);
@@ -369,6 +381,7 @@ export const createPageMenuSlice = (set, get) => {
         handle: newHandle,
         components: {},
         index: pages.length + 1,
+        ...pageObj,
         isPageGroup,
         ...(isPageGroup
           ? {
@@ -378,10 +391,12 @@ export const createPageMenuSlice = (set, get) => {
       };
       set((state) => {
         state.modules.canvas.pages.push(pageObject);
+        state.editingPage = pageObject;
       });
       const { app, currentVersionId } = get();
       await savePageChanges(app.appId, currentVersionId, '', pageObject, 'create', 'pages');
       if (!isPageGroup) get().switchPage(newPageId, newHandle);
+      return pageObject;
     },
 
     handleSearch: (value) => {

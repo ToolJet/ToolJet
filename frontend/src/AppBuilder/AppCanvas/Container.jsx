@@ -49,6 +49,7 @@ export const Container = React.memo(
     canvasMaxWidth,
     isViewerSidebarPinned,
     pageSidebarStyle,
+    pagePositionType,
     componentType,
   }) => {
     const realCanvasRef = useRef(null);
@@ -120,15 +121,9 @@ export const Container = React.memo(
     }, [canvasWidth, listViewMode, columns]);
 
     const getCanvasWidth = useCallback(() => {
-      if (
-        id === 'canvas' &&
-        !isPagesSidebarHidden &&
-        isViewerSidebarPinned &&
-        currentLayout !== 'mobile' &&
-        currentMode !== 'edit'
-      ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
-      }
+      // if (id === 'canvas' && !isPagesSidebarHidden && isViewerSidebarPinned && currentLayout !== 'mobile') {
+      //   return `calc(100% - ${pageSidebarStyle === 'icon' && pagePositionType !== 'side' ? '44px' : '226px'})`;
+      // }
       return '100%';
     }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 

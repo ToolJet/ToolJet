@@ -77,6 +77,10 @@ export class PageHelperService implements IPageHelperService {
     page.appVersionId = appVersionId;
     page.autoComputeLayout = true;
     page.index = dto.index;
+    page.appId = dto.appId;
+    page.url = dto.url;
+    page.type = dto.type;
+    page.openIn = dto.openIn;
     return page;
   }
 }

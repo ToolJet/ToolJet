@@ -60,6 +60,20 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           }
         />
       </div>
+      <div
+        className="cursor-pointer"
+        onClick={() => {
+          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
+          if (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES) {
+            handleToggle();
+          }
+        }}
+      >
+        <SolidIcon
+          name={'page'}
+          fill={isRightSidebarOpen && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES ? '#4368E3' : '#CCD1D5'}
+        />
+      </div>
     </div>
   );
 };

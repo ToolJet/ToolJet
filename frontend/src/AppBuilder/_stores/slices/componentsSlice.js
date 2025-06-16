@@ -1386,7 +1386,6 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
   setSelectedComponents: (components) => {
-    get().togglePageSettingMenu(false);
     set(
       (state) => {
         state.selectedComponents = components;

@@ -621,6 +621,7 @@ button {
     background-color: var(--base);
     background-clip: border-box;
     height: 100vh;
+    z-index: 2;
 
     >div {
       background-color: var(--base);
@@ -852,26 +853,6 @@ button {
         margin: 0px auto;
         background-size: 80px 80px;
         background-repeat: repeat;
-      }
-
-      .navigation-area {
-        background: var(--base, #FFF);
-        padding: 1rem;
-
-        a.page-link {
-          border-radius: 0;
-          border: 0;
-        }
-
-        a.page-link:hover {
-          color: white;
-          background-color: #4D72FA;
-        }
-
-        a.page-link.active {
-          color: white;
-          background-color: #4D72FA;
-        }
       }
 
     }
