@@ -4,6 +4,7 @@ import { EntityManager } from 'typeorm';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseInitService as ILicenseInitService } from '../interfaces/IService';
 import { getLicenseFieldValue } from '../helper';
+import LicenseBase from '../configs/LicenseBase';
 
 @Injectable()
 export class LicenseInitService extends ILicenseInitService {
@@ -18,7 +19,7 @@ export class LicenseInitService extends ILicenseInitService {
     return;
   }
 
-  getLicenseFieldValue(type: LICENSE_FIELD): any {
-    return getLicenseFieldValue(type, License.Instance());
+  getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: LicenseBase): Promise<any> {
+    return getLicenseFieldValue(type, licenseInstance);
   }
 }

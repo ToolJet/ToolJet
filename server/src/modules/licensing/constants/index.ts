@@ -168,3 +168,5 @@ export enum FEATURE_KEY {
   GET_USER_LIMITS = 'get_user_limits',
   GET_WORKFLOW_LIMITS = 'get_workflow_limits',
 }
+
+export const ORGANIZATION_INSTANCE_KEY = 'INSTANCE';

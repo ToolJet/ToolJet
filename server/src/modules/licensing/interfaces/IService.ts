@@ -1,5 +1,6 @@
 import { EntityManager } from 'typeorm';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
+import LicenseBase from '../configs/LicenseBase';
 
 export interface ILicenseWorkflowsService {
   getWorkflowLimit(params: { limitFor: string; workspaceId?: string }): Promise<any>;
@@ -11,8 +12,8 @@ export interface ILicenseUserService {
 }
 
 export abstract class LicenseTermsService {
-  constructor(protected readonly licenseInitService: LicenseInitService) {}
-  abstract getLicenseTerms(type?: any): Promise<any>;
+  constructor(protected readonly licenseInitService: LicenseInitService) { }
+  abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
 }
 
 export interface ILicenseOrganizationService {
@@ -23,7 +24,7 @@ export interface ILicenseOrganizationService {
 export abstract class LicenseInitService {
   abstract initForMigration(manager?: EntityManager): Promise<{ isValid: boolean }>;
   abstract init(): Promise<void>;
-  abstract getLicenseFieldValue(type: any): any;
+  abstract getLicenseFieldValue(type: any, licenseInstance: LicenseBase): any;
 }
 
 export interface ILicenseDecryptService {
