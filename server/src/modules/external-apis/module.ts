@@ -15,6 +15,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
+import { OrganizationRepository } from '@modules/organizations/repository';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -45,6 +46,7 @@ export class ExternalApiModule {
         GroupPermissionsRepository,
         VersionRepository,
         AppGitRepository,
+        OrganizationRepository,
       ],
       controllers: [ExternalApisController, ExternalApisAppsController],
       exports: [ExternalApiUtilService],
