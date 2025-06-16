@@ -72,6 +72,7 @@ Once SAML is configured and the groups are created in ToolJet, the next time the
 In some cases (especially for Azure AD), group names are not passed as strings but as object IDs. In such cases, you must use the environment variable based group mapping method.
 
 :::note
+- This method is only applicable for Self-hosted setups.
 - This configuration applies to all identity providers for SAML group mapping.
 - For Azure AD users: use the Object ID of the group if the configuration does not emit the group name.
 - If environment variables are configured, they will take precedence over the group mappings defined in the above steps.
@@ -87,7 +88,7 @@ TJ_SAML_GROUP_MAPPINGS__<workspace_slug>='{"idp-group-name-or-objectId": "toolje
 
 Replace `<workspace_slug>` with your workspace’s slug and in-case if the slug contains hyphens (-), replace them with underscores (_). The slug can be found in the URL of your workspace. 
 
-For example, in the instance URL `https://app.corp.com/my-workspace`, the slug is `my-workspace` and in the environment variable, it becomes `my_workspace`.You can also find it by clicking *Edit* icon from the workspace dropdown at the bottom left, a modal will appear showing the slug.
+For example, in the instance URL `https://app.corp.com/my-workspace`, the slug is `my-workspace` and in the environment variable, it becomes `my_workspace`. You can also find it by clicking *Edit* icon from the workspace dropdown at the bottom left, a modal will appear showing the slug.
 
   <img className="screenshot-full img-s" src="/img/user-management/group-sync/saml/workspace-slug.png" alt="SAML Group Sync Config" />
 
