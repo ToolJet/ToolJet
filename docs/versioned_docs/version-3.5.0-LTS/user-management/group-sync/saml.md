@@ -12,8 +12,8 @@ title: SAML
   />
  <span>Paid feature</span>
 </div>
-
-In ToolJet, you can use the group synchronization feature to automatically update user roles and custom groups from the identity provider. This functionality enables centralized access management, reduces the risk of manual errors, enhances security, and simplifies the user onboarding process. Group Sync is only available at the workspace level. 
+ 
+In ToolJet, you can use the group synchronization feature to automatically update user roles and custom groups from the identity provider. This functionality enables centralized access management, reduces the risk of manual errors, enhances security, and simplifies the user onboarding process. SAML Group Sync is only available at the workspace level.
 
 This guide covers how to set up SAML group synchronization with Okta as identity provider as an example. This can be used as a reference for other IdPs configuration.
 
@@ -31,8 +31,17 @@ Please make sure to add the *group attribute* while setting up SAML to your Tool
 
 ## Group Mapping
 
-To map groups between your Okta account (or any identity provider except Azure AD) and ToolJet, follow these steps:
-For Azure AD a different configuration is required which is explained later in this document.
+ToolJet allows mapping identity provider (IdP) groups to ToolJet custom groups using SAML group synchronization. This ensures user access and roles are managed consistently across systems, enabling centralized and automated access control.
+
+There are two ways to configure:
+- UI-based mapping: Create matching custom groups in ToolJet that reflect the group names from your IdP.
+- Environment variable-based mapping: Define group mappings in the .env file of your ToolJet instance. This is especially useful when your IdP provides group IDs instead of names — like in Azure AD.
+
+Let’s go over each method in detail:
+
+## UI-based Group Mapping
+
+To map groups using the UI, follow these steps:
 
 ### 1.	Configure group sync via SAML
 Make sure SAML is properly configured between your IdP and ToolJet.
@@ -58,7 +67,7 @@ Assign roles and permissions to each custom group in ToolJet based on your acces
 ### 5.	User group mapping on login
 Once SAML is configured and the groups are created in ToolJet, the next time the respective user logs in, the group mapping will occur, and their role and custom groups will be updated accordingly.
 
-## Group Mapping using Environment Variables
+## Environment Variable-based Group Mapping
 
 In some cases (especially for Azure AD), group names are not passed as strings but as object IDs. In such cases, you must use the `.env-based` group mapping method.
 
@@ -76,7 +85,9 @@ Add the following environment variable in your ToolJet instance:
 TJ_SAML_GROUP_MAPPINGS__<workspace-slug>='{"idp-group-name-or-objectId": "tooljet-group-name"}'
 ```
 
-Replace `<workspace-slug>` with your workspace’s slug. For example, in `https://app.corp.com/my-workspace`, the slug is `my-workspace`. You can also find it by clicking *Edit* icon from the workspace dropdown at the bottom left, a modal will appear showing the slug.
+Replace `<workspace-slug>` with your workspace’s slug and in-case if the slug contains hyphens (-), replace them with underscores (_). The slug can be found in the URL of your workspace. 
+
+For example, in the instance URL `https://app.corp.com/my-workspace`, the slug is `my-workspace` and in the environment variable, it becomes `my_workspace`.You can also find it by clicking *Edit* icon from the workspace dropdown at the bottom left, a modal will appear showing the slug.
 
   <img className="screenshot-full img-s" src="/img/user-management/group-sync/saml/workspace-slug.png" alt="SAML Group Sync Config" />
 
@@ -94,7 +105,7 @@ If you have a group named *Support* in Azure AD and you want it mapped to a grou
 Here's what the environment variable will look like:
 
 ```bash title=".env"
-TJ_SAML_GROUP_MAPPINGS__my-workspace='{"cObfe2ea-680-4029-9172-9d73dd5c08c7": "Support"}'
+TJ_SAML_GROUP_MAPPINGS__my_workspace='{"cObfe2ea-680-4029-9172-9d73dd5c08c7": "Support"}'
 ```
 
 ### Multiple Group Mappings example
@@ -102,7 +113,7 @@ TJ_SAML_GROUP_MAPPINGS__my-workspace='{"cObfe2ea-680-4029-9172-9d73dd5c08c7": "S
 You can also specify multiple mappings by separating them with commas. For example, if you have two groups named "Support" and "Admin" in your identity provider (e.g., Okta) and you want them mapped to groups named "Support_Team" and "Admin" in ToolJet respectively, you would configure it like this:
 
 ```bash title=".env"
-TJ_SAML_GROUP_MAPPINGS__my-workspace='{"Support": "Support_Team", "Admin": "Admin"}'
+TJ_SAML_GROUP_MAPPINGS__my_workspace='{"Support": "Support_Team", "Admin": "Admin"}'
 ```
 
 Now, when a user logs into ToolJet through SAML, their role and custom groups will be updated according to the specified mappings.
