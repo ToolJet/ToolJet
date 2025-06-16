@@ -55,7 +55,7 @@ describe("App Export", () => {
             .selectFile(TEST_DATA.appFiles.multiVersion, {
                 force: true,
             });
-        cy.wait(1500);
+        cy.wait(2000);
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(importSelectors.importAppButton).click();
         cy.wait(3000);
