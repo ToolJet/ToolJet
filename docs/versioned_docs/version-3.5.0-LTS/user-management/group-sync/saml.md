@@ -35,7 +35,7 @@ ToolJet allows mapping identity provider (IdP) groups to ToolJet custom groups u
 
 There are two ways to configure:
 - UI-based mapping: Create matching custom groups in ToolJet that reflect the group names from your IdP.
-- Environment variable-based mapping: Define group mappings in the .env file of your ToolJet instance. This is especially useful when your IdP provides group IDs instead of names — like in Azure AD.
+- Environment variable-based mapping: Define group mappings in the .env file of your ToolJet instance.
 
 Let’s go over each method in detail:
 
