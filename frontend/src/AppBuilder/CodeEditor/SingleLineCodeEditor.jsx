@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,8 @@ import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { createReferencesLookup } from '@/_stores/utils';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -156,9 +158,20 @@ const EditorInput = ({
   paramLabel = '',
   disabled = false,
 }) => {
+  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+
+  const codeHinterContext = useContext(CodeHinterContext);
+  const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
+
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   function autoCompleteExtensionConfig(context) {
-    const hints = getSuggestions();
+    const hintsWithoutParamHints = getSuggestions();
+
+    const allHints = {
+      ...hintsWithoutParamHints,
+      appHints: [...hintsWithoutParamHints.appHints, ...paramHints],
+    };
+
     let word = context.matchBefore(/\w*/);
 
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
@@ -189,7 +202,7 @@ const EditorInput = ({
       queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
+    let completions = getAutocompletion(queryInput, validationType, allHints, totalReferences, originalQueryInput);
 
     return {
       from: word.from,
@@ -199,7 +212,7 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [paramHints]);
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],

@@ -41,7 +41,7 @@ export const RadioButton = function RadioButton({
     if (isInitialRender.current) return;
     setExposedVariable('value', value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [value]);
 
   useEffect(() => {
     const exposedVariables = {
