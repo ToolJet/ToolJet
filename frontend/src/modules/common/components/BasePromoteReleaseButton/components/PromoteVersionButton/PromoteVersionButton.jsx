@@ -6,8 +6,7 @@ import { PromoteConfirmationModal } from './components';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const PromoteVersionButton = ({ hasPromotePermission }) => {
-  // console.log('has promote permissions', hasPromotePermission);
+const PromoteVersionButton = () => {
   const [promoteModalData, setPromoteModalData] = useState(null);
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
   const { isPromoteVersionEnabled } = getCanPromoteAndRelease();
@@ -37,7 +36,15 @@ const PromoteVersionButton = ({ hasPromotePermission }) => {
       target: environments[currentEnvIndex + 1],
     });
   };
-
+  const renderTooltipMessage = () => {
+    if (!isPromoteVersionEnabled) {
+      return "You don't have access to promote application. Contact admin to know more.";
+    }
+    if (!shouldDisablePromote) {
+      return 'Promote this version to the next environment';
+    }
+    return '';
+  };
   return (
     <>
       <ButtonSolid
@@ -47,7 +54,11 @@ const PromoteVersionButton = ({ hasPromotePermission }) => {
         disabled={shouldDisablePromote || !isPromoteVersionEnabled}
         data-cy="promote-button"
       >
-        <ToolTip message="Promote this version to the next environment" placement="bottom" show={!shouldDisablePromote}>
+        <ToolTip
+          message={renderTooltipMessage()}
+          placement="bottom"
+          show={!shouldDisablePromote || !isPromoteVersionEnabled}
+        >
           <div style={{ fontSize: '14px' }}>Promote </div>
         </ToolTip>
         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">

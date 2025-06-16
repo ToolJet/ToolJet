@@ -8,6 +8,7 @@ import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
+import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const ReleaseVersionButton = function DeployVersionButton() {
@@ -29,7 +30,6 @@ const ReleaseVersionButton = function DeployVersionButton() {
     }),
     shallow
   );
-
   const { t } = useTranslation();
 
   const releaseVersion = (editingVersion) => {
@@ -59,7 +59,6 @@ const ReleaseVersionButton = function DeployVersionButton() {
   const onReleaseConfirm = () => {
     releaseVersion(editingVersion);
   };
-
   return (
     <>
       <ReleaseConfirmation
@@ -77,7 +76,13 @@ const ReleaseVersionButton = function DeployVersionButton() {
           disabled={isVersionReleased || !isReleaseVersionEnabled}
           onClick={onReleaseButtonClick}
         >
-          {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
+          <ToolTip
+            message={"You don't have access to promote application. Contact admin to know more."}
+            placement="bottom"
+            show={!isReleaseVersionEnabled}
+          >
+            {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
+          </ToolTip>
         </ButtonSolid>
       </div>
     </>
