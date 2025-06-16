@@ -17,6 +17,8 @@ export interface UserPermissions {
   isEndUser: boolean;
   appCreate: boolean;
   appDelete: boolean;
+  appPromote: boolean;
+  appRelease: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
   folderCRUD: boolean;

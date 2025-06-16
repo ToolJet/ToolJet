@@ -6,23 +6,30 @@ import { PromoteConfirmationModal } from './components';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const PromoteVersionButton = () => {
-  const { moduleId } = useModuleContext();
+const PromoteVersionButton = ({ hasPromotePermission }) => {
+  // console.log('has promote permissions', hasPromotePermission);
   const [promoteModalData, setPromoteModalData] = useState(null);
-  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } = useStore(
-    (state) => ({
-      isSaving: state.appStore.modules[moduleId].app.isSaving,
-      editingVersion: state.currentVersionId,
-      selectedEnvironment: state.selectedEnvironment,
-      environments: state.environments,
-      appVersionEnvironment: state.appVersionEnvironment,
-      currentEnvIndex: state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
-    }),
-    shallow
-  );
+  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
+  const { isPromoteVersionEnabled } = getCanPromoteAndRelease();
+  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } =
+    useStore(
+      (state) => ({
+        isSaving: state.app.isSaving,
+        editingVersion: state.currentVersionId,
+        selectedEnvironment: state.selectedEnvironment,
+        environments: state.environments,
+        appVersionEnvironment: state.appVersionEnvironment,
+        currentEnvIndex: state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
+      }),
+      shallow
+    );
 
   // enable only after the environment details are loaded
-  const shouldDisablePromote = isSaving || selectedEnvironment?.priority < appVersionEnvironment?.priority || !appVersionEnvironment || !environments?.[currentEnvIndex + 1];
+  const shouldDisablePromote =
+    isSaving ||
+    selectedEnvironment?.priority < appVersionEnvironment?.priority ||
+    !appVersionEnvironment ||
+    !environments?.[currentEnvIndex + 1];
 
   const handlePromote = () => {
     setPromoteModalData({
@@ -37,7 +44,7 @@ const PromoteVersionButton = () => {
         variant="primary"
         onClick={handlePromote}
         size="md"
-        disabled={shouldDisablePromote}
+        disabled={shouldDisablePromote || !isPromoteVersionEnabled}
         data-cy="promote-button"
       >
         <ToolTip message="Promote this version to the next environment" placement="bottom" show={!shouldDisablePromote}>
@@ -57,7 +64,7 @@ const PromoteVersionButton = () => {
         data={promoteModalData}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
-        fetchEnvironments={() => { }}
+        fetchEnvironments={() => {}}
       />
     </>
   );
