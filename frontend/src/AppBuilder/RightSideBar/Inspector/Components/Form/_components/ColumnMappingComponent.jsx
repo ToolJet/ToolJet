@@ -312,6 +312,11 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
     const groupBySection = () => {
       const grouped = {};
 
+      // Check if we're in GENERATE_FIELDS or REFRESH_FIELDS mode
+      const isGenerateFieldsMode = currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS;
+      const isRefreshFormMode = currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS;
+      const shouldSelectByDefault = isGenerateFieldsMode || isRefreshFormMode;
+
       columns.forEach((col) => {
         let sectionType = 'existing';
 
@@ -328,7 +333,30 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         if (!grouped[sectionType]) {
           grouped[sectionType] = [];
         }
-        grouped[sectionType].push(col);
+
+        // If in GENERATE_FIELDS or REFRESH_FIELDS mode, set columns as selected by default
+        // For REFRESH_FIELDS, only select new fields by default
+        if (
+          shouldSelectByDefault &&
+          sectionType !== 'isRemoved' &&
+          (isGenerateFieldsMode || (isRefreshFormMode && sectionType === 'isNew'))
+        ) {
+          let updatedCol = { ...col };
+
+          // Update the selected property based on its current structure
+          if (typeof updatedCol.selected === 'object') {
+            updatedCol.selected = {
+              ...updatedCol.selected,
+              value: true,
+            };
+          } else {
+            updatedCol.selected = true;
+          }
+
+          grouped[sectionType].push(updatedCol);
+        } else {
+          grouped[sectionType].push(col);
+        }
       });
 
       const preferredOrder = ['isNew', 'isRemoved', 'existing', 'isCustomField'];
@@ -340,7 +368,7 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
     };
 
     groupBySection();
-  }, [columns]);
+  }, [columns, currentStatusRef]);
 
   const updateSectionColumns = (sectionType, updatedColumns) => {
     setGroupedColumns((prev) => ({

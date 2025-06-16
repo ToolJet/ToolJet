@@ -40,6 +40,9 @@ export const createNewComponentFromMeta = (column, parentId, nextTop) => {
           },
           visibility: column.selected,
         },
+        styles: {
+          alignment: { value: 'top' },
+        },
         validation: {
           mandatory: column.mandatory,
         },
@@ -171,6 +174,9 @@ const handleComponentTypeChange = (componentToUpdate, updatedField) => {
           },
           visibility: updatedField.selected || componentToUpdate.component.definition.properties.visibility,
           ...(addOptions && { options: componentToUpdate.component.definition.properties.options }),
+        },
+        styles: {
+          alignment: { value: 'top' },
         },
         validation: {
           mandatory: updatedField.mandatory || componentToUpdate.component.definition.validation.mandatory,

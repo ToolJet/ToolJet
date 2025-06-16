@@ -214,7 +214,11 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
           }
           if (Object.keys(added).length !== 0) {
             operations.added[added.id] = added;
-            nextTop = nextTop + added.layouts['desktop'].height + COMPONENT_LAYOUT_DETAILS.spacing;
+            if (added.component.component === 'Checkbox') {
+              nextTop = nextTop + added.layouts['desktop'].height + 10;
+            } else {
+              nextTop = nextTop + added.layouts['desktop'].height + COMPONENT_LAYOUT_DETAILS.spacing;
+            }
 
             // Create simplified column structure with only the required fields
             // This will allow DataSectionUI to use componentId to fetch detailed info from the store

@@ -15,21 +15,23 @@ export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen, currentS
   }
 
   return (
-    <>
-      <div className="tw-flex tw-flex-col tw-gap-1">
-        {fields.map((field) => (
-          <FormField
-            key={field.name}
-            field={field}
-            activeMenu={activeMenuField}
-            onMenuToggle={(fieldName) => {
-              currentStatusRef.current = null;
-              setActiveMenuField(fieldName);
-            }}
-            onDelete={onDeleteField}
-            onSave={onSave}
-          />
-        ))}
+    <div className="tw-flex tw-flex-col" style={{ maxHeight: '400px' }}>
+      <div className="tw-flex-grow tw-overflow-y-auto tw-max-h-[calc(100%-50px)]">
+        <div className="tw-flex tw-flex-col tw-gap-1">
+          {fields.map((field) => (
+            <FormField
+              key={field.name}
+              field={field}
+              activeMenu={activeMenuField}
+              onMenuToggle={(fieldName) => {
+                currentStatusRef.current = null;
+                setActiveMenuField(fieldName);
+              }}
+              onDelete={onDeleteField}
+              onSave={onSave}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="tw-flex tw-justify-center tw-items-center tw-mt-3">
@@ -45,6 +47,6 @@ export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen, currentS
           Manage fields
         </Button>
       </div>
-    </>
+    </div>
   );
 };
