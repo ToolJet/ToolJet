@@ -16,7 +16,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
 
     let scope =
       'users:read,channels:read,groups:read,im:read,mpim:read,channels:history,groups:history,im:history,mpim:history';
-    if (options.access_type === 'chat:write') {
+    if (options?.access_type?.value === 'chat:write') {
       scope = `${scope},chat:write`;
     }
 
