@@ -65,7 +65,7 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
-    [FEATURE_KEY.AUTO_PROMOTE_APP]: {
+    [FEATURE_KEY.AUTO_RELEASE_APP]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
