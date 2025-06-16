@@ -77,11 +77,11 @@ const ReleaseVersionButton = function DeployVersionButton() {
           onClick={onReleaseButtonClick}
         >
           <ToolTip
-            message={"You don't have access to promote application. Contact admin to know more."}
+            message="You don't have access to release application. Contact admin to know more."
             placement="bottom"
             show={!isReleaseVersionEnabled}
           >
-            {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
+            <div>{isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}</div>
           </ToolTip>
         </ButtonSolid>
       </div>
