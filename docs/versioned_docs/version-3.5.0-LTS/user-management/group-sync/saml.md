@@ -49,6 +49,11 @@ Make sure SAML is properly configured between your IdP and ToolJet.
 Determine the groups in your identity provider (e.g., Okta) that you want to sync with ToolJet.
 ### 3.	Create custom groups in ToolJet
 - Create custom groups in ToolJet using exactly the same names as the ones in your IdP. Refer to the [custom group](/docs/user-management/role-based-access/custom-groups/) documentation to learn more about creating custom groups.
+<div>
+  :::note
+  Group names are case-sensitive, so make sure group names in ToolJet and your identity provider (e.g., Okta) match exactly. 
+  :::
+</div>
 - Example: If you have a group named *Support* in Okta, create a group named *Support* in ToolJet as shown below:
   - Group in Okta
 
@@ -56,10 +61,6 @@ Determine the groups in your identity provider (e.g., Okta) that you want to syn
 
   - Group in ToolJet
     <img className="screenshot-full img-l" src="/img/user-management/group-sync/saml/tooljet-group.png" alt="SAML Group Sync Config" />
-
-:::note
-Group names are case-sensitive, so make sure group names in ToolJet and your identity provider (e.g., Okta) match exactly. 
-:::
 
 ### 4.	Set permissions in ToolJet
 Assign roles and permissions to each custom group in ToolJet based on your access control needs.
