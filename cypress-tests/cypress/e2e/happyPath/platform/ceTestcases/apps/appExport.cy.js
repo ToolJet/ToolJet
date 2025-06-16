@@ -37,6 +37,7 @@ describe("App Export", () => {
             appReName: `${fake.companyName}-${fake.companyName}-IE-App`,
             dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
         };
+        cy.exec("cd ./cypress/downloads/ && rm -rf *");
         cy.exec("mkdir -p ./cypress/downloads/");
         cy.wait(3000);
 
@@ -79,6 +80,7 @@ describe("App Export", () => {
         ).should("not.exist");
 
         // Re-open the export modal and click the export button
+        cy.wait(2000);
         selectAppCardOption(
             data.appName,
             commonSelectors.appCardOptions(commonText.exportAppOption)
