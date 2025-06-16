@@ -5,14 +5,8 @@ import { FeaturesConfig } from '../types';
 export const FEATURES: FeaturesConfig = {
   [MODULES.SMTP]: {
     [FEATURE_KEY.GET]: {},
-    [FEATURE_KEY.UPDATE]: {
-      auditLogsKey: 'SMTP_PROTOCOL_UPDATE',
-    },
-    [FEATURE_KEY.UPDATE_ENV]: {
-      auditLogsKey: 'SMTP_PROTOCOL_UPDATE',
-    },
-    [FEATURE_KEY.UPDATE_STATUS]: {
-      auditLogsKey: 'SMTP_PROTOCOL_UPDATE',
-    },
+    [FEATURE_KEY.UPDATE]: {},
+    [FEATURE_KEY.UPDATE_ENV]: {},
+    [FEATURE_KEY.UPDATE_STATUS]: {},
   },
 };
