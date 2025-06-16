@@ -14,6 +14,8 @@ const ReleaseVersionButton = function DeployVersionButton() {
   const { moduleId } = useModuleContext();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
+  const { isReleaseVersionEnabled } = getCanPromoteAndRelease();
   const { isVersionReleased, editingVersion, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
     (state) => ({
       isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
@@ -72,7 +74,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
             'btn-loading': isReleasing,
             'released-button': isVersionReleased,
           })}
-          disabled={isVersionReleased}
+          disabled={isVersionReleased || !isReleaseVersionEnabled}
           onClick={onReleaseButtonClick}
         >
           {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
