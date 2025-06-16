@@ -136,7 +136,7 @@ export const ViewerSidebarNavigation = ({
             return page.hidden || page.disabled ? null : (
               <FolderList
                 key={page.handle}
-                onClick={() => switchPageWrapper(page?.id)}
+                onClick={currentPageId !== page.id && (() => switchPageWrapper(page?.id))}
                 selectedItem={page?.id === currentPageId}
                 CustomIcon={!labelStyle?.icon?.hidden && IconElement}
                 customStyles={computeStyles}
