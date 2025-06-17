@@ -1,12 +1,13 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { fullName, generateNextNameAndSlug } from '@helpers/utils.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import {
   getUserStatusAndSource,
   lifecycleEvents,
   USER_STATUS,
   USER_TYPE,
+  WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
@@ -30,8 +31,6 @@ import { UserDetailsService } from './services/user-details.service';
 import { FetchUserResponse, InvitedUserType, RoleUpdate, UserFilterOptions } from './types';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@modules/organizations/constants';
-import { MODULE_INFO } from '@modules/app/constants/module-info';
-import { MODULES } from '@modules/app/constants/modules';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import * as uuid from 'uuid';
@@ -212,7 +211,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async createDefaultOrganization(manager: EntityManager) {
     const { name, slug } = generateNextNameAndSlug('My workspace');
-    return await this.setupOrganizationsUtilService.create(name, slug, null, manager);
+    return await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
   }
 
   addUserAsAdmin(userId: string, organizationId: string, manager: EntityManager) {
@@ -343,7 +342,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async personalWorkspaces(userId: string): Promise<OrganizationUser[]> {
     const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
-      select: ['organizationId', 'invitationToken'],
+      select: ['organizationId', 'invitationToken', 'id'],
       where: { userId },
     });
     const personalWorkspaceArray: OrganizationUser[] = [];
@@ -511,11 +510,33 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         !user || !!user.invitationToken
       );
 
+      const groupsArray = [];
+      if (inviteNewUserDto.groups && inviteNewUserDto.groups.length > 0) {
+        const groupQuery = {
+          organizationId: currentOrganization.id,
+          id: In(inviteNewUserDto.groups),
+        };
+        const orgGroupPermissions = await this.groupPermissionsRepository.find({
+          where: groupQuery,
+          select: ['id', 'name'],
+        });
+        groupsArray.push(...orgGroupPermissions.map((group) => group.name));
+      }
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: currentUser.id,
         organizationId: currentOrganization.id,
-        resourceId: currentOrganization.id,
+        resourceId: updatedUser.id,
         resourceName: updatedUser.email,
+        resourceData: {
+          invited_user: {
+            id: updatedUser.id,
+            email: updatedUser.email,
+            first_name: updatedUser.firstName,
+            last_name: updatedUser.lastName,
+            role: inviteNewUserDto.role,
+            group: groupsArray,
+          },
+        },
       });
 
       return organizationUser;
@@ -578,4 +599,41 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     user.organizationUserSource = organizationUser.source;
     return user;
   }
+
+  addUserToWorkspace = async (
+    user: User,
+    workspace: Organization,
+    manager?: EntityManager
+  ) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Create organization user entry if not exists
+      let existingOrgUser = await this.organizationUsersRepository.findOne({
+        where: {
+          userId: user.id,
+          organizationId: workspace.id,
+        }
+      });
+
+      if(existingOrgUser){ 
+        return existingOrgUser;
+      }
+
+      const organizationUser = await this.organizationUsersRepository.createOne(
+        user,
+        workspace,
+        true,
+        manager,
+        WORKSPACE_USER_SOURCE.SIGNUP
+      );
+
+      // Add end-user role in default workspace if not already present
+      await this.rolesUtilService.addUserRole(
+        workspace.id,
+        { role: USER_ROLE.END_USER, userId: user.id },
+        manager
+      );
+
+      return organizationUser;
+    }, manager);
+  };
 }

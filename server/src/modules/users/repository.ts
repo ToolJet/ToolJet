@@ -18,6 +18,7 @@ import { Organization } from '@entities/organization.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { isSuperAdmin } from '@helpers/utils.helper';
 import * as uuid from 'uuid';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 
 type UserFilterOptions = { searchText?: string; status?: string; page?: number };
 
@@ -166,6 +167,18 @@ export class UserRepository extends Repository<User> {
     manager?: EntityManager
   ): Promise<void> {
     await manager.upsert(UserDetails, updatableParams, conflictsPaths);
+  }
+
+  async getUserWithAdminRole(organizationId: string, manager?: EntityManager): Promise<User | null> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(User, 'user')
+        .innerJoin('user.userGroups', 'groupUsers')
+        .innerJoin('groupUsers.group', 'group')
+        .where('group.name = :groupName', { groupName: USER_ROLE.ADMIN })
+        .andWhere('group.organizationId = :organizationId', { organizationId })
+        .getOne();
+    }, manager || this.manager);
   }
 
   async findByEmail(

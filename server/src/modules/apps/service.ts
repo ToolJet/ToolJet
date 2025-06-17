@@ -29,9 +29,6 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
-import { DataQuery } from '@entities/data_query.entity';
-import { DataSource } from '@entities/data_source.entity';
-import { AppVersion } from '@entities/app_version.entity';
 import { PageService } from './services/page.service';
 import { EventsService } from './services/event.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
@@ -41,6 +38,7 @@ import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -55,7 +53,8 @@ export class AppsService implements IAppsService {
     protected readonly pageService: PageService,
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
-    protected readonly aiUtilService: AiUtilService
+    protected readonly aiUtilService: AiUtilService,
+    protected readonly eventEmitter: EventEmitter2
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
@@ -147,15 +146,18 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    // const prevName = app.name;
     const { name } = appUpdateDto;
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
-      // Can use event emitter
-      //this.appGitUtilService.renameAppOrVersion(user, app.id, prevName);
+      const appRenameDto = {
+        user: user,
+        organizationId: organizationId,
+        app: app,
+        appUpdateDto: appUpdateDto,
+      };
+      await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
-
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
@@ -225,40 +227,7 @@ export class AppsService implements IAppsService {
   }
 
   async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const tooljetDbDataQueries = await manager
-        .createQueryBuilder(DataQuery, 'data_queries')
-        .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
-        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
-        .where('app_versions.app_id = :appId', { appId })
-        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
-        .getMany();
-
-      const uniqTableIds = new Set();
-      tooljetDbDataQueries.forEach((dq) => {
-        if (dq.options?.operation === 'join_tables') {
-          const joinOptions = dq.options?.join_table?.joins ?? [];
-          (joinOptions || []).forEach((join) => {
-            const { table, conditions } = join;
-            if (table) uniqTableIds.add(table);
-            conditions?.conditionsList?.forEach((condition) => {
-              const { leftField, rightField } = condition;
-              if (leftField?.table) {
-                uniqTableIds.add(leftField?.table);
-              }
-              if (rightField?.table) {
-                uniqTableIds.add(rightField?.table);
-              }
-            });
-          });
-        }
-        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
-      });
-
-      return [...uniqTableIds].map((table_id) => {
-        return { table_id };
-      });
-    });
+    return await this.appsUtilService.findTooljetDbTables(appId); //moved to util
   }
 
   async getOne(app: App, user: User): Promise<any> {

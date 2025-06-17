@@ -19,6 +19,10 @@ const CreateVersionModal = ({
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
+  const gitSyncEnabled =
+    orgGit?.org_git?.git_https?.is_enabled ||
+    orgGit?.org_git?.git_ssh?.is_enabled ||
+    orgGit?.org_git?.git_lab?.is_enabled;
 
   const {
     createNewVersionAction,
@@ -168,7 +172,7 @@ const CreateVersionModal = ({
             </div>
           </div>
 
-          {orgGit?.org_git?.is_enabled && (
+          {gitSyncEnabled && (
             <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
               <div>
                 <input

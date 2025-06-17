@@ -22,7 +22,7 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository
-  ) {}
+  ) { }
 
   async getAll(versionId: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -30,9 +30,6 @@ export class DataQueriesService implements IDataQueriesService {
 
     // serialize
     for (const query of queries) {
-      if (query.dataSource.type === DataSourceTypes.STATIC) {
-        delete query['dataSourceId'];
-      }
       delete query['dataSource'];
 
       const decamelizeQuery = decamelizeKeys(query);

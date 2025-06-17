@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EditUserRoleDto } from './dto';
 import { RolesUtilService } from './util.service';
-import { ERROR_HANDLER } from '../group-permissions/constants/error';
-import { _ } from 'lodash';
-import { LicenseUserService } from '@modules/licensing/services/user.service';
-import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
 import { RolesRepository } from './repository';
 import { IRolesService } from './interfaces/IService';
+import { EntityManager } from 'typeorm';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { LicenseUserService } from '@modules/licensing/services/user.service';
+import { ERROR_HANDLER } from '@modules/group-permissions/constants/error';
+import { _ } from 'lodash';
 
 @Injectable()
 export class RolesService implements IRolesService {
