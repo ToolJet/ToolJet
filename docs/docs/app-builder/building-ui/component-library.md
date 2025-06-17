@@ -3,7 +3,9 @@ id: component-library
 title: Component Library
 ---
 
-**Components** in ToolJet are the basic building blocks used to create the interactive user interface. The **Components Library**, located on the right side, contains all [available components](#available-components). Components can be added to the canvas by dragging and dropping them at the desired location.
+**Components** in ToolJet are the basic building blocks used to create the interactive user interface. The **Components Library**, located on the right side, contains all [available components](#available-components). 
+
+Components can be added to the canvas by dragging and dropping them at the desired location.
 
 <img className="screenshot-full img-full" src="/img/app-builder/components/component-library.png" alt="App Builder: Component library"/>
 
