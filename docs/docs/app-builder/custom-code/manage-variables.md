@@ -70,7 +70,7 @@ actions.unsetPageVariable('userPreferences');
 
 ## Use Cases
 
-### Sharing data across pages
+### Sharing Data Across Pages
 
 You can share data across different pages by setting a variable on one page and accessing it on another. 
 
@@ -88,19 +88,17 @@ actions.setVariable("selectedListViewIndex", components.postList.selectedRow.id)
 
 //On the second page
 const postId = actions.getVariable("selectedListViewIndex");
-
-//You can now use the postId variable to fetch the full post from the database and display it on the second page.
 ```
 
-### Setting up form payload for a multi-step form
+### Setting Up Form Payload For A Multi-step Form
 
 If you’re building a multi-step form, each step may require a different set of fields. Each step is on a different page. You can use variables to construct the payload based on the currently active page.
 
 Let’s say your form has three steps: personal details, educational background, and work experience. Each step has its own set of fields. If you want to construct a final payload to be sent as the body when the submit button is clicked on the last step, you can create a RunJS query that checks which step is active and constructs the payload accordingly. Here’s how you might implement this:
 
 ```js
-
 let payload = {};
+
 if (page.handle === "personalDetails") {
     payload.firstName = components.firstName.value;
     payload.lastName = components.lastName.value;
@@ -119,7 +117,6 @@ else if (page.handle === "workExperience") {
 }
 
 actions.setVariable("formPayload", payload);
-
 ```
 
 Now, you can pass this payload to a query that sends it to your backend API endpoint.

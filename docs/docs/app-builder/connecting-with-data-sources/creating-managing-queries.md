@@ -26,7 +26,7 @@ The query configuration interface varies depending on the type of data source yo
 - For the Postgres data source, when using GUI mode (as shown in the image below), you’ll need select the operations you want to perform and then fill out the required fields.
     <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/gui-mode.png" alt="App Builder: configure PostgreSQL queries"/>
 
-- In this example using the AWS S3 data source, we’re performing the **Upload object** operation to upload a file to an S3 bucket. You’ll need to provide details such as the bucket name, key, and other relevant parameters based on the selected operation.
+- In this example using the AWS S3 data source, you can perform the **Upload object** operation to upload a file to an S3 bucket. You’ll need to provide details such as the bucket name, key, and other relevant parameters based on the selected operation.
 
     <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/aws-gui.png" alt="App Builder: configure AWS S3 queries"/>
 

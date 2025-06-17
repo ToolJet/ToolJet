@@ -15,7 +15,7 @@ If you need to transform data from a single query, you can use the [transformati
 
 However, if your use case involves combining data from multiple queries or components, you’ll need to use RunJS or RunPy queries. 
 
-For example, let's say you're building an invetory management application and want to display a list of items along with their current stock levels. You have inventory data stored in a PostgreSQL database and product data coming from a ToolJet Database. To display the item names alongside their current stock levels, you would need to merge the results from these two queries using a RunJS query. Here's how you could do it:
+For example, let's say you're building an inventory management application and want to display a list of items along with their current stock levels. You have inventory data stored in a PostgreSQL database and product data coming from a ToolJet Database. To display the item names alongside their current stock levels, you would need to merge the results from these two queries using a RunJS query as shown below.
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/custom-code/transformation_with_code.png" alt="App Builder: query transformations"/>
 
@@ -35,10 +35,8 @@ With RunJs or RunPy queries, you can write code to manipulate data from multiple
 
 Let's say you want to show a list of users with their order counts. The user data comes from a REST API, and the order data comes from a MySQL database. Now, if you want to show a combined list of users along with their respective order counts, you can use can use a RunJS query to combine the results.
 
-```js title="RunJS Query - usersWithOrderCount"
-
+```js
 // Assuming getUsers and getOrders are already defined as queries
- 
 // Run queries to fetch users and their orders
 await queries.getUsers.run();
 await queries.getOrders.run();
@@ -73,7 +71,6 @@ return usersWithOrderCount;
   { id: 5, name: "Eva", email: "eva@example.com" },
   { id: 6, name: "Frank", email: "frank@example.com" }
 ]
-
 ```
 
 </details>
@@ -94,7 +91,6 @@ return usersWithOrderCount;
   { id: 108, userId: 5, total: 50.00 },
   { id: 109, userId: 4, total: 90.00 }
 ]
-
 ```
 
 </details>
@@ -122,11 +118,8 @@ Now you reference this data in your app, for instance, in a **Table** component.
 
 Let's say you have a list of products and want to group them by category and sort each group by stock (highest to lowest). This helps display organized inventory in a component like a nested list or grouped table. You can a JS query to transform the data.
 
-```js title="JS Query"
-
+```js
 await queries.getProducts.run();
-//
-
 const products = queries.getProducts.getData();
 
 const grouped = {};

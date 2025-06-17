@@ -16,7 +16,7 @@ You can pass query results to a component by using the `{{ }}` syntax. For examp
 
 ### Quick Actions
 In the inspector, when you hover over a property like data, you’ll see two icons, you can see in the above image there are icons besides the data dropdown. These icons allow you to quickly copy either the path or value of that property. Here’s what they do:
-1. Copy Path – Copies the full reference (e.g., `{{queries.getEmployees.data}}`) so you can paste it directly into component fields.
-2. Copy Value – Copies the actual data returned, useful when inspecting values or mocking responses.
+1. Copy Path - Copies the full path (e.g., `{{queries.getEmployees.data}}`) so you can reference it directly into component fields.
+2. Copy Value - Copies the actual data returned, useful when inspecting values or mocking responses.
 
 These icons are available for every property in the inspector, thus makes it easy to wire up your data to components without memorizing query names or manually typing syntax.

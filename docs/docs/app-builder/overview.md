@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-ToolJet’s app builder offers a low-code environment that helps you build and deploy internal tools quickly without extensive coding knowledge. You can build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
+ToolJet’s app builder offers an AI native, low-code environment that helps you build and deploy internal tools quickly without extensive coding knowledge. You can build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
 
 Teams across engineering, product, operations, and business can build applications with ease, following four simple steps to get up and running in minutes.
 
@@ -58,7 +58,7 @@ This gives developers the ability to handle complex scenarios with code, while s
 
 Combining the speed of low-code with the ability to write custom code where needed, you can build any buisness application, from simple dashboards to complex workflows, all in one platform.
 
-## Usecases
+## Use Cases
 Here are some examples of what you can achieve with ToolJet:
 * Store inventory tracker
 * Warehouse picking & packing app
@@ -73,4 +73,4 @@ Here are some examples of what you can achieve with ToolJet:
 * Time sheet tracker
 * Software license management app
 
-Learn more about these usecases here: [https://www.tooljet.ai/templates](https://www.tooljet.ai/templates)
+Learn more about these use cases here: [https://www.tooljet.ai/templates](https://www.tooljet.ai/templates)

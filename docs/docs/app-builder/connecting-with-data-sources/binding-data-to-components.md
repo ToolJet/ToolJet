@@ -13,21 +13,23 @@ For example, you are working on a Employee Directory app where you want to show 
 <img className="screenshot-full img-full" style={{marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/binding.png" alt="App Builder: bininding data to components"/>
 
 
-ToolJet also supports JavaScript expressions inside `{{ }}`, so you can manipulate the data on the fly. Here are a few usecases:
+ToolJet also supports JavaScript expressions inside `{{ }}`, so you can manipulate the data on the go. Here are a few usecases:
 
 ## Use cases
 ### Filtering Data
 If you want to show only employees from the ‘Engineering’ department:
 
 ```js
-{{ queries.listEmployees.data.filter(employee => employee.department === 'Engineering') }}
+{{ queries.listEmployees.data
+      .filter(employee => employee.department === 'Engineering') }}
 ```
 ### Map Data
 
 If you want to show only employee names in a dropdown:
 
 ```js
-{{ queries.listEmployees.data.map(employee => employee.name) }}
+{{ queries.listEmployees.data
+      .map(employee => employee.name) }}
 ```
 
 ### Conditional Rendering
@@ -35,7 +37,7 @@ If you want to show only employee names in a dropdown:
 If you want to show a greeting if an employee is selected in a table:
 
 ```js
-{{ table1.selectedRow ? `Hello, ${table1.selectedRow.name}` : "" }}
+{{ components.table1.selectedRow ? `Hello, ${components.table1.selectedRow.name}` : "" }}
 ```
 
 ### Chaining Expressions

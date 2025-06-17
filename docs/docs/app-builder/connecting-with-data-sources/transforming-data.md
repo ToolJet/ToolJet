@@ -50,14 +50,14 @@ If you’re more comfortable with Python, just switch the language in the transf
 
 ```python
 [
-    {"id":item.id,
+    {"id":item.['id'],
      "name": item['name'],
-     "designation": item['designation']}
-     for item in data
+     "designation": item['designation']
+     } for item in data
 ]
 ```
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_python.png" alt="App Builder: query transformations"/>
 
 
-Instead of changing APIs or writing extra code in every component, you can transform the data once at the query level. This makes your app easier to build and maintain.
+Transformations provide you with an easy way to clean, filter, and shape your data before using it in your apps.

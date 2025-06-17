@@ -1,5 +1,5 @@
 ---
-title: Fx for dynamic behaviour
+title: Fx For Dynamic Behaviour
 id: fx-dynamic-behaviour
 ---
 
