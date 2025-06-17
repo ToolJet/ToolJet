@@ -12,7 +12,7 @@ const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) { }
+  constructor(protected eventHandlerService: EventsService) {}
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -186,7 +186,7 @@ export class ComponentsService implements IComponentsService {
     }, appVersionId);
   }
 
-  async getAllComponents(pageId: string, manager: EntityManager) {
+  async getAllComponents(pageId: string, manager?: EntityManager) {
     // need to get all components for a page with their layouts
 
     return dbTransactionWrap(async (manager: EntityManager) => {
