@@ -9,6 +9,36 @@ import { v4 as uuidv4 } from 'uuid';
 import InputComponent from '@/components/ui/Input/Index';
 import { isEmpty } from 'lodash';
 
+const ensureUniqueIds = (node, parentId = '') => {
+  if (!node) return node;
+
+  const seenIds = new Set();
+  const processNode = (currentNode, currentParentId = '') => {
+    if (!currentNode) return currentNode;
+
+    const newChildren = currentNode.children?.map((child, index) => {
+      const baseId = child.id;
+      let uniqueId = baseId;
+      let counter = 1;
+
+      while (seenIds.has(uniqueId)) {
+        uniqueId = `${baseId}_${counter}`;
+        counter++;
+      }
+
+      seenIds.add(uniqueId);
+      return processNode({ ...child, id: uniqueId }, uniqueId);
+    });
+
+    return {
+      ...currentNode,
+      children: newChildren,
+    };
+  };
+
+  return processNode(node, parentId);
+};
+
 const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths = new Set() }) => {
   const searchValue = useStore((state) => state.inspectorSearchValue, shallow);
   const getComponentIdFromName = useStore((state) => state.getComponentIdFromName, shallow);
@@ -81,7 +111,8 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     return uuidv4();
   }, [JSON.stringify(data), selectedNodePath]);
 
-  const flattendedData = flattenTree(data);
+  const processedData = useMemo(() => ensureUniqueIds(data), [data]);
+  const flattendedData = flattenTree(processedData);
 
   const backFn = () => {
     setSelectedNodePath(null);

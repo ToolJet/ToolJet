@@ -122,6 +122,8 @@ $btn-dark-color: #FFFFFF;
 .page-selector-panel-body {
   padding: 4px;
   border-right: 1px solid #DFE3E6;
+  padding-left:16px;
+  padding-right:16px;
 
   &.dark-theme {
     border-right: 1px solid var(--slate7);

@@ -84,8 +84,9 @@ export const extractComponentName = (path) => {
   }
 };
 
-export const copyToClipboard = (data) => {
+export const copyToClipboard = (data, includeQuotes = true) => {
   const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
-  navigator.clipboard.writeText(stringified);
+  const finalText = includeQuotes ? stringified : stringified.slice(1, -1);
+  navigator.clipboard.writeText(finalText);
   return toast.success('Copied to the clipboard', { position: 'top-center' });
 };

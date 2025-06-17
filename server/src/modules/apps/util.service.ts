@@ -11,6 +11,7 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
@@ -40,8 +41,10 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
+import { RequestContext } from '@modules/request-context/service';
+import { RenameAppOrVersionDto } from '@modules/app-git/dto';
+import got from 'got';
 import { DataQuery } from '@entities/data_query.entity';
-import { DataSource } from '@entities/data_source.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -652,5 +655,13 @@ export class AppsUtilService implements IAppsUtilService {
         return { table_id };
       });
     });
+  }
+
+  async findByAppName(name: string, organizationId: string): Promise<App> {
+    return this.appRepository.findByAppName(name, organizationId);
+  }
+
+  async findByAppId(appId: string): Promise<App> {
+    return this.appRepository.findByAppId(appId);
   }
 }

@@ -60,7 +60,7 @@ RUN npm --prefix server run build
 FROM debian:11
 
 RUN apt-get update -yq \
-    && apt-get install curl gnupg zip -yq \
+    && apt-get install curl wget gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt -y install redis \
     && apt-get clean -y
@@ -80,13 +80,29 @@ RUN echo "[supervisord]\n" \
     "nodaemon=true\n" \
     "\n" \
     "[program:postgrest]\n" \
-    "command=/bin/postgrest \n" \
+    "command=/bin/postgrest\n" \
     "autostart=true\n" \
     "autorestart=true\n" \
     "stdout_logfile=/dev/stdout\n" \
     "stderr_logfile=/dev/stderr\n" \
     "stdout_logfile_maxbytes=0\n" \
     "stderr_logfile_maxbytes=0\n" \
+    "\n" \
+    "[program:neo4j]\n" \
+    "command=neo4j console\n" \
+    "autostart=true\n" \
+    "autorestart=unexpected\n" \
+    "startsecs=30\n" \
+    "startretries=999\n" \
+    "priority=90\n" \
+    "exitcodes=0,1,2\n" \
+    "stopsignal=SIGTERM\n" \
+    "stopasgroup=true\n" \
+    "killasgroup=true\n" \
+    "redirect_stderr=true\n" \
+    "stdout_logfile=/var/log/neo4j/neo4j.log\n" \
+    "stdout_logfile_backups=10\n" \
+    "stderr_capture_maxbytes=20MB\n" \
     "\n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
 
 # Create a wrapper for PostgREST to prefix its logs
@@ -113,6 +129,48 @@ RUN apt-get update && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean
+
+# Install Neo4j
+RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
+    echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
+    apt-get update && \
+    apt-get install -y neo4j=1:5.26.6 && \
+    apt-mark hold neo4j && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set the necessary Neo4j environment variables
+ENV NEO4J_HOME=/opt/neo4j
+ENV NEO4J_CONF=/etc/neo4j
+ENV NEO4J_DATA=/var/lib/neo4j/data
+ENV NEO4J_LOG=/var/log/neo4j
+ENV NEO4J_PLUGIN=/var/lib/neo4j/plugins
+ENV NEO4J_IMPORT=/var/lib/neo4j/import
+
+# Create the necessary directories for Neo4j
+RUN mkdir -p /data/db /data/logs /data/plugins
+RUN mkdir -p /opt/neo4j/plugins
+
+# Configure APOC plugin for Neo4j
+ENV NEO4J_dbms_active_plugins=apoc
+
+# Download and install APOC plugin for Neo4j 5.x (BEFORE creating user)
+RUN mkdir -p /var/lib/neo4j/plugins && \
+    wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
+    # Try to download extended version
+    (wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-extended.jar || \
+     wget -P /var/lib/neo4j/plugins https://neo4j-contrib.github.io/neo4j-apoc-procedures/5.26.6/apoc-5.26.6-extended.jar || \
+     echo "Extended JAR not available, continuing with core only")
+
+# Configure Neo4j with APOC
+RUN echo "dbms.security.procedures.unrestricted=apoc.*" >> /etc/neo4j/neo4j.conf && \
+    echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" >> /etc/neo4j/neo4j.conf && \
+    echo "dbms.directories.plugins=/var/lib/neo4j/plugins" >> /etc/neo4j/neo4j.conf
+
+# Configure Neo4j to use authentication
+RUN if [ -f "/etc/neo4j/neo4j.conf" ]; then \
+    sed -i '/dbms.security.auth_enabled/d' /etc/neo4j/neo4j.conf && \
+    echo "dbms.security.auth_enabled=true" >> /etc/neo4j/neo4j.conf; \
+fi
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -149,6 +207,7 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+COPY --from=builder /app/server/src/assets ./app/server/src/assets
 
 COPY  ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
@@ -161,14 +220,21 @@ RUN useradd --create-home --home-dir /home/appuser appuser \
     && chmod -R g=u /app \
     && chmod -R g=u /home
 
-# Create directory /home/appuser and set ownership to appuser (Refer doc for understanding the changes https://app.clickup.com/37484951/v/dc/13qycq-4081)
+RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \
+    chown -R appuser:0 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
+    chmod -R 770 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
+    chmod -R 644 /var/lib/neo4j/plugins/*.jar && \
+    chown -R appuser:0 /var/lib/neo4j/plugins && \
+    chmod 755 /var/lib/neo4j/plugins
+
+# Create directory /home/appuser and set ownership to appuser
 RUN mkdir -p /home/appuser \
     && chown -R appuser:0 /home/appuser \
     && chmod g+s /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
 
-# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser (Refer doc for understanding the changes https://app.clickup.com/37484951/v/dc/13qycq-4081)
+# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
 RUN mkdir -p /tmp/.npm/npm-cache/ \
     && chown -R appuser:0 /tmp/.npm/npm-cache/ \
     && chmod g+s /tmp/.npm/npm-cache/ \
@@ -205,6 +271,9 @@ RUN mkdir -p /var/lib/postgrest /var/log/postgrest /etc/postgrest \
     && chmod -R g=u /var/lib/postgrest /var/log/postgrest /etc/postgrest
 
 ENV HOME=/home/appuser
+
+# Installing git for simple git commands
+RUN apt-get update && apt-get install -y git && apt-get clean
 
 # Switch back to appuser
 USER appuser

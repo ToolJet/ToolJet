@@ -1527,7 +1527,8 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   turnOffAutoComputeLayout: async (moduleId = 'canvas') => {
-    const { app, getCurrentPageId, currentVersionId } = get();
+    const { appStore, getCurrentPageId, currentVersionId } = get();
+    const app = appStore.modules[moduleId].app;
     const currentPageId = getCurrentPageId(moduleId);
     set(
       (state) => {

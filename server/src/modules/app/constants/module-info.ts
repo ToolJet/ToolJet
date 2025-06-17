@@ -38,6 +38,7 @@ import { FEATURES as WHITE_LABELLING_FEATURES } from '@modules/white-labelling/c
 import { FEATURES as APP_PERMISSIONS_FEATURES } from '@modules/app-permissions/constants/features';
 import { FEATURES as EXTERNAL_API_FEATURES } from '@modules/external-apis/constants/feature';
 import { FEATURES as MODULE_FEATURES } from '@modules/modules/constants/feature';
+import { FEATURES as APP_GIT_FEATURES } from '@modules/app-git/constants/feature';
 
 const GROUP_PERMISSIONS_FEATURES =
   getTooljetEdition() === TOOLJET_EDITIONS.EE ? GROUP_PERMISSIONS_FEATURES_EE : GROUP_PERMISSIONS_FEATURES_CE;
@@ -81,4 +82,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...AUDIT_LOGS_FEATURES,
   ...EXTERNAL_API_FEATURES,
   ...MODULE_FEATURES,
+  ...APP_GIT_FEATURES,
 };

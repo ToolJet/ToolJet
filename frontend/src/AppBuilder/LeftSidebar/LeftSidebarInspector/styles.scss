@@ -278,3 +278,11 @@
 		}
 	}
 }
+
+.node-label-no-data {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--text-placeholder, #858C94);
+	
+}

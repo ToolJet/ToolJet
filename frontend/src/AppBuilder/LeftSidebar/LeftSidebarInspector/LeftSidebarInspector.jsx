@@ -9,6 +9,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useIconList from './useIconList';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { formatInspectorDataMisc, formatInspectorQueryData } from './utils';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 
 import './styles.scss';
 
@@ -121,6 +122,22 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
       });
     }
 
+    const addNoDataChild = (data) => {
+      const types = data.children;
+      types.forEach((type) => {
+        if (type.children.length === 0) {
+          type.children.push({
+            id: `empty-${type.metadata.type}`,
+            name: `No ${type.metadata.type} found`,
+            children: [],
+            metadata: { noData: true },
+          });
+        }
+      });
+    };
+
+    addNoDataChild(jsontreeData);
+
     return jsontreeData;
   }, [
     sortedComponents,
@@ -154,12 +171,14 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
       </HeaderSection>
 
       <div className="card-body p-1 pb-5">
-        <JSONTreeViewerV2
-          data={memoizedJSONData}
-          iconsList={iconsList}
-          darkMode={darkMode}
-          searchablePaths={searchablePaths.current}
-        />
+        <ErrorBoundary>
+          <JSONTreeViewerV2
+            data={memoizedJSONData}
+            iconsList={iconsList}
+            darkMode={darkMode}
+            searchablePaths={searchablePaths.current}
+          />
+        </ErrorBoundary>
       </div>
     </div>
   );

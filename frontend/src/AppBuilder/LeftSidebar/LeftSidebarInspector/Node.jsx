@@ -124,20 +124,28 @@ export const Node = (props) => {
       <div
         onClick={() => onSelect(props)}
         className={cx('node-content', {
-          'node-content-hoverable': level !== 1,
+          'node-content-hoverable': level !== 1 && !metadata.noData,
           'node-content-active': actionClicked,
         })}
       >
         {nodeIcon && <div className="node-icon">{nodeIcon}</div>}
         <div className="node-label" data-cy={`inspector-${type}-node`}>
-          <OverflowTooltip whiteSpace="normal" placement="top" style={{ height: '100%', width: '80%' }}>
-            <Highlighter
-              highlightClassName="node-highlight"
-              searchWords={[searchValue]}
-              autoEscape={true}
-              textToHighlight={element.name}
-            />
-          </OverflowTooltip>
+          {metadata.noData && (
+            <div className="node-label-no-data">
+              <SolidIcon name="removefolder" fill="var(--icon-weak)" width="14" height="14" />
+              {element.name}
+            </div>
+          )}
+          {!metadata.noData && (
+            <OverflowTooltip whiteSpace="normal" placement="top" style={{ height: '100%', width: '80%' }}>
+              <Highlighter
+                highlightClassName="node-highlight"
+                searchWords={[searchValue]}
+                autoEscape={true}
+                textToHighlight={element.name}
+              />
+            </OverflowTooltip>
+          )}
         </div>
         <div className="node-actions" style={{ marginRight: 10 + nodeSpecificFilteredActions.length * 10 }}>
           <HiddenOptions

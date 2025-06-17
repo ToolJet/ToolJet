@@ -28,6 +28,7 @@ import toast from 'react-hot-toast';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
+import { noop } from 'lodash';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -69,7 +70,7 @@ export const Container = React.memo(
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
-    const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow);
+    const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
 
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';

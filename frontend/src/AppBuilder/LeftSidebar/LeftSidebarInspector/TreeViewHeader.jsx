@@ -22,7 +22,7 @@ export const TreeViewHeader = (props) => {
   };
 
   const copyPath = () => {
-    generalActions[0].dispatchAction(data?.selectedNodePath);
+    generalActions[0].dispatchAction(`{{${data?.selectedNodePath}}}`, false);
   };
 
   const copyValue = () => {
