@@ -56,7 +56,7 @@ export class AppsService implements IAppsService {
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
     protected readonly aiUtilService: AiUtilService,
-    protected readonly componentsService: ComponentsService
+    protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2
   ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
