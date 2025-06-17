@@ -5,7 +5,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm i -g npm@10.9.2
 RUN mkdir -p /app
-# RUN npm cache clean --force
+RUN npm cache clean --force
 
 WORKDIR /app
 
