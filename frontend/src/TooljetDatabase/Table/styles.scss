@@ -15,8 +15,8 @@
 //   margin-right: 6px !important;
 // }
 
-.tj-database-column-header:hover{
-  .primaryKeyTooltip{
+.tj-database-column-header:hover {
+  .primaryKeyTooltip {
     width: 88% !important;
   }
 }
@@ -57,6 +57,9 @@
     }
 
     &:last-child {
+      border-right: 0px;
+      border-color: inherit;
+
       &::before {
         content: '';
         position: absolute;
@@ -68,8 +71,6 @@
         background-color: rgba(101, 109, 119, 0.16) !important;
       }
 
-      border-right: 0px;
-      border-color: inherit;
     }
   }
 
@@ -112,6 +113,10 @@
     }
 
     &:last-child {
+
+      border-right: 0px;
+      border-color: inherit;
+
       &::before {
         content: '';
         position: absolute;
@@ -122,9 +127,6 @@
         height: 100%;
         background-color: rgba(101, 109, 119, 0.16) !important;
       }
-
-      border-right: 0px;
-      border-color: inherit;
     }
   }
 
@@ -168,18 +170,20 @@
         width: 80%;
       }
     }
-    &:has(.tjdb-dashboard-codehinter-wrapper-cell){
+
+    &:has(.tjdb-dashboard-codehinter-wrapper-cell) {
       padding: 0 !important;
     }
-    
-      .tjdb-dashboard-codehinter-wrapper-cell{
-        .cm-editor{
-          border: 0 !important;
-        }
-        .codehinter-input.focused .cm-editor{
-          border: 0 !important;
-        }
-      
+
+    .tjdb-dashboard-codehinter-wrapper-cell {
+      .cm-editor {
+        border: 0 !important;
+      }
+
+      .codehinter-input.focused .cm-editor {
+        border: 0 !important;
+      }
+
     }
   }
 
@@ -191,10 +195,10 @@
         padding-bottom: 0px !important;
 
         .cell-menu-text {
-          white-space: nowrap ;
-          overflow: hidden ;
-          text-overflow: ellipsis ;
-          width: 85% ;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 85%;
           color: var(--slate11) !important;
           cursor: default;
           border-radius: 6px;
@@ -209,6 +213,7 @@
     .tjdb-td-wrapper {
       div {
         padding-bottom: 0px !important;
+
         .cell-menu-text {
           white-space: nowrap;
           overflow: hidden;
@@ -431,13 +436,15 @@
     background: #1C252F !important;
   }
 
-  &::-webkit-scrollbar{
+  &::-webkit-scrollbar {
     display: none;
   }
-  &::-webkit-scrollbar-track{
+
+  &::-webkit-scrollbar-track {
     background-color: transparent;
   }
-  &:hover::-webkit-scrollbar{
+
+  &:hover::-webkit-scrollbar {
     display: block;
   }
 }

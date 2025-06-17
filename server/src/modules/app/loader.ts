@@ -111,18 +111,17 @@ export class AppModuleLoader {
      * █                                                                             █
      * ███████████████████████████████████████████████████████████████████████████████
      */
-    const dynamicModulePromises: Promise<DynamicModule>[] = [];
+    const dynamicModules: Promise<DynamicModule>[] = [];
 
     try {
       const { LogToFileModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/log-to-file/module`);
       const { AuditLogsModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`);
-      dynamicModulePromises.push(LogToFileModule.register(configs));
-      dynamicModulePromises.push(AuditLogsModule.register(configs));
+      dynamicModules.push(LogToFileModule.register(configs));
+      dynamicModules.push(AuditLogsModule.register(configs));
     } catch (error) {
       console.error('Error loading dynamic modules:', error);
     }
 
-    const dynamicModules = await Promise.all(dynamicModulePromises);
-    return [...staticModules, ...dynamicModules] as (DynamicModule | Type<any>)[];
+    return [...staticModules, ...dynamicModules] as (Type<any> | DynamicModule)[];
   }
 }
