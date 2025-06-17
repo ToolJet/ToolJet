@@ -9,6 +9,7 @@ import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import ComponentModuleTab from './ComponentModuleTab';
 import { ModuleManager } from '@/modules/Modules/components';
 
@@ -30,7 +31,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
-
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const handleSearchQueryChange = useCallback(
     debounce((value) => {
       setSearchQuery(value);

@@ -14,6 +14,7 @@ import EditorHeader from '@/AppBuilder/Header';
 import LeftSidebar from '@/AppBuilder/LeftSidebar';
 import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
@@ -25,6 +26,7 @@ import { shallow } from 'zustand/shallow';
 // TODO: split Loader into separate component and remove editor loading state from Editor
 export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType = 'front-end' }) => {
   useAppData(appId, moduleId, darkMode);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const isModuleEditor = appType === 'module';
@@ -54,9 +56,10 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           </Suspense>
           {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
           <DndProvider backend={HTML5Backend}>
-            <AppCanvas appId={appId} />
+            <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} />
             <QueryPanel darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} />
+            <RightSidebarToggle darkMode={darkMode} />
+            {isRightSidebarOpen && <RightSideBar darkMode={darkMode} />}{' '}
           </DndProvider>
           <Popups darkMode={darkMode} />
         </ModuleProvider>

@@ -1438,7 +1438,6 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
   setSelectedComponents: (components) => {
-    get().togglePageSettingMenu(false);
     set(
       (state) => {
         state.selectedComponents = components;
@@ -1511,7 +1510,13 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   handleCanvasContainerMouseUp: (e) => {
-    const { selectedComponents, clearSelectedComponents, setActiveRightSideBarTab } = get();
+    const {
+      selectedComponents,
+      clearSelectedComponents,
+      setActiveRightSideBarTab,
+      setRightSidebarOpen,
+      isRightSidebarPinned,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -1523,11 +1528,15 @@ export const createComponentsSlice = (set, get) => ({
     ) {
       clearSelectedComponents();
       setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      // if (!isRightSidebarPinned) {
+      //   setRightSidebarOpen(false);
+      // }
     }
   },
 
   turnOffAutoComputeLayout: async (moduleId = 'canvas') => {
-    const { app, getCurrentPageId, currentVersionId } = get();
+    const { appStore, getCurrentPageId, currentVersionId } = get();
+    const app = appStore.modules[moduleId].app;
     const currentPageId = getCurrentPageId(moduleId);
     set(
       (state) => {

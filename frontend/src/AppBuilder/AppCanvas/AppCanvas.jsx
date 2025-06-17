@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Container } from './Container';
 import Grid from './Grid';
 import { EditorSelecto } from './Selecto';
@@ -17,8 +17,10 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
+import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
+import { resolveReferences } from '@/_helpers/utils';
 
-export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) => {
+export const AppCanvas = ({ appId, isViewer = false, switchDarkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
@@ -41,9 +43,31 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
-  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  // const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned, shallow);
+  const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
+    localStorage.getItem('isPagesSidebarPinned') !== 'false'
+  );
+
+  const { currentPageId, globalSettings, pages, pageSettings, homePageId, switchPage } = useStore(
+    (state) => ({
+      currentPageId: state.currentPageId,
+      globalSettings: state.globalSettings,
+      pages: state.modules.canvas.pages,
+      pageSettings: state.pageSettings,
+      homePageId: state.homePageId,
+      switchPage: state.switchPage,
+    }),
+    shallow
+  );
+
+  const showHeader = !globalSettings?.hideHeader;
+  const { definition: { styles = {}, properties = {} } = {} } = pageSettings ?? {};
+  const { position, disableMenu } = properties ?? {};
+  const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
   const hideSidebar = isModuleMode || isPagesSidebarHidden || appType === 'module';
 
@@ -80,7 +104,7 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId]);
 
-  const styles = useMemo(() => {
+  const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
@@ -101,11 +125,15 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
       height: currentMode === 'edit' ? canvasContainerHeight : '100%',
       background: canvasBgColor,
       marginLeft:
-        isViewerSidebarPinned && !hideSidebar && currentLayout !== 'mobile' && currentMode !== 'edit'
-          ? pageSidebarStyle === 'icon'
-            ? '65px'
-            : '210px'
-          : 'auto',
+        isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
+          ? pageSidebarStyle === 'icon' && position !== 'side'
+            ? '44px'
+            : '226px'
+          : isPagesSidebarHidden
+          ? 'auto'
+          : position == 'top'
+          ? 'auto'
+          : '44px',
     };
   }, [
     currentMode,
@@ -114,10 +142,17 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
     editorMarginLeft,
     canvasContainerHeight,
     isViewerSidebarPinned,
-    hideSidebar,
+    isPagesSidebarHidden,
     currentLayout,
+    position,
     pageSidebarStyle,
   ]);
+
+  const toggleSidebarPinned = useCallback(() => {
+    const newValue = !isViewerSidebarPinned;
+    setIsSidebarPinned(newValue);
+    localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
+  }, [isViewerSidebarPinned]);
 
   return (
     <div
@@ -127,48 +162,64 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
     >
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
-      <div
-        ref={canvasContainerRef}
-        className={cx(
-          'canvas-container align-items-center page-container',
-          { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
-          { 'overflow-x-auto': (currentMode === 'edit' && isSidebarOpen) || currentMode === 'view' },
-          { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
+      <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
+        {!isPagesSidebarHidden && (
+          <PagesSidebarNavigation
+            showHeader={showHeader}
+            isMobileDevice={currentLayout === 'mobile'}
+            pages={pages}
+            currentPageId={currentPageId ?? homePageId}
+            switchPage={switchPage}
+            height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
+            switchDarkMode={switchDarkMode}
+            isSidebarPinned={isViewerSidebarPinned}
+            toggleSidebarPinned={toggleSidebarPinned}
+          />
         )}
-        style={styles}
-      >
         <div
-          style={{
-            minWidth: isModuleMode ? '100%' : `calc((100vw - 300px) - 48px)`,
-          }}
-          className={`app-${appId} _tooljet-page-${getPageId()}`}
-        >
-          {currentMode === 'edit' && (
-            <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
+          ref={canvasContainerRef}
+          className={cx(
+            'canvas-container align-items-center page-container',
+            { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
+            { 'overflow-x-auto': currentMode === 'edit' },
+            { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
           )}
-          <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-          <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
-            {environmentLoadingState !== 'loading' && (
-              <div>
-                <Container
-                  id={moduleId}
-                  gridWidth={gridWidth}
-                  canvasWidth={canvasWidth}
-                  canvasHeight={canvasHeight}
-                  darkMode={isAppDarkMode}
-                  canvasMaxWidth={canvasMaxWidth}
-                  isViewerSidebarPinned={isViewerSidebarPinned}
-                  pageSidebarStyle={pageSidebarStyle}
-                  appType={appType}
-                />
-                {appType !== 'module' && <div id="component-portal" />}
-              </div>
+          style={canvasContainerStyles}
+        >
+          <div
+            style={{
+              minWidth: isModuleMode ? '100%' : `calc((100vw - 300px) - 48px)`,
+            }}
+            className={`app-${appId} _tooljet-page-${getPageId()}`}
+          >
+            {currentMode === 'edit' && (
+              <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
             )}
+            <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+            <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
+              {environmentLoadingState !== 'loading' && (
+                <div>
+                  <Container
+                    id="canvas"
+                    gridWidth={gridWidth}
+                    canvasWidth={canvasWidth}
+                    canvasHeight={canvasHeight}
+                    darkMode={isAppDarkMode}
+                    canvasMaxWidth={canvasMaxWidth}
+                    isViewerSidebarPinned={isViewerSidebarPinned}
+                    pageSidebarStyle={pageSidebarStyle}
+                    pagePositionType={position}
+                    appType={appType}
+                  />
+                  {appType !== 'module' && <div id="component-portal" />}
+                </div>
+              )}
 
-            {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-              <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
-            )}
-          </HotkeyProvider>
+              {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
+                <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+              )}
+            </HotkeyProvider>
+          </div>
         </div>
       </div>
       {currentMode === 'edit' && <EditorSelecto />}

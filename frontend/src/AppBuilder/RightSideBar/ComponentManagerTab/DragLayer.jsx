@@ -11,6 +11,11 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { noop } from 'lodash';
 
 export const DragLayer = ({ index, component, isModuleTab = false }) => {
+  const [isRightSidebarOpen, toggleRightSidebar] = useStore(
+    (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
+    shallow
+  );
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
   const [{ isDragging }, drag, preview] = useDrag(
@@ -28,11 +33,14 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
 
   useEffect(() => {
     if (isDragging && !isModuleEditor) {
+      if (!isRightSidebarPinned) {
+        toggleRightSidebar(!isRightSidebarOpen);
+      }
       setShowModuleBorder(true);
     } else {
       setShowModuleBorder(false);
     }
-  }, [isDragging, setShowModuleBorder, isModuleEditor]);
+  }, [isDragging, setShowModuleBorder, isModuleEditor, toggleRightSidebar]);
 
   // const size = isModuleTab
   //   ? component.module_container.layouts[currentLayout]
@@ -55,7 +63,7 @@ const CustomDragLayer = ({ size }) => {
     currentOffset: monitor.getSourceClientOffset(),
     item: monitor.getItem(),
   }));
-
+  console.log(currentOffset, 'currentOffset');
   if (!currentOffset) return null;
 
   const canvasWidth = item?.canvasWidth;

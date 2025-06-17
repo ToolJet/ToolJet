@@ -23,12 +23,12 @@ export class PageService implements IPageService {
     protected eventHandlerService: EventsService
   ) {}
 
-  async findPagesForVersion(appVersionId: string): Promise<Page[]> {
+  async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     // const allPages = await this.pageRepository.find({ where: { appVersionId }, order: { index: 'ASC' } });
-    const allPages = await this.pageHelperService.fetchPages(appVersionId);
+    const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id);
+        const components = await this.componentsService.getAllComponents(page.id, manager);
         delete page.appVersionId;
         return { ...page, components };
       })
@@ -54,7 +54,7 @@ export class PageService implements IPageService {
     // TODO - Should use manager here - multiple db operations found
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
-        where: { id: pageId, versionId: appVersionId },
+        where: { id: pageId, appVersionId },
       });
 
       if (!pageToClone) {
@@ -81,6 +81,7 @@ export class PageService implements IPageService {
       newPage.index = pageToClone.index + 1;
       newPage.appVersionId = appVersionId;
       newPage.autoComputeLayout = true;
+      newPage.type = pageToClone.type;
 
       const clonedpage = await manager.save(newPage);
 
@@ -255,7 +256,6 @@ export class PageService implements IPageService {
   }
 
   async updatePage(pageUpdates: UpdatePageDto, appVersionId: string) {
-    console.log({ pageUpdates });
     if (Object.keys(pageUpdates.diff).length > 1) {
       throw new Error('Can not update multiple pages');
     }
@@ -264,7 +264,6 @@ export class PageService implements IPageService {
       const currentPage = await manager.findOne(Page, {
         where: { id: pageUpdates.pageId },
       });
-      console.log({ currentPage });
 
       if (!currentPage) {
         throw new Error('Page not found');

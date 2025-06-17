@@ -11,7 +11,7 @@ import { IPageHelperService } from '../interfaces/services/IPageUtilService';
 export class PageHelperService implements IPageHelperService {
   constructor(protected eventHandlerService: EventsService, protected licenseTermsService: LicenseTermsService) {}
 
-  public async fetchPages(appVersionId: string): Promise<Page[]> {
+  public async fetchPages(appVersionId: string, manager: EntityManager): Promise<Page[]> {
     let allPages = [];
     return await dbTransactionWrap(async (manager: EntityManager) => {
       allPages = await manager.find(Page, {
@@ -77,6 +77,10 @@ export class PageHelperService implements IPageHelperService {
     page.appVersionId = appVersionId;
     page.autoComputeLayout = true;
     page.index = dto.index;
+    page.appId = dto.appId;
+    page.url = dto.url;
+    page.type = dto.type;
+    page.openIn = dto.openIn;
     return page;
   }
 

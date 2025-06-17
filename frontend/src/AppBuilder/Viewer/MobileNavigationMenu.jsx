@@ -6,8 +6,12 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 import useStore from '@/AppBuilder/_stores/store';
-import { buildTree } from '../LeftSidebar/PageMenu/Tree/utilities';
+import { buildTree } from '../RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
 import * as Icons from '@tabler/icons-react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { redirectToDashboard } from '@/_helpers/routes';
+import AppLogo from '@/_components/AppLogo';
+import { Link } from 'react-router-dom';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
@@ -33,7 +37,7 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
           <div className={`card mb-1`}>
             <div className="card-body">
               <IconElement />
-              <span style={{ color: 'var(--slate12)' }}>{_.truncate(pageGroup?.name, { length: 22 })}</span>
+              <span>{_.truncate(pageGroup?.name, { length: 22 })}</span>
               <svg
                 className={`page-group-collapse ${isExpanded ? 'expanded' : 'collapsed'}`}
                 width={17}
@@ -66,7 +70,7 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
                   <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
                     <div className="card-body">
                       <IconElement />
-                      <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                      <span>{_.truncate(page?.name, { length: 22 })}</span>
                     </div>
                   </div>
                 </div>
@@ -108,12 +112,12 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
               <div
                 key={page.handle}
                 onClick={() => handlepageSwitch(page?.id)}
-                className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
               >
-                <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
+                <div className={`card ${page?.id === currentPageId ? 'active' : ''}`}>
                   <div className="card-body">
                     <IconElement />
-                    <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                    <span>{_.truncate(page?.name, { length: 22 })}</span>
                   </div>
                 </div>
               </div>
@@ -141,13 +145,6 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
     switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), moduleId);
   };
   var styles = {
-    bmBurgerButton: {
-      position: 'absolute',
-      width: '16px',
-      height: '16px',
-      top: '13px',
-      right: '1rem',
-    },
     bmBurgerBars: {
       background: 'var(--slate12)',
     },
@@ -162,11 +159,11 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       height: '100%',
       width: 'calc(100% - 20%)',
       top: 0,
-      right: 0,
+      left: 0,
     },
     bmMenu: {
       background: darkMode ? '#202B37' : '#fff',
-      padding: '0',
+      padding: '16px 8px',
     },
     bmMorphShape: {
       fill: '#373a47',
@@ -203,17 +200,31 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
         pageWrapId={'page-wrap'}
         outerContainerId={'outer-container'}
         onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
-        right
+        customBurgerIcon={
+          <div className="icon-btn">
+            <SolidIcon fill="var(--icon-strong)" name="menu" />
+          </div>
+        }
+        right={false}
       >
         <div className="pt-0">
-          <Header className={'mobile-header'}>
-            <div className="py-2 row w-100">
-              <div className="col">
-                <span style={{ color: 'var(--slate12)' }}>Menu</span>
+          <Header styles={{ paddingBottom: '24px' }} className={'mobile-header'}>
+            <div onClick={() => setHamburgerMenuOpen(false)} className="cursor-pointer">
+              <div className="icon-btn">
+                <SolidIcon name="remove03" />
               </div>
-              <div onClick={() => setHamburgerMenuOpen(false)} className="col-1 cursor-pointer">
-                <Cross fill={'var(--slate12)'} />
-              </div>
+            </div>
+            <div className="d-flex flex-grow-1 justify-content-center">
+              <h1 className="navbar-brand d-none-navbar-horizontal p-0">
+                <Link
+                  data-cy="viewer-page-logo"
+                  onClick={() => {
+                    redirectToDashboard();
+                  }}
+                >
+                  <AppLogo isLoadingFromHeader={false} viewer={true} />
+                </Link>
+              </h1>
             </div>
           </Header>
 
@@ -237,12 +248,12 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
                     <div
                       key={page.handle}
                       onClick={() => handlepageSwitch(page?.id)}
-                      className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                      className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
                     >
-                      <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
+                      <div className={`card  ${page?.id === currentPageId ? 'active' : ''}`}>
                         <div className="card-body">
-                          <IconElement />
-                          <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                          <IconElement style={{ width: '16px', height: '16px' }} />
+                          <span>{_.truncate(page?.name, { length: 22 })}</span>
                         </div>
                       </div>
                     </div>
@@ -254,16 +265,12 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
         </div>
         {showDarkModeToggle && (
           <div>
-            <hr className="m-0 mb-3" />
             <div className="d-flex justify-content-center">
-              <div
-                className={`d-flex align-items-center justify-content-center`}
-                style={{ border: '1px solid var(--slate7)', width: 'calc(100% - 20px)' }}
-              >
+              <div className={`d-flex align-items-center justify-content-center`}>
                 <DarkModeToggle
                   switchDarkMode={changeToDarkMode}
                   darkMode={darkMode}
-                  showText={true}
+                  showText={false}
                   tooltipPlacement={'top'}
                 />
               </div>

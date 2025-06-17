@@ -464,6 +464,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
@@ -508,18 +510,27 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-9 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
-          {!isModuleContainer && (
-            <div className="col-2" data-cy={'component-inspector-options'}>
-              <OverlayTrigger
-                trigger={'click'}
-                placement={'bottom-end'}
-                rootClose={false}
-                show={showHeaderActionsMenu}
-                overlay={
-                  <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                    <Popover.Body bsPrefix="list-item-popover-body">
-                      {INSPECTOR_HEADER_OPTIONS.map((option) => (
+          <div className={`col-7 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          <div className="col-2" data-cy={'component-inspector-options'}>
+            <OverlayTrigger
+              trigger={'click'}
+              placement={'bottom-end'}
+              rootClose={false}
+              show={showHeaderActionsMenu}
+              overlay={
+                <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                  <Popover.Body bsPrefix="list-item-popover-body">
+                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
+                      <div
+                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                        className="list-item-popover-option"
+                        key={option?.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInspectorHeaderActions(option.value);
+                        }}
+                      >
+                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
                         <div
                           data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
                           className="list-item-popover-option"
@@ -538,17 +549,32 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                             {option?.label}
                           </div>
                         </div>
-                      ))}
-                    </Popover.Body>
-                  </Popover>
-                }
-              >
-                <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                  <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-                </span>
-              </OverlayTrigger>
-            </div>
-          )}
+                      </div>
+                    ))}
+                  </Popover.Body>
+                </Popover>
+              }
+            >
+              <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
+              </span>
+            </OverlayTrigger>
+          </div>
+          <div className="col-2">
+            <span className="cursor-pointer" onClick={() => toggleRightSidebarPin()}>
+              <SolidIcon name={isRightSidebarPinned ? 'unpin' : 'pin'} width="24" fill={'var(--slate12)'} />
+            </span>
+          </div>
+        </div>
+        <div className={`${shouldFreeze && 'disabled'}`}>
+          <Tabs defaultActiveKey={'properties'} id="inspector">
+            <Tab eventKey="properties" title="Properties">
+              {propertiesTab}
+            </Tab>
+            <Tab eventKey="styles" title="Styles">
+              {stylesTab}
+            </Tab>
+          </Tabs>
         </div>
 
         <div className={`${shouldFreeze && 'disabled'}`}>{renderTabs()}</div>
@@ -563,8 +589,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>

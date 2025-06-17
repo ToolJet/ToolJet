@@ -614,7 +614,7 @@ button {
 
   .editor-sidebar {
     position: fixed;
-    right: 0;
+    right: 40px;
     overflow: hidden;
     width: 300px;
     flex: 1 1 auto;
@@ -623,6 +623,7 @@ button {
     background-color: var(--base);
     background-clip: border-box;
     height: 100vh;
+    z-index: 2;
 
     >div {
       background-color: var(--base);
@@ -773,7 +774,7 @@ button {
       height: 100%;
       top: 48px;
       position: fixed;
-      right: 300px;
+      // right: 300px;
       left: 48px;
       overflow-y: scroll;
       overflow-x: hidden;
@@ -869,26 +870,6 @@ button {
         margin: 0px auto;
         background-size: 80px 80px;
         background-repeat: repeat;
-      }
-
-      .navigation-area {
-        background: var(--base, #FFF);
-        padding: 1rem;
-
-        a.page-link {
-          border-radius: 0;
-          border: 0;
-        }
-
-        a.page-link:hover {
-          color: white;
-          background-color: #4D72FA;
-        }
-
-        a.page-link.active {
-          color: white;
-          background-color: #4D72FA;
-        }
       }
 
     }

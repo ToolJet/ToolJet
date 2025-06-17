@@ -681,7 +681,7 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
-        setEditorLoading(false, false);
+        setEditorLoading(false, moduleId);
       });
     }
   }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);

@@ -52,6 +52,7 @@ export const Container = React.memo(
     canvasMaxWidth,
     isViewerSidebarPinned,
     pageSidebarStyle,
+    pagePositionType,
     componentType,
     appType,
   }) => {
@@ -165,13 +166,22 @@ export const Container = React.memo(
         !isPagesSidebarHidden &&
         isViewerSidebarPinned &&
         currentLayout !== 'mobile' &&
-        currentMode !== 'edit' &&
+        pagePositionType == 'side' &&
         appType !== 'module'
       ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
+        return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
+      }
+      if (
+        id === 'canvas' &&
+        !isPagesSidebarHidden &&
+        !isViewerSidebarPinned &&
+        currentLayout !== 'mobile' &&
+        pagePositionType == 'side'
+      ) {
+        return `calc(100% - ${'44px'})`;
       }
       return '100%';
-    }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
+    }, [id, isPagesSidebarHidden, isViewerSidebarPinned, currentLayout, pagePositionType, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {
