@@ -1,6 +1,7 @@
 import React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+
 const BaseImportAppMenu = ({
   showTemplateLibraryModal = () => null,
   readAndImport = () => null,
@@ -15,13 +16,15 @@ const BaseImportAppMenu = ({
   const { t } = useTranslation();
   return (
     <Dropdown.Menu className="import-lg-position new-app-dropdown">
-      <Dropdown.Item
-        className="homepage-dropdown-style tj-text tj-text-xsm"
-        onClick={showTemplateLibraryModal}
-        data-cy="choose-from-template-button"
-      >
-        {t('homePage.header.chooseFromTemplate', 'Choose from template')}
-      </Dropdown.Item>
+      {props.appType !== 'module' && (
+        <Dropdown.Item
+          className="homepage-dropdown-style tj-text tj-text-xsm"
+          onClick={showTemplateLibraryModal}
+          data-cy="choose-from-template-button"
+        >
+          {t('homePage.header.chooseFromTemplate', 'Choose from template')}
+        </Dropdown.Item>
+      )}
       <label
         className="homepage-dropdown-style tj-text tj-text-xsm"
         data-cy="import-option-label"
