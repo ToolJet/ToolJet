@@ -17,7 +17,7 @@ import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { RIGHT_SIDE_BAR_TAB } from '../rightSidebarConstants';
 import { SortableTree } from './PageMenu/Tree/SortableTree';
-import { SortableList } from '@/_components/SortableList/SortableList';
+import SortableList from '@/_components/SortableList';
 import { PageMenuItem } from './PageMenu/PageMenuItem';
 import { get } from 'lodash';
 import { Button } from '@/components/ui/Button/Button';
@@ -97,7 +97,7 @@ export const PageSettings = () => {
         ) : (
           <SortableList Element={PageMenuItem} darkMode={darkMode} switchPage={switchPage} classNames="page-handler" />
         ),
-        <AddNewPageMenu key="new-page" darkMode={darkMode} />,
+        <AddNewPageMenu isLicensed={isLicensed} key="new-page" darkMode={darkMode} />,
       ],
     },
   ];

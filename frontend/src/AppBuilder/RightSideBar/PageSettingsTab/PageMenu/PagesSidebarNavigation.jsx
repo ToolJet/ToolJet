@@ -282,7 +282,7 @@ export const PagesSidebarNavigation = ({
         }}
       >
         <div className="position-relative">
-          <div className="app-name">
+          <div style={{ marginRight: hideHeader ? '0px' : '40px' }} className="app-name">
             {!hideHeader && (
               <>
                 <div className="cursor-pointer">

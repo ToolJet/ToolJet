@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import PageOptions from './PageOptions';
 
-export function AddNewPageMenu({ darkMode }) {
+export function AddNewPageMenu({ darkMode, isLicensed }) {
   const newPageBtnRef = useRef(null);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
@@ -67,13 +67,15 @@ export function AddNewPageMenu({ darkMode }) {
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
             />
-            <PageOptions
-              type="group"
-              text="Add nav group"
-              icon="folder"
-              darkMode={darkMode}
-              onClick={() => handleOpenPopup('group')}
-            />
+            {isLicensed && (
+              <PageOptions
+                type="group"
+                text="Add nav group"
+                icon="folder"
+                darkMode={darkMode}
+                onClick={() => handleOpenPopup('group')}
+              />
+            )}
           </div>
         </Popover>
       </Overlay>
