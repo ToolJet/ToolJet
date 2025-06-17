@@ -28,7 +28,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
     const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
 
-    if (isAdmin || superAdmin || userPermission.appPromote) {
+    if (isAdmin || superAdmin || userPermission?.appPromote) {
       can([FEATURE_KEY.PROMOTE], App);
     }
 
