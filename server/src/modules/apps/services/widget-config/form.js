@@ -49,7 +49,7 @@ export const formConfig = {
   properties: {
     buttonToSubmit: {
       type: 'select',
-      displayName: 'Button to submit form',
+      displayName: 'Submit button',
       options: [{ name: 'None', value: 'none' }],
       validation: {
         schema: { type: 'string' },

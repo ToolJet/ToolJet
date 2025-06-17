@@ -20,6 +20,7 @@ import {
 import { updateFormFieldComponent, createNewComponentFromMeta } from '../utils/fieldOperations';
 import { merge, isEqual } from 'lodash';
 import { FORM_STATUS, COMPONENT_LAYOUT_DETAILS } from '../constants';
+import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
 
 /* IMPORTANT - mandatory and selected (visibility) properties are objects with value and fxActive 
                This is to support dynamic values and fx expressions in the form fields.
@@ -56,7 +57,7 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   const existingData = getFormDataSectionData(component?.id);
   const isFormGenerated = getFormDataSectionData(component.id).generateFormFrom?.value ?? false;
 
-  const formFields = useMemo(() => getFormFields(component.id) || [], [getFormFields, component.id]);
+  const formFields = useStore((state) => state.getFormFields(component.id), checkDiff);
   const formFieldsWithComponentDefinition = useMemo(
     () => mergeFieldsWithComponentDefinition(formFields, getComponentDefinition),
     [formFields, getComponentDefinition]

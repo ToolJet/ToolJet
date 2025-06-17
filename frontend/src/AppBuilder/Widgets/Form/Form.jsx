@@ -86,6 +86,8 @@ const FormComponent = (props) => {
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    scrollbarWidth: 'none' /* Firefox */,
+    msOverflowStyle: 'none' /* IE and Edge */,
   };
 
   const parentRef = useRef(null);
@@ -374,7 +376,10 @@ const FormComponent = (props) => {
         />
       )}
 
-      <div className="jet-form-body sub-container-overflow-wrap" style={formContent}>
+      <div
+        className="jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover"
+        style={formContent}
+      >
         {isLoading ? (
           <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
             <div className="spinner-border" role="status"></div>

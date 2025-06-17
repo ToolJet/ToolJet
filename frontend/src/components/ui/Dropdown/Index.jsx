@@ -47,7 +47,7 @@ const DropdownComponent = ({ options = {}, ...props }) => {
                 avatarFall={options[key].avatarFall}
                 key={key}
               >
-                {key}
+                {options[key].label ?? key}
               </SelectItem>
             ))}
           </SelectGroup>

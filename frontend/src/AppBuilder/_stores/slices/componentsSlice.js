@@ -850,8 +850,11 @@ export const createComponentsSlice = (set, get) => ({
           'addComponentToCurrentPage'
         );
       });
-      const selectedComponents = findHighestLevelofSelection(newComponents);
-      get().setSelectedComponents(selectedComponents.map((component) => component.id));
+
+      if (!skipFormUpdate) {
+        const selectedComponents = findHighestLevelofSelection(newComponents);
+        get().setSelectedComponents(selectedComponents.map((component) => component.id));
+      }
 
       if (saveAfterAction) {
         saveComponentChanges(diff, 'components', 'create')

@@ -37,7 +37,10 @@ const SelectTrigger = React.forwardRef(({ className, children, open, size, ...pr
       onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
-      <div className="tw-flex tw-items-center tw-gap-[6px]">
+      <div
+        className="tw-flex tw-items-center tw-gap-[6px]"
+        style={props.leadingIcon ? { width: 'calc(100% - 28px)' } : {}}
+      >
         {props.leadingIcon && (
           <LeadingIcon
             icon={props.leadingIcon}
@@ -47,9 +50,8 @@ const SelectTrigger = React.forwardRef(({ className, children, open, size, ...pr
           />
         )}
         <div
-          className={`${
-            props.leadingIcon ? 'tw-max-w-[94px]' : 'tw-max-w-[116px]'
-          } [&>span]:tw-text-left [&>span]:tw-line-clamp-1`}
+          className={`[&>span]:tw-text-left [&>span]:tw-line-clamp-1`}
+          style={{ wordWrap: 'break-word', width: props.leadingIcon ? 'calc(100% - 20px)' : '116px' }}
         >
           {children}
         </div>
@@ -118,7 +120,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'tw-relative tw-flex tw-w-full tw-h-[30px] tw-items-center tw-rounded-[6px] tw-py-[6px] tw-pl-[30px] tw-pr-[8px] tw-text-[12px]/[18px] tw-font-normal tw-text-text-default tw-outline-none focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-interactive-focus-outline hover:tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/35 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-text-text-placeholder [&>span]:tw-w-[100px] [&>span]:tw-text-left [&>span]:tw-line-clamp-1',
+      'tw-relative tw-flex tw-w-full tw-h-[30px] tw-items-center tw-rounded-[6px] tw-py-[6px] tw-pl-[30px] tw-pr-[8px] tw-text-[12px]/[18px] tw-font-normal tw-text-text-default tw-outline-none focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-interactive-focus-outline hover:tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/35 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-text-text-placeholder [&>span]:tw-w-[100px] [&>span]:tw-text-left [&>span]:tw-line-clamp-1 tw-cursor-pointer',
       className
     )}
     {...props}

@@ -250,7 +250,7 @@ export const baseComponentProperties = (
 
   if (properties.length > 0) {
     items.push({
-      title: `${i18next.t('widget.common.properties', 'Properties')}`,
+      title: `${i18next.t('widget.common.structure', 'Structure')}`,
       children: properties.map((property) =>
         renderElement(
           component,

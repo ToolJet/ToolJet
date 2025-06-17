@@ -1,8 +1,9 @@
 import React from 'react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
-import { DATATYPE_TO_COMPONENT, JSON_DIFFERENCE } from '../constants';
+import { DATATYPE_TO_COMPONENT, JSON_DIFFERENCE, INPUT_COMPONENTS_FOR_FORM } from '../constants';
 import { startCase, omit } from 'lodash';
 import { getFieldDataFromComponent } from './fieldOperations';
+import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 
 export const buildOptions = (options = []) => {
   if (Array.isArray(options))
@@ -151,52 +152,25 @@ export const findNextElementTop = (childComponents, currentLayout = 'desktop', c
 };
 
 export const getInputTypeOptions = (darkMode) => {
-  return {
-    TextInput: {
-      value: 'TextInput',
-      leadingIcon: <WidgetIcon name={'textinput'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    NumberInput: {
-      value: 'NumberInput',
-      leadingIcon: <WidgetIcon name={'numberinput'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    PasswordInput: {
-      value: 'PasswordInput',
-      leadingIcon: <WidgetIcon name={'passwordinput'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    TextArea: {
-      value: 'TextArea',
-      leadingIcon: <WidgetIcon name={'textarea'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    DaterangePicker: {
-      value: 'DaterangePicker',
-      leadingIcon: <WidgetIcon name={'daterangepicker'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    DatePickerV2: {
-      value: 'DatePickerV2',
-      leadingIcon: <WidgetIcon name={'datepicker'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    Checkbox: {
-      value: 'Checkbox',
-      leadingIcon: <WidgetIcon name={'checkbox'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    DropdownV2: {
-      value: 'DropdownV2',
-      leadingIcon: <WidgetIcon name={'dropdown'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    MultiselectV2: {
-      value: 'MultiselectV2',
-      leadingIcon: <WidgetIcon name={'multiselect'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    RadioButtonV2: {
-      value: 'RadioButtonV2',
-      leadingIcon: <WidgetIcon name={'radiobutton'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
-    ToggleSwitchV2: {
-      value: 'ToggleSwitchV2',
-      leadingIcon: <WidgetIcon name={'toggleswitch'} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />,
-    },
+  const constructOptions = (component) => {
+    return {
+      label: component.displayName,
+      value: component.component,
+      leadingIcon: (
+        <WidgetIcon
+          name={component.name.toLowerCase()}
+          version={component?.version}
+          fill={darkMode ? '#3A3F42' : '#D7DBDF'}
+          width="16"
+        />
+      ),
+    };
   };
+
+  return INPUT_COMPONENTS_FOR_FORM.reduce((options, component) => {
+    options[component] = constructOptions(componentTypeDefinitionMap[component]);
+    return options;
+  }, {});
 };
 
 export const constructFeildForSave = (field) => {
