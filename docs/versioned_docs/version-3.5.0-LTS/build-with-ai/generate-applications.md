@@ -5,7 +5,7 @@ title: Generate Applications
 
 This guide explains how to quickly generate and modify business applications using ToolJet. You can create an app from scratch with a single prompt or enhance an existing app with AI-powered assistance.
 
-:::warning
+:::note
 If you are a self-hosted user, please configure the configuratoins mentioned under the [Self-hosted Configuration](/docs/build-with-ai/generate-applications#self-hosting-configuration) section below.
 :::
 
@@ -60,3 +60,37 @@ For example, if you want add a button in your app you can write a prompt for the
 
 
 ## Self-hosting configuration
+
+- The AI feature in ToolJet may require API requests that run for several minutes depending on the model and prompt complexity.
+
+- Please ensure your instance is configured to support long-running HTTP requests (at least 5–10 minutes) to avoid timeouts.
+
+- If you're using Nginx as a reverse proxy:
+Make sure to increase timeout values and disable buffering to allow uninterrupted AI responses.
+
+```
+server {
+    listen 80;
+    server_name your_domain;
+
+    location / {
+        proxy_pass http://localhost:3000;
+
+        proxy_connect_timeout 600s;
+        proxy_send_timeout    600s;
+        proxy_read_timeout    600s;
+        send_timeout          600s;
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_buffering off;
+        proxy_cache off;
+        chunked_transfer_encoding on;
+    }
+}
+```
