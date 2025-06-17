@@ -12,6 +12,7 @@ import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
@@ -25,11 +26,12 @@ export const PagesSidebarNavigation = ({
   height,
   switchDarkMode,
 }) => {
+  const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const currentMode = useStore((state) => state.currentMode);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const license = useStore((state) => state.license);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
 

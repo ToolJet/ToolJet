@@ -10,6 +10,7 @@ import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
 
@@ -24,6 +25,7 @@ export const BaseLeftSidebar = ({
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
 }) => {
+  const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
     pinned,
     selectedSidebarItem,
@@ -42,7 +44,7 @@ export const BaseLeftSidebar = ({
       state.selectedSidebarItem,
       state.setIsLeftSideBarPinned,
       state.setSelectedSidebarItem,
-      state.currentMode,
+      state.modeStore.modules[moduleId].currentMode,
       state.queryPanel.queryPanelHeight,
       state.debugger.unreadErrorCount,
       state.debugger.resetUnreadErrorCount,
@@ -105,6 +107,8 @@ export const BaseLeftSidebar = ({
             // popoverContentHeight={popoverContentHeight}
             setPinned={setPinned}
             pinned={pinned}
+            moduleId={moduleId}
+            appType={appType}
           />
         );
       case 'tooljetai':
@@ -149,6 +153,7 @@ export const BaseLeftSidebar = ({
             // globalSettingsChanged={globalSettingsChanged}
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
+            isModuleEditor={isModuleEditor}
             // toggleAppMaintenance={toggleAppMaintenance}
             // isMaintenanceOn={isMaintenanceOn}
             // app={app}
@@ -163,72 +168,70 @@ export const BaseLeftSidebar = ({
     return null;
   }
 
+  const renderCommonItems = () => {
+    return (
+      <>
+        <SidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('inspect')}
+          darkMode={darkMode}
+          icon="inspect"
+          className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+          tip="Inspector"
+          ref={setSideBarBtnRefs('inspect')}
+        />
+
+        <SidebarItem
+          icon="debugger"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          // eslint-disable-next-line no-unused-vars
+          onClick={(e) => handleSelectedSidebarItem('debugger')}
+          className={`left-sidebar-item  left-sidebar-layout`}
+          badge={true}
+          count={unreadErrorCount}
+          tip="Debugger"
+          ref={setSideBarBtnRefs('debugger')}
+        />
+      </>
+    );
+  };
+
+  const renderLeftSidebarItems = () => {
+    if (isModuleEditor) {
+      return renderCommonItems();
+    }
+    return (
+      <>
+        {renderAISideBarTrigger({
+          selectedSidebarItem: selectedSidebarItem,
+          onClick: () => handleSelectedSidebarItem('tooljetai'),
+          darkMode: darkMode,
+          icon: 'tooljetai',
+          className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
+          tip: 'Build with AI',
+          ref: setSideBarBtnRefs('tooljetai'),
+        })}
+        {renderCommonItems()}
+        <SidebarItem
+          icon="settings"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          // eslint-disable-next-line no-unused-vars
+          onClick={(e) => handleSelectedSidebarItem('settings')}
+          className={`left-sidebar-item  left-sidebar-layout`}
+          badge={true}
+          tip="Settings"
+          ref={setSideBarBtnRefs('settings')}
+          isModuleEditor={isModuleEditor}
+        />
+      </>
+    );
+  };
+
   return (
     <div className={cx('left-sidebar', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
-      {renderAISideBarTrigger({
-        selectedSidebarItem: selectedSidebarItem,
-        onClick: () => handleSelectedSidebarItem('tooljetai'),
-        darkMode: darkMode,
-        icon: 'tooljetai',
-        className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
-        tip: 'Build with AI',
-        ref: setSideBarBtnRefs('tooljetai'),
-      })}
-      {/* <SidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => handleSelectedSidebarItem('page')}
-        darkMode={darkMode}
-        icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-        tip="Pages"
-        ref={setSideBarBtnRefs('page')}
-      /> */}
-
-      <SidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => handleSelectedSidebarItem('inspect')}
-        darkMode={darkMode}
-        icon="inspect"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-        tip="Inspector"
-        ref={setSideBarBtnRefs('inspect')}
-      />
-
-      <SidebarItem
-        icon="debugger"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('debugger')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        count={unreadErrorCount}
-        tip="Debugger"
-        ref={setSideBarBtnRefs('debugger')}
-      />
-      <SidebarItem
-        icon="settings"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('settings')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        tip="Settings"
-        ref={setSideBarBtnRefs('settings')}
-      />
-
-      {/* 	{dataSources?.length > 0 && (
-				<LeftSidebarItem
-					selectedSidebarItem={selectedSidebarItem}
-					onClick={() => handleSelectedSidebarItem('datasource')}
-					icon="datasource"
-					className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
-					tip="Sources"
-					ref={setSideBarBtnRefs('datasource')}
-				/>
-			)} */}
-
+      {renderLeftSidebarItems()}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
@@ -239,7 +242,7 @@ export const BaseLeftSidebar = ({
           toggleLeftSidebar(false);
         }}
         open={isSidebarOpen}
-        popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
+        popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${selectedSidebarItem}`}
         side="right"
         popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}

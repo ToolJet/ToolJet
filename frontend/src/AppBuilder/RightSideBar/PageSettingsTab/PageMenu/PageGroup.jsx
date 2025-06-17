@@ -11,6 +11,7 @@ import { buildTree } from './Tree/utilities';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RenderPage = ({
   page,
@@ -127,7 +128,7 @@ const RenderPageGroup = ({
     );
   }
 
-  const active = currentPage.pageGroupId === pageGroup.id;
+  const active = currentPage?.pageGroupId === pageGroup?.id;
 
   return (
     <div
@@ -211,6 +212,7 @@ export const RenderPageAndPageGroup = ({
   style,
   isSidebarPinned,
 }) => {
+  const { moduleId } = useModuleContext();
   // Don't render empty folders if displaying only icons
   const visibleTree = buildTree(position === 'top' ? visibleLinks : pages, !!labelStyle?.label?.hidden);
   const overflowTree = buildTree(overflowLinks, !!labelStyle?.label?.hidden);
@@ -222,7 +224,7 @@ export const RenderPageAndPageGroup = ({
   );
   const currentPageId = useStore((state) => state.currentPageId);
   const currentPage = pages.find((page) => page.id === currentPageId);
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const [showPopover, setShowPopover] = useState(false);
   return (
     <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>

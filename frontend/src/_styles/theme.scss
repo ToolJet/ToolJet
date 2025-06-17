@@ -19,6 +19,7 @@
 @import 'tailwindcss/utilities';
 @import "./componentdesign.scss";
 @import './pages-sidebar.scss';
+@import './modules.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -807,6 +808,21 @@ button {
     }
   }
 
+  .viewer .main {
+    height: auto !important;
+
+    .canvas-container {
+      top: 0;
+      right: 0;
+      scrollbar-width: thin;
+      scrollbar-color: #6a727c4d transparent;
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #6a727c4d !important;
+      }
+    }
+  }
+
   @media screen and (max-height: 450px) {
     .sidebar {
       padding-top: 15px;
@@ -1533,6 +1549,13 @@ button {
     border-top: 1px solid var(--slate5) !important;
   }
 
+  &.module-editor-inspector {
+    .tab-content {
+      border-top: none !important;
+    }
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
   /* Hide scrollbar for Chrome, Safari and Opera */
   .tab-content::-webkit-scrollbar {
     display: none;
@@ -2688,6 +2711,14 @@ hr {
   max-height: 10px;
   z-index: 100;
   min-width: 108px;
+
+  &.module-container {
+    .handle-content {
+      cursor: move;
+      color: #fff;
+      background: #c6cad0 !important;
+    }
+  }
 }
 
 
@@ -4100,6 +4131,7 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
+
     background-color: var(--primary-brand) !important;
     border: transparent
   }
@@ -7556,6 +7588,13 @@ tbody {
 .apploader {
   height: 100vh;
 
+  &.module-mode {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .app-container {
     height: 100%;
     display: flex;
@@ -7916,6 +7955,11 @@ tbody {
   border-right: 1px solid var(--slate5);
   display: grid;
   grid-template-rows: auto 1fr auto;
+
+  // Added to work with AppTypeTab component
+  &:has(:nth-child(4):last-child) {
+    grid-template-rows: auto auto 1fr auto;
+  }
 
   @media only screen and (max-width: 767px) {
     display: none;
@@ -9119,7 +9163,8 @@ tbody {
 }
 
 .global-settings-app-wrapper {
-  max-width: 190px;
+  max-width: 350px;
+  margin-right: 10px;
 }
 
 .version-manager-container {
@@ -10876,7 +10921,7 @@ tbody {
   background: var(--indigo3);
   border-radius: 6px;
   padding: 5px 10px;
-  
+
   p {
     font-weight: 500 !important;
     line-height: 18px !important;
@@ -12286,11 +12331,11 @@ tbody {
   }
 
   .design-component-inputs textarea {
-    
+
     &.valid-textarea {
       border: 1.5px solid #519b62 !important;
     }
-    
+
     &.invalid-textarea {
       border: 1.5px solid #e26367 !important;
     }
@@ -15732,7 +15777,7 @@ tbody {
   /* Set the desired width */
 }
 
-textarea.tj-text-input-widget{
+textarea.tj-text-input-widget {
   resize: none !important;
   overflow-y: auto !important;
 }
@@ -18644,8 +18689,8 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .codebuilder-color-swatches-options {
-  width:100%;
-  height:30px;
+  width: 100%;
+  height: 30px;
   padding: 6px 8px;
   border-radius: 6px;
 
@@ -18678,8 +18723,8 @@ section.ai-message-prompt-input-wrapper {
 .theme-create-btn {
   width: 100%;
   margin-bottom: 8px;
-  height:32px;
-  color:#000;
+  height: 32px;
+  color: #000;
   border: 1px solid var(--Border-brand-weak, #97AEFC);
 }
 
@@ -18702,14 +18747,14 @@ section.ai-message-prompt-input-wrapper {
   border-color: var(--primary-brand);
 }
 
-.multiselct-widget-option{
+.multiselct-widget-option {
   input:checked {
     background-color: var(--primary-brand);
   }
 }
 
 .multiselect-box {
-  .options{
+  .options {
     input:checked {
       background-color: var(--primary-brand);
     }
@@ -18718,6 +18763,7 @@ section.ai-message-prompt-input-wrapper {
 
 .timer-btn {
   background-color: var(--primary-brand);
+
   &:hover {
     background-color: var(--primary-brand);
   }
@@ -18756,6 +18802,7 @@ section.ai-message-prompt-input-wrapper {
     color: #ffffff;
     border: 1px solid transparent;
   }
+
   .canvas-styles-header {
     background-color: #212325;
     color: #ffffff;
@@ -18801,8 +18848,9 @@ section.ai-message-prompt-input-wrapper {
 }
 
 #inspector-tabpane-properties .accordion-header {
-  height:32px;
+  height: 32px;
 }
+
 .cm-tooltip {
   z-index: 9999 !important;
 }
@@ -18871,5 +18919,71 @@ section.ai-message-prompt-input-wrapper {
 .single-line-codehinter-input {
   .cm-editor {
     max-height: 100px !important;
+  }
+}
+
+.missing-groups-modal {
+  .modal-body {
+    padding: 16px;
+
+    .header {
+      padding-top: 12px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .sub-header {
+      margin-bottom: 0px;
+      font-size: 12px;
+    }
+
+    .groups-list {
+      padding-top: 16px;
+      padding-bottom: 16px;
+
+      .container {
+        padding: 12px;
+      }
+    }
+
+    .info {
+      margin-bottom: 0px;
+      font-size: 12px;
+      padding-bottom: 24px;
+    }
+
+    .action-btns {
+      justify-content: space-between;
+    }
+
+    .primary-action,
+    .secondary-action {
+      padding: 8px !important;
+      font-size: 12px;
+    }
+
+    .toggle-button {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+      color: var(--icon-brand);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .toggle-button:hover {
+      text-decoration: underline;
+    }
+
+    .toggle-button .chevron {
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-button.expanded .chevron {
+      transform: rotate(180deg);
+    }
   }
 }

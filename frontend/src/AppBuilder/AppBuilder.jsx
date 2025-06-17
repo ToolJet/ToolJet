@@ -15,6 +15,8 @@ import LeftSidebar from '@/AppBuilder/LeftSidebar';
 import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
+import { shallow } from 'zustand/shallow';
+
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
 // const AppCanvas = lazy(() => import('@/AppBuilder/AppCanvas'));
@@ -22,12 +24,14 @@ import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 // const QueryPanel = lazy(() => import('@/AppBuilder/QueryPanel'));
 
 // TODO: split Loader into separate component and remove editor loading state from Editor
-export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode }) => {
+export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType = 'front-end' }) => {
   useAppData(appId, moduleId, darkMode);
-  const isEditorLoading = useStore((state) => state.isEditorLoading);
-  const currentMode = useStore((state) => state.currentMode);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
-  const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode);
+  const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
+  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  const isModuleEditor = appType === 'module';
+
+  const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
 
   const changeToDarkMode = (newMode) => {
     updateIsTJDarkMode(newMode);
@@ -45,20 +49,20 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   return (
     <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
       <ErrorBoundary>
-        <Suspense fallback={<div>Loading...</div>}>
-          <EditorHeader darkMode={darkMode} />
-          <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
-        </Suspense>
-        {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
-        <DndProvider backend={HTML5Backend}>
-          <ModuleProvider moduleId={moduleId}>
+        <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
+          <Suspense fallback={<div>Loading...</div>}>
+            <EditorHeader darkMode={darkMode} />
+            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
+          </Suspense>
+          {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
+          <DndProvider backend={HTML5Backend}>
             <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} />
             <QueryPanel darkMode={darkMode} />
             <RightSidebarToggle darkMode={darkMode} />
-            {isRightSidebarOpen && <RightSideBar darkMode={darkMode} />}
-          </ModuleProvider>
-        </DndProvider>
-        <Popups darkMode={darkMode} />
+            {isRightSidebarOpen && <RightSideBar darkMode={darkMode} />}{' '}
+          </DndProvider>
+          <Popups darkMode={darkMode} />
+        </ModuleProvider>
       </ErrorBoundary>
     </div>
   );

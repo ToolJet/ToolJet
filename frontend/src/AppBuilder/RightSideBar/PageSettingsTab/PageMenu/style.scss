@@ -449,4 +449,7 @@
         flex: 1;
         border-bottom: 1px dashed var(--border-default);
     }
+.modal-base .modal-footer .action-btn-page-permission svg path {
+    fill: var(--indigo1) !important;
+}
 }

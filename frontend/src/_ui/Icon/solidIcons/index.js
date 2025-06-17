@@ -234,14 +234,19 @@ import CalendarSmall from './CalendarSmall.jsx';
 import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
+import EmptyStateModules from './EmptyStateModules.jsx';
 import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
+import EnterpriseCrown from './EnterrpiseCrown.jsx';
+import FileCode from './FileCode.jsx';
+import Corners from './Corners.jsx';
 import Moon from './Moon.jsx';
 import NoPageEvents from './NoPageEvents.jsx';
 import ArrowRight01 from './ArrowRight01.jsx';
 import DuplicatePage from './DuplicatePage.jsx';
 import Delete01 from './Delete01.jsx';
+import RemoveFolder from './RemoveFolder.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -373,6 +378,8 @@ const Icon = (props) => {
       return <EnterpriseNew {...props} />;
     case 'enterprisev3':
       return <EnterpriseV3 {...props} />;
+    case 'enterprisecrown':
+      return <EnterpriseCrown {...props} />;
     case 'lockGradient':
       return <LockGradient {...props} />;
     case 'datasourceGradient':
@@ -387,6 +394,8 @@ const Icon = (props) => {
       return <EyeDisable {...props} />;
     case 'expand':
       return <Expand {...props} />;
+    case 'file-code':
+      return <FileCode {...props} />;
     case 'file01':
       return <File01 {...props} />;
     case 'filedownload':
@@ -515,6 +524,8 @@ const Icon = (props) => {
       return <Remove {...props} />;
     case 'remove01':
       return <Remove01 {...props} />;
+    case 'removefolder':
+      return <RemoveFolder {...props} />;
     case 'removerectangle':
       return <RemoveRectangle {...props} />;
     case 'rightarrrow':
@@ -551,6 +562,8 @@ const Icon = (props) => {
       return <ShiftButtonIcon {...props} />;
     case 'comments':
       return <Comments {...props} />;
+    case 'corners':
+      return <Corners {...props} />;
     case 'share':
       return <Share {...props} />;
     case 'shield':
@@ -727,6 +740,8 @@ const Icon = (props) => {
       return <StudentIcon {...props} />;
     case 'ai-crown':
       return <AICrown {...props} />;
+    case 'empty-state-modules':
+      return <EmptyStateModules {...props} />;
     case 'play01':
       return <Play01 {...props} />;
     case 'moon':

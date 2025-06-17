@@ -12,11 +12,13 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { redirectToDashboard } from '@/_helpers/routes';
 import AppLogo from '@/_components/AppLogo';
 import { Link } from 'react-router-dom';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
+  const { moduleId } = useModuleContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const groupActive = currentPage.pageGroupId === pageGroup?.id;
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
@@ -82,8 +84,9 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
 };
 
 const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, currentPage }) => {
+  const { moduleId } = useModuleContext();
   const tree = buildTree(pages);
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   return (
     <div className="w-100">
       <div className={`pages-container ${darkMode && 'dark'}`}>
@@ -127,6 +130,7 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
 };
 
 const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeToDarkMode, showDarkModeToggle }) => {
+  const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const license = useStore((state) => state.license);
@@ -138,7 +142,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       version: selectedVersionName,
       env: selectedEnvironmentName,
     };
-    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams));
+    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), moduleId);
   };
   var styles = {
     bmBurgerBars: {
@@ -186,7 +190,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
     _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   return (
     <>

@@ -25,7 +25,7 @@ export const query = (operation) => {
 };
 
 export const verifypreview = (type, data) => {
-  cy.get(`[data-cy="preview-tab-${type}"]`).click();
+  cy.get(`[data-cy="preview-tab-${type}"]`, { timeout: 15000 }).click();
   cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement(
     "contain.text",
     data,
@@ -255,7 +255,7 @@ export const createRestAPIQuery = (
     }).then((response) => {
       const editingVersionId = response.body.editing_version.id;
 
-      const data_source_id = Cypress.env(kind);
+      const data_source_id = Cypress.env(`${dsName}`);
 
       const requestBody = {
         app_id: Cypress.env("appId"),

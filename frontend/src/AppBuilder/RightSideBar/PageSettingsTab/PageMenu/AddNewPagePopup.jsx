@@ -11,6 +11,7 @@ import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { appService } from '@/_services';
 import { ToolTip } from '@/_components';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const POPOVER_TITLES = {
   add: {
@@ -40,6 +41,7 @@ const POPOVER_ACTIONS = {
 };
 
 export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
+  const { moduleId } = useModuleContext();
   const { show, mode, type } = useStore((state) => state.newPagePopupConfig);
   const editingPage = useStore((state) => state.editingPage);
   const pages = useStore((state) => state?.modules?.canvas?.pages ?? []);
@@ -55,13 +57,14 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const switchPage = useStore((state) => state.switchPage);
 
   const isPageGroup = useStore((state) => state.isPageGroup);
-  const homePageId = useStore((state) => state.app.homePageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const updatePageVisibility = useStore((state) => state.updatePageVisibility);
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const updatePageAppId = useStore((state) => state.updatePageAppId);
   const currentPageId = useStore((state) => state.currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const [page, setPage] = useState(editingPage);
   const [pageName, setPageName] = useState('');
@@ -75,7 +78,6 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   //Nav item with app
   const [appOptions, setAppOptions] = useState([]);
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
-  const appId = useStore((state) => state.app.appId);
 
   useEffect(() => {
     if (mode === 'add' && type === 'default' && !hasAutoSaved) {

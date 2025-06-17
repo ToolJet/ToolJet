@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Container } from './Container';
 import Grid from './Grid';
 import { EditorSelecto } from './Selecto';
-import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
@@ -20,15 +20,18 @@ import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { resolveReferences } from '@/_helpers/utils';
 
-export const AppCanvas = ({ moduleId, appId, switchDarkMode }) => {
+export const AppCanvas = ({ appId, isViewer = false, switchDarkMode }) => {
+  const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
-  const canvasHeight = useStore((state) => state.canvasHeight);
-  const creationMode = useStore((state) => state.app.creationMode);
-  const environmentLoadingState = useStore((state) => state.environmentLoadingState || state.isEditorLoading);
-  const [canvasWidth, setCanvasWidth] = useState(getCanvasWidth());
+  const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
+  const creationMode = useStore((state) => state.appStore.modules[moduleId].app.creationMode);
+  const environmentLoadingState = useStore(
+    (state) => state.environmentLoadingState || state.loaderStore.modules[moduleId].isEditorLoading
+  );
+  const [canvasWidth, setCanvasWidth] = useState(getCanvasWidth(moduleId));
   const gridWidth = canvasWidth / NO_OF_GRIDS;
-  const currentMode = useStore((state) => state.currentMode, shallow);
+  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const pageSidebarStyle = useStore((state) => state?.pageSettings?.definition?.properties?.style, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
@@ -66,23 +69,84 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode }) => {
   const { position, disableMenu } = properties ?? {};
   const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
+  const hideSidebar = isModuleMode || isPagesSidebarHidden || appType === 'module';
+
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
-    setIsComponentLayoutReady(true);
-    return () => setIsComponentLayoutReady(false);
+    setIsComponentLayoutReady(true, moduleId);
+    return () => setIsComponentLayoutReady(false, moduleId);
   }, []);
 
   useEffect(() => {
     function handleResize() {
-      const _canvasWidth = document.getElementById('real-canvas')?.getBoundingClientRect()?.width;
+      const _canvasWidth =
+        moduleId === 'canvas'
+          ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
+          : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
-    window.addEventListener('resize', handleResize);
+
+    if (moduleId === 'canvas') {
+      window.addEventListener('resize', handleResize);
+    } else {
+      const elem = document.getElementById(moduleId);
+      const resizeObserver = new ResizeObserver(handleResize);
+      if (elem) resizeObserver.observe(elem);
+
+      return () => {
+        if (elem) resizeObserver.unobserve(elem);
+        resizeObserver.disconnect();
+      };
+    }
     handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned]);
+  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId]);
+
+  const canvasContainerStyles = useMemo(() => {
+    const canvasBgColor =
+      currentMode === 'view'
+        ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
+        : !isAppDarkMode
+        ? '#EBEBEF'
+        : '#2F3C4C';
+
+    if (isModuleMode) {
+      return {
+        borderLeft: 'none',
+        height: '100%',
+        background: canvasBgColor,
+      };
+    }
+
+    return {
+      borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
+      height: currentMode === 'edit' ? canvasContainerHeight : '100%',
+      background: canvasBgColor,
+      marginLeft:
+        isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
+          ? pageSidebarStyle === 'icon' && position !== 'side'
+            ? '44px'
+            : '226px'
+          : isPagesSidebarHidden
+          ? 'auto'
+          : position == 'top'
+          ? 'auto'
+          : '44px',
+    };
+  }, [
+    currentMode,
+    isAppDarkMode,
+    isModuleMode,
+    editorMarginLeft,
+    canvasContainerHeight,
+    isViewerSidebarPinned,
+    isPagesSidebarHidden,
+    currentLayout,
+    position,
+    pageSidebarStyle,
+  ]);
 
   const toggleSidebarPinned = useCallback(() => {
     const newValue = !isViewerSidebarPinned;
@@ -117,42 +181,15 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode }) => {
           className={cx(
             'canvas-container align-items-center page-container',
             { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
-            {
-              'overflow-x-auto': currentMode === 'edit' || currentMode === 'view',
-            }
+            { 'overflow-x-auto': currentMode === 'edit' },
+            { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
           )}
-          style={{
-            // transform: `scale(1)`,
-            width: '100%',
-            borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
-            height: currentMode === 'edit' ? canvasContainerHeight : '100%',
-            background:
-              currentMode === 'view'
-                ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
-                : !isAppDarkMode
-                ? '#EBEBEF'
-                : '#2F3C4C',
-            marginLeft:
-              isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
-                ? pageSidebarStyle === 'icon' && position !== 'side'
-                  ? '44px'
-                  : '226px'
-                : isPagesSidebarHidden
-                ? 'auto'
-                : position == 'top'
-                ? 'auto'
-                : '44px',
-            // borderRight:
-            //   !isRightSidebarPinned && currentMode === 'edit' && isRightSidebarOpen ? '388px solid' : undefined,
-            // right: isRightSidebarPinned ? '380px' : '40px',
-          }}
+          style={canvasContainerStyles}
         >
           <div
-            style={
-              {
-                // minWidth: `calc((100vw - 300px) - 48px)`,
-              }
-            }
+            style={{
+              minWidth: isModuleMode ? '100%' : `calc((100vw - 300px) - 48px)`,
+            }}
             className={`app-${appId} _tooljet-page-${getPageId()}`}
           >
             {currentMode === 'edit' && (
@@ -172,8 +209,9 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode }) => {
                     isViewerSidebarPinned={isViewerSidebarPinned}
                     pageSidebarStyle={pageSidebarStyle}
                     pagePositionType={position}
+                    appType={appType}
                   />
-                  <div id="component-portal" />
+                  {appType !== 'module' && <div id="component-portal" />}
                 </div>
               )}
 
