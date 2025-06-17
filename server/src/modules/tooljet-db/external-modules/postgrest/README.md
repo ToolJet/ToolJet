@@ -3,6 +3,9 @@
 
 This module is required to setup ToolJet database
 
+## Install postgrest
+https://docs.postgrest.org/en/v12/explanations/install.html
+
 ## PostgREST configuration file - postgrest.conf
 ```
 db-uri = "postgres://postgres:postgres@localhost:5432/tooljet_new_db"
@@ -19,4 +22,9 @@ PGRST_HOST=localhost:3001
 TOOLJET_DB_USER=postgres
 TOOLJET_DB_PASS=postgres
 PGRST_DB_PRE_CONFIG=postgrest.pre_config
+```
+
+### Start Postgrest
+```
+postgrest postgrest.conf
 ```
