@@ -23,6 +23,7 @@ import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import AppPromoteReleasePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
