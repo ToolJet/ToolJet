@@ -31,6 +31,7 @@ export const PagesSidebarNavigation = ({
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const homePageId = useStore((state) => state.app.homePageId);
   const license = useStore((state) => state.license);
+  const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -50,7 +51,7 @@ export const PagesSidebarNavigation = ({
     }
 
     const containerWidth = navRef.current.offsetWidth;
-    let currentWidth = 0;
+    let currentWidth = 112;
     const tempVisible = [];
     const tempOverflow = [];
 
@@ -176,12 +177,51 @@ export const PagesSidebarNavigation = ({
     },
   };
 
-  const switchPageWrapper = (pageId) => {
+  const getAbsoluteUrl = (url) => {
+    if (!url) return '';
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://${url}`;
+  };
+
+  const switchPageWrapper = (page) => {
+    if (page?.type === 'url' && page?.url) {
+      const finalUrl = getAbsoluteUrl(page.url);
+      if (finalUrl) {
+        if (page.openIn === 'new_tab') {
+          window.open(finalUrl, '_blank');
+        } else {
+          window.location.href = finalUrl;
+        }
+      }
+      return;
+    }
+
+    if (page?.type === 'app' && page?.appId) {
+      const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+      if (page.openIn === 'new_tab') {
+        window.open(baseUrl, '_blank');
+      } else {
+        window.location.href = baseUrl;
+      }
+      return;
+    }
+
+    if (currentPageId === page?.id) {
+      return;
+    }
     const queryParams = {
       version: selectedVersionName,
       env: selectedEnvironmentName,
     };
-    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams));
+    switchPage(
+      page?.id,
+      pages.find((p) => page.id === p?.id)?.handle,
+      currentMode === 'view' ? Object.entries(queryParams) : []
+    );
+    currentMode !== 'view' && setCurrentPageHandle(page.handle);
   };
 
   const isLicensed =
@@ -222,7 +262,7 @@ export const PagesSidebarNavigation = ({
         className={cx('navigation-area', {
           close: !isSidebarPinned && properties?.collapsable,
           // 'sidebar-overlay': !isSidebarPinned && properties?.collapsable,
-          'icon-only': labelHidden || (sidebarCollapsed && position !== 'top' && !isEditing),
+          'icon-only': labelHidden || (sidebarCollapsed && position !== 'top'),
           'position-top': position === 'top',
           'text-only': style === 'text',
         })}
@@ -246,10 +286,10 @@ export const PagesSidebarNavigation = ({
                 <div className="cursor-pointer">
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
-                {(isPinnedWithLabel || isUnpinnedInEdit) && !labelHidden && <span>{name}</span>}
+                {isPinnedWithLabel && !labelHidden && <span>{name}</span>}
               </>
             )}
-            {collapsable && currentMode !== 'edit' && !isTopPositioned && !labelHidden && (
+            {collapsable && !isTopPositioned && !labelHidden && (
               <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
                 <SolidIcon
                   className="cursor-pointer"

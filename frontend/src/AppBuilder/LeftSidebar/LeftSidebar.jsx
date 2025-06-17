@@ -174,7 +174,7 @@ export const BaseLeftSidebar = ({
         tip: 'Build with AI',
         ref: setSideBarBtnRefs('tooljetai'),
       })}
-      <SidebarItem
+      {/* <SidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('page')}
         darkMode={darkMode}
@@ -182,7 +182,7 @@ export const BaseLeftSidebar = ({
         className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
         tip="Pages"
         ref={setSideBarBtnRefs('page')}
-      />
+      /> */}
 
       <SidebarItem
         selectedSidebarItem={selectedSidebarItem}

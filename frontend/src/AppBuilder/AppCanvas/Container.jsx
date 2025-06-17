@@ -121,11 +121,26 @@ export const Container = React.memo(
     }, [canvasWidth, listViewMode, columns]);
 
     const getCanvasWidth = useCallback(() => {
-      // if (id === 'canvas' && !isPagesSidebarHidden && isViewerSidebarPinned && currentLayout !== 'mobile') {
-      //   return `calc(100% - ${pageSidebarStyle === 'icon' && pagePositionType !== 'side' ? '44px' : '226px'})`;
-      // }
+      if (
+        id === 'canvas' &&
+        !isPagesSidebarHidden &&
+        isViewerSidebarPinned &&
+        currentLayout !== 'mobile' &&
+        pagePositionType == 'side'
+      ) {
+        return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
+      }
+      if (
+        id === 'canvas' &&
+        !isPagesSidebarHidden &&
+        !isViewerSidebarPinned &&
+        currentLayout !== 'mobile' &&
+        pagePositionType == 'side'
+      ) {
+        return `calc(100% - ${'44px'})`;
+      }
       return '100%';
-    }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
+    }, [id, isPagesSidebarHidden, isViewerSidebarPinned, currentLayout, pagePositionType, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {

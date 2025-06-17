@@ -26,6 +26,7 @@ import { AddNewPagePopup } from './PageMenu/AddNewPagePopup';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import Select from '@/_ui/Select';
+import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -231,7 +232,7 @@ export const PageSettings = () => {
                       />
                     )}
                   </div> */}
-                  <Accordion items={pagesAndMenuItems} />
+                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
                   <Accordion items={appHeaderMenuItems} />
                   <Accordion items={devices} />
                 </div>
@@ -245,6 +246,7 @@ export const PageSettings = () => {
               </div>
             </Tab>
           </Tabs>
+          <DeletePageConfirmationModal darkMode={darkMode} />
         </div>
       </div>
     </div>
@@ -336,7 +338,9 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
 
   const styleOptions = [
     { label: 'Text and icon', value: 'texticon' },
-    { label: 'Text only', value: 'text' },
+    ...((position == 'side' && collapsable != true) || position == 'top'
+      ? [{ label: 'Text only', value: 'text' }]
+      : []),
     ...(position !== 'top' ? [{ label: 'Icon only', value: 'icon' }] : []),
   ];
 
@@ -375,7 +379,7 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
             <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
               <ToggleGroup
                 onValueChange={(value) => {
-                  if (position?.toString() === 'side') {
+                  if (position?.toString() === 'side' || (value === 'side' && style == 'text' && collapsable == true)) {
                     pageSettingChanged({ style: 'texticon' }, 'properties');
                   }
                   pageSettingChanged({ position: value }, 'properties');
@@ -413,6 +417,9 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {
+                    if (position === 'side' && value == 'false') {
+                      pageSettingChanged({ style: 'texticon' }, 'properties');
+                    }
                     pageSettingChanged({ collapsable: stringToBoolean(value) }, 'properties');
                   }}
                   defaultValue={collapsable?.toString()}

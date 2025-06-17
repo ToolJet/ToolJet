@@ -20,7 +20,7 @@ import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { resolveReferences } from '@/_helpers/utils';
 
-export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinned, toggleSidebarPinned }) => {
+export const AppCanvas = ({ moduleId, appId, switchDarkMode }) => {
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.canvasHeight);
@@ -40,11 +40,15 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinn
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
-  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  // const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned, shallow);
+  const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
+    localStorage.getItem('isPagesSidebarPinned') !== 'false'
+  );
+
   const { currentPageId, globalSettings, pages, pageSettings, homePageId, switchPage } = useStore(
     (state) => ({
       currentPageId: state.currentPageId,
@@ -60,9 +64,7 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinn
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { styles = {}, properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu } = properties ?? {};
-  const resolvedDisableMenu = resolveReferences(disableMenu?.value);
-
-  console.log({ isViewerSidebarPinned, isPagesSidebarHidden, pageSidebarStyle, position, pageSettings });
+  const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -82,6 +84,12 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinn
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned]);
 
+  const toggleSidebarPinned = useCallback(() => {
+    const newValue = !isViewerSidebarPinned;
+    setIsSidebarPinned(newValue);
+    localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
+  }, [isViewerSidebarPinned]);
+
   return (
     <div
       className={cx(`main main-editor-canvas position-relative`, {})}
@@ -91,7 +99,7 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinn
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
       <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
-        {!resolvedDisableMenu && (
+        {!isPagesSidebarHidden && (
           <PagesSidebarNavigation
             showHeader={showHeader}
             isMobileDevice={currentLayout === 'mobile'}
@@ -110,9 +118,7 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinn
             'canvas-container align-items-center page-container',
             { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
             {
-              'overflow-x-auto':
-                (currentMode === 'edit' && (isSidebarOpen || (isRightSidebarOpen && !isRightSidebarPinned))) ||
-                currentMode === 'view',
+              'overflow-x-auto': currentMode === 'edit' || currentMode === 'view',
             }
           )}
           style={{
@@ -130,8 +136,12 @@ export const AppCanvas = ({ moduleId, appId, switchDarkMode, isViewerSidebarPinn
               isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
                 ? pageSidebarStyle === 'icon' && position !== 'side'
                   ? '44px'
-                  : '200px'
-                : 'auto',
+                  : '226px'
+                : isPagesSidebarHidden
+                ? 'auto'
+                : position == 'top'
+                ? 'auto'
+                : '44px',
             // borderRight:
             //   !isRightSidebarPinned && currentMode === 'edit' && isRightSidebarOpen ? '388px solid' : undefined,
             // right: isRightSidebarPinned ? '380px' : '40px',

@@ -38,6 +38,9 @@ export const PageMenuItem = withRouter(
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
     const setEditingPage = useStore((state) => state.setEditingPage);
     const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
+    const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
+    const clonePage = useStore((state) => state.clonePage);
+    const markAsHomePage = useStore((state) => state.markAsHomePage);
     const restricted = page?.permissions && page?.permissions?.length > 0;
     const {
       definition: { styles, properties },
@@ -144,13 +147,55 @@ export const PageMenuItem = withRouter(
 
     const switchPage = useStore((state) => state.switchPage);
 
+    const getAbsoluteUrl = (url) => {
+      if (!url) return '';
+
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      return `https://${url}`;
+    };
+
     const handlePageSwitch = useCallback(() => {
-      if (currentPageId === page.id) {
+      if (page?.type === 'url' && page?.url) {
+        const finalUrl = getAbsoluteUrl(page.url);
+        if (finalUrl) {
+          if (page.openIn === 'new_tab') {
+            window.open(finalUrl, '_blank');
+          } else {
+            window.location.href = finalUrl;
+          }
+        }
         return;
       }
-      switchPage(page.id, page.handle);
+
+      if (page?.type === 'app' && page?.appId) {
+        const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+        if (page.openIn === 'new_tab') {
+          window.open(baseUrl, '_blank');
+        } else {
+          window.location.href = baseUrl;
+        }
+        return;
+      }
+
+      if (currentPageId === page?.id) {
+        return;
+      }
+
+      switchPage(page?.id, page?.handle);
       setCurrentPageHandle(page.handle);
-    }, [currentPageId, page.id, page.handle, switchPage, setCurrentPageHandle]);
+    }, [
+      page?.type,
+      page.url,
+      page.appId,
+      page?.id,
+      page.handle,
+      page.openIn,
+      currentPageId,
+      switchPage,
+      setCurrentPageHandle,
+    ]);
 
     const handlePageMenuSettings = useCallback(
       (event) => {
@@ -178,12 +223,10 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            onClick={handlePageSwitch}
-            className={`page-menu-item ${isSelected && 'is-selected'} ${darkMode && 'dark-theme'}`}
+            className={`page-menu-item ${showPageOptions && 'is-selected'} ${darkMode && 'dark-theme'}`}
             style={{
               position: 'relative',
               width: '100%',
-              ...computedStyles?.pill,
             }}
           >
             {editingPageName && editingPage?.id === page?.id ? (
@@ -202,7 +245,7 @@ export const PageMenuItem = withRouter(
                 {' '}
                 <div ref={optionBtnRef} className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
                   {icon()}
-                  <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
+                  <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text, maxWidth: '159px' }}>
                     {page.name}
                   </OverflowTooltip>
                   <span
@@ -253,7 +296,7 @@ export const PageMenuItem = withRouter(
                     //   <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
                     // </button>
                     <div className="action-btn-wrapper">
-                      <div className="icon-btn">
+                      <div onClick={handlePageSwitch} className="icon-btn">
                         <SolidIcon name="arrowright01" width="12" viewBox="0 0 12 12" />
                       </div>
                       <div
@@ -276,26 +319,38 @@ export const PageMenuItem = withRouter(
                         <Popover id="edit-page-popover">
                           <div className="menu-options mb-0">
                             <PageOptions
-                              text="Edit group details"
-                              icon="rename"
+                              text="Edit page details"
+                              icon="editable"
                               darkMode={darkMode}
-                              onClick={() => handleOpenPopup('page', page)}
+                              onClick={() => handleOpenPopup(page?.type || 'page', page)}
                             />
                             <PageOptions
-                              text="Duplicate group"
+                              text="Mark home"
+                              icon="home"
+                              darkMode={darkMode}
+                              disabled={isHomePage}
+                              onClick={() => markAsHomePage(page?.id)}
+                            />
+                            <PageOptions
+                              text="Duplicate page"
                               icon="copy"
                               darkMode={darkMode}
-                              // onClick={() => handleOpenPopup('app')}
+                              onClick={() => clonePage(page?.id)}
                             />
                             <PageOptions
-                              text="Delete group"
+                              text="Delete page"
                               icon="trash"
                               darkMode={darkMode}
-                              // onClick={() => handleOpenPopup('group')}
+                              disabled={isHomePage}
+                              onClick={() => {
+                                openPageEditPopover(page);
+                                toggleDeleteConfirmationModal(true);
+                              }}
                             />
                           </div>
                         </Popover>
                       </Overlay>
+
                       <Overlay
                         target={optionBtnRef.current}
                         show={showEditPopover && newPagePopupConfig?.mode == 'edit'}

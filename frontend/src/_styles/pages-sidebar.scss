@@ -31,8 +31,8 @@
 }
 
 .icon-selector {
-    width: 25px;
-    height: 25px;
+    width: 21px;
+    height: 21px;
     margin-right: 6px;
     justify-content: center;
 
@@ -62,15 +62,6 @@
             color: #6A727C;
             stroke: #6A727C;
             
-        }
-    }
-    &.is-selected {
-        .icon-selector {
-            svg {
-                color: #4368E3;
-                stroke: #4368E3;
-                
-            }
         }
     }
     &.dark-theme {
@@ -160,6 +151,26 @@
         .accordion-button {
             padding: 0px !important;
         }
+    }
+}
+
+.pages-and-groups-list {
+    .page-menu-item {
+        .icon-selector {
+            svg {
+                width: 16px !important;
+                height: 16px !important;
+            }
+        }
+    }
+    .page-name {
+        font-size: 12px !important;
+        color: var(--text-default) !important;
+    }
+    .accordion-body {
+        gap: 4px;
+        display: flex;
+        flex-direction: column;
     }
 }
 
@@ -419,6 +430,7 @@
             }
 
             .tj-list-item {
+                outline: none !important;
                 padding: 6px 10px;
                 height: 32px;
             }
@@ -441,6 +453,7 @@
 #more-nav-btns {
     .popover-body{
         padding: 4px;
+        width: fit-content;
 
         .tj-list-item{
             padding: 6px 12px;
@@ -558,6 +571,12 @@
 
     &:hover {
         .action-btn-wrapper {
+            display: flex !important;
+        }
+    }
+    
+    .action-btn-wrapper {
+        &.options-opened {
             display: flex !important;
         }
     }

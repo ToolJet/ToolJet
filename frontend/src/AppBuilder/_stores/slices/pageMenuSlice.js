@@ -222,7 +222,7 @@ export const createPageMenuSlice = (set, get) => {
       const newPages = data?.pages;
       const newEvents = data?.events;
       const pageAdded = newPages.find((p) => !pages.some((p2) => p2.id === p.id));
-      if (pageAdded) {
+      if (Object.keys(pageAdded).length) {
         const currentComponents = buildComponentMetaDefinition(JSON.parse(JSON.stringify(pageAdded?.components)));
 
         pageAdded.components = currentComponents;

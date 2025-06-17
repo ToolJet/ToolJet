@@ -27,7 +27,7 @@ export function AddNewPageMenu({ darkMode }) {
         className="add-new-page"
         id="add-new-page"
         onClick={() => {
-          setNewPagePopupConfig({ show: true, mode: 'add', type: 'page' });
+          setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
         }}
       >
         New page

@@ -57,12 +57,6 @@
         &.highlight {
             border: 2px solid #3D63DC;
         }
-        &.is-selected {
-            background-color: #f0f4ff;
-            &.dark-theme {
-                background-color: var(--slate5);
-            }
-        }
         .page-group-actions {
             transition: 0.2s ease;
             opacity: 0;
@@ -96,7 +90,6 @@
             opacity: 0;
         }
         &:hover{
-            background-color: #ECEEF0;
             button.edit-page-overlay-toggle{
                 opacity: 1;
             }
@@ -110,12 +103,13 @@
             }
         }
         height:32px;
-        border-radius: 4px;
+        border-radius: 6px;
         display: flex;
         align-items: center;
-        padding: 0px 8px;
+        padding: 7px 8px;
         margin-top: 2px;
         justify-content: space-between;
+        background-color: var(--interactive-default);
         .left{
             // margin-left: 15px;
             .page-name{
@@ -408,7 +402,6 @@
 
     .actions-container {
         display: flex;
-        gap: 7px;
         svg {
             width: 18px;
             path {

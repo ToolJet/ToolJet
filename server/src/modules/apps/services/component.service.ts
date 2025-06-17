@@ -185,7 +185,7 @@ export class ComponentsService implements IComponentsService {
     }, appVersionId);
   }
 
-  async getAllComponents(pageId: string) {
+  async getAllComponents(pageId: string, manager: EntityManager) {
     // need to get all components for a page with their layouts
 
     return dbTransactionWrap(async (manager: EntityManager) => {

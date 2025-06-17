@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -10,16 +10,17 @@ import Select from '@/_ui/Select';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { appService } from '@/_services';
+import { ToolTip } from '@/_components';
 
 const POPOVER_TITLES = {
   add: {
-    page: 'New page',
+    default: 'New page',
     app: 'New nav item with app',
     url: 'New nav item with URL',
     group: 'New nav group',
   },
   edit: {
-    page: 'Edit page',
+    default: 'Edit page',
     app: 'Edit nav item',
     url: 'New nav item',
     group: 'Edit nav group',
@@ -30,6 +31,13 @@ const OPEN_APP_MODES = [
   { label: 'New tab', value: 'new_tab' },
   { label: 'Same tab', value: 'same_tab' },
 ];
+
+const POPOVER_ACTIONS = {
+  default: 'page',
+  url: 'page',
+  app: 'page',
+  group: 'group',
+};
 
 export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const { show, mode, type } = useStore((state) => state.newPagePopupConfig);
@@ -42,11 +50,18 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const updatePageURL = useStore((state) => state.updatePageURL);
   const updatePageIcon = useStore((state) => state.updatePageIcon);
   const markAsHomePage = useStore((state) => state.markAsHomePage);
+  const clonePage = useStore((state) => state.clonePage);
+  const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
+  const switchPage = useStore((state) => state.switchPage);
+
   const isPageGroup = useStore((state) => state.isPageGroup);
   const homePageId = useStore((state) => state.app.homePageId);
   const updatePageVisibility = useStore((state) => state.updatePageVisibility);
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const updatePageAppId = useStore((state) => state.updatePageAppId);
+  const currentPageId = useStore((state) => state.currentPageId);
+  const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
+  const openPageEditPopover = useStore((state) => state.openPageEditPopover);
 
   const [page, setPage] = useState(editingPage);
   const [pageName, setPageName] = useState('');
@@ -63,7 +78,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const appId = useStore((state) => state.app.appId);
 
   useEffect(() => {
-    if (mode === 'add' && type === 'page' && !hasAutoSaved) {
+    if (mode === 'add' && type === 'default' && !hasAutoSaved) {
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `Page ${index}`;
@@ -83,7 +98,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       setPageName(editingPage.name);
       setHandle(editingPage.handle);
     }
-  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, pageName, isPageGroup, type]);
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
 
   //Nav item with URL hooks
   useEffect(() => {
@@ -148,7 +163,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         index++;
         newName = `Page ${index}`;
       }
-      const pageObj = { type: 'url', openIn: 'new_tab' };
+      const pageObj = { type: 'app', openIn: 'new_tab' };
       addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
         setPage(data);
         setPageName(newName);
@@ -159,7 +174,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       setPage(editingPage);
       setPageName(editingPage.name);
     }
-  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, pageName, isPageGroup, type, appId]);
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
 
   //Nav item with group
   useEffect(() => {
@@ -182,7 +197,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       setPage(editingPage);
       setPageName(editingPage.name);
     }
-  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, pageName, isPageGroup, type, appId]);
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+
+  const handlePageSwitch = useCallback(() => {
+    if (currentPageId === page.id) {
+      return;
+    }
+    switchPage(page.id, page.handle);
+    setCurrentPageHandle(page.handle);
+  }, [currentPageId, page?.id, page?.handle, switchPage, setCurrentPageHandle]);
 
   return (
     <Popover id="add-new-page-popup" ref={ref} {...props} className={`${darkMode && 'dark-theme'}`}>
@@ -190,20 +213,37 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         <div className="d-flex justify-content-between align-items-center">
           <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
           <div className="actions-container">
-            <div className="icon-btn">
-              <SolidIcon name="arrowright01" />
-            </div>
-            <div className="icon-btn">
-              <SolidIcon name="duplicatepage" />
-            </div>
-            <div className="icon-btn">
-              <SolidIcon name="delete01" />
-            </div>
+            {type !== 'group' && (
+              <>
+                <ToolTip message={'Go to page'} placement="bottom">
+                  <div onClick={handlePageSwitch} className="icon-btn">
+                    <SolidIcon name="arrowright01" />
+                  </div>
+                </ToolTip>
+                <ToolTip message={`Duplicate ${POPOVER_ACTIONS[type]}`} placement="bottom">
+                  <div onClick={() => clonePage(page?.id)} className="icon-btn">
+                    <SolidIcon name="duplicatepage" />
+                  </div>
+                </ToolTip>
+              </>
+            )}
+
+            <ToolTip message={`Delete ${POPOVER_ACTIONS[type]}`} placement="bottom">
+              <div
+                onClick={() => {
+                  openPageEditPopover(page);
+                  toggleDeleteConfirmationModal(true);
+                }}
+                className="icon-btn"
+              >
+                <SolidIcon name="delete01" />
+              </div>
+            </ToolTip>
           </div>
         </div>
       </Popover.Header>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
-        {type === 'page' && (
+        {type === 'default' && (
           <>
             <div className="pb-2">
               <div className="col">
@@ -214,7 +254,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   value={pageName}
                   autoFocus={true}
                   onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName !== e.target.value && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
                   minLength="1"
                 />
               </div>
@@ -290,7 +330,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   className="form-control"
                   value={pageName}
                   autoFocus={true}
-                  onBlur={(e) => pageName !== e.target.value && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
                   minLength="1"
                 />
               </div>
@@ -302,7 +342,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   onChange={(e) => setPageURL(e.target.value)}
                   className="form-control"
                   value={pageURL}
-                  onBlur={(e) => pageURL !== e.target.value && updatePageURL(page?.id, pageURL)}
+                  onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
                   minLength="1"
                 />
               </div>
@@ -356,7 +396,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   className="form-control"
                   value={pageName}
                   autoFocus={true}
-                  onBlur={(e) => pageName !== e.target.value && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
                   minLength="1"
                 />
               </div>
@@ -425,7 +465,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   value={pageName}
                   autoFocus={true}
                   onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName !== e.target.value && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName, true)}
                   minLength="1"
                 />
               </div>

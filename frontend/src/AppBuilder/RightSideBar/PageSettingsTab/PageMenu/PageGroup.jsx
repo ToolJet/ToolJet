@@ -53,7 +53,7 @@ const RenderPage = ({
     >
       <FolderList
         key={page.handle}
-        onClick={() => switchPageWrapper(page?.id)}
+        onClick={() => switchPageWrapper(page)}
         selectedItem={page?.id === currentPageId}
         CustomIcon={!labelStyle?.icon?.hidden && IconElement}
         customStyles={computeStyles}
