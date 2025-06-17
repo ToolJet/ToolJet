@@ -5,6 +5,10 @@ title: Generate Applications
 
 This guide explains how to quickly generate and modify business applications using ToolJet. You can create an app from scratch with a single prompt or enhance an existing app with AI-powered assistance.
 
+:::warning
+If you are a self-hosted user, please configure the configuratoins mentioned under the [Self-hosted Configuration](/docs/build-with-ai/generate-applications#self-hosting-configuration) section below.
+:::
+
 ## Creating Application
 To create an application, follow these steps:
 
@@ -16,7 +20,7 @@ To create an application, follow these steps:
 </div>
 
 :::info
-The platform features a two-phase interface: an AI-first chat environment for building your initial application, followed by a visual editor for making detailed customizations and refinements. This approach matches the right tool to the right task, letting AI handle the heavy lifting while giving you direct control when you need precision.
+The platform features a two-phase interface: an AI-first chat interface for building your initial application, followed by a visual editor for making detailed customizations and refinements. This approach matches the right tool to the right task, letting AI handle the heavy lifting while giving you direct control when you need precision.
 :::
 
 2. **App generation** – In this stage, you’ll witness the full AI-driven app creation process. It begins with ToolJet analyzing your prompt and generating a list of specifications based on your prompt. These specifications include details like navigation structure, core features, and design requirements. You can review and edit each specification before proceeding.
@@ -25,7 +29,7 @@ The platform features a two-phase interface: an AI-first chat environment for bu
 <img className="screenshot-full img-full" src="/img/tooljet-ai/specs.png" alt="tooljet generate apps " />
  
 </div>
-Once confirmed, ToolJet sets up the database schema for the app. Using ToolJet Database, it automatically creates the necessary tables and columns based on your prompt.
+Once confirmed, ToolJet sets up the database schema for the app. Using [ToolJet Database](/docs/tooljet-db/tooljet-database), it automatically creates the necessary tables and columns based on your prompt.
 
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 
@@ -50,12 +54,9 @@ You can modify any application in ToolJet with AI assitance, whether it's a newl
 For example, if you want add a button in your app you can write a prompt for the same.
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 
-<img className="screenshot-full img-full" src="/img/tooljet-ai/generate05.png" alt="tooljet generate apps " />
+<img className="screenshot-full img-full" src="/img/tooljet-ai/modify.png" alt="tooljet generate apps " />
  
 </div>
-## Limitations
-ToolJet supports generating queries with AI for the following data sources:
-- [Postgres](/docs/data-sources/postgresql/)
-- [MySQL](/docs/data-sources/mysql/)
-- [SQL Server](/docs/data-sources/mssql/)
-- [RunJS Queries](/docs/tooljet-concepts/run-js/)
+
+
+## Self-hosting configuration
