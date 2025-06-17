@@ -120,26 +120,37 @@ function createGranularPermission(id, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group-permissions/${id}/granular-permissions`, requestOptions).then(handleResponse);
+  const type = body.type === 'app' ? 'app' : 'data-source';
+  return fetch(`${config.apiUrl}/v2/group-permissions/${id}/granular-permissions/${type}`, requestOptions).then(
+    handleResponse
+  );
 }
 
-function updateGranularPermission(id, body) {
+function updateGranularPermission(permission, body) {
+  const id = permission.id;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${id}`, requestOptions).then(handleResponse);
+  const type = permission.type === 'app' ? 'app' : 'data-source';
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${type}/${id}`, requestOptions).then(
+    handleResponse
+  );
 }
 
-function deleteGranularPermission(id) {
+function deleteGranularPermission(permission) {
+  const id = permission.id;
   const requestOptions = {
     method: 'DELETE',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${id}`, requestOptions).then(handleResponse);
+  const type = permission.type === 'app' ? 'app' : 'data-source';
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${type}/${id}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function fetchGranularPermissions(groupPermissionId) {

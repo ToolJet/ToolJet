@@ -22,7 +22,8 @@ export const CONSTRAINTS = [
 export enum FEATURE_KEY {
   GET = 'get',
   UPDATE = 'update',
-  WORKSPACE_STATUS_UPDATE = 'status_update',
+  WORKSPACE_ARCHIVE = 'workspace_archive',
+  WORKSPACE_UNARCHIVE = 'workspace_unarchive',
   CHECK_UNIQUE = 'check_unique',
   CREATE = 'create',
   CHECK_UNIQUE_ONBOARDING = 'check_unique_onboarding',

@@ -10,6 +10,7 @@ export enum FEATURE_KEY {
   GET_ONE = 'get_one',
   GET_BY_SLUG = 'APP_VIEW',
   RELEASE = 'release',
+  APP_PUBLIC_UPDATE = 'app_public_update',
 }
 
 export enum APP_TYPES {

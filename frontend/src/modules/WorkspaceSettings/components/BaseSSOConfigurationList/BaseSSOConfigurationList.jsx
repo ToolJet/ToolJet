@@ -135,7 +135,7 @@ class BaseSSOConfigurationList extends React.Component {
   toggleDefaultSSO = async () => {
     try {
       const currentDefaultSSO = !this.state.defaultSSO;
-      await organizationService.editOrganization({ inheritSSO: currentDefaultSSO });
+      await organizationService.updateInheritSSO({ inheritSSO: currentDefaultSSO });
       this.setState(
         {
           defaultSSO: currentDefaultSSO,

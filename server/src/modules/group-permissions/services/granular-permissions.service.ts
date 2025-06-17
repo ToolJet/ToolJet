@@ -11,6 +11,9 @@ import { GranularPermissionQuerySearchParam } from '../types';
 import { IGranularPermissionsService } from '../interfaces/IService';
 import { GroupPermissionLicenseUtilService } from '../util-services/license.util.service';
 import { USER_ROLE } from '../constants';
+import { User } from '@entities/user.entity';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
@@ -21,7 +24,8 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService
   ) {}
 
-  async create(organizationId: string, createGranularPermissionsDto: CreateGranularPermissionDto) {
+  async create(user: User, createGranularPermissionsDto: CreateGranularPermissionDto) {
+    const organizationId = user.organizationId;
     const { createResourcePermissionObject } = createGranularPermissionsDto;
     const group = await this.groupPermissionRepository.getGroup({
       id: createGranularPermissionsDto.groupId,
@@ -29,7 +33,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     });
     this.granularPermissionUtilService.validateGranularPermissionCreateOperation(group);
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.granularPermissionUtilService.create(
+      const granularPermission = await this.granularPermissionUtilService.create(
         {
           createGranularPermissionDto: createGranularPermissionsDto,
           organizationId,
@@ -37,8 +41,16 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         createResourcePermissionObject,
         manager
       );
-
       await this.licenseUserService.validateUser(manager);
+
+      //GRANULAR_PERMISSION_APP_CREATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: granularPermission.id,
+        resourceName: granularPermission.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     });
   }
   async getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]> {
@@ -88,7 +100,8 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     });
   }
 
-  async update(id: string, organizationId: string, updateGranularPermissionDto: UpdateGranularPermissionDto<any>) {
+  async update(id: string, user: User, updateGranularPermissionDto: UpdateGranularPermissionDto<any>) {
+    const organizationId = user.organizationId;
     await dbTransactionWrap(async (manager: EntityManager) => {
       const granularPermissions = await this.groupPermissionRepository.getGranularPermission(
         id,
@@ -105,10 +118,20 @@ export class GranularPermissionsService implements IGranularPermissionsService {
       });
 
       await this.licenseUserService.validateUser(manager);
+
+      //GRANULAR_PERMISSION_APP_UPDATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: granularPermissions.id,
+        resourceName: granularPermissions.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     });
   }
 
-  async delete(id: string, organizationId: string) {
+  async delete(id: string, user: User) {
+    const organizationId = user.organizationId;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const granularPermission = await this.groupPermissionRepository.getGranularPermission(
         id,
@@ -120,6 +143,15 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         throw new BadRequestException();
       }
       await manager.delete(GranularPermissions, id);
+
+      //GRANULAR_PERMISSION_APP_DELETE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: granularPermission.id,
+        resourceName: granularPermission.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     });
   }
 }

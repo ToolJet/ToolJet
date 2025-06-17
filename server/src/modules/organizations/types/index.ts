@@ -8,7 +8,8 @@ interface Features {
   [FEATURE_KEY.UPDATE]: FeatureConfig;
   [FEATURE_KEY.CREATE]: FeatureConfig;
   [FEATURE_KEY.CHECK_UNIQUE_ONBOARDING]: FeatureConfig;
-  [FEATURE_KEY.WORKSPACE_STATUS_UPDATE]: FeatureConfig;
+  [FEATURE_KEY.WORKSPACE_ARCHIVE]: FeatureConfig;
+  [FEATURE_KEY.WORKSPACE_UNARCHIVE]: FeatureConfig;
   [FEATURE_KEY.SET_DEFAULT]: FeatureConfig;
 }
 
