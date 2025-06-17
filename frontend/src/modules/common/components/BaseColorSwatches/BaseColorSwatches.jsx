@@ -4,6 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
+import { Tooltip } from 'react-bootstrap';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const BaseColorSwatches = ({
   value,
@@ -19,6 +21,7 @@ const BaseColorSwatches = ({
   componentType = 'color',
   CustomOptionList = () => {},
   SwatchesToggle = () => {},
+  onReset,
 }) => {
   value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
   const [showPicker, setShowPicker] = useState(false);
@@ -113,6 +116,7 @@ const BaseColorSwatches = ({
     );
   };
   const ColorPickerInputBox = () => {
+    console.log('onReset', onReset);
     return (
       <div
         className="row mx-0 color-picker-input d-flex"
@@ -138,6 +142,15 @@ const BaseColorSwatches = ({
                 .join('/')
             : value}
         </div>
+        {typeof onReset === 'function' && (
+          <div className="col-auto p-0">
+            <OverlayTrigger placement="left" overlay={<Tooltip id="reset-default-color">Reset to default</Tooltip>}>
+              <div onClick={onReset} className="color-reset">
+                <SolidIcon name="reset" />
+              </div>
+            </OverlayTrigger>
+          </div>
+        )}
       </div>
     );
   };
