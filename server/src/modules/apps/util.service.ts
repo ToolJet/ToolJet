@@ -526,7 +526,7 @@ export class AppsUtilService implements IAppsUtilService {
       const tooljetDbDataQueries = await manager
         .createQueryBuilder(DataQuery, 'data_queries')
         .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
-        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
+        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_queries.app_version_id')
         .where('app_versions.app_id = :appId', { appId })
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
