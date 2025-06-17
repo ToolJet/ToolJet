@@ -73,7 +73,7 @@ Once SAML is configured and the groups are created in ToolJet, the next time the
 In some cases (especially for Azure AD), group names are not passed as strings but as object IDs. In such cases, you must use the environment variable based group mapping method.
 
 :::note
-- This method is only applicable for Self-hosted setups.
+- This method is only applicable for self-hosted setups.
 - This configuration applies to all identity providers for SAML group mapping.
 - For Azure AD users: use the Object ID of the group if the configuration does not emit the group name.
 - If environment variables are configured, they will take precedence over the group mappings defined in the above steps.
