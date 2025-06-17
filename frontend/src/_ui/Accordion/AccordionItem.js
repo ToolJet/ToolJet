@@ -40,13 +40,14 @@ const AccordionItem = ({ open = true, index, title, children }) => {
       >
         <div className={cx("accordion-button inspector")}>
           <span
-            className="text-capitalize accordion-title-text"
+            className="text-capitalize accordion-title-text tw-text-sm tw-text-text-default"
             data-cy={`label-${String(title)
               .toLowerCase()
               .replace(/\s+/g, "-")}`}
           >
             {title}
           </span>
+
           <div
             data-cy={`${String(title)
               .toLowerCase()
@@ -57,7 +58,11 @@ const AccordionItem = ({ open = true, index, title, children }) => {
             aria-expanded="false"
             className={cx("accordion-item-trigger", { collapsed: !show })}
             onClick={() => setShow((prev) => !prev)}
-          ></div>
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 10" fill="none">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M1.75248 9.79077C1.45888 9.99505 1.01733 10.0562 0.633728 9.94561C0.250116 9.83505 -1.8595e-08 9.5746 -3.12232e-08 9.2857L-4.0589e-07 0.714319C-4.18519e-07 0.425392 0.250115 0.164965 0.633727 0.0543937C1.01733 -0.0561772 1.45888 0.00496476 1.75248 0.20925L7.54905 4.24239C8.15032 4.6608 8.15032 5.33919 7.54905 5.75761L1.75248 9.79077Z" fill="var(--icon-default)"/>
+            </svg>
+          </div>
         </div>
       </h2>
       <div
