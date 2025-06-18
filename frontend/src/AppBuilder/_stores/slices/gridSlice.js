@@ -178,8 +178,7 @@ export const createGridSlice = (set, get) => ({
           }
         } else if (componentType === 'Form') {
           const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-          const { showHeader, showFooter } = properties;
-          const { headerHeight, footerHeight } = styles;
+          const { showHeader, showFooter, headerHeight, footerHeight } = properties;
           if (showHeader && isProperNumber(headerHeight)) {
             extraHeight += headerHeight;
           }
