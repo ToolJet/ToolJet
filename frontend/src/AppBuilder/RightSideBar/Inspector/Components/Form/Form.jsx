@@ -70,6 +70,7 @@ export const Form = ({
   let properties = [];
   let additionalActions = [];
   let dataProperties = [];
+  let deprecatedProperties = [];
 
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
@@ -81,6 +82,8 @@ export const Form = ({
       additionalActions.push(key);
     } else if (componentMeta?.properties[key]?.section === 'data') {
       dataProperties.push(key);
+    } else if (componentMeta?.properties[key]?.section === 'deprecated') {
+      deprecatedProperties.push(key);
     } else {
       // Skip the fields property as it is handled separately
       if (key === 'fields') continue;
@@ -170,7 +173,7 @@ export const Form = ({
 
   const renderDataElement = () => {
     return (
-      <>
+      <div className={`${resolvedCustomSchema ? 'tw-pointer-events-none opacity-60' : ''}`}>
         {dataProperties?.map((property) => {
           // Mutating the component definition properties to set the generateFormFrom source as we're not saving it to DB unless the user clicks the Generate Form/Refersh data button
           component.component.definition.properties.generateFormFrom = source;
@@ -196,7 +199,7 @@ export const Form = ({
           darkMode={darkMode}
           saveDataSection={saveDataSection}
         />
-      </>
+      </div>
     );
   };
 
@@ -216,6 +219,7 @@ export const Form = ({
     darkMode,
     pages,
     additionalActions,
+    deprecatedProperties,
     resolvedCustomSchema,
     renderDataElement
   );
@@ -243,6 +247,7 @@ export const baseComponentProperties = (
   darkMode,
   pages,
   additionalActions,
+  deprecatedProperties,
   resolvedCustomSchema,
   renderDataElement
 ) => {
@@ -267,13 +272,13 @@ export const baseComponentProperties = (
     });
   }
 
-  if (!resolvedCustomSchema) {
-    items.push({
-      title: 'Data',
-      isOpen: true,
-      children: renderDataElement(),
-    });
-  }
+  // if (!resolvedCustomSchema) {
+  items.push({
+    title: 'Data',
+    isOpen: true,
+    children: renderDataElement(),
+  });
+  // }
 
   if (events.length > 0) {
     items.push({
@@ -359,6 +364,24 @@ export const baseComponentProperties = (
           allComponents
         )}
       </>
+    ),
+  });
+
+  items.push({
+    title: 'Deprecated',
+    isOpen: true,
+    children: deprecatedProperties?.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode
+      )
     ),
   });
 

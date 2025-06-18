@@ -31,6 +31,7 @@ import { shallow } from 'zustand/shallow';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
+import Icon from '@/_ui/Icon/solidIcons/index';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -271,7 +272,10 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [isInsideQueryManager, paramHints]);
+  const overRideFunction = React.useCallback(
+    (context) => autoCompleteExtensionConfig(context),
+    [isInsideQueryManager, paramHints]
+  );
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
@@ -484,9 +488,9 @@ const EditorInput = ({
               }}
             />
           </div>
-        </ErrorBoundary >
-      </CodeHinter.Portal >
-    </div >
+        </ErrorBoundary>
+      </CodeHinter.Portal>
+    </div>
   );
 };
 
@@ -512,7 +516,8 @@ const DynamicEditorBridge = (props) => {
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
-  const { isFxNotRequired, newLine = false } = fieldMeta;
+  const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
+  const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue,
@@ -552,6 +557,11 @@ const DynamicEditorBridge = (props) => {
                 darkMode && 'color-whitish-darkmode'
               }`}
             />
+            {isDeprecated && (
+              <span className={'list-item-deprecated-column-type'}>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
+            )}
           </div>
         )}
       </>

@@ -115,10 +115,12 @@ export const formConfig = {
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
+      section: 'deprecated',
     },
     JSONSchema: {
       type: 'code',
       displayName: 'JSON Schema',
+      section: 'deprecated',
       conditionallyRender: {
         key: 'advanced',
         value: true,
