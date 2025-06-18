@@ -25,7 +25,7 @@ export const getImportPath = async (isGetContext?: boolean, edition?: TOOLJET_ED
     case TOOLJET_EDITIONS.EE:
       return `${join(process.cwd(), baseDir, 'ee')}`;
     case TOOLJET_EDITIONS.Cloud:
-      return `${join(process.cwd(), baseDir, 'cloud')}`;
+      return `${join(process.cwd(), baseDir, 'ee')}`;
     default:
       return `${join(process.cwd(), baseDir, 'src/modules')}`;
   }
