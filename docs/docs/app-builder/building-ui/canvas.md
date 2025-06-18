@@ -1,6 +1,6 @@
 ---
 id: canvas
-title: Canvas and Layout Systems
+title: Canvas and Layout
 ---
 
 **Canvas** is the main playground in the ToolJet App Builder where the application is built and the user interface is designed.
