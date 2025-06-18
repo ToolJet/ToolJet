@@ -48,10 +48,8 @@ export class AbilityService extends IAbilityService {
           isEndUser: false,
           appCreate: acc.appCreate || group.appCreate,
           appDelete: acc.appDelete || group.appDelete,
-          // needs review
           appPromote: acc.appPromote || group.appPromote,
           appRelease: acc.appRelease || group.appRelease,
-          //           // needs review
           dataSourceCreate: acc.dataSourceCreate || group.dataSourceCreate,
           dataSourceDelete: acc.dataSourceDelete || group.dataSourceDelete,
           folderCRUD: acc.folderCRUD || group.folderCRUD,
