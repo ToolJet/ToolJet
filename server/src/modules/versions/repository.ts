@@ -180,7 +180,6 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersions;
     }, manager || this.manager);
   }
- 
   async getAppVersionById(versionId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const version = await manager.findOneOrFail(AppVersion, {

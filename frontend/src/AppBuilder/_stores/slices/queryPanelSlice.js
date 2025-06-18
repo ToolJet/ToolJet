@@ -539,7 +539,7 @@ export const createQueryPanelSlice = (set, get) => ({
     },
 
     previewQuery: (query, calledFromQuery = false, userSuppliedParameters = {}, moduleId = 'canvas') => {
-      const { eventsSlice, queryPanel, app, currentVersionId, selectedEnvironment } = get();
+      const { eventsSlice, queryPanel, appStore, currentVersionId, selectedEnvironment } = get();
       const {
         queryPreviewData,
         setPreviewLoading,
@@ -562,6 +562,8 @@ export const createQueryPanelSlice = (set, get) => ({
       const { onEvent } = eventsSlice;
 
       let parameters = userSuppliedParameters;
+
+      const app = appStore.modules[moduleId].app;
 
       // passing current env through props only for querymanager
       const { environmentId } = app;

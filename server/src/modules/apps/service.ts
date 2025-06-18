@@ -103,8 +103,8 @@ export class AppsService implements IAppsService {
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
-        ? await this.versionRepository.findByName(versionName, app.id)
-        : // Handle version retrieval based on env
+          ? await this.versionRepository.findByName(versionName, app.id)
+          : // Handle version retrieval based on env
           await this.versionRepository.findLatestVersionForEnvironment(
             app.id,
             envId,

@@ -525,7 +525,7 @@ const DynamicEditorBridge = (props) => {
   }, [component, fxActive]);
 
   const renderFx = () => {
-    if (paramType === 'query' || (paramLabel !== 'Type' && isFxNotRequired === undefined)) {
+    if (paramType === 'query' || !(paramLabel !== 'Type' && isFxNotRequired === undefined)) {
       return null;
     }
     return (
