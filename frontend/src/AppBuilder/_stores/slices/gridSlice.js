@@ -21,6 +21,12 @@ export const createGridSlice = (set, get) => ({
   setHoveredComponentForGrid: (id) =>
     set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
   getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
+  checkHoveredComponentDynamicHeight: () => {
+    const { hoveredComponentForGrid, getResolvedComponent } = get();
+    const resolvedProperties = getResolvedComponent(hoveredComponentForGrid, null)?.properties;
+    const { dynamicHeight } = resolvedProperties;
+    return dynamicHeight;
+  },
   setHoveredComponentBoundaryId: (id) =>
     set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
   toggleCanvasUpdater: () =>
