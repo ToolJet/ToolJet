@@ -128,7 +128,6 @@ const WidgetWrapper = memo(
             onOptionsChange={onOptionsChange}
           />
         </div>
-        <DragGhostWidget isDragging={isDragging} />
         <ResizeGhostWidget isResizing={isResizing} />
       </>
     );

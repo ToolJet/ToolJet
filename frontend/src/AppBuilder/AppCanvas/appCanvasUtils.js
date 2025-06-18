@@ -84,6 +84,7 @@ export const addNewWidgetToTheEditor = (
     left = Math.max(0, NO_OF_GRIDS - width);
     width = Math.min(width, NO_OF_GRIDS);
   }
+
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;
@@ -789,7 +790,6 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
     if (isModalHeader) {
       const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
         ?.hideCloseButton;
-      console.log('isModalHeaderCloseBtnEnabled', isModalHeaderCloseBtnEnabled);
       padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
     } else {
       padding = 2 * MODAL_CANVAS_PADDING;
