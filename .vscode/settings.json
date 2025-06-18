@@ -25,6 +25,6 @@
         }
     ],
     "CodeGPT.apiKey": "CodeGPT Plus Beta",
-    "workbench.colorTheme": "Cursor Dark",
+    "workbench.colorTheme": "Default Dark Modern",
     "workbench.iconTheme": "vs-seti"
 }

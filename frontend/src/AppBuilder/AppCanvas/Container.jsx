@@ -4,7 +4,7 @@ import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useDrop } from 'react-dnd';
+import { useDrop, useDragLayer } from 'react-dnd';
 import {
   addChildrenWidgetsToParent,
   addNewWidgetToTheEditor,
@@ -29,6 +29,7 @@ import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { noop } from 'lodash';
+import { useGhostMoveable } from '@/AppBuilder/_hooks/useGhostMoveable';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -72,18 +73,62 @@ export const Container = React.memo(
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
 
+    // Initialize ghost moveable hook (only for main canvas)
+    const { activateGhost, updateGhost, deactivateGhost } = useGhostMoveable();
+
+    // Monitor drag layer to update ghost position continuously
+    const { isDragging, currentOffset, dragItem } = useDragLayer((monitor) => ({
+      isDragging: monitor.isDragging(),
+      currentOffset: monitor.getClientOffset(),
+      dragItem: monitor.getItem(),
+    }));
+
+    // Update ghost position when dragging over main canvas
+    useEffect(() => {
+      if (id === 'canvas' && isDragging && currentOffset && dragItem && !dragItem.id && currentMode === 'edit') {
+        updateGhost(currentOffset, realCanvasRef);
+      }
+    }, [id, isDragging, currentOffset, dragItem, currentMode, updateGhost]);
+
+    // Cleanup ghost when drag ends
+    useEffect(() => {
+      if (id === 'canvas' && !isDragging) {
+        deactivateGhost();
+      }
+    }, [id, isDragging, deactivateGhost]);
+
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
-      hover: (item) => {
+      hover: (item, monitor) => {
         item.canvasRef = realCanvasRef?.current;
         item.canvasId = id;
         item.canvasWidth = getContainerCanvasWidth();
+
+        // Only activate ghost for main canvas and when component is being dragged from sidebar
+        if (id === 'canvas' && !item.id && currentMode === 'edit') {
+          const canvasWidthValue = getContainerCanvasWidth();
+          const currentGridWidth = canvasWidthValue / NO_OF_GRIDS;
+
+          const componentSize = {
+            width: (item.component?.defaultSize?.width || 4) * currentGridWidth,
+            height: item.component?.defaultSize?.height || 40,
+          };
+
+          const clientOffset = monitor.getClientOffset();
+          if (clientOffset) {
+            activateGhost(componentSize, clientOffset, realCanvasRef);
+          }
+        }
       },
       drop: async ({ componentType, component }, monitor) => {
+        // Deactivate ghost when dropping
+        if (id === 'canvas') {
+          deactivateGhost();
+        }
         setShowModuleBorder(false); // Hide the module border when dropping
         if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
         const didDrop = monitor.didDrop();

@@ -12,6 +12,9 @@ const initialState = {
   idGroupDragged: false,
   openModalWidgetId: null,
   subContainerWidths: {},
+  dynamicElementGuidelines: [],
+  moveableRef: null,
+  virtualTarget: null,
 };
 
 export const useGridStore = create(
@@ -26,7 +29,18 @@ export const useGridStore = create(
         setOpenModalWidgetId: (openModalWidgetId) => set({ openModalWidgetId }),
         setSubContainerWidths: (id, width) =>
           set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
+        setVirtualTarget: (target) => set({ virtualTarget: target }),
       },
+      addToElementGuidelines: (selector) =>
+        set((state) => ({
+          dynamicElementGuidelines: [...state.dynamicElementGuidelines, selector],
+        })),
+      removeFromElementGuidelines: (selector) =>
+        set((state) => ({
+          dynamicElementGuidelines: state.dynamicElementGuidelines.filter((item) => item !== selector),
+        })),
+      clearDynamicElementGuidelines: () => set({ dynamicElementGuidelines: [] }),
+      setMoveableRef: (ref) => set({ moveableRef: ref }),
     }),
     { name: 'Grid Store' }
   )

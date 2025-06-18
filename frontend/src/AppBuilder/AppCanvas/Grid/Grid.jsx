@@ -66,6 +66,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
   const [dragParentId, setDragParentId] = useState(null);
   const [elementGuidelines, setElementGuidelines] = useState([]);
+  const dynamicElementGuidelines = useGridStore((state) => state.dynamicElementGuidelines, shallow);
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
@@ -73,6 +74,16 @@ export default function Grid({ gridWidth, currentLayout }) {
   const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
+  const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
+  // Set moveable reference in grid store for access by other components
+  useEffect(() => {
+    if (moveableRef.current) {
+      useGridStore.getState().setMoveableRef(moveableRef.current);
+    }
+    return () => {
+      useGridStore.getState().setMoveableRef(null);
+    };
+  }, [moveableRef.current]);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -105,9 +116,21 @@ export default function Grid({ gridWidth, currentLayout }) {
         return true;
       })
       .map((box) => `.ele-${box.id}`);
-    setElementGuidelines(guidelines);
-  }, [boxList, dragParentId, draggingComponentId, resizingComponentId, selectedComponents, getResolvedValue]);
 
+    // Combine static guidelines with dynamic ones (for ghost elements)
+    const allGuidelines = [...guidelines, ...dynamicElementGuidelines];
+    setElementGuidelines(allGuidelines);
+  }, [
+    boxList,
+    dragParentId,
+    draggingComponentId,
+    resizingComponentId,
+    selectedComponents,
+    getResolvedValue,
+    dynamicElementGuidelines,
+  ]);
+
+  // console.log('boxList', elementGuidelines, dynamicElementGuidelines);
   useEffect(() => {
     setBoxList(
       Object.keys(currentPageComponents)
@@ -593,12 +616,18 @@ export default function Grid({ gridWidth, currentLayout }) {
           customMouseInteraction: groupedTargets.length < 2,
           multiComponentHandle: groupedTargets.length > 1,
         }}
+        resizable={{
+          edge: ['e', 'w'],
+          renderDirections: ['w', 'e'],
+        }}
         flushSync={flushSync}
-        target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
+        // target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
+        target={virtualTarget ? virtualTarget : '.target'}
         origin={false}
         individualGroupable={groupedTargets.length <= 1}
         draggable={!shouldFreeze && mode !== 'view'}
-        resizable={!shouldFreeze ? RESIZABLE_CONFIG : false && mode !== 'view'}
+        // resizable={true}
+        // resizable={!shouldFreeze ? RESIZABLE_CONFIG : false && mode !== 'view'}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
@@ -660,6 +689,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             useGridStore.getState().resizingComponentId !== e.target.id &&
             !e.target.classList.contains('delete-icon')
           ) {
+            console.log('resize start', e);
             // When clicked on widget boundary/resizer, select the component
             setSelectedComponents([e.target.id]);
           }
