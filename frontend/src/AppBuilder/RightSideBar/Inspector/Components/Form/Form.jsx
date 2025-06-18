@@ -33,6 +33,8 @@ export const Form = ({
   const queryNameIdMapping = useStore((state) => state.modules.canvas.queryNameIdMapping, shallow);
   const getChildComponents = useStore((state) => state.getChildComponents, shallow);
   const saveFormFields = useStore((state) => state.saveFormFields, shallow);
+  const runQuery = useStore((state) => state.queryPanel.runQuery, shallow);
+  const getExposedValueOfQuery = useStore((state) => state.getExposedValueOfQuery, shallow);
 
   const [source, setSource] = useState({
     value: component.component.definition.properties?.generateFormFrom?.value,
@@ -64,6 +66,7 @@ export const Form = ({
   const [JSONData, setJSONData] = useState({
     value: resolvedSource === 'rawJson' ? component.component.definition.properties?.JSONData?.value : resolvedSource,
   });
+  const [openModal, setOpenModal] = useState(false);
 
   const tempComponentMeta = deepClone(componentMeta);
 
@@ -119,19 +122,34 @@ export const Form = ({
     };
   }
 
-  const paramUpdatedInterceptor = (param, attr, value, paramType, ...restArgs) => {
+  const paramUpdatedInterceptor = async (param, attr, value, paramType, ...restArgs) => {
     // Need not to auto save if the param is JSONData and generateFormFrom is rawJson
     // Saving will happen when they either click the Generate Form button or Refresh data button
     if (param?.name === 'generateFormFrom') {
       const res = extractAndReplaceReferencesFromString(value, componentNameIdMapping, queryNameIdMapping);
-      let { valueWithId: selectedQuery } = res;
+      let { valueWithId: selectedQuery, allRefs } = res;
       if (attr === 'value') {
         const { generateFormFrom, JSONData } = getFormDataSectionData(component?.id);
         if (value === generateFormFrom?.value) {
           return setJSONData({ value: JSONData.value });
         }
         if (value !== 'rawJson') {
-          const resolvedValue = resolveReferences('canvas', value);
+          const queryId = allRefs[0]?.entityNameOrId;
+          const resolvedValueofQuery = getExposedValueOfQuery(queryId, 'canvas');
+          let resolvedValue = resolveReferences('canvas', value);
+
+          const hasMetadata =
+            resolvedValueofQuery && typeof resolvedValueofQuery === 'object' && 'metadata' in resolvedValueofQuery;
+
+          // Set the source value to the selected query until the query is run
+          setSource((prev) => ({ ...prev, value: selectedQuery }));
+          setOpenModal(true);
+
+          if (!hasMetadata && queryId && runQuery) {
+            await runQuery(queryId, '', false, 'edit');
+            resolvedValue = resolveReferences('canvas', value);
+          }
+
           if (!source?.fxActive) {
             const transformedData = findFirstKeyValuePairWithPath(resolvedValue, selectedQuery);
             setJSONData({ value: transformedData.value });
@@ -198,6 +216,7 @@ export const Form = ({
           paramUpdated={paramUpdatedInterceptor}
           darkMode={darkMode}
           saveDataSection={saveDataSection}
+          openModalFromParent={openModal}
         />
       </div>
     );

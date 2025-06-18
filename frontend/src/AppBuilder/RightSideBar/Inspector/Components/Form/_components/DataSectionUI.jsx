@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import LabeledDivider from './LabeledDivider';
 import ColumnMappingComponent from './ColumnMappingComponent';
@@ -30,7 +30,14 @@ import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
                For example: field.label, field.name, field.value, etc.
 */
 
-const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSection, currentStatusRef }) => {
+const DataSectionUI = ({
+  component,
+  darkMode = false,
+  buttonDetails,
+  saveDataSection,
+  currentStatusRef,
+  openModalFromParent = false,
+}) => {
   const {
     resolveReferences,
     getChildComponents,
@@ -75,6 +82,12 @@ const DataSectionUI = ({ component, darkMode = false, buttonDetails, saveDataSec
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAddFieldPopover, setShowAddFieldPopover] = useState(false);
   const addFieldButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (openModalFromParent) {
+      setIsModalOpen(true);
+    }
+  }, [openModalFromParent]);
 
   const buildColumns = () => {
     if (currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS) {
