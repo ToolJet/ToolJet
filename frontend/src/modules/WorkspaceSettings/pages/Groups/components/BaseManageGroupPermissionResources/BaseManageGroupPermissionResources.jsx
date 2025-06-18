@@ -81,7 +81,6 @@ class BaseManageGroupPermissionResources extends React.Component {
 
   fetchGroupPermission = (groupPermissionId) => {
     groupPermissionV2Service.getGroup(groupPermissionId).then(({ group, isBuilderLevel }) => {
-      console.log('fetched group permissions', group);
       this.setState((prevState) => {
         return {
           isRoleGroup: group.type === 'default',
