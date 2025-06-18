@@ -126,7 +126,7 @@ const DataSectionUI = ({
       label: newField.label,
       value: '',
       placeholder: newField.placeholder,
-      selected: { value: `{{true}}` },
+      selected: true,
       isCustomField: true,
     };
     const childComponents = getChildComponents(component?.id);

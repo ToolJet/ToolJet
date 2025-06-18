@@ -38,7 +38,6 @@ export const createNewComponentFromMeta = (column, parentId, nextTop) => {
           label: {
             value: column.label,
           },
-          visibility: column.selected,
         },
         styles: {
           alignment: { value: 'top' },
@@ -121,11 +120,6 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
     set(updatedComponent.component.definition.validation, 'mandatory', updatedField.mandatory);
   }
 
-  // Update visibility if changed
-  if (updatedField.selected !== currentField.selected) {
-    set(updatedComponent.component.definition.properties, 'visibility', updatedField.selected);
-  }
-
   // Update component type specific properties
   const componentType = updatedField.componentType || componentToUpdate.component.component;
 
@@ -172,7 +166,6 @@ const handleComponentTypeChange = (componentToUpdate, updatedField) => {
           label: {
             value: updatedField.label || componentToUpdate.component.definition.properties.label?.value,
           },
-          visibility: updatedField.selected || componentToUpdate.component.definition.properties.visibility,
           ...(addOptions && { options: componentToUpdate.component.definition.properties.options }),
         },
         styles: {
@@ -272,7 +265,7 @@ export const getFieldDataFromComponent = (componentId, getComponentDefinition) =
   }
 
   const mandatory = definition.validation?.mandatory;
-  const selected = definition.properties?.visibility;
+  const selected = true;
   const placeholder = definition.properties?.placeholder?.value || '';
 
   return {

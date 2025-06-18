@@ -21,7 +21,6 @@ const ColumnMappingRow = ({ column, onChange, onCheckboxChange, index, darkMode 
 
   const inputTypeOptions = getInputTypeOptions(darkMode);
 
-  const isSelectedFxControlled = isPropertyFxControlled(column.selected);
   const isMandatoryFxControlled = isPropertyFxControlled(column.mandatory);
 
   const handleLabelChange = (e) => {
@@ -59,11 +58,7 @@ const ColumnMappingRow = ({ column, onChange, onCheckboxChange, index, darkMode 
     <div className="tw-flex tw-items-center tw-w-full tw-py-3 tw-px-2 tw-border-b tw-border-border-lighter column-mapping-row">
       {/* Checkbox */}
       <div className={cx(`tw-w-6`, { 'tw-invisible': disabled })}>
-        <Checkbox
-          checked={isTrueValue(column.selected.value)}
-          onCheckedChange={onCheckboxChange}
-          disabled={isSelectedFxControlled} // Disable if fx controlled
-        />
+        <Checkbox checked={column.selected} onCheckedChange={onCheckboxChange} />
       </div>
 
       {/* Column Name and Type */}
@@ -136,13 +131,11 @@ const RenderSection = ({
 }) => {
   const columnsArray = Array.isArray(mappedColumns) ? mappedColumns : [];
 
-  const selectableColumns = columnsArray.filter((col) => !isPropertyFxControlled(col.selected));
   const mandatorySettableColumns = columnsArray.filter((col) => !isPropertyFxControlled(col.mandatory));
 
-  const isAllSelected =
-    selectableColumns.length > 0 ? selectableColumns.every((col) => isTrueValue(col.selected.value)) : false;
+  const isAllSelected = columnsArray.length > 0 ? columnsArray.every((col) => col.selected) : false;
 
-  const isIntermediateSelected = !isAllSelected && selectableColumns.some((col) => isTrueValue(col.selected.value));
+  const isIntermediateSelected = !isAllSelected && columnsArray.some((col) => col.selected);
 
   const isAllSelectedMandatory =
     mandatorySettableColumns.length > 0
@@ -154,19 +147,10 @@ const RenderSection = ({
 
   const handleSelectAll = (checked) => {
     if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => {
-        if (isPropertyFxControlled(col.selected)) {
-          return col;
-        }
-
-        return {
-          ...col,
-          selected: {
-            ...col.selected,
-            value: checked,
-          },
-        };
-      });
+      const updatedColumns = columnsArray.map((col) => ({
+        ...col,
+        selected: checked,
+      }));
       setMappedColumns(updatedColumns);
     }
   };
@@ -193,24 +177,14 @@ const RenderSection = ({
   const handleColumnSelect = (columnName, checked) => {
     if (columnsArray.length > 0) {
       const updatedColumns = columnsArray.map((col) => {
-        if (col.name !== columnName || isPropertyFxControlled(col.selected)) {
+        if (col.name !== columnName) {
           return col;
         }
 
-        if (typeof col.selected === 'object') {
-          return {
-            ...col,
-            selected: {
-              ...col.selected,
-              value: checked,
-            },
-          };
-        } else {
-          return {
-            ...col,
-            selected: checked,
-          };
-        }
+        return {
+          ...col,
+          selected: checked,
+        };
       });
       setMappedColumns(updatedColumns);
     }
@@ -343,15 +317,8 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         ) {
           let updatedCol = { ...col };
 
-          // Update the selected property based on its current structure
-          if (typeof updatedCol.selected === 'object') {
-            updatedCol.selected = {
-              ...updatedCol.selected,
-              value: true,
-            };
-          } else {
-            updatedCol.selected = true;
-          }
+          // Set selected as boolean true
+          updatedCol.selected = true;
 
           grouped[sectionType].push(updatedCol);
         } else {
@@ -379,7 +346,9 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
 
   const handleSubmit = () => {
     setIsSaving(true);
-    const combinedColumns = Object.entries(groupedColumns).flatMap(([_, columns]) => columns);
+    const combinedColumns = Object.entries(groupedColumns)
+      .flatMap(([_, columns]) => columns)
+      .filter((column) => column.selected); // Filter out unselected columns
 
     onSubmit?.(combinedColumns);
   };
