@@ -83,7 +83,7 @@ export const pageConfig = {
         isDefault: true,
       },
       selectedTextColor: {
-        value: 'var(--cc-primary-brand)',
+        value: 'var(--cc-primary-text)',
         isDefault: true,
       },
       selectedIconColor: {
@@ -91,7 +91,7 @@ export const pageConfig = {
         isDefault: true,
       },
       pillHoverBackgroundColor: {
-        value: '#ECEEF0',
+        value: 'var(--cc-surface2-surface)',
         isDefault: true,
       },
       pillSelectedBackgroundColor: {
