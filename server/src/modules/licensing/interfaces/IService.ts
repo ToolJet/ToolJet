@@ -12,7 +12,7 @@ export interface ILicenseUserService {
 }
 
 export abstract class LicenseTermsService {
-  constructor(protected readonly licenseInitService: LicenseInitService) { }
+  constructor(protected readonly licenseInitService: LicenseInitService) {}
   abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
 }
 
@@ -32,15 +32,18 @@ export interface ILicenseDecryptService {
 }
 
 export interface ILicenseCountsService {
-  getUserIdWithEditPermission(manager: EntityManager): Promise<any>;
-  fetchTotalEditorCount(manager: EntityManager): Promise<number>;
-  fetchTotalViewerEditorCount(manager: EntityManager): Promise<{ editor: number; viewer: number }>;
+  getUserIdWithEditPermission(organizationId: string, manager: EntityManager): Promise<any>;
+  fetchTotalEditorCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchTotalViewerEditorCount(
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<{ editor: number; viewer: number }>;
   fetchTotalSuperadminCount(manager: EntityManager): Promise<number>;
-  getUsersCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number>;
-  fetchTotalAppCount(manager: EntityManager): Promise<number>;
+  getUsersCount(organizationId: string, isOnlyActive?: boolean, manager?: EntityManager): Promise<number>;
+  fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number>;
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number>;
   organizationsCount(manager?: EntityManager): Promise<number>;
-  fetchTotalAppCount(manager: EntityManager): Promise<number>;
+  fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number>;
 }
 
 export interface ILicenseAppsService {
