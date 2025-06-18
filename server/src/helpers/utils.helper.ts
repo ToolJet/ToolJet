@@ -7,7 +7,6 @@ import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 import { getEnvVars } from 'scripts/database-config-utils';
 
-
 const semver = require('semver');
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
@@ -459,3 +458,7 @@ export function getCustomEnvVars(name: string) {
   const envVars = getEnvVars();
   return envVars[name] || '';
 }
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
+};
