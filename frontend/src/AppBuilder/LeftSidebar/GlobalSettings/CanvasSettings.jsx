@@ -13,6 +13,7 @@ import { Confirm } from '@/Editor/Viewer/Confirm';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { getCssVarValue } from '@/Editor/Components/utils';
 
 const CanvasSettings = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -140,27 +141,38 @@ const CanvasSettings = ({ darkMode }) => {
           )}
           <div className={`${!forceCodeBox && 'hinter-canvas-input'} `}>
             {!forceCodeBox && (
-              <CodeHinter
-                cyLabel={`canvas-bg-colour`}
-                initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                lang="javascript"
-                className="canvas-hinter-wrap"
-                lineNumbers={false}
-                onChange={(color) => {
-                  const options = {
-                    canvasBackgroundColor: resolveReferences(color),
-                    backgroundFxQuery: color,
-                  };
-                  globalSettingsChanged(options);
-                  resolveOthers('canvas', true, { canvasBackgroundColor: color });
-                }}
-              />
+              <div className="canvas-hinter-wrap-container">
+                <CodeHinter
+                  cyLabel={`canvas-bg-colour`}
+                  initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                  lang="javascript"
+                  className="canvas-hinter-wrap"
+                  lineNumbers={false}
+                  onChange={(color) => {
+                    const options = {
+                      canvasBackgroundColor: resolveReferences(color),
+                      backgroundFxQuery: color,
+                    };
+                    globalSettingsChanged(options);
+                    resolveOthers('canvas', true, { canvasBackgroundColor: color });
+                  }}
+                />
+              </div>
             )}
             <div className={`fx-canvas `}>
               <FxButton
                 dataCy={`canvas-bg-color`}
                 active={!forceCodeBox ? true : false}
-                onPress={() => {
+                onPress={async () => {
+                  if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
+                    const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
+                    const options = {
+                      canvasBackgroundColor: value,
+                      backgroundFxQuery: value,
+                    };
+                    await Promise.resolve(globalSettingsChanged(options));
+                    await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
+                  }
                   setForceCodeBox(!forceCodeBox);
                 }}
               />

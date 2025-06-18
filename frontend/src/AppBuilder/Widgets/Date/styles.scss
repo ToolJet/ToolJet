@@ -19,3 +19,22 @@
 .react-datepicker__day--keyboard-selected {
     background-color: var(--cc-surface1-surface) !important;
 }
+
+.daterangepicker-header {
+    .react-select__menu .react-select__menu-list {
+        background-color: var(--cc-surface1-surface) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option {
+        background-color: var(--cc-surface1-surface) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option:hover {
+        background-color: var(--cc-date-dropdown-hover) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option:active {
+        background-color: var(--cc-date-dropdown-active) !important;
+    }
+
+}
