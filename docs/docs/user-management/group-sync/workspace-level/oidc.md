@@ -25,40 +25,69 @@ If the license expires or downgrades to a plan without group sync, both SSO and 
 
 This guide explains how group sync works at the instance level, when to use it, and how to configure it.
 
-## When to use Instance Level Group Sync?
+## When to Use Instance Level Group Sync
 
-Let’s say your organization has multiple workspaces in ToolJet, each dedicated to different departments such as Marketing, Sales, and Engineering. If you’re using an identity provider like Okta or Azure AD, manually setting up group-to-role mappings in every workspace becomes repetitive and error-prone. 
+Imagine your organization has multiple workspaces in ToolJet, one for Marketing, another for Sales, and another for Engineering and you’re using OIDC SSO for authentication. In a traditional setup, you would need to configure OIDC SSO and group sync separately for each workspace. This means setting up group-to-role mappings manually in every workspace, which can quickly become repetitive and prone to errors.
 
-Instance-level group sync resolves this issue. Super Admins can configure OIDC SSO and Group Sync at the instance level, with mappings inherited by a default workspace and optionally applied to other workspaces.
+Instance-level group sync addresses this challenge. As a Super Admin, you can configure OIDC SSO and group sync once at the instance level. These settings are automatically applied to the default workspace and can optionally be inherited by other workspaces.
 
-
-## How it works
-
-1. Super Admins configure OIDC SSO and Group Sync at the instance level. 
-- To configure OIDC SSO and Group Sync, go to Instance Settings > Instance Login tab and click on the OpenID Connect toggle which will open up a modal. 
-- Fill up the CREDENRTIAL details and turn on the Group Sync Toggle to enable it. By default, it will be disabled.
-- Once the Group sync is trunded on, a table will appear where you can select the workspace for which you want to configure the group syc and then you can enter the Claim Name and Group Mappings for the selected workspace.
-- You can also choose whether to inherit the instance-level group sync settings for the default workspace or disable it entirely. Inherited settings apply only to the default workspace unless explicitly overridden.
-- The redirect uri for OIDC SSO is `https://<instance-url>/login` and does not require any modification.
-
-:::note
-The instance-level redirect URI simplifies login by allowing users to authenticate at the root instance URL, eliminating the need to navigate to specific workspace URLs.
-:::
+This setup also streamlines the login experience: users can authenticate directly via the root instance URL, removing the need to access individual workspace URLs.
 
 
-- A designated default workspace automatically inherits the instance-level SSO and Group Sync settings when Group Sync is enabled. Super Admins can toggle inheritance on/off for the default workspace, if another workspace is present.
+## How It Works
 
-3. Multi-Workspace Support
-Super Admins can add additional workspaces to inherit instance-level Group Sync settings 
-Added workspaces inherit the instance-level claim name and group mappings by default but allow modifications.
-Each workspace has a toggle to enable/disable Group Sync inheritance independently.
-At least one workspace should be on enabled state for inheriting instance-level Group Sync. 
+**Role Required**: Super Admin
 
-4. Scalability and Flexibility
-The solution supports multi-tenant environments by allowing instance-level configurations to scale across workspaces without requiring redeployment.
-Text-based group mapping ensures compatibility with various IdPs (e.g., Okta, Azure AD) and minimizes configuration complexity
+###  Enable Group Sync at Instance Level
+- Naviate to **Instance Settings** > **Instance Login** Tab.
+- Click on the OpenID Connect under the SSO section.
+- Setup the OpenID Connect SSO by following this [guide](/docs/user-management/sso/oidc/setup).
+- Enable the **Group Sync** toggle and provide the following information:
 
+    - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., groups).
+    - **Group mapping**: Configure how IdP groups map to ToolJet groups. Use the format:
+    <br/>
+   ```
+   IdP Group -> ToolJet Group, Another IdP Group -> Another ToolJet Group
+   ```
+   For example:
+   ```
+   Marketing Team -> marketing, Sales Team -> sales
+   ```
 
+   Checkout the Group Mapping section below for more details.
+
+   <img className="screenshot-full img-l" src="/img/user-management/group-sync/oidc/setup.png" alt="OIDC Group Sync Config" />
+
+### Default Workspace Inheritance
+ToolJet will apply these settings to one default workspace automatically.
+- You can disable this inheritance if needed
+- If you delete the default workspace, make sure another one inherits the config
+
+### Add More Workspaces
+You can choose other workspaces to inherit the instance-level configuration.
+- Click **Add Workspace**
+- Pick a workspace from the dropdown
+- The workspace will inherit the **Claim Name** and **Group Mappings**
+- You can edit them if needed (overrides the inherited config)
+This makes it easy to roll out consistent role mappings across all workspaces.
+  
+  <img className="screenshot-full img-l" src="/img/user-management/group-sync/oidc/add_ws.png" alt="OIDC Group Sync Config" />
+
+### Disable Group Sync
+If you toggle off Group Sync:
+- All settings are hidden but not lost
+- You can re-enable later, and your previous config will return
+- No changes are applied while it's off
+
+   <img className="screenshot-full img-l" src="/img/user-management/group-sync/oidc/disable.png" alt="OIDC Group Sync Config" />
+
+### Delete Workspaces
+- You can delete workspaces from the sync list
+- ToolJet will show a warning before removing config
+- At least one workspace must stay enabled for Group Sync to work
+
+   <img className="screenshot-full img-l" src="/img/user-management/group-sync/oidc/delete.png" alt="OIDC Group Sync Config" />
 
 ## Group Mapping
 
@@ -77,25 +106,3 @@ Group mapping in ToolJet follows these principles:
 | **engineers** | **engineers** - Doesn't exist <br/> **developer** - Exists | **engineers → developers** | User added to **developers** custom group and assigned **builder** or **end-user** role based on permissions. |
 | **admin**, **developers** | Exists | None | User added to **developers** custom group and assigned **admin** user role. |
 | no group | N/A | None | User added to **end-users** default group. |
-
-## Configure OIDC Group Sync in ToolJet
-
-To set up OIDC group synchronization in ToolJet follow these steps:
-
-1. Navigate to the **Workspace Settings** > **Workspace Login** Tab. <br/>
-   (Example URL: )
-2. Click on the OpenID Connect under the SSO section.
-3. Setup the OpenID Connect SSO by following this [guide](/docs/user-management/sso/oidc/setup).
-4. Enable the **Group Sync** toggle and provide the following information:
-
-- **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., groups).
-- **Group mapping**: Configure how IdP groups map to ToolJet groups. Use the format:
-   ```
-   IdP Group -> ToolJet Group, Another IdP Group -> Another ToolJet Group
-   ```
-   For example:
-   ```
-   Marketing Team -> marketing, Sales Team -> sales
-   ```
-
-   <img className="screenshot-full" src="/img/user-management/group-sync/oidc/mapping.png" alt="OIDC Group Sync Config" />
