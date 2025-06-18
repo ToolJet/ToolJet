@@ -120,6 +120,7 @@
     "sanitize-html": "^2.7.0",
     "semver": "^7.5.4",
     "sshpk": "^1.17.0",
+    "stripe": "^14.3.0",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.3.20",
