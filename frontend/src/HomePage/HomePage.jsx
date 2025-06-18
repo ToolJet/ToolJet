@@ -453,7 +453,6 @@ class HomePageComponent extends React.Component {
   canUserPerform(user, action, app) {
     if (authenticationService.currentSessionValue?.super_admin) return true;
     const currentSession = authenticationService.currentSessionValue;
-    console.log('current session', currentSession);
     const appPermission = currentSession.app_group_permissions;
     const canUpdateApp =
       appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.includes(app?.id));
