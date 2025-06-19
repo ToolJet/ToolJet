@@ -3,7 +3,6 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseInitService } from '../interfaces/IService';
 import { LicenseTermsService as ILicenseTermsService } from '../interfaces/IService';
 import License from '../configs/License';
-import LicenseBase from '../configs/LicenseBase';
 
 @Injectable()
 export class LicenseTermsService extends ILicenseTermsService {

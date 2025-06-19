@@ -121,6 +121,7 @@
     "semver": "^7.5.4",
     "simple-git": "^3.27.0",
     "sshpk": "^1.17.0",
+    "stripe": "^14.3.0",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.3.20",
