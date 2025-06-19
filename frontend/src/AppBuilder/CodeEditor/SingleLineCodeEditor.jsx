@@ -207,6 +207,7 @@ const EditorInput = ({
   onInputChange,
   wrapperRef,
   showSuggestions,
+  setCodeEditorView = null, // Function to set the CodeMirror view
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
@@ -444,6 +445,9 @@ const EditorInput = ({
             <CodeMirror
               onCreateEditor={(view) => {
                 setCodeMirrorView(view);
+                if (setCodeEditorView) {
+                  setCodeEditorView(view);
+                }
               }}
               value={currentValue}
               placeholder={placeholder}

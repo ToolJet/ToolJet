@@ -54,6 +54,7 @@ const MultiLineCodeEditor = (props) => {
     readOnly = false,
     editable = true,
     renderCopilot,
+    setCodeEditorView,
   } = props;
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
@@ -349,7 +350,12 @@ const MultiLineCodeEditor = (props) => {
                 indentWithTab={false}
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager
-                onCreateEditor={(view) => setEditorView(view)}
+                onCreateEditor={(view) => {
+                  setEditorView(view);
+                  if (setCodeEditorView) {
+                    setCodeEditorView(view);
+                  }
+                }}
                 onUpdate={(view) => setIsSearchPanelOpen(searchPanelOpen(view.state))}
               />
             </div>

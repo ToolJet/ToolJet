@@ -128,7 +128,8 @@ export function renderElement(
   components = {},
   darkMode = false,
   placeholder = '',
-  validationFn
+  validationFn,
+  setCodeEditorView = null
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -176,6 +177,7 @@ export function renderElement(
       placeholder={placeholder}
       validationFn={validationFn}
       isHidden={isHidden}
+      setCodeEditorView={setCodeEditorView}
     />
   );
 }

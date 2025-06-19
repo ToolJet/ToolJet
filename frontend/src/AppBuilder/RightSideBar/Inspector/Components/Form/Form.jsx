@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../../EventManager';
 import { renderElement } from '../../Utils';
@@ -67,6 +67,15 @@ export const Form = ({
     value: resolvedSource === 'rawJson' ? component.component.definition.properties?.JSONData?.value : resolvedSource,
   });
   const [openModal, setOpenModal] = useState(false);
+  const [codeEditorView, setCodeEditorView] = useState(null);
+  const shouldFocusJSONDataEditor = useRef(false);
+
+  useEffect(() => {
+    if (codeEditorView && shouldFocusJSONDataEditor.current) {
+      // Focus the codehinter only when the user changes the generateForm dropdown to rawJson
+      codeEditorView.focus();
+    }
+  }, [codeEditorView, shouldFocusJSONDataEditor]);
 
   const tempComponentMeta = deepClone(componentMeta);
 
@@ -126,6 +135,7 @@ export const Form = ({
     // Need not to auto save if the param is JSONData and generateFormFrom is rawJson
     // Saving will happen when they either click the Generate Form button or Refresh data button
     if (param?.name === 'generateFormFrom') {
+      shouldFocusJSONDataEditor.current = false;
       const res = extractAndReplaceReferencesFromString(value, componentNameIdMapping, queryNameIdMapping);
       let { valueWithId: selectedQuery, allRefs } = res;
       if (attr === 'value') {
@@ -157,6 +167,7 @@ export const Form = ({
           }
           setJSONData({ value: resolvedValue });
         } else {
+          shouldFocusJSONDataEditor.current = true;
           setJSONData({
             value:
               "{{{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }}}",
@@ -196,6 +207,7 @@ export const Form = ({
           // Mutating the component definition properties to set the generateFormFrom source as we're not saving it to DB unless the user clicks the Generate Form/Refersh data button
           component.component.definition.properties.generateFormFrom = source;
           component.component.definition.properties.JSONData = JSONData;
+          const focusCodeEditor = property === 'JSONData' ? setCodeEditorView : undefined;
 
           return renderElement(
             component,
@@ -206,7 +218,10 @@ export const Form = ({
             'properties',
             currentState,
             allComponents,
-            darkMode
+            darkMode,
+            '',
+            null,
+            focusCodeEditor
           );
         })}
         <DataSectionWrapper
