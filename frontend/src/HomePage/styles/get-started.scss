@@ -1,0 +1,125 @@
+.get-started-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 64px);
+
+  .card {
+    cursor: pointer;
+    &:hover {
+      box-shadow: var(--elevation-200-box-shadow);
+    }
+    &:active {
+      box-shadow: var(--elevation-000-box-shadow);
+      background-color: var(--interactive-overlays-fill-hover);
+    }
+  }
+
+  .get-started-footer {
+    flex-shrink: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-top: 1px solid var(--border-weak);
+
+    .org-select-container {
+      border-top: none;
+      cursor: pointer;
+      padding: 0 8px;
+      border-right: 1px solid var(--border-weak);
+    }
+
+    .tj-org-select .react-select__control {
+      background-color: var(--page-weak) !important;
+    }
+  }
+
+  .ai-builder-chat-container {
+    position: relative;
+    .footer {
+      display: flex;
+      background-color: transparent;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 100%;
+      padding: 8px;
+      border-radius: 0 0 8px 8px;
+      border-top: 0px !important;
+
+      button[role="combobox"] {
+        border-radius: 100px !important;
+        height: 20px !important;
+        font-size: 11px !important;
+        padding: 0 8px !important;
+
+        &:hover {
+          background-color: var(--interactive-default) !important;
+        }
+      }
+    }
+  }
+}
+
+div[role="listbox"].example-prompts-dropdown__content {
+  width: 220px !important;
+  padding: 8px !important;
+
+  div[role="option"] {
+    padding: 8px 6px !important;
+    font-size: 12px !important;
+    height: 30px !important;
+    cursor: pointer;
+
+    &:hover {
+      outline: 0px !important;
+      border: 0px !important;
+      box-shadow: none !important;
+    }
+
+    > span {
+      width: 100% !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+  }
+}
+
+.slot-placeholder {
+  &-outer {
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    height: 16px;
+    width: calc(100% - 32px);
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &-inner {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &-line {
+    height: 16px;
+    display: flex;
+    align-items: center;
+    opacity: 0.3;
+    transition: opacity 0.4s ease;
+    font-size: 12px;
+    color: var(--text-placeholder);
+
+    &.active {
+      opacity: 1;
+    }
+  }
+}
