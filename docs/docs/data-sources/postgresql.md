@@ -87,6 +87,20 @@ In ToolJet, you can set up server-side row-level security to restrict access to 
 
 You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
+### PostgreSQL Dynamic Functions and System Variables
+
+PostgreSQL offers dynamic functions that provide runtime information about the current session, connection, database, and server settings. These can help you write queries that automatically adapt to different environments without hardcoding values.
+
+| Function / Variable  | Description                                                           | Example Output                              |
+| -------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
+| `current_database()` | Returns the name of the current database                              | `tooljet_db`                                |
+| `current_user`       | Returns the name of the current user                                  | `app_user`                                  |
+| `session_user`       | Returns the session user (same as `current_user` unless role changes) | `app_user`                                  |
+| `version()`          | Returns the PostgreSQL server version                                 | `PostgreSQL 15.3 on x86_64-pc-linux-gnu...` |
+| `inet_server_addr()` | Returns the IP address of the server                                  | `192.168.1.10`                              |
+| `inet_server_port()` | Returns the server port                                               | `5432`                                      |
+| `pg_backend_pid()`   | Returns the process ID of the current backend                         | `56789`                                     |
+
 </div>
 
 <div style={{paddingTop:'24px'}}>
