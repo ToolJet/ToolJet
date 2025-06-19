@@ -24,7 +24,7 @@ import {
   resizeQueryPanel,
   verifypreview
 } from "Support/utils/dataSource";
-import { openNode, verifyNodeData, verifyValue } from "Support/utils/inspector";
+import { openNode, verifyNodeData } from "Support/utils/inspector";
 import {
   addNewPage
 } from "Support/utils/multipage";
@@ -54,8 +54,8 @@ describe("runpy", () => {
     cy.get(".tooltip-inner").invoke("hide");
     openNode("queries");
     openNode("runpy1");
-    verifyValue("data", "Boolean", "true");
-    verifyValue("rawData", "Boolean", "true");
+    verifyNodeData("data", "Boolean", "true");
+    verifyNodeData("rawData", "Boolean", "true");
     cy.apiDeleteApp();
   });
 
@@ -76,11 +76,11 @@ actions.setPageVariable('pageVar', 'pageTest')`
     verifyNodeData("variables", "Object", "1 entry ");
     openNode("variables", 0);
 
-    verifyValue("var", "String", `"test"`);
+    verifyNodeData("var", "String", `"test"`);
 
     openNode("page");
     openNode("variables", 1);
-    verifyValue("pageVar", "String", `"pageTest"`);
+    verifyNodeData("pageVar", "String", `"pageTest"`);
 
     addInputOnQueryField(
       "runpy",

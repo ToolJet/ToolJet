@@ -32,7 +32,7 @@ function findExpression(input) {
 export function extractAndReplaceReferencesFromString(input, componentIdNameMapping = {}, queryIdNameMapping = {}) {
   // Quick check for relevant keywords
   const regexForQuickCheck =
-    /\b(components|queries|globals|variables|page|parameters|secrets|constants)(?:\[\S*|\.\S*|\?\.\S*)/;
+    /\b(components|queries|globals|variables|page|parameters|secrets|constants|input)(?:\[\S*|\.\S*|\?\.\S*)/;
   if (!regexForQuickCheck.test(input)) {
     return {
       allRefs: [],
@@ -41,7 +41,7 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
     };
   }
 
-  const relevantKeywords = /\b(components|queries|globals|variables|page|parameters|secrets|constants)\b/;
+  const relevantKeywords = /\b(components|queries|globals|variables|page|parameters|secrets|constants|input)\b/;
   const expressionRegex = /{{(.*?)}}/gs;
   const results = [];
   let lastIndex = 0;
@@ -312,6 +312,7 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
       variables: true,
       globals: true,
       page: true,
+      input: true,
     };
 
     walk.simple(ast, {
@@ -359,7 +360,7 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
 
       if (
         (rootObject && (rootObject === 'queries' || rootObject === 'components') && path.length >= 3) ||
-        ((rootObject === 'variables' || rootObject === 'globals') && path.length === 2) ||
+        ((rootObject === 'variables' || rootObject === 'globals' || rootObject === 'input') && path.length === 2) ||
         (rootObject === 'page' && path.length === 3)
       ) {
         return createReferenceObject(rootObject, path, uuidMappings, componentIdNameMapping, queryIdNameMapping);
@@ -386,7 +387,7 @@ function createReferenceObject(entityType, path, uuidMappings, componentIdNameMa
       const mapping = entityType === 'components' ? componentIdNameMapping : queryIdNameMapping;
       entityNameOrId = mapping[entityNameOrId] || entityNameOrId;
     }
-  } else if (entityType === 'variables' || entityType === 'globals') {
+  } else if (entityType === 'variables' || entityType === 'globals' || entityType === 'input') {
     entityKey = path[1];
   } else if (entityType === 'page') {
     entityNameOrId = path[1];
