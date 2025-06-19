@@ -33,7 +33,7 @@ describe("Datasource Manager", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit(`${workspaceSlug}`);
-    cy.viewport(1200, 1300);
+    cy.viewport(1800, 1800);
     cy.skipWalkthrough();
   });
 
@@ -250,10 +250,10 @@ describe("Datasource Manager", () => {
     cy.get("#react-select-4-listbox")
       .contains(`cypress-${data.dsName2}-postgresql`)
       .click();
-    
+
     cy.get('[data-cy="query-tab-settings"]').click();
     addSuccessNotification("postgresql");
-        cy.waitForAutoSave();
+    cy.waitForAutoSave();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "postgresql");
 
