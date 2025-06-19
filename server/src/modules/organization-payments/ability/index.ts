@@ -3,15 +3,15 @@ import { Ability, AbilityBuilder, InferSubjects } from '@casl/ability';
 import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '@modules/organization-payments/constants';
-import { OrganizationConstant } from '@entities/organization_constants.entity';
+import { OrganizationSubscription } from '@entities/organization_subscription.entity';
 
-type Subjects = InferSubjects<typeof OrganizationConstant> | 'all';
+type Subjects = InferSubjects<typeof OrganizationSubscription> | 'all';
 export type OrganizationConstantAbility = Ability<[FEATURE_KEY, Subjects]>;
 
 @Injectable()
 export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
   protected getSubjectType() {
-    return OrganizationConstant;
+    return OrganizationSubscription;
   }
 
   protected defineAbilityFor(
@@ -32,7 +32,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.UPDATE_INVOICE,
           FEATURE_KEY.UPDATE_SUBSCRIPTION,
         ],
-        OrganizationConstant
+        OrganizationSubscription
       );
     }
   }

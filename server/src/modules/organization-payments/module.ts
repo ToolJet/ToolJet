@@ -10,8 +10,8 @@ export class OrganizationPaymentModule {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
 
     // Dynamically import services and controllers
-    const { OrganizationPaymentController } = await import(`${importPath}/organization-payment/controller`);
-    const { OrganizationPaymentService } = await import(`${importPath}/organization-payment/service`);
+    const { OrganizationPaymentController } = await import(`${importPath}/organization-payments/controller`);
+    const { OrganizationPaymentService } = await import(`${importPath}/organization-payments/service`);
 
     return {
       module: OrganizationPaymentModule,
