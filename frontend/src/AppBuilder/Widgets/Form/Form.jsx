@@ -86,8 +86,6 @@ const FormComponent = (props) => {
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    scrollbarWidth: 'none' /* Firefox */,
-    msOverflowStyle: 'none' /* IE and Edge */,
   };
 
   const parentRef = useRef(null);

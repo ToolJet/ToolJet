@@ -1192,7 +1192,8 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
-    const { currentPageIndex, getCurrentMode, saveComponentChanges } = get();
+    const { getCurrentPageIndex, getCurrentMode, saveComponentChanges } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     const currentMode = getCurrentMode(moduleId);
     const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
     const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
