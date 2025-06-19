@@ -26,7 +26,11 @@ export class EditorUserCountGuard implements CanActivate {
     if (editorsCount === LICENSE_LIMIT.UNLIMITED) {
       return true;
     }
-    const editorCount = await this.licenseCountsService.fetchTotalEditorCount(this._dataSource.manager);
+    const organizationId =
+      typeof request.headers['tj-workspace-id'] === 'object'
+        ? request.headers['tj-workspace-id'][0]
+        : request.headers['tj-workspace-id'];
+    const editorCount = await this.licenseCountsService.fetchTotalEditorCount(organizationId, this._dataSource.manager);
 
     if (editorCount >= editorsCount) {
       throw new HttpException('Maximum editor user limit reached', 451);

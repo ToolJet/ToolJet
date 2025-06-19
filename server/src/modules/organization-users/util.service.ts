@@ -129,7 +129,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       }
 
       // Step 4 - License check
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
     }, manager);
   }
 
@@ -497,7 +497,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, true, manager);
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, currentOrganization.id);
       await this.licenseOrganizationService.validateOrganization(manager);
 
       /* Send welcome email */
@@ -600,21 +600,17 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     return user;
   }
 
-  addUserToWorkspace = async (
-    user: User,
-    workspace: Organization,
-    manager?: EntityManager
-  ) => {
+  addUserToWorkspace = async (user: User, workspace: Organization, manager?: EntityManager) => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create organization user entry if not exists
-      let existingOrgUser = await this.organizationUsersRepository.findOne({
+      const existingOrgUser = await this.organizationUsersRepository.findOne({
         where: {
           userId: user.id,
           organizationId: workspace.id,
-        }
+        },
       });
 
-      if(existingOrgUser){ 
+      if (existingOrgUser) {
         return existingOrgUser;
       }
 
@@ -627,11 +623,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       );
 
       // Add end-user role in default workspace if not already present
-      await this.rolesUtilService.addUserRole(
-        workspace.id,
-        { role: USER_ROLE.END_USER, userId: user.id },
-        manager
-      );
+      await this.rolesUtilService.addUserRole(workspace.id, { role: USER_ROLE.END_USER, userId: user.id }, manager);
 
       return organizationUser;
     }, manager);

@@ -77,7 +77,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       );
 
       // Step 4 - validate license
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
       return;
     });
   }
@@ -166,7 +166,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       const updatedStatus =
         !!invitationToken && status === USER_STATUS.ARCHIVED ? USER_STATUS.INVITED : USER_STATUS.ACTIVE;
       await this.organizationUsersUtilService.updateUserStatus(userId, updatedStatus, manager);
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, unarchivedUserWorkspaces[0].organizationId);
       await this.licenseOrganizationService.validateOrganization(manager);
       const organizationIds = unarchivedUserWorkspaces.map((user) => user.organizationId);
       const auditLogEntry = {
@@ -209,7 +209,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         invitationToken,
       });
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
       await this.licenseOrganizationService.validateOrganization(manager);
       const organization = await manager.findOne(Organization, {
         where: { id: organizationUser.organizationId },

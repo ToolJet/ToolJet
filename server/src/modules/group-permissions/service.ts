@@ -104,7 +104,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
       }, [DATA_BASE_CONSTRAINTS.GROUP_NAME_UNIQUE]);
 
       // Validating license
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
     });
   }
 
@@ -174,7 +174,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
         // CE - EE changes - removed data source
       }
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
       return newGroup;
     });
   }
@@ -188,7 +188,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager);
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
     }, manager);
   }
 

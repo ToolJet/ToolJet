@@ -15,7 +15,7 @@ export class LicenseUserService implements ILicenseUserService {
     protected readonly licenseCountsService: LicenseCountsService
   ) {}
 
-  async getUserLimitsByType(type: LIMIT_TYPE): Promise<any> {
+  async getUserLimitsByType(type: LIMIT_TYPE, organizationId): Promise<any> {
     const {
       allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
       status: licenseStatus,
@@ -27,28 +27,31 @@ export class LicenseUserService implements ILicenseUserService {
           if (users === LICENSE_LIMIT.UNLIMITED) {
             return;
           }
-          const currentUsersCount = await this.licenseCountsService.getUsersCount(true, manager);
+          const currentUsersCount = await this.licenseCountsService.getUsersCount(organizationId, true, manager);
           return generatePayloadForLimits(currentUsersCount, users, licenseStatus);
         }
         case LIMIT_TYPE.EDITOR: {
           if (editorUsers === LICENSE_LIMIT.UNLIMITED) {
             return;
           }
-          const currentEditorsCount = await this.licenseCountsService.fetchTotalEditorCount(manager);
+          const currentEditorsCount = await this.licenseCountsService.fetchTotalEditorCount(organizationId, manager);
           return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
         }
         case LIMIT_TYPE.VIEWER: {
           if (viewerUsers === LICENSE_LIMIT.UNLIMITED) {
             return;
           }
-          const { viewer: currentViewersCount } = await this.licenseCountsService.fetchTotalViewerEditorCount(manager);
+          const { viewer: currentViewersCount } = await this.licenseCountsService.fetchTotalViewerEditorCount(
+            organizationId,
+            manager
+          );
           return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
         }
         case LIMIT_TYPE.ALL: {
-          const currentUsersCount = await this.licenseCountsService.getUsersCount(true, manager);
+          const currentUsersCount = await this.licenseCountsService.getUsersCount(organizationId, true, manager);
           const currentSuperadminsCount = await this.licenseCountsService.fetchTotalSuperadminCount(manager);
           const { viewer: currentViewersCount, editor: currentEditorsCount } =
-            await this.licenseCountsService.fetchTotalViewerEditorCount(manager);
+            await this.licenseCountsService.fetchTotalViewerEditorCount(organizationId, manager);
 
           return {
             usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),
@@ -76,7 +79,7 @@ export class LicenseUserService implements ILicenseUserService {
     });
   }
 
-  async validateUser(manager: EntityManager): Promise<void> {
+  async validateUser(manager: EntityManager, organizationId): Promise<void> {
     let editor = -1,
       viewer = -1;
     const {
@@ -93,16 +96,19 @@ export class LicenseUserService implements ILicenseUserService {
       }
     }
 
-    if (users !== LICENSE_LIMIT.UNLIMITED && (await this.licenseCountsService.getUsersCount(true, manager)) > users) {
+    if (
+      users !== LICENSE_LIMIT.UNLIMITED &&
+      (await this.licenseCountsService.getUsersCount(organizationId, true, manager)) > users
+    ) {
       throw new HttpException('You have reached your limit for number of users.', 451);
     }
 
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED && viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
-      ({ editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(manager));
+      ({ editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(organizationId, manager));
     }
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (editor === -1) {
-        editor = await this.licenseCountsService.fetchTotalEditorCount(manager);
+        editor = await this.licenseCountsService.fetchTotalEditorCount(organizationId, manager);
       }
       if (editor > editorUsers) {
         throw new HttpException('You have reached your limit for number of builders.', 451);
@@ -111,9 +117,9 @@ export class LicenseUserService implements ILicenseUserService {
 
     if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (viewer === -1) {
-        ({ viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(manager));
+        ({ viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(organizationId, manager));
       }
-      const addedUsers = await this.licenseCountsService.getUsersCount(true, manager);
+      const addedUsers = await this.licenseCountsService.getUsersCount(organizationId, true, manager);
       const addableUsers = users - addedUsers;
 
       if (viewer > viewerUsers && addableUsers < 0) {

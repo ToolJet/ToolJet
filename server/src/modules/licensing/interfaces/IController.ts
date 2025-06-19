@@ -88,7 +88,7 @@ export interface ILicenseUserController {
    * @param type - The limit type.
    * @returns {Promise<any>} The user limits.
    */
-  getUserLimits(type: LIMIT_TYPE): Promise<any>;
+  getUserLimits(type: LIMIT_TYPE, user: any): Promise<any>;
 }
 
 /**

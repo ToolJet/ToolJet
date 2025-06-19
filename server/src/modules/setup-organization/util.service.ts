@@ -44,7 +44,7 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
       }
       await this.sampleDBService.createSampleDB(organization.id, manager);
       await this.licenseOrganizationService.validateOrganization(manager);
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, 'INSTANCE');
       //create default theme for this organization
       await this.organizationThemesUtilService.createDefaultTheme(manager, organization.id);
       await this.tooljetDbTableOperationsService.createTooljetDbTenantSchemaAndRole(organization.id, manager);

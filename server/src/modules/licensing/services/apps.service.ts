@@ -13,7 +13,7 @@ export class LicenseAppsService implements ILicenseAppsService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly licenseCountService: LicenseCountsService
   ) {}
-  async getAppsLimit() {
+  async getAppsLimit(organizationId?: string): Promise<any> {
     const licenseTerms = await this.licenseTermsService.getLicenseTerms([
       LICENSE_FIELD.APP_COUNT,
       LICENSE_FIELD.STATUS,
@@ -22,7 +22,7 @@ export class LicenseAppsService implements ILicenseAppsService {
       return {
         appsCount: generatePayloadForLimits(
           licenseTerms[LICENSE_FIELD.APP_COUNT] !== LICENSE_LIMIT.UNLIMITED
-            ? await this.licenseCountService.fetchTotalAppCount(manager)
+            ? await this.licenseCountService.fetchTotalAppCount(organizationId, manager)
             : 0,
           licenseTerms[LICENSE_FIELD.APP_COUNT],
           licenseTerms[LICENSE_FIELD.STATUS],
