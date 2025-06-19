@@ -6,7 +6,7 @@ export class AddUniqueAppSlug1749765848193 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     // If edition is not cloud, skip this migration
-    if (edition !== 'cloud') {
+    if (edition !== TOOLJET_EDITIONS.Cloud) {
       console.log('Migration is only restricted for cloud edition.');
       return; // Exit the migration early
     }

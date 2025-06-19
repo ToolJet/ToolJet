@@ -7,19 +7,19 @@ export class ReplaceTheSampleDBConnectionValues1749766677207 implements Migratio
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     // If edition is not cloud, skip this migration
-    if (edition !== 'cloud') {
+    if (edition !== TOOLJET_EDITIONS.Cloud) {
       console.log('Migration is only restricted for cloud edition.');
       return; // Exit the migration early
     }
+    console.log(edition, 'edition');
+    
     const { SampleDataSourceService } = await import(
       `${await getImportPath(true, edition)}/data-sources/services/sample-ds.service`
     );
-    const app = await NestFactory.create(AppModule, {
-      logger: ['error', 'warn'],
-    });
-    const dataSourceService = app.get(SampleDataSourceService);
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const dataSourceService = nestApp.get(SampleDataSourceService);
     await dataSourceService.updateSampleDs(queryRunner.manager);
-    await app.close();
+    await nestApp.close();
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}

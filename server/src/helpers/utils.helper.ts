@@ -451,6 +451,9 @@ export const getSubpath = () => {
 };
 
 export function getTooljetEdition(): string {
+  if (process.env.TOOLJET_EDITION) {
+    return process.env.TOOLJET_EDITION.toLowerCase();
+  }
   const envVars = getEnvVars();
   return envVars['TOOLJET_EDITION']?.toLowerCase() || 'ce';
 }
