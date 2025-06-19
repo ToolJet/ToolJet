@@ -103,6 +103,20 @@ In ToolJet, you can set up server-side row-level security to restrict access to 
 
 You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
+### MS SQL Server Dynamic Functions and System Variables
+
+SQL Server provides dynamic functions that return information about the current connection, database, user, and server. These can help you write queries that automatically adapt to different environments without hardcoding values.
+
+| Function / Variable | Description                                        | Example Output                       |
+| ------------------- | -------------------------------------------------- | ------------------------------------ |
+| `DB_NAME()`         | Returns the name of the current database           | `tooljet_db`                         |
+| `SUSER_SNAME()`     | Returns the login name of the current user         | `app_user`                           |
+| `USER_NAME()`       | Returns the database user name of the current user | `dbo`                                |
+| `SYSTEM_USER`       | Returns the current system login (login name)      | `app_user`                           |
+| `@@SERVERNAME`      | Returns the name of the SQL Server instance        | `MSSQLSERVER01`                      |
+| `@@VERSION`         | Returns the SQL Server version and build info      | `Microsoft SQL Server 2019 (RTM)...` |
+| `@@SPID`            | Returns the current session ID                     | `55`                                 |
+
 </div>
 
 <div style={{paddingTop:'24px'}}>
