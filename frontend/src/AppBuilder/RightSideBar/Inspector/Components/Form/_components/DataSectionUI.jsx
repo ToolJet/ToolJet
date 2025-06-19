@@ -16,6 +16,7 @@ import {
   mergeFieldsWithComponentDefinition,
   mergeFormFieldsWithNewData,
   cleanupFormFields,
+  mergeArrays,
 } from '../utils/utils';
 import { updateFormFieldComponent, createNewComponentFromMeta } from '../utils/fieldOperations';
 import { merge, isEqual } from 'lodash';
@@ -91,7 +92,8 @@ const DataSectionUI = ({
 
   const buildColumns = () => {
     if (currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS) {
-      return formFieldsWithComponentDefinition;
+      const allColumnsFromJsonData = parseDataAndBuildFields(newResolvedJsonData);
+      return mergeArrays(allColumnsFromJsonData, formFieldsWithComponentDefinition);
     } else if (currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS) {
       const jsonDifferences = analyzeJsonDifferences(newResolvedJsonData, existingResolvedJsonData);
       const mergedJsonData = merge({}, existingResolvedJsonData, newResolvedJsonData);

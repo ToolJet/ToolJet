@@ -306,3 +306,15 @@ export const findFirstKeyValuePairWithPath = (data, basePath = '') => {
     path: null,
   };
 };
+
+export const mergeArrays = (arr1, arr2) => {
+  const map = new Map();
+
+  // Add all from arr1
+  arr1.forEach((item) => map.set(item.key, item));
+
+  // Overwrite/add from arr2
+  arr2.forEach((item) => map.set(item.key, item));
+
+  return Array.from(map.values());
+};
