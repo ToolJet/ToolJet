@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { getComponentToRender } from '@/_helpers/editorHelpers';
+// import { getComponentToRender } from '@/_helpers/editorHelpers';
 import _ from 'lodash';
 import { getComponentsToRenders, flushComponentsToRender } from '@/_stores/editorStore';
 
@@ -58,7 +58,7 @@ const ComponentWrapper = React.memo(({ componentName, ...props }) => {
     setKey(Math.random());
   }, []);
 
-  const ComponentToRender = getComponentToRender(componentName);
+  const ComponentToRender = <></>; // getComponentToRender(componentName);
 
   if (ComponentToRender === null) return;
   if (componentName === 'Form') {

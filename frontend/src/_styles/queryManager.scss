@@ -4,11 +4,11 @@
 $border-radius: 4px;
 
 .query-manager {
+  user-select: none;
+
   .react-select__value-container {
     margin-bottom: 0px !important;
   }
-
-  user-select: none;
 
   .btn {
     height: 31px;
@@ -89,6 +89,20 @@ $border-radius: 4px;
 }
 
 .query-pane {
+
+  height: 400px;
+  position: fixed;
+  left: 48px;
+  right: 300px;
+  bottom: 0;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  font-size: 12px;
+  line-height: 20px;
+  border-top: 1px solid var(--slate5);
+  border-width: 1px 0px 0px 0px;
+  background-color: var(--base);
+
   &.expanded {
     z-index: 12 !important;
   }
@@ -106,19 +120,6 @@ $border-radius: 4px;
       border-width: 2px 0px 0px 0px;
     }
   }
-
-  height: 400px;
-  position: fixed;
-  left: 48px;
-  right: 300px;
-  bottom: 0;
-  overflow-x: hidden;
-  flex: 1 1 auto;
-  font-size: 12px;
-  line-height: 20px;
-  border-top: 1px solid var(--slate5);
-  border-width: 1px 0px 0px 0px;
-  background-color: var(--base);
 
   &#query-manager {
     border-width: 3px 0px 0px 0px;
@@ -1131,6 +1132,8 @@ $border-radius: 4px;
       justify-content: space-between;
 
       .left {
+        cursor: pointer;
+
         span {
           color: var(--slate12);
           font-family: 'source-code-pro', Menlo, 'Courier New', Consolas, monospace;
@@ -1145,7 +1148,6 @@ $border-radius: 4px;
           fill: var(--slate12) !important;
         }
 
-        cursor: pointer;
       }
     }
 

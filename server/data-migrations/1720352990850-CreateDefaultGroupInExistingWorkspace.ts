@@ -29,6 +29,11 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreateDefaultGroupInExistingWorkspace1720352990850 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const edition = getTooljetEdition() as TOOLJET_EDITIONS;
+    if (edition === TOOLJET_EDITIONS.Cloud) {
+      console.log('Migration is only restricted for cloud edition.');
+      return; // Exit the migration early
+    }
     const manager = queryRunner.manager;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
 

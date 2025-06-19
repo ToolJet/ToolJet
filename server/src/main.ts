@@ -17,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { custom } from 'openid-client';
 import { join } from 'path';
-import * as helmet from 'helmet';
+import helmet from 'helmet';
 import * as express from 'express';
 import * as fs from 'fs';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
