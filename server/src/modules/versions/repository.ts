@@ -164,4 +164,31 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersion.app;
     }, manager || this.manager);
   }
+
+  async findVersionsFromApp(app: App, manager?: EntityManager): Promise<AppVersion[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersions = await manager.find(AppVersion, {
+        where: { appId: app.id },
+        relations: [
+          'app',
+          'dataQueries',
+          'dataQueries.dataSource',
+          'dataQueries.plugins',
+          'dataQueries.plugins.manifestFile',
+        ],
+      });
+      return appVersions;
+    }, manager || this.manager);
+  }
+
+  async getAppVersionById(versionId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const version = await manager.findOneOrFail(AppVersion, {
+        where: { id: versionId },
+        relations: ['app'],
+      });
+      if (!version) throw new BadRequestException('Wrong version Id');
+      return version;
+    });
+  }
 }

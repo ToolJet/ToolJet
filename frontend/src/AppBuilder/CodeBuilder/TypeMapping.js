@@ -23,4 +23,5 @@ export const TypeMapping = {
   numberInput: 'NumberInput',
   tableRowHeightInput: 'TableRowHeightInput',
   dropdownMenu: 'DropdownMenu',
+  query: 'Query',
 };
