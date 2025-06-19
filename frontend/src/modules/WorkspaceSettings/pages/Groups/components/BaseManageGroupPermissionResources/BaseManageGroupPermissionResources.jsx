@@ -21,6 +21,7 @@ import ChangeRoleModal from '../ChangeRoleModal';
 import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
+import { debounce } from 'lodash';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -350,9 +351,9 @@ class BaseManageGroupPermissionResources extends React.Component {
     this.setState({ showRoleEditMessage: true });
   };
 
-  handleUserSearchInGroup = (e) => {
+  handleUserSearchInGroup = debounce((e) => {
     this.fetchUsersInGroup(this.props.groupPermissionId, e?.target?.value);
-  };
+  }, 500);
 
   toggleUserTabSearchBox = () => {
     this.fetchUsersInGroup(this.props.groupPermissionId);
