@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
 describe('Number Input Component Tests', () => {
@@ -86,7 +86,7 @@ describe('Number Input Component Tests', () => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Numberinput-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Number Input", 50, 50);
+        cy.dragAndDropWidget("Number Input", 500, 500);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
@@ -95,8 +95,8 @@ describe('Number Input Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("numberinput1", exposedValues, verifyValue);
-        verifyNodes(functions, verifyfunctions);
+        openAndVerifyNode("numberinput1", exposedValues, verifyNodeData);
+        verifyNodes(functions, verifyNodeData);
         //id is pending
 
     });

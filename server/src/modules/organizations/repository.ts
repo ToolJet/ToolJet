@@ -21,7 +21,7 @@ export class OrganizationRepository extends Repository<Organization> {
 
   async fetchOrganizationWithSSOConfigs(slug: string, statusList?: Array<boolean>): Promise<Organization> {
     const conditions: any = {
-      relations: ['ssoConfigs'],
+      relations: ['ssoConfigs', 'ssoConfigs.oidcGroupSyncs'],
       where: {
         ssoConfigs: {
           enabled: statusList ? In(statusList) : In([true, false]),

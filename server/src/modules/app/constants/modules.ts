@@ -40,5 +40,6 @@ export enum MODULES {
   AUDIT_LOGS = 'auditLogs',
   EXTERNAL_APIS = 'externalApis',
   ORGANIZATION_PAYMENTS = 'organizationPayments',
+  MODULES = 'Modules',
   GIT_SYNC = 'GitSync', //register
 }
