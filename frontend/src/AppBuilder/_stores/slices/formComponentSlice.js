@@ -15,10 +15,11 @@ export const createFormComponentSlice = (set, get) => ({
     return { generateFormFrom, JSONData };
   },
   saveFormDataSectionData: (componentId, data, fields, moduleId = 'canvas') => {
-    const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
+    const { getComponentDefinition, withUndoRedo, getCurrentPageIndex, saveComponentPropertyChanges } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return;
 
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     set(
       withUndoRedo((state) => {
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
@@ -48,10 +49,11 @@ export const createFormComponentSlice = (set, get) => ({
   saveFormFields: (componentId, fields, moduleId = 'canvas') => {
     if (!componentId) return;
 
-    const { getComponentDefinition, withUndoRedo, currentPageIndex, saveComponentPropertyChanges } = get();
+    const { getComponentDefinition, withUndoRedo, getCurrentPageIndex, saveComponentPropertyChanges } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return;
 
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     set(
       withUndoRedo((state) => {
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
@@ -190,12 +192,13 @@ export const createFormComponentSlice = (set, get) => ({
       currentMode,
       saveComponentChanges,
       withUndoRedo,
-      currentPageIndex,
+      getCurrentPageIndex,
       getResolvedComponent,
       getComponentDefinition,
     } = get();
 
     let diff = {};
+    const currentPageIndex = getCurrentPageIndex(moduleId);
 
     // Process resolved values for each component diff before state update
     Object.entries(componentDiffs).forEach(([componentId, componentDiff]) => {
