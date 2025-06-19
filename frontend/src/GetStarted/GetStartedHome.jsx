@@ -43,7 +43,7 @@ function Hero() {
         <h1 className="tw-text-2xl tw-font-medium tw-text-center tw-text-text-default tw-mb-2">
           What do you want to build today?
         </h1>
-        <AiBuilder onChange={handleAiBuilderChange} />
+        <AiBuilder onSubmit={handleAiBuilderChange} />
       </div>
     </div>
   );

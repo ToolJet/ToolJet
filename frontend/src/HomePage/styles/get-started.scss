@@ -4,6 +4,7 @@
   justify-content: center;
   align-items: center;
   height: calc(100vh - 64px);
+  background: var(--page-weak);
 
   .card {
     cursor: pointer;
@@ -38,7 +39,7 @@
 
   .ai-builder-chat-container {
     position: relative;
-    .footer {
+    .ai-builder-footer {
       display: flex;
       background-color: transparent;
       justify-content: flex-end;
@@ -47,7 +48,7 @@
       position: absolute;
       bottom: 0;
       right: 0;
-      width: 100%;
+      width: fit-content;
       padding: 8px;
       border-radius: 0 0 8px 8px;
       border-top: 0px !important;
