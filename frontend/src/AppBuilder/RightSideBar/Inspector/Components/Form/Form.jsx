@@ -228,7 +228,6 @@ export const Form = ({
           source={source}
           JSONData={JSONData}
           component={component}
-          paramUpdated={paramUpdatedInterceptor}
           darkMode={darkMode}
           saveDataSection={saveDataSection}
           openModalFromParent={openModal}

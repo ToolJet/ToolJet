@@ -45,7 +45,6 @@ const DataSectionUI = ({
     currentLayout,
     getComponentDefinition,
     performBatchComponentOperations,
-    getFormFields,
     saveFormFields,
     getFormDataSectionData,
   } = useStore(
@@ -55,7 +54,6 @@ const DataSectionUI = ({
       currentLayout: state.currentLayout,
       getComponentDefinition: state.getComponentDefinition,
       performBatchComponentOperations: state.performBatchComponentOperations,
-      getFormFields: state.getFormFields,
       saveFormFields: state.saveFormFields,
       getFormDataSectionData: state.getFormDataSectionData,
     }),
