@@ -6,6 +6,7 @@
 
 .wj-form-header {
   position: relative;
+
   &::after {
     content: "";
     position: absolute;
@@ -19,6 +20,7 @@
 
 .wj-form-footer {
   position: relative;
+
   &::after {
     content: "";
     position: absolute;
@@ -48,7 +50,8 @@
 .resizable-slot {
   position: relative;
   height: auto;
-  box-shadow: 0 0 0 1px transparent; /* Acts as a border */
+  box-shadow: 0 0 0 1px transparent;
+  /* Acts as a border */
   transition: box-shadow 0.15s ease-in-out;
   max-height: 100%;
 
@@ -67,8 +70,10 @@
   .resize-handle {
     position: absolute;
     bottom: -4px;
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Ensure proper centering */
+    left: 50%;
+    /* Center horizontally */
+    transform: translateX(-50%);
+    /* Ensure proper centering */
     width: 24px;
     height: 8px;
     border-radius: 4px;
@@ -85,8 +90,7 @@
   }
 }
 
-.only-bottom {
-}
+.only-bottom {}
 
 .jet-form-header {
   min-height: 10px;
@@ -114,7 +118,34 @@
     left: -3px;
     right: -3px;
   }
+
   .jet-form-body fieldset {
     padding: 20px;
   }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Show scrollbar on hover for Chrome, Safari and Opera */
+.show-scrollbar-on-hover:hover::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+/* Scrollbar styling when visible on hover */
+.show-scrollbar-on-hover:hover::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }

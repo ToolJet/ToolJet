@@ -20,6 +20,7 @@ export const Code = ({
   placeholder,
   validationFn,
   isHidden = false,
+  setCodeEditorView,
   customMeta,
 }) => {
   const currentState = useCurrentState();
@@ -75,6 +76,7 @@ export const Code = ({
         placeholder={placeholder}
         validationFn={validationFn}
         cyLabel=""
+        setCodeEditorView={setCodeEditorView}
       />
     </div>
   );

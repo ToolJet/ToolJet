@@ -20,7 +20,15 @@ const CODE_EDITOR_TYPE = {
   tjdbHinter: TJDBCodeEditor,
 };
 
-const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, renderCopilot, ...restProps }) => {
+const CodeHinter = ({
+  type = 'basic',
+  initialValue,
+  componentName,
+  disabled,
+  renderCopilot,
+  setCodeEditorView,
+  ...restProps
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [isOpen, setIsOpen] = React.useState(false);
@@ -71,6 +79,7 @@ const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, ren
       }}
       componentName={componentName}
       disabled={disabled}
+      setCodeEditorView={setCodeEditorView}
       {...restProps}
     />
   );

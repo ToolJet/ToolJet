@@ -442,6 +442,9 @@ export const createResolvedSlice = (set, get) => ({
       return {};
     }
   },
+  getExposedValueOfQuery: (queryId, moduleId = 'canvas') => {
+    return get().resolvedStore.modules[moduleId].exposedValues.queries[queryId] || {};
+  },
   getAllExposedValues: (moduleId = 'canvas') => {
     return get().resolvedStore.modules[moduleId].exposedValues;
   },

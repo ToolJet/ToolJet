@@ -40,46 +40,6 @@ export const formConfig = {
         padding: 'none',
       },
     },
-    {
-      componentName: 'TextInput',
-      layout: {
-        top: 20,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: ['placeholder', 'label'],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
-      defaultValue: {
-        placeholder: 'Enter your name',
-        label: 'Name',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-      },
-    },
-    {
-      componentName: 'NumberInput',
-      layout: {
-        top: 80,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: ['placeholder', 'label'],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
-      defaultValue: {
-        placeholder: 'Age',
-        label: 'Age',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-      },
-    },
   ],
   component: 'Form',
   others: {
@@ -89,7 +49,7 @@ export const formConfig = {
   properties: {
     buttonToSubmit: {
       type: 'select',
-      displayName: 'Button to submit form',
+      displayName: 'Submit button',
       options: [{ name: 'None', value: 'none' }],
       validation: {
         schema: { type: 'string' },
@@ -98,6 +58,49 @@ export const formConfig = {
       conditionallyRender: {
         key: 'advanced',
         value: false,
+      },
+    },
+    generateFormFrom: {
+      type: 'dropdownMenu',
+      displayName: 'Generate form from',
+      options: [{ name: 'Raw JSON', value: 'rawJson' }],
+      section: 'data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
+      newLine: true,
+    },
+    JSONData: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'rawJson',
+      },
+      section: 'data',
+      showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    fields: {
+      type: 'array',
+      displayName: 'Table Columns',
+    },
+    validateOnSubmit: {
+      type: 'toggle',
+      displayName: 'Validate all fields on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    resetOnSubmit: {
+      type: 'toggle',
+      displayName: 'Reset form on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
       },
     },
     loadingState: {
@@ -112,10 +115,12 @@ export const formConfig = {
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
+      section: 'deprecated',
     },
     JSONSchema: {
       type: 'code',
       displayName: 'JSON Schema',
+      section: 'deprecated',
       conditionallyRender: {
         key: 'advanced',
         value: true,
@@ -265,6 +270,8 @@ export const formConfig = {
       disabledState: { value: '{{false}}' },
       headerHeight: { value: 60 },
       footerHeight: { value: 60 },
+      validateOnSubmit: { value: '{{true}}' },
+      resetOnSubmit: { value: '{{true}}' },
     },
     events: [],
     styles: {
