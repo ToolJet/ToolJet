@@ -225,6 +225,7 @@ import AICrown from './AICrown.jsx';
 import BookDemo from './BookDemo.jsx';
 import Contactv3 from './Contactv3.jsx';
 import PremiumLogo from './PremiumLogo.jsx';
+import PremiumPlan from './PremiumPlan.jsx';
 import StudentIcon from './StudentIcon.jsx';
 import CalendarIcon from './CalendarIcon.jsx';
 import CalendarSmall from './CalendarSmall.jsx';
@@ -705,6 +706,8 @@ const Icon = (props) => {
       return <Contactv3 {...props} />;
     case 'premium-logo':
       return <PremiumLogo {...props} />;
+    case 'premium-plan':
+      return <PremiumPlan {...props} />;
     case 'calendar-icon':
       return <CalendarIcon {...props} />;
     case 'calendar-small':
