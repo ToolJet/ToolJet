@@ -230,6 +230,7 @@ const sidebars = {
                     'widgets/password-input',
                     'widgets/pdf',
                     'widgets/pagination',
+                    'widgets/phone-input',
                     'widgets/qr-scanner',
                     'widgets/radio-button',
                     'widgets/range-slider',
