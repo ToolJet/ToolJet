@@ -26,11 +26,11 @@
 }
 
 .apps-modules-tabs.dark-mode {
+    border-bottom-color: #2B394A;
+    
     .nav-link {
         background-color: inherit;
     }
-
-    border-bottom-color: #2B394A;
 }
 
 #homePage-tab-front-end,
@@ -44,6 +44,9 @@
 
 .module-container-canvas {
     >div:first-child {
+        /* Firefox scrollbar support */
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
         height: 100%;
         overflow: hidden auto;
 
@@ -64,10 +67,6 @@
                 border-radius: 3px;
             }
         }
-
-        /* Firefox scrollbar support */
-        scrollbar-width: thin;
-        scrollbar-color: transparent transparent;
 
         &:hover {
             scrollbar-color: #6a727c4d transparent;

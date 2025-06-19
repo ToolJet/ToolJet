@@ -1,13 +1,14 @@
 .tj-datepicker-widget {
-    &.react-datepicker-popper {
-        z-index: 3;
-    }
 
     border-radius: 6px !important;
     border: 1px solid var(--slate5) !important;
     box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
     width: 250px;
     padding: 0px;
+
+    &.react-datepicker-popper {
+        z-index: 3;
+    }
 }
 
 .tj-timepicker-widget {
