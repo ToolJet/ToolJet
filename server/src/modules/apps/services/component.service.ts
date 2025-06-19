@@ -220,7 +220,7 @@ export class ComponentsService implements IComponentsService {
             return acc;
           }, {});
         });
-    });
+    }, manager);
   }
 
   transformComponentData(data: object): Component[] {

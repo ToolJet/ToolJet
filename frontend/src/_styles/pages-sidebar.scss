@@ -18,6 +18,21 @@
 
     }
 
+    .inspector-component-title-input-holder {
+        .col-1 {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        .col-9 {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            width: 73%;
+
+        }
+    }
+
     .settings-tab {
         .field {
             label {
@@ -109,6 +124,10 @@
 
 #page-settings-tabpane-properties {
     padding: 0px !important;
+    .app-name {
+        width: 100% !important;
+        margin: 0px !important;
+    }
     .form-check-input[type=checkbox] {
         float: right;
     }
@@ -178,7 +197,7 @@
 #sidebar-page-navigation {
     
     .navigation-area {
-        margin-left: 48px;
+        // margin-left: 48px;
         z-index: 1;
         background: var(--base, #FFF);
         padding: 1rem;
@@ -237,9 +256,21 @@
         }
 
         .tj-list-item-selected {
-            color: var(--text-default);
+            color: var(--text-default) !important;
             font-weight: 500;
             background: var(--background-accent-weak);
+        }
+
+        .page-group-wrapper {
+            &.tj-list-item-selected {
+                border-radius: 6px;
+                background: var(--background-accent-weak);
+
+            .page-name {
+                color: var(--text-default) !important;
+                font-weight: 500;
+            }
+            }
         }
 
         // &.close {
@@ -376,7 +407,9 @@
 
         &.position-top {
             flex-direction: row;
-            width: calc(100% - 87px) !important;
+            position: fixed !important;
+            top: 47px !important;
+            width: calc(100% - 86px) !important;
             height: 60px !important;
             display: flex;
             padding-top: 0px;
@@ -548,8 +581,20 @@
             }
         }
     }
-
+    &.offset-top-bar-navigation {
+        .navbar {
+            height: 44px;
+        }
+        #sidebar-page-navigation {
+        .navigation-area {
+            &.position-top {
+                top: 44px !important;
+            }
+        }
+        }
+    }
 }
+
 
 .icon-btn {
     padding: 7px;

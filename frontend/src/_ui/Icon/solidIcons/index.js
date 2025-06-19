@@ -22,6 +22,7 @@ import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
 import Clock from './Clock.jsx';
+import CursorClick from './CursorClick.jsx';
 import LockGradient from './LockGradient.jsx';
 import DatasourceGradient from './DatasourceGradient.jsx';
 import Column from './Column.jsx';
@@ -336,6 +337,8 @@ const Icon = (props) => {
       return <Code {...props} />;
     case 'clock':
       return <Clock {...props} />;
+    case 'cursorclick':
+      return <CursorClick {...props} />;
     case 'column':
       return <Column {...props} />;
     case 'columns':

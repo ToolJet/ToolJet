@@ -27,6 +27,9 @@ import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import Select from '@/_ui/Select';
 import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
+import EditAppName from '@/AppBuilder/Header/EditAppName';
+import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -38,6 +41,8 @@ export const PageSettings = () => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const switchPage = useStore((state) => state.switchPage);
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
 
   const license = useStore((state) => state.license);
   const isLicensed =
@@ -111,6 +116,7 @@ export const PageSettings = () => {
           pageSettingChanged={pageSettingChanged}
           key="header-and-navigation"
           darkMode={darkMode}
+          licenseValid={isLicensed}
         />,
         <NavigationMenu
           pageSettings={pageSettings}
@@ -139,7 +145,7 @@ export const PageSettings = () => {
   return (
     <div className="inspector pages-settings">
       <div>
-        <div className="row inspector-component-title-input-holder">
+        <div className="row inspector-component-title-input-holder d-flex align-items-center">
           <div className="col-1" onClick={() => setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS)}>
             <span
               data-cy={`inspector-close-icon`}
@@ -150,6 +156,11 @@ export const PageSettings = () => {
             </span>
           </div>
           <div className={`col-9 p-0 mx-2 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
+          <div className="d-flex">
+            <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
+              <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin01' : 'pin'} width="16" />
+            </div>
+          </div>
         </div>
         <div>
           <Tabs defaultActiveKey={'properties'} id="page-settings">
@@ -282,7 +293,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
   });
 });
 
-const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
+const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseValid }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { hideHeader, name } = properties ?? {};
   const [_name, _setName] = useState(name);
@@ -290,12 +301,18 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
     <>
       <div className="section-header pb-2">App header</div>
       <div className=" d-flex justify-content-between align-items-center pb-2">
-        <label className="form-label font-weight-400 mb-0">Show app header</label>
+        <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+          Show app header
+          <LicenseTooltip message={"App header can't be hidden on free plans"} placement="bottom" show={!licenseValid}>
+            <div className="d-flex align-items-center">{!licenseValid && <SolidIcon name="enterprisecrown" />}</div>
+          </LicenseTooltip>
+        </label>
         <label className={`form-switch`}>
           <input
             className="form-check-input"
             type="checkbox"
-            checked={!hideHeader}
+            checked={licenseValid ? !hideHeader : true}
+            disabled={!licenseValid}
             onChange={(e) => {
               pageSettingChanged({ hideHeader: !e.target.checked }, 'properties');
             }}
@@ -305,16 +322,7 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
       <div className="pb-2">
         <div className="col pb-1">
           <label className="form-label font-weight-400 mb-0">Title</label>
-          <input
-            type="text"
-            onBlur={(e) => {
-              pageSettingChanged({ name: e.target.value }, 'properties');
-            }}
-            onChange={(e) => _setName(e.target.value)}
-            className="form-control"
-            value={_name}
-            minLength="1"
-          />
+          <EditAppName />
         </div>
       </div>
     </>
@@ -338,9 +346,7 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
 
   const styleOptions = [
     { label: 'Text and icon', value: 'texticon' },
-    ...((position == 'side' && collapsable != true) || position == 'top'
-      ? [{ label: 'Text only', value: 'text' }]
-      : []),
+    ...(position == 'side' || position == 'top' ? [{ label: 'Text only', value: 'text' }] : []),
     ...(position !== 'top' ? [{ label: 'Icon only', value: 'icon' }] : []),
   ];
 
@@ -379,7 +385,7 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
             <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
               <ToggleGroup
                 onValueChange={(value) => {
-                  if (position?.toString() === 'side' || (value === 'side' && style == 'text' && collapsable == true)) {
+                  if (position?.toString() === 'side' && style === 'icon') {
                     pageSettingChanged({ style: 'texticon' }, 'properties');
                   }
                   pageSettingChanged({ position: value }, 'properties');
@@ -411,15 +417,15 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
               />
             </div>
           </div>
-          {position !== 'top' && (
+          {position == 'side' && style !== 'text' && style !== 'icon' && (
             <div className="d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Collapsable</label>
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {
-                    if (position === 'side' && value == 'false') {
-                      pageSettingChanged({ style: 'texticon' }, 'properties');
-                    }
+                    // if (position === 'side' && value == 'false') {
+                    //   pageSettingChanged({ style: 'texticon' }, 'properties');
+                    // }
                     pageSettingChanged({ collapsable: stringToBoolean(value) }, 'properties');
                   }}
                   defaultValue={collapsable?.toString()}

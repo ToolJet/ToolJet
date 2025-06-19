@@ -19,8 +19,9 @@ import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { resolveReferences } from '@/_helpers/utils';
+import useRightSidebarMargin from './userRightSidebarMargin';
 
-export const AppCanvas = ({ appId, isViewer = false, switchDarkMode }) => {
+export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
@@ -43,22 +44,24 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode }) => {
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
+  // const editorMarginRight = useRightSidebarMargin(canvasContainerRef);
   // const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned, shallow);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
-  const { currentPageId, globalSettings, pages, pageSettings, homePageId, switchPage } = useStore(
+  const { globalSettings, pages, pageSettings, switchPage } = useStore(
     (state) => ({
-      currentPageId: state.currentPageId,
       globalSettings: state.globalSettings,
       pages: state.modules.canvas.pages,
       pageSettings: state.pageSettings,
-      homePageId: state.homePageId,
       switchPage: state.switchPage,
     }),
     shallow
@@ -102,7 +105,9 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode }) => {
     handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId]);
+  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
+
+  useEffect(() => {}, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
@@ -124,35 +129,36 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode }) => {
       borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
       height: currentMode === 'edit' ? canvasContainerHeight : '100%',
       background: canvasBgColor,
-      marginLeft:
-        isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
-          ? pageSidebarStyle === 'icon' && position !== 'side'
-            ? '44px'
-            : '226px'
-          : isPagesSidebarHidden
-          ? 'auto'
-          : position == 'top'
-          ? 'auto'
-          : '44px',
+      width: currentMode === 'edit' ? `calc(100% - 88px)` : '100%',
+      alignItems: 'unset',
+      justifyContent: 'unset',
+      borderRight: currentMode === 'edit' && isRightSidebarOpen && '300' + 'px solid',
     };
-  }, [
-    currentMode,
-    isAppDarkMode,
-    isModuleMode,
-    editorMarginLeft,
-    canvasContainerHeight,
-    isViewerSidebarPinned,
-    isPagesSidebarHidden,
-    currentLayout,
-    position,
-    pageSidebarStyle,
-  ]);
+  }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
 
   const toggleSidebarPinned = useCallback(() => {
     const newValue = !isViewerSidebarPinned;
     setIsSidebarPinned(newValue);
     localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
   }, [isViewerSidebarPinned]);
+
+  const getMinWidth = () => {
+    if (isModuleMode) {
+      return '100%';
+    }
+
+    let offsetPx;
+    if (isViewerSidebarPinned && editorMarginLeft) {
+      offsetPx = '84px';
+    } else if (isViewerSidebarPinned) {
+      // This case will be hit if isViewerSidebarPinned is true, but editorMarginLeft is false
+      offsetPx = '-94px';
+    } else {
+      // This case will be hit if isViewerSidebarPinned is false
+      offsetPx = '146px';
+    }
+    return `calc(100vw - ${offsetPx})`;
+  };
 
   return (
     <div
@@ -163,32 +169,55 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode }) => {
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
       <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
-        {!isPagesSidebarHidden && (
-          <PagesSidebarNavigation
-            showHeader={showHeader}
-            isMobileDevice={currentLayout === 'mobile'}
-            pages={pages}
-            currentPageId={currentPageId ?? homePageId}
-            switchPage={switchPage}
-            height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
-            switchDarkMode={switchDarkMode}
-            isSidebarPinned={isViewerSidebarPinned}
-            toggleSidebarPinned={toggleSidebarPinned}
-          />
-        )}
         <div
           ref={canvasContainerRef}
           className={cx(
-            'canvas-container align-items-center page-container',
+            'canvas-container d-flex page-container',
             { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
             { 'overflow-x-auto': currentMode === 'edit' },
+            { 'position-top': position === 'top' },
             { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
           )}
           style={canvasContainerStyles}
         >
+          {!isPagesSidebarHidden && (
+            <PagesSidebarNavigation
+              showHeader={showHeader}
+              isMobileDevice={currentLayout === 'mobile'}
+              pages={pages}
+              currentPageId={currentPageId ?? homePageId}
+              switchPage={switchPage}
+              height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
+              switchDarkMode={switchDarkMode}
+              isSidebarPinned={isViewerSidebarPinned}
+              toggleSidebarPinned={toggleSidebarPinned}
+              darkMode={darkMode}
+            />
+          )}
           <div
             style={{
-              minWidth: isModuleMode ? '100%' : `calc((100vw - 300px) - 48px)`,
+              minWidth: isModuleMode
+                ? '100%'
+                : (isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit')) && `calc((100vw - 329px))`,
+              scrollbarWidth: 'none',
+              overflow: 'auto',
+              // borderLeft: `${
+              //   editorMarginLeft
+              //     ? '0px'
+              //     : currentLayout === 'mobile'
+              //     ? '0px'
+              //     : isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
+              //     ? pageSidebarStyle === 'icon' && position == 'side'
+              //       ? '44px'
+              //       : '226px'
+              //     : isPagesSidebarHidden
+              //     ? 'auto'
+              //     : position == 'top'
+              //     ? 'auto'
+              //     : '44px'
+              // } solid`,
+              width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '226px' : '0px'})` : '100%',
+              // flex: 1,
             }}
             className={`app-${appId} _tooljet-page-${getPageId()}`}
           >

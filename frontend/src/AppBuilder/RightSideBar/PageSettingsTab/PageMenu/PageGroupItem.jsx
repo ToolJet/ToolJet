@@ -72,6 +72,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
 
   const { openPageEditPopover, toggleDeleteConfirmationModal } = useStore();
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
+  const cloneGroup = useStore((state) => state.cloneGroup);
   const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
   const computeStyles = useCallback(() => {
@@ -207,12 +208,12 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                           darkMode={darkMode}
                           onClick={() => handleOpenPopup('group', page)}
                         />
-                        {/* <PageOptions
+                        <PageOptions
                           text="Duplicate group"
                           icon="copy"
                           darkMode={darkMode}
-                          // onClick={() => handleOpenPopup('app')}
-                        /> */}
+                          onClick={() => cloneGroup(page?.id)}
+                        />
                         <PageOptions
                           text="Delete group"
                           icon="trash"

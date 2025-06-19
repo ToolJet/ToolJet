@@ -16,6 +16,8 @@ export const APP_HEADER_HEIGHT = 47;
 
 export const LEFT_SIDEBAR_WIDTH = 348; // exclusive of border
 
+export const RIGHT_SIDEBAR_WIDTH = 299;
+
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;

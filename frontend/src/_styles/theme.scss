@@ -628,6 +628,35 @@ button {
       background-color: var(--base);
     }
 
+    .empty-configuration-header {
+      display: flex;
+      padding: 0 12px;
+      align-items: center;
+      justify-content: space-between;
+
+      .header {
+        color: var(--text-default);
+        font-weight: 500;
+        font-size: 12px;
+      }
+    }
+
+    .no-component-selected {
+      flex-direction: column;
+      height: 100%;
+      padding: 0px 32px;
+
+      .heading {
+        color: var(--text-default);
+        margin-top: 16px;
+      }
+
+      .sub-heading {
+        color: var(--text-default);
+        text-align: center;
+      }
+    }
+
 
     .inspector {
       .form-control-plaintext {
@@ -5261,11 +5290,17 @@ input[type="text"] {
   }
 
   .inspector-component-title-input-holder {
-    padding: 4px 12px;
+    padding: 2px 12px;
     margin: 0;
     display: flex;
     align-items: center;
     height: 36px;
+    flex-direction: column;
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+    }
   }
 }
 

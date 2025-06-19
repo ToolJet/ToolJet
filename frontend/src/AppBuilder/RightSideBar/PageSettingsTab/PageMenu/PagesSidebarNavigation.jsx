@@ -9,10 +9,11 @@ import useStore from '@/AppBuilder/_stores/store';
 import { APP_HEADER_HEIGHT } from '../../../AppCanvas/appCanvasConstants';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
-import { DarkModeToggle } from '@/_components';
+import { DarkModeToggle, ToolTip } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+// import useSidebarMargin from './useSidebarMargin';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
@@ -34,6 +35,8 @@ export const PagesSidebarNavigation = ({
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const license = useStore((state) => state.license);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
+  const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -45,7 +48,9 @@ export const PagesSidebarNavigation = ({
   const [visibleLinks, setVisibleLinks] = useState(pages);
   const [showPopover, setShowPopover] = useState(false);
 
-  const { disableMenu, hideHeader, position, style, collapsable, name } = properties ?? {};
+  const { disableMenu, hideHeader, position, style, collapsable } = properties ?? {};
+
+  // const editorMarginLeft = useSidebarMargin(canvasContainerRef);
 
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || !measurementContainerRef.current || pages.length === 0) {
@@ -175,7 +180,7 @@ export const PagesSidebarNavigation = ({
       hidden: properties?.style === 'text',
     },
     label: {
-      hidden: properties?.style === 'icon',
+      hidden: properties?.style === 'icon' || (!isSidebarPinned && properties?.position === 'side'),
     },
   };
 
@@ -236,6 +241,7 @@ export const PagesSidebarNavigation = ({
   const labelHidden = labelStyle?.label?.hidden;
   const sidebarCollapsed = !isSidebarPinned;
   const isEditing = currentMode === 'edit';
+  const headerHidden = isLicensed ? hideHeader : false;
 
   return (
     <div>
@@ -262,36 +268,45 @@ export const PagesSidebarNavigation = ({
       <div
         ref={navRef}
         className={cx('navigation-area', {
-          close: !isSidebarPinned && properties?.collapsable,
+          close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           // 'sidebar-overlay': !isSidebarPinned && properties?.collapsable,
-          'icon-only': labelHidden || (sidebarCollapsed && position !== 'top'),
+          'icon-only': labelHidden || (!isSidebarPinned && position !== 'top'),
           'position-top': position === 'top',
           'text-only': style === 'text',
         })}
         style={{
           width: 226,
-          position: 'fixed',
+          position: 'sticky',
           // height: `calc(100% - ${showHeader ? APP_HEADER_HEIGHT : 0}px)`,
-          height,
-          top: showHeader ? '47px' : '0px',
+          // height,
+          height: '100%',
+          // top: showHeader ? '47px' : '0px',
+          top: '0px',
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
           border: `${styles?.pillRadius?.value}px`,
           borderRight: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
+          boxShadow: 'var(--elevation-100-box-shadow)',
+          // ...(position === 'side' && isSidebarOpen ? { marginLeft: isSidebarPinned ? '574px' : '392px' } : {}),
         }}
       >
         <div className="position-relative">
-          <div style={{ marginRight: hideHeader ? '0px' : '40px' }} className="app-name">
-            {!hideHeader && (
+          <div
+            style={{
+              marginRight: headerHidden && position == 'top' && '0px',
+            }}
+            className="app-name"
+          >
+            {!headerHidden && (
               <>
                 <div className="cursor-pointer">
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
-                {isPinnedWithLabel && !labelHidden && <span>{name}</span>}
+                {((isPinnedWithLabel && !labelHidden) || position === 'top') && <span>{appName}</span>}
               </>
             )}
-            {collapsable && !isTopPositioned && !labelHidden && (
+            {collapsable && !isTopPositioned && !labelHidden && style !== 'text' && position === 'side' && (
               <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
                 <SolidIcon
                   className="cursor-pointer"
@@ -335,12 +350,24 @@ export const PagesSidebarNavigation = ({
               {pages.map((page) => {
                 const isHomePage = page.id === homePageId;
                 const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-                // eslint-disable-next-line import/namespace
-                const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+                const IconElement = (props) => {
+                  // eslint-disable-next-line import/namespace
+                  const Icon = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+
+                  if (!isSidebarPinned || labelStyle?.label?.hidden) {
+                    return (
+                      <ToolTip message={page?.name} placement={'right'}>
+                        <Icon {...props} />
+                      </ToolTip>
+                    );
+                  }
+
+                  return <Icon {...props} />;
+                };
                 return page.hidden || page.disabled || page?.restricted ? null : (
                   <FolderList
                     key={page.handle}
-                    onClick={() => switchPageWrapper(page?.id)}
+                    onClick={() => switchPageWrapper(page)}
                     selectedItem={page?.id === currentPageId}
                     CustomIcon={!labelStyle?.icon?.hidden && IconElement}
                     customStyles={computeStyles}
@@ -348,7 +375,10 @@ export const PagesSidebarNavigation = ({
                   >
                     {!labelStyle?.label?.hidden && (
                       <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
-                        <OverflowTooltip style={{ width: '110px' }} childrenClassName={'page-name'}>
+                        <OverflowTooltip
+                          style={{ width: '110px', position: 'relative' }}
+                          childrenClassName={'page-name'}
+                        >
                           {page.name}
                         </OverflowTooltip>
                       </span>

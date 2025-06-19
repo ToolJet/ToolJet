@@ -182,6 +182,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
     },
     bmOverlay: {
       background: 'rgba(0, 0, 0, 0.3)',
+      top: '0px',
     },
   };
 

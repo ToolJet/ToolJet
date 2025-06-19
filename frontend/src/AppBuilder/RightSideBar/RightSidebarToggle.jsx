@@ -17,7 +17,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const handleToggle = () => {
     if (!isRightSidebarPinned) {
-      toggleRightSidebar(!isRightSidebarOpen);
+      toggleRightSidebar();
     }
   };
 

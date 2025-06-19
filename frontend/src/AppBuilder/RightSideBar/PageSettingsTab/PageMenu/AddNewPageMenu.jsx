@@ -12,8 +12,8 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
 
   const handleOpenPopup = (type) => {
-    setShowMenuPopover(false); // Close menu
-    setNewPagePopupConfig({ type, show: true, mode: 'add' }); // Open popup
+    setShowMenuPopover(false);
+    setNewPagePopupConfig({ type, show: true, mode: 'add' });
   };
 
   return (

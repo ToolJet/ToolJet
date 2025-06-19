@@ -53,6 +53,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const updatePageIcon = useStore((state) => state.updatePageIcon);
   const markAsHomePage = useStore((state) => state.markAsHomePage);
   const clonePage = useStore((state) => state.clonePage);
+  const cloneGroup = useStore((state) => state.cloneGroup);
   const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
   const switchPage = useStore((state) => state.switchPage);
 
@@ -222,13 +223,14 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     <SolidIcon name="arrowright01" />
                   </div>
                 </ToolTip>
-                <ToolTip message={`Duplicate ${POPOVER_ACTIONS[type]}`} placement="bottom">
-                  <div onClick={() => clonePage(page?.id)} className="icon-btn">
-                    <SolidIcon name="duplicatepage" />
-                  </div>
-                </ToolTip>
               </>
             )}
+
+            <ToolTip message={`Duplicate ${POPOVER_ACTIONS[type]}`} placement="bottom">
+              <div onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))} className="icon-btn">
+                <SolidIcon name="duplicatepage" />
+              </div>
+            </ToolTip>
 
             <ToolTip message={`Delete ${POPOVER_ACTIONS[type]}`} placement="bottom">
               <div
@@ -277,7 +279,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             <div className="pb-1">
               <div className="d-flex justify-content-between align-items-center pb-2">
                 <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon || 'IconHome'} />
+                <Icon
+                  isVisibilityEnabled={false}
+                  onChange={(value) => updatePageIcon(page?.id, value)}
+                  value={page?.icon || 'IconFile'}
+                />
               </div>
             </div>
             <div className="pb-2">
@@ -370,7 +376,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             <div className="pb-2">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon} />
+                <Icon
+                  isVisibilityEnabled={false}
+                  onChange={(value) => updatePageIcon(page?.id, value)}
+                  value={page?.icon || 'IconFile'}
+                />
               </div>
             </div>
             <div className=" d-flex justify-content-between align-items-center">
@@ -423,7 +433,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             </div>
             <div className="d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Icon</label>
-              <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon} />
+              <Icon
+                isVisibilityEnabled={false}
+                onChange={(value) => updatePageIcon(page?.id, value)}
+                value={page?.icon || 'IconFile'}
+              />
             </div>
             <div className="d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Open app in</label>
@@ -475,7 +489,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             <div className="pb-2">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon} />
+                <Icon
+                  isVisibilityEnabled={false}
+                  onChange={(value) => updatePageIcon(page?.id, value)}
+                  value={page?.icon || 'IconFolder'}
+                />
               </div>
             </div>
             <div className=" d-flex justify-content-between align-items-center">
