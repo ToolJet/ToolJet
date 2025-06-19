@@ -276,6 +276,21 @@ const DataSectionUI = ({
     ]
   );
 
+  const renderManageFieldsIcon = () => {
+    return (
+      <Button
+        iconOnly
+        leadingIcon="sliders"
+        variant="ghost"
+        size="small"
+        onClick={() => {
+          currentStatusRef.current = FORM_STATUS.MANAGE_FIELDS;
+          setIsModalOpen(true);
+        }}
+      />
+    );
+  };
+
   const renderAddCustomFieldButton = () => {
     return (
       <OverlayTrigger
@@ -334,7 +349,10 @@ const DataSectionUI = ({
         <div className="tw-flex-1">
           <LabeledDivider label="Fields" />
         </div>
-        {renderAddCustomFieldButton()}
+        <div className="tw-flex tw-items-center">
+          {renderManageFieldsIcon()}
+          {renderAddCustomFieldButton()}
+        </div>
       </div>
       <FormFieldsList
         fields={formFieldsWithComponentDefinition}

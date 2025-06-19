@@ -33,20 +33,6 @@ export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen, currentS
           ))}
         </div>
       </div>
-
-      <div className="tw-flex tw-justify-center tw-items-center tw-mt-3">
-        <Button
-          fill="#ACB2B9"
-          leadingIcon="sliders"
-          variant="outline"
-          onClick={() => {
-            currentStatusRef.current = FORM_STATUS.MANAGE_FIELDS;
-            setIsModalOpen(true);
-          }}
-        >
-          Manage fields
-        </Button>
-      </div>
     </div>
   );
 };
