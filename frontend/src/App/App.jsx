@@ -42,6 +42,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
+import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -401,6 +402,15 @@ class AppComponent extends React.Component {
                   element={
                     <PrivateRoute>
                       <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/home"
+                  element={
+                    <PrivateRoute>
+                      <BlankHomePage />
                     </PrivateRoute>
                   }
                 />
