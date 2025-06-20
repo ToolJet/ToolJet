@@ -19,6 +19,7 @@
 @import 'tailwindcss/utilities';
 @import "./componentdesign.scss";
 @import './pages-sidebar.scss';
+@import './modules.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -806,6 +807,21 @@ button {
     }
   }
 
+  .viewer .main {
+    height: auto !important;
+
+    .canvas-container {
+      top: 0;
+      right: 0;
+      scrollbar-width: thin;
+      scrollbar-color: #6a727c4d transparent;
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #6a727c4d !important;
+      }
+    }
+  }
+
   @media screen and (max-height: 450px) {
     .sidebar {
       padding-top: 15px;
@@ -1552,6 +1568,13 @@ button {
     border-top: 1px solid var(--slate5) !important;
   }
 
+  &.module-editor-inspector {
+    .tab-content {
+      border-top: none !important;
+    }
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
   /* Hide scrollbar for Chrome, Safari and Opera */
   .tab-content::-webkit-scrollbar {
     display: none;
@@ -2707,6 +2730,14 @@ hr {
   max-height: 10px;
   z-index: 100;
   min-width: 108px;
+
+  &.module-container {
+    .handle-content {
+      cursor: move;
+      color: #fff;
+      background: #c6cad0 !important;
+    }
+  }
 }
 
 
@@ -4122,7 +4153,6 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
-
   }
 
   .rbc-off-range-bg {
@@ -5636,7 +5666,7 @@ div#driver-page-overlay {
   }
 
   .open-id-sso-card {
-    border-bottom: 1px solid var(--slate5) !important;
+    border-bottom: none !important;
   }
 
   .sso-card-footer {
@@ -7581,6 +7611,13 @@ tbody {
 .apploader {
   height: 100vh;
 
+  &.module-mode {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .app-container {
     height: 100%;
     display: flex;
@@ -7941,6 +7978,11 @@ tbody {
   border-right: 1px solid var(--slate5);
   display: grid;
   grid-template-rows: auto 1fr auto;
+
+  // Added to work with AppTypeTab component
+  &:has(:nth-child(4):last-child) {
+    grid-template-rows: auto auto 1fr auto;
+  }
 
   @media only screen and (max-width: 767px) {
     display: none;
@@ -9144,7 +9186,8 @@ tbody {
 }
 
 .global-settings-app-wrapper {
-  max-width: 190px;
+  max-width: 350px;
+  margin-right: 10px;
 }
 
 .version-manager-container {
@@ -10902,7 +10945,7 @@ tbody {
   background: var(--indigo3);
   border-radius: 6px;
   padding: 5px 10px;
-  
+
   p {
     font-weight: 500 !important;
     line-height: 18px !important;
@@ -18909,6 +18952,73 @@ section.ai-message-prompt-input-wrapper {
     max-height: 100px !important;
   }
 }
+
+.missing-groups-modal {
+  .modal-body {
+    padding: 16px;
+
+    .header {
+      padding-top: 12px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .sub-header {
+      margin-bottom: 0px;
+      font-size: 12px;
+    }
+
+    .groups-list {
+      padding-top: 16px;
+      padding-bottom: 16px;
+
+      .container {
+        padding: 12px;
+      }
+    }
+
+    .info {
+      margin-bottom: 0px;
+      font-size: 12px;
+      padding-bottom: 24px;
+    }
+
+    .action-btns {
+      justify-content: space-between;
+    }
+
+    .primary-action,
+    .secondary-action {
+      padding: 8px !important;
+      font-size: 12px;
+    }
+
+    .toggle-button {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+      color: var(--icon-brand);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .toggle-button:hover {
+      text-decoration: underline;
+    }
+
+    .toggle-button .chevron {
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-button.expanded .chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
+
 
 .application-editable-checkbox-container {
   .form-check-input {

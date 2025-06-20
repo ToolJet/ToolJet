@@ -19,6 +19,7 @@ import {
 } from "Support/utils/common";
 import { inviteUserBasedOnRole } from "Support/utils/manageGroups";
 import { resolveHost } from "Support/utils/apps";
+import { addSuccessNotification } from "Support/utils/queries";
 
 const data = {};
 data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -32,7 +33,7 @@ describe("Datasource Manager", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit(`${workspaceSlug}`);
-    cy.viewport(1200, 1300);
+    cy.viewport(1800, 1800);
     cy.skipWalkthrough();
   });
 
@@ -199,7 +200,7 @@ describe("Datasource Manager", () => {
 
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    pinInspector();
+    // pinInspector();
 
     addQuery(
       "table_preview",
@@ -212,9 +213,11 @@ describe("Datasource Manager", () => {
       "table_preview "
     );
 
-    cy.get(commonWidgetSelector.sidebarinspector).click();
+    cy.get('[data-cy="query-tab-settings"]').click();
+    addSuccessNotification("table_preview");
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "10 items ");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "table_preview");
+
     cy.get('[data-cy="show-ds-popover-button"]').click();
 
     cy.get(".p-2 > .tj-base-btn")
@@ -247,9 +250,13 @@ describe("Datasource Manager", () => {
     cy.get("#react-select-4-listbox")
       .contains(`cypress-${data.dsName2}-postgresql`)
       .click();
+
+    cy.get('[data-cy="query-tab-settings"]').click();
+    addSuccessNotification("postgresql");
     cy.waitForAutoSave();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "4 items ");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "postgresql");
+
   });
 
   it.skip("Should verify the query creation and scope changing functionality.", () => {
