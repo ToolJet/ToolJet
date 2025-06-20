@@ -90,6 +90,7 @@ export class EmailService implements IEmailService {
       host: smtpSettings.host,
       port: smtpSettings.port,
       secure: smtpSettings.port === 465, // Use `true` for port 465, `false` for others
+      ignoreTLS: process.env.SMTP_IGNORE_TLS === 'true' ? true : false,
       auth: {
         user: smtpSettings.username,
         pass: smtpSettings.password,
