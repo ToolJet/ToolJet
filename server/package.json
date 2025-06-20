@@ -131,8 +131,7 @@
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^8.17.1",
-    "y-websocket": "^1.4.0",
-    "@octokit/rest": "^18.12.0"
+    "y-websocket": "^1.4.0"
   },
   "peerDependencies": {
     "@nestjs/cli": "^11.0.7"
