@@ -164,8 +164,6 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersion.app;
     }, manager || this.manager);
   }
-<<<<<<< HEAD
-=======
 
   async findVersionsFromApp(app: App, manager?: EntityManager): Promise<AppVersion[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -183,7 +181,6 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
->>>>>>> 3bb1fbd2a6717a4c8547e00e3311f4258b1b5d19
   async getAppVersionById(versionId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const version = await manager.findOneOrFail(AppVersion, {
@@ -194,7 +191,6 @@ export class VersionRepository extends Repository<AppVersion> {
       return version;
     });
   }
-<<<<<<< HEAD
 
   async getAppVersionByIdOrName(versionId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -227,6 +223,4 @@ export class VersionRepository extends Repository<AppVersion> {
       );
     }, manager || this.manager);
   }
-=======
->>>>>>> 3bb1fbd2a6717a4c8547e00e3311f4258b1b5d19
 }
