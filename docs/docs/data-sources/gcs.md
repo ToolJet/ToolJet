@@ -3,7 +3,7 @@ id: gcs
 title: Google Cloud Storage
 ---
 
-ToolJet can connect to GCS buckets and perform various operation on them.
+ToolJet can connect to GCS buckets and perform various operations on them.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -36,7 +36,7 @@ Query results can be transformed using transformations. Read our transformations
 #### Supported operations
 
 - **[Read file](#read-file)**
-- **[Upload file](#uplodad-file)**
+- **[Upload file](#upload-file)**
 - **[List buckets](#list-buckets)**
 - **[List files in a bucket](#list-files-in-a-bucket)**
 - **[Signed url for download](#signed-url-for-download)**
@@ -54,7 +54,7 @@ Reads the content of a file from GCS.
 
 <img className="screenshot-full" src="/img/datasource-reference/gcs/readFile.png" alt="gcs query" style={{marginBottom:'15px'}} />
 
-### Uplodad File
+### Upload File
 
 Uploads a file to GCS.
 
@@ -113,5 +113,28 @@ Generates a signed URL for uploading a file.
 - **Content Type**
 
 <img className="screenshot-full" src="/img/datasource-reference/gcs/urlUpload.png" alt="gcs query" style={{marginBottom:'15px'}} />
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Additional Information
+
+### Rate Limits
+
+Google Cloud Storage has rate limits to ensure fair usage and prevent abuse. It is important to design your queries and applications to handle rate limits gracefully. You can read more about rate limits in the [Google Cloud Storage documentation](https://cloud.google.com/storage/docs/rate-limits).
+
+### Error Handling
+
+When working with Google Cloud Storage, it is important to handle errors appropriately. Common errors include authentication errors, rate limit errors, and validation errors. Make sure to check the response status and handle errors accordingly in your application.
+
+### Best Practices
+
+- **Use Caching**: To reduce the number of API requests and improve performance, consider implementing caching mechanisms for frequently accessed data.
+- **Optimize Queries**: Use filters, sorting, and pagination to optimize your queries and retrieve only the necessary data.
+- **Handle Rate Limits**: Implement retry mechanisms and exponential backoff to handle rate limit errors gracefully.
+- **Secure Connection Strings**: Keep your Google Cloud Storage connection strings secure and avoid exposing them in client-side code. Use environment variables or secure storage mechanisms to store connection strings.
+
+For more detailed information and best practices, refer to the [Google Cloud Storage documentation](https://cloud.google.com/storage/docs).
 
 </div>

@@ -135,3 +135,55 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself wi
 ## License
 
 ToolJet © 2023, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
+
+## Contributing Guidelines
+
+We welcome contributions from the community! Please read our [Contributing Guide](CONTRIBUTING.md) to understand the process for contributing to ToolJet. This guide includes information on how to report bugs, suggest new features, and submit pull requests.
+
+## Setting Up the Repository
+
+To set up the ToolJet repository locally, follow these steps:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/ToolJet/ToolJet.git
+   cd ToolJet
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+For more detailed setup instructions, refer to the [Setup Guide](https://docs.tooljet.com/docs/contributing-guide/setup).
+
+## Usage Examples
+
+Here are some examples of how you can use ToolJet to build internal tools:
+
+1. **Time Tracker Application:**
+   - Create a new application in ToolJet.
+   - Add a table component to display the list of tasks.
+   - Use the built-in Timer component to track time spent on each task.
+   - Save the tracked time to a database using a query.
+
+2. **CMS (Content Management System):**
+   - Create a new application in ToolJet.
+   - Add a form component to allow users to create and edit content.
+   - Use the built-in Rich Text Editor component for content editing.
+   - Save the content to a database using a query.
+   - Display the content in a table or list component.
+
+3. **AWS S3 Browser:**
+   - Create a new application in ToolJet.
+   - Add a file picker component to allow users to upload files to S3.
+   - Use the built-in S3 integration to list and manage files in an S3 bucket.
+   - Display the list of files in a table component.
+   - Add buttons to download or delete files from S3.
+
+For more usage examples and tutorials, refer to the [ToolJet Blog](https://blog.tooljet.com) and the [Documentation](https://docs.tooljet.com).

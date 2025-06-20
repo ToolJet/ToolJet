@@ -374,3 +374,42 @@ jobs:
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
       - run: NODE_OPTIONS=--max_old_space_size=8096 npm --prefix server run test:e2e -- --silent --testTimeout=20000
+
+  comprehensive-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60 # Set a timeout of 60 minutes
+    needs: build
+    container: node:18.18.2-bullseye
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - run: apt update && apt install -y postgresql-client
+      - run: npm --prefix plugins ci
+      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
+      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
+      - run: npm --prefix server ci
+      - run: npm --prefix server run db:create
+      - run: npm --prefix server run db:migrate
+      - run: npm --prefix server run test:comprehensive
