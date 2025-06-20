@@ -4163,9 +4163,6 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
-
-    background-color: var(--primary-brand) !important;
-    border: transparent
   }
 
   .rbc-off-range-bg {
@@ -5685,7 +5682,7 @@ div#driver-page-overlay {
   }
 
   .open-id-sso-card {
-    border-bottom: 1px solid var(--slate5) !important;
+    border-bottom: none !important;
   }
 
   .sso-card-footer {

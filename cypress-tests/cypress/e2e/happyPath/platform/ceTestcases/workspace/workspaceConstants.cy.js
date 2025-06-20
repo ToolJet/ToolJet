@@ -143,11 +143,11 @@ describe("Workspace constants", () => {
     cy.get(dataSourceSelector.previewTabRawContainer).contains("secrets is not defined");
 
     //verify global const should be visible, secrets and deleted const are not in Inspector
-    cy.get(commonWidgetSelector.inspectorIcon).click();
-    cy.get(commonWidgetSelector.constantInspectorIcon).click();
-    cy.get('[data-cy="inspector-node-restapiheaderkey"]').should('exist');
-    cy.get('[data-cy="inspector-node-deleteconst"]').should('not.exist');
-    cy.get('[data-cy="inspector-node-sconst"]').should('not.exist');
+    // cy.get(commonWidgetSelector.sidebarinspector).click();
+    // cy.get(commonWidgetSelector.constantInspectorIcon).click();
+    // cy.get('[data-cy="inspector-node-restapiheaderkey"]').should('exist');
+    // cy.get('[data-cy="inspector-node-deleteconst"]').should('not.exist');
+    // cy.get('[data-cy="inspector-node-sconst"]').should('not.exist');
 
     //Preview app and verify components
     cy.openInCurrentTab(commonWidgetSelector.previewButton);

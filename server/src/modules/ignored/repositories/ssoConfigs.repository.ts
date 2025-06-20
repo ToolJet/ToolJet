@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { SSOConfigs, SSOType } from '@entities/sso_config.entity';
-import { Organization } from '@entities/organization.entity';
 
 @Injectable()
 export class SSOConfigsRepository extends Repository<SSOConfigs> {
