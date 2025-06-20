@@ -84,7 +84,7 @@ describe("App Slug", () => {
 
     // Release and verify URLs
     releaseApp();
-    verifyURLs(workspaceId, data.slug, false);
+    verifyURLs(workspaceId, data.slug, true);
 
     // Verify duplicate slug validation
     cy.visit("/my-workspace");
