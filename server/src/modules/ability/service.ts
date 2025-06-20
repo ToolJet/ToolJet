@@ -48,6 +48,8 @@ export class AbilityService extends IAbilityService {
           isEndUser: false,
           appCreate: acc.appCreate || group.appCreate,
           appDelete: acc.appDelete || group.appDelete,
+          appPromote: acc.appPromote || group.appPromote,
+          appRelease: acc.appRelease || group.appRelease,
           dataSourceCreate: acc.dataSourceCreate || group.dataSourceCreate,
           dataSourceDelete: acc.dataSourceDelete || group.dataSourceDelete,
           folderCRUD: acc.folderCRUD || group.folderCRUD,
@@ -58,7 +60,7 @@ export class AbilityService extends IAbilityService {
 
       userPermissions.isAdmin = adminGroup;
       userPermissions.isSuperAdmin = false;
-      
+
       if (!adminGroup) {
         const isBuilder = await this.abilityUtilService.isBuilder(user);
         if (isBuilder) {
@@ -84,8 +86,8 @@ export class AbilityService extends IAbilityService {
             dsGranularPermissions
           );
 
-          if(userPermissions.isBuilder) {
-              /* in community edition. builder can use the datasources */
+          if (userPermissions.isBuilder) {
+            /* in community edition. builder can use the datasources */
             userPermissions[MODULES.GLOBAL_DATA_SOURCE].isAllUsable = true;
           }
         }

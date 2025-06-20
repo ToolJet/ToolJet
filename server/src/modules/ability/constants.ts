@@ -8,6 +8,8 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   isEndUser: false,
   appCreate: false,
   appDelete: false,
+  appPromote: false,
+  appRelease: false,
   dataSourceCreate: false,
   dataSourceDelete: false,
   folderCRUD: false,
