@@ -4,10 +4,6 @@ title: ToolJet API
 ---
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-:::info BETA
-ToolJet API is currently in beta and not recommended for production use.
-:::
-
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
  - [Get All Users](#get-all-users)
@@ -33,29 +29,29 @@ By default, the ToolJet API is disabled. To enable the API, add these variables 
 
 The ToolJet API is secured with an access token created by you in your `.env` file. You need to pass the access token in the `Authorization` header to authenticate your requests. The access token should be sent in the format `Basic <access_token>`.
 
-<details>
-
-<summary>cURL Request Example</summary>
-
-```bash
-
+```bash title="cURL Request Example"
 curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
--H 'Authorization: Basic <access_token>' \
--H 'Content-Type: application/json'
-
+  -H 'Authorization: Basic <access_token>' \
+  -H 'Content-Type: application/json'
 ```
-
-</details>
 
 ## API Endpoints
 
-### **Get All Users**
+### Get All Users
+
     - **Description:** Retrieves a list of all the users.
     - **URL:** `/api/ext/users`
     - **Method:** GET
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Response:** Array of User objects.
+
+    ```bash title="cURL Request"
+    curl -X GET https://<your-domain>/api/ext/users \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
+
   <details>
   <summary>**Response Example**</summary>
 ```json
@@ -125,7 +121,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ```
 </details>
 
-### **Get User by ID**
+### Get User by ID
+
     - **Description:** Returns a user by their ID.
     - **URL:** `/api/ext/user/:id`
     - **Method:** GET
@@ -134,6 +131,13 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Params:**
         - id (string): The ID of the user.
     - **Response:** User object.
+
+    ```bash title="cURL Request"
+    curl -X GET https://<your-domain>/api/ext/user/<id> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
+
   <details>
   <summary>**Response Example**</summary>
 ```json
@@ -179,7 +183,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 </details>
 
 
-### **Create User**
+### Create User
+
     - **Description:** Creates a new user.
     - **URL:** `/api/ext/users`
     - **Method:** POST
@@ -198,6 +203,33 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
             - `id` (string, optional): The unique identifier of the group.
             - `name` (string, optional): The name of the group.
             - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
+
+    ```bash title="cURL Request"
+    curl -X POST https://<your-domain>/api/ext/users \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "<name>",
+        "email": "<email>",
+        "password": "<password>",
+        "status": "<active|archived>",
+        "workspaces": [
+          {
+            "id": "<workspace_id>",
+            "name": "<workspace_name>",
+            "status": "<active|archived>",
+            "groups": [
+              {
+                "id": "<group_id>",
+                "name": "<group_name>",
+                "status": "<active|archived>"
+              }
+            ]
+          }
+        ]
+      }'
+    ```
+
   <details>
   <summary>**Request Body Example**</summary>
 ```json
@@ -222,7 +254,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 </details>
     - **Response:** `201 Created`
 
-### **Update User**
+### Update User
     - **Description:** Finds and updates a user by their ID.
     - **URL:** `/api/ext/user/:id`
     - **Method:** PATCH
@@ -235,20 +267,30 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `email` (string, optional): The updated email address of the user.
         - `password` (string, optional): The updated password for the user. Must be between 5 and 100 characters.
         - `status` (string, optional): The updated status of the user. Can be either `active` or `archived`.
+
+    ```bash title="cURL Request"
+    curl -X PATCH https://<your-domain>/api/ext/user/<id> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "<name>",
+        "email": "<email>",
+        "password": "<password>",
+        "status": "<active|archived>"
+      }'
+    ```
         
 <details>
 
 <summary>Request Body Example</summary>
 
 ```json
-
 {
   "name": "Jane Doe",
   "email": "jane.doe@example.com",
   "password": "newsecurepassword",
   "status": "active"
 }
-
 ```
 
 </details>
@@ -256,7 +298,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Response:** `200 OK`
 
 
-### **Update User Role**
+### Update User Role
+    
     - **Description:** Updates the user role for a particular workspace.
     - **URL:** `/api/ext/update-user-role/workspace/workspaceId`
     - **Method:** PUT
@@ -267,6 +310,16 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Body:** The body object can contain the following fields:
         - `newRole` (string, required): The updated user role of the user.
         - `userId` (string, required): The unique identifier of the user.
+
+    ```bash title="cURL Request"
+    curl -X PUT https://<your-domain>/api/ext/update-user-role/workspace/<workspaceId> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "newRole": "<new_role>",
+        "userId": "<user_id>"
+      }'
+    ```
         
 <details>
 
@@ -285,7 +338,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
     - **Response:** `200 OK`
  
-### **Replace User Workspaces Relations**
+### Replace User Workspaces Relations
 
     - **Description:** Replaces all workspaces relations associated with a user.
     - **URL:** `/api/ext/user/:id/workspaces`
@@ -305,8 +358,27 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Note:** If the array is empty, it will remove all existing workspace relations.
     - **Response:** `200 OK`
  
+    ```bash title="cURL Request"
+    curl -X PUT https://<your-domain>/api/ext/user/<id>/workspaces \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '[
+        {
+          "id": "<workspace_id>",
+          "name": "<workspace_name>",
+          "status": "<active|archived>",
+          "groups": [
+            {
+              "id": "<group_id>",
+              "name": "<group_name>",
+              "status": "<active|archived>"
+            }
+          ]
+        }
+      ]'
+    ```
 
-### **Replace User Workspace**
+### Replace User Workspace
 
     - **Description:** Updates a specific workspace relation associated with a user.
     - **URL:** `/api/ext/user/:id/workspaces/:workspaceId`
@@ -323,6 +395,24 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
           - `id` (string, optional): The ID of the group.
           - `name` (string, optional): The name of the group.
+
+    ```bash title="cURL Request"
+    curl -X PATCH https://<your-domain>/api/ext/user/<id>/workspaces/<workspaceId> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "id": "<workspace_id>",
+        "name": "<workspace_name>",
+        "status": "<active|archived>",
+        "groups": [
+          {
+            "id": "<group_id>",
+            "name": "<group_name>"
+          }
+        ]
+      }'
+    ```
+
 <details>
 
 <summary>Request Body Example</summary>
@@ -344,7 +434,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Note:** If no body is given or body is an empty object, it will not do anything.
     - **Response:** `200 OK`
 
-### **Get All Workspaces**
+### Get All Workspaces
 
     - **Description:** Retrieves a list of all workspaces.
     - **URL:** `/api/ext/workspaces`
@@ -352,6 +442,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Response:** Array of Workspace objects.
+
+    ```bash title="cURL Request"
+    curl -X GET https://<your-domain>/api/ext/workspaces \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
 <details>
 <summary>Response Example</summary>
