@@ -424,7 +424,7 @@ export const createPageMenuSlice = (set, get) => {
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
       await savePageChanges(appId, currentVersionId, '', pageObject, 'create', 'pages');
-      if (!isPageGroup) get().switchPage(newPageId, newHandle);
+      if (!isPageGroup && pageObj?.type === 'default') get().switchPage(newPageId, newHandle);
       return pageObject;
     },
 

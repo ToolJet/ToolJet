@@ -164,47 +164,62 @@ export const PageMenuItem = withRouter(
       return `https://${url}`;
     };
 
-    const handlePageSwitch = useCallback(() => {
-      if (page?.type === 'url' && page?.url) {
-        const finalUrl = getAbsoluteUrl(page.url);
-        if (finalUrl) {
-          if (page.openIn === 'new_tab') {
-            window.open(finalUrl, '_blank');
+    const handlePageSwitch = useCallback(
+      (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (page?.type === 'url') {
+          if (page?.url) {
+            const finalUrl = getAbsoluteUrl(page.url);
+            if (finalUrl) {
+              if (page.openIn === 'new_tab') {
+                window.open(finalUrl, '_blank');
+              } else {
+                window.location.href = finalUrl;
+              }
+            }
           } else {
-            window.location.href = finalUrl;
+            toast.error('No URL provied');
+            return;
           }
+          return;
         }
-        return;
-      }
 
-      if (page?.type === 'app' && page?.appId) {
-        const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
-        if (page.openIn === 'new_tab') {
-          window.open(baseUrl, '_blank');
-        } else {
-          window.location.href = baseUrl;
+        if (page?.type === 'app') {
+          if (page?.appId) {
+            const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+            if (page.openIn === 'new_tab') {
+              window.open(baseUrl, '_blank');
+            } else {
+              window.location.href = baseUrl;
+            }
+          } else {
+            toast.error('No app selected');
+            return;
+          }
+          return;
         }
-        return;
-      }
 
-      if (currentPageId === page?.id) {
-        return;
-      }
+        if (currentPageId === page?.id) {
+          return;
+        }
 
-      switchPage(page?.id, page?.handle, [], moduleId);
-      setCurrentPageHandle(page.handle);
-    }, [
-      page?.type,
-      page.url,
-      page.appId,
-      page?.id,
-      page.handle,
-      page.openIn,
-      currentPageId,
-      switchPage,
-      moduleId,
-      setCurrentPageHandle,
-    ]);
+        switchPage(page?.id, page?.handle, [], moduleId);
+        setCurrentPageHandle(page.handle);
+      },
+      [
+        page?.type,
+        page.url,
+        page.appId,
+        page?.id,
+        page.handle,
+        page.openIn,
+        currentPageId,
+        switchPage,
+        moduleId,
+        setCurrentPageHandle,
+      ]
+    );
 
     const handlePageMenuSettings = useCallback(
       (event) => {
@@ -268,7 +283,9 @@ export const PageMenuItem = withRouter(
               position: 'relative',
               width: '100%',
             }}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               handleOpenPopup(page?.type || 'page', page);
             }}
           >
@@ -362,6 +379,8 @@ export const PageMenuItem = withRouter(
                           e.preventDefault();
                           setEditingPage(page);
                           toggleShowPageOptions(true);
+                          setNewPagePopupConfig({ show: false, mode: null, type: null });
+                          setShowEditPopover(false);
                         }}
                         className="icon-btn"
                       >
@@ -394,6 +413,8 @@ export const PageMenuItem = withRouter(
                               darkMode={darkMode}
                               disabled={isHomePage}
                               onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
                                 markAsHomePage(page?.id, moduleId);
                               }}
                             />
@@ -402,6 +423,8 @@ export const PageMenuItem = withRouter(
                               icon="copy"
                               darkMode={darkMode}
                               onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
                                 toggleShowPageOptions(false);
 
                                 clonePage(page?.id);
@@ -413,6 +436,8 @@ export const PageMenuItem = withRouter(
                               darkMode={darkMode}
                               disabled={isHomePage}
                               onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
                                 toggleShowPageOptions(false);
                                 openPageEditPopover(page);
                                 toggleDeleteConfirmationModal(true);
@@ -424,13 +449,14 @@ export const PageMenuItem = withRouter(
 
                       <Overlay
                         target={optionBtnRef.current}
-                        show={showEditPopover && newPagePopupConfig?.mode == 'edit'}
+                        show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditingPage}
                         placement="left-start"
                         rootClose
                         onHide={() => {
                           setEditingPage(null);
                           setNewPagePopupConfig({ show: false, mode: null, type: null });
-                          showPageOptions(false);
+                          toggleShowPageOptions(false);
+                          setShowEditPopover(false);
                         }}
                       >
                         <AddEditPagePopup darkMode={darkMode} />

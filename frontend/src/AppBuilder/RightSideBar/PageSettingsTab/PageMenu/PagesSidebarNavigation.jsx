@@ -13,6 +13,7 @@ import { DarkModeToggle, ToolTip } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import toast from 'react-hot-toast';
 // import useSidebarMargin from './useSidebarMargin';
 
 export const PagesSidebarNavigation = ({
@@ -194,24 +195,34 @@ export const PagesSidebarNavigation = ({
   };
 
   const switchPageWrapper = (page) => {
-    if (page?.type === 'url' && page?.url) {
-      const finalUrl = getAbsoluteUrl(page.url);
-      if (finalUrl) {
-        if (page.openIn === 'new_tab') {
-          window.open(finalUrl, '_blank');
-        } else {
-          window.location.href = finalUrl;
+    if (page?.type === 'url') {
+      if (page?.url) {
+        const finalUrl = getAbsoluteUrl(page.url);
+        if (finalUrl) {
+          if (page.openIn === 'new_tab') {
+            window.open(finalUrl, '_blank');
+          } else {
+            window.location.href = finalUrl;
+          }
         }
+      } else {
+        toast.error('No URL provied');
+        return;
       }
       return;
     }
 
-    if (page?.type === 'app' && page?.appId) {
-      const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
-      if (page.openIn === 'new_tab') {
-        window.open(baseUrl, '_blank');
+    if (page?.type === 'app') {
+      if (page?.appId) {
+        const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+        if (page.openIn === 'new_tab') {
+          window.open(baseUrl, '_blank');
+        } else {
+          window.location.href = baseUrl;
+        }
       } else {
-        window.location.href = baseUrl;
+        toast.error('No app selected');
+        return;
       }
       return;
     }

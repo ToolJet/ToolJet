@@ -188,6 +188,8 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                       e.preventDefault();
                       setEditingPage(page);
                       toggleShowPageOptions(true);
+                      setNewPagePopupConfig({ show: false, mode: null, type: null });
+                      setShowEditPopover(false);
                     }}
                     role="button"
                     className="icon-btn"
@@ -241,7 +243,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                   </Overlay>
                   <Overlay
                     target={optionsBtnRef.current}
-                    show={showEditPopover && newPagePopupConfig?.mode == 'edit'}
+                    show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditing}
                     placement="left-start"
                     rootClose
                     onHide={() => {

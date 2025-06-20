@@ -23,7 +23,7 @@ const POPOVER_TITLES = {
   edit: {
     default: 'Edit page',
     app: 'Edit nav item',
-    url: 'New nav item',
+    url: 'Edit nav item',
     group: 'Edit nav group',
   },
 };
@@ -67,7 +67,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
   const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
-  const [page, setPage] = useState(editingPage);
+  const [page, setPage] = useState(editingPage || props?.page);
   const [pageName, setPageName] = useState('');
   const [handle, setHandle] = useState('');
   const [pageURL, setPageURL] = useState('');
@@ -122,8 +122,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       });
 
       setHasAutoSaved(true);
-    } else if (mode === 'edit' && editingPage) {
-      setPage(editingPage, appOptions);
+    } else if (editingPage) {
+      setPage(editingPage);
       setPageName(editingPage.name);
       setPageURL(editingPage.url);
     }
@@ -178,6 +178,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       setPageName(editingPage.name);
     }
   }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+
 
   //Nav item with group
   useEffect(() => {
@@ -258,7 +259,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   value={pageName}
                   autoFocus={true}
                   onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => {
+                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  }}
                   minLength="1"
                 />
               </div>
@@ -338,7 +341,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   className="form-control"
                   value={pageName}
                   autoFocus={true}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => {
+                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  }}
                   minLength="1"
                 />
               </div>
@@ -408,7 +413,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   className="form-control"
                   value={pageName}
                   autoFocus={true}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => {
+                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  }}
                   minLength="1"
                 />
               </div>
@@ -481,7 +488,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   value={pageName}
                   autoFocus={true}
                   onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName, true)}
+                  onBlur={(e) => pageName && pageName !== page?.name && updatePageName(page?.id, pageName, true)}
                   minLength="1"
                 />
               </div>
