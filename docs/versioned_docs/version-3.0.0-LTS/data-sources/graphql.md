@@ -9,11 +9,11 @@ ToolJet can establish connections with GraphQL endpoints, enabling the execution
 
 ## Connection
 
-To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-v2.png" alt="ToolJet - Data source - GraphQL" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-v3.png" alt="ToolJet - Data source - GraphQL" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -40,30 +40,40 @@ ToolJet requires the following to connect to a GraphQL datasource:
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 ### Required Parameters:
-- **Query**
+- **Query:** Provide queries to perform operations on a database, such as retrieving, inserting, updating, or deleting data.
 
 ### Optional Parameters
-- **Variable**
-- **Headers**
+- **Variable** : Stores temporary data values for use within queries or procedural code blocks in a database session.
+- **Headers** : Specify key-value pairs to pass additional information.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/headers-v2.png" alt="ToolJet - Data source - GraphQl" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/graphql/headers-v3.png" alt="ToolJet - Data source - GraphQl" style={{marginBottom:'15px'}}/>
 
 </div>
 
-#### Example
+<details>
+<summary>**Example Value**</summary>
 ```yaml
-{
-  todos {
-    id
-    description
-  }
-}
+"Query": "query Query { allFilms { films { title director releaseDate speciesConnection { species { name classification homeworld { name } } } } } }"
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    data: {} 1 Key
+      allFilms: {} 1 Key
+        films: [] 6 items
+          title:"A New Hope"
+          director:"George Lucas"
+          releaseDate:"1977-05-25"
+          "..."
+```
+</details>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our **[transformations documentation](/docs/tutorial/transformations)** to see how.
 :::
 
 </div>
@@ -72,7 +82,7 @@ Query results can be transformed using transformations. Read our transformations
 Metadata is additional information about the data returned by the GraphQL query. It includes details such as the request URL, method, headers, and response status code. You can access this information using the `metadata` object. REST API. The metadata can be accessed within queries and components using the `{{queries.<queryname>.metadata}}` syntax.
 
 :::info
-While accessing the properties of the metadata object, which contains a hyphen, you can use the bracket notation. For example, to access the `content-length` property, you can use `{{queries.graphql1.metadata.request.headers["content-length"]}}` or `{{queries.graphql1.metadata.request.headers."content-length"}}`.
+While accessing the properties of the metadata object, which contains a hyphen, you can use the bracket notation. For example, to access the `content-length` property, you can use `{{queries.graphql.metadata.request.headers["content-length"]}}` or `{{queries.graphql.metadata.request.headers."content-length"}}`.
 :::
 
 <details>
