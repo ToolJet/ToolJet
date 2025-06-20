@@ -36,10 +36,9 @@ import { UserAppsPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { Component } from 'src/entities/component.entity';
+import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
-import { RequestContext } from '@modules/request-context/service';
-import { RenameAppOrVersionDto } from '@modules/app-git/dto';
-import got from 'got';
 import { DataQuery } from '@entities/data_query.entity';
 
 @Injectable()
@@ -83,8 +82,52 @@ export class AppsUtilService implements IAppsUtilService {
         })
       );
 
+      if (type === 'module') {
+        const moduleContainer = await manager.save(
+          manager.create(Component, {
+            name: 'ModuleContainer',
+            type: 'ModuleContainer',
+            pageId: defaultHomePage.id,
+            properties: {
+              inputItems: { value: [] },
+              outputItems: { value: [] },
+              visibility: { value: '{{true}}' },
+            },
+            styles: {
+              backgroundColor: { value: '#fff' },
+            },
+            displayPreferences: {
+              showOnDesktop: { value: '{{true}}' },
+              showOnMobile: { value: '{{true}}' },
+            },
+          })
+        );
+
+        await manager.save(
+          manager.create(Layout, {
+            component: moduleContainer,
+            type: 'desktop',
+            top: 50,
+            left: 6,
+            height: 400,
+            width: 38,
+          })
+        );
+
+        await manager.save(
+          manager.create(Layout, {
+            component: moduleContainer,
+            type: 'mobile',
+            top: 50,
+            left: 6,
+            height: 400,
+            width: 38,
+          })
+        );
+      }
+
       // Set default values for app version
-      appVersion.showViewerNavigation = true;
+      appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
         hideHeader: false,
@@ -170,8 +213,8 @@ export class AppsUtilService implements IAppsUtilService {
     const processEnvironmentName = environmentName
       ? environmentName
       : !isMultiEnvironmentEnabled
-      ? 'development'
-      : null;
+        ? 'development'
+        : null;
 
     const environment: AppEnvironment = environmentId
       ? await this.appEnvironmentUtilService.get(organizationId, environmentId)
@@ -387,19 +430,23 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = userAppPermissions.hideAll
       ? [null, ...userAppPermissions.editableAppsId]
       : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+          ])
+        ),
+      ];
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'viewable_apps')
       .innerJoin('viewable_apps.user', 'user')
       .addSelect(['user.firstName', 'user.lastName'])
       .where('viewable_apps.organizationId = :organizationId', { organizationId: user.organizationId });
+
+    if (type === 'module') {
+      viewableAppsQb.leftJoinAndSelect('viewable_apps.appVersions', 'versions');
+    }
 
     if (type) viewableAppsQb.andWhere('viewable_apps.type = :type', { type: type });
 
@@ -517,6 +564,43 @@ export class AppsUtilService implements IAppsUtilService {
     return components;
   }
 
+  async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
+    const versionToLoad = versionId
+      ? await this.versionRepository.findVersion(versionId)
+      : app.currentVersionId
+        ? await this.versionRepository.findVersion(app.currentVersionId)
+        : await this.versionRepository.findVersion(app.editingVersion?.id);
+
+    const modules = await dbTransactionWrap(async (manager) => {
+      const moduleComponents = await manager
+        .createQueryBuilder(Component, 'component')
+        .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
+        .leftJoinAndSelect(AppVersion, 'app_version', 'app_version.id = page.app_version_id')
+        .leftJoinAndSelect(App, 'app', 'app.id = app_version.app_id')
+        .andWhere(
+          `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
+          {
+            module: 'ModuleViewer',
+            appVersionId: versionToLoad.id,
+            appId: app.id,
+          }
+        )
+        .getMany();
+
+      const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+
+      const modules =
+        moduleAppIds.length > 0
+          ? await manager
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
+          : [];
+      return modules;
+    });
+    return modules;
+  }
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
     return await this.appRepository.findAllOrganizationApps(organizationId);
   }

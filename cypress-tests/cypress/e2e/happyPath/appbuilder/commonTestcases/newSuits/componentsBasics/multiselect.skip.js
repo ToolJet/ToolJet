@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
 describe('Multiselect Component Tests', () => {
@@ -104,7 +104,7 @@ describe('Multiselect Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("multiselect1", exposedValues, verifyValue);
+        openAndVerifyNode("multiselect1", exposedValues, verifyNodeData);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
