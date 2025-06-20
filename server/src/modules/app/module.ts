@@ -97,7 +97,7 @@ export class AppModule implements OnModuleInit {
       await TemplatesModule.register(configs),
       await TooljetDbModule.register(configs),
       await WorkflowsModule.register(configs),
-      await ModulesModule.register(configs),
+      // await ModulesModule.register(configs),
       await AiModule.register(configs),
       await CustomStylesModule.register(configs),
       await AppPermissionsModule.register(configs),

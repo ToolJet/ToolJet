@@ -7,8 +7,8 @@ export interface ILicenseWorkflowsService {
 }
 
 export interface ILicenseUserService {
-  getUserLimitsByType(type: LIMIT_TYPE): Promise<any>;
-  validateUser(manager: EntityManager): Promise<void>;
+  getUserLimitsByType(type: LIMIT_TYPE, organizationId:string): Promise<any>;
+  validateUser(manager: EntityManager, organizationId:string): Promise<void>;
 }
 
 export abstract class LicenseTermsService {
@@ -17,8 +17,8 @@ export abstract class LicenseTermsService {
 }
 
 export interface ILicenseOrganizationService {
-  validateOrganization(manager: EntityManager): Promise<void>;
-  limit(manager?: EntityManager): Promise<any>;
+  validateOrganization(manager: EntityManager, organizationId: string): Promise<void>;
+  limit(organizationId: string, manager?: EntityManager): Promise<any>;
 }
 
 export abstract class LicenseInitService {

@@ -5,6 +5,6 @@ export class FirstUserSignupGuard implements CanActivate {
   constructor(protected readonly licenseCountsService: LicenseCountsService) {}
 
   async canActivate(): Promise<any> {
-    return (await this.licenseCountsService.getUsersCount()) === 0;
+    return (await this.licenseCountsService.getUsersCount('INSTANCE')) === 0;
   }
 }

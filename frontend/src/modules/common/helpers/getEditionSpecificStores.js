@@ -12,7 +12,7 @@ const getEditionSpecificStore = async (moduleName, storeName) => {
   const edition = fetchEdition();
 
   try {
-    const editionStores = storeRegistry[edition] || storeRegistry.ce;
+    let editionStores = storeRegistry[edition] || storeRegistry.ce;
     return editionStores?.stores?.[storeName];
   } catch (error) {
     console.error(`Error loading store ${storeName} from ${edition} edition for module ${moduleName}:`, error);

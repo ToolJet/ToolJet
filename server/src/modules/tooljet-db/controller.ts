@@ -77,7 +77,7 @@ export class TooljetDbController {
   @Get('/tables/limits')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async getTablesLimit(@Param('organizationId') organizationId) {
-    const data = await this.tableOperationsService.getTablesLimit();
+    const data = await this.tableOperationsService.getTablesLimit(organizationId);
     return data;
   }
 

@@ -80,6 +80,7 @@
     "papaparse": "^5.3.2",
     "path-browserify": "^1.0.1",
     "plotly.js-dist-min": "^2.29.1",
+    "posthog-js": "^1.255.0",
     "process": "^0.11.10",
     "psl": "^1.9.0",
     "query-string": "^8.1.0",

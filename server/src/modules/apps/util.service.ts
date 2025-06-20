@@ -220,7 +220,7 @@ export class AppsUtilService implements IAppsUtilService {
     currentEnvIdOfVersion: string,
     organizationId: string
   ): Promise<AppEnvironment> {
-    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
     if (environmentName && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
@@ -280,7 +280,7 @@ export class AppsUtilService implements IAppsUtilService {
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 
         const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
-          LICENSE_FIELD.MULTI_ENVIRONMENT
+          LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId
         );
         /* 
         Allow version release only if the environment is on 
@@ -363,7 +363,7 @@ export class AppsUtilService implements IAppsUtilService {
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
-      if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+      if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId))) {
         throw new BadRequestException('You do not have permissions to perform this action');
       }
 
