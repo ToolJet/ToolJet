@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
@@ -399,6 +399,17 @@ const JoinOn = ({
   onOperatorChange,
   onRemove,
 }) => {
+  const [tooltipValue, setTooltipValue] = useState(condition?.leftField?.jsonpath || '');
+  const [rightFieldTooltipValue, setRightFieldTooltipValue] = useState(condition?.rightField?.jsonpath || '');
+
+  useEffect(() => {
+    setTooltipValue(condition?.leftField?.jsonpath || '');
+  }, [condition?.leftField?.jsonpath]);
+
+  useEffect(() => {
+    setRightFieldTooltipValue(condition?.rightField?.jsonpath || '');
+  }, [condition?.rightField?.jsonpath]);
+
   const { tableInfo, findTableDetails } = useContext(TooljetDatabaseContext);
   const { operator, leftField, rightField } = condition;
   const leftFieldColumn = leftField?.columnName;
@@ -522,9 +533,7 @@ const JoinOn = ({
           <div className="tjdb-codehinter-jsonpath">
             <ToolTip
               message={
-                condition?.leftField?.jsonpath
-                  ? condition.leftField.jsonpath
-                  : 'Access nested JSON fields by using -> for JSON object and ->> for text'
+                tooltipValue ? tooltipValue : 'Access nested JSON fields by using -> for JSON object and ->> for text'
               }
               tooltipClassName="tjdb-table-tooltip"
               placement="top"
@@ -534,7 +543,7 @@ const JoinOn = ({
               <span>
                 <CodeHinter
                   type="basic"
-                  initialValue={condition?.leftField?.jsonpath || ''}
+                  initialValue={leftField?.jsonpath || ''}
                   lang="javascript"
                   onChange={(value) => {
                     onChange &&
@@ -546,10 +555,13 @@ const JoinOn = ({
                         },
                       });
                   }}
+                  onInputChange={(value) => {
+                    setTooltipValue(value);
+                  }}
                   enablePreview={false}
                   height="30"
-                  placeholder="->>key"
-                  componentName={condition?.leftField?.columnName ? `{}${condition.leftField.columnName}` : ''}
+                  placeholder="->>'key'"
+                  componentName={leftField?.columnName ? `{}${leftField.columnName}` : ''}
                 />
               </span>
             </ToolTip>
@@ -608,8 +620,8 @@ const JoinOn = ({
             <div className="tjdb-codehinter-jsonpath">
               <ToolTip
                 message={
-                  condition?.rightField?.jsonpath
-                    ? condition.rightField.jsonpath
+                  rightFieldTooltipValue
+                    ? rightFieldTooltipValue
                     : 'Access nested JSON fields by using -> for JSON object and ->> for text'
                 }
                 tooltipClassName="tjdb-table-tooltip"
@@ -632,6 +644,9 @@ const JoinOn = ({
                             jsonpath: value,
                           },
                         });
+                    }}
+                    onInputChange={(value) => {
+                      setRightFieldTooltipValue(value);
                     }}
                     enablePreview={false}
                     height="30"
