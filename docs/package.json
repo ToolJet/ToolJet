@@ -14,10 +14,10 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.6.3",
-    "@docusaurus/plugin-client-redirects": "^3.6.3",
-    "@docusaurus/plugin-google-gtag": "^3.6.3",
-    "@docusaurus/plugin-sitemap": "^3.6.3",
+    "@docusaurus/core": "^3.7.0",
+    "@docusaurus/plugin-client-redirects": "^3.7.0",
+    "@docusaurus/plugin-google-gtag": "^3.7.0",
+    "@docusaurus/plugin-sitemap": "^3.7.0",
     "@docusaurus/preset-classic": "^3.6.3",
     "@mdx-js/react": "^3.0.1",
     "autoprefixer": "^10.4.20",
