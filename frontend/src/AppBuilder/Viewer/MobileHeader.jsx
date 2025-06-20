@@ -127,6 +127,7 @@ const MobileHeader = ({
         styles={{
           height: '46px',
         }}
+        className={'mobile-nav-container'}
       >
         <div className="d-flex w-100">
           {!resolvedDisableMenu && _renderMobileNavigationMenu()}

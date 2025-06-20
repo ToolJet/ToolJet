@@ -114,6 +114,7 @@ import Settings from './Settings.jsx';
 import Share from './Share.jsx';
 import Shield from './Shield.jsx';
 import ShieldCheck from './ShieldCheck.jsx';
+import Skip from './Skip.jsx';
 import Signpost from './Signpost.jsx';
 import SmileRectangle from './SmileRectangle.jsx';
 import SortArrowDown from './SortArrowDown.jsx';
@@ -573,6 +574,8 @@ const Icon = (props) => {
       return <Shield {...props} />;
     case 'shieldcheck':
       return <ShieldCheck {...props} />;
+    case 'skip':
+      return <Skip {...props} />;
     case 'signpost':
       return <Signpost {...props} />;
     case 'smilerectangle':

@@ -256,16 +256,6 @@ export const RenderPageAndPageGroup = ({
           const renderSeparatorBottom = !filteredPagesVisible[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
           return (
             <>
-              {renderSeparatorTop && (
-                <div
-                  style={{
-                    margin: '10px 0',
-                    width: '100%',
-                    borderTop: '1px solid var(--slate7)',
-                  }}
-                  className="separator-line"
-                ></div>
-              )}
               <RenderPageGroup
                 switchPageWrapper={switchPageWrapper}
                 homePageId={homePageId}
@@ -281,16 +271,6 @@ export const RenderPageAndPageGroup = ({
                 isSidebarPinned={isSidebarPinned}
                 position={position}
               />
-              {renderSeparatorBottom && (
-                <div
-                  style={{
-                    margin: '10px 0',
-                    width: '100%',
-                    borderBottom: '1px solid var(--slate7)',
-                  }}
-                  className="separator-line"
-                ></div>
-              )}
             </>
           );
         } else if (!page.isPageGroup) {
@@ -348,16 +328,6 @@ export const RenderPageAndPageGroup = ({
                       !filteredPagesOverflow[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
                     return (
                       <>
-                        {renderSeparatorTop && (
-                          <div
-                            style={{
-                              margin: '10px 0',
-                              width: '100%',
-                              borderTop: '1px solid var(--slate7)',
-                            }}
-                            className="separator-line"
-                          ></div>
-                        )}
                         <RenderPageGroup
                           switchPageWrapper={switchPageWrapper}
                           homePageId={homePageId}
@@ -372,16 +342,6 @@ export const RenderPageAndPageGroup = ({
                           linkRefs={linkRefs}
                           isSidebarPinned={isSidebarPinned}
                         />
-                        {renderSeparatorBottom && (
-                          <div
-                            style={{
-                              margin: '10px 0',
-                              width: '100%',
-                              borderBottom: '1px solid var(--slate7)',
-                            }}
-                            className="separator-line"
-                          ></div>
-                        )}
                       </>
                     );
                   } else if (!page.isPageGroup) {

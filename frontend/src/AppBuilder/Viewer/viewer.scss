@@ -51,11 +51,18 @@
 
 .released-version-no-header-mbl-preview {
   position: absolute;
-  left: 50% !important;
-  border-radius: 100px;
+  left: 50%;
   padding : 2px 8px;
+  background-color: unset !important;
   z-index: 1000;
-  top: 10px !important
+
+  .preview-chip {
+    color: var(--text-on-solid) !important;
+  }
+  .preview-settings {
+    margin-left: 6px;
+    padding: 4px;
+  }
 }
 
 .preview-settings-overlay {
@@ -180,6 +187,12 @@
               position: unset !important;
             }
           }
+        }
+      }
+
+      .mobile-nav-container {
+        .header-container {
+          background-color: unset !important;
         }
       }
     }

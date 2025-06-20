@@ -57,6 +57,24 @@
         &.highlight {
             border: 2px solid #3D63DC;
         }
+
+        &.is-selected {
+            background-color: var(--interactive-selected) !important; 
+        }
+
+        &:hover {
+            background-color: var(--interactive-default);
+        }
+
+        &.page-group-item {
+            background-color: unset;
+            &:hover {
+                background-color: var(--interactive-default);
+            }
+            &:active {
+                background-color: var(--interactive-selected);
+            }
+        }
         .page-group-actions {
             transition: 0.2s ease;
             opacity: 0;
@@ -79,12 +97,12 @@
             }
         }
         .meta-text{
-            color: var(--slate8);
+            color: var(--text-placeholder);
             font-size: 12px;
             font-style: normal;
             font-weight: 400;
             line-height: 18px;
-            margin-top: 3px;
+            margin-left: 8px;
         }
         button.edit-page-overlay-toggle{
             opacity: 0;
@@ -119,7 +137,6 @@
                 font-style: normal;
                 font-weight: 400;
                 max-width: 246px;
-                margin-top: 3px;
             }
             display: flex;
             align-items: center;
@@ -443,6 +460,10 @@
     align-items: center;
     font-weight: 500;
     font-size: 12px;
+
+    .title {
+        margin: 0px 6px;
+    }
 
     &:before, &:after {
         content: "";

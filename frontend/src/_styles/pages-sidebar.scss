@@ -153,11 +153,13 @@
         }
 
         .add-new-page, .more-page-opts {
-            background-color: #FFFFFF;
-            border: 1px solid var(--Border-default, #CCD1D5);
-            box-shadow: 0px 1px 0px 0px var(--Dropshadow000);
             padding: 7px 12px;
             margin-top: 12px;
+            height: 32px;
+            svg {
+                width: 16px;
+                height: 16px;
+            }
         }
 
         .add-new-page {
@@ -583,7 +585,11 @@
     }
     &.offset-top-bar-navigation {
         .navbar {
-            height: 44px;
+            height: 32px;
+        }
+
+        .header-container {
+            background-color: var(--background-inverse);
         }
         #sidebar-page-navigation {
         .navigation-area {
@@ -599,6 +605,8 @@
 .icon-btn {
     padding: 7px;
     display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 6px;
     width: 28px;
     height: 28px;
@@ -637,6 +645,15 @@
             width: 21px;
             height: 21px;
             border-radius: 4px;
+            &:hover {
+                background-color: var(--button-outline-hover);
+                border-color: var(--border-weak);
+            }
+
+            &:active {
+                background-color: var(--interactive-selected) !important;
+                border-color: var(--interactive-overlay-border-pressed) !important;
+              }
         }
     }
 }

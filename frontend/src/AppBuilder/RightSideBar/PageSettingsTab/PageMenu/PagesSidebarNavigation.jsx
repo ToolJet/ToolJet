@@ -180,7 +180,7 @@ export const PagesSidebarNavigation = ({
       hidden: properties?.style === 'text',
     },
     label: {
-      hidden: properties?.style === 'icon' || (!isSidebarPinned && properties?.position === 'side'),
+      hidden: properties?.style === 'icon' || (style === 'texticon' && !isSidebarPinned && !isTopPositioned),
     },
   };
 
@@ -270,7 +270,7 @@ export const PagesSidebarNavigation = ({
         className={cx('navigation-area', {
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           // 'sidebar-overlay': !isSidebarPinned && properties?.collapsable,
-          'icon-only': labelHidden || (!isSidebarPinned && position !== 'top'),
+          'icon-only': style === 'icon' || (style === 'texticon' && !isSidebarPinned && position === 'side'),
           'position-top': position === 'top',
           'text-only': style === 'text',
         })}
@@ -306,7 +306,7 @@ export const PagesSidebarNavigation = ({
                 {((isPinnedWithLabel && !labelHidden) || position === 'top') && <span>{appName}</span>}
               </>
             )}
-            {collapsable && !isTopPositioned && !labelHidden && style !== 'text' && position === 'side' && (
+            {collapsable && !isTopPositioned && style == 'texticon' && position === 'side' && (
               <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
                 <SolidIcon
                   className="cursor-pointer"

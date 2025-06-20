@@ -9,6 +9,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
   const newPageBtnRef = useRef(null);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
+  const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
 
   const handleOpenPopup = (type) => {
@@ -23,8 +24,8 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
         key="new-page-btn"
         fill="var(--icon-default)"
         leadingIcon="plus"
-        variant="secondary"
-        className="add-new-page"
+        variant="outline"
+        className="add-new-page icon-btn"
         id="add-new-page"
         onClick={() => {
           setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
@@ -85,7 +86,10 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
         show={newPagePopupConfig.show && newPagePopupConfig?.mode == 'add'}
         placement="left-start"
         rootClose
-        onHide={() => setNewPagePopupConfig({ show: false, mode: null, type: null })}
+        onHide={() => {
+          setNewPagePopupConfig({ show: false, mode: null, type: null });
+          setEditingPage(null);
+        }}
       >
         <AddEditPagePopup darkMode={darkMode} />
       </Overlay>

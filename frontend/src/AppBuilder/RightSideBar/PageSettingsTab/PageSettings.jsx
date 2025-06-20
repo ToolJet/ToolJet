@@ -299,7 +299,9 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseVali
   const [_name, _setName] = useState(name);
   return (
     <>
-      <div className="section-header pb-2">App header</div>
+      <div className="section-header pb-2">
+        <div className="title">App header</div>
+      </div>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show app header
@@ -356,7 +358,9 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
 
   return (
     <>
-      <div className="section-header pb-2">Navigation menu</div>
+      <div className="section-header pb-2">
+        <div className="title">Navigation menu</div>
+      </div>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label className="form-label font-weight-400 mb-0">Show navigation menu</label>
         <label className={`form-switch`}>

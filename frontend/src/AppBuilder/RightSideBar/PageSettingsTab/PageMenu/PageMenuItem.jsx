@@ -4,6 +4,7 @@ import cx from 'classnames';
 // import { PagehandlerMenu } from './PagehandlerMenu';
 // import { EditModal } from './EditModal';
 // import { SettingsModal } from './SettingsModal';
+import * as Icons from '@tabler/icons-react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
@@ -22,6 +23,13 @@ import { Overlay, Popover } from 'react-bootstrap';
 import PageOptions from './PageOptions';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
+import Skip from '@/_ui/Icon/solidIcons/Skip';
+
+export const PAGE_TYPES = {
+  default: '',
+  app: 'TJ app',
+  url: 'URL',
+};
 
 export const PageMenuItem = withRouter(
   memo(({ darkMode, page, navigate }) => {
@@ -49,14 +57,7 @@ export const PageMenuItem = withRouter(
     } = useStore((state) => state.pageSettings);
     const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
     // only update when the page is being edited
-    const editingPage = useStore(
-      (state) => state.editingPage,
-      (prev, next) => {
-        if (next?.id === page?.id) return false;
-        if (prev?.id === page?.id) return false;
-        return true;
-      }
-    );
+    const editingPage = useStore((state) => state.editingPage);
     const editingPageName = useStore((state) => state.showEditPageNameInput);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
     const [showEditPopover, setShowEditPopover] = useState(false);
@@ -69,10 +70,16 @@ export const PageMenuItem = withRouter(
     const moreBtnRef = useRef(null);
 
     const isEditingPage = editingPage?.id === page?.id;
-    const icon = () => {
+    const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+      // eslint-disable-next-line import/namespace
+      const Icon = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+
+      return (
+        <Icon {...props} style={{ width: '16px', height: '16px', color: 'var(--icons-default)', marginRight: '6px' }} />
+      );
+
       // if (!isDisabled && !isHidden) {
-      return <IconSelector iconColor={computedStyles?.icon?.color} iconName={iconName} pageId={page.id} />;
       // }
       // if (isDisabled || (isDisabled && isHidden)) {
       //   return (
@@ -80,7 +87,6 @@ export const PageMenuItem = withRouter(
       //   );
       // }
     };
-
     const computeStyles = useCallback(() => {
       const baseStyles = {
         pill: {
@@ -196,6 +202,7 @@ export const PageMenuItem = withRouter(
       page.openIn,
       currentPageId,
       switchPage,
+      moduleId,
       setCurrentPageHandle,
     ]);
 
@@ -254,10 +261,15 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${showPageOptions && 'is-selected'} ${darkMode && 'dark-theme'}`}
+            className={`page-menu-item ${darkMode && 'dark-theme'} ${
+              showPageOptions && isEditingPage ? 'is-selected' : ''
+            }`}
             style={{
               position: 'relative',
               width: '100%',
+            }}
+            onClick={() => {
+              handleOpenPopup(page?.type || 'page', page);
             }}
           >
             {editingPageName && editingPage?.id === page?.id ? (
@@ -279,35 +291,42 @@ export const PageMenuItem = withRouter(
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text, maxWidth: '159px' }}>
                     {page.name}
                   </OverflowTooltip>
-                  <span
-                    style={{
-                      marginLeft: '8px',
-                    }}
-                    className="color-slate09 meta-text"
-                  >
+                  <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
                     {isHomePage && (
                       <ToolTip message="Home page" placement="bottom">
-                        <div>
-                          <Home fill="var(--icon-default)" className="" width={16} height={16} />
+                        <div className=" d-flex align-items-center justify-content-center">
+                          <Home fill="var(--icons-default)" className="" width={16} height={16} />
                         </div>
                       </ToolTip>
                     )}
 
-                    {isDisabled && 'Disabled'}
-                    {isHidden && !isDisabled && (
-                      <ToolTip message="Hidden page" placement="bottom">
-                        <div>
-                          <EyeDisable fill="var(--icon-default)" className="" width={16} height={16} />
+                    {isDisabled && (
+                      <ToolTip message="Disabled page" placement="bottom">
+                        <div className=" d-flex align-items-center justify-content-center">
+                          <Skip fill="var(--icons-default)" className="" width={16} height={16} viewBox="0 0 16 16" />
                         </div>
                       </ToolTip>
                     )}
+                    {isHidden && !isDisabled && (
+                      <ToolTip
+                        message={page?.type !== PAGE_TYPES.default ? 'Hidden nav item' : 'Hidden page'}
+                        placement="bottom"
+                      >
+                        <div className=" d-flex align-items-center justify-content-center">
+                          <EyeDisable fill="var(--icons-default)" className="" width={16} height={16} />
+                        </div>
+                      </ToolTip>
+                    )}
+                  </span>
+                  <span className="meta-text" style={{ marginLeft: '6px' }}>
+                    {PAGE_TYPES[page?.type]}
                   </span>
                 </div>
                 <div style={{ marginLeft: '8px', marginRight: 'auto' }}>
                   {licenseValid && restricted && (
                     <ToolTip message={getTooltip()}>
                       <div>
-                        <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />
+                        <SolidIcon width="16" name="lock" fill="var(--icons-default)" />
                       </div>
                     </ToolTip>
                   )}
@@ -332,26 +351,32 @@ export const PageMenuItem = withRouter(
                     // >
                     //   <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
                     // </button>
-                    <div className="action-btn-wrapper">
+                    <div className={cx('action-btn-wrapper', { 'options-opened': showPageOptions })}>
                       <div onClick={handlePageSwitch} className="icon-btn">
-                        <SolidIcon name="arrowright01" width="12" viewBox="0 0 12 12" />
+                        <SolidIcon name="arrowright01" fill="var(--icons-strong)" />
                       </div>
                       <div
                         ref={moreBtnRef}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setEditingPage(page);
                           toggleShowPageOptions(true);
                         }}
                         className="icon-btn"
                       >
-                        <SolidIcon name="morevertical01" width="12" viewBox="0 0 12 12" />
+                        <SolidIcon name="morevertical01" fill="var(--icons-strong)" width="12" viewBox="0 0 12 12" />
                       </div>
 
                       <Overlay
                         target={moreBtnRef.current}
-                        show={showPageOptions}
+                        show={showPageOptions && isEditingPage}
                         placement="bottom-end"
                         rootClose
-                        onHide={() => toggleShowPageOptions(false)}
+                        onHide={() => {
+                          setEditingPage(null);
+                          toggleShowPageOptions(false);
+                        }}
                       >
                         <Popover id="edit-page-popover">
                           <div className="menu-options mb-0">
@@ -359,27 +384,36 @@ export const PageMenuItem = withRouter(
                               text="Edit page details"
                               icon="editable"
                               darkMode={darkMode}
-                              onClick={() => handleOpenPopup(page?.type || 'page', page)}
+                              onClick={(e) => {
+                                handleOpenPopup(page?.type || 'page', page);
+                              }}
                             />
                             <PageOptions
                               text="Mark home"
                               icon="home"
                               darkMode={darkMode}
                               disabled={isHomePage}
-                              onClick={() => markAsHomePage(page?.id)}
+                              onClick={(e) => {
+                                markAsHomePage(page?.id, moduleId);
+                              }}
                             />
                             <PageOptions
                               text="Duplicate page"
                               icon="copy"
                               darkMode={darkMode}
-                              onClick={() => clonePage(page?.id)}
+                              onClick={(e) => {
+                                toggleShowPageOptions(false);
+
+                                clonePage(page?.id);
+                              }}
                             />
                             <PageOptions
                               text="Delete page"
                               icon="trash"
                               darkMode={darkMode}
                               disabled={isHomePage}
-                              onClick={() => {
+                              onClick={(e) => {
+                                toggleShowPageOptions(false);
                                 openPageEditPopover(page);
                                 toggleDeleteConfirmationModal(true);
                               }}
@@ -394,8 +428,9 @@ export const PageMenuItem = withRouter(
                         placement="left-start"
                         rootClose
                         onHide={() => {
+                          setEditingPage(null);
                           setNewPagePopupConfig({ show: false, mode: null, type: null });
-                          setShowEditPopover(false);
+                          showPageOptions(false);
                         }}
                       >
                         <AddEditPagePopup darkMode={darkMode} />

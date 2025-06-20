@@ -89,7 +89,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         index++;
         newName = `Page ${index}`;
       }
-      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup).then((data) => {
+      const pageObj = { type: 'default' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
         setPage(data);
         setPageName(newName);
         setHandle(data?.handle);
@@ -130,35 +131,34 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
 
   //Nav item with app hooks
   useEffect(() => {
-    if (mode === 'add' && type === 'app' && !hasAutoSaved) {
-      const fetchApps = async (page) => {
-        const { apps } = await appService.getAll(page);
-        return apps;
-      };
+    const fetchApps = async (page) => {
+      const { apps } = await appService.getAll(page);
+      return apps;
+    };
 
-      // eslint-disable-next-line no-inner-declarations
-      async function getAllApps() {
-        const apps = await fetchApps(0);
-        let appsOptionsList = [];
-        apps
-          .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
-          .forEach((item) => {
-            appsOptionsList.push({
-              name: item.name,
-              value: item.slug,
-            });
+    // eslint-disable-next-line no-inner-declarations
+    async function getAllApps() {
+      const apps = await fetchApps(0);
+      let appsOptionsList = [];
+      apps
+        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+        .forEach((item) => {
+          appsOptionsList.push({
+            name: item.name,
+            value: item.slug,
           });
-        return appsOptionsList;
-      }
-
-      getAllApps()
-        .then((apps) => {
-          setAppOptions(apps);
-        })
-        .finally(() => {
-          setAppOptionsLoading(false);
         });
+      return appsOptionsList;
+    }
 
+    getAllApps()
+      .then((apps) => {
+        setAppOptions(apps);
+      })
+      .finally(() => {
+        setAppOptionsLoading(false);
+      });
+    if (mode === 'add' && type === 'app' && !hasAutoSaved) {
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `Page ${index}`;

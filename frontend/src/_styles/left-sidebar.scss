@@ -707,6 +707,9 @@
 }
 
 .mobile-header {
+  .header-container {
+    background-color: unset !important;
+  }
   width: 100%;
   .navbar {
     border-bottom: 0px !important;
