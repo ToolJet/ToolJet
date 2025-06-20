@@ -17,6 +17,7 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
+import { DragGhostWidget } from './GhostWidgets';
 
 export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -161,6 +162,8 @@ export const AppCanvas = ({ appId, isViewerSidebarPinned, isViewer = false }) =>
                   pageSidebarStyle={pageSidebarStyle}
                   appType={appType}
                 />
+                <DragGhostWidget />
+                <div id="component-portal" />
                 {appType !== 'module' && <div id="component-portal" />}
               </div>
             )}
