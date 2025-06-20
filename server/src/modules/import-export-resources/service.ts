@@ -69,6 +69,18 @@ export class ImportExportResourcesService {
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
     const importingVersion = importResourcesDto.tooljet_version;
+    const skipPagePermissionsGroupCheck = importResourcesDto.skip_page_permissions_group_check;
+
+    if (!isEmpty(importResourcesDto.app) && !skipPagePermissionsGroupCheck) {
+      for (const appImportDto of importResourcesDto.app) {
+        let appParams = appImportDto.definition;
+        if (appParams?.appV2) {
+          appParams = { ...appParams.appV2 };
+          const pages = appParams?.pages;
+          pages?.length && (await this.appImportExportService.checkIfGroupPermissionsExist(pages, user.organizationId));
+        }
+      }
+    }
 
     if (!isEmpty(importResourcesDto.tooljet_database)) {
       const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
