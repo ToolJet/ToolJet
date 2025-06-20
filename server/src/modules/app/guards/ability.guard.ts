@@ -52,7 +52,7 @@ export abstract class AbilityGuard implements CanActivate {
       const licenseRequired: LICENSE_FIELD = featureInfo?.license;
       if (
         licenseRequired &&
-        !(await this.licenseTermsService.getLicenseTerms(licenseRequired, ORGANIZATION_INSTANCE_KEY))
+        !(await this.licenseTermsService.getLicenseTerms(licenseRequired, app.organizationId || ORGANIZATION_INSTANCE_KEY))
       ) {
         throw new HttpException(
           `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,

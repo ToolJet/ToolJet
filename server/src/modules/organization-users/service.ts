@@ -167,7 +167,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         !!invitationToken && status === USER_STATUS.ARCHIVED ? USER_STATUS.INVITED : USER_STATUS.ACTIVE;
       await this.organizationUsersUtilService.updateUserStatus(userId, updatedStatus, manager);
       await this.licenseUserService.validateUser(manager, unarchivedUserWorkspaces[0].organizationId);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseOrganizationService.validateOrganization(manager, user?.organizationId);
       const organizationIds = unarchivedUserWorkspaces.map((user) => user.organizationId);
       const auditLogEntry = {
         userId: user.id,
@@ -210,7 +210,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       });
 
       await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseOrganizationService.validateOrganization(manager, organizationUser.organizationId);
       const organization = await manager.findOne(Organization, {
         where: { id: organizationUser.organizationId },
       });

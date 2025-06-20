@@ -13,12 +13,13 @@ export class UserCountGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const totalUsers = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TOTAL_USERS);
     const request = context.switchToHttp().getRequest();
     const organizationId =
       typeof request.headers['tj-workspace-id'] === 'object'
         ? request.headers['tj-workspace-id'][0]
         : request.headers['tj-workspace-id'];
+    const totalUsers = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TOTAL_USERS, organizationId);
+    
     if (
       totalUsers !== LICENSE_LIMIT.UNLIMITED &&
       (await this.licenseCountsService.getUsersCount(organizationId)) >= totalUsers

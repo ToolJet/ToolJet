@@ -17,8 +17,8 @@ export abstract class LicenseTermsService {
 }
 
 export interface ILicenseOrganizationService {
-  validateOrganization(manager: EntityManager): Promise<void>;
-  limit(manager?: EntityManager): Promise<any>;
+  validateOrganization(manager: EntityManager, organizationId: string): Promise<void>;
+  limit(organizationId: string, manager?: EntityManager): Promise<any>;
 }
 
 export abstract class LicenseInitService {

@@ -16,6 +16,7 @@ import { SampleDataSourceService } from '@modules/data-sources/services/sample-d
 import { ISetupOrganizationsUtilService } from './interfaces/IUtilService';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { OrganizationInputs } from './types/organization-inputs';
+import { ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
 
 @Injectable()
 export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilService {
@@ -43,8 +44,8 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
         await this.rolesUtilService.addUserRole(organization.id, { role: USER_ROLE.ADMIN, userId: user.id }, manager);
       }
       await this.sampleDBService.createSampleDB(organization.id, manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
-      await this.licenseUserService.validateUser(manager, 'INSTANCE');
+      await this.licenseOrganizationService.validateOrganization(manager, ORGANIZATION_INSTANCE_KEY);
+      await this.licenseUserService.validateUser(manager, ORGANIZATION_INSTANCE_KEY);
       //create default theme for this organization
       await this.organizationThemesUtilService.createDefaultTheme(manager, organization.id);
       await this.tooljetDbTableOperationsService.createTooljetDbTenantSchemaAndRole(organization.id, manager);

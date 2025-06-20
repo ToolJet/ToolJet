@@ -166,7 +166,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
 
       // if datasource is restapi then reset the token data
@@ -485,7 +485,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT,organizationId);
 
       if (isMultiEnvEnabled) {
         await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);

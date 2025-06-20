@@ -405,7 +405,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     options: UserFilterOptions,
     page = 1
   ): Promise<{ organizationUsers: FetchUserResponse[]; total: number }> {
-    const isBasicPlan = !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.VALID));
+    const isBasicPlan = !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.VALID, user.organizationId));
     const pageSize = 10;
 
     const [organizationUsers, count] = await this.organizationUsersRepository.fetchUsersWithDetails(
@@ -498,7 +498,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, true, manager);
 
       await this.licenseUserService.validateUser(manager, currentOrganization.id);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseOrganizationService.validateOrganization(manager, currentOrganization.id);
 
       /* Send welcome email */
       const inviterName = fullName(currentUser.firstName, currentUser.lastName);

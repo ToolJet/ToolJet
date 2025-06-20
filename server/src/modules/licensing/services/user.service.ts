@@ -19,7 +19,7 @@ export class LicenseUserService implements ILicenseUserService {
     const {
       allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
       status: licenseStatus,
-    } = await this.licenseTermsService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.STATUS]);
+    } = await this.licenseTermsService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.STATUS], organizationId);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       switch (type) {
@@ -87,7 +87,7 @@ export class LicenseUserService implements ILicenseUserService {
       editors: editorUsers,
       viewers: viewerUsers,
       superadmins: superadminUsers,
-    } = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.USER);
+    } = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.USER, organizationId);
 
     if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
       const superadmin = await this.licenseCountsService.fetchTotalSuperadminCount(manager);

@@ -49,7 +49,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
       const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
 
       // License validation - Update not allowed on basic plan
-      const isLicenseValid = await this.licenseUtilService.isValidLicense();
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
       if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
         throw new ForbiddenException(ERROR_HANDLER.INVALID_LICENSE);
       }

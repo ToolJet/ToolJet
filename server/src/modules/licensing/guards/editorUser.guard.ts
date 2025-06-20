@@ -17,19 +17,19 @@ export class EditorUserCountGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    const organizationId =
+      typeof request.headers['tj-workspace-id'] === 'object'
+        ? request.headers['tj-workspace-id'][0]
+        : request.headers['tj-workspace-id'];
     const isWorkspaceSignup = !!request.body.organizationId;
     const isPersonalWorkspaceEnabled =
       (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
     if (isWorkspaceSignup && !isPersonalWorkspaceEnabled) return true;
 
-    const editorsCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.EDITORS);
+    const editorsCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.EDITORS, organizationId);
     if (editorsCount === LICENSE_LIMIT.UNLIMITED) {
       return true;
     }
-    const organizationId =
-      typeof request.headers['tj-workspace-id'] === 'object'
-        ? request.headers['tj-workspace-id'][0]
-        : request.headers['tj-workspace-id'];
     const editorCount = await this.licenseCountsService.fetchTotalEditorCount(organizationId, this._dataSource.manager);
 
     if (editorCount >= editorsCount) {
