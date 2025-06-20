@@ -1,4 +1,4 @@
-import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
+import { LICENSE_LIMIT, LICENSE_TYPE, PLAN_DETAILS } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
   BUSINESS_PLAN_TERMS,
@@ -42,6 +42,7 @@ export default class LicenseBase {
   private _ai: object;
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
+  private _plan: string;
   private BASIC_PLAN_TERMS: Partial<Terms>;
 
   constructor(
@@ -49,7 +50,8 @@ export default class LicenseBase {
     licenseData?: Partial<Terms>,
     updatedDate?: Date,
     startDate?: Date,
-    expiryDate?: Date
+    expiryDate?: Date,
+    plan?: string
   ) {
     this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
 
@@ -71,6 +73,7 @@ export default class LicenseBase {
       this._isAi = true;
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
+      this._plan = plan;
       return;
     }
     if (!licenseData) {
@@ -78,7 +81,7 @@ export default class LicenseBase {
       this._type = LICENSE_TYPE.BASIC;
       return;
     }
-    this._expiryDate = expiryDate || new Date(`${licenseData.expiry} 23:59:59`);
+    this._expiryDate = expiryDate || (licenseData?.expiry ? new Date(`${licenseData?.expiry} 23:59:59`) : null);
     this._startDate = startDate;
     this._isFlexiblePlan = licenseData?.plan?.isFlexible === true;
     this._appsCount = licenseData?.apps;
@@ -91,6 +94,7 @@ export default class LicenseBase {
     this._isLicenseValid = true;
     this._workspacesCount = licenseData?.workspaces;
     this._type = licenseData?.type;
+    this._plan = plan || licenseData?.plan?.name;
     this._domainsList = licenseData?.domains;
     this._metaData = licenseData?.meta;
     this._workflows = licenseData?.workflows;
@@ -125,6 +129,13 @@ export default class LicenseBase {
       return false;
     }
     return true;
+  }
+
+  public get plan(): string {
+    if (this.IsBasicPlan) {
+      return;
+    }
+    return this._plan;
   }
 
   public get isExpired(): boolean {

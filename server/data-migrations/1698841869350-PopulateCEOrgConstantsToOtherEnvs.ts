@@ -4,9 +4,15 @@ import { OrganizationConstant } from '@entities/organization_constants.entity';
 import { OrgEnvironmentConstantValue } from '@entities/org_environment_constant_values.entity';
 import { MigrationProgress } from '@helpers/migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class PopulateCEOrgConstantsToOtherEnvs1698841869350 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
+      console.log('Skipping migration as it is not EE edition');
+      return;
+    }
     const manager = queryRunner.manager;
     const organizations = await manager.find(Organization);
     const migrationProgress = new MigrationProgress(

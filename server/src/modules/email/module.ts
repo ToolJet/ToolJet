@@ -18,6 +18,7 @@ export class EmailModule {
         await SMTPModule.register(configs),
       ],
       providers: [EmailService, EmailListener, EmailUtilService],
+      exports: [EmailListener, EmailUtilService],
     };
   }
 }

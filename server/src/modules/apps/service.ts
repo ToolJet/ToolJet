@@ -281,7 +281,10 @@ export class AppsService implements IAppsService {
     }
 
     if (response['editing_version']) {
-      const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        app.organizationId
+      );
       let shouldFreezeEditor = false;
       let appVersionEnvironment: AppEnvironment;
       if (hasMultiEnvLicense) {
@@ -374,7 +377,10 @@ export class AppsService implements IAppsService {
         })
         .getOne();
 
-      const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        user.organizationId
+      );
       /* 
           Allow version release only if the environment is on 
           production with a valid license or 

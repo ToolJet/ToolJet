@@ -10,8 +10,13 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 export class environmentDataSourceMappingFix1683022868045 implements MigrationInterface {
   // This is to fix apps having only single environment option values (Imported from CE)
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    if (edition !== TOOLJET_EDITIONS.EE) {
+      console.log('Skipping migration as it is not EE edition');
+      return;
+    }
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    
     const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
     const encryptionService = nestApp.get(EncryptionService);
     const entityManager = queryRunner.manager;
