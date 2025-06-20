@@ -6,7 +6,7 @@ import * as Icons from '@tabler/icons-react';
 import { SearchBox } from '@/_components';
 import useStore from '@/AppBuilder/_stores/store';
 
-export default function IconSelector({ iconName, iconColor, pageId, disabled = false }) {
+export default function IconSelector({ iconName, iconColor, pageId, iconStyles, disabled = false }) {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
   const updatePageIcon = useStore((state) => state.updatePageIcon);
@@ -86,7 +86,7 @@ export default function IconSelector({ iconName, iconColor, pageId, disabled = f
         <div className="">
           <IconElement
             color={`${iconColor}`}
-            style={{ width: '19px', height: '19px', color: iconColor, stroke: iconColor }}
+            style={{ width: '19px', height: '19px', color: iconColor, stroke: iconColor, ...iconStyles }}
           />
         </div>
       </div>

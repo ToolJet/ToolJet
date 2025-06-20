@@ -72,12 +72,8 @@ const DesktopHeader = ({
     );
   }
   return (
-    <Header
-      styles={{
-        height: '46px',
-      }}
-    >
-      {_renderAppNameAndLogo()}
+    <Header>
+      {/* {_renderAppNameAndLogo()} */}
       {!isReleasedVersionId && (
         <PreviewSettings
           isMobileLayout={false}
@@ -86,11 +82,11 @@ const DesktopHeader = ({
           darkMode={darkMode}
         />
       )}
-      {showDarkModeToggle && (
+      {/* {showDarkModeToggle && (
         <div className="d-flex align-items-center">
           <DarkModeToggle switchDarkMode={changeToDarkMode} darkMode={darkMode} />
         </div>
-      )}
+      )} */}
     </Header>
   );
 };

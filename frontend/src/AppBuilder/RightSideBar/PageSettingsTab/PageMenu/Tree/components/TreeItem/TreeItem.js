@@ -59,7 +59,7 @@ export const TreeItem = forwardRef(
             ...style,
             width: '100%',
             ...(value?.pageGroupId && {
-              borderLeft: '1px solid var(--slate7)',
+              borderLeft: '1px dashed var(--icon-weak)',
               padding: '0 0 0 6px',
             }),
           }}

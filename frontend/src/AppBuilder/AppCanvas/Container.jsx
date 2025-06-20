@@ -52,6 +52,7 @@ export const Container = React.memo(
     canvasMaxWidth,
     isViewerSidebarPinned,
     pageSidebarStyle,
+    pagePositionType,
     componentType,
     appType,
   }) => {
@@ -160,18 +161,27 @@ export const Container = React.memo(
     }, [canvasWidth, listViewMode, columns]);
 
     const getCanvasWidth = useCallback(() => {
-      if (
-        id === 'canvas' &&
-        !isPagesSidebarHidden &&
-        isViewerSidebarPinned &&
-        currentLayout !== 'mobile' &&
-        currentMode !== 'edit' &&
-        appType !== 'module'
-      ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
-      }
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side' &&
+      //   appType !== 'module'
+      // ) {
+      //   return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
+      // }
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   !isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side'
+      // ) {
+      //   return `calc(100% - ${'44px'})`;
+      // }
       return '100%';
-    }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
+    }, [id, isPagesSidebarHidden, isViewerSidebarPinned, currentLayout, pagePositionType, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {
@@ -223,7 +233,7 @@ export const Container = React.memo(
               : id === 'canvas'
               ? canvasBgColor
               : '#f0f0f0',
-          width: getCanvasWidth(),
+          width: '100%',
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {

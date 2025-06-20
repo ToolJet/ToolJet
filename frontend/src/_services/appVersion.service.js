@@ -15,6 +15,7 @@ export const appVersionService = {
   deleteAppVersionEventHandler,
   clonePage,
   findAllEventsWithSourceId,
+  cloneGroup,
 };
 
 function getAll(appId) {
@@ -194,6 +195,18 @@ function clonePage(appId, versionId, pageId) {
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone`, requestOptions).then(
     handleResponse
   );
+}
+
+function cloneGroup(appId, versionId, pageId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone-group`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function findAllEventsWithSourceId(appId, versionId, sourceId = undefined) {

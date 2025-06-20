@@ -7,7 +7,14 @@ import * as Icons from '@tabler/icons-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { Visibility } from './Visibility';
 
-export const Icon = ({ value, onChange, onVisibilityChange, styleDefinition, component }) => {
+export const Icon = ({
+  value,
+  onChange,
+  onVisibilityChange,
+  styleDefinition,
+  component,
+  isVisibilityEnabled = true,
+}) => {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
   const iconList = useRef(Object.keys(Icons));
@@ -111,13 +118,15 @@ export const Icon = ({ value, onChange, onVisibilityChange, styleDefinition, com
                   >
                     {String(value)}
                   </div>
-                  <Visibility
-                    value={value}
-                    onChange={onChange}
-                    onVisibilityChange={onVisibilityChange}
-                    component={component}
-                    styleDefinition={styleDefinition}
-                  />
+                  {isVisibilityEnabled && (
+                    <Visibility
+                      value={value}
+                      onChange={onChange}
+                      onVisibilityChange={onVisibilityChange}
+                      component={component}
+                      styleDefinition={styleDefinition}
+                    />
+                  )}
                 </div>
               </OverlayTrigger>
             </div>

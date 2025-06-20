@@ -5,13 +5,14 @@ import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { DarkModeToggle } from '@/_components';
 import Popover from '@/_ui/Popover';
-import { PageMenu } from './PageMenu';
+// import { PageMenu } from './PageMenu';
 import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -211,15 +212,6 @@ export const BaseLeftSidebar = ({
           tip: 'Build with AI',
           ref: setSideBarBtnRefs('tooljetai'),
         })}
-        <SidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('page')}
-          darkMode={darkMode}
-          icon="page"
-          className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-          tip="Pages"
-          ref={setSideBarBtnRefs('page')}
-        />
         {renderCommonItems()}
         <SidebarItem
           icon="settings"
