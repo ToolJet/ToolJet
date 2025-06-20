@@ -1,11 +1,11 @@
 import * as availablePlugins from '../src/assets/marketplace/plugins.json';
-import { AppModule } from '../src/app.module';
-import { CreatePluginDto } from '@dto/create-plugin.dto';
+import { AppModule } from '@modules/app/module';
+import { CreatePluginDto } from '@modules/plugins/dto';
 import { EntityManager } from 'typeorm';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Plugin } from 'src/entities/plugin.entity';
-import { PluginsService } from '@services/plugins.service';
+import { PluginsService } from '@modules/plugins/service';
 import { getEnvVars } from './database-config-utils';
 import { validateSync } from 'class-validator';
 
