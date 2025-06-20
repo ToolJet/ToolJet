@@ -51,17 +51,67 @@ With this operation you can easily create `Collections` in your TypeSense cluste
 #### Required Parameter
 - **Schema**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/collection-v2.png" alt="typesense collection" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/typesense/collection-v3.png" alt="typesense collection" />
 
-#### Example
+<details>
+<summary>**Example Values**</summary>
 
 ```yaml
-[
-  { "name": "id", "type": "string" },
-  { "name": "name", "type": "string" },
-  { "name": "price", "type": "float" }
-]
+{
+  "name": "products", 
+  "fields": [
+    { "name": "id", "type": "string" },
+    { "name": "name", "type": "string" },
+    { "name": "price", "type": "float" }
+  ]
+}
+
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "created_at": 1741577571,
+  "default_sorting_field": "",
+  "enable_nested_fields": false,
+  "fields": [
+    {
+      "facet": false,
+      "index": true,
+      "infix": false,
+      "locale": "",
+      "name": "name",
+      "optional": false,
+      "sort": false,
+      "stem": false,
+      "stem_dictionary": "",
+      "store": true,
+      "type": "string"
+    },
+    {
+      "facet": false,
+      "index": true,
+      "infix": false,
+      "locale": "",
+      "name": "price",
+      "optional": false,
+      "sort": true,
+      "stem": false,
+      "stem_dictionary": "",
+      "store": true,
+      "type": "float"
+    }
+  ],
+  "name": "products",
+  "num_documents": 0,
+  "symbols_to_index": [],
+  "token_separators": []
+}
+```
+</details>
 
 ### Index a Document
 
@@ -72,7 +122,10 @@ https://typesense.org/docs/0.22.2/api/documents.html#index-a-single-document)**.
 - **Collection**
 - **Document**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/index-v2.png" alt="typesense index" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/typesense/index-v3.png" alt="typesense index" />
+
+<details>
+<summary>**Example Values**</summary>
 
 ```yaml
 {
@@ -81,6 +134,19 @@ https://typesense.org/docs/0.22.2/api/documents.html#index-a-single-document)**.
   "price": 999.99
 }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "id": "1",
+  "name": "Laptop",
+  "price": 999.99
+}
+```
+</details>
 
 ### Search
 
@@ -89,15 +155,53 @@ Use this operation to perform a search within the specified collection. Know mor
 #### Required Parameter
 - **Collection**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/search-v2.png" alt="typesense search" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/typesense/search-v3.png" alt="typesense search" />
+
+<details>
+<summary>**Example Values**</summary>
 
 ```yaml
 {
+  "q": "*", 
   "filter_by": "price:<1000",
   "sort_by": "price:desc",
   "per_page": 10
 }
+
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "facet_counts": [],
+  "found": 1,
+  "hits": [
+    {
+      "document": {
+        "id": "2",
+        "name": "Mobile",
+        "price": 499.99
+      },
+      "highlight": {},
+      "highlights": []
+    }
+  ],
+  "out_of": 2,
+  "page": 1,
+  "request_params": {
+    "collection_name": "products",
+    "first_q": "*",
+    "per_page": 10,
+    "q": "*"
+  },
+  "search_cutoff": false,
+  "search_time_ms": 0
+}
+```
+</details>
 
 ### Get a Document
 
@@ -107,8 +211,27 @@ Use this operation to fetch an individual document in a collection by providing 
 - **Collection**
 - **Id**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/get-v2.png" alt="typesense get" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/typesense/get-v3.png" alt="typesense get" />
 
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Id: 1
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "id": "1",
+  "name": "Gaming Laptop",
+  "price": 1199.99
+}
+```
+</details>
 
 ### Update a Document
 
@@ -119,7 +242,10 @@ Use this operation to update an individual document by providing the **Collectio
 - **Id**
 - **Document**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/update-v2.png" alt="typesense update" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/typesense/update-v3.png" alt="typesense update" />
+
+<details>
+<summary>**Example Values**</summary>
 
 ```yaml
 {
@@ -127,6 +253,19 @@ Use this operation to update an individual document by providing the **Collectio
   "price": 1199.99
 }
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "id": "1",
+  "name": "Gaming Laptop",
+  "price": 1199.99
+}
+```
+</details>
 
 ### Delete a Document
 
@@ -136,7 +275,27 @@ Delete a document from collection by providing the `Id` of the document. Check o
 - **Collection**
 - **Id**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/delete-v2.png" alt="typesense delete" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/typesense/delete-v3.png" alt="typesense delete" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Id: 1
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "id": "1",
+  "name": "Laptop",
+  "price": 999.99
+}
+```
+</details>
 
 <br/><br/>
 
