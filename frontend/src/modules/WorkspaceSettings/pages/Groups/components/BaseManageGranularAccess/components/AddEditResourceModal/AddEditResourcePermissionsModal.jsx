@@ -280,7 +280,7 @@ function AddEditResourcePermissionsModal({
                   style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
                   data-cy="custom-info-text"
                 >
-                  Select specific ${RESOURCE_NAME_MAPPING[resourceType]} you want to add to the group
+                  Select specific {RESOURCE_NAME_MAPPING[resourceType]} you want to add to the group
                 </span>
               </div>
             </label>
