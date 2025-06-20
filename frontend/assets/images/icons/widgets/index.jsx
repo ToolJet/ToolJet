@@ -62,6 +62,7 @@ import PhoneInput from './phoneinput.jsx';
 import EmailInput from './emailinput.jsx';
 
 const WidgetIcon = (props) => {
+  // TO_DO -> Use widget type instead of widget name
   switch (props.name) {
     case 'boundedbox':
       return <BoundedBox {...props} />;
@@ -112,6 +113,7 @@ const WidgetIcon = (props) => {
       return <Downstatistics {...props} />;
     case 'dropdown':
     case 'dropdownv2':
+    case 'dropdownlegacy':
       return <Dropdown {...props} />;
     case 'filepicker':
       return <Filepicker {...props} />;
@@ -144,6 +146,7 @@ const WidgetIcon = (props) => {
       return <Modal {...props} />;
     case 'multiselect':
     case 'multiselectv2':
+    case 'multiselectlegacy':
       return <Multiselect {...props} />;
     case 'numberinput':
       return <Numberinput {...props} />;
@@ -156,6 +159,7 @@ const WidgetIcon = (props) => {
     case 'qrscanner':
       return <Qrscanner {...props} />;
     case 'radiobutton':
+    case 'radiobuttonlegacy':
     case 'radiobuttonv2':
       return <RadioButton {...props} />;
     case 'rangeslider':
@@ -193,6 +197,7 @@ const WidgetIcon = (props) => {
       return <Timer {...props} />;
     case 'toggleswitch':
     case 'toggleswitchv2':
+    case 'toggleswitchlegacy':
       return <Toggleswitch {...props} />;
 
     case 'treeselect':
