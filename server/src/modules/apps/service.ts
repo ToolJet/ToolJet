@@ -31,6 +31,7 @@ import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
 import { PageService } from './services/page.service';
 import { EventsService } from './services/event.service';
+import { ComponentsService } from './services/component.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
@@ -38,6 +39,8 @@ import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { MODULES } from '@modules/app/constants/modules';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -52,8 +55,10 @@ export class AppsService implements IAppsService {
     protected readonly pageService: PageService,
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
-    protected readonly aiUtilService: AiUtilService
-  ) {}
+    protected readonly aiUtilService: AiUtilService,
+    protected readonly componentsService: ComponentsService,
+    protected readonly eventEmitter: EventEmitter2
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -149,6 +154,13 @@ export class AppsService implements IAppsService {
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
       await this.appsUtilService.handleAppRenameCommit(app.id, app, appUpdateDto);
+      const appRenameDto = {
+        user: user,
+        organizationId: organizationId,
+        app: app,
+        appUpdateDto: appUpdateDto,
+      };
+      await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
@@ -195,6 +207,13 @@ export class AppsService implements IAppsService {
         totalFolderCount = totalCount;
       } else {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type);
+      }
+
+      if (type === 'module') {
+        for (const app of apps) {
+          const appVersionId = app?.appVersions[0]?.id;
+          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId);
+        }
       }
 
       const totalCount = await this.appsUtilService.count(user, searchKey, type);
@@ -293,42 +312,53 @@ export class AppsService implements IAppsService {
   }
 
   async getBySlug(app: App, user: User): Promise<any> {
-    const versionToLoad = app.currentVersionId
-      ? await this.versionRepository.findVersion(app.currentVersionId)
-      : await this.versionRepository.findVersion(app.editingVersion?.id);
+    const prepareResponse = async (app) => {
+      const versionToLoad = app.currentVersionId
+        ? await this.versionRepository.findVersion(app.currentVersionId)
+        : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
-    const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
-    const appTheme = await this.organizationThemeUtilService.getTheme(
-      app.organizationId,
-      versionToLoad?.globalSettings?.theme?.id
-    );
+      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+      const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
+      const appTheme = await this.organizationThemeUtilService.getTheme(
+        app.organizationId,
+        versionToLoad?.globalSettings?.theme?.id
+      );
 
-    if (app?.isPublic && user) {
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceName: app.name,
-      });
-    }
+      if (app?.isPublic && user) {
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: app.id,
+          resourceName: app.name,
+          resourceType: MODULES.APP,
+        });
+      }
 
-    // serialize
-    return {
-      current_version_id: app['currentVersionId'],
-      data_queries: versionToLoad?.dataQueries,
-      definition: versionToLoad?.definition,
-      is_public: app.isPublic,
-      is_maintenance_on: app.isMaintenanceOn,
-      name: app.name,
-      slug: app.slug,
-      events: eventsForVersion,
-      pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
-      homePageId: versionToLoad.homePageId,
-      globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
-      showViewerNavigation: versionToLoad.showViewerNavigation,
-      pageSettings: versionToLoad?.pageSettings,
+      // serialize
+      return {
+        current_version_id: app['currentVersionId'],
+        data_queries: versionToLoad?.dataQueries,
+        definition: versionToLoad?.definition,
+        is_public: app.isPublic,
+        is_maintenance_on: app.isMaintenanceOn,
+        name: app.name,
+        slug: app.slug,
+        events: eventsForVersion,
+        pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
+        homePageId: versionToLoad.homePageId,
+        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        showViewerNavigation: versionToLoad.showViewerNavigation,
+        pageSettings: versionToLoad?.pageSettings,
+      };
     };
+
+    const response = await prepareResponse(app);
+
+    const modules = await this.appsUtilService.fetchModules(app, false, undefined);
+
+    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
+
+    return response;
   }
 
   async release(app: App, user: User, versionReleaseDto: VersionReleaseDto) {

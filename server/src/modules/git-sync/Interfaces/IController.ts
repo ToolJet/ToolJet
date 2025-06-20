@@ -1,5 +1,6 @@
-import { User as UserEntity } from '../../../entities/user.entity';
+import { User as UserEntity } from '@entities/user.entity';
 import { OrganizationGitCreateDto, OrganizationGitStatusUpdateDto, OrganizationGitUpdateDto } from '../dto';
+import { ProviderConfigDTO } from '../dto/provider-config.dto';
 
 export interface IGitSyncController {
   getOrgGitByOrgId(user: UserEntity, organizationId: string, gitType: string): any;
@@ -15,7 +16,12 @@ export interface IGitSyncController {
     gitType: string
   ): Promise<void>;
 
-  setFinalizeConfig(user: UserEntity, organizationGitId: string, gitType: string): Promise<void>;
+  setFinalizeConfig(
+    user: UserEntity,
+    organizationGitId: string,
+    configDto: ProviderConfigDTO,
+    gitType: string
+  ): Promise<void>;
 
   changeStatus(
     user: UserEntity,

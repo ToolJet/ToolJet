@@ -39,6 +39,7 @@ import { TemplatesModule } from '@modules/templates/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { WorkflowsModule } from '@modules/workflows/module';
+import { ModulesModule } from '@modules/modules/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
@@ -46,7 +47,6 @@ import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
-
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -97,6 +97,7 @@ export class AppModule implements OnModuleInit {
       await TemplatesModule.register(configs),
       await TooljetDbModule.register(configs),
       await WorkflowsModule.register(configs),
+      await ModulesModule.register(configs),
       await AiModule.register(configs),
       await CustomStylesModule.register(configs),
       await AppPermissionsModule.register(configs),

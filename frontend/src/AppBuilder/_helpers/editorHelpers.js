@@ -71,6 +71,9 @@ import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
+
+import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
+
 // import './requestIdleCallbackPolyfill';
 
 export function memoizeFunction(func) {
@@ -152,6 +155,8 @@ export const AllComponents = {
   Form,
   BoundedBox,
   ToggleSwitchV2,
+  ModuleContainer,
+  ModuleViewer,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);

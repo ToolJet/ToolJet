@@ -69,25 +69,6 @@ function updateStatus(organizationGitId, isEnabled, gitType) {
   return fetch(`${config.apiUrl}/git-sync/status/${organizationGitId}`, requestOptions).then(handleResponse);
 }
 
-function setFinalizeConfig(organizationGitId, gitType) {
-  const controller = new AbortController();
-  const timeOut = 2500;
-  const id = setTimeout(() => controller.abort(), timeOut);
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    signal: controller.signal,
-  };
-
-  const response = fetch(
-    `${config.apiUrl}/git-sync/finalize/${organizationGitId}?gitType=${gitType}`,
-    requestOptions
-  ).then(handleResponse);
-  clearTimeout(id);
-  return response;
-}
-
 function getGitConfig(workspaceId, gitType = '') {
   const requestOptions = {
     method: 'GET',
@@ -189,6 +170,24 @@ function importGitApp(body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/app-git/gitpull/app`, requestOptions).then(handleResponse);
+}
+
+function setFinalizeConfig(organizationGitId, body) {
+  const controller = new AbortController();
+  const timeOut = 2500;
+  const id = setTimeout(() => controller.abort(), timeOut);
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    signal: controller.signal,
+    body: JSON.stringify(body),
+  };
+  const response = fetch(`${config.apiUrl}/git-sync/finalize/${organizationGitId}`, requestOptions).then(
+    handleResponse
+  );
+  clearTimeout(id);
+  return response;
 }
 function saveProviderConfigs(body) {
   // TO DO Later : Review if we need to use abort controller for this api request

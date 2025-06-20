@@ -17,6 +17,9 @@ export class OrganizationGitSsh {
   @Column({ name: 'git_url' })
   gitUrl: string;
 
+  @Column({ name: 'git_branch' })
+  gitBranch: string;
+
   @Column({ name: 'ssh_private_key' })
   sshPrivateKey: string;
 

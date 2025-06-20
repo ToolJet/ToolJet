@@ -4,7 +4,11 @@ import UserResponse from '../models/user_response';
 
 @Injectable()
 export class SamlService implements ISamlService {
-  async signIn(samlResponseId: string, configs: any, configId: string): Promise<UserResponse> {
+  async signIn(
+    samlResponseId: string,
+    configs: any,
+    extraProps: { configId: string; orgSlug: string }
+  ): Promise<UserResponse> {
     throw new Error('Method not implemented');
   }
 

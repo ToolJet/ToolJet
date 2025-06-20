@@ -42,6 +42,9 @@ export class AppGitModule {
     const { BaseGitSyncService } = await import(
       `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git.service`
     );
+    const { AppVersionRenameListener } = await import(
+      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/listener`
+    );
     return {
       module: AppGitModule,
       imports: [
@@ -69,6 +72,7 @@ export class AppGitModule {
         BaseGitUtilService,
         BaseGitSyncService,
         AppGitAbilityFactory,
+        AppVersionRenameListener,
       ],
       exports: [SSHAppGitUtilityService, HTTPSAppGitUtilityService, GitLabAppGitUtilityService],
     };
