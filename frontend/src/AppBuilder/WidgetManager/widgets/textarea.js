@@ -17,6 +17,15 @@ export const textareaConfig = {
       displayName: 'Label',
       validation: { schema: { type: 'string' }, defaultValue: 'Label' },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     placeholder: {
       type: 'code',
       displayName: 'Placeholder',
@@ -274,6 +283,7 @@ export const textareaConfig = {
       value: { value: '' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter your input' },
+      dynamicHeight: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },

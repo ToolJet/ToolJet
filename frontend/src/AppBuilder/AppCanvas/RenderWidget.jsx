@@ -51,6 +51,8 @@ const RenderWidget = ({
   const { moduleId } = useModuleContext();
   const componentDefinition = useStore((state) => state.getComponentDefinition(id, moduleId), shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
+  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
+  const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
   const component = componentDefinition?.component;
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
@@ -202,6 +204,8 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            adjustComponentPositions={adjustComponentPositions}
+            componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
           />
         </div>

@@ -1,28 +1,34 @@
-.target, .nested-target {
-	position: absolute;
-	box-sizing: border-box;
+.target,
+.nested-target {
+    position: absolute;
+    box-sizing: border-box;
 }
 
-.target.hovered{
+.target.hovered {
     z-index: 2;
 }
 
-.moveable-control-box>.moveable-control-box:not(.moveable-control-box-d-block, .moveable-dragging, .selected-component){
-	visibility: hidden !important;
+.moveable-control-box>.moveable-control-box:not(.moveable-control-box-d-block, .moveable-dragging, .selected-component) {
+    visibility: hidden !important;
 }
-.moveable-control-box>.moveable-control-box:hover, .selected-component{
-	visibility: visible !important;
+
+.moveable-control-box>.moveable-control-box:hover,
+.selected-component {
+    visibility: visible !important;
 }
-.moveable-control-box>.moveable-control-box:hover, .moveable-control-box>.moveable-dragging{
-	visibility: visible !important;
+
+.moveable-control-box>.moveable-control-box:hover,
+.moveable-control-box>.moveable-dragging {
+    visibility: visible !important;
 }
-.moveable-control-box.modal-moveable{
+
+.moveable-control-box.modal-moveable {
     z-index: 3001 !important;
 }
 
 
-.moveable-e.moveable-control{
-	/* height: 24px !important;
+.moveable-e.moveable-control {
+    /* height: 24px !important;
     top: -5px !important; */
     border-radius: 2px !important;
     border: 1px solid #3E63DD !important;
@@ -31,8 +37,8 @@
     left: 4px !important;
 }
 
-.moveable-w.moveable-control{
-	/* height: 24px !important;
+.moveable-w.moveable-control {
+    /* height: 24px !important;
     top: -5px !important; */
     border-radius: 2px !important;
     border: 1px solid #3E63DD !important;
@@ -41,8 +47,32 @@
     left: 4px !important;
 }
 
-.moveable-n.moveable-control{
-	/* height: 24px !important; */
+.moveable-horizontal-only {
+
+    .moveable-direction.moveable-w:not(.moveable-edge),
+    .moveable-direction.moveable-e:not(.moveable-edge) {
+        height: 20px !important;
+        width: 7.5px !important;
+        opacity: 1 !important;
+        background-color: #fff !important;
+        border-radius: 10px !important;
+
+    }
+
+    .moveable-direction.moveable-w:not(.moveable-edge) {
+        left: 1px !important;
+        top: -6.5px !important;
+    }
+
+    .moveable-direction.moveable-e:not(.moveable-edge) {
+        left: 1px !important;
+        top: -6.5px !important;
+    }
+
+}
+
+.moveable-n.moveable-control {
+    /* height: 24px !important; */
     top: 4px !important;
     border-radius: 2px !important;
     border: 1px solid #3E63DD !important;
@@ -51,8 +81,8 @@
     /* left: 3px !important; */
 }
 
-.moveable-s.moveable-control{
-	/* height: 24px !important; */
+.moveable-s.moveable-control {
+    /* height: 24px !important; */
     top: 4px !important;
     border-radius: 2px !important;
     border: 1px solid #3E63DD !important;
@@ -62,14 +92,15 @@
 }
 
 .grid-guide-lines {
-	background: #8DA4EF !important;
+    background: #8DA4EF !important;
 }
 
 .moveable-control-box:not([data-able-groupable]) .moveable-control-box:not(:hover) {
     opacity: 0;
 }
 
-.dragged-movable-control-box, [data-hovered-control="true"] {
+.dragged-movable-control-box,
+[data-hovered-control="true"] {
     opacity: 1 !important;
 }
 
@@ -86,8 +117,10 @@
     border-bottom: 5px solid #fff0;
 }
 
-.moveable-control[data-rotation="0"], .moveable-control[data-rotation="90"],
-.moveable-around-control[data-rotation="0"], .moveable-around-control[data-rotation="90"] {
+.moveable-control[data-rotation="0"],
+.moveable-control[data-rotation="90"],
+.moveable-around-control[data-rotation="0"],
+.moveable-around-control[data-rotation="90"] {
     opacity: 0;
     width: 0px !important;
     height: 0px !important;
@@ -103,7 +136,7 @@
     margin-left: -4px !important;
 }
 
-.moveable-around-control{
+.moveable-around-control {
     height: 10px !important;
     width: 10px !important;
 }
@@ -162,15 +195,14 @@
 
 .dragging-component-canvas {
     outline: 1px solid var(--border-accent-strong) !important;
-    outline-offset: 0px; /* Creates space between element and outline */
+    outline-offset: 0px;
+    /* Creates space between element and outline */
     z-index: 999 !important;
 }
 
-.non-dragging-component { 
+.non-dragging-component {
     outline: 1px dotted var(--border-accent-weak) !important;
-    outline-offset: 0px; /* Creates space between element and outline */
+    outline-offset: 0px;
+    /* Creates space between element and outline */
     z-index: 999 !important;
 }
-
-
-
