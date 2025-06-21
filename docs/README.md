@@ -39,7 +39,7 @@ This directory contains the following folders:
 │   └── tooljet-database.md
 ├── versions.json        # file to indicate what versions are available
 ├── versioned_docs
-│   ├── version-x.x.x    # Current/latest version (set it on docusauras.config.js)
+│   ├── version-x.x.x    # Current/latest version (set it on docusaurus.config.js)
 │   │   ├── Enterprise
 │   │   │   └── multi-environment.md   # https://docs.tooljet.ai/docs/Enterprise/multi-environment
 │   │   └── tooljet-database.md.       # https://docs.tooljet.ai/docs/tooljet-database
