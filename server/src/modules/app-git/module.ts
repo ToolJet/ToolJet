@@ -7,6 +7,7 @@ import { AppsModule } from '@modules/apps/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { VersionModule } from '@modules/versions/module';
+import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory';
 import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppGitRepository } from './repository';
@@ -59,6 +60,7 @@ export class AppGitModule {
         AppGitRepository,
         AppsRepository,
         AppGitService,
+        AppsAbilityFactory,
         SourceControlProviderService,
         SSHAppGitService,
         HTTPSAppGitService,
