@@ -15,7 +15,7 @@ import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { SentryModule } from '@modules/observability/sentry/module';
 
 export class AppModuleLoader {
-  static async loadModules(configs: { IS_GET_CONTEXT: boolean }): Promise<(DynamicModule | Type<any>)[]> {
+  static async loadModules(configs: { IS_GET_CONTEXT: boolean }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
     // Static imports that are always loaded
     const staticModules = [
       EventEmitterModule.forRoot({
@@ -33,7 +33,7 @@ export class AppModuleLoader {
           port: parseInt(process.env.REDIS_PORT) || 6379,
         },
       }),
-      ConfigModule.forRoot({
+      await ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
         load: [() => getEnvVars()],
@@ -111,17 +111,17 @@ export class AppModuleLoader {
      * █                                                                             █
      * ███████████████████████████████████████████████████████████████████████████████
      */
-    const dynamicModules: Promise<DynamicModule>[] = [];
+    const dynamicModules: DynamicModule[] = [];
 
     try {
       const { LogToFileModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/log-to-file/module`);
       const { AuditLogsModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`);
-      dynamicModules.push(LogToFileModule.register(configs));
-      dynamicModules.push(AuditLogsModule.register(configs));
+      dynamicModules.push(await LogToFileModule.register(configs));
+      dynamicModules.push(await AuditLogsModule.register(configs));
     } catch (error) {
       console.error('Error loading dynamic modules:', error);
     }
 
-    return [...staticModules, ...dynamicModules] as (Type<any> | DynamicModule)[];
+    return [...staticModules, ...dynamicModules];
   }
 }

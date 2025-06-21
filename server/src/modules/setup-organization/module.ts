@@ -10,6 +10,7 @@ import { ThemesModule } from '@modules/organization-themes/module';
 import { SessionModule } from '@modules/session/module';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 
 export class SetupOrganizationsModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -38,7 +39,7 @@ export class SetupOrganizationsModule {
         OrganizationRepository,
         OrganizationUsersRepository,
         FeatureAbilityFactory,
-        TooljetDbModule,
+        DataSourcesRepository,
       ],
       exports: [SetupOrganizationsUtilService],
     };
