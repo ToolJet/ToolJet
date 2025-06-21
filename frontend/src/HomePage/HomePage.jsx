@@ -1563,7 +1563,10 @@ class HomePageComponent extends React.Component {
                   ) : (
                     <p className="empty-title mt-3">
                       You have not created any modules.&nbsp;
-                      <a onClick={this.openCreateAppModal} className="text-bold">
+                      <a
+                        onClick={this.openCreateAppModal}
+                        className={`text-bold ${this.props.appType === 'module' && invalidLicense ? 'disabled' : ''}`}
+                      >
                         Create a module&nbsp;
                       </a>
                       to start using it within your apps.
