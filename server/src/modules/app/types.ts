@@ -11,6 +11,7 @@ export interface UserAllPermissions {
   isBuilder: boolean;
   isEndUser: boolean;
   user: User;
+  resource: ResourceDetails[];
 }
 
 export interface FeatureConfig {
