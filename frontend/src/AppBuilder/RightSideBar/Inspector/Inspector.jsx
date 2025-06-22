@@ -99,6 +99,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'RangeSlider',
   'Link',
   'Steps',
+  'FilePicker',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {

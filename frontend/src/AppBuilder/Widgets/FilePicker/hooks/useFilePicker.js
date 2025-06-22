@@ -40,9 +40,15 @@ export const useFilePicker = ({
   const isMandatory = validation?.enableValidation ?? false;
 
   // --- Resolved Styles ---
+  const containerBackgroundColor = styles?.containerBackgroundColor ?? 'var(--color-surface-1)';
+  const containerBorder = styles?.containerBorder ?? 'transparent';
+  const containerBoxShadow = styles?.containerBoxShadow ?? 'none';
+  const containerPadding = styles?.containerPadding ?? 16;
   const borderRadius = styles?.borderRadius ?? 8;
-  const boxShadow = styles?.boxShadow;
 
+  const dropzoneTitleColor = styles?.dropzoneTitleColor ?? 'var(--text-primary';
+  const dropzoneActiveColor = styles?.dropzoneActiveColor ?? 'var(--primary-brand)';
+  const dropzoneErrorColor = styles?.dropzoneErrorColor ?? 'var(--status-error-strong)';
   // --- Use useExposeState Hook ---
   const { isDisabled, isVisible, isLoading } = useExposeState(
     initialLoading,
@@ -63,6 +69,7 @@ export const useFilePicker = ({
   const [isValid, setIsValid] = useState(!isMandatory);
   const [dropzoneRejections, setDropzoneRejections] = useState([]);
   const [uiErrorMessage, setUiErrorMessage] = useState('');
+  const [isTouched, setIsTouched] = useState(false);
 
   // Calculate total file size
   const totalFileSize = useMemo(() => {
@@ -126,28 +133,14 @@ export const useFilePicker = ({
         console.error(`Error reading file ${file.name}:`, error);
         // Update status/errors directly here or ensure it's handled by caller
         setUploadingStatus((prev) => ({ ...prev, [file.name]: 'error' }));
-        setFileErrors((prev) => ({ ...prev, [file.name]: error.message || 'Failed to read file' }));
+        setFileErrors((prev) => ({
+          ...prev,
+          [file.name]: error.message || 'Failed to read file',
+        }));
         throw error; // Re-throw for Promise.allSettled
       }
     },
     [getFileData, parseContent, fileTypeFromExtension]
-  );
-
-  // Error Handling for Size
-  const handleFileSizeErrors = useCallback(
-    (rejectedFileSize, errorObj) => {
-      const { code } = errorObj;
-      const errorMessages = {
-        'file-too-small': `File size ${formatFileSize(rejectedFileSize)} is too small. Minimum size is ${formatFileSize(
-          minSize
-        )}.`,
-        'file-too-large': `File size ${formatFileSize(rejectedFileSize)} is too large. Maximum size is ${formatFileSize(
-          maxSize
-        )}.`,
-      };
-      return errorMessages[code] || errorObj.message;
-    },
-    [minSize, maxSize]
   );
 
   // --- Dropzone Setup ---
@@ -167,10 +160,14 @@ export const useFilePicker = ({
             }
             break;
           case 'file-too-small':
-            specificMessage = `The file "${file.name}" (${formatFileSize(file.size)}) is smaller than the minimum allowed size of ${formatFileSize(minSize)}.`;
+            specificMessage = `The file "${file.name}" (${formatFileSize(
+              file.size
+            )}) is smaller than the minimum allowed size of ${formatFileSize(minSize)}.`;
             break;
           case 'file-too-large':
-            specificMessage = `The file "${file.name}" (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}.`;
+            specificMessage = `The file "${file.name}" (${formatFileSize(
+              file.size
+            )}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}.`;
             break;
           case 'too-many-files':
             specificMessage = `You can select a maximum of ${maxFileCount} files.`;
@@ -179,9 +176,10 @@ export const useFilePicker = ({
             specificMessage = `The file "${file.name}" has already been selected.`;
             break;
           default:
-            specificMessage = error.message && typeof error.message === 'string' && error.message.trim() !== ''
-              ? error.message
-              : `An issue occurred with file "${file.name}".`;
+            specificMessage =
+              error.message && typeof error.message === 'string' && error.message.trim() !== ''
+                ? error.message
+                : `An issue occurred with file "${file.name}".`;
             break;
         }
         setUiErrorMessage(specificMessage);
@@ -190,15 +188,20 @@ export const useFilePicker = ({
         const genericMessage = 'Multiple files have errors. Please check the requirements.';
         setUiErrorMessage(genericMessage);
         // Toast individual errors if desired, or one generic toast
-        rejectedFiles.forEach(({ file, errors }) => {
+        for (const { file, errors } of rejectedFiles) {
           // Simplified toast for multiple errors, could be more detailed
           toast.error(`Error with ${file.name}: ${errors[0].message}`);
-        });
+        }
       }
       // dropzoneRejections state can be kept raw for other potential uses or removed if only for this UI message
       setDropzoneRejections(rejectedFiles); // Keep raw rejections for potential debugging or detailed listing elsewhere
+
+      // Clear setUiErrorMessage afgter 5 seconds
+      setTimeout(() => {
+        clearErrorStates();
+      }, 10000);
     },
-    [fileTypeCategory, minSize, maxSize, maxFileCount, setExposedVariable]
+    [fileTypeCategory, minSize, maxSize, maxFileCount]
   );
 
   // Custom validator
@@ -216,7 +219,7 @@ export const useFilePicker = ({
       if (!enableMultiple && selectedFiles.length >= 1) {
         return {
           code: 'max-files-exceeded',
-          message: `Only one file can be uploaded.`,
+          message: 'Only one file can be uploaded.',
         };
       }
 
@@ -237,6 +240,7 @@ export const useFilePicker = ({
     async (acceptedDropFiles) => {
       // Fire 'onFileSelected' event before processing
       fireEvent?.('onFileSelected');
+      setIsTouched(true); // Set touched state
 
       const currentFileNames = selectedFiles.map((f) => f.name);
       const newFilesToAdd = acceptedDropFiles.filter((f) => !currentFileNames.includes(f.name));
@@ -306,7 +310,6 @@ export const useFilePicker = ({
       maxFileCount,
       fileErrors,
       uploadingStatus,
-      dropzoneRejections,
     ]
   );
 
@@ -324,6 +327,14 @@ export const useFilePicker = ({
     }, {});
   }, [fileTypeCategory]);
 
+  // Reusable function to clear error states
+  const clearErrorStates = useCallback(() => {
+    setUiErrorMessage('');
+    setDropzoneRejections([]);
+    setFileErrors({});
+    setUploadingStatus({});
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     accept: acceptProp, // Use the calculated accept prop
     noClick: !enablePicker || disablePicker,
@@ -336,6 +347,23 @@ export const useFilePicker = ({
     onDropRejected: onDropRejected,
     validator: validateFile,
     onDrop: onDrop,
+    onDropAccepted: (acceptedFiles) => {
+      // After files are accepted, check if minFileCount is met
+      if (selectedFiles.length + acceptedFiles.length < minFileCount) {
+        setUiErrorMessage(`Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`);
+        setTimeout(() => {
+          clearErrorStates();
+        }, 5000);
+      } else {
+        setUiErrorMessage('');
+      }
+    },
+    onFileDialogOpen: () => {
+      clearErrorStates();
+      setTimeout(() => {
+        setIsTouched(true); // Set touched state
+      }, 2000);
+    },
   });
 
   // Function to remove a file
@@ -372,14 +400,14 @@ export const useFilePicker = ({
   const setFileName = useCallback(
     (indexOrUpdates, newNameIfSingle) => {
       setSelectedFiles((currentFiles) => {
-        let updateMap = {};
+        const updateMap = {}; // Changed from let to const
         if (Array.isArray(indexOrUpdates)) {
           // Batch update: [{index: number, newFileName: string}]
-          indexOrUpdates.forEach((update) => {
+          for (const update of indexOrUpdates) {
             if (typeof update.index === 'number' && typeof update.newFileName === 'string') {
               updateMap[update.index] = update.newFileName.trim();
             }
-          });
+          }
         } else if (typeof indexOrUpdates === 'number' && typeof newNameIfSingle === 'string') {
           // Single update: (index: number, newFileName: string)
           const index = indexOrUpdates;
@@ -392,7 +420,7 @@ export const useFilePicker = ({
         if (Object.keys(updateMap).length === 0) return currentFiles; // No valid updates
 
         return currentFiles.map((file, index) => {
-          if (updateMap.hasOwnProperty(index)) {
+          if (Object.prototype.hasOwnProperty.call(updateMap, index)) {
             const newNameBase = updateMap[index];
             const currentNameParts = file.name.split('.');
             const extension = currentNameParts.length > 1 ? currentNameParts.pop() : null;
@@ -409,6 +437,39 @@ export const useFilePicker = ({
   );
 
   // --- Effects ---
+  useEffect(() => {
+    const newIsMandatoryMet = !isMandatory || selectedFiles.length > 0;
+    setIsMandatoryMet(newIsMandatoryMet);
+
+    const newIsMinCountMet = selectedFiles.length >= minFileCount || !enableMultiple;
+    setIsMinCountMet(newIsMinCountMet);
+
+    const newIsValid = newIsMandatoryMet && newIsMinCountMet;
+    setIsValid(newIsValid);
+
+    // Update exposed validation status
+    setExposedVariable?.('isValid', newIsValid);
+
+    if (isMandatory && selectedFiles.length === 0 && isTouched && !isDragActive) {
+      setUiErrorMessage('This field is mandatory. Please select a file.');
+    } else if (
+      uiErrorMessage === 'This field is mandatory. Please select a file.' &&
+      (selectedFiles.length > 0 || !isMandatory || !isTouched || isDragActive)
+    ) {
+      setUiErrorMessage('');
+    }
+  }, [
+    selectedFiles.length,
+    isMandatory,
+    isTouched,
+    uiErrorMessage,
+    isDragActive,
+    setUiErrorMessage,
+    minFileCount,
+    enableMultiple,
+    setExposedVariable,
+  ]);
+
   useEffect(() => {
     // Update exposed variables
     if (!isInitialRender.current) {
@@ -482,6 +543,11 @@ export const useFilePicker = ({
     // Use isDisabled from useExposeState for dropzone disabled prop
   }, [selectedFiles.length, maxFileCount, enableMultiple, isDisabled]);
 
+  useEffect(() => {
+    // Clear UI error message when isDisabled state changes
+    setUiErrorMessage('');
+  }, [isDisabled, setUiErrorMessage]);
+
   // --- Styles for Dropzone ---
   // Moved style calculation to component as it depends on drag states from useDropzone return
 
@@ -508,7 +574,13 @@ export const useFilePicker = ({
     disablePicker, // Needed for styling/cursor
     disabledState: isDisabled, // Return isDisabled from useExposeState
     borderRadius, // Needed for styling
-    boxShadow, // Needed for styling
+    containerBackgroundColor,
+    containerBorder,
+    containerBoxShadow,
+    containerPadding,
+    dropzoneTitleColor,
+    dropzoneActiveColor,
+    dropzoneErrorColor,
     height, // Needed for styling
     minSize,
     maxSize,

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { formatFileSize } from '@/_helpers/utils';
@@ -27,7 +27,7 @@ const FilePicker = (props) => {
     dataCy,
   } = props;
 
-  const numericWidgetHeight = parseFloat(String(height).replace('px', '')) || 0; // Default to 0 if parsing fails
+  const numericWidgetHeight = Number.parseFloat(String(height).replace('px', '')) || 0; // Default to 0 if parsing fails
   const isSmallWidget = numericWidgetHeight < 200;
 
   const {
@@ -45,8 +45,6 @@ const FilePicker = (props) => {
     instructionText,
     disablePicker,
     disabledState,
-    borderRadius,
-    boxShadow,
     isVisible,
     isLoading,
     isMandatory,
@@ -54,21 +52,73 @@ const FilePicker = (props) => {
     maxFileCount,
     dropzoneRejections,
     uiErrorMessage,
+    containerBackgroundColor,
+    borderRadius,
+    containerBorder,
+    containerBoxShadow,
+    containerPadding,
+    dropzoneTitleColor,
+    dropzoneActiveColor,
+    dropzoneErrorColor,
   } = useFilePicker({ ...props, setExposedVariable, setExposedVariables });
+
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (!rootRef.current) return;
+    if (dropzoneActiveColor) {
+      rootRef.current.style.setProperty('--file-picker-primary-brand', dropzoneActiveColor);
+    }
+    if (dropzoneErrorColor) {
+      rootRef.current.style.setProperty('--file-picker-error-strong', dropzoneErrorColor);
+    }
+    if (dropzoneTitleColor) {
+      rootRef.current.style.setProperty('--file-picker-text-primary', dropzoneTitleColor);
+    }
+    if (borderRadius !== undefined) {
+      rootRef.current.style.setProperty(
+        '--file-picker-border-radius',
+        typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius
+      );
+    }
+    if (containerBackgroundColor) {
+      rootRef.current.style.setProperty('--file-picker-background-color', containerBackgroundColor);
+    }
+    if (containerBorder) {
+      rootRef.current.style.setProperty('--file-picker-border', containerBorder);
+    }
+    if (containerBoxShadow) {
+      rootRef.current.style.setProperty('--file-picker-box-shadow', containerBoxShadow);
+    }
+    if (containerPadding !== undefined) {
+      rootRef.current.style.setProperty(
+        '--file-picker-padding',
+        typeof containerPadding === 'number' ? `${containerPadding}px` : containerPadding
+      );
+    }
+  }, [
+    dropzoneActiveColor,
+    dropzoneErrorColor,
+    dropzoneTitleColor,
+    borderRadius,
+    containerBackgroundColor,
+    containerBorder,
+    containerBoxShadow,
+    containerPadding,
+  ]);
 
   const [isFocused, setIsFocused] = useState(false);
 
   const dynamicDropzoneStyle = useMemo(
     () => ({
       display: isVisible ? 'flex' : 'none',
-      borderRadius: `${borderRadius}px`,
       backgroundColor: 'var(--cc-surface1-surface)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
-      boxShadow: boxShadow,
       height: `${numericWidgetHeight}px`,
       overflowY: isSmallWidget ? 'auto' : 'visible',
+      opacity: disabledState ? 0.5 : 1,
     }),
-    [borderRadius, darkMode, boxShadow, numericWidgetHeight, isVisible, isSmallWidget]
+    [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState]
   );
 
   const dropzoneClasses = clsx('file-picker-dropzone', {
@@ -120,15 +170,17 @@ const FilePicker = (props) => {
   });
 
   return (
-    <div className="file-picker-widget-wrapper" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
+    <div ref={rootRef} className="file-picker-widget-wrapper" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
       {isLoading ? (
         <div className="p-2 tw-flex tw-items-center tw-justify-center h-full">
-          <div className="spinner-border" role="status"></div>
+          <div className="spinner-border" role="status" />
         </div>
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title">{labelText || 'Upload files'}</h3>
+            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
+              {labelText || 'Upload files'}
+            </h3>
 
             <UploadArea
               getRootProps={getRootProps}
@@ -148,8 +200,8 @@ const FilePicker = (props) => {
               onFocus={handleFocus}
               onBlur={handleBlur}
               borderRadius={borderRadius}
-              boxShadow={boxShadow}
               height={height}
+              selectedFilesLength={selectedFiles.length}
             />
 
             <ValidationBar

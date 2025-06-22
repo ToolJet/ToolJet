@@ -56,7 +56,8 @@ export function renderCustomStyles(
     componentConfig.component == 'Button' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
-    componentConfig.component == 'RangeSlider'
+    componentConfig.component == 'RangeSlider' ||
+    componentConfig.component == 'FilePicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

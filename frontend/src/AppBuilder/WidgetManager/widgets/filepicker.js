@@ -217,16 +217,53 @@ export const filepickerConfig = {
     },
   },
   styles: {
+    dropzoneTitleColor: {
+      type: 'colorSwatches',
+      displayName: 'Title',
+      validation: { schema: { type: 'string' }, defaultValue: false },
+      accordian: 'File Drop Area',
+    },
+    dropzoneActiveColor: {
+      type: 'colorSwatches',
+      displayName: 'Active color',
+      validation: { schema: { type: 'string' }, defaultValue: false },
+      accordian: 'File Drop Area',
+    },
+    dropzoneErrorColor: {
+      type: 'colorSwatches',
+      displayName: 'Error color',
+      validation: { schema: { type: 'string' }, defaultValue: false },
+      accordian: 'File Drop Area',
+    },
+    containerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: false },
+      accordian: 'Container',
+    },
+    containerBorder: {
+      type: 'colorSwatches',
+      displayName: 'Border',
+      validation: { schema: { type: 'string' }, defaultValue: 'transparent' },
+      accordian: 'Container',
+    },
     borderRadius: {
-      type: 'code',
-      displayName: 'Border radius',
-      validation: {
-        schema: {
-          type: 'union',
-          schemas: [{ type: 'string' }, { type: 'number' }],
-        },
-        defaultValue: 4,
-      },
+      type: 'numberInput',
+      displayName: 'Border Radius',
+      validation: { schema: { type: 'number' }, defaultValue: 6 },
+      accordian: 'Container',
+    },
+    containerBoxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'string' }, defaultValue: '0px 1px 3px rgba(0,0,0,0.1)' },
+      accordian: 'Container',
+    },
+    containerPadding: {
+      type: 'numberInput',
+      displayName: 'Padding',
+      validation: { schema: { type: 'string' }, defaultValue: 16 },
+      accordian: 'Container',
     },
   },
   exposedVariables: {
@@ -259,7 +296,22 @@ export const filepickerConfig = {
     },
     events: [],
     styles: {
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
+      dropzoneTitleColor: { value: 'var(--cc-primary-text)' },
+      dropzoneActiveColor: { value: 'var(--cc-primary-brand)' },
+      dropzoneErrorColor: { value: 'var(--cc-error-systemStatus)' },
+      containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      containerBorder: { value: 'var(--cc-default-border)' },
+      containerBoxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
+      containerPadding: { value: '16px' },
+    },
+    validation: {
+      enableValidation: { value: '{{false}}' },
+      fileType: { value: '{{}}' },
+      minSize: { value: '{{50}}' },
+      maxSize: { value: '{{51200000}}' },
+      minFileCount: { value: '{{0}}' },
+      maxFileCount: { value: '{{2}}' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

@@ -17,19 +17,20 @@ const UploadArea = ({
   onFocus,
   onBlur,
   borderRadius,
-  boxShadow,
   height,
   instructionText,
   minSize,
   maxSize,
   maxCount,
   fileTypeCategory,
+  selectedFilesLength,
 }) => {
   // --- Refactored Conditions for Readability ---
-  const canShowInstructionText = !isDragActive && !isDisabled;
+  const canShowInstructionText = !isDragActive && selectedFilesLength < maxCount;
   const showGenericDropMessage = isDragActive && !isDragAccept && !isDragReject;
   const showAcceptDropMessage = isDragActive && isDragAccept;
   const showRejectDropMessage = isDragActive && isDragReject;
+  const showDisabledMessage = isDisabled && selectedFilesLength >= maxCount;
   const hasUiError = uiErrorMessage && uiErrorMessage.trim() !== '.';
   // --- End Refactored Conditions ---
 
@@ -50,7 +51,7 @@ const UploadArea = ({
       onFocus={onFocus}
       onBlur={onBlur}
       tabIndex={isDisabled ? -1 : 0}
-      style={{ borderRadius: `${borderRadius}px`, boxShadow, height }}
+      style={{ borderRadius: `${borderRadius}px`, height }}
     >
       <input {...getInputProps()} />
 
@@ -62,18 +63,7 @@ const UploadArea = ({
 
       {!hasUiError && (
         <>
-          {canShowInstructionText && (
-            <p className="dropzone-instruction">
-              {instructionText.includes('click')
-                ? instructionText.split('click').map((part, index, arr) => (
-                    <React.Fragment key={index}>
-                      {part}
-                      {index < arr.length - 1 && <span className="dropzone-instruction-link">click</span>}
-                    </React.Fragment>
-                  ))
-                : instructionText}
-            </p>
-          )}
+          {canShowInstructionText && <p className="dropzone-instruction">{instructionText}</p>}
 
           {showGenericDropMessage && <p className="dropzone-message">Drop the files here ...</p>}
           {showAcceptDropMessage && (
@@ -83,6 +73,7 @@ const UploadArea = ({
             </p>
           )}
           {showRejectDropMessage && <p className="dropzone-message">Cannot upload these files</p>}
+          {showDisabledMessage && <p className="dropzone-message">Maximum files uploaded</p>}
         </>
       )}
     </div>
@@ -116,8 +107,8 @@ UploadArea.defaultProps = {
   height: '100%',
   uiErrorMessage: '.',
   minSize: 0,
-  maxSize: Infinity,
-  maxCount: Infinity,
+  maxSize: Number.POSITIVE_INFINITY,
+  maxCount: Number.POSITIVE_INFINITY,
   fileTypeCategory: '*/*',
 };
 
