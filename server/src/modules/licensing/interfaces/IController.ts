@@ -8,25 +8,25 @@ export interface ILicenseController {
    * Retrieves the current license settings.
    * @returns A promise that resolves to the license settings with keys converted to snake_case.
    */
-  getLicense(): Promise<any>;
+  getLicense(req: Request): Promise<any>;
 
   /**
    * Gets the feature access based on the current license.
    * @returns A promise that resolves to the Terms object.
    */
-  getFeatureAccess(): Promise<Terms>;
+  getFeatureAccess(req: Request): Promise<Terms>;
 
   /**
    * Fetches the domains associated with the license.
    * @returns A promise that resolves to an object containing domains and license status.
    */
-  getDomains(): Promise<{ domains: any; licenseStatus: any }>;
+  getDomains(req: Request): Promise<{ domains: any; licenseStatus: any }>;
 
   /**
    * Retrieves the terms of the license.
    * @returns A promise that resolves to an object containing the license terms.
    */
-  getLicenseTerms(): Promise<{ terms: Terms }>;
+  getLicenseTerms(req: Request): Promise<{ terms: Terms }>;
 
   /**
    * Updates the license settings.
@@ -41,7 +41,7 @@ export interface ILicenseAppsController {
    * Retrieves the application limits based on the current license.
    * @returns The limit of applications allowed by the license.
    */
-  getLimits(): any;
+  getLimits(req: Request): any;
 }
 
 export interface IAuditLogLicenseController {
@@ -63,7 +63,7 @@ export interface ILicenseOrganizationController {
    * Retrieves the organization limits based on the current license.
    * @returns A promise that resolves to the limits set for the organization.
    */
-  getLimits(): Promise<any>;
+  getLimits(req: Request): Promise<any>;
 }
 
 /**
@@ -127,5 +127,5 @@ export interface ILicenseAppsController {
    * Get the application limits.
    * @returns {any} The application limits.
    */
-  getLimits(): any;
+  getLimits(req: Request): any;
 }

@@ -13,7 +13,7 @@ export class LicenseAppsService implements ILicenseAppsService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly licenseCountService: LicenseCountsService
   ) {}
-  async getAppsLimit(organizationId?: string): Promise<any> {
+  async getAppsLimit(organizationId: string): Promise<any> {
     const licenseTerms = await this.licenseTermsService.getLicenseTerms([
       LICENSE_FIELD.APP_COUNT,
       LICENSE_FIELD.STATUS,

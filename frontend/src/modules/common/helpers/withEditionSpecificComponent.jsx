@@ -9,7 +9,6 @@ export function withEditionSpecificComponent(BaseComponent, moduleName) {
     if (edition === 'cloud') {
       edition = 'ee'; // Treat cloud as enterprise edition for component loading
     }
-    console.log(edition, 'EDITION');
 
     const componentName = BaseComponent.name;
 
@@ -20,7 +19,6 @@ export function withEditionSpecificComponent(BaseComponent, moduleName) {
     // Use the editions registry instead of dynamic imports
     const Component = editions[edition]?.[moduleName]?.components?.[componentName];
     const EditionComponent = Component?.default ?? Component;
-    console.log(EditionComponent, componentName, moduleName, edition);
 
     if (!EditionComponent) {
       console.warn(`Component ${componentName} not found in ${moduleName} for ${edition} edition`);

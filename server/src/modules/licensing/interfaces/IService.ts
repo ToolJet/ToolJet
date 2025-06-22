@@ -47,14 +47,14 @@ export interface ILicenseCountsService {
 }
 
 export interface ILicenseAppsService {
-  getAppsLimit(): Promise<any>;
+  getAppsLimit(organizationId: string): Promise<any>;
 }
 
 export interface ILicenseService {
   getLicense(): Promise<any>;
-  getFeatureAccess(): Promise<any>;
-  getDomains(): Promise<{ domains: any; licenseStatus: any }>;
-  getLicenseTerms(): Promise<{ terms: any }>;
+  getFeatureAccess(organizationId: string): Promise<any>;
+  getDomains(organizationId: string): Promise<{ domains: any; licenseStatus: any }>;
+  getLicenseTerms(organizationId: string): Promise<{ terms: any }>;
   updateLicense(dto: any): Promise<void>;
   plans(): Promise<{ plans: any }>;
 }

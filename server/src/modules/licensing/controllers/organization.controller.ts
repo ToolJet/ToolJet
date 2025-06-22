@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get } from '@nestjs/common';
+import { Controller, UseGuards, Get, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { LicenseOrganizationService } from '../services/organization.service';
 import { ILicenseOrganizationController } from '../interfaces/IController';
@@ -16,7 +16,11 @@ export class LicenseOrganizationController implements ILicenseOrganizationContro
 
   @InitFeature(FEATURE_KEY.GET_ORGANIZATION_LIMITS)
   @Get('limits')
-  async getLimits() {
-    return await this.licenseOrganizationService.limit(ORGANIZATION_INSTANCE_KEY); // INSTANCE
+  async getLimits(@Req() req: Request) {
+    const organizationId =
+      typeof req.headers['tj-workspace-id'] === 'object'
+        ? req.headers['tj-workspace-id'][0]
+        : req.headers['tj-workspace-id'];
+    return await this.licenseOrganizationService.limit(organizationId);
   }
 }
