@@ -21,6 +21,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { merge } from 'lodash';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 /**
  * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
@@ -479,8 +480,20 @@ const ColumnMappingComponent = ({
     return Array.isArray(sectionColumns) ? sectionColumns.every((col) => !col.selected) : true;
   });
 
+  const renderLoader = () => {
+    return (
+      <div style={{ width: '100%', height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <center>
+          <Loader width="32" absolute={false} />
+        </center>
+      </div>
+    );
+  };
+
   const modalBody = (
     <div className="tw-w-full column-mapping-modal-body-container">
+      {sectionTypes.length === 0 && renderLoader()}
+
       {sectionTypes.length > 0 && (
         <>
           {sectionTypes.map((sectionType) => {
@@ -502,8 +515,11 @@ const ColumnMappingComponent = ({
           })}
         </>
       )}
-
-      <div className="tw-flex tw-justify-between tw-items-center tw-mt-4">
+      <div
+        className={`tw-flex ${
+          currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'tw-justify-between' : 'tw-justify-end'
+        } tw-items-center tw-mt-4`}
+      >
         {currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS && (
           <Button fill={'#ACB2B9'} leadingIcon={'arrowdirectionloop'} variant="outline" onClick={refreshData}>
             Refresh data

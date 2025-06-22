@@ -235,7 +235,7 @@ export const Form = ({
       ) {
         performBatchComponentOperations(operations);
         saveDataSection(cleanupFormFields(newColumns));
-        if (openModal) setOpenModal(false);
+        setOpenModal(false);
       }
     }
   };
@@ -323,16 +323,15 @@ export const Form = ({
 
           let resolvedValue;
 
+          setOpenModal(true);
           if (!hasMetadata && queryId && runQuery) {
             await runQuery(queryId, '', false, 'edit');
           }
           resolvedValue = resolveReferences('canvas', valueWithBrackets);
-          // debugger;
 
           if (!source?.fxActive) {
             const transformedData = findFirstKeyValuePairWithPath(resolvedValue, selectedQuery);
             setJSONData({ value: transformedData.value });
-            setOpenModal(true);
             return setSource((prev) => ({ ...prev, value: transformedData.path }));
           }
           setJSONData({ value: resolvedValue });
