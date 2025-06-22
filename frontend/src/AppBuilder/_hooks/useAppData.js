@@ -560,7 +560,7 @@ const useAppData = (
         const propertyObj = categoryObj[property];
         Object.keys(propertyObj).forEach((type) => {
           const color = propertyObj[type][darkMode ? 'dark' : 'light'];
-          root.style.setProperty(`--cc-${type}-${category}`, `${color}`);
+          root.style.setProperty(`--cc-${camelCase(type)}-${camelCase(category)}`, `${color}`);
           if (type === 'placeholder' && category === 'text') {
             root.style.setProperty(`--cc-default-icon`, `${color}`);
           }
@@ -574,7 +574,7 @@ const useAppData = (
       });
     });
     detectThemeChange();
-  }, [darkMode, selectedTheme, themeAccess]);
+  }, [darkMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
     if (moduleMode) return;

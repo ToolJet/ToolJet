@@ -10,7 +10,7 @@
 
 
   &.jet-table {
-    background-color: var(--surfaces-surface-01);
+    background-color: var(--cc-surface1-surface);
     box-shadow: var(--elevation-200-box-shadow);
     border: 1px solid var(--borders-weak-disabled);
   }
@@ -30,7 +30,7 @@
 
   .card-footer,
   .card {
-    background-color: var(--surfaces-surface-01);
+    background-color: var(--cc-surface1-surface);
   }
 
   .card {
@@ -261,7 +261,7 @@
           top: 0;
           left: 0;
           right: 0;
-          background: var(--surfaces-surface-01) !important;
+          background: var(--cc-surface1-surface) !important;
           box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
             rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
         }
@@ -512,7 +512,7 @@
 
       &:focus-within:not(.has-actions) {
         border: 1px solid var(--interactive-overlays-focus-outline);
-        background-color: var(--surfaces-surface-01) !important;
+        background-color: var(--cc-surface1-surface) !important;
         box-shadow: var(--elevation-200-box-shadow);
 
         &:has(.long-text-input) {
@@ -624,7 +624,7 @@
 
       &:focus-within {
         border: 1px solid var(--indigo9) !important;
-        background-color: var(--indigo1) !important;
+        background-color: var(--cc-surface1-surface) !important;
 
       }
     }
@@ -654,7 +654,7 @@
   right: 0;
   height: 300px;
   z-index: 100;
-  background-color: var(--surfaces-surface-01) !important;
+  background-color: var(--cc-surface1-surface) !important;
   overflow: hidden;
 }
 
@@ -673,7 +673,7 @@
 */
 // download pop-up in the table widget
 .table-widget-download-popup {
-  background-color: var(--surfaces-surface-01) !important;
+  background-color: var(--cc-surface1-surface) !important;
   color: var(--slate12) !important;
   padding: 4px;
   border-radius: 6px;
@@ -718,7 +718,7 @@
 
 .popover:has(.dropdown-table-column-hide-common) {
   border: 1px solid var(--slate3) !important;
-  background-color: var(--surfaces-surface-01) !important;
+  background-color: var(--cc-surface1-surface) !important;
   padding: 4px;
   border-radius: 6px;
 }
@@ -1037,7 +1037,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: var(--surfaces-surface-01) !important;
+  background-color: var(--cc-surface1-surface) !important;
 
   .table-select-column-type-search-box {
     width: 100%;
@@ -1154,8 +1154,7 @@
     flex-direction: column;
     border-radius: 8px;
     box-shadow: var(--elevation-400-box-shadow);
-    background-color: var(--surfaces-surface-01) !important;
-
+    background-color: var(--cc-surface1-surface) !important;
     
 
     .option-wrapper {
@@ -1168,7 +1167,7 @@
       }
 
       &:active {
-        background: var(--surfaces-surface-01) !important;
+        background: var(--cc-surface1-surface) !important;
         box-shadow: 0px 0px 0px 4px #DFE3E6;
 
       }
@@ -1340,7 +1339,7 @@
     padding: 0.75rem !important;
     outline: none !important;
     border: 1px solid var(--interactive-overlays-focus-outline) !important;
-    background-color: var(--surfaces-surface-01) !important;
+    background-color: var(--cc-surface1-surface) !important;
     z-index: 99999 !important;
     align-items: flex-start !important;
   }
@@ -1352,7 +1351,7 @@
 
 .overlay-cell-table {
   box-shadow: var(--elevation-400-box-shadow) !important;
-  background: var(--surfaces-surface-01) !important;
+  background: var(--cc-surface1-surface) !important;
   display: inline-flex !important;
   flex-wrap: wrap !important;
   gap: 10px !important;
@@ -1556,3 +1555,38 @@
   }
 }
 
+
+
+.table-cell {
+  input[type="checkbox"] {
+    position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid var(--borders-default);
+    border-radius: 3px;
+    background-color: var(--cc-surface1-surface);
+    cursor: pointer;
+    
+    &:checked {
+      background-color: var(--cc-primary-brand);
+      border-color: var(--cc-primary-brand);
+      
+      &:after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 5px;
+        height: 9px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+    
+    &:not(:checked) {
+      background-color: var(--cc-surface1-surface);
+      border-color: var(--borders-default);
+    }
+  }
+}

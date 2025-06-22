@@ -9,6 +9,7 @@ import { isArray } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
+import '../styles.scss';
 
 const { MenuList } = components;
 
@@ -32,8 +33,15 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
-    <div className="table-select-custom-menu-list" onClick={(e) => e.stopPropagation()}>
-      <div className="table-select-column-type-search-box-wrapper">
+    <div
+      className="table-select-custom-menu-list"
+      onClick={(e) => e.stopPropagation()}
+      style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+    >
+      <div
+        className="table-select-column-type-search-box-wrapper"
+        style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+      >
         {!inputValue && (
           <span>
             <SolidIcon name="search" width="14" />
@@ -56,7 +64,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
           spellCheck="false"
         />
       </div>
-      <MenuList {...props} selectProps={selectProps}>
+      <MenuList {...props} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
         {optionsLoadingState ? (
           <div className="text-center py-4">
             <div className="spinner-border text-primary" role="status">
@@ -76,7 +84,12 @@ const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) 
   const { optionColors } = props.selectProps;
 
   return (
-    <div ref={innerRef} {...innerProps} className="option-wrapper d-flex">
+    <div
+      ref={innerRef}
+      {...innerProps}
+      className="option-wrapper d-flex"
+      style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+    >
       {props.selectProps.isMulti ? (
         <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
       ) : (
@@ -247,7 +260,7 @@ export const CustomSelectColumn = ({
       }),
       menuList: (base) => ({
         ...base,
-        backgroundColor: 'var(--surfaces-surface-01)',
+        backgroundColor: 'var(--cc-surface1-surface)',
         color: 'var(--text-primary)',
         cursor: 'pointer',
         overflow: 'auto',
