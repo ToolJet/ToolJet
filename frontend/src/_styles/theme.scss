@@ -5586,8 +5586,6 @@ div#driver-page-overlay {
   background: var(--surfaces-surface-01);
 
   .card {
-    background: var(--base);
-    border: 1px solid var(--border-weak) !important;
     width: 880px;
 
     .card-header {
@@ -8586,6 +8584,11 @@ tbody {
     .paid-feature-banner {
       margin-left: 15px;
     }
+  }
+
+  &[data-name="Audit logs"] {
+    flex: 1 0 0%;
+    max-width: unset;
   }
 }
 
@@ -16280,6 +16283,11 @@ fieldset:disabled {
   header {
     display: flex;
     gap: 12px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    background: var(--bg-surface-layer-01);
+    box-shadow: var(--elevation-000-box-shadow);
+    border: 1px solid var(--border-weak);
 
     .left {
       border-radius: 24px;
