@@ -39,11 +39,13 @@ const FormComponent = (props) => {
     onComponentClick,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), checkDiff);
+  const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id), shallow);
+
   const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
   const {
     buttonToSubmit,
-    advanced,
-    JSONSchema,
+    advanced: _deprecatedAdvanced,
+    JSONSchema: _deprecatedJSONSchema,
     showHeader = false,
     showFooter = false,
     headerHeight = 80,
@@ -51,7 +53,11 @@ const FormComponent = (props) => {
     canvasHeight,
     validateOnSubmit = true,
     resetOnSubmit = true,
+    newJsonSchema,
   } = properties;
+
+  const advanced = _deprecatedAdvanced || isJSONSchema;
+  const JSONSchema = _deprecatedAdvanced ? _deprecatedJSONSchema : newJsonSchema;
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -462,7 +468,11 @@ export const Form = React.memo(FormComponent, (prevProps, nextProps) => {
 
   if (Object.keys(diffInProps).length === 0) return true; // No changes detected, no need to re-render
   if (Object.keys(diffInProps).length === 1) {
-    if (diffInProps['properties'] && diffInProps['properties']['generateFormFrom']) {
+    if (
+      diffInProps['properties'] &&
+      diffInProps['properties']['generateFormFrom'] &&
+      diffInProps['properties']['generateFormFrom'] !== 'jsonSchema'
+    ) {
       return true; // No changes detected in childrenData, no need to re-render
     }
   }

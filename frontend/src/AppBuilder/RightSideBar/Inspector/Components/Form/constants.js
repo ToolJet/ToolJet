@@ -38,7 +38,7 @@ export const FORM_STATUS = {
 };
 
 export const COMPONENT_LAYOUT_DETAILS = {
-  spacing: 25,
+  spacing: 40,
   defaultWidth: 37,
   defaultHeight: 30,
   defaultLeft: 3,

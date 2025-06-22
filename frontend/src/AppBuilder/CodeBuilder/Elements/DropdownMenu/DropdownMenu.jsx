@@ -16,6 +16,7 @@ export const DropdownMenu = (props) => {
   const sourceOptions = useMemo(
     () => [
       { id: 'rawJson', label: 'Raw JSON', icon: <SolidIcon name="curlybraces" /> },
+      { id: 'jsonSchema', label: 'JSON schema', icon: <SolidIcon name="curlybraces" /> },
       // { id: 'json-schema', label: 'JSON schema' },
     ],
     []
@@ -78,7 +79,7 @@ export const DropdownMenu = (props) => {
   const selectSource = (source) => {
     setSelectedSource(source);
     setIsOpen(false);
-    if (source.id === 'rawJson') {
+    if (source.id === 'rawJson' || source.id === 'jsonSchema') {
       onChange(source.id);
     } else if (source.type === 'query') {
       onChange(source.value);

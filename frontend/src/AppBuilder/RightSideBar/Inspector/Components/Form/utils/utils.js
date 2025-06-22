@@ -69,7 +69,7 @@ export const buildFieldObject = (key, value, label, jsonDifferences) => {
     dataType,
     componentType: DATATYPE_TO_COMPONENT[dataType] || 'TextInput',
     mandatory: { value: false },
-    selected: { value: false },
+    selected: false,
     isCustomField: false,
     isNew: jsonDifferences.isNew.includes(key),
     isRemoved: jsonDifferences.isRemoved.includes(key),

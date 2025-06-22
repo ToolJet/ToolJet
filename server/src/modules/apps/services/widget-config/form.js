@@ -3,7 +3,7 @@ export const formConfig = {
   displayName: 'Form',
   description: 'Wrapper for multiple components',
   defaultSize: {
-    width: 13,
+    width: 15,
     height: 450,
   },
   defaultChildren: [
@@ -63,7 +63,10 @@ export const formConfig = {
     generateFormFrom: {
       type: 'dropdownMenu',
       displayName: 'Generate form from',
-      options: [{ name: 'Raw JSON', value: 'rawJson' }],
+      options: [
+        { name: 'Raw JSON', value: 'rawJson' },
+        { name: 'JSON schema', value: 'jsonSchema' },
+      ],
       section: 'data',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
       newLine: true,
@@ -74,6 +77,19 @@ export const formConfig = {
       conditionallyRender: {
         key: 'generateFormFrom',
         value: 'rawJson',
+      },
+      section: 'data',
+      showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    newJsonSchema: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'jsonSchema',
       },
       section: 'data',
       showLabel: false,
@@ -261,6 +277,10 @@ export const formConfig = {
       loadingState: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
+        value:
+          "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
+      },
+      newJsonSchema: {
         value:
           "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
       },

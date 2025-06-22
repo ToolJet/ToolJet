@@ -6,8 +6,21 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Input from '@/components/ui/Input/Index';
-import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from '../utils/utils';
+import {
+  getInputTypeOptions,
+  isTrueValue,
+  isPropertyFxControlled,
+  parseDataAndBuildFields,
+  analyzeJsonDifferences,
+  mergeFieldsWithComponentDefinition,
+  mergeFormFieldsWithNewData,
+  mergeArrays,
+} from '../utils/utils';
 import { FORM_STATUS } from '../constants';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { merge } from 'lodash';
+import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 
 /**
  * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
@@ -16,7 +29,15 @@ import { FORM_STATUS } from '../constants';
  *
  */
 
-const ColumnMappingRow = ({ column, onChange, onCheckboxChange, index, darkMode = false, disabled = false }) => {
+const ColumnMappingRow = ({
+  column,
+  onChange,
+  onCheckboxChange,
+  index,
+  darkMode = false,
+  disabled = false,
+  sectionType,
+}) => {
   if (!column) return null;
 
   const inputTypeOptions = getInputTypeOptions(darkMode);
@@ -54,10 +75,12 @@ const ColumnMappingRow = ({ column, onChange, onCheckboxChange, index, darkMode 
     });
   };
 
+  const shouldHideCheckbox = sectionType === 'isCustomField';
+
   return (
     <div className="tw-flex tw-items-center tw-w-full tw-py-3 tw-px-2 tw-border-b tw-border-border-lighter column-mapping-row">
       {/* Checkbox */}
-      <div className={cx(`tw-w-6`, { 'tw-invisible': disabled })}>
+      <div className={cx(`tw-w-6`, { 'tw-invisible': disabled || shouldHideCheckbox })}>
         <Checkbox checked={column.selected} onCheckedChange={onCheckboxChange} />
       </div>
 
@@ -205,10 +228,12 @@ const RenderSection = ({
     );
   };
 
+  const shouldHideSelectAll = sectionType === 'isCustomField';
+
   const renderHeader = () => {
     return (
       <div className="tw-flex tw-items-center tw-w-full tw-py-[10px] tw-px-2 header-row column-mapping-row">
-        <div className={cx(`tw-w-6 header-column`, { 'tw-invisible': disabled })}>
+        <div className={cx(`tw-w-6 header-column`, { 'tw-invisible': disabled || shouldHideSelectAll })}>
           <Checkbox
             checked={isAllSelected || isIntermediateSelected}
             onCheckedChange={handleSelectAll}
@@ -266,6 +291,7 @@ const RenderSection = ({
               index={index}
               darkMode={darkMode}
               disabled={disabled}
+              sectionType={sectionType}
             />
           ))
         ) : (
@@ -276,14 +302,82 @@ const RenderSection = ({
   );
 };
 
-const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = false, onSubmit, currentStatusRef }) => {
+const ColumnMappingComponent = ({
+  isOpen,
+  onClose,
+  columns = [],
+  darkMode = false,
+  onSubmit,
+  currentStatusRef,
+  // refreshData,
+  component,
+  newResolvedJsonData,
+  existingResolvedJsonData,
+  source,
+}) => {
+  const { resolveReferences, getFormDataSectionData, getComponentDefinition, getFormFields } = useStore(
+    (state) => ({
+      resolveReferences: state.resolveReferences,
+      getFormDataSectionData: state.getFormDataSectionData,
+      getComponentDefinition: state.getComponentDefinition,
+      getFormFields: state.getFormFields,
+    }),
+    shallow
+  );
+
+  const componentNameIdMapping = useStore((state) => state.modules.canvas.componentNameIdMapping, shallow);
+  const queryNameIdMapping = useStore((state) => state.modules.canvas.queryNameIdMapping, shallow);
+  const runQuery = useStore((state) => state.queryPanel.runQuery, shallow);
+
   const [isSaving, setIsSaving] = useState(false);
   const [groupedColumns, setGroupedColumns] = useState({});
   const [sectionTypes, setSectionTypes] = useState([]);
+  const [refreshedColumns, setRefreshedColumns] = useState([]);
+
+  const refreshData = async () => {
+    currentStatusRef.current = FORM_STATUS.REFRESH_FIELDS;
+    const res = extractAndReplaceReferencesFromString(source.value, componentNameIdMapping, queryNameIdMapping);
+    const { allRefs, valueWithBrackets } = res;
+    const queryId = allRefs[0]?.entityNameOrId;
+    if (queryId && runQuery) {
+      await runQuery(queryId, '', false, 'edit');
+    }
+    const resolvedValue = resolveReferences('canvas', valueWithBrackets);
+    setRefreshedColumns(resolvedValue);
+  };
+
+  const buildColumns = (currentStatus = currentStatusRef.current) => {
+    const formFields = getFormFields(component.id);
+    const formFieldsWithComponentDefinition = mergeFieldsWithComponentDefinition(formFields, getComponentDefinition);
+
+    if (currentStatus === FORM_STATUS.MANAGE_FIELDS) {
+      const allColumnsFromJsonData = parseDataAndBuildFields(newResolvedJsonData);
+      return mergeArrays(allColumnsFromJsonData, formFieldsWithComponentDefinition);
+    } else if (currentStatus === FORM_STATUS.REFRESH_FIELDS) {
+      const jsonDifferences = analyzeJsonDifferences(refreshedColumns, existingResolvedJsonData);
+      const mergedJsonData = merge({}, existingResolvedJsonData, refreshedColumns);
+      const parsedFields = parseDataAndBuildFields(mergedJsonData, jsonDifferences);
+      const mergedFields = mergeFormFieldsWithNewData(formFieldsWithComponentDefinition, parsedFields);
+      const enhancedFieldsWithComponentDefinition = mergeFieldsWithComponentDefinition(
+        mergedFields,
+        getComponentDefinition
+      );
+      return [
+        ...enhancedFieldsWithComponentDefinition,
+        ...formFieldsWithComponentDefinition.filter((f) => f.isCustomField),
+      ];
+    }
+    return parseDataAndBuildFields(newResolvedJsonData || []);
+  };
+
+  const columnsToUse = buildColumns();
 
   // Group columns by section type on component load or when columns change
   useEffect(() => {
     const groupBySection = () => {
+      // Use buildColumns if columns is empty or we need to rebuild
+      // const columnsToUse = columns.length > 0 ? columns : buildColumns();
+
       const grouped = {};
 
       // Check if we're in GENERATE_FIELDS or REFRESH_FIELDS mode
@@ -291,7 +385,7 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
       const isRefreshFormMode = currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS;
       const shouldSelectByDefault = isGenerateFieldsMode || isRefreshFormMode;
 
-      columns.forEach((col) => {
+      columnsToUse.forEach((col) => {
         let sectionType = 'existing';
 
         if (col.isNew) {
@@ -335,7 +429,14 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
     };
 
     groupBySection();
-  }, [columns, currentStatusRef]);
+  }, [
+    columns,
+    currentStatusRef,
+    component.id,
+    newResolvedJsonData,
+    existingResolvedJsonData,
+    JSON.stringify(columnsToUse),
+  ]);
 
   const updateSectionColumns = (sectionType, updatedColumns) => {
     setGroupedColumns((prev) => ({
@@ -346,9 +447,18 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
 
   const handleSubmit = () => {
     setIsSaving(true);
-    const combinedColumns = Object.entries(groupedColumns)
-      .flatMap(([_, columns]) => columns)
-      .filter((column) => column.selected); // Filter out unselected columns
+    const flatColumns = Object.entries(groupedColumns).flatMap(([_, columns]) => columns);
+    const combinedColumns =
+      currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS
+        ? flatColumns.map((column) => {
+            if (!column.selected && column.componentId) {
+              return {
+                ...column,
+                isRemoved: true,
+              };
+            } else return column;
+          })
+        : flatColumns.filter((column) => column.selected);
 
     onSubmit?.(combinedColumns);
   };
@@ -393,7 +503,12 @@ const ColumnMappingComponent = ({ isOpen, onClose, columns = [], darkMode = fals
         </>
       )}
 
-      <div className="tw-flex tw-justify-end tw-mt-4">
+      <div className="tw-flex tw-justify-between tw-items-center tw-mt-4">
+        {currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS && (
+          <Button fill={'#ACB2B9'} leadingIcon={'arrowdirectionloop'} variant="outline" onClick={refreshData}>
+            Refresh data
+          </Button>
+        )}
         <Button
           variant="primary"
           onClick={handleSubmit}

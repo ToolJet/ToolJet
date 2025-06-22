@@ -7,6 +7,13 @@ const initialState = {};
 export const createFormComponentSlice = (set, get) => ({
   ...initialState,
 
+  isJsonSchemaInGenerateFormFrom: (componentId, moduleId = 'canvas') => {
+    const { getComponentDefinition } = get();
+    const componentDefinition = getComponentDefinition(componentId, moduleId);
+    if (!componentDefinition) return false;
+    const { generateFormFrom } = componentDefinition.component.definition.properties || {};
+    return generateFormFrom?.value === 'jsonSchema';
+  },
   getFormDataSectionData: (componentId, moduleId = 'canvas') => {
     const { getComponentDefinition } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
