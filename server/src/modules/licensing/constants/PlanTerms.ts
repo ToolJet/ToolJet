@@ -88,7 +88,6 @@ export const CLOUD_EDITION_SETTINGS = {
   },
 };
 
-
 export const BUSINESS_PLAN_TERMS = {
   auditLogs: {
     maximumDays: 14,
