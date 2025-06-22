@@ -9,9 +9,8 @@ import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import ComponentModuleTab from './ComponentModuleTab';
 import { ModuleManager } from '@/modules/Modules/components';
+import { ComponentModuleTab } from '@/modules/Appbuilder/components';
 
 // TODO: Hardcode all the component-section mapping in a constant file and just loop over it
 // TODO: styling
