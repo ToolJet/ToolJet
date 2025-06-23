@@ -4151,6 +4151,8 @@ input[type="text"] {
 .calendar-widget {
   padding: 10px;
   background-color: white;
+  background-color: var(--cc-primary-brand) !important;
+  border: transparent;
 
   .rbc-day-slot .rbc-event,
   .rbc-day-slot .rbc-background-event {
@@ -4168,8 +4170,7 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
-    background-color: var(--cc-primary-brand) !important;
-    border: transparent
+
   }
 
   .rbc-off-range-bg {
