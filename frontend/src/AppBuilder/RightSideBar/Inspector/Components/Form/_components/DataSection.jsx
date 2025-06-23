@@ -17,6 +17,7 @@ export const DataSection = ({
   currentStatusRef,
   saveDataSection,
   openModal,
+  closeModal,
   performColumnMapping,
   existingResolvedJsonData,
   savedSourceValue,
@@ -57,6 +58,7 @@ export const DataSection = ({
           darkMode={darkMode}
           saveDataSection={saveDataSection}
           openModalFromParent={openModal}
+          closeModalParent={closeModal}
           performColumnMapping={performColumnMapping}
           newResolvedJsonData={resolveReferences('canvas', JSONData.value)}
           existingResolvedJsonData={existingResolvedJsonData}

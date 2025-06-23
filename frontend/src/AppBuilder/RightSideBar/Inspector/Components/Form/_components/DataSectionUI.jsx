@@ -24,6 +24,7 @@ const DataSectionUI = ({
   darkMode = false,
   currentStatusRef,
   openModalFromParent = false,
+  closeModalParent,
   performColumnMapping,
   newResolvedJsonData,
   existingResolvedJsonData,
@@ -157,6 +158,7 @@ const DataSectionUI = ({
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
+    closeModalParent();
   }, [setIsModalOpen]);
 
   return (

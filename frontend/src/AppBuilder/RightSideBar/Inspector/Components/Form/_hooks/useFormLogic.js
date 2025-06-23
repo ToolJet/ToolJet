@@ -99,5 +99,8 @@ export const useFormLogic = (component, paramUpdated) => {
     performColumnMapping,
     handleJSONDataBlur,
     saveDataSection,
+    closeModal: () => {
+      formState.setOpenModal(false);
+    },
   };
 };

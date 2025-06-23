@@ -49,6 +49,7 @@ export const Form = ({
     currentStatusRef: formLogic.currentStatusRef,
     saveDataSection: formLogic.saveDataSection,
     openModal: formLogic.openModal,
+    closeModal: formLogic.closeModal,
     performColumnMapping: formLogic.performColumnMapping,
     existingResolvedJsonData: formLogic.existingResolvedJsonData,
     savedSourceValue: formLogic.savedSourceValue.current,
