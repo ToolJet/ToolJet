@@ -86,6 +86,20 @@ SQL Parameters:
 
 You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
+### MySQL Dynamic Functions and System Variables
+
+MySQL offers dynamic functions and system variables that provide real-time information about the current database, user session, connection, and server environment. These can help you write queries that automatically adapt to different environments without hardcoding values.
+
+| Function / Variable | Description                                                       | Example Output       |
+| ------------------- | ----------------------------------------------------------------- | -------------------- |
+| `DATABASE()`        | Returns the name of the current database in use                   | `tooljet_db`         |
+| `USER()`            | Returns the current MySQL user account (user\@host)               | `app_user@localhost` |
+| `CURRENT_USER()`    | Returns the authenticated user account (can differ from `USER()`) | `app_user@%`         |
+| `VERSION()`         | Returns the MySQL server version                                  | `8.0.33`             |
+| `@@hostname`        | Returns the MySQL server hostname                                 | `db-server-01`       |
+| `@@port`            | Returns the MySQL server port number                              | `3306`               |
+| `CONNECTION_ID()`   | Returns the connection ID for the current session                 | `123456`             |
+
 ## Querying in GUI Mode
 
 GUI mode can be used to query MySQL database without writing queries. 
