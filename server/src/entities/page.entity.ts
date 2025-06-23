@@ -41,7 +41,7 @@ export class Page {
   @Column()
   disabled: boolean;
 
-  @Column('simple-json', { name: 'hidden' })
+  @Column('jsonb', { name: 'hidden' })
   hidden;
 
   @Column()

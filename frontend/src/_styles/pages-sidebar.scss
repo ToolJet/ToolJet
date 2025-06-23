@@ -433,6 +433,7 @@
             .accordion-item {
                 .page-group-collapse {
                     right: 4px;
+                    transform: rotate(30deg);
                 }
                 .tj-list-item {
                     padding-right: 22px;
@@ -518,6 +519,7 @@
 
         .page-group-collapse {
             right: 4px;
+            transform: rotate(30deg);
         }
 
         .page-name {

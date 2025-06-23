@@ -24,6 +24,7 @@ import PageOptions from './PageOptions';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const PAGE_TYPES = {
   default: '',
@@ -38,17 +39,19 @@ export const PageMenuItem = withRouter(
     const isHomePage = page.id === homePageId;
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
     const isSelected = page.id === currentPageId;
-    const isHidden = page?.hidden ?? false;
+    const isHidden = resolveReferences(page?.hidden?.value) ?? false;
     const isDisabled = page?.disabled ?? false;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
     const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
     const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
     const showEditingPopover = useStore((state) => state.showEditingPopover);
+    const logError = useStore((state) => state.eventsSlice.logError);
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
     const setEditingPage = useStore((state) => state.setEditingPage);
     const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
     const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
+    const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
     const clonePage = useStore((state) => state.clonePage);
     const markAsHomePage = useStore((state) => state.markAsHomePage);
     const restricted = page?.permissions && page?.permissions?.length > 0;
@@ -179,7 +182,15 @@ export const PageMenuItem = withRouter(
               }
             }
           } else {
-            toast.error('No URL provied');
+            logError(
+              'Navigation',
+              'navigation',
+              { message: 'No URL provided', errorTarget: 'page' },
+              { eventType: 'page' },
+              {},
+              '',
+              page
+            );
             return;
           }
           return;
@@ -194,7 +205,15 @@ export const PageMenuItem = withRouter(
               window.location.href = baseUrl;
             }
           } else {
-            toast.error('No app selected');
+            logError(
+              'Navigation',
+              'navigation',
+              { message: 'No application slug provided', errorTarget: 'page' },
+              { eventType: 'page' },
+              {},
+              '',
+              page
+            );
             return;
           }
           return;
@@ -207,18 +226,7 @@ export const PageMenuItem = withRouter(
         switchPage(page?.id, page?.handle, [], moduleId);
         setCurrentPageHandle(page.handle);
       },
-      [
-        page?.type,
-        page.url,
-        page.appId,
-        page?.id,
-        page.handle,
-        page.openIn,
-        currentPageId,
-        switchPage,
-        moduleId,
-        setCurrentPageHandle,
-      ]
+      [page, currentPageId, switchPage, moduleId, setCurrentPageHandle, logError]
     );
 
     const handlePageMenuSettings = useCallback(
@@ -308,6 +316,9 @@ export const PageMenuItem = withRouter(
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text, maxWidth: '159px' }}>
                     {page.name}
                   </OverflowTooltip>
+                  <span className="meta-text" style={{ marginLeft: '6px' }}>
+                    {PAGE_TYPES[page?.type]}
+                  </span>
                   <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
                     {isHomePage && (
                       <ToolTip message="Home page" placement="bottom">
@@ -334,19 +345,16 @@ export const PageMenuItem = withRouter(
                         </div>
                       </ToolTip>
                     )}
+                    <div style={{ marginRight: 'auto' }}>
+                      {licenseValid && restricted && (
+                        <ToolTip message={getTooltip()}>
+                          <div className="d-flex">
+                            <SolidIcon width="16" name="lock" fill="var(--icons-default)" />
+                          </div>
+                        </ToolTip>
+                      )}
+                    </div>
                   </span>
-                  <span className="meta-text" style={{ marginLeft: '6px' }}>
-                    {PAGE_TYPES[page?.type]}
-                  </span>
-                </div>
-                <div style={{ marginLeft: '8px', marginRight: 'auto' }}>
-                  {licenseValid && restricted && (
-                    <ToolTip message={getTooltip()}>
-                      <div>
-                        <SolidIcon width="16" name="lock" fill="var(--icons-default)" />
-                      </div>
-                    </ToolTip>
-                  )}
                 </div>
                 <div>
                   {!shouldFreeze && (
@@ -407,17 +415,19 @@ export const PageMenuItem = withRouter(
                                 handleOpenPopup(page?.type || 'page', page);
                               }}
                             />
-                            <PageOptions
-                              text="Mark home"
-                              icon="home"
-                              darkMode={darkMode}
-                              disabled={isHomePage}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                markAsHomePage(page?.id, moduleId);
-                              }}
-                            />
+                            {page?.type === 'default' && (
+                              <PageOptions
+                                text="Mark home"
+                                icon="home"
+                                darkMode={darkMode}
+                                disabled={isHomePage}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  markAsHomePage(page?.id, moduleId);
+                                }}
+                              />
+                            )}
                             <PageOptions
                               text="Duplicate page"
                               icon="copy"
@@ -441,6 +451,29 @@ export const PageMenuItem = withRouter(
                                 toggleShowPageOptions(false);
                                 openPageEditPopover(page);
                                 toggleDeleteConfirmationModal(true);
+                              }}
+                            />
+                            <PageOptions
+                              text={
+                                <ToolTip
+                                  message={'Page permissions are available only in paid plans'}
+                                  placement="right"
+                                  show={!licenseValid}
+                                >
+                                  <div className="d-flex align-items-center">
+                                    <div>Page permission</div>
+                                    {!licenseValid && <SolidIcon name="enterprisecrown" />}
+                                  </div>
+                                </ToolTip>
+                              }
+                              icon="lock"
+                              darkMode={darkMode}
+                              disabled={isHomePage}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                toggleShowPageOptions(false);
+                                togglePagePermissionModal(true);
                               }}
                             />
                           </div>

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import PageOptions from './PageOptions';
+import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function AddNewPageMenu({ darkMode, isLicensed }) {
   const newPageBtnRef = useRef(null);
@@ -68,7 +70,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
             />
-            {isLicensed && (
+            <div className={`d-flex ${!isLicensed && 'disabled licensed-page-option'}`}>
               <PageOptions
                 type="group"
                 text="Add nav group"
@@ -76,7 +78,14 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
                 darkMode={darkMode}
                 onClick={() => handleOpenPopup('group')}
               />
-            )}
+              <LicenseTooltip
+                message={"App header can't be hidden on free plans"}
+                placement="bottom"
+                show={!isLicensed}
+              >
+                <div className="d-flex align-items-center">{!isLicensed && <SolidIcon name="enterprisecrown" />}</div>
+              </LicenseTooltip>
+            </div>
           </div>
         </Popover>
       </Overlay>
