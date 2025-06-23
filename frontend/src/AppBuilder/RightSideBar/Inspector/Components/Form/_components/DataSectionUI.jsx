@@ -1,11 +1,8 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import LabeledDivider from './LabeledDivider';
-import ColumnMappingComponent from './ColumnMappingComponent';
-import { FormFieldsList } from './FormFieldsList';
+import { LabeledDivider, ColumnMappingComponent, FormFieldsList, FieldPopoverContent } from './index';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import FieldPopoverContent from './FieldPopoverContent';
 import { useDropdownState } from '../_hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';

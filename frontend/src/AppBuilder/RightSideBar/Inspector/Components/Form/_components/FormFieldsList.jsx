@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { FormField } from './FormField';
-import { Button } from '@/components/ui/Button/Button';
-import { FORM_STATUS } from '../constants';
+import { FormField } from './index';
 
-export const FormFieldsList = ({ fields, onDeleteField, setIsModalOpen, currentStatusRef, onSave }) => {
+export const FormFieldsList = ({ fields, onDeleteField, currentStatusRef, onSave }) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
   if (fields.length === 0) {

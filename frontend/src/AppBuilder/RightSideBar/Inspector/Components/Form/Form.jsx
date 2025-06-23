@@ -5,7 +5,7 @@ import { shallow } from 'zustand/shallow';
 import { useFormLogic } from './_hooks';
 import { processComponentMeta } from './utils/componentMetaUtils';
 import { createAccordionItems } from './config/accordionConfig';
-import { DataSection } from './_components/DataSection';
+import { DataSection } from './_components';
 import './styles.scss';
 
 export const Form = ({

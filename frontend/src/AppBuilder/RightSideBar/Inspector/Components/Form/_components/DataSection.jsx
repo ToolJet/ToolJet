@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderElement } from '../../../Utils';
-import DataSectionWrapper from '../_components/DataSectionWrapper';
+import { DataSectionWrapper } from './index';
 
 export const DataSection = ({
   component,

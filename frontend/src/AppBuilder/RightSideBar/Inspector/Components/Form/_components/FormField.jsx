@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button/Button';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import WidgetIcon from '@/../assets/images/icons/widgets';
-import FieldPopoverContent from './FieldPopoverContent';
+import { FieldPopoverContent } from './index';
 import { useDropdownState } from '../_hooks/useDropdownState';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';

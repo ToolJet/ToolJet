@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Popover from 'react-bootstrap/Popover';
@@ -16,16 +16,25 @@ const FieldPopoverContent = ({
   setSelectedComponents,
 }) => {
   const [localField, setLocalField] = useState(field ?? {});
-  const isSelectedFxControlled = mode === 'edit' ? isPropertyFxControlled(localField.selected) : false;
-  const isCurrentlySelected = mode === 'edit' ? isTrueValue(localField.selected.value) : false;
 
   useEffect(() => {
     setLocalField({ ...field });
   }, [field]);
 
-  const inputTypeOptions = getInputTypeOptions(darkMode);
+  // Memoize expensive computations
+  const isSelectedFxControlled = useMemo(
+    () => (mode === 'edit' ? isPropertyFxControlled(localField.selected) : false),
+    [mode, localField.selected]
+  );
 
-  const handleFieldChange = (property, value) => {
+  const isCurrentlySelected = useMemo(
+    () => (mode === 'edit' ? isTrueValue(localField.selected?.value) : false),
+    [mode, localField.selected?.value]
+  );
+
+  const inputTypeOptions = useMemo(() => getInputTypeOptions(darkMode), [darkMode]);
+
+  const handleFieldChange = useCallback((property, value) => {
     if (property === 'mandatory' || property === 'selected') {
       return setLocalField((prevField) => ({
         ...prevField,
@@ -33,21 +42,21 @@ const FieldPopoverContent = ({
       }));
     }
     setLocalField((prevField) => ({ ...prevField, [property]: value }));
-  };
+  }, []);
 
-  const handleFxChange = (property, fxActive) => {
+  const handleFxChange = useCallback((property, fxActive) => {
     setLocalField((prevField) => ({
       ...prevField,
       [property]: { ...prevField[property], fxActive },
     }));
-  };
+  }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     onChange?.(localField);
     if (mode !== 'edit') {
       onClose?.();
     }
-  };
+  }, [localField, onChange, onClose, mode]);
 
   const renderPlaceholder = () => {
     if (['Checkbox', 'RadioButtonV2', 'Datepicker'].includes(localField.componentType)) return null;

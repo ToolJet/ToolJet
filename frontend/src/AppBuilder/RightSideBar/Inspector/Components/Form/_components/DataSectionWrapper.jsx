@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import DataSectionUI from './DataSectionUI';
+import { DataSectionUI } from './index';
 import { isEqual } from 'lodash';
 import { FORM_STATUS } from '../constants';
 
