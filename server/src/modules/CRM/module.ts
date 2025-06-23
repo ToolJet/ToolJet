@@ -7,7 +7,7 @@ export class CrmModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
 
-    const { CrmListenerService } = await import(`${importPath}/crm.listener.service`);
+    const { CrmListenerService } = await import(`${importPath}/CRM/listener`);
 
     return {
       module: CrmModule,

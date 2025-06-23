@@ -1,7 +1,7 @@
 import { UpdateWhiteLabellingDto } from '@modules/white-labelling/dto';
 
 export interface IWhiteLabellingController {
-  get(): Promise<any>; // Method to fetch white labeling settings
+  get(organizationId: string): Promise<any>; // Method to fetch white labeling settings
 
   update(updateWhiteLabellingDto: UpdateWhiteLabellingDto): Promise<any>; // Method to update white labeling settings
 

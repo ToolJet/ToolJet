@@ -32,20 +32,9 @@ class ItemDto {
   planId: string;
 }
 
-export class ProrationDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ItemDto)
-  items: ItemDto[];
-
-  @IsBoolean()
-  includeChange: boolean;
-
-  @IsNotEmpty()
-  prorationDate: number;
-
-  @IsNotEmpty()
-  planForm: any;
+enum PlanType {
+  TEAM = 'team',
+  PRO = 'pro',
 }
 
 export enum SubscriptionMode {
@@ -57,6 +46,23 @@ export enum SubscriptionMode {
 export enum SubscriptionType {
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
+}
+
+export class ProrationDto {
+  @IsNotEmpty()
+  @IsNumber()
+  quantity: number;
+
+  @IsNotEmpty()
+  @IsEnum(SubscriptionType)
+  subscriptionType: string;
+
+  @IsNotEmpty()
+  @IsEnum(PlanType)
+  plan: string;
+
+  @IsOptional()
+  coupon: string;
 }
 
 export class PaymentRedirectDto {

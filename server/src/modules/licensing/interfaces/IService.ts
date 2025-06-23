@@ -14,6 +14,7 @@ export interface ILicenseUserService {
 export abstract class LicenseTermsService {
   constructor(protected readonly licenseInitService: LicenseInitService) {}
   abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
+  abstract getOrganizationLicense(organizationId: string): Promise<any>;
 }
 
 export interface ILicenseOrganizationService {
