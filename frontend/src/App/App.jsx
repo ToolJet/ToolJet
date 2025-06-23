@@ -282,9 +282,9 @@ class AppComponent extends React.Component {
                     exact
                     path="/:workspaceId/workflows/*"
                     element={
-                      <AdminRoute {...this.props}>
+                      <PrivateRoute>
                         <Workflows switchDarkMode={this.switchDarkMode} darkMode={this.darkMode} />
-                      </AdminRoute>
+                      </PrivateRoute>
                     }
                   />
                 )}

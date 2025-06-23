@@ -10661,7 +10661,6 @@ tbody {
 .manage-groups-body {
   padding: 12px 12px 10px 12px;
   font-size: 12px;
-  overflow-y: auto;
   height: calc(100vh - 300px);
 
   .group-users-list-container {
@@ -10882,6 +10881,7 @@ tbody {
 }
 
 .permission-body {
+  
   .form-check {
     margin-bottom: 0px !important;
   }
