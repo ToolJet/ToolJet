@@ -43,14 +43,13 @@ export class DataSourcesService implements IDataSourcesService {
     });
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
-    const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
-    let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
+    let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
 
     if (!shouldIncludeWorkflows) {
       // remove workflowsdefault data source from static data sources
-      staticDataSources = staticDataSources.filter((dataSource) => dataSource.kind !== 'workflows');
+      dataSources = dataSources.filter((dataSource) => dataSource.kind !== 'workflows');
     }
-    const decamelizedDatasources = decamelizeKeys([...staticDataSources, ...dataSources]);
+    const decamelizedDatasources = decamelizeKeys(dataSources);
     return { data_sources: decamelizedDatasources };
   }
 
@@ -66,6 +65,7 @@ export class DataSourcesService implements IDataSourcesService {
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, {
       appVersionId: query.appVersionId,
       environmentId: selectedEnvironmentId,
+      types: [DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
     });
     for (const dataSource of dataSources) {
       const parseIfNeeded = (data: any) => {

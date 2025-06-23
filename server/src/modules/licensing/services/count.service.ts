@@ -9,6 +9,7 @@ import { UserRepository } from '@modules/users/repository';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { ILicenseCountsService } from '../interfaces/IService';
 import { ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class LicenseCountsService implements ILicenseCountsService {
@@ -254,7 +255,7 @@ export class LicenseCountsService implements ILicenseCountsService {
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number> {
     return manager.count(App, {
       where: {
-        type: 'workflow',
+        type: APP_TYPES.WORKFLOW,
         ...(workspaceId && { organizationId: workspaceId }),
       },
     });
@@ -300,7 +301,7 @@ export class LicenseCountsService implements ILicenseCountsService {
     if (organizationId === ORGANIZATION_INSTANCE_KEY) {
       const apps = await manager.find(App, {
         where: {
-          type: 'front-end',
+          type: APP_TYPES.FRONT_END,
           organization: {
             status: 'active',
           },
@@ -310,7 +311,7 @@ export class LicenseCountsService implements ILicenseCountsService {
 
       return apps.length;
     } else {
-      return manager.count(App, { where: { type: 'front-end', organizationId } });
+      return manager.count(App, { where: { type: APP_TYPES.FRONT_END, organizationId } });
     }
   }
 }

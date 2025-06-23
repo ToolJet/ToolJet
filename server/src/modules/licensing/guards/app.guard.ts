@@ -4,6 +4,7 @@ import { LicenseTermsService } from '../interfaces/IService';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { App } from '@entities/app.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class AppCountGuard implements CanActivate {
@@ -13,7 +14,7 @@ export class AppCountGuard implements CanActivate {
   async fetchTotalAppCount(manager: EntityManager): Promise<number> {
     const apps = await manager.find(App, {
       where: {
-        type: 'front-end',
+        type: APP_TYPES.FRONT_END,
         organization: {
           status: 'active',
         },
