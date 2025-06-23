@@ -130,12 +130,12 @@
 #page-settings-tabpane-properties {
     padding: 0px !important;
 
-    <<<<<<< HEAD=======.app-name {
+    .app-name {
         width: 100% !important;
         margin: 0px !important;
     }
 
-    >>>>>>>revamp/pages-sidebar .form-check-input[type=checkbox] {
+    .form-check-input[type=checkbox] {
         float: right;
     }
 
@@ -454,6 +454,7 @@
             .accordion-item {
                 .page-group-collapse {
                     right: 4px;
+                    transform: rotate(30deg);
                 }
 
                 .tj-list-item {
@@ -541,6 +542,7 @@
 
         .page-group-collapse {
             right: 4px;
+            transform: rotate(30deg);
         }
 
         .page-name {

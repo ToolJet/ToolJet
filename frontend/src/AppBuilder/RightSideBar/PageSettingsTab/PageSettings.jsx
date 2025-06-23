@@ -30,6 +30,7 @@ import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationMo
 import EditAppName from '@/AppBuilder/Header/EditAppName';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import PagePermission from './PageMenu/PagePermission';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -98,7 +99,11 @@ export const PageSettings = () => {
       title: 'Pages and menu',
       children: [
         isLicensed ? (
-          <SortableTree darkMode={darkMode} collapsible indicator={true} />
+          <>
+            <PagePermission darkMode={darkMode} />
+
+            <SortableTree darkMode={darkMode} collapsible indicator={true} />
+          </>
         ) : (
           <SortableList Element={PageMenuItem} darkMode={darkMode} switchPage={switchPage} classNames="page-handler" />
         ),
@@ -295,7 +300,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
 
 const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseValid }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { hideHeader, name } = properties ?? {};
+  const { hideHeader, name, position, style } = properties ?? {};
   const [_name, _setName] = useState(name);
   return (
     <>

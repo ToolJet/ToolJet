@@ -1,4 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import cx from 'classnames';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -12,6 +13,10 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { appService } from '@/_services';
 import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import { resolveReferences } from '@/_helpers/utils';
+import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
 
 const POPOVER_TITLES = {
   add: {
@@ -109,12 +114,12 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
     if (mode === 'add' && type === 'url' && !hasAutoSaved) {
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
-      let newName = `Page ${index}`;
+      let newName = `URL ${index}`;
       while (existingNames.includes(newName.toLowerCase())) {
         index++;
-        newName = `Page ${index}`;
+        newName = `URL ${index}`;
       }
-      const pageObj = { type: 'url', openIn: 'new_tab' };
+      const pageObj = { type: 'url', openIn: 'new_tab', url: 'https://www.tooljet.ai' };
       addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
         setPage(data);
         setPageName(newName);
@@ -161,10 +166,10 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
     if (mode === 'add' && type === 'app' && !hasAutoSaved) {
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
-      let newName = `Page ${index}`;
+      let newName = `App ${index}`;
       while (existingNames.includes(newName.toLowerCase())) {
         index++;
-        newName = `Page ${index}`;
+        newName = `App ${index}`;
       }
       const pageObj = { type: 'app', openIn: 'new_tab' };
       addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
@@ -179,16 +184,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
     }
   }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
 
-
   //Nav item with group
   useEffect(() => {
     if (mode === 'add' && type === 'group' && !hasAutoSaved) {
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
-      let newName = `Page ${index}`;
+      let newName = `Group ${index}`;
       while (existingNames.includes(newName.toLowerCase())) {
         index++;
-        newName = `Page ${index}`;
+        newName = `Group ${index}`;
       }
       const pageObj = { type: 'group', openIn: 'new_tab' };
       addNewPage(newName, kebabCase(newName.toLowerCase()), true, pageObj).then((data) => {
@@ -302,7 +306,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   />
                 </label>
               </div>
-              <div className=" d-flex justify-content-between align-items-center pb-2">
+              {/* <div className=" d-flex justify-content-between align-items-center pb-2">
                 <label className="form-label font-weight-400 mb-0">Hide this page on navigation</label>
                 <label className={`form-switch`}>
                   <input
@@ -313,7 +317,14 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     disabled={isHomePage}
                   />
                 </label>
-              </div>
+              </div> */}
+              <HidePageOnNavigation
+                hidden={page?.hidden}
+                page={page}
+                updatePageVisibility={updatePageVisibility}
+                darkMode={darkMode}
+                isHomePage={isHomePage}
+              />
               <div className=" d-flex justify-content-between align-items-center pb-2">
                 <label className="form-label font-weight-400 mb-0">Disable page</label>
                 <label className={`form-switch`}>
@@ -388,18 +399,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 />
               </div>
             </div>
-            <div className=" d-flex justify-content-between align-items-center">
-              <label className="form-label font-weight-400 mb-0">Hide this item on navigation</label>
-              <label className={`form-switch`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={page?.hidden}
-                  onChange={(e) => updatePageVisibility(page?.id, !page?.hidden)}
-                  disabled={isHomePage}
-                />
-              </label>
-            </div>
+            <HidePageOnNavigation
+              hidden={page?.hidden}
+              page={page}
+              updatePageVisibility={updatePageVisibility}
+              darkMode={darkMode}
+              isHomePage={isHomePage}
+            />
           </>
         )}
         {type === 'app' && (
@@ -463,18 +469,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 </ToggleGroup>
               </div>
             </div>
-            <div className=" d-flex justify-content-between align-items-center">
-              <label className="form-label font-weight-400 mb-0">Hide this item on navigation</label>
-              <label className={`form-switch`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={page?.hidden}
-                  onChange={(e) => updatePageVisibility(page?.id, !page?.hidden)}
-                  disabled={isHomePage}
-                />
-              </label>
-            </div>
+            <HidePageOnNavigation
+              hidden={page?.hidden}
+              page={page}
+              updatePageVisibility={updatePageVisibility}
+              darkMode={darkMode}
+              isHomePage={isHomePage}
+            />
           </>
         )}
         {type === 'group' && (
@@ -503,18 +504,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 />
               </div>
             </div>
-            <div className=" d-flex justify-content-between align-items-center">
-              <label className="form-label font-weight-400 mb-0">Hide this item on navigation</label>
-              <label className={`form-switch`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={page?.hidden}
-                  onChange={(e) => updatePageVisibility(page?.id, !page?.hidden)}
-                  disabled={isHomePage}
-                />
-              </label>
-            </div>
+            <HidePageOnNavigation
+              hidden={page?.hidden}
+              page={page}
+              updatePageVisibility={updatePageVisibility}
+              darkMode={darkMode}
+              isHomePage={isHomePage}
+            />
           </>
         )}
       </Popover.Body>
@@ -549,6 +545,74 @@ const PageEvents = ({ page, allPages }) => {
           popOverCallback={(showing) => showing}
         />
       </div>
+    </div>
+  );
+};
+
+const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage }) => {
+  const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
+
+  return (
+    <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
+      <div className={cx('d-flex align-items-center justify-content-between')}>
+        <div className={`field`}>
+          <InspectorTooltip
+            label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
+              darkMode && 'color-whitish-darkmode'
+            }`}
+          />
+        </div>
+        <div className={`flex-grow-1`}>
+          <div
+            style={{ marginBottom: forceCodeBox ? '0.5rem' : '0px' }}
+            className={`d-flex align-items-center justify-content-end`}
+          >
+            <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
+              <FxButton
+                active={forceCodeBox}
+                onPress={() => {
+                  if (forceCodeBox) {
+                    setForceCodeBox(false);
+                  } else {
+                    setForceCodeBox(true);
+                  }
+                }}
+              />
+            </div>
+
+            {!forceCodeBox && (
+              <div className="form-check form-switch m-0">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={resolveReferences(hidden?.value)}
+                  disabled={isHomePage}
+                  onChange={(e) =>
+                    updatePageVisibility(page?.id, {
+                      value: `{{${e.target.checked}}}`,
+                      fxActive: forceCodeBox,
+                    })
+                  }
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {forceCodeBox && (
+        <CodeHinter
+          initialValue={hidden?.value}
+          lang="javascript"
+          lineNumbers={false}
+          onChange={(value) => {
+            updatePageVisibility(page?.id, {
+              value: value,
+              fxActive: forceCodeBox,
+            });
+          }}
+        />
+      )}
     </div>
   );
 };

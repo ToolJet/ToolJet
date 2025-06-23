@@ -68,6 +68,7 @@ const MobileHeader = ({
       changeToDarkMode={changeToDarkMode}
       showHeader={showHeader}
       showDarkModeToggle={showDarkModeToggle}
+      appName={appName}
     />
   );
 

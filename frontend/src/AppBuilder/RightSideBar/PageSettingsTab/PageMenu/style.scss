@@ -6,15 +6,13 @@
 
 .page-handler.ghost {
     background-color: #ECEEF0;
-
-    &.dark-theme {
-        background-color: var(--slate4);
-    }
-
     border-radius: 4px;
     position: relative;
     width: 100%;
     opacity: 0.8;
+    &.dark-theme{
+        background-color: var(--slate4);
+    }
 }
 
 .edit-page-overlay-toggle {
@@ -55,7 +53,15 @@
 }
 
 .page-handler {
-    .page-menu-item {
+    .page-menu-item{
+        height:32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        padding: 7px 8px;
+        margin-top: 2px;
+        justify-content: space-between;
+        background-color: var(--interactive-default);
         &.highlight {
             border: 2px solid #3D63DC;
         }
@@ -110,6 +116,7 @@
             font-weight: 400;
             line-height: 18px;
             margin-left: 8px;
+            gap: 6px;
         }
 
         button.edit-page-overlay-toggle {
@@ -131,20 +138,11 @@
                 }
             }
         }
-
-        height:32px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        padding: 7px 8px;
-        margin-top: 2px;
-        justify-content: space-between;
-        background-color: var(--interactive-default);
-
-        .left {
-
+        .left{
             // margin-left: 15px;
-            .page-name {
+            display: flex;
+            align-items: center;
+            .page-name{
                 overflow: hidden;
                 color: var(--slate12);
                 font-size: 14px;
@@ -152,9 +150,6 @@
                 font-weight: 400;
                 max-width: 246px;
             }
-
-            display: flex;
-            align-items: center;
         }
 
         // .right {
@@ -431,6 +426,15 @@
         svg {
             path {
                 fill: var(--icon-weak);
+            }
+        }
+    }
+
+    .licensed-page-option {
+        button {
+            pointer-events: none;
+            &:hover {
+                background-color: unset !important;
             }
         }
     }

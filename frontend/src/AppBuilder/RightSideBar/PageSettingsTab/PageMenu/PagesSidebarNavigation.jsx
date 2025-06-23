@@ -51,39 +51,36 @@ export const PagesSidebarNavigation = ({
 
   const { disableMenu, hideHeader, position, style, collapsable } = properties ?? {};
 
-  // const editorMarginLeft = useSidebarMargin(canvasContainerRef);
-
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || !measurementContainerRef.current || pages.length === 0) {
       return;
     }
 
     const containerWidth = navRef.current.offsetWidth;
-    let currentWidth = 112;
+    let currentWidth = 0;
     const tempVisible = [];
     const tempOverflow = [];
 
     const measuredNavItems = Array.from(measurementContainerRef.current.children);
-
-    const MORE_BUTTON_WIDTH_ESTIMATE = 80;
+    const MORE_BUTTON_WIDTH_ESTIMATE = 180;
 
     for (let i = 0; i < pages.length; i++) {
       const link = pages[i];
-      const correspondingMeasuredElement = measuredNavItems.find((item) => item.dataset.id === String(link.id));
+      const correspondingMeasuredElement = measuredNavItems.find(
+        (item) => item.dataset.id === String(link.id) && !link?.pageGroupId
+      );
 
       if (!correspondingMeasuredElement) {
         continue;
       }
 
       const itemWidth = correspondingMeasuredElement.offsetWidth;
-      const itemMargin = parseInt(window.getComputedStyle(correspondingMeasuredElement).marginRight || '0', 10);
-      const totalItemWidth = itemWidth + itemMargin;
 
       const spaceNeededForMoreButton = i < pages.length - 1 || tempOverflow.length > 0 ? MORE_BUTTON_WIDTH_ESTIMATE : 0;
 
-      if (currentWidth + totalItemWidth <= containerWidth - spaceNeededForMoreButton) {
+      if (currentWidth + itemWidth <= containerWidth - spaceNeededForMoreButton) {
         tempVisible.push(link);
-        currentWidth += totalItemWidth;
+        currentWidth += itemWidth;
       } else {
         tempOverflow.push(link);
       }
@@ -93,6 +90,7 @@ export const PagesSidebarNavigation = ({
       if (tempVisible.length > 0) {
         const lastVisible = tempVisible.pop();
         tempOverflow.unshift(lastVisible);
+        currentWidth -= lastVisible.offsetWidth;
       }
     }
 
@@ -101,25 +99,20 @@ export const PagesSidebarNavigation = ({
   }, [pages]);
 
   useLayoutEffect(() => {
-    let debouncedHandleResize = () => {};
-    if (position === 'top') {
-      calculateOverflow();
-      const handleResize = () => {
-        let timeoutId;
-        return () => {
-          clearTimeout(timeoutId);
-          timeoutId = setTimeout(calculateOverflow, 100);
-        };
-      };
+    const handleResize = () => {
+      requestAnimationFrame(() => {
+        calculateOverflow();
+      });
+    };
 
-      debouncedHandleResize = handleResize();
-      window.addEventListener('resize', debouncedHandleResize);
-    }
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', debouncedHandleResize);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [pages, calculateOverflow, position]);
+  }, [pages, calculateOverflow]);
 
   if (isMobileDevice) {
     return null;
@@ -181,7 +174,8 @@ export const PagesSidebarNavigation = ({
       hidden: properties?.style === 'text',
     },
     label: {
-      hidden: properties?.style === 'icon' || (style === 'texticon' && !isSidebarPinned && !isTopPositioned),
+      hidden:
+        properties?.style === 'icon' || (style === 'texticon' && !isSidebarPinned && properties?.position != 'top'),
     },
   };
 
@@ -265,16 +259,17 @@ export const PagesSidebarNavigation = ({
           visibility: 'hidden',
           whiteSpace: 'nowrap',
           display: 'flex',
-          padding: '0px 22px',
+          padding: '0px 0px',
           className: 'tj-list-item page-name',
-          marginLeft: '184px',
         }}
       >
-        {pages.map((link) => (
-          <div style={{ padding: '0px 22px' }} key={`measure-${link.id}`} data-id={link.id}>
-            {link?.name}
-          </div>
-        ))}
+        {pages
+          .filter((p) => !p.pageGroupId)
+          .map((link) => (
+            <div style={{ padding: '0px 10px' }} key={`measure-${link.id}`} data-id={link.id}>
+              {link?.name}
+            </div>
+          ))}
       </button>
       <div
         ref={navRef}

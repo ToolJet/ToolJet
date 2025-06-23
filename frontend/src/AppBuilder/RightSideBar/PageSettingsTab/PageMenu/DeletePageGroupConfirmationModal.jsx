@@ -25,7 +25,7 @@ export const DeletePageGroupConfirmationModal = ({ onConfirm, onCancel, darkMode
           className="delete-all-button"
         >
           <Trash width="14" fill="#69727C" />
-          <span>Delete folder and pages</span>
+          <span>Delete group and pages</span>
         </button>
         <button
           onClick={onCancel}

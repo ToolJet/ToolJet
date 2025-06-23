@@ -129,7 +129,15 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
   );
 };
 
-const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeToDarkMode, showDarkModeToggle }) => {
+const MobileNavigationMenu = ({
+  pages,
+  switchPage,
+  currentPageId,
+  darkMode,
+  changeToDarkMode,
+  showDarkModeToggle,
+  appName,
+}) => {
   const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
@@ -218,12 +226,22 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
             <div className="d-flex flex-grow-1 justify-content-center">
               <h1 className="navbar-brand d-none-navbar-horizontal p-0">
                 <Link
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
                   data-cy="viewer-page-logo"
                   onClick={() => {
                     redirectToDashboard();
                   }}
                 >
                   <AppLogo isLoadingFromHeader={false} viewer={true} />
+                  {appName && (
+                    <div className="d-flex align-items-center app-title">
+                      <span>{appName}</span>
+                    </div>
+                  )}
                 </Link>
               </h1>
             </div>

@@ -235,6 +235,6 @@
   position: absolute;
   display: block !important;
   &.expanded{
-    transform: rotate(60deg);
+    transform: rotate(60deg) !important;
   }
 }
