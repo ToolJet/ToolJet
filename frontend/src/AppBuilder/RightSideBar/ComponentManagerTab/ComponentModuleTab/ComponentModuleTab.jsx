@@ -15,7 +15,6 @@ export const ComponentModuleTab = ({ onChangeTab }) => {
         <button
           className={`tj-drawer-tabs-btn tj-text-xsm ${activeTab == 1 && 'tj-drawer-tabs-btn-active'}`}
           onClick={() => handleChangeTab(1)}
-          data-cy="button-invite-with-email"
         >
           <span>Components</span>
         </button>
