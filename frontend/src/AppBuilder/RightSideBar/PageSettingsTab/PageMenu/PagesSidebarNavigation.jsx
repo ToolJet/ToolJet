@@ -75,7 +75,6 @@ export const PagesSidebarNavigation = ({
       }
 
       const itemWidth = correspondingMeasuredElement.offsetWidth;
-      console.log(`Measuring item ${link.id}:`, { itemWidth, correspondingMeasuredElement });
 
       const spaceNeededForMoreButton = i < pages.length - 1 || tempOverflow.length > 0 ? MORE_BUTTON_WIDTH_ESTIMATE : 0;
 
@@ -175,7 +174,8 @@ export const PagesSidebarNavigation = ({
       hidden: properties?.style === 'text',
     },
     label: {
-      hidden: properties?.style === 'icon' || (style === 'texticon' && !isSidebarPinned && !isTopPositioned),
+      hidden:
+        properties?.style === 'icon' || (style === 'texticon' && !isSidebarPinned && properties?.position != 'top'),
     },
   };
 
