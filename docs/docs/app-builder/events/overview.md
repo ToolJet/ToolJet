@@ -3,11 +3,12 @@ id: overview
 title: Overview
 ---
 
-In ToolJet, you can build dynamic, logic-driven applications using Events, Actions, Variables, and Component-Specific Actions (CSAs). These features let you define how your app responds to user interactions and system events — without writing any backend code. Each component has a different set of available events and CSAs based on its functionality. Refer to the [individual component](#) guides for more details.
+In ToolJet, you can build dynamic, logic-driven applications using Events, Actions, Variables, and Component-Specific Actions (CSAs). These features let you define how your app responds to user interactions and system events without writing any backend code. Each component has a different set of available events and CSAs based on its functionality. Refer to the [individual component](#) guides for more details.
 
 ## Events
 
-Events are triggers that respond when certain conditions are met — either through user interaction (for example, clicking a **Button** component or selecting a **Dropdown** option) or system-level changes (for example, the completion of a query). You can configure events using event handlers on components or queries. Each handler defines the trigger and the actions that should follow. <br/>
+Events are triggers that respond when certain conditions are met — either through user interaction (for example, clicking a **Button** component or selecting a **Dropdown** option) or system-level changes (for example, the completion of a query). You can configure events using event handlers on components or queries. Each handler defines the trigger and the actions that should follow. 
+
 For example, when a user clicks a **Button**, it can trigger a query to refresh data. Once that query completes, a second event can run to show a confirmation alert.
 
 <img className="screenshot-full img-l" src="/img/app-builder/events/overview/events.png" alt="Events Architecture Diagram"/>

@@ -3,7 +3,7 @@ id: canvas
 title: Canvas and Layout
 ---
 
-**Canvas** is the main playground in the ToolJet App Builder where the application is built and the user interface is designed.
+**Canvas** is the main area in the ToolJet App Builder where the application is built and the user interface is designed.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/canvas.png" alt="App Builder: Canvas"/>
 

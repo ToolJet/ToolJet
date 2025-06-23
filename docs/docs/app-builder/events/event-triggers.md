@@ -9,7 +9,8 @@ You can use event triggers to run queries, update variables, show alerts, naviga
 
 ## Configuring an Event Handler
 
-Suppose you're building a feedback form using a **Form** component that submits user input to a database whenever the user clicks on the submit button. To achieve this, you can configure the submit button to trigger a query when clicked. <br/>
+Suppose you're building a feedback form using a **Form** component that submits user input to a database whenever the user clicks on the submit button. To achieve this, you can configure the submit button to trigger a query when clicked.
+
 First, create a query and name it **addData**, that inserts **Form** values into the database. Then, configure the **Button** with the following event handler:
 - Event: **On Click**
 - Action: **Run Query**
@@ -23,7 +24,8 @@ This setup ensures that every time the button is clicked, the form data is sent 
 
 ## Configuring Sequential Event Handler
 
-Continuing the previous example, after submitting the form, you may want to update the UI by fetching the latest data. To do this, create a new query and name it **fetchData** that retrieves updated records from the database. <br/>
+Continuing the previous example, after submitting the form, you may want to update the UI by fetching the latest data. To do this, create a new query and name it **fetchData** that retrieves updated records from the database.
+
 Next, configure a sequential event handler for the **addData** query:
 - Event: **Query Success**
 - Action: **Run Query**
