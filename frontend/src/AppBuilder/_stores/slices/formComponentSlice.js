@@ -329,7 +329,7 @@ export const createFormComponentSlice = (set, get) => ({
       // Use existing addComponentToCurrentPage but with saveAfterAction=false
       // We'll save all changes together at the end
       return addComponentToCurrentPage(componentsToCreate, moduleId, {
-        skipUndoRedo: true, // We'll handle undo/redo for the entire batch
+        skipUndoRedo: false,
         saveAfterAction: false,
         skipFormUpdate: true,
       });
@@ -341,7 +341,7 @@ export const createFormComponentSlice = (set, get) => ({
 
       // Use existing setComponentPropertyByComponentIds function
       upatedDiff = setComponentPropertyByComponentIds(operations.updated, moduleId, {
-        skipUndoRedo: true, // We'll handle undo/redo for the entire batch
+        skipUndoRedo: false,
         saveAfterAction: false, // We'll save all changes together at the end
       });
     };
@@ -352,7 +352,7 @@ export const createFormComponentSlice = (set, get) => ({
 
       // Use existing deleteComponents function but with saveAfterAction=false
       deleteComponents(operations.deleted, moduleId, {
-        skipUndoRedo: true, // We'll handle undo/redo for the entire batch
+        skipUndoRedo: false,
         saveAfterAction: false,
         isCut: false,
         skipFormUpdate: true, // Skip form updates to avoid conflicts
