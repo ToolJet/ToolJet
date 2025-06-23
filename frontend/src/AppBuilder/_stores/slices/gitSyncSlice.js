@@ -1,16 +1,14 @@
 import useStore from '@/AppBuilder/_stores/store';
 import { gitSyncService } from '@/_services';
-
+import { useAppDataStore } from '@/_stores/appDataStore';
 const initialState = {
   showGitSyncModal: false,
   allowEditing: false,
   appLoading: false,
 };
-
 export const createGitSyncSlice = (set, get) => ({
   ...initialState,
-  toggleGitSyncModal: () => {
-    const creationMode = useStore.getState()?.app.creationMode;
+  toggleGitSyncModal: (creationMode) => {
     const featureAccess = useStore.getState()?.license?.featureAccess;
     const selectedEnvironment = useStore.getState()?.selectedEnvironment;
     const isEditorFreezed = useStore.getState()?.isEditorFreezed;
