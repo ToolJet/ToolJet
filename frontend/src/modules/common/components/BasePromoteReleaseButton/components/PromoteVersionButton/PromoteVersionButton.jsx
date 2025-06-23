@@ -8,12 +8,13 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PromoteVersionButton = () => {
   const [promoteModalData, setPromoteModalData] = useState(null);
+  const { moduleId } = useModuleContext();
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
   const { isPromoteVersionEnabled } = getCanPromoteAndRelease();
   const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } =
     useStore(
       (state) => ({
-        isSaving: state.app.isSaving,
+        isSaving: state.appStore.modules[moduleId].app.isSaving,
         editingVersion: state.currentVersionId,
         selectedEnvironment: state.selectedEnvironment,
         environments: state.environments,
