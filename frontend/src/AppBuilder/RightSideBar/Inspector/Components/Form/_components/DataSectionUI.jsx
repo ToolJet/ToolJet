@@ -186,10 +186,8 @@ const DataSectionUI = ({
           isOpen={isModalOpen}
           onClose={closeModal}
           darkMode={darkMode}
-          columns={[]} // Empty since buildColumns is now internal
           currentStatusRef={currentStatusRef}
           onSubmit={performColumnMapping}
-          // refreshData={refreshData}
           // Add new props for buildColumns
           component={component}
           newResolvedJsonData={newResolvedJsonData}
