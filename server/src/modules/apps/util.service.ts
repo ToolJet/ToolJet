@@ -34,9 +34,7 @@ import { mergeWith } from 'lodash';
 import { isArray } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
-import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
-import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { APP_TYPES } from './constants';
 import { Component } from 'src/entities/component.entity';
@@ -52,10 +50,8 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly versionRepository: VersionRepository,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
-    protected readonly abilityService: AbilityService,
-    protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly dataSourceUtilService: DataSourcesUtilService
-  ) { }
+    protected readonly abilityService: AbilityService
+  ) {}
   async create(name: string, user: User, type: APP_TYPES, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
@@ -77,14 +73,6 @@ export class AppsUtilService implements IAppsUtilService {
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
       const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
 
-      for (const defaultSource of ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows']) {
-        const dataSource = await this.dataSourceRepository.createDefaultDataSource(
-          defaultSource,
-          appVersion.id,
-          manager
-        );
-        await this.dataSourceUtilService.createDataSourceInAllEnvironments(user.organizationId, dataSource.id, manager);
-      }
       const defaultHomePage = await manager.save(
         manager.create(Page, {
           name: 'Home',
@@ -156,43 +144,6 @@ export class AppsUtilService implements IAppsUtilService {
       return app;
     }, manager);
   }
-
-  // async createVersion(
-  //   user: User,
-  //   app: App,
-  //   versionName: string,
-  //   versionFromId: string,
-  //   manager?: EntityManager
-  // ): Promise<AppVersion> {
-  //   return await dbTransactionWrap(async (manager: EntityManager) => {
-  //     let versionFrom: AppVersion;
-  //     const { organizationId } = user;
-
-  //     if (versionFromId) {
-  //       versionFrom = await manager.findOneOrFail(AppVersion, {
-  //         where: {
-  //           id: versionFromId,
-  //           app: {
-  //             id: app.id,
-  //             organizationId,
-  //           },
-  //         },
-  //         relations: ['app', 'dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
-  //       });
-  //     }
-
-  //     const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
-
-  //     if (noOfVersions && !versionFrom) {
-  //       throw new BadRequestException('Version from should not be empty');
-  //     }
-
-  //     if (versionFrom) {
-  //     }
-
-  //     return appVersion;
-  //   }, manager);
-  // }
 
   async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
     let app: App;
@@ -675,7 +626,7 @@ export class AppsUtilService implements IAppsUtilService {
       const tooljetDbDataQueries = await manager
         .createQueryBuilder(DataQuery, 'data_queries')
         .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
-        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
+        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_queries.app_version_id')
         .where('app_versions.app_id = :appId', { appId })
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
