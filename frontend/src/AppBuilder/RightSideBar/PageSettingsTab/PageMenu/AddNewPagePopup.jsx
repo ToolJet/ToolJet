@@ -23,7 +23,7 @@ const POPOVER_TITLES = {
   edit: {
     default: 'Edit page',
     app: 'Edit nav item',
-    url: 'New nav item',
+    url: 'Edit nav item',
     group: 'Edit nav group',
   },
 };
@@ -53,6 +53,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const updatePageIcon = useStore((state) => state.updatePageIcon);
   const markAsHomePage = useStore((state) => state.markAsHomePage);
   const clonePage = useStore((state) => state.clonePage);
+  const cloneGroup = useStore((state) => state.cloneGroup);
   const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
   const switchPage = useStore((state) => state.switchPage);
 
@@ -66,7 +67,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
   const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
-  const [page, setPage] = useState(editingPage);
+  const [page, setPage] = useState(editingPage || props?.page);
   const [pageName, setPageName] = useState('');
   const [handle, setHandle] = useState('');
   const [pageURL, setPageURL] = useState('');
@@ -88,7 +89,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         index++;
         newName = `Page ${index}`;
       }
-      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup).then((data) => {
+      const pageObj = { type: 'default' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
         setPage(data);
         setPageName(newName);
         setHandle(data?.handle);
@@ -120,8 +122,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       });
 
       setHasAutoSaved(true);
-    } else if (mode === 'edit' && editingPage) {
-      setPage(editingPage, appOptions);
+    } else if (editingPage) {
+      setPage(editingPage);
       setPageName(editingPage.name);
       setPageURL(editingPage.url);
     }
@@ -129,35 +131,34 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
 
   //Nav item with app hooks
   useEffect(() => {
-    if (mode === 'add' && type === 'app' && !hasAutoSaved) {
-      const fetchApps = async (page) => {
-        const { apps } = await appService.getAll(page);
-        return apps;
-      };
+    const fetchApps = async (page) => {
+      const { apps } = await appService.getAll(page);
+      return apps;
+    };
 
-      // eslint-disable-next-line no-inner-declarations
-      async function getAllApps() {
-        const apps = await fetchApps(0);
-        let appsOptionsList = [];
-        apps
-          .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
-          .forEach((item) => {
-            appsOptionsList.push({
-              name: item.name,
-              value: item.slug,
-            });
+    // eslint-disable-next-line no-inner-declarations
+    async function getAllApps() {
+      const apps = await fetchApps(0);
+      let appsOptionsList = [];
+      apps
+        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+        .forEach((item) => {
+          appsOptionsList.push({
+            name: item.name,
+            value: item.slug,
           });
-        return appsOptionsList;
-      }
-
-      getAllApps()
-        .then((apps) => {
-          setAppOptions(apps);
-        })
-        .finally(() => {
-          setAppOptionsLoading(false);
         });
+      return appsOptionsList;
+    }
 
+    getAllApps()
+      .then((apps) => {
+        setAppOptions(apps);
+      })
+      .finally(() => {
+        setAppOptionsLoading(false);
+      });
+    if (mode === 'add' && type === 'app' && !hasAutoSaved) {
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `Page ${index}`;
@@ -177,6 +178,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       setPageName(editingPage.name);
     }
   }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+
 
   //Nav item with group
   useEffect(() => {
@@ -222,13 +224,14 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     <SolidIcon name="arrowright01" />
                   </div>
                 </ToolTip>
-                <ToolTip message={`Duplicate ${POPOVER_ACTIONS[type]}`} placement="bottom">
-                  <div onClick={() => clonePage(page?.id)} className="icon-btn">
-                    <SolidIcon name="duplicatepage" />
-                  </div>
-                </ToolTip>
               </>
             )}
+
+            <ToolTip message={`Duplicate ${POPOVER_ACTIONS[type]}`} placement="bottom">
+              <div onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))} className="icon-btn">
+                <SolidIcon name="duplicatepage" />
+              </div>
+            </ToolTip>
 
             <ToolTip message={`Delete ${POPOVER_ACTIONS[type]}`} placement="bottom">
               <div
@@ -256,7 +259,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   value={pageName}
                   autoFocus={true}
                   onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => {
+                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  }}
                   minLength="1"
                 />
               </div>
@@ -277,7 +282,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             <div className="pb-1">
               <div className="d-flex justify-content-between align-items-center pb-2">
                 <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon || 'IconHome'} />
+                <Icon
+                  isVisibilityEnabled={false}
+                  onChange={(value) => updatePageIcon(page?.id, value)}
+                  value={page?.icon || 'IconFile'}
+                />
               </div>
             </div>
             <div className="pb-2">
@@ -332,7 +341,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   className="form-control"
                   value={pageName}
                   autoFocus={true}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => {
+                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  }}
                   minLength="1"
                 />
               </div>
@@ -370,7 +381,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             <div className="pb-2">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon} />
+                <Icon
+                  isVisibilityEnabled={false}
+                  onChange={(value) => updatePageIcon(page?.id, value)}
+                  value={page?.icon || 'IconFile'}
+                />
               </div>
             </div>
             <div className=" d-flex justify-content-between align-items-center">
@@ -398,7 +413,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   className="form-control"
                   value={pageName}
                   autoFocus={true}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName)}
+                  onBlur={(e) => {
+                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  }}
                   minLength="1"
                 />
               </div>
@@ -423,7 +440,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             </div>
             <div className="d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Icon</label>
-              <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon} />
+              <Icon
+                isVisibilityEnabled={false}
+                onChange={(value) => updatePageIcon(page?.id, value)}
+                value={page?.icon || 'IconFile'}
+              />
             </div>
             <div className="d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Open app in</label>
@@ -467,7 +488,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   value={pageName}
                   autoFocus={true}
                   onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName !== page?.name && updatePageName(page?.id, pageName, true)}
+                  onBlur={(e) => pageName && pageName !== page?.name && updatePageName(page?.id, pageName, true)}
                   minLength="1"
                 />
               </div>
@@ -475,7 +496,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             <div className="pb-2">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon onChange={(value) => updatePageIcon(page?.id, value)} value={page?.icon} />
+                <Icon
+                  isVisibilityEnabled={false}
+                  onChange={(value) => updatePageIcon(page?.id, value)}
+                  value={page?.icon || 'IconFolder'}
+                />
               </div>
             </div>
             <div className=" d-flex justify-content-between align-items-center">

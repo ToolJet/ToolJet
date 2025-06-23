@@ -52,9 +52,17 @@
 .released-version-no-header-mbl-preview {
   position: absolute;
   left: 50%;
-  border-radius: 100px;
   padding : 2px 8px;
+  background-color: unset !important;
   z-index: 1000;
+
+  .preview-chip {
+    color: var(--text-on-solid) !important;
+  }
+  .preview-settings {
+    margin-left: 6px;
+    padding: 4px;
+  }
 }
 
 .preview-settings-overlay {
@@ -155,6 +163,39 @@
       width: 100%;
     }
 
+    &.mobile-view {
+      .navbar, .header {
+        height: 60px !important;
+        max-height: 60px !important;
+      }
+      .header {
+        box-shadow: var(--elevation-100-box-shadow);
+      }
+      .preview-settings-mobile {
+        height: 44px !important;
+        header {
+          height: 44px !important;
+
+          .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: unset !important;
+            padding: 0px !important;
+            
+            .released-version-no-header-mbl-preview {
+              position: unset !important;
+            }
+          }
+        }
+      }
+
+      .mobile-nav-container {
+        .header-container {
+          background-color: unset !important;
+        }
+      }
+    }
 
     .canvas-container::-webkit-scrollbar {
       // width: 0;

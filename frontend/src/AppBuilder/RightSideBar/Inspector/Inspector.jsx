@@ -512,7 +512,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
             </span>
           </div>
           <div className={`col-7 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
-          <div className="col-2" data-cy={'component-inspector-options'}>
+          <div className="col-3" data-cy={'component-inspector-options'}>
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -556,15 +556,15 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                 </Popover>
               }
             >
-              <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-              </span>
+              <div className="d-flex">
+                <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
+                  <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin01' : 'pin'} width="16" />
+                </div>
+                <div className="cursor-pointer icon-btn" onClick={() => setShowHeaderActionsMenu(true)}>
+                  <SolidIcon data-cy={'menu-icon'} name="morevertical01" width="16" fill="var(--icon-strong)" />
+                </div>
+              </div>
             </OverlayTrigger>
-          </div>
-          <div className="col-2">
-            <span className="cursor-pointer" onClick={() => toggleRightSidebarPin()}>
-              <SolidIcon name={isRightSidebarPinned ? 'unpin' : 'pin'} width="24" fill={'var(--slate12)'} />
-            </span>
           </div>
         </div>
         <div className={`${shouldFreeze && 'disabled'}`}>

@@ -119,18 +119,23 @@ const MobileHeader = ({
   }
 
   return (
-    <Header
-      styles={{
-        height: '46px',
-      }}
-    >
-      <div className="d-flex w-100">
-        {!resolvedDisableMenu && _renderMobileNavigationMenu()}
-        <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
-      </div>
-      {/* {!isReleasedVersionId && !isEmpty(editingVersion) && _renderPreviewSettings()} */}
-      {/* {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })} */}
-    </Header>
+    <div>
+      <Header className={'preview-settings-mobile'} styles={{ height: '44px' }}>
+        {!isReleasedVersionId && !isEmpty(editingVersion) && _renderPreviewSettings()}
+      </Header>
+      <Header
+        styles={{
+          height: '46px',
+        }}
+        className={'mobile-nav-container'}
+      >
+        <div className="d-flex w-100">
+          {!resolvedDisableMenu && _renderMobileNavigationMenu()}
+          <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
+        </div>
+        {/* {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })} */}
+      </Header>
+    </div>
   );
 };
 
