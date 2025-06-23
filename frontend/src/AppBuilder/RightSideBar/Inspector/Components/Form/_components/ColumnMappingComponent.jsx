@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import Checkbox from '@/components/ui/Checkbox/Index';
 import cx from 'classnames';
@@ -6,28 +6,89 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Input from '@/components/ui/Input/Index';
-import {
-  getInputTypeOptions,
-  isTrueValue,
-  isPropertyFxControlled,
-  parseDataAndBuildFields,
-  analyzeJsonDifferences,
-  mergeFieldsWithComponentDefinition,
-  mergeFormFieldsWithNewData,
-  mergeArrays,
-} from '../utils/utils';
+import { getInputTypeOptions, isTrueValue, isPropertyFxControlled } from '../utils/utils';
 import { FORM_STATUS } from '../constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { merge } from 'lodash';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useColumnBuilder, useGroupedColumns, useCheckboxStates } from './hooks/useColumnMapping';
+
+// Constants for section display names
+const SECTION_DISPLAY_NAMES = {
+  existing: 'Existing',
+  isCustomField: 'Custom fields',
+  isNew: 'New',
+  isRemoved: 'Removed',
+};
+
+/**
+ * Reusable editable icon component
+ */
+const EditableIcon = ({ darkMode }) => (
+  <div className="tw-mr-2 editable-icon">
+    <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} viewBox="0 0 12 12" />
+  </div>
+);
+
+/**
+ * Modal header component
+ */
+const ModalHeader = ({ currentStatus, onClose }) => (
+  <div className="column-mapping-modal-header tw-flex tw-p-4 tw-flex-col tw-items-start tw-gap-2 tw-self-stretch tw-border-b bg-white">
+    <div className="tw-flex tw-justify-between tw-items-center tw-w-full" style={{ height: '28px' }}>
+      <h4 className="text-default tw-font-ibmplex tw-font-medium tw-leading-5 tw-m-0">
+        {currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'Manage fields' : 'Map columns'}
+      </h4>
+      <button className="tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer hover:tw-opacity-70" onClick={onClose}>
+        <SolidIcon name="remove" width="16" height="16" fill="#6A727C" />
+      </button>
+    </div>
+  </div>
+);
+
+/**
+ * Modal footer component
+ */
+const ModalFooter = ({ currentStatus, refreshData, handleSubmit, isSaving, allSectionsEmpty }) => (
+  <div
+    className={`tw-flex ${
+      currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'tw-justify-between' : 'tw-justify-end'
+    } tw-items-center tw-mt-4`}
+  >
+    {currentStatus !== FORM_STATUS.GENERATE_FIELDS && (
+      <Button fill={'#ACB2B9'} leadingIcon={'arrowdirectionloop'} variant="outline" onClick={refreshData}>
+        Refresh data
+      </Button>
+    )}
+    <Button
+      variant="primary"
+      onClick={handleSubmit}
+      disabled={isSaving || allSectionsEmpty}
+      leadingIcon={currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'save' : 'plus'}
+      isLoading={isSaving}
+      loaderText={currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'Saving' : 'Generating'}
+    >
+      {currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'Save' : 'Generate form'}
+    </Button>
+  </div>
+);
+
+/**
+ * Loader component
+ */
+const LoaderComponent = () => (
+  <div style={{ width: '100%', height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <center>
+      <Loader width="32" absolute={false} />
+    </center>
+  </div>
+);
 
 /**
  * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
  * This is to prevent users from changing the state of fx controlled properties directly.
  * Instead, they should use the fx editor to manage these properties.
- *
  */
 
 const ColumnMappingRow = ({
@@ -153,81 +214,77 @@ const RenderSection = ({
   sectionDisplayName,
   disabled = false,
 }) => {
-  const columnsArray = Array.isArray(mappedColumns) ? mappedColumns : [];
+  const columnsArray = useMemo(() => {
+    return Array.isArray(mappedColumns) ? mappedColumns : [];
+  }, [mappedColumns]);
 
-  const mandatorySettableColumns = columnsArray.filter((col) => !isPropertyFxControlled(col.mandatory));
+  const checkboxStates = useCheckboxStates(columnsArray);
 
-  const isAllSelected = columnsArray.length > 0 ? columnsArray.every((col) => col.selected) : false;
+  const { isAllSelected, isIntermediateSelected, isAllSelectedMandatory, isIntermediateMandatory } = checkboxStates;
 
-  const isIntermediateSelected = !isAllSelected && columnsArray.some((col) => col.selected);
-
-  const isAllSelectedMandatory =
-    mandatorySettableColumns.length > 0
-      ? mandatorySettableColumns.every((col) => isTrueValue(col.mandatory.value))
-      : false;
-
-  const isIntermediateMandatory =
-    !isAllSelectedMandatory && mandatorySettableColumns.some((col) => isTrueValue(col.mandatory.value));
-
-  const handleSelectAll = (checked) => {
-    if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => ({
-        ...col,
-        selected: checked,
-      }));
-      setMappedColumns(updatedColumns);
-    }
-  };
-
-  const handleSelectAllMandatory = (checked) => {
-    if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => {
-        if (isPropertyFxControlled(col.mandatory)) {
-          return col;
-        }
-
-        return {
-          ...col,
-          mandatory: {
-            ...col.mandatory,
-            value: checked,
-          },
-        };
-      });
-      setMappedColumns(updatedColumns);
-    }
-  };
-
-  const handleColumnSelect = (columnName, checked) => {
-    if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => {
-        if (col.name !== columnName) {
-          return col;
-        }
-
-        return {
+  const handleSelectAll = useCallback(
+    (checked) => {
+      if (columnsArray.length > 0) {
+        const updatedColumns = columnsArray.map((col) => ({
           ...col,
           selected: checked,
-        };
-      });
-      setMappedColumns(updatedColumns);
-    }
-  };
+        }));
+        setMappedColumns(updatedColumns);
+      }
+    },
+    [columnsArray, setMappedColumns]
+  );
 
-  const handleColumnChange = (columnName, changes) => {
-    if (columnsArray.length > 0) {
-      const updatedColumns = columnsArray.map((col) => (col.name === columnName ? { ...col, ...changes } : col));
-      setMappedColumns(updatedColumns);
-    }
-  };
+  const handleSelectAllMandatory = useCallback(
+    (checked) => {
+      if (columnsArray.length > 0) {
+        const updatedColumns = columnsArray.map((col) => {
+          if (isPropertyFxControlled(col.mandatory)) {
+            return col;
+          }
 
-  const renderEditableIcon = () => {
-    return (
-      <div className="tw-mr-2 editable-icon">
-        <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} vievBox="0 0 12 12" />
-      </div>
-    );
-  };
+          return {
+            ...col,
+            mandatory: {
+              ...col.mandatory,
+              value: checked,
+            },
+          };
+        });
+        setMappedColumns(updatedColumns);
+      }
+    },
+    [columnsArray, setMappedColumns]
+  );
+
+  const handleColumnSelect = useCallback(
+    (columnName, checked) => {
+      if (columnsArray.length > 0) {
+        const updatedColumns = columnsArray.map((col) => {
+          if (col.name !== columnName) {
+            return col;
+          }
+
+          return {
+            ...col,
+            selected: checked,
+          };
+        });
+        setMappedColumns(updatedColumns);
+      }
+    },
+    [columnsArray, setMappedColumns]
+  );
+
+  const handleColumnChange = useCallback(
+    (columnName, changes) => {
+      if (columnsArray.length > 0) {
+        const updatedColumns = columnsArray.map((col) => (col.name === columnName ? { ...col, ...changes } : col));
+        setMappedColumns(updatedColumns);
+      }
+    },
+    [columnsArray, setMappedColumns]
+  );
 
   const shouldHideSelectAll = sectionType === 'isCustomField';
 
@@ -246,11 +303,11 @@ const RenderSection = ({
         </div>
         <div className="arrow-column header-column" />
         <div className="mapped-column header-column tw-flex">
-          {renderEditableIcon()}
+          <EditableIcon darkMode={darkMode} />
           <span className="text-default small-medium">Mapped to</span>
         </div>
         <div className="type-column tw-flex-1 header-column tw-flex">
-          {renderEditableIcon()}
+          <EditableIcon darkMode={darkMode} />
           <span className="text-default small-medium">Input label</span>
         </div>
         <div className="mandatory-column header-column tw-flex tw-justify-end">
@@ -306,20 +363,17 @@ const RenderSection = ({
 const ColumnMappingComponent = ({
   isOpen,
   onClose,
-  columns = [],
   darkMode = false,
   onSubmit,
   currentStatusRef,
-  // refreshData,
   component,
   newResolvedJsonData,
   existingResolvedJsonData,
   source,
 }) => {
-  const { resolveReferences, getFormDataSectionData, getComponentDefinition, getFormFields } = useStore(
+  const { resolveReferences, getComponentDefinition, getFormFields } = useStore(
     (state) => ({
       resolveReferences: state.resolveReferences,
-      getFormDataSectionData: state.getFormDataSectionData,
       getComponentDefinition: state.getComponentDefinition,
       getFormFields: state.getFormFields,
     }),
@@ -331,11 +385,23 @@ const ColumnMappingComponent = ({
   const runQuery = useStore((state) => state.queryPanel.runQuery, shallow);
 
   const [isSaving, setIsSaving] = useState(false);
-  const [groupedColumns, setGroupedColumns] = useState({});
-  const [sectionTypes, setSectionTypes] = useState([]);
   const [refreshedColumns, setRefreshedColumns] = useState([]);
 
-  const refreshData = async () => {
+  const currentStatus = currentStatusRef.current;
+
+  const columnsToUse = useColumnBuilder(
+    component,
+    currentStatus,
+    newResolvedJsonData,
+    existingResolvedJsonData,
+    refreshedColumns,
+    getFormFields,
+    getComponentDefinition
+  );
+
+  const { groupedColumns, sectionTypes, updateSectionColumns } = useGroupedColumns(columnsToUse, currentStatus);
+
+  const refreshData = useCallback(async () => {
     currentStatusRef.current = FORM_STATUS.REFRESH_FIELDS;
     const res = extractAndReplaceReferencesFromString(source.value, componentNameIdMapping, queryNameIdMapping);
     const { allRefs, valueWithBrackets } = res;
@@ -345,110 +411,11 @@ const ColumnMappingComponent = ({
     }
     const resolvedValue = resolveReferences('canvas', valueWithBrackets);
     setRefreshedColumns(resolvedValue);
-  };
+  }, [source.value, componentNameIdMapping, queryNameIdMapping, runQuery, resolveReferences, currentStatusRef]);
 
-  const buildColumns = (currentStatus = currentStatusRef.current) => {
-    const formFields = getFormFields(component.id);
-    const formFieldsWithComponentDefinition = mergeFieldsWithComponentDefinition(formFields, getComponentDefinition);
-
-    if (currentStatus === FORM_STATUS.MANAGE_FIELDS) {
-      const allColumnsFromJsonData = parseDataAndBuildFields(newResolvedJsonData);
-      return mergeArrays(allColumnsFromJsonData, formFieldsWithComponentDefinition);
-    } else if (currentStatus === FORM_STATUS.REFRESH_FIELDS) {
-      const jsonDifferences = analyzeJsonDifferences(refreshedColumns, existingResolvedJsonData);
-      const mergedJsonData = merge({}, existingResolvedJsonData, refreshedColumns);
-      const parsedFields = parseDataAndBuildFields(mergedJsonData, jsonDifferences);
-      const mergedFields = mergeFormFieldsWithNewData(formFieldsWithComponentDefinition, parsedFields);
-      const enhancedFieldsWithComponentDefinition = mergeFieldsWithComponentDefinition(
-        mergedFields,
-        getComponentDefinition
-      );
-      return [
-        ...enhancedFieldsWithComponentDefinition,
-        ...formFieldsWithComponentDefinition.filter((f) => f.isCustomField),
-      ];
-    }
-    return parseDataAndBuildFields(newResolvedJsonData || []);
-  };
-
-  const columnsToUse = buildColumns();
-
-  // Group columns by section type on component load or when columns change
-  useEffect(() => {
-    const groupBySection = () => {
-      // Use buildColumns if columns is empty or we need to rebuild
-      // const columnsToUse = columns.length > 0 ? columns : buildColumns();
-
-      const grouped = {};
-
-      // Check if we're in GENERATE_FIELDS or REFRESH_FIELDS mode
-      const isGenerateFieldsMode = currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS;
-      const isRefreshFormMode = currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS;
-      const shouldSelectByDefault = isGenerateFieldsMode || isRefreshFormMode;
-
-      columnsToUse.forEach((col) => {
-        let sectionType = 'existing';
-
-        if (col.isNew) {
-          sectionType = 'isNew';
-        } else if (col.isRemoved) {
-          sectionType = 'isRemoved';
-        } else if (col.isCustomField) {
-          sectionType = 'isCustomField';
-        } else {
-          sectionType = 'existing';
-        }
-
-        if (!grouped[sectionType]) {
-          grouped[sectionType] = [];
-        }
-
-        // If in GENERATE_FIELDS or REFRESH_FIELDS mode, set columns as selected by default
-        // For REFRESH_FIELDS, only select new fields by default
-        if (
-          shouldSelectByDefault &&
-          sectionType !== 'isRemoved' &&
-          (isGenerateFieldsMode || (isRefreshFormMode && sectionType === 'isNew'))
-        ) {
-          let updatedCol = { ...col };
-
-          // Set selected as boolean true
-          updatedCol.selected = true;
-
-          grouped[sectionType].push(updatedCol);
-        } else {
-          grouped[sectionType].push(col);
-        }
-      });
-
-      const preferredOrder = ['isNew', 'isRemoved', 'existing', 'isCustomField'];
-
-      const types = preferredOrder.filter((type) => grouped[type] && grouped[type].length > 0);
-
-      setGroupedColumns(grouped);
-      setSectionTypes(types);
-    };
-
-    groupBySection();
-  }, [
-    columns,
-    currentStatusRef,
-    component.id,
-    newResolvedJsonData,
-    existingResolvedJsonData,
-    JSON.stringify(columnsToUse),
-  ]);
-
-  const updateSectionColumns = (sectionType, updatedColumns) => {
-    setGroupedColumns((prev) => ({
-      ...prev,
-      [sectionType]: updatedColumns,
-    }));
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     setIsSaving(true);
-    const flatColumns = Object.entries(groupedColumns).flatMap(([_, columns]) => columns);
+    const flatColumns = Object.entries(groupedColumns).flatMap(([, columns]) => columns);
     const combinedColumns =
       currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS
         ? flatColumns.map((column) => {
@@ -462,37 +429,22 @@ const ColumnMappingComponent = ({
         : flatColumns.filter((column) => column.selected);
 
     onSubmit?.(combinedColumns);
-  };
+  }, [groupedColumns, currentStatusRef, onSubmit]);
 
   // Get display name for section type
-  const getSectionDisplayName = (sectionType) => {
-    const displayNames = {
-      existing: 'Existing',
-      isCustomField: 'Custom fields',
-      isNew: 'New',
-      isRemoved: 'Removed',
-    };
+  const getSectionDisplayName = useCallback((sectionType) => {
+    return SECTION_DISPLAY_NAMES[sectionType] || '';
+  }, []);
 
-    return displayNames[sectionType];
-  };
-
-  const allSectionsEmpty = Object.values(groupedColumns).every((sectionColumns) => {
-    return Array.isArray(sectionColumns) ? sectionColumns.every((col) => !col.selected) : true;
-  });
-
-  const renderLoader = () => {
-    return (
-      <div style={{ width: '100%', height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <center>
-          <Loader width="32" absolute={false} />
-        </center>
-      </div>
-    );
-  };
+  const allSectionsEmpty = useMemo(() => {
+    return Object.values(groupedColumns).every((sectionColumns) => {
+      return Array.isArray(sectionColumns) ? sectionColumns.every((col) => !col.selected) : true;
+    });
+  }, [groupedColumns]);
 
   const modalBody = (
     <div className="tw-w-full column-mapping-modal-body-container">
-      {sectionTypes.length === 0 && renderLoader()}
+      {sectionTypes.length === 0 && <LoaderComponent />}
 
       {sectionTypes.length > 0 && (
         <>
@@ -506,7 +458,7 @@ const ColumnMappingComponent = ({
                   darkMode={darkMode}
                   sectionType={sectionType}
                   sectionDisplayName={
-                    currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? getSectionDisplayName(sectionType) : ''
+                    currentStatus !== FORM_STATUS.GENERATE_FIELDS ? getSectionDisplayName(sectionType) : ''
                   }
                   disabled={sectionType === 'isRemoved'}
                 />
@@ -515,52 +467,22 @@ const ColumnMappingComponent = ({
           })}
         </>
       )}
-      <div
-        className={`tw-flex ${
-          currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'tw-justify-between' : 'tw-justify-end'
-        } tw-items-center tw-mt-4`}
-      >
-        {currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS && (
-          <Button fill={'#ACB2B9'} leadingIcon={'arrowdirectionloop'} variant="outline" onClick={refreshData}>
-            Refresh data
-          </Button>
-        )}
-        <Button
-          variant="primary"
-          onClick={handleSubmit}
-          disabled={isSaving || allSectionsEmpty}
-          leadingIcon={currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'save' : 'plus'}
-          isLoading={isSaving}
-          loaderText={currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'Saving' : 'Generating'}
-        >
-          {currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'Save' : 'Generate form'}
-        </Button>
-      </div>
+      <ModalFooter
+        currentStatus={currentStatus}
+        refreshData={refreshData}
+        handleSubmit={handleSubmit}
+        isSaving={isSaving}
+        allSectionsEmpty={allSectionsEmpty}
+      />
     </div>
   );
 
-  const renderModal = () => {
-    return (
-      <Modal show={isOpen} onHide={onClose} size="lg">
-        <div className="column-mapping-modal-header tw-flex tw-p-4 tw-flex-col tw-items-start tw-gap-2 tw-self-stretch tw-border-b bg-white">
-          <div className="tw-flex tw-justify-between tw-items-center tw-w-full" style={{ height: '28px' }}>
-            <h4 className="text-default tw-font-ibmplex tw-font-medium tw-leading-5 tw-m-0">
-              {currentStatusRef.current !== FORM_STATUS.GENERATE_FIELDS ? 'Manage fields' : 'Map columns'}
-            </h4>
-            <button
-              className="tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer hover:tw-opacity-70"
-              onClick={onClose}
-            >
-              <SolidIcon name="remove" width="16" height="16" fill="#6A727C" />
-            </button>
-          </div>
-        </div>
-        <div className="tw-p-4 column-mapping-modal-body">{modalBody}</div>
-      </Modal>
-    );
-  };
-
-  return renderModal();
+  return (
+    <Modal show={isOpen} onHide={onClose} size="lg">
+      <ModalHeader currentStatus={currentStatus} onClose={onClose} />
+      <div className="tw-p-4 column-mapping-modal-body">{modalBody}</div>
+    </Modal>
+  );
 };
 
 export default ColumnMappingComponent;
