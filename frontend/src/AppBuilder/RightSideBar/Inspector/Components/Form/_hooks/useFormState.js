@@ -23,6 +23,7 @@ export const useFormState = (component) => {
   });
 
   const [openModal, setOpenModal] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const [codeEditorView, setCodeEditorView] = useState(null);
 
   // Refs for managing component state
@@ -67,5 +68,7 @@ export const useFormState = (component) => {
     currentStatusRef,
     shouldInvokeBlurEvent,
     savedSourceValue,
+    isLoading,
+    setLoading,
   };
 };

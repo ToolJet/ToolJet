@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import Checkbox from '@/components/ui/Checkbox/Index';
 import cx from 'classnames';
@@ -370,6 +370,7 @@ const ColumnMappingComponent = ({
   newResolvedJsonData,
   existingResolvedJsonData,
   source,
+  isDataLoading,
 }) => {
   const { resolveReferences, getComponentDefinition, getFormFields } = useStore(
     (state) => ({
@@ -386,6 +387,11 @@ const ColumnMappingComponent = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [refreshedColumns, setRefreshedColumns] = useState([]);
+  const [showLoader, setShowLoader] = useState(false);
+
+  useEffect(() => {
+    setShowLoader(isDataLoading);
+  }, [isDataLoading]);
 
   const currentStatus = currentStatusRef.current;
 
@@ -402,34 +408,41 @@ const ColumnMappingComponent = ({
   const { groupedColumns, sectionTypes, updateSectionColumns } = useGroupedColumns(columnsToUse, currentStatus);
 
   const refreshData = useCallback(async () => {
+    setShowLoader(true);
     currentStatusRef.current = FORM_STATUS.REFRESH_FIELDS;
     const res = extractAndReplaceReferencesFromString(source.value, componentNameIdMapping, queryNameIdMapping);
     const { allRefs, valueWithBrackets } = res;
-    const queryId = allRefs[0]?.entityNameOrId;
-    if (queryId && runQuery) {
-      await runQuery(queryId, '', false, 'edit');
-    }
+
+    const queryRefs = allRefs
+      .filter((ref) => ref.entityType === 'queries')
+      .filter((ref, index, self) => index === self.findIndex((r) => r.entityNameOrId === ref.entityNameOrId));
+
+    await Promise.all(
+      queryRefs.map(async (ref) => {
+        const queryId = ref.entityNameOrId;
+        await runQuery(queryId, '', false, 'edit');
+      })
+    );
+
     const resolvedValue = resolveReferences('canvas', valueWithBrackets);
     setRefreshedColumns(resolvedValue);
+    setShowLoader(false);
   }, [source.value, componentNameIdMapping, queryNameIdMapping, runQuery, resolveReferences, currentStatusRef]);
 
   const handleSubmit = useCallback(() => {
     setIsSaving(true);
     const flatColumns = Object.entries(groupedColumns).flatMap(([, columns]) => columns);
-    const combinedColumns =
-      currentStatusRef.current === FORM_STATUS.MANAGE_FIELDS
-        ? flatColumns.map((column) => {
-            if (!column.selected && column.componentId) {
-              return {
-                ...column,
-                isRemoved: true,
-              };
-            } else return column;
-          })
-        : flatColumns.filter((column) => column.selected);
+    const combinedColumns = flatColumns.map((column) => {
+      if (!column.selected) {
+        return {
+          ...column,
+          isRemoved: true,
+        };
+      } else return column;
+    });
 
     onSubmit?.(combinedColumns);
-  }, [groupedColumns, currentStatusRef, onSubmit]);
+  }, [groupedColumns, onSubmit]);
 
   // Get display name for section type
   const getSectionDisplayName = useCallback((sectionType) => {
@@ -444,9 +457,9 @@ const ColumnMappingComponent = ({
 
   const modalBody = (
     <div className="tw-w-full column-mapping-modal-body-container">
-      {sectionTypes.length === 0 && <LoaderComponent />}
+      {showLoader && <LoaderComponent />}
 
-      {sectionTypes.length > 0 && (
+      {!showLoader && (
         <>
           {sectionTypes.map((sectionType) => {
             return (

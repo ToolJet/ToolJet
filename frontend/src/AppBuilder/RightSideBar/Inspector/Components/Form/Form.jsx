@@ -54,6 +54,7 @@ export const Form = ({
     existingResolvedJsonData: formLogic.existingResolvedJsonData,
     savedSourceValue: formLogic.savedSourceValue.current,
     resolveReferences,
+    isLoading: formLogic.isLoading,
   });
 
   // Create accordion items

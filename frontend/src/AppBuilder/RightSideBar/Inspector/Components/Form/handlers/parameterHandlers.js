@@ -17,6 +17,7 @@ export const createParamUpdatedInterceptor = ({
   getExposedValueOfQuery,
   runQuery,
   resolveReferences,
+  setLoading,
 }) => {
   return async (param, attr, value, paramType, ...restArgs) => {
     // Handle generateFormFrom parameter
@@ -35,39 +36,48 @@ export const createParamUpdatedInterceptor = ({
           setSource({ value: 'jsonSchema' });
           savedSourceValue.current = 'jsonSchema';
           return paramUpdated(param, attr, value, paramType, ...restArgs);
-        }
-
-        if (value !== 'rawJson' && value !== 'jsonSchema') {
-          const queryId = allRefs[0]?.entityNameOrId;
-          const resolvedValueofQuery = getExposedValueOfQuery(queryId, 'canvas');
-
-          const hasMetadata =
-            resolvedValueofQuery && typeof resolvedValueofQuery === 'object' && 'metadata' in resolvedValueofQuery;
-
-          // Set the source value to the selected query until the query is run
-          setSource((prev) => ({ ...prev, value: selectedQuery }));
-
-          let resolvedValue;
-
-          setOpenModal(true);
-          if (!hasMetadata && queryId && runQuery) {
-            await runQuery(queryId, '', false, 'edit');
-          }
-          resolvedValue = resolveReferences('canvas', valueWithBrackets);
-
-          if (!source?.fxActive) {
-            const transformedData = findFirstKeyValuePairWithPath(resolvedValue, selectedQuery);
-            setJSONData({ value: transformedData.value });
-            return setSource((prev) => ({ ...prev, value: transformedData.path }));
-          }
-          setJSONData({ value: resolvedValue });
-          setOpenModal(true);
         } else if (value === 'rawJson') {
           shouldFocusJSONDataEditor.current = true;
           setJSONData({
             value: "{{{ 'name': 'John Doe', 'age': 35 }}}",
           });
           return setSource((prev) => ({ ...prev, value }));
+        } else if (value !== 'rawJson' && value !== 'jsonSchema') {
+          // Set the source value to the selected query until the query is run
+          setSource((prev) => ({ ...prev, value: selectedQuery }));
+          setLoading(true);
+
+          const queryRefs = allRefs
+            .filter((ref) => ref.entityType === 'queries')
+            .filter((ref, index, self) => index === self.findIndex((r) => r.entityNameOrId === ref.entityNameOrId));
+
+          setOpenModal(true);
+          await Promise.all(
+            queryRefs.map(async (ref) => {
+              const queryId = ref.entityNameOrId;
+              const resolvedValueofQuery = getExposedValueOfQuery(queryId, 'canvas');
+
+              const hasMetadata =
+                resolvedValueofQuery && typeof resolvedValueofQuery === 'object' && 'metadata' in resolvedValueofQuery;
+              if (!hasMetadata && queryId && runQuery) {
+                await runQuery(queryId, '', false, 'edit');
+              }
+            })
+          );
+
+          let resolvedValue;
+
+          resolvedValue = resolveReferences('canvas', valueWithBrackets);
+          setLoading(false);
+
+          if (!source?.fxActive) {
+            const transformedData = findFirstKeyValuePairWithPath(resolvedValue, selectedQuery);
+            setJSONData({ value: transformedData.value });
+            return setSource((prev) => ({ ...prev, value: transformedData.path }));
+          }
+
+          setJSONData({ value: resolvedValue });
+          setOpenModal(true);
         }
         setSource((prev) => ({ ...prev, value: selectedQuery }));
       } else if (attr === 'fxActive') {

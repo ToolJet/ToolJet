@@ -30,6 +30,8 @@ const DataSectionUI = ({
   existingResolvedJsonData,
   source,
   JSONData,
+  isLoading: isDataLoading,
+  savedSourceValue = '',
 }) => {
   const { getChildComponents, currentLayout, getComponentDefinition, performBatchComponentOperations, saveFormFields } =
     useStore(
@@ -104,7 +106,7 @@ const DataSectionUI = ({
   };
 
   const renderManageFieldsIcon = () => {
-    if (formFields.length === 0 || source.value === 'rawJson') return;
+    if (formFields.length === 0 || savedSourceValue === 'rawJson') return;
     return (
       <Button
         iconOnly
@@ -194,6 +196,7 @@ const DataSectionUI = ({
           existingResolvedJsonData={existingResolvedJsonData}
           source={source}
           JSONData={JSONData}
+          isDataLoading={isDataLoading}
         />
       )}
     </>

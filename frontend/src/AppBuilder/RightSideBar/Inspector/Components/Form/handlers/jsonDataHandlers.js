@@ -51,9 +51,12 @@ export const createJSONDataBlurHandler = ({
     if (hasDataChanged) {
       const sourceChanged = !isEqual(savedSourceValue.current, source?.value);
       currentStatusRef.current = sourceChanged ? FORM_STATUS.GENERATE_FIELDS : FORM_STATUS.REFRESH_FIELDS;
-      const jsonDifferences = analyzeJsonDifferences(resolvedNewJSONValue, existingResolvedJsonData);
+      const jsonDifferences = analyzeJsonDifferences(
+        resolvedNewJSONValue,
+        sourceChanged ? null : existingResolvedJsonData
+      );
 
-      const mergedJsonData = merge({}, existingResolvedJsonData, resolvedNewJSONValue);
+      const mergedJsonData = merge({}, sourceChanged ? {} : existingResolvedJsonData, resolvedNewJSONValue);
       const parsedFields = parseDataAndBuildFields(mergedJsonData, jsonDifferences);
       const mergedFields = mergeFormFieldsWithNewData(formFieldsWithComponentDefinition, parsedFields);
       const enhancedFieldsWithComponentDefinition = mergeFieldsWithComponentDefinition(

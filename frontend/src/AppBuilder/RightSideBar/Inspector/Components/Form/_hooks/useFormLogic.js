@@ -82,6 +82,7 @@ export const useFormLogic = (component, paramUpdated) => {
     getExposedValueOfQuery,
     runQuery,
     resolveReferences,
+    setLoading: formState.setLoading,
   });
 
   // Effect for handling JSON data blur

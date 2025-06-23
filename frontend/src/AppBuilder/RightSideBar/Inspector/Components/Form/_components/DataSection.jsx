@@ -22,6 +22,7 @@ export const DataSection = ({
   existingResolvedJsonData,
   savedSourceValue,
   resolveReferences,
+  isLoading = false,
 }) => {
   return () => (
     <div className={`${resolvedCustomSchema ? 'tw-pointer-events-none opacity-60' : ''}`}>
@@ -63,6 +64,7 @@ export const DataSection = ({
           newResolvedJsonData={resolveReferences('canvas', JSONData.value)}
           existingResolvedJsonData={existingResolvedJsonData}
           savedSourceValue={savedSourceValue}
+          isLoading={isLoading}
         />
       )}
     </div>

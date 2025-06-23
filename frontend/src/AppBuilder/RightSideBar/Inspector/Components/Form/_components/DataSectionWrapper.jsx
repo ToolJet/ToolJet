@@ -53,6 +53,7 @@ const DataSectionWrapper = ({
       performColumnMapping={performColumnMapping}
       source={source}
       JSONData={JSONData}
+      savedSourceValue={savedSourceValue}
     />
   );
 };

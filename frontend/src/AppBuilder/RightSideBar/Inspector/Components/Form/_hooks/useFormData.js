@@ -12,7 +12,6 @@ export const useFormData = (component) => {
   // Get form data and process it
   const existingData = getFormDataSectionData(component?.id);
   let isFormGenerated = existingData?.generateFormFrom?.value ?? false;
-  isFormGenerated = isFormGenerated !== 'jsonSchema';
 
   // Memoized form fields with component definition
   const formFieldsWithComponentDefinition = React.useMemo(
