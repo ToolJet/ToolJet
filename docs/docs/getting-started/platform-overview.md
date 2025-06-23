@@ -15,7 +15,7 @@ ToolJet is a low-code platform that enables developers to rapidly build and depl
 ## How ToolJet Works:
 
 
-<img style={{marginBottom:'24px'}} className="img-full screenshot-full" src="/img/platform-overview/platform-overview-v3.png" alt="Platform Overview" />
+<img style={{marginBottom:'24px'}} className="img-full screenshot-full" src="/img/platform-overview/platform-overview-v4.png" alt="Platform Overview" />
 
 
 **With ToolJet, you can streamline app development with 4 core steps:** <br/>
