@@ -128,7 +128,6 @@
   }
 
   &.is-disabled {
-    border-color: var(--cc-disabled-border);
     background-color: var(--cc-surface2-surface);
     cursor: not-allowed;
     opacity: 0.6;

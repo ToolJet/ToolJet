@@ -28,10 +28,6 @@ export const getInputBorderColor = ({
     return fieldBorderColor;
   }
 
-  if (isLoading || isDisabled) {
-    return '1px solid var(--cc-disabled-border)';
-  }
-
   return 'var(--cc-default-border)';
 };
 

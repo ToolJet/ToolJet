@@ -3886,10 +3886,6 @@ input[type="text"] {
   opacity: 0.5;
 }
 
-.loading {
-  pointer-events: none;
-}
-
 .enable-edit-fields {
   pointer-events: auto !important;
   opacity: 1 !important;
@@ -14866,6 +14862,7 @@ color: var(--cc-primary-text) !important;
   }
 }
 
+
 .navbar-seperator {
   border: 1px solid var(--slate5, #2B2F31);
   background: var(--slate1, #151718);
@@ -15201,10 +15198,52 @@ color: var(--cc-primary-text) !important;
 }
 
 .canvas-codehinter-container {
+  align-items: center;
+  gap: 5px;
+
   .sketch-picker {
     left: 70px !important;
     top: 207px;
   }
+
+  .hinter-canvas-input  {
+    width: 160px;
+    padding: 0px;
+    .canvas-hinter-wrap-container{
+      width:155px;
+    }
+  }
+
+  .fx-canvas{
+    background-color: transparent !important;
+    cursor: pointer;
+    border: none !important;
+
+    .fx-button {
+      height: 24px;
+      width: 26px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.1s ease, visibility 0.1s ease;
+    }
+
+    .fx-button.active {
+      opacity: 1;
+      visibility: visible;
+      display: flex;
+      background-color: var(--indigo5) !important;
+    }
+
+    &:hover{
+      .fx-button{
+        opacity: 1;
+        visibility: visible;
+        display: flex;
+      }
+    }
+  }
+
+
 }
 
 .debugger-card-body {
@@ -18901,6 +18940,8 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .codebuilder-color-picker {
+  box-shadow: var(--elevation-400-box-shadow) !important;
+  border-radius: 8px !important;
   .sketch-picker {
     border: none !important;
   }
@@ -18925,6 +18966,31 @@ section.ai-message-prompt-input-wrapper {
 .cm-tooltip {
   z-index: 9999 !important;
 }
+
+.accordion-item {
+
+  .accordion-button.inspector {
+    height: 28px;
+    padding: 0rem 1rem !important;
+    background-color: transparent;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+  
+  .accordion-header {
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+  .accordion-body {
+    border-bottom: 1px solid rgba(101, 109, 119, 0.16);
+  }
+
+}
+
 
 .workspace-constant-value {
   position: relative;
@@ -19088,11 +19154,6 @@ section.ai-message-prompt-input-wrapper {
 
   input::placeholder, textarea::placeholder {
     color: var(--cc-placeholder-text) !important;
-  }
-
-  input:disabled, textarea:disabled {
-    background-color: var(--cc-surface3-surface) !important;
-    border-color: var(--cc-disabled-border) !important;
   }
 
   .sketch-picker {
