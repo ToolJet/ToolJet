@@ -20,6 +20,9 @@ export class OrganizationsLicense extends BaseEntity {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
+  @Column({ name: 'plan' })
+  plan: string;
+
   @Column({ name: 'license_key' })
   licenseKey: string;
 

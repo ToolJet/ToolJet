@@ -64,6 +64,10 @@ export class ProrationDto {
   @IsOptional()
   coupon: string;
 }
+export enum Plans {
+  TEAM = 'team',
+  PRO = 'pro',
+}
 
 export class PaymentRedirectDto {
   @IsString()
@@ -79,6 +83,9 @@ export class PaymentRedirectDto {
   @IsString()
   success_url: string;
 
+  @IsEnum(Plans)
+  plan: string;
+
   @IsString()
   cancel_url: string;
 
@@ -92,8 +99,8 @@ export class PaymentRedirectDto {
   @IsInt({ message: 'Number of builders should be an integer. ' })
   NumberOfEditor: number;
 
-  @IsInt({ message: 'Number of end users should be an integer.' })
-  NumberOfViewers: number;
+  // @IsInt({ message: 'Number of end users should be an integer.' })
+  // NumberOfViewers: number;
 }
 
 export class PaymentRedirectDtoObject extends PartialType(PaymentRedirectDto) {}

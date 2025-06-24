@@ -122,6 +122,7 @@ export enum LICENSE_FIELD {
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
   EXTERNAL_API = 'externalApiEnabled',
+  PLAN = 'plan',
 }
 
 export enum LICENSE_LIMITS_LABEL {
