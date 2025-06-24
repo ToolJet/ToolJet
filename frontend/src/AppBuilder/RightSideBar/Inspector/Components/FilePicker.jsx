@@ -111,6 +111,7 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
   let additionalActions = [];
   let dataProperties = [];
 
+
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
 

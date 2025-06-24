@@ -31,7 +31,6 @@
     .delete-button {
       opacity: 1;
       visibility: visible;
-      transform: translateX(0);
     }
   }
 
@@ -73,9 +72,12 @@
     padding: 0;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(-2px);
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out,
-      transform 0.15s ease-in-out;
+    background-color: var(--cc-surface1-surface);
+    border-color: var(--cc-default-border);
+
+    &:hover {
+      background-color: var(--file-picker-delete-button-hover-bg) !important;
+    }
   }
 }
 
@@ -101,8 +103,9 @@
   margin-top: 0.5rem;
 
   &:hover {
-    border-color: var(--borders-strong);
+    border-color: var(--cc-primary-brand);
     color: var(--cc-primary-text);
+    border-width: 2px;
   }
 
   &:focus,
@@ -161,10 +164,6 @@
   }
 }
 
-.file-picker-title {
-  color: var(--cc-primary-text);
-}
-
 // Validation Bar
 .validation-bar {
   display: flex;
@@ -191,11 +190,11 @@
 // File Picker Widget
 .file-picker {
   &-title {
-    color: var(--file-picker-text-primary);
+    color: var(--cc-primary-text);
     text-align: left;
     width: 100%;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 20px;
     letter-spacing: 0;
     margin: 0;
