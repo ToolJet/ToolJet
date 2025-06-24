@@ -5,7 +5,7 @@ export enum THEME_UPDATE_TYPE {
   DEFAULT = 'default',
 }
 
-export const defaultThemeName = 'TJ default';
+export const defaultThemeName = 'Tooljet';
 
 export const TJDefaultTheme: Definition = {
   brand: {
@@ -61,7 +61,7 @@ export const TJDefaultTheme: Definition = {
         dark: '#318344',
       },
       error: {
-        light: '#D72D39',
+        light: '#D72D39',   
         dark: '#D03F43',
       },
       warning: {
