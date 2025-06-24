@@ -44,7 +44,7 @@ resolve_submodule_conflict() {
     echo "  → Staging submodule changes..."
     git add "$submodule_path"
     
-    echo "✅ Resolved conflict for $submodule_name"
+    echo "✅ Resolved conflict for $submodule_path"
     echo ""
 }
 
@@ -67,8 +67,3 @@ else
 fi
 
 echo "🎉 All submodule conflicts resolved!"
-echo ""
-echo "📝 Next steps:"
-echo "   1. Review the changes with: git status"
-echo "   2. Continue the rebase with: git rebase --continue"
-echo "   3. Or commit the changes if not in a rebase: git commit"
