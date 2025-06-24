@@ -1,13 +1,32 @@
-FROM node:18.18.2-buster AS builder
+FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@9.8.1
+RUN npm i -g npm@10.9.2
 RUN mkdir -p /app
-# RUN npm cache clean --force
+RUN npm cache clean --force
 
 WORKDIR /app
+
+# Set GitHub token and branch as build arguments
+ARG CUSTOM_GITHUB_TOKEN
+ARG BRANCH_NAME=cloud/liense-banner
+
+# Clone and checkout the frontend repository
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+RUN git config --global http.version HTTP/1.1
+RUN git config --global http.postBuffer 524288000
+RUN git clone https://github.com/ToolJet/ToolJet.git .
+
+# The branch name needs to be changed the branch with modularisation in CE repo
+RUN git checkout cloud/liense-banner
+
+RUN git submodule update --init --recursive
+
+# Checkout the same branch in submodules if it exists, otherwise stay on default branch
+RUN git submodule foreach 'git checkout ${BRANCH_NAME} || true'
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -19,6 +38,8 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
+ENV TOOLJET_EDITION=cloud
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
@@ -26,16 +47,18 @@ COPY ./frontend/ ./frontend/
 RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
+ENV TOOLJET_EDITION=cloud
 ENV NODE_ENV=production
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli 
+RUN npm install -g @nestjs/cli
+RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM debian:11
+FROM debian:12
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -52,6 +75,7 @@ RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
+ENV TOOLJET_EDITION=cloud
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
     apt-get install -y postgresql-client freetds-dev libaio1 wget && \
