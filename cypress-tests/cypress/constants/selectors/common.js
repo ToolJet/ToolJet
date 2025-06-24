@@ -18,7 +18,7 @@ export const commonSelectors = {
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
-  nameInputFieldd: "[data-cy=name-input-field]",
+  inputFieldName: "[data-cy=name-input-field]",
   valueInputFieldd: "[data-cy=value-input-field]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
