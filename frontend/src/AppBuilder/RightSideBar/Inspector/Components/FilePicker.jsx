@@ -58,7 +58,7 @@ const FxSelect = ({ label, paramName, initialValue, darkMode, paramUpdated, opti
         ) : (
           <Select
             options={options}
-            value={initialValue ?? 'image/*'}
+            value={initialValue ?? '*/*'}
             search={true}
             closeOnSelect={true}
             onChange={(value) => onValueChange(value)}

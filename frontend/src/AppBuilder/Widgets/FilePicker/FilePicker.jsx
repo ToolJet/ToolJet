@@ -177,10 +177,19 @@ const FilePicker = (props) => {
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
-              {labelText || 'Upload files'}
-            </h3>
-
+            <div className="tw-flex tw-flex-col">
+              <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
+                {labelText || 'Upload files'}
+              </h3>
+              <ValidationBar
+                minSize={minSize}
+                maxSize={maxSize}
+                selectedFileCount={selectedFiles.length}
+                minFileCount={minFileCount}
+                maxFileCount={maxFileCount}
+                enableMultiple={enableMultiple}
+              />
+            </div>
             <UploadArea
               getRootProps={getRootProps}
               getInputProps={getInputProps}
@@ -203,14 +212,6 @@ const FilePicker = (props) => {
               selectedFilesLength={selectedFiles.length}
             />
 
-            <ValidationBar
-              minSize={minSize}
-              maxSize={maxSize}
-              selectedFileCount={selectedFiles.length}
-              minFileCount={minFileCount}
-              maxFileCount={maxFileCount}
-              enableMultiple={enableMultiple}
-            />
           </div>
           {selectedFiles.length > 0 && (
             <div className={filePaneClasses}>
