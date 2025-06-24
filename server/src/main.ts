@@ -165,12 +165,6 @@ async function bootstrap() {
     process.exit(0);
   });
 
-  process.on('SIGTERM', async () => {
-    console.log('SIGTERM signal received: closing application...');
-    await app.close();
-    process.exit(0);
-  });
-
   if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
     replaceSubpathPlaceHoldersInStaticAssets();
   }

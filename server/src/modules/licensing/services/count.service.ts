@@ -299,17 +299,15 @@ export class LicenseCountsService implements ILicenseCountsService {
 
   async fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number> {
     if (organizationId === ORGANIZATION_INSTANCE_KEY) {
-      const apps = await manager.find(App, {
+      return manager.count(App, {
         where: {
           type: APP_TYPES.FRONT_END,
           organization: {
-            status: 'active',
+            status: WORKSPACE_STATUS.ACTIVE, // No filter by organizationId for instance-specific logic
           },
         },
         relations: ['organization'],
       });
-
-      return apps.length;
     } else {
       return manager.count(App, { where: { type: APP_TYPES.FRONT_END, organizationId } });
     }
