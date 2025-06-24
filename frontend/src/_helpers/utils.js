@@ -1533,14 +1533,6 @@ export function checkIfToolJetCloud(version) {
   return parsed[1] === 'cloud';
 }
 
-export const centsToUSD = (amountInCents) => {
-  return (amountInCents / 100).toFixed(2);
-};
-
-export function formatPrice(price) {
-  return price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
 export const calculateDueDate = (currentPeriodEnd) => {
   const currentPeriodEndDate = new Date(currentPeriodEnd * 1000);
   const currentDate = new Date();
@@ -1567,3 +1559,11 @@ export const calculateDueDate = (currentPeriodEnd) => {
 
   return dueMessage;
 };
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
+};
+
+export function formatPrice(price) {
+  return price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}

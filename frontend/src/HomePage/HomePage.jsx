@@ -45,7 +45,6 @@ import {
   OrganizationList,
   UserGroupMigrationBanner,
   ConsultationBanner,
-  AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -1357,7 +1356,7 @@ class HomePageComponent extends React.Component {
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
-              <AppTypeTab appType={this.props.appType} navigate={this.props.navigate} darkMode={this.props.darkMode} />
+              {/* <AppTypeTab appType={this.props.appType} navigate={this.props.navigate} darkMode={this.props.darkMode} /> */}
               {this.canCreateApp() && (
                 <div className="create-new-app-license-wrapper">
                   <LicenseTooltip

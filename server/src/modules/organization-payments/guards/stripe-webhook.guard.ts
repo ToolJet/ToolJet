@@ -28,7 +28,7 @@ export class StripeWebhookGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const payload = request.rawBody;
+    const payload = request.rawBody || JSON.stringify(request.body);
     const isStripeEvent = await this.validateStripeEvent(payload);
     if (isStripeEvent) return true;
     else return false;

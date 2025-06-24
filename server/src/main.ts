@@ -40,7 +40,6 @@ async function handleLicensingInit(app: NestExpressApplication) {
 
   const licenseInitService = app.get<LicenseInitService>(LicenseInitService);
   const licenseUtilService = app.get<ILicenseUtilService>(LicenseUtilService);
-  await licenseInitService.init();
 
   if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
     return;
@@ -169,8 +168,10 @@ async function bootstrap() {
   if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
     replaceSubpathPlaceHoldersInStaticAssets();
   }
-
+  console.log(getTooljetEdition(), 'ToolJet Edition 🚀');
+  if(getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
   await handleLicensingInit(app);
+  }
 
   const configService = app.get<ConfigService>(ConfigService);
 

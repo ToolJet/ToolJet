@@ -6,6 +6,7 @@ export class OrganizationIdValidationGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    console.log(request, 'request');
     const user = request?.user;
     const paramOrgId = request?.params['organizationId'];
 

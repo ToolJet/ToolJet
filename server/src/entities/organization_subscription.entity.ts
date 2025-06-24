@@ -84,6 +84,9 @@ export class OrganizationSubscription {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Column({ name: 'plan' })
+  plan: string;
+
   @OneToMany(
     () => OrganizationSubscriptionInvoice,
     (organizationSubscriptionInvoice: OrganizationSubscriptionInvoice) =>

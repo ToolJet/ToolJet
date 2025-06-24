@@ -38,7 +38,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         manager
       );
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
     });
   }
   async getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]> {
@@ -104,7 +104,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         updateGranularPermissionDto,
       });
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
     });
   }
 

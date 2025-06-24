@@ -358,7 +358,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       if (ssoGroups?.length) {
         await this.organizationUsersUtilService.attachUserGroup(groupsIds, organizationId, userId, true, manager);
-        await this.licenseUserService.validateUser(manager);
+        await this.licenseUserService.validateUser(manager, organizationId);
       }
 
       /* Create avatar if profilePhoto available */

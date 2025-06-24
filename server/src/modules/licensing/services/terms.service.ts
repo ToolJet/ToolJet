@@ -25,4 +25,7 @@ export class LicenseTermsService extends ILicenseTermsService {
     }
     return this.licenseInitService.getLicenseFieldValue(type, License.Instance());
   }
+   async getOrganizationLicense(organizationId: string): Promise<any> {
+     return null;
+  }
 }

@@ -32,20 +32,9 @@ class ItemDto {
   planId: string;
 }
 
-export class ProrationDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ItemDto)
-  items: ItemDto[];
-
-  @IsBoolean()
-  includeChange: boolean;
-
-  @IsNotEmpty()
-  prorationDate: number;
-
-  @IsNotEmpty()
-  planForm: any;
+enum PlanType {
+  TEAM = 'team',
+  PRO = 'pro',
 }
 
 export enum SubscriptionMode {
@@ -57,6 +46,27 @@ export enum SubscriptionMode {
 export enum SubscriptionType {
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
+}
+
+export class ProrationDto {
+  @IsNotEmpty()
+  @IsNumber()
+  quantity: number;
+
+  @IsNotEmpty()
+  @IsEnum(SubscriptionType)
+  subscriptionType: string;
+
+  @IsNotEmpty()
+  @IsEnum(PlanType)
+  plan: string;
+
+  @IsOptional()
+  coupon: string;
+}
+export enum Plans {
+  TEAM = 'team',
+  PRO = 'pro',
 }
 
 export class PaymentRedirectDto {
@@ -73,6 +83,9 @@ export class PaymentRedirectDto {
   @IsString()
   success_url: string;
 
+  @IsEnum(Plans)
+  plan: string;
+
   @IsString()
   cancel_url: string;
 
@@ -86,8 +99,8 @@ export class PaymentRedirectDto {
   @IsInt({ message: 'Number of builders should be an integer. ' })
   NumberOfEditor: number;
 
-  @IsInt({ message: 'Number of end users should be an integer.' })
-  NumberOfViewers: number;
+  // @IsInt({ message: 'Number of end users should be an integer.' })
+  // NumberOfViewers: number;
 }
 
 export class PaymentRedirectDtoObject extends PartialType(PaymentRedirectDto) {}

@@ -7,18 +7,19 @@ export interface ILicenseWorkflowsService {
 }
 
 export interface ILicenseUserService {
-  getUserLimitsByType(type: LIMIT_TYPE): Promise<any>;
-  validateUser(manager: EntityManager): Promise<void>;
+  getUserLimitsByType(type: LIMIT_TYPE, organizationId:string): Promise<any>;
+  validateUser(manager: EntityManager, organizationId:string): Promise<void>;
 }
 
 export abstract class LicenseTermsService {
   constructor(protected readonly licenseInitService: LicenseInitService) {}
   abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
+  abstract getOrganizationLicense(organizationId: string): Promise<any>;
 }
 
 export interface ILicenseOrganizationService {
-  validateOrganization(manager: EntityManager): Promise<void>;
-  limit(manager?: EntityManager): Promise<any>;
+  validateOrganization(manager: EntityManager, organizationId: string): Promise<void>;
+  limit(organizationId: string, manager?: EntityManager): Promise<any>;
 }
 
 export abstract class LicenseInitService {
@@ -47,14 +48,14 @@ export interface ILicenseCountsService {
 }
 
 export interface ILicenseAppsService {
-  getAppsLimit(): Promise<any>;
+  getAppsLimit(organizationId: string): Promise<any>;
 }
 
 export interface ILicenseService {
   getLicense(): Promise<any>;
-  getFeatureAccess(): Promise<any>;
-  getDomains(): Promise<{ domains: any; licenseStatus: any }>;
-  getLicenseTerms(): Promise<{ terms: any }>;
+  getFeatureAccess(organizationId: string): Promise<any>;
+  getDomains(organizationId: string): Promise<{ domains: any; licenseStatus: any }>;
+  getLicenseTerms(organizationId: string): Promise<{ terms: any }>;
   updateLicense(dto: any): Promise<void>;
   plans(): Promise<{ plans: any }>;
 }

@@ -14,11 +14,15 @@ function get(organizationId = null) {
 }
 
 function update(settings) {
+  const headers = authHeader();
   const requestOptions = {
     method: 'PUT',
-    headers: authHeader(),
+    headers: headers,
     credentials: 'include',
     body: JSON.stringify(settings),
   };
-  return fetch(`${config.apiUrl}/white-labelling`, requestOptions).then(handleResponseWithoutValidation);
+  const organizationId = headers['tj-workspace-id'];
+  return fetch(`${config.apiUrl}/white-labelling/${organizationId}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
 }

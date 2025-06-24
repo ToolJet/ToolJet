@@ -84,9 +84,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.USER:
       return {
-        total: licenseInstance.users,
-        editors: licenseInstance.editorUsers,
-        viewers: licenseInstance.viewerUsers,
+        total: licenseInstance?.users,
+        editors: licenseInstance?.editorUsers,
+        viewers: licenseInstance?.viewerUsers,
         superadmins: licenseInstance.superadminUsers,
       };
 
@@ -115,6 +115,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.AI:
       return licenseInstance.ai;
+
+    case LICENSE_FIELD.PLAN:
+      return licenseInstance.plan;
 
     default:
       return licenseInstance.terms;

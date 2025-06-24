@@ -58,7 +58,7 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2
-  ) { }
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -103,8 +103,8 @@ export class AppsService implements IAppsService {
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
-          ? await this.versionRepository.findByName(versionName, app.id)
-          : // Handle version retrieval based on env
+        ? await this.versionRepository.findByName(versionName, app.id)
+        : // Handle version retrieval based on env
           await this.versionRepository.findLatestVersionForEnvironment(
             app.id,
             envId,
