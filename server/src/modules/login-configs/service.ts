@@ -12,6 +12,7 @@ import { OrganizationConfigsUpdateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
+import { SsoConfigOidcGroupSyncRepository } from './oidc-group-sync.repository';
 
 @Injectable()
 export class LoginConfigsService implements ILoginConfigsService {
@@ -20,7 +21,8 @@ export class LoginConfigsService implements ILoginConfigsService {
     protected organizationsRepository: OrganizationRepository,
     protected configService: ConfigService,
     protected encryptionService: EncryptionService,
-    protected loginConfigsUtilService: LoginConfigsUtilService
+    protected loginConfigsUtilService: LoginConfigsUtilService,
+    protected oidcGroupSyncRepository: SsoConfigOidcGroupSyncRepository
   ) {}
 
   async getProcessedOrganizationDetails(organizationId: string) {
@@ -55,7 +57,7 @@ export class LoginConfigsService implements ILoginConfigsService {
 
   async updateOrganizationSSOConfigs(user: User, params: any): Promise<any> {
     const organizationId = user.organizationId;
-    const { type, configs, enabled } = params;
+    const { type, configs, enabled, oidcGroupSyncs } = params;
 
     if (
       !(type && [SSOType.GOOGLE, SSOType.GIT, SSOType.FORM, SSOType.OPENID, SSOType.SAML, SSOType.LDAP].includes(type))
@@ -74,13 +76,19 @@ export class LoginConfigsService implements ILoginConfigsService {
     };
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
 
-    return await this.ssoConfigsRepository.createOrUpdateSSOConfig({
+    const ssoConfig = await this.ssoConfigsRepository.createOrUpdateSSOConfig({
       sso: type,
       configs,
       enabled,
       organizationId,
       configScope: ConfigScope.ORGANIZATION,
     });
+
+    if (oidcGroupSyncs) {
+      await this.oidcGroupSyncRepository.createOrUpdateGroupSync(oidcGroupSyncs, ssoConfig.id);
+    }
+
+    return ssoConfig;
   }
 
   async updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto) {
