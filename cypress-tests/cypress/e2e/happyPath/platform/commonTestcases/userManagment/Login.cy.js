@@ -50,9 +50,6 @@ describe("Login functionality", () => {
 
   it("Should be able to login with valid credentials", () => {
     cy.appUILogin(user.email, user.password);
-    if (envVar === "Enterprise") {
-      cy.get(".btn-close").click();
-    }
     cy.get(commonSelectors.settingsIcon).click();
     cy.get(dashboardSelector.logoutLink);
   });
