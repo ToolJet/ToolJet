@@ -69,7 +69,11 @@ type NewRevampedComponent =
   | 'VerticalDivider'
   | 'Link'
   | 'DaterangePicker'
-  | 'TextArea';
+  | 'TextArea'
+  | 'Icon'
+  | 'Image'
+  | 'Steps'
+  | 'RangeSlider';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -92,6 +96,10 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Link',
   'DaterangePicker',
   'TextArea',
+  'Icon',
+  'Image',
+  'Steps',
+  'RangeSlider',
 ];
 
 @Injectable()
@@ -2026,6 +2034,56 @@ function migrateProperties(
       if (properties.maxValue) {
         validation.maxValue = properties?.maxValue;
         delete properties.maxValue;
+      }
+    }
+
+    if (componentType === 'Image') {
+      if (styles.padding) {
+        styles.customPadding = styles.padding;
+        styles.padding = { value: 'custom' };
+      }
+
+      if (styles.borderType?.value === 'rounded-circle') {
+        styles.imageShape = { value: 'circle' };
+        delete styles.borderType;
+      }
+
+      if (styles.borderType?.value === 'rounded') {
+        styles.borderRadius = { value: '4' };
+        delete styles.borderType;
+      }
+
+      if (styles.borderType?.value === 'img-thumbnail') {
+        if (!styles.backgroundColor) {
+          styles.backgroundColor = { value: '#f4f6fa' };
+        }
+        styles.borderColor = { value: '#e7eaef' };
+        styles.borderRadius = { value: '4' };
+        styles.padding = { value: 'custom' };
+        styles.customPadding = { value: '4' };
+        delete styles.borderType;
+      }
+    }
+
+    if (componentType === 'Steps') {
+      if (styles.theme) {
+        properties['variant'] = styles.theme;
+        delete styles.theme;
+      }
+      if (styles.color) {
+        styles['completedAccent'] = styles.color;
+        delete styles.color;
+      }
+      if (styles.textColor) {
+        styles['completedLabel'] = styles.textColor;
+        styles['incompletedLabel'] = styles.textColor;
+        styles['currentStepLabel'] = styles.textColor;
+        delete styles.textColor;
+      }
+      if (properties.steps) {
+        properties['schema'] = properties.steps;
+        delete properties.steps;
+        properties['advanced'] = { value: '{{true}}' };
       }
     }
   }
