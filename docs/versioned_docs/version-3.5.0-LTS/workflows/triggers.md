@@ -117,4 +117,7 @@ Parameters can be passed to the workflow from the **Params** field in the query.
 ```
 
 Assume a scenario where teams manage multiple ToolJet apps, each requiring queries to the same database for specific data. Instead of duplicating these steps across various apps, a workflow can be created once and seamlessly integrated wherever needed.
-  <img className="screenshot-full img-full" src="/img/workflows/triggers/paramui.png" alt="Triggers" />
+
+Parameters passed through the query will override the default parameters set using Test JSON parameters.
+
+<img className="screenshot-full img-full" src="/img/workflows/triggers/paramui.png" alt="Triggers" />
