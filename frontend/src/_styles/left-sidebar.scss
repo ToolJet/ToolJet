@@ -708,6 +708,9 @@
 
 .mobile-header {
   width: 100%;
+  .header-container {
+    background-color: unset !important;
+  }
   .navbar {
     border-bottom: 0px !important;
   }
@@ -727,10 +730,11 @@
 
   .card.active {
     width: inherit;
-    background-color: var(--slate5);
-    color: var(--slate12);
+    background-color: var(--background-accent-weak);
+    color: var(--text-default);
     border: none;
-    padding: 0px
+    padding: 0px;
+    border-radius: 6px;
   }
 }
 

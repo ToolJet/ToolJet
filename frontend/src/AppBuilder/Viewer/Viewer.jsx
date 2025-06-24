@@ -47,6 +47,7 @@ export const Viewer = ({
     isMaintenanceOn,
     setIsViewer,
     toggleCurrentLayout,
+    isReleasedVersionId,
   } = useStore(
     (state) => ({
       isEditorLoading: state.loaderStore.modules[moduleId].isEditorLoading,
@@ -67,6 +68,7 @@ export const Viewer = ({
       isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
       setIsViewer: state.setIsViewer,
       toggleCurrentLayout: state.toggleCurrentLayout,
+      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
     }),
     shallow
   );
@@ -195,37 +197,16 @@ export const Viewer = ({
         <ErrorBoundary>
           <Suspense fallback={<div>Loading...</div>}>
             <div
-              className={cx('viewer wrapper', { 'mobile-layout': currentLayout, 'theme-dark dark-theme': darkMode })}
+              className={cx('viewer wrapper', {
+                'mobile-layout': currentLayout,
+                'theme-dark dark-theme': darkMode,
+                'offset-top-bar-navigation': !isReleasedVersionId,
+                'mobile-view': currentLayout === 'mobile',
+              })}
             >
               <DndProvider backend={HTML5Backend}>
                 <ModuleProvider moduleId={moduleId} isModuleMode={moduleMode} appType={appType} isModuleEditor={false}>
                   {renderHeader()}
-                  {/* {currentLayout !== 'mobile' && (
-                    <DesktopHeader
-                      showHeader={showHeader}
-                      isAppLoaded={isAppLoaded}
-                      appName={appName}
-                      darkMode={darkMode}
-                      pages={pages}
-                      currentPageId={currentPageId ?? homePageId}
-                      showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
-                      changeToDarkMode={changeToDarkMode}
-                    />
-                  )} */}
-                  {currentLayout === 'mobile' && !hideHeader && (
-                    <MobileHeader
-                      showHeader={showHeader}
-                      appName={appName}
-                      darkMode={darkMode}
-                      pages={pages}
-                      currentPageId={currentPageId ?? homePageId}
-                      showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
-                      changeToDarkMode={changeToDarkMode}
-                      switchPage={switchPage}
-                    />
-                  )}
                   <div className="sub-section">
                     <div className="main">
                       <div
@@ -267,14 +248,14 @@ export const Viewer = ({
                               className="canvas-area"
                               ref={canvasRef}
                               style={{
-                                width: isMobilePreviewMode ? '450px' : currentCanvasWidth,
-                                maxWidth: isMobilePreviewMode ? '450px' : computeCanvasMaxWidth(),
+                                width: isMobilePreviewMode ? '390px' : currentCanvasWidth,
+                                maxWidth: isMobilePreviewMode ? '390px' : computeCanvasMaxWidth(),
                                 margin: 0,
                                 padding: 0,
                                 position: 'relative',
                               }}
                             >
-                              {/* {currentLayout === 'mobile' && isMobilePreviewMode && (
+                              {currentLayout === 'mobile' && isMobilePreviewMode && (
                                 <MobileHeader
                                   showHeader={showHeader && isAppLoaded}
                                   appName={appName}
@@ -286,7 +267,7 @@ export const Viewer = ({
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                 />
-                              )} */}
+                              )}
                               <AppCanvas
                                 moduleId={moduleId}
                                 isViewerSidebarPinned={isSidebarPinned}
@@ -294,6 +275,8 @@ export const Viewer = ({
                                 appId={appId}
                                 appType={appType}
                                 isViewer={true}
+                                switchDarkMode={changeToDarkMode}
+                                darkMode={darkMode}
                               />
                             </div>
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}

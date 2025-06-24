@@ -4,16 +4,19 @@ import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import PageOptions from './PageOptions';
+import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function AddNewPageMenu({ darkMode, isLicensed }) {
   const newPageBtnRef = useRef(null);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
+  const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
 
   const handleOpenPopup = (type) => {
-    setShowMenuPopover(false); // Close menu
-    setNewPagePopupConfig({ type, show: true, mode: 'add' }); // Open popup
+    setShowMenuPopover(false);
+    setNewPagePopupConfig({ type, show: true, mode: 'add' });
   };
 
   return (
@@ -23,8 +26,8 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
         key="new-page-btn"
         fill="var(--icon-default)"
         leadingIcon="plus"
-        variant="secondary"
-        className="add-new-page"
+        variant="outline"
+        className="add-new-page icon-btn"
         id="add-new-page"
         onClick={() => {
           setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
@@ -67,7 +70,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
             />
-            {isLicensed && (
+            <div className={`d-flex ${!isLicensed && 'disabled licensed-page-option'}`}>
               <PageOptions
                 type="group"
                 text="Add nav group"
@@ -75,7 +78,14 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
                 darkMode={darkMode}
                 onClick={() => handleOpenPopup('group')}
               />
-            )}
+              <LicenseTooltip
+                message={"App header can't be hidden on free plans"}
+                placement="bottom"
+                show={!isLicensed}
+              >
+                <div className="d-flex align-items-center">{!isLicensed && <SolidIcon name="enterprisecrown" />}</div>
+              </LicenseTooltip>
+            </div>
           </div>
         </Popover>
       </Overlay>
@@ -85,7 +95,10 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
         show={newPagePopupConfig.show && newPagePopupConfig?.mode == 'add'}
         placement="left-start"
         rootClose
-        onHide={() => setNewPagePopupConfig({ show: false, mode: null, type: null })}
+        onHide={() => {
+          setNewPagePopupConfig({ show: false, mode: null, type: null });
+          setEditingPage(null);
+        }}
       >
         <AddEditPagePopup darkMode={darkMode} />
       </Overlay>

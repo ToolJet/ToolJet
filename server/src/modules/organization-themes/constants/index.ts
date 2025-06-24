@@ -35,10 +35,6 @@ export const TJDefaultTheme: Definition = {
         light: '#6A727C',
         dark: '#858C94',
       },
-      disabled: {
-        light: '#ACB2B9',
-        dark: '#545B64',
-      },
     },
   },
   border: {
@@ -55,10 +51,6 @@ export const TJDefaultTheme: Definition = {
       weak: {
         light: '#E4E7EB',
         dark: '#EEF0F1',
-      },
-      disabled: {
-        light: '#E4E7EB',
-        dark: '#F6F8FA',
       },
     },
   },

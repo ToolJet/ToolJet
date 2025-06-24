@@ -161,25 +161,25 @@ export const Container = React.memo(
     }, [canvasWidth, listViewMode, columns]);
 
     const getCanvasWidth = useCallback(() => {
-      if (
-        id === 'canvas' &&
-        !isPagesSidebarHidden &&
-        isViewerSidebarPinned &&
-        currentLayout !== 'mobile' &&
-        pagePositionType == 'side' &&
-        appType !== 'module'
-      ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
-      }
-      if (
-        id === 'canvas' &&
-        !isPagesSidebarHidden &&
-        !isViewerSidebarPinned &&
-        currentLayout !== 'mobile' &&
-        pagePositionType == 'side'
-      ) {
-        return `calc(100% - ${'44px'})`;
-      }
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side' &&
+      //   appType !== 'module'
+      // ) {
+      //   return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
+      // }
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   !isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side'
+      // ) {
+      //   return `calc(100% - ${'44px'})`;
+      // }
       return '100%';
     }, [id, isPagesSidebarHidden, isViewerSidebarPinned, currentLayout, pagePositionType, pageSidebarStyle]);
 
@@ -233,7 +233,7 @@ export const Container = React.memo(
               : id === 'canvas'
               ? canvasBgColor
               : '#f0f0f0',
-          width: getCanvasWidth(),
+          width: '100%',
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {

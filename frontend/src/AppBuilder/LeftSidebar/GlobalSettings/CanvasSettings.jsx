@@ -119,15 +119,33 @@ const CanvasSettings = ({ darkMode }) => {
         </div>
       </div>
 
-      <div className="d-flex justify-content-between mb-3">
+      <div className="d-flex mb-3" style={{ height: '42px', gap: '20px' }}>
         <span className="pt-2" data-cy={`label-bg-canvas`}>
           {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
         </span>
         <div className="canvas-codehinter-container">
+          <div className={`fx-canvas `}>
+            <FxButton
+              dataCy={`canvas-bg-color`}
+              active={!forceCodeBox ? true : false}
+              onPress={async () => {
+                if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
+                  const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
+                  const options = {
+                    canvasBackgroundColor: value,
+                    backgroundFxQuery: value,
+                  };
+                  await Promise.resolve(globalSettingsChanged(options));
+                  await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
+                }
+                setForceCodeBox(!forceCodeBox);
+              }}
+            />
+          </div>
           {forceCodeBox && (
             <ColorSwatches
               data-cy={`color-picker-canvas`}
-              outerWidth="125px"
+              outerWidth="155px"
               value={canvasBackgroundColor}
               onChange={(color) => {
                 const options = {
@@ -159,24 +177,6 @@ const CanvasSettings = ({ darkMode }) => {
                 />
               </div>
             )}
-            <div className={`fx-canvas `}>
-              <FxButton
-                dataCy={`canvas-bg-color`}
-                active={!forceCodeBox ? true : false}
-                onPress={async () => {
-                  if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
-                    const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
-                    const options = {
-                      canvasBackgroundColor: value,
-                      backgroundFxQuery: value,
-                    };
-                    await Promise.resolve(globalSettingsChanged(options));
-                    await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
-                  }
-                  setForceCodeBox(!forceCodeBox);
-                }}
-              />
-            </div>
           </div>
         </div>
       </div>

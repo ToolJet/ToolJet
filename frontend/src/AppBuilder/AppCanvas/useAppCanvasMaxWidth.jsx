@@ -14,7 +14,7 @@ const useAppCanvasMaxWidth = ({ mode }) => {
   const getEditorCanvasWidth = useCallback(() => {
     let _maxWidth;
     const windowWidth = window.innerWidth;
-    const widthInPx = windowWidth - (CANVAS_WIDTHS.leftSideBarWidth + (isRightSidebarPinned ? 340 : 40));
+    const widthInPx = windowWidth - CANVAS_WIDTHS.leftSideBarWidth;
 
     if (canvasMaxWidthType === 'px') {
       _maxWidth = +canvasMaxWidth;
@@ -23,7 +23,7 @@ const useAppCanvasMaxWidth = ({ mode }) => {
       _maxWidth = (widthInPx / 100) * +canvasMaxWidth;
     }
     setMaxWidth(_maxWidth);
-  }, [canvasMaxWidth, canvasMaxWidthType, isRightSidebarOpen, isRightSidebarPinned]);
+  }, [canvasMaxWidth, canvasMaxWidthType]);
 
   const getViewerWidth = useCallback(() => {
     let _maxWidth;

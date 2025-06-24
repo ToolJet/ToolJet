@@ -10,8 +10,7 @@
     position: relative;
     width: 100%;
     opacity: 0.8;
-
-    &.dark-theme {
+    &.dark-theme{
         background-color: var(--slate4);
     }
 }
@@ -54,24 +53,36 @@
 }
 
 .page-handler {
-    .page-menu-item {
-        height: 32px;
-        border-radius: 4px;
+    .page-menu-item{
+        height:32px;
+        border-radius: 6px;
         display: flex;
         align-items: center;
-        padding: 0px 8px;
+        padding: 7px 8px;
         margin-top: 2px;
         justify-content: space-between;
-
+        background-color: var(--interactive-default);
         &.highlight {
             border: 2px solid #3D63DC;
         }
 
         &.is-selected {
-            background-color: #f0f4ff;
+            background-color: var(--interactive-selected) !important;
+        }
 
-            &.dark-theme {
-                background-color: var(--slate5);
+        &:hover {
+            background-color: var(--interactive-default);
+        }
+
+        &.page-group-item {
+            background-color: unset;
+
+            &:hover {
+                background-color: var(--interactive-default);
+            }
+
+            &:active {
+                background-color: var(--interactive-selected);
             }
         }
 
@@ -99,12 +110,13 @@
         }
 
         .meta-text {
-            color: var(--slate8);
+            color: var(--text-placeholder);
             font-size: 12px;
             font-style: normal;
             font-weight: 400;
             line-height: 18px;
-            margin-top: 3px;
+            margin-left: 8px;
+            gap: 6px;
         }
 
         button.edit-page-overlay-toggle {
@@ -112,8 +124,6 @@
         }
 
         &:hover {
-            background-color: #ECEEF0;
-
             button.edit-page-overlay-toggle {
                 opacity: 1;
             }
@@ -128,28 +138,18 @@
                 }
             }
         }
-        height:32px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        padding: 7px 8px;
-        margin-top: 2px;
-        justify-content: space-between;
-        background-color: var(--interactive-default);
         .left{
+            // margin-left: 15px;
             display: flex;
             align-items: center;
-            // margin-left: 15px;
-            .page-name {
+            .page-name{
                 overflow: hidden;
                 color: var(--slate12);
                 font-size: 14px;
                 font-style: normal;
                 font-weight: 400;
                 max-width: 246px;
-                margin-top: 3px;
             }
-
         }
 
         // .right {
@@ -404,9 +404,11 @@
     }
 }
 
-#add-new-page-popover, #edit-page-popover {
+#add-new-page-popover,
+#edit-page-popover {
     margin-left: 40px;
-    padding: 8px;    
+    padding: 8px;
+
     button {
         border: 0px;
         padding: 8px;
@@ -414,12 +416,25 @@
         display: flex;
         box-shadow: none;
         justify-content: flex-start;
+
         &:hover {
             background-color: var(--interactive-default);
-        };
+        }
+
+        ;
+
         svg {
             path {
                 fill: var(--icon-weak);
+            }
+        }
+    }
+
+    .licensed-page-option {
+        button {
+            pointer-events: none;
+            &:hover {
+                background-color: unset !important;
             }
         }
     }
@@ -436,8 +451,10 @@
 
     .actions-container {
         display: flex;
+
         svg {
             width: 18px;
+
             path {
                 fill: var(--icons-strong)
             }
@@ -478,12 +495,18 @@
     font-weight: 500;
     font-size: 12px;
 
-    &:before, &:after {
+    .title {
+        margin: 0px 6px;
+    }
+
+    &:before,
+    &:after {
         content: "";
         flex: 1;
         border-bottom: 1px dashed var(--border-default);
     }
-.modal-base .modal-footer .action-btn-page-permission svg path {
-    fill: var(--indigo1) !important;
-}
+
+    .modal-base .modal-footer .action-btn-page-permission svg path {
+        fill: var(--indigo1) !important;
+    }
 }

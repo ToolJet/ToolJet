@@ -404,12 +404,7 @@ export const DropdownV2 = ({
     option: (provided, _state) => ({
       ...provided,
       backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--cc-surface1-surface)',
-      color:
-        selectedTextColor !== '#1B1F24'
-          ? selectedTextColor
-          : isDropdownDisabled || isDropdownLoading
-          ? 'var(--cc-disabled-text)'
-          : 'var(--cc-primary-text)',
+      color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
       '&:hover': {

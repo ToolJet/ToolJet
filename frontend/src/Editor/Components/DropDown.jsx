@@ -236,7 +236,7 @@ export const DropDown = function DropDown({
 
       const styles = darkMode
         ? {
-            color: state.isDisabled ? 'var(--cc-disabled-text)' : 'white',
+            color: 'white',
             backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
             ':hover': {
               backgroundColor: state.isDisabled
@@ -253,11 +253,7 @@ export const DropDown = function DropDown({
           }
         : {
             backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-            color: state.isDisabled
-              ? 'var(--cc-disabled-text)'
-              : state.value === currentValue
-              ? 'white'
-              : 'var(--cc-primary-text)',
+            color: state.value === currentValue ? 'white' : 'var(--cc-primary-text)',
             ':hover': {
               backgroundColor: state.isDisabled
                 ? 'transparent'

@@ -1,5 +1,6 @@
 import React, { memo, useState, useMemo, useCallback, useRef } from 'react';
 import cx from 'classnames';
+import * as Icons from '@tabler/icons-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { RenameInput } from './RenameInput';
 import IconSelector from './IconSelector';
@@ -8,6 +9,9 @@ import PageOptions from './PageOptions';
 import { Overlay, Popover } from 'react-bootstrap';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components';
+import Skip from '@/_ui/Icon/solidIcons/Skip';
+import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 
 const Caret = memo((props) => {
   return (
@@ -69,11 +73,14 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
   } = useStore((state) => state.pageSettings);
 
   const moreBtnRef = useRef(null);
+  const optionsBtnRef = useRef(null);
 
   const { openPageEditPopover, toggleDeleteConfirmationModal } = useStore();
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
+  const cloneGroup = useStore((state) => state.cloneGroup);
   const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
+  const editingPage = useStore((state) => state.editingPage);
   const computeStyles = useCallback(() => {
     const baseStyles = {
       pill: {
@@ -121,6 +128,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
   };
 
   const memoizedContent = useMemo(() => {
+    const isEditing = editingPage?.id === page?.id;
     const childrenCount = page?.children?.length;
     return (
       <div
@@ -129,47 +137,37 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
         style={{ position: 'relative', width: '100%' }}
       >
         <div
-          className={`page-menu-item ${highlight ? 'highlight' : ''} ${darkMode ? 'dark-theme' : ''}`}
+          className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${darkMode ? 'dark-theme' : ''} ${
+            showPageOptions && isEditing ? 'is-selected' : ''
+          }`}
+          onClick={() => {
+            handleOpenPopup('group', page);
+          }}
           // style={{ ...computedStyles?.pill }}
         >
           {renamingPageGroup ? (
             <>
-              <div className="left">
-                {childrenCount > 0 && (
-                  <Caret
-                    style={{
-                      transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
-                    }}
-                    onClick={() => onCollapse(page.id)}
-                  />
-                )}
-                <IconSelector
-                  iconStyles={{ width: '16px', height: '16px' }}
-                  iconColor={computedStyles?.icon?.color}
-                  iconName={page.icon}
-                  pageId={page.id}
-                />
-              </div>
+              <div className="left"></div>
               <RenameInput page={page} updaterCallback={() => setRenamingPageGroup(false)} />
             </>
           ) : (
             <>
               {' '}
-              <div className="left">
-                {childrenCount > 0 && (
-                  <Caret
-                    style={{
-                      transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
-                    }}
-                    onClick={() => onCollapse(page.id)}
-                  />
-                )}
-                <IconSelector iconColor={computedStyles?.icon?.color} iconName={page.icon} pageId={page.id} />
+              <div ref={optionsBtnRef} className="left">
                 <div className="page-name">
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
                     {page.name}
                   </OverflowTooltip>
                 </div>
+                <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
+                  {page?.hidden && (
+                    <ToolTip message="Hidden group" placement="bottom">
+                      <div className=" d-flex align-items-center justify-content-center">
+                        <EyeDisable fill="var(--icons-default)" className="" width={16} height={16} />
+                      </div>
+                    </ToolTip>
+                  )}
+                </span>
               </div>
               {/* <PageGroupActions
                 onRename={() => {
@@ -181,12 +179,19 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                   toggleDeleteConfirmationModal(true);
                 }}
               /> */}
-              <div ref={moreBtnRef}>
+              <div>
                 <div className={cx('action-btn-wrapper', { 'options-opened': showPageOptions })}>
                   <div
-                    onClick={() => {
+                    ref={moreBtnRef}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setEditingPage(page);
                       toggleShowPageOptions(true);
+                      setNewPagePopupConfig({ show: false, mode: null, type: null });
+                      setShowEditPopover(false);
                     }}
+                    role="button"
                     className="icon-btn"
                   >
                     <SolidIcon name="morevertical01" width="12" viewBox="0 0 12 12" />
@@ -194,10 +199,13 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
 
                   <Overlay
                     target={moreBtnRef.current}
-                    show={showPageOptions}
+                    show={showPageOptions && isEditing}
                     placement="bottom-end"
                     rootClose
-                    onHide={() => toggleShowPageOptions(false)}
+                    onHide={() => {
+                      setEditingPage(null);
+                      toggleShowPageOptions(false);
+                    }}
                   >
                     <Popover id="edit-page-popover">
                       <div className="menu-options mb-0">
@@ -207,17 +215,25 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                           darkMode={darkMode}
                           onClick={() => handleOpenPopup('group', page)}
                         />
-                        {/* <PageOptions
+                        <PageOptions
                           text="Duplicate group"
                           icon="copy"
                           darkMode={darkMode}
-                          // onClick={() => handleOpenPopup('app')}
-                        /> */}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            toggleShowPageOptions(false);
+                            cloneGroup(page?.id);
+                          }}
+                        />
                         <PageOptions
                           text="Delete group"
                           icon="trash"
                           darkMode={darkMode}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            toggleShowPageOptions(false);
                             openPageEditPopover(page);
                             toggleDeleteConfirmationModal(true);
                           }}
@@ -226,13 +242,15 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                     </Popover>
                   </Overlay>
                   <Overlay
-                    target={moreBtnRef.current}
-                    show={showEditPopover && newPagePopupConfig?.mode == 'edit'}
+                    target={optionsBtnRef.current}
+                    show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditing}
                     placement="left-start"
                     rootClose
                     onHide={() => {
                       setNewPagePopupConfig({ show: false, mode: null, type: null });
                       setShowEditPopover(false);
+                      setEditingPage(null);
+                      showPageOptions(false);
                     }}
                   >
                     <AddEditPagePopup darkMode={darkMode} />
@@ -245,19 +263,20 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
       </div>
     );
   }, [
+    editingPage,
     page,
+    showPageOptions,
     highlight,
     darkMode,
-    computedStyles?.pill,
-    computedStyles?.icon?.color,
-    computedStyles?.text,
     renamingPageGroup,
-    collapsed,
-    showPageOptions,
+    computedStyles?.text,
     showEditPopover,
     newPagePopupConfig?.mode,
-    onCollapse,
     handleOpenPopup,
+    setEditingPage,
+    cloneGroup,
+    openPageEditPopover,
+    toggleDeleteConfirmationModal,
     setNewPagePopupConfig,
   ]);
 

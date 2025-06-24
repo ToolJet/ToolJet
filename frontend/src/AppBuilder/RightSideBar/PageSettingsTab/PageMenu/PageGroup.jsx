@@ -23,6 +23,8 @@ const RenderPage = ({
   homePageId,
   linkRefs,
   isSidebarPinned,
+  callback,
+  position,
 }) => {
   const currentMode = useStore((state) => state.currentMode);
   const isHomePage = page.id === homePageId;
@@ -30,7 +32,7 @@ const RenderPage = ({
   const IconElement = (props) => {
     const Icon = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
 
-    if ((!isSidebarPinned && currentMode === 'view') || labelStyle?.label?.hidden) {
+    if (!isSidebarPinned || labelStyle?.label?.hidden) {
       return (
         <ToolTip message={page?.name} placement={'right'}>
           <Icon {...props} />
@@ -54,14 +56,20 @@ const RenderPage = ({
     >
       <FolderList
         key={page.handle}
-        onClick={() => switchPageWrapper(page)}
+        onClick={() => {
+          switchPageWrapper(page);
+          callback && position !== 'side' && callback();
+        }}
         selectedItem={page?.id === currentPageId}
         CustomIcon={!labelStyle?.icon?.hidden && IconElement}
         customStyles={computeStyles}
         darkMode={darkMode}
       >
         {!labelStyle?.label?.hidden && (
-          <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+          <span
+            // className={isSelected && 'tj-list-item-selected'}
+            data-cy={`pages-name-${String(page?.name).toLowerCase()}`}
+          >
             <OverflowTooltip style={{ width: '110px', position: 'relative' }} childrenClassName={'page-name'}>
               {page.name}
             </OverflowTooltip>
@@ -84,6 +92,7 @@ const RenderPageGroup = ({
   currentPageId,
   linkRefs,
   isSidebarPinned,
+  position,
 }) => {
   const currentMode = useStore((state) => state.currentMode);
 
@@ -122,6 +131,7 @@ const RenderPageGroup = ({
             computeStyles={computeStyles}
             darkMode={darkMode}
             homePageId={homePageId}
+            position={position}
           />
         ))}
       </>
@@ -138,7 +148,7 @@ const RenderPageGroup = ({
       className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
     >
       <div
-        className={`page-group-wrapper ${active ? 'active' : ''}`}
+        className={`page-group-wrapper ${active || isExpanded ? 'tj-list-item-selected' : ''}`}
         style={{
           position: 'relative',
         }}
@@ -190,6 +200,8 @@ const RenderPageGroup = ({
               darkMode={darkMode}
               homePageId={homePageId}
               linkRefs={linkRefs}
+              callback={handleToggle}
+              position={position}
             />
           ))}
         </div>
@@ -222,7 +234,7 @@ export const RenderPageAndPageGroup = ({
   const filteredPagesOverflow = overflowTree.filter(
     (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
   );
-  const currentPageId = useStore((state) => state.currentPageId);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const currentPage = pages.find((page) => page.id === currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const [showPopover, setShowPopover] = useState(false);
@@ -244,16 +256,6 @@ export const RenderPageAndPageGroup = ({
           const renderSeparatorBottom = !filteredPagesVisible[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
           return (
             <>
-              {renderSeparatorTop && (
-                <div
-                  style={{
-                    margin: '10px 0',
-                    width: '100%',
-                    borderTop: '1px solid var(--slate7)',
-                  }}
-                  className="separator-line"
-                ></div>
-              )}
               <RenderPageGroup
                 switchPageWrapper={switchPageWrapper}
                 homePageId={homePageId}
@@ -267,17 +269,8 @@ export const RenderPageAndPageGroup = ({
                 darkMode={darkMode}
                 linkRefs={linkRefs}
                 isSidebarPinned={isSidebarPinned}
+                position={position}
               />
-              {renderSeparatorBottom && (
-                <div
-                  style={{
-                    margin: '10px 0',
-                    width: '100%',
-                    borderBottom: '1px solid var(--slate7)',
-                  }}
-                  className="separator-line"
-                ></div>
-              )}
             </>
           );
         } else if (!page.isPageGroup) {
@@ -293,6 +286,7 @@ export const RenderPageAndPageGroup = ({
               homePageId={homePageId}
               linkRefs={linkRefs}
               isSidebarPinned={isSidebarPinned}
+              position={position}
             />
           );
         }
@@ -334,16 +328,6 @@ export const RenderPageAndPageGroup = ({
                       !filteredPagesOverflow[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
                     return (
                       <>
-                        {renderSeparatorTop && (
-                          <div
-                            style={{
-                              margin: '10px 0',
-                              width: '100%',
-                              borderTop: '1px solid var(--slate7)',
-                            }}
-                            className="separator-line"
-                          ></div>
-                        )}
                         <RenderPageGroup
                           switchPageWrapper={switchPageWrapper}
                           homePageId={homePageId}
@@ -358,16 +342,6 @@ export const RenderPageAndPageGroup = ({
                           linkRefs={linkRefs}
                           isSidebarPinned={isSidebarPinned}
                         />
-                        {renderSeparatorBottom && (
-                          <div
-                            style={{
-                              margin: '10px 0',
-                              width: '100%',
-                              borderBottom: '1px solid var(--slate7)',
-                            }}
-                            className="separator-line"
-                          ></div>
-                        )}
                       </>
                     );
                   } else if (!page.isPageGroup) {

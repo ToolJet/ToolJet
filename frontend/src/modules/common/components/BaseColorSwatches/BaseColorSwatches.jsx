@@ -124,7 +124,7 @@ const BaseColorSwatches = ({
         data-cy={`${String(cyLabel)}-picker`}
         style={outerStyles}
       >
-        <div className="color-icon" style={{ backgroundColor: value, marginLeft: '8px' }} />
+        <div className="color-icon" style={{ backgroundColor: value, marginLeft: '4px' }} />
 
         <div
           className="col tj-text-xsm p-0 color-slate12"

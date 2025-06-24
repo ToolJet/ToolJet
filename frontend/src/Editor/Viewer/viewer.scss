@@ -29,9 +29,17 @@
 .released-version-no-header-mbl-preview {
   position: absolute;
   left: 50%;
-  border-radius: 100px;
   padding : 2px 8px;
+  background-color: unset !important;
   z-index: 1000;
+
+  .preview-chip {
+    color: var(--text-on-solid);
+  }
+  .preview-settings {
+    margin-left: 6px;
+    padding: 4px;
+  }
 }
 
 .preview-settings-overlay {

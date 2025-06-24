@@ -232,6 +232,29 @@ export const createPageMenuSlice = (set, get) => {
         get().switchPage(pageAdded.id, pageAdded.handle);
       }
     },
+    cloneGroup: async (pageId) => {
+      const { getAppId, currentVersionId } = get();
+      const appId = getAppId('canvas');
+      const pages = get().modules.canvas.pages;
+      const data = await appVersionService.cloneGroup(appId, currentVersionId, pageId);
+      const newPages = data?.pages;
+      const newEvents = data?.events;
+      const pageIdsBefore = new Set(pages.map((p) => p.id));
+      const addedPages = newPages.filter((p) => !pageIdsBefore.has(p.id));
+
+      if (addedPages.length) {
+        const processedPages = addedPages.map((page) => {
+          const cloned = JSON.parse(JSON.stringify(page));
+          const currentComponents = cloned?.components ? buildComponentMetaDefinition(cloned.components) : undefined;
+          return { ...cloned, components: currentComponents };
+        });
+
+        set((state) => {
+          state.modules.canvas.pages.push(...processedPages);
+          state.eventsSlice.module.canvas.events = newEvents;
+        });
+      }
+    },
     deletePage: async (pageId) => {
       const { getAppId, getHomePageId, currentVersionId } = get();
       const appId = getAppId('canvas');
@@ -332,7 +355,6 @@ export const createPageMenuSlice = (set, get) => {
       };
 
       set((state) => {
-        state.app.homePageId = pageId;
         state.appStore.modules[moduleId].app.homePageId = pageId;
         state.showEditingPopover = false;
         state.editingPage = null;
@@ -402,7 +424,7 @@ export const createPageMenuSlice = (set, get) => {
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
       await savePageChanges(appId, currentVersionId, '', pageObject, 'create', 'pages');
-      if (!isPageGroup) get().switchPage(newPageId, newHandle);
+      if (!isPageGroup && pageObj?.type === 'default') get().switchPage(newPageId, newHandle);
       return pageObject;
     },
 

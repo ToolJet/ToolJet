@@ -1443,6 +1443,7 @@ export const createComponentsSlice = (set, get) => ({
         state.selectedComponents = components;
         if (components.length === 1) {
           state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          state.isRightSidebarOpen = true;
         }
       },
       false,
