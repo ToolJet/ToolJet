@@ -14,11 +14,11 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="https://private-user-images.githubusercontent.com/84658520/457749297-2216525d-1aea-4abc-a689-6b5f4199e63c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTA2NTc5MDksIm5iZiI6MTc1MDY1NzYwOSwicGF0aCI6Ii84NDY1ODUyMC80NTc3NDkyOTctMjIxNjUyNWQtMWFlYS00YWJjLWE2ODktNmI1ZjQxOTllNjNjLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA2MjMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNjIzVDA1NDY0OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU4MGNmNTExZGQ4OGZlMjBhYWI4NTA0N2JiNjI2NWE5YWJjODZjZDU5MjFjM2I4NTU1NTQ2YTNkNWEwNTc5YmYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.KCs4_3__TEdLij-9DqwhwCeuDpb9xiPvjr7I-kpNTio" alt="Tooljet dashboard"/>
+    <img src="docs/static/img/readme/banner.png" alt="Tooljet dashboard"/>
 </p>
 
 <p align="center">
-    <img src="https://private-user-images.githubusercontent.com/84658520/457749246-62887354-c1d5-4c89-837d-322be266b77b.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTA2NTc5MDksIm5iZiI6MTc1MDY1NzYwOSwicGF0aCI6Ii84NDY1ODUyMC80NTc3NDkyNDYtNjI4ODczNTQtYzFkNS00Yzg5LTgzN2QtMzIyYmUyNjZiNzdiLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA2MjMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNjIzVDA1NDY0OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTBlMzFmYjE3YTllNTVkM2Y4MjE1MWMyMWEwMWFmM2U3ODViYWE2ZGI5ZTg2NzNjMDE5ZDQ4NjA3MmU4MDgyOGQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.VKVwVXAnUMb_QCvc3rwa56vlyRC-6tc1yCrgycQv_rM" alt="Platform overview"/>
+    <img src="docs/static/img/readme/flowchart.png" alt="Platform overview"/>
 </p>
 
 ## All features
