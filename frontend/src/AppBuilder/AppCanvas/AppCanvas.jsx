@@ -38,6 +38,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const pageKey = useStore((state) => state.pageKey);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
 
   useEffect(() => {
@@ -99,7 +100,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
           <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
             {environmentLoadingState !== 'loading' && (
-              <div>
+              <div key={pageKey}>
                 <Container
                   id="canvas"
                   gridWidth={gridWidth}

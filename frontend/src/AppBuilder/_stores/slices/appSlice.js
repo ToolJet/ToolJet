@@ -8,6 +8,7 @@ import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { replaceEntityReferencesWithIds } from '../utils';
 import { getSubpath } from '@/_helpers/routes';
+import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
   app: {},
@@ -18,6 +19,7 @@ const initialState = {
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
   isComponentLayoutReady: false,
+  pageKey: uuidv4(),
 };
 
 export const createAppSlice = (set, get) => ({
@@ -130,6 +132,12 @@ export const createAppSlice = (set, get) => ({
       if (!value) return false;
       return true;
     });
+    const isSamePage = get().currentPageId === pageId;
+    if (isSamePage) {
+      set((state) => {
+        state.pageKey = uuidv4();
+      });
+    }
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().app.slug;
