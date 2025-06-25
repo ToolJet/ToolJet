@@ -1996,8 +1996,8 @@ export const createComponentsSlice = (set, get) => ({
     });
   },
   setComponentPermission: (componentId, data) => {
-    const { currentPageId, modules } = get();
-    const currentPageIndex = modules.canvas.pages.findIndex((page) => page.id === currentPageId);
+    const { modules } = get();
+    const currentPageIndex = modules.canvas.currentPageIndex;
     const component = modules.canvas.pages[currentPageIndex]?.components?.[componentId];
 
     if (component) {
