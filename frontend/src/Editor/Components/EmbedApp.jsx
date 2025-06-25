@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import useRouter from '@/_hooks/use-router';
 import config from 'config';
+import toast from 'react-hot-toast';
 
 // In-memory PAT token store
 let inMemoryPatToken = null;
@@ -35,6 +36,7 @@ export default function EmbedAppRedirect() {
         });
         if (!res.ok) {
           if (res.status === 401 || res.status === 403) {
+            toast.error('Your pat is expired. Please refresh or contact your admin.');
             // 🔔 Show toast if token is expired or invalid
             parent.postMessage(
               { error: res.status, message: 'Your pat is expired. Please refresh or contact your admin.' },
