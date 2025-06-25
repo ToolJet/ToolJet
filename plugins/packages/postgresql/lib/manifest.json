@@ -73,6 +73,9 @@
     },
     "ssl_certificate": {
       "value": "none"
+    },
+    "allow_dynamic_connection_parameters": {
+      "value": false
     }
   },
   "properties": {
@@ -90,7 +93,15 @@
           "name": "Connection string",
           "value": "string"
         }
-      ]
+      ],
+      "commonFields": {
+        "allow_dynamic_connection_parameters": {
+          "label": "Allow dynamic connection parameters",
+          "key": "allow_dynamic_connection_parameters",
+          "type": "toggle",
+          "description": "Turning this on will allow dynamically setting host name and database from application"
+        }
+      }
     },
     "manual": {
       "ssl_certificate": {

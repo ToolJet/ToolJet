@@ -34,10 +34,24 @@ export default class PostgresqlQueryService implements QueryService {
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
-    let pgPool;
-    let pgConnection;
+    let pgPool, pgConnection, checkCache, knexInstance;
+
+    if (sourceOptions['allow_dynamic_connection_parameters']) {
+      if (sourceOptions.connection_type === 'manual') {
+        sourceOptions['host'] = queryOptions['host'] ? queryOptions['host'] : sourceOptions['host'];
+        sourceOptions['database'] = queryOptions['database'] ? queryOptions['database'] : sourceOptions['database'];
+      } else if (sourceOptions.connection_type === 'string') {
+        const modifiedConnectionString = new URL(sourceOptions.connection_string);
+        if (queryOptions['host']) modifiedConnectionString.hostname = queryOptions['host'];
+        if (queryOptions['database']) modifiedConnectionString.pathname = `/${queryOptions['database']}`;
+        sourceOptions['connection_string'] = modifiedConnectionString.toString();
+      }
+    }
+
     try {
-      const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+      // If dynamic connection parameters is toggled on - We don't cache the connection also destroy the connection created.
+      checkCache = sourceOptions['allow_dynamic_connection_parameters'] ? false : true;
+      knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
 
       switch (queryOptions.mode) {
         case 'sql': {
@@ -75,6 +89,7 @@ export default class PostgresqlQueryService implements QueryService {
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
       if (pgPool && pgConnection) pgPool.release(pgConnection);
+      if (!checkCache) await knexInstance.destroy();
     }
   }
 
