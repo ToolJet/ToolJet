@@ -128,7 +128,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get(dataSourceSelector.connectionAlertText).should(
       "have.text",
       "Invalid account. The specified value must be a valid subdomain string."
     );

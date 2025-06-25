@@ -15,6 +15,7 @@ import {
   BOX_PADDING,
   TAB_CANVAS_PADDING,
   MODAL_CANVAS_PADDING,
+  LISTVIEW_CANVAS_PADDING,
 } from './appCanvasConstants';
 
 export function snapToGrid(canvasWidth, x, y) {
@@ -26,7 +27,14 @@ export function snapToGrid(canvasWidth, x, y) {
 }
 
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
-export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, currentLayout, realCanvasRef, parentId) => {
+export const addNewWidgetToTheEditor = (
+  componentType,
+  eventMonitorObject,
+  currentLayout,
+  realCanvasRef,
+  parentId,
+  moduleInfo = undefined
+) => {
   const canvasBoundingRect = realCanvasRef?.current?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
   const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
@@ -50,6 +58,24 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
   // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
   let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+
+  let customLayouts = undefined;
+
+  if (moduleInfo) {
+    componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
+    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
+    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+    componentData.definition.properties.visibility = { value: true };
+    customLayouts = moduleInfo.moduleContainer.layouts;
+
+    const inputItems = Object.values(
+      moduleInfo.moduleContainer.component.definition.properties?.input_items?.value ?? {}
+    );
+
+    for (const { name, default_value } of inputItems) {
+      componentData.definition.properties[name] = { value: default_value };
+    }
+  }
 
   // Ensure minimum width
   width = Math.max(width, 1);
@@ -76,14 +102,14 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
       [currentLayout]: {
         top: top,
         left: left,
-        width,
-        height: defaultHeight,
+        width: customLayouts ? customLayouts[currentLayout].width : width,
+        height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
       },
       [nonActiveLayout]: {
         top: top,
         left: left,
-        width,
-        height: defaultHeight,
+        width: customLayouts ? customLayouts[nonActiveLayout].width : width,
+        height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
       },
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
@@ -170,6 +196,7 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
         component: {
           ...componentData,
           parent: _parent,
+          name: widgetName,
         },
         layouts: {
           [currentLayout]: {
@@ -682,10 +709,14 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);
 }
 
-export const getCanvasWidth = (currentLayout) => {
-  if (currentLayout === 'mobile') {
-    return CANVAS_WIDTHS.deviceWindowWidth;
+export const getCanvasWidth = (moduleId = 'canvas') => {
+  if (moduleId !== 'canvas') {
+    return '100%';
   }
+
+  // if (currentLayout === 'mobile') {
+  //   return CANVAS_WIDTHS.deviceWindowWidth;
+  // }
   const windowWidth = window.innerWidth;
   const widthInPx = windowWidth - (CANVAS_WIDTHS.leftSideBarWidth + CANVAS_WIDTHS.rightSideBarWidth);
   const canvasMaxWidth = useStore.getState().globalSettings.canvasMaxWidth;
@@ -746,7 +777,7 @@ export const getSubContainerIdWithSlots = (parentId) => {
   return cleanParentId;
 };
 
-export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId) => {
+export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
   if (componentType === 'Container' || componentType === 'Form') {
     padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
@@ -759,11 +790,13 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
     if (isModalHeader) {
       const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
         ?.hideCloseButton;
-      console.log('isModalHeaderCloseBtnEnabled', isModalHeaderCloseBtnEnabled);
       padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
     } else {
       padding = 2 * MODAL_CANVAS_PADDING;
     }
+  }
+  if (componentType === 'Listview') {
+    padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
   }
   return canvasWidth - padding;
 };
