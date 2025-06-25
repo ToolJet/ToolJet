@@ -53,7 +53,7 @@ export const ConfigHandle = ({
     );
   }, shallow);
 
-  const currentPageIndex = useStore((state) => state.currentPageIndex);
+  const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex].components[id]);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
