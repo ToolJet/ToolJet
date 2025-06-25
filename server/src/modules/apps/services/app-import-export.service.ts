@@ -53,7 +53,6 @@ interface AppResourceMappings {
   componentsMapping: Record<string, string>;
 }
 
-type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
 type DefaultDataSourceName =
   | 'restapidefault'
   | 'runjsdefault'
@@ -80,7 +79,6 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'tooljetdbdefault',
   'workflowsdefault',
 ];
-const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 const NewRevampedComponents: NewRevampedComponent[] = [
   'Text',
   'TextInput',
@@ -101,7 +99,6 @@ export class AppImportExportService {
     protected dataSourcesRepository: DataSourcesRepository,
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
-    protected readonly entityManager: EntityManager,
     protected componentsService: ComponentsService
   ) {}
 
@@ -301,54 +298,65 @@ export class AppImportExportService {
     externalResourceMappings = {},
     isGitApp = false,
     tooljetVersion = '',
-    cloning = false
+    cloning = false,
+    manager?: EntityManager
   ): Promise<App> {
-    if (typeof appParamsObj !== 'object') {
-      throw new BadRequestException('Invalid params for app import');
-    }
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (typeof appParamsObj !== 'object') {
+        throw new BadRequestException('Invalid params for app import');
+      }
 
-    let appParams = appParamsObj;
+      let appParams = appParamsObj;
 
-    if (appParams?.appV2) {
-      appParams = { ...appParams.appV2 };
-    }
+      if (appParams?.appV2) {
+        appParams = { ...appParams.appV2 };
+      }
 
-    if (!appParams?.name) {
-      throw new BadRequestException('Invalid params for app import');
-    }
+      if (!appParams?.name) {
+        throw new BadRequestException('Invalid params for app import');
+      }
 
-    const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
-      ? appParams
-      : convertSinglePageSchemaToMultiPageSchema(appParams);
-    schemaUnifiedAppParams.name = appName;
+      const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
+        ? appParams
+        : convertSinglePageSchemaToMultiPageSchema(appParams);
+      schemaUnifiedAppParams.name = appName;
 
-    const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
-    const isNormalizedAppDefinitionSchema = cloning
-      ? true
-      : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
+      const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
+      const isNormalizedAppDefinitionSchema = cloning
+        ? true
+        : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const currentTooljetVersion = !cloning ? tooljetVersion : null;
+      const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
+      const importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user, isGitApp);
 
-    const resourceMapping = await this.setupImportedAppAssociations(
-      this.entityManager,
-      importedApp,
-      schemaUnifiedAppParams,
-      user,
-      externalResourceMappings,
-      isNormalizedAppDefinitionSchema,
-      currentTooljetVersion
-    );
-    await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
+      const resourceMapping = await this.setupImportedAppAssociations(
+        manager,
+        importedApp,
+        schemaUnifiedAppParams,
+        user,
+        externalResourceMappings,
+        isNormalizedAppDefinitionSchema,
+        currentTooljetVersion
+      );
+      await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
 
-    // NOTE: App slug updation callback doesn't work while wrapped in transaction
-    // hence updating slug explicitly
-    await importedApp.reload();
-    importedApp.slug = importedApp.id;
-    await this.entityManager.save(importedApp);
+      // Update latest version as editing version
+      const {
+        importingAppVersions,
+      } = this.extractImportDataFromAppParams(appParams)
 
-    return importedApp;
+      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importingAppVersions)
+
+      // NOTE: App slug updation callback doesn't work while wrapped in transaction
+      // hence updating slug explicitly
+      //await importedApp.reload(); -> this will not work as we are using transaction
+      const newApp = await manager.findOne(App, { where: { id: importedApp.id } });
+      newApp.slug = importedApp.id;
+      await manager.save(newApp);
+
+      return newApp;
+    }, manager);
   }
 
   async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
@@ -527,196 +535,194 @@ export class AppImportExportService {
      * If an error occurs during the function execution, the transaction will rolled back.
      */
 
-    await manager.transaction(async (transactionalEntityManager) => {
-      appResourceMappings = await this.setupAppVersionAssociations(
-        transactionalEntityManager,
-        importingAppVersions,
-        user,
-        appResourceMappings,
-        externalResourceMappings,
-        importingAppEnvironments,
-        importingDataSources,
-        importingDataSourceOptions,
-        importingDataQueries,
-        importingDefaultAppEnvironmentId,
-        importingPages,
-        importingComponents,
-        importingEvents,
-        tooljetVersion
-      );
+    appResourceMappings = await this.setupAppVersionAssociations(
+      manager,
+      importingAppVersions,
+      user,
+      appResourceMappings,
+      externalResourceMappings,
+      importingAppEnvironments,
+      importingDataSources,
+      importingDataSourceOptions,
+      importingDataQueries,
+      importingDefaultAppEnvironmentId,
+      importingPages,
+      importingComponents,
+      importingEvents,
+      tooljetVersion
+    );
 
-      if (!isNormalizedAppDefinitionSchema) {
-        for (const importingAppVersion of importingAppVersions) {
-          const updatedDefinition: DeepPartial<any> = this.replaceDataQueryIdWithinDefinitions(
-            importingAppVersion.definition,
-            appResourceMappings.dataQueryMapping
-          );
+    if (!isNormalizedAppDefinitionSchema) {
+      for (const importingAppVersion of importingAppVersions) {
+        const updatedDefinition: DeepPartial<any> = this.replaceDataQueryIdWithinDefinitions(
+          importingAppVersion.definition,
+          appResourceMappings.dataQueryMapping
+        );
 
-          let updateHomepageId = null;
+        let updateHomepageId = null;
 
-          if (updatedDefinition?.pages) {
-            for (const pageId of Object.keys(updatedDefinition?.pages)) {
-              const page = updatedDefinition.pages[pageId];
+        if (updatedDefinition?.pages) {
+          for (const pageId of Object.keys(updatedDefinition?.pages)) {
+            const page = updatedDefinition.pages[pageId];
 
-              const pageEvents = page.events || [];
-              const componentEvents = [];
+            const pageEvents = page.events || [];
+            const componentEvents = [];
 
-              const pagePostionIntheList = Object.keys(updatedDefinition?.pages).indexOf(pageId);
+            const pagePostionIntheList = Object.keys(updatedDefinition?.pages).indexOf(pageId);
 
-              const isHompage = (updatedDefinition['homePageId'] as any) === pageId;
+            const isHompage = (updatedDefinition['homePageId'] as any) === pageId;
 
-              const pageComponents = page.components;
+            const pageComponents = page.components;
 
-              const mappedComponents = transformComponentData(
-                pageComponents,
-                componentEvents,
-                appResourceMappings.componentsMapping,
-                isNormalizedAppDefinitionSchema,
-                tooljetVersion
-              );
+            const mappedComponents = transformComponentData(
+              pageComponents,
+              componentEvents,
+              appResourceMappings.componentsMapping,
+              isNormalizedAppDefinitionSchema,
+              tooljetVersion
+            );
 
-              const componentLayouts = [];
+            const componentLayouts = [];
 
-              const newPage = transactionalEntityManager.create(Page, {
-                name: page.name,
-                handle: page.handle,
-                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                index: pagePostionIntheList,
-                disabled: page.disabled || false,
-                hidden: page.hidden || false,
-                autoComputeLayout: page.autoComputeLayout || false,
-                isPageGroup: page.isPageGroup,
-                pageGroupIndex: page.pageGroupIndex || null,
-                icon: page.icon || null,
-              });
-              const pageCreated = await transactionalEntityManager.save(newPage);
+            const newPage = manager.create(Page, {
+              name: page.name,
+              handle: page.handle,
+              appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+              index: pagePostionIntheList,
+              disabled: page.disabled || false,
+              hidden: page.hidden || false,
+              autoComputeLayout: page.autoComputeLayout || false,
+              isPageGroup: page.isPageGroup,
+              pageGroupIndex: page.pageGroupIndex || null,
+              icon: page.icon || null,
+            });
+            const pageCreated = await manager.save(newPage);
 
-              appResourceMappings.pagesMapping[pageId] = pageCreated.id;
+            appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
-              mappedComponents.forEach((component) => {
-                component.page = pageCreated;
-              });
+            mappedComponents.forEach((component) => {
+              component.page = pageCreated;
+            });
 
-              const savedComponents = await transactionalEntityManager.save(Component, mappedComponents);
+            const savedComponents = await manager.save(Component, mappedComponents);
 
-              for (const componentId in pageComponents) {
-                const componentLayout = pageComponents[componentId]['layouts'];
+            for (const componentId in pageComponents) {
+              const componentLayout = pageComponents[componentId]['layouts'];
 
-                if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
-                  for (const type in componentLayout) {
-                    const layout = componentLayout[type];
-                    const newLayout = new Layout();
-                    newLayout.type = type;
-                    newLayout.top = layout.top;
-                    newLayout.left =
-                      layout.dimensionUnit !== LayoutDimensionUnits.COUNT
-                        ? this.componentsService.resolveGridPositionForComponent(layout.left, type)
-                        : layout.left;
-                    newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-                    newLayout.width = layout.width;
-                    newLayout.height = layout.height;
-                    newLayout.componentId = appResourceMappings.componentsMapping[componentId];
+              if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
+                for (const type in componentLayout) {
+                  const layout = componentLayout[type];
+                  const newLayout = new Layout();
+                  newLayout.type = type;
+                  newLayout.top = layout.top;
+                  newLayout.left =
+                    layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                      ? this.componentsService.resolveGridPositionForComponent(layout.left, type)
+                      : layout.left;
+                  newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+                  newLayout.width = layout.width;
+                  newLayout.height = layout.height;
+                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
-                    componentLayouts.push(newLayout);
-                  }
+                  componentLayouts.push(newLayout);
                 }
               }
+            }
 
-              await transactionalEntityManager.save(Layout, componentLayouts);
+            await manager.save(Layout, componentLayouts);
 
-              //Event handlers
+            //Event handlers
 
-              if (pageEvents.length > 0) {
-                pageEvents.forEach(async (event, index) => {
-                  const newEvent = {
-                    name: event.eventId,
-                    sourceId: pageCreated.id,
-                    target: Target.page,
-                    event: event,
-                    index: pageEvents.index || index,
-                    appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                  };
+            if (pageEvents.length > 0) {
+              await Promise.all(pageEvents.map(async (event, index) => {
+                const newEvent = {
+                  name: event.eventId,
+                  sourceId: pageCreated.id,
+                  target: Target.page,
+                  event: event,
+                  index: pageEvents.index || index,
+                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                };
 
-                  await transactionalEntityManager.save(EventHandler, newEvent);
+                await manager.save(EventHandler, newEvent);
+              }));
+            }
+
+            await Promise.all(componentEvents.map(async (eventObj) => {
+              if (eventObj.event?.length === 0) return;
+
+              await Promise.all(eventObj.event.map(async (event, index) => {
+                const newEvent = manager.create(EventHandler, {
+                  name: event.eventId,
+                  sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
+                  target: Target.component,
+                  event: event,
+                  index: eventObj.index || index,
+                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                 });
-              }
 
-              componentEvents.forEach((eventObj) => {
-                if (eventObj.event?.length === 0) return;
+                await manager.save(EventHandler, newEvent);
+              }));
+            }));
 
-                eventObj.event.forEach(async (event, index) => {
-                  const newEvent = transactionalEntityManager.create(EventHandler, {
-                    name: event.eventId,
-                    sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
-                    target: Target.component,
-                    event: event,
-                    index: eventObj.index || index,
-                    appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                  });
+            await Promise.all(savedComponents.map(async (component) => {
+              if (component.type === 'Table') {
+                const tableActions = component.properties?.actions?.value || [];
+                const tableColumns = component.properties?.columns?.value || [];
 
-                  await transactionalEntityManager.save(EventHandler, newEvent);
-                });
-              });
+                const tableActionAndColumnEvents = [];
 
-              savedComponents.forEach(async (component) => {
-                if (component.type === 'Table') {
-                  const tableActions = component.properties?.actions?.value || [];
-                  const tableColumns = component.properties?.columns?.value || [];
+                tableActions.forEach((action) => {
+                  const actionEvents = action.events || [];
 
-                  const tableActionAndColumnEvents = [];
-
-                  tableActions.forEach((action) => {
-                    const actionEvents = action.events || [];
-
-                    actionEvents.forEach((event, index) => {
-                      tableActionAndColumnEvents.push({
-                        name: event.eventId,
-                        sourceId: component.id,
-                        target: Target.tableAction,
-                        event: { ...event, ref: action.name },
-                        index: event.index ?? index,
-                        appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                      });
+                  actionEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId,
+                      sourceId: component.id,
+                      target: Target.tableAction,
+                      event: { ...event, ref: action.name },
+                      index: event.index ?? index,
+                      appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                     });
                   });
+                });
 
-                  tableColumns.forEach((column) => {
-                    if (column?.columnType !== 'toggle') return;
-                    const columnEvents = column.events || [];
+                tableColumns.forEach((column) => {
+                  if (column?.columnType !== 'toggle') return;
+                  const columnEvents = column.events || [];
 
-                    columnEvents.forEach((event, index) => {
-                      tableActionAndColumnEvents.push({
-                        name: event.eventId,
-                        sourceId: component.id,
-                        target: Target.tableColumn,
-                        event: { ...event, ref: column.name },
-                        index: event.index ?? index,
-                        appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                      });
+                  columnEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId,
+                      sourceId: component.id,
+                      target: Target.tableColumn,
+                      event: { ...event, ref: column.name },
+                      index: event.index ?? index,
+                      appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                     });
                   });
+                });
 
-                  await transactionalEntityManager.save(EventHandler, tableActionAndColumnEvents);
-                }
-              });
-
-              if (isHompage) {
-                updateHomepageId = pageCreated.id;
+                await manager.save(EventHandler, tableActionAndColumnEvents);
               }
+            }));
+
+            if (isHompage) {
+              updateHomepageId = pageCreated.id;
             }
           }
-
-          await transactionalEntityManager.update(
-            AppVersion,
-            { id: appResourceMappings.appVersionMapping[importingAppVersion.id] },
-            {
-              definition: updatedDefinition,
-              homePageId: updateHomepageId,
-            }
-          );
         }
+
+        await manager.update(
+          AppVersion,
+          { id: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+          {
+            definition: updatedDefinition,
+            homePageId: updateHomepageId,
+          }
+        );
       }
-    });
+    }
 
     const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
 
@@ -729,8 +735,6 @@ export class AppImportExportService {
         appResourceMappings.pagesMapping
       );
     }
-
-    await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
 
     return appResourceMappings;
   }
@@ -788,7 +792,6 @@ export class AppImportExportService {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
           manager,
           importingDataSource,
-          appResourceMappings.appVersionMapping[importingAppVersion.id],
           user
         );
 
@@ -954,7 +957,7 @@ export class AppImportExportService {
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
-            componentLayout.forEach(async (layout) => {
+            await Promise.all(componentLayout.map(async (layout) => {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
@@ -968,7 +971,7 @@ export class AppImportExportService {
               newLayout.component = savedComponent;
 
               await manager.save(newLayout);
-            });
+            }));
 
             if (component.permissions) {
               savedComponent.permissions = component.permissions;
@@ -980,7 +983,7 @@ export class AppImportExportService {
             const componentEvents = importingEvents.filter((event) => event.sourceId === component.id);
 
             if (componentEvents.length > 0) {
-              componentEvents.forEach(async (componentEvent) => {
+              await Promise.all(componentEvents.map(async (componentEvent) => {
                 const newEvent = await manager.create(EventHandler, {
                   name: componentEvent.name,
                   sourceId: savedComponent.id,
@@ -991,7 +994,7 @@ export class AppImportExportService {
                 });
 
                 await manager.save(EventHandler, newEvent);
-              });
+              }));
             }
           }
         }
@@ -999,7 +1002,7 @@ export class AppImportExportService {
         const pageEvents = importingEvents.filter((event) => event.sourceId === page.id);
 
         if (pageEvents.length > 0) {
-          pageEvents.forEach(async (pageEvent) => {
+          await Promise.all(pageEvents.map(async (pageEvent) => {
             const newEvent = await manager.create(EventHandler, {
               name: pageEvent.name,
               sourceId: pageCreated.id,
@@ -1010,7 +1013,7 @@ export class AppImportExportService {
             });
 
             await manager.save(EventHandler, newEvent);
-          });
+          }));
         }
       }
 
@@ -1037,7 +1040,7 @@ export class AppImportExportService {
         );
 
         if (importingQueryEvents.length > 0) {
-          importingQueryEvents.forEach(async (dataQueryEvent) => {
+          await Promise.all(importingQueryEvents.map(async (dataQueryEvent) => {
             const newEvent = await manager.create(EventHandler, {
               name: dataQueryEvent.name,
               sourceId: mappedNewDataQuery.id,
@@ -1048,7 +1051,7 @@ export class AppImportExportService {
             });
 
             await manager.save(EventHandler, newEvent);
-          });
+          }));
         } else {
           this.replaceDataQueryOptionsWithNewDataQueryIds(
             mappedNewDataQuery?.options,
@@ -1059,7 +1062,7 @@ export class AppImportExportService {
           delete mappedNewDataQuery?.options?.events;
 
           if (queryEvents.length > 0) {
-            queryEvents.forEach(async (event, index) => {
+            await Promise.all(queryEvents.map(async (event, index) => {
               const newEvent = await manager.create(EventHandler, {
                 name: event.eventId,
                 sourceId: mappedNewDataQuery.id,
@@ -1070,7 +1073,7 @@ export class AppImportExportService {
               });
 
               await manager.save(EventHandler, newEvent);
-            });
+            }));
           }
         }
 
@@ -1250,12 +1253,7 @@ export class AppImportExportService {
     user: User,
     appResourceMappings: AppResourceMappings
   ) {
-    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user?.organizationId,
-      appResourceMappings.appVersionMapping[appVersion.id],
-      DefaultDataSourceKinds,
-      manager
-    );
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);
     appResourceMappings.defaultDataSourceIdMapping[appVersion.id] = defaultDataSourceIds;
 
     return appResourceMappings;
@@ -1264,7 +1262,6 @@ export class AppImportExportService {
   async findOrCreateDataSourceForAppVersion(
     manager: EntityManager,
     dataSource: DataSource,
-    appVersionId: string,
     user: User
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
@@ -1273,10 +1270,10 @@ export class AppImportExportService {
     if (isDefaultDatasource) {
       const createdDefaultDatasource = await manager.findOne(DataSource, {
         where: {
-          appVersionId,
+          organizationId: user.organizationId,
           kind: dataSource.kind,
           type: DataSourceTypes.STATIC,
-          scope: 'local',
+          scope: DataSourceScopes.GLOBAL,
         },
       });
 
@@ -1289,8 +1286,8 @@ export class AppImportExportService {
           id: dataSource.id,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: 'global',
-          organizationId: user?.organizationId,
+          scope: DataSourceScopes.GLOBAL,
+          organizationId: user.organizationId,
         },
       });
     };
@@ -1300,8 +1297,8 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
-          scope: 'global',
-          organizationId: user?.organizationId,
+          scope: DataSourceScopes.GLOBAL,
+          organizationId: user.organizationId,
         },
       });
     };
@@ -1323,7 +1320,7 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          scope: 'global', // No appVersionId for global data sources
+          scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
           pluginId: plugin.id,
         });
         await manager.save(newDataSource);
@@ -1338,7 +1335,7 @@ export class AppImportExportService {
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
-        scope: 'global', // No appVersionId for global data sources
+        scope: DataSourceScopes.GLOBAL, // No appVersionId for global data sources
         pluginId: null,
       });
       await manager.save(newDataSource);
@@ -1642,19 +1639,12 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
-  async createDefaultDataSourceForVersion(
-    organizationId: string,
-    versionId: string,
-    kinds: DefaultDataSourceKind[],
-    manager: EntityManager
-  ): Promise<any> {
-    const response = {};
-    for (const defaultSource of kinds) {
-      const dataSource = await this.dataSourcesRepository.createDefaultDataSource(defaultSource, versionId, manager);
-      response[defaultSource] = dataSource.id;
-      await this.dataSourcesUtilService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
-    }
-    return response;
+  async createDefaultDataSourceForVersion(organizationId: string, manager: EntityManager): Promise<any> {
+    const dataSources = await this.dataSourcesRepository.getStaticDataSources(organizationId, manager);
+    return dataSources?.reduce<Record<string, string>>((acc, source) => {
+      acc[source.kind] = source.id;
+      return acc;
+    }, {});
   }
 
   async setEditingVersionAsLatestVersion(manager: EntityManager, appVersionMapping: any, appVersions: Array<any>) {
@@ -1800,12 +1790,7 @@ export class AppImportExportService {
     await manager.save(version);
 
     // Create default data sources
-    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
-      user?.organizationId,
-      version.id,
-      DefaultDataSourceKinds,
-      manager
-    );
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);
     let envIdArray: string[] = [];
 
     const organization: Organization = await manager.findOne(Organization, {
@@ -1902,7 +1887,7 @@ export class AppImportExportService {
       newQuery.options = newOptions;
       await manager.save(newQuery);
 
-      queryEvents.forEach(async (event, index) => {
+      await Promise.all(queryEvents.map(async (event, index) => {
         const newEvent = {
           name: event.eventId,
           sourceId: newQuery.id,
@@ -1913,7 +1898,7 @@ export class AppImportExportService {
         };
 
         await manager.save(EventHandler, newEvent);
-      });
+      }));
     }
 
     await manager.update(

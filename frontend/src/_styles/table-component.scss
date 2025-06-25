@@ -222,6 +222,8 @@
 
       .td {
 
+        display: flex !important;
+
         // padding: 6px 12px;
         .text-container:focus-visible,
         .text-container:focus,
@@ -236,8 +238,6 @@
           background: linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)),
         }
 
-
-        display: flex !important;
 
         .td-container {
           margin-top: auto;
@@ -317,6 +317,7 @@
     }
 
     .jet-data-table {
+      overflow: hidden;
 
       .th:first-child,
       td:first-child {
@@ -327,8 +328,6 @@
       td:last-child {
         border-right: none;
       }
-
-      overflow: hidden;
 
       .form-check {
         margin-bottom: 0;
@@ -719,6 +718,7 @@
   width: 100%;
   color: var(--slate12) !important;
   height: 100% !important;
+  overflow-wrap: wrap;
 
   .dropdown-item {
     display: flex;
@@ -734,7 +734,6 @@
     }
   }
 
-  overflow-wrap: wrap;
 
   .dropdown-item {
     &:hover {
@@ -1148,9 +1147,12 @@
 }
 
 .table-select-custom-menu-list {
+  box-shadow: var(--elevation-400-box-shadow) !important;
+
   .react-select__menu-list {
     display: flex;
     flex-direction: column;
+    background-color: var(--surfaces-surface-01) !important;
 
     .option-wrapper {
       align-items: center;
@@ -1185,10 +1187,8 @@
       }
     }
 
-    background-color: var(--surfaces-surface-01) !important;
   }
 
-  box-shadow: var(--elevation-400-box-shadow) !important;
 
 }
 
