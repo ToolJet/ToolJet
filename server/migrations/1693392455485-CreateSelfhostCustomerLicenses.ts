@@ -1,6 +1,6 @@
 import { LICENSE_TYPE } from '@modules/licensing/constants';
 import { MigrationInterface, QueryRunner, Table, TableUnique } from 'typeorm';
-export class CreateSelfhostCustomerLicenses1749614199617 implements MigrationInterface {
+export class CreateSelfhostCustomerLicenses1693392455485 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
