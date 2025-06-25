@@ -122,10 +122,11 @@ export const createAndRunRestAPIQuery = ({
                 }
                 if (Array.isArray(responseData)) {
                   responseData.forEach((item) => {
-                    expect(item).to.have.any.keys("id", "name", "price");
+                    expect(item).to.have.any.keys("id", "name", "username", "email", "address");
                   });
                 }
                 if (responseData?.id) {
+                  cy.log(responseData.id)
                   cy.writeFile("cypress/fixtures/restAPI/storedId.json", {
                     id: responseData.id,
                   });

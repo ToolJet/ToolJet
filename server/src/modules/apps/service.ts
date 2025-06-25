@@ -41,6 +41,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AppGitRepository } from '@modules/app-git/repository';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -57,7 +58,8 @@ export class AppsService implements IAppsService {
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
-    protected readonly eventEmitter: EventEmitter2
+    protected readonly eventEmitter: EventEmitter2,
+    protected readonly appGitRepository: AppGitRepository
   ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
@@ -70,7 +72,7 @@ export class AppsService implements IAppsService {
       appUpdateDto.icon = icon;
       await this.appsUtilService.update(app, appUpdateDto, null, manager);
 
-      // Setting data for audit logs
+      //APP_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -161,6 +163,8 @@ export class AppsService implements IAppsService {
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
+
+    //APP_UPDATE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
@@ -178,9 +182,11 @@ export class AppsService implements IAppsService {
     const { id } = app;
 
     await this.appRepository.delete({ id, organizationId });
+    console.log('deleted app');
 
+    //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-      userId: id,
+      userId: user.id,
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
@@ -295,7 +301,11 @@ export class AppsService implements IAppsService {
         appVersionEnvironment = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
-      response['should_freeze_editor'] = app.creationMode === 'GIT' || shouldFreezeEditor;
+      response['should_freeze_editor'] = shouldFreezeEditor;
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
+      }
       response['editorEnvironment'] = {
         id: appVersionEnvironment.id,
         name: appVersionEnvironment.name,
@@ -388,6 +398,7 @@ export class AppsService implements IAppsService {
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 
+      //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
