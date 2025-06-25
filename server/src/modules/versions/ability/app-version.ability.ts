@@ -35,6 +35,9 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
+        FEATURE_KEY.APP_VERSION_CREATE,
+        FEATURE_KEY.APP_VERSION_DELETE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );
@@ -67,6 +70,9 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
+        FEATURE_KEY.APP_VERSION_CREATE,
+        FEATURE_KEY.APP_VERSION_DELETE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );
@@ -97,6 +103,9 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
+        FEATURE_KEY.APP_VERSION_CREATE,
+        FEATURE_KEY.APP_VERSION_DELETE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );

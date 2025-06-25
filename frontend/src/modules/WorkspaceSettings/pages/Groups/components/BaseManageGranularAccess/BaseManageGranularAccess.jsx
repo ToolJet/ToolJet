@@ -131,7 +131,7 @@ class BaseManageGranularAccess extends React.Component {
       deleteGranularPermissions: true,
     });
     groupPermissionV2Service
-      .deleteGranularPermission(currentEditingPermissions.id)
+      .deleteGranularPermission(currentEditingPermissions)
       .then(() => {
         toast.success('Deleted permission successfully');
         this.fetchGranularPermissions(this.props.groupPermissionId);
@@ -365,7 +365,7 @@ class BaseManageGranularAccess extends React.Component {
       allowRoleChange,
     };
     groupPermissionV2Service
-      .updateGranularPermission(permission.id, body)
+      .updateGranularPermission(permission, body)
       .then(() => {
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
@@ -451,7 +451,7 @@ class BaseManageGranularAccess extends React.Component {
     };
 
     groupPermissionV2Service
-      .updateGranularPermission(currentEditingPermissions.id, body)
+      .updateGranularPermission(currentEditingPermissions, body)
       .then(() => {
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
@@ -495,7 +495,7 @@ class BaseManageGranularAccess extends React.Component {
           <SolidIcon name="informationcircle" fill="var(--slate8)" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -636,7 +636,6 @@ class BaseManageGranularAccess extends React.Component {
 
     const currentGroupPermission = this.props?.groupPermission;
     const isRoleGroup = currentGroupPermission.name == 'admin';
-    const defaultGroup = currentGroupPermission.type === 'default';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'
