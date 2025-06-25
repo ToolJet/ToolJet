@@ -21,7 +21,7 @@ To create a workflow follow the following steps:
     <img style={{marginTop:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/trigger-section.png" alt="Webhook option on the left panel" />
 5. Click on **Webhooks**. By default, the webhook trigger is disabled. Toggle the switch to **enable** the webhook trigger. Refer to the [trigger documentation](/docs/workflows/workflow-triggers#webhooks) for more information.
     <img style={{marginTop:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/enable-webhook.png" alt="Enable Webhook" />
-6. Add **Parameters** to the workflow by clicking the **+ Add parameter** button. You must whitelist the parameter name and type here, otherwise, parameters passed through the request body of the webhook will be escaped.
+6. Add **Parameters** to the workflow by clicking the **+ Add parameter** button. You must add the parameter name and type here, otherwise, parameters passed through the request body of the webhook will be escaped.
     <img style={{marginTop:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/parameters.png" alt="Add parameters to your webhook" />
 7. Copy the **Endpoint URL** and **API token**.
     <img style={{marginTop:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/copy-url.png" alt="Copy URL and API Token" />

@@ -11,7 +11,7 @@ The **Start Trigger** node is the entry point of your workflow. It can be trigge
 - Manually through ToolJet applications similar to queries
 - Via webhooks from external systems
 
-The data received by the Start Trigger through parameters is accessible throughout the workflow. Users can define Test JSON parameters, which will serve as the default parameters for the workflow. These values will be used by default if no values are provided when triggering the workflow from the app builder or webhook.
+The Start Trigger receives data through parameters, which can be used in any node of the workflow. You can also set default values using Test JSON parameters. These defaults will be used if no values are provided when the workflow is triggered from the app builder or a webhook.
 
 <img className="screenshot-full" src="/img/workflows/nodes/v2/start-node.png" alt="Workflows Preview" />
 
