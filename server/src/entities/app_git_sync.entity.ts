@@ -61,6 +61,9 @@ export class AppGitSync extends BaseEntity {
   @JoinColumn({ name: 'app_id' })
   app: App;
 
+  @Column({ name: 'allow_editing', default: false, nullable: false })
+  allowEditing: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
