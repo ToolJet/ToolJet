@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique } from 'typeorm';
-export class CreateOrganizationSubscriptionTable1749614642081 implements MigrationInterface {
+export class CreateOrganizationSubscriptionTable1708923006176 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({

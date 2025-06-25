@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
-export class AddOwnerInOrganizations1698603800358 implements MigrationInterface {
+export class AddOwnerInOrganization1698603800358 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
       'organizations',

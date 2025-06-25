@@ -1,6 +1,6 @@
 import { LICENSE_TYPE } from '@modules/licensing/constants';
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableUnique } from 'typeorm';
-export class AddOrganizationLicenseTable1749614408820 implements MigrationInterface {
+export class AddOrganizationLicenseTable1698848739145 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
