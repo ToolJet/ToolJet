@@ -400,7 +400,7 @@ const ColumnMappingComponent = ({
     currentStatus,
     newResolvedJsonData,
     existingResolvedJsonData,
-    refreshedColumns,
+    refreshedColumns?.length === 0 ? newResolvedJsonData : refreshedColumns,
     getFormFields,
     getComponentDefinition
   );
@@ -431,7 +431,9 @@ const ColumnMappingComponent = ({
 
   const handleSubmit = useCallback(() => {
     setIsSaving(true);
-    const flatColumns = Object.entries(groupedColumns).flatMap(([, columns]) => columns);
+    const flatColumns = Object.entries(groupedColumns)
+      .flatMap(([, columns]) => columns)
+      .filter((col) => !col.isCustomField);
     const combinedColumns = flatColumns.map((column) => {
       if (!column.selected) {
         return {

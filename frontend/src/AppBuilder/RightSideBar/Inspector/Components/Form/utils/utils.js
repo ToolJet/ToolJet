@@ -231,6 +231,7 @@ export const mergeFieldsWithComponentDefinition = (fields, getComponentDefinitio
           name: componentData?.name || field.name || '',
           value: componentData?.value || field.value || '',
           mandatory: componentData?.mandatory || field.mandatory || false,
+          visibility: componentData?.visibility || field.visibility || false,
           selected: componentData?.selected || field.selected || false,
           placeholder: componentData?.placeholder || field.placeholder || '',
           componentType: componentData?.componentType || field.componentType || 'TextInput',

@@ -26,30 +26,30 @@ export const createColumnMappingHandler = ({
 
     const isFormRegeneration = isFormGenerated && currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS;
 
-    if (isFormRegeneration) {
-      formFields.forEach((field) => {
-        if (!field.isCustomField) {
-          componentsToBeRemoved.push(field.componentId);
-          operations.deleted.push(field.componentId);
-        } else {
-          newColumns.push(field);
-        }
-      });
-    } else if (currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS) {
-      newColumns.push(...formFields);
-    } else {
-      if (currentStatusRef.current === FORM_STATUS.REFRESH_FIELDS) {
+    if (!isSingleUpdate) {
+      if (isFormRegeneration) {
+        formFields.forEach((field) => {
+          if (!field.isCustomField) {
+            componentsToBeRemoved.push(field.componentId);
+            operations.deleted.push(field.componentId);
+          } else {
+            newColumns.push(field);
+          }
+        });
+      } else if (currentStatusRef.current === FORM_STATUS.GENERATE_FIELDS) {
+        newColumns.push(...formFields);
+      } else {
         formFields.forEach((field) => {
           if (field.isCustomField) {
             newColumns.push(field);
           }
         });
+        columns.forEach((column) => {
+          if (column.isRemoved) {
+            componentsToBeRemoved.push(column.componentId);
+          }
+        });
       }
-      columns.forEach((column) => {
-        if (column.isRemoved) {
-          componentsToBeRemoved.push(column.componentId);
-        }
-      });
     }
 
     const childComponents = getChildComponents(component?.id);
@@ -128,8 +128,8 @@ export const createColumnMappingHandler = ({
       ) {
         performBatchComponentOperations(operations);
         saveDataSection(cleanupFormFields(newColumns));
-        setOpenModal(false);
       }
+      setOpenModal(false);
     }
   };
 };

@@ -45,7 +45,7 @@ export const useFormState = (component) => {
         });
       }
     });
-    saveFormFields(component.id, newFields);
+    saveFormFields(component.id, newFields, 'canvas');
   }
 
   // Focus management effect

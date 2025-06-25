@@ -120,6 +120,11 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
     set(updatedComponent.component.definition.validation, 'mandatory', updatedField.mandatory);
   }
 
+  // Update visibility status
+  if (updatedField.visibility !== currentField.visibility) {
+    set(updatedComponent.component.definition.properties, 'visibility', updatedField.visibility);
+  }
+
   // Update component type specific properties
   const componentType = updatedField.componentType || componentToUpdate.component.component;
 
@@ -265,6 +270,7 @@ export const getFieldDataFromComponent = (componentId, getComponentDefinition) =
   }
 
   const mandatory = definition.validation?.mandatory;
+  const visibility = definition.properties?.visibility;
   const selected = true;
   const placeholder = definition.properties?.placeholder?.value || '';
 
@@ -273,6 +279,7 @@ export const getFieldDataFromComponent = (componentId, getComponentDefinition) =
     name,
     value,
     mandatory,
+    visibility,
     selected,
     placeholder,
     componentType,

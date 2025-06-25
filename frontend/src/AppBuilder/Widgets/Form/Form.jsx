@@ -19,6 +19,7 @@ import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
+import Spinner from '@/_ui/Spinner';
 
 import './form.scss';
 
@@ -386,7 +387,7 @@ const FormComponent = (props) => {
       >
         {isLoading ? (
           <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
-            <div className="spinner-border" role="status"></div>
+            <Spinner />
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%' }}>

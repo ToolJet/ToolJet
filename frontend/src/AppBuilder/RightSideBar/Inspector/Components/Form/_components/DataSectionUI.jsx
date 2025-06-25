@@ -71,7 +71,7 @@ const DataSectionUI = ({
       deleted: [field.componentId],
     };
     performBatchComponentOperations(operations);
-    saveFormFields(component.id, updatedFields);
+    saveFormFields(component.id, updatedFields, 'canvas');
   };
 
   const handleAddField = (newField) => {
@@ -101,7 +101,7 @@ const DataSectionUI = ({
     operations.added[added.id] = added;
 
     performBatchComponentOperations(operations);
-    saveFormFields(component.id, [...formFields, { componentId: added.id, isCustomField: true }]);
+    saveFormFields(component.id, [...formFields, { componentId: added.id, isCustomField: true }], 'canvas');
     setShowAddFieldPopover(false);
   };
 

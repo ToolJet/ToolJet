@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { isEqual } from 'lodash';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Popover from 'react-bootstrap/Popover';
@@ -22,20 +23,20 @@ const FieldPopoverContent = ({
   }, [field]);
 
   // Memoize expensive computations
-  const isSelectedFxControlled = useMemo(
-    () => (mode === 'edit' ? isPropertyFxControlled(localField.selected) : false),
-    [mode, localField.selected]
+  const isVisibilityFxControlled = useMemo(
+    () => (mode === 'edit' ? isPropertyFxControlled(localField.visibility) : false),
+    [mode, localField.visibility]
   );
 
-  const isCurrentlySelected = useMemo(
-    () => (mode === 'edit' ? isTrueValue(localField.selected?.value) : false),
-    [mode, localField.selected?.value]
+  const isCurrentlyVisibility = useMemo(
+    () => (mode === 'edit' ? isTrueValue(localField.visibility?.value) : false),
+    [mode, localField.visibility?.value]
   );
 
   const inputTypeOptions = useMemo(() => getInputTypeOptions(darkMode), [darkMode]);
 
   const handleFieldChange = useCallback((property, value) => {
-    if (property === 'mandatory' || property === 'selected') {
+    if (property === 'mandatory' || property === 'visibility') {
       return setLocalField((prevField) => ({
         ...prevField,
         [property]: { ...prevField[property], value },
@@ -88,7 +89,6 @@ const FieldPopoverContent = ({
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
-          placeholder={'{{}}'}
           onChange={(value) => handleFieldChange('value', value)}
         />
       </div>
@@ -111,13 +111,13 @@ const FieldPopoverContent = ({
               />
               <Button
                 iconOnly
-                leadingIcon={isCurrentlySelected ? 'eyedisable' : 'eye'}
+                leadingIcon={isCurrentlyVisibility ? 'eye' : 'eyedisable'}
                 variant="ghost"
                 size="medium"
-                disabled={isSelectedFxControlled}
-                className={`${isSelectedFxControlled ? 'tw-opacity-50' : ''}`}
+                disabled={isVisibilityFxControlled}
+                className={`${isVisibilityFxControlled ? 'tw-opacity-50' : ''}`}
                 onClick={() => {
-                  handleFieldChange('selected', `{{${!isCurrentlySelected}}}`);
+                  handleFieldChange('visibility', !isCurrentlyVisibility);
                 }}
               />
             </>
@@ -185,21 +185,21 @@ const FieldPopoverContent = ({
           {mode === 'edit' && (
             <div className="field m-0">
               <CodeHinter
-                initialValue={localField.selected?.value ?? true}
+                initialValue={localField.visibility?.value ?? true}
                 theme={darkMode ? 'monokai' : 'default'}
                 mode="javascript"
                 lineNumbers={false}
                 type={'fxEditor'}
                 paramLabel={'Visibility'}
                 paramName={'visible'}
-                fxActive={localField.selected?.fxActive ?? false}
+                fxActive={localField.visibility?.fxActive ?? false}
                 fieldMeta={{
                   type: 'toggle',
                   displayName: 'Make editable',
                 }}
                 paramType={'toggle'}
-                onChange={(value) => handleFieldChange('selected', value)}
-                onFxPress={(active) => handleFxChange('selected', active)}
+                onChange={(value) => handleFieldChange('visibility', value)}
+                onFxPress={(active) => handleFxChange('visibility', active)}
               />
             </div>
           )}
@@ -208,6 +208,7 @@ const FieldPopoverContent = ({
             variant="primary"
             onClick={handleSubmit}
             className="tw-w-full tw-rounded-[6px]"
+            disabled={field && isEqual(localField, field)}
           >
             {mode === 'edit' ? 'Save' : 'Add Field'}
           </Button>

@@ -989,7 +989,7 @@ export const createComponentsSlice = (set, get) => ({
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
-          state.selectedComponents = []; // Empty the selected components
+          if (!skipFormUpdate) state.selectedComponents = []; // Empty the selected components
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
@@ -1079,7 +1079,7 @@ export const createComponentsSlice = (set, get) => ({
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
-    checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
+    updateParent && checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
     set(
       withUndoRedo((state) => {
         const page = state.modules[moduleId].pages[currentPageIndex];
