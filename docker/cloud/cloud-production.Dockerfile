@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
-ARG BRANCH_NAME=cloud/liense-banner
+ARG BRANCH_NAME=feat/cloud-licensing
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
@@ -21,7 +21,7 @@ RUN git config --global http.postBuffer 524288000
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout cloud/liense-banner
+RUN git checkout feat/cloud-licensing
 
 RUN git submodule update --init --recursive
 
@@ -65,13 +65,12 @@ RUN apt-get update -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
 
-
-RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
-    && tar -xf node-v18.18.2-linux-x64.tar.xz \
-    && mv node-v18.18.2-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
+    && tar -xf node-v22.15.1-linux-x64.tar.xz \
+    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v18.18.2-linux-x64.tar.xz
+    && rm node-v22.15.1-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
@@ -103,21 +102,23 @@ RUN mkdir -p /app
 
 # copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
-
 # copy plugins dependencies
 COPY --from=builder /app/plugins/dist ./app/plugins/dist
 COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
 COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
 COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
-
+# copy frontend build
+COPY --from=builder /app/frontend/build ./app/frontend/build
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/ee/keys ./app/server/ee/keys
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+COPY --from=builder /app/server/src/assets ./app/server/src/assets
 
 COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
