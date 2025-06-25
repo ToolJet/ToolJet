@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
-export class ReplaceTheSampleDBConnectionValues1749766677207 implements MigrationInterface {
+export class ReplaceTheSampleDBConnectionValues1731279588337 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     // If edition is not cloud, skip this migration

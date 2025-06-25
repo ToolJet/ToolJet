@@ -2,7 +2,7 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class SubscriptionImprovements1749766591073 implements MigrationInterface {
+export class subscriptionImprovements1713874179417 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     // If edition is not cloud, skip this migration

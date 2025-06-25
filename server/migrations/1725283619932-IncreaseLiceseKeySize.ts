@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-export class IncreaseLiceseKeySize1749614911505 implements MigrationInterface {
+export class IncreaseLiceseKeySize1725283619932 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
                 ALTER TABLE selfhost_customer_licenses 
