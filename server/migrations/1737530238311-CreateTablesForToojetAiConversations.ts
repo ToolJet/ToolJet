@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateTablesForToojetAiConversations1740399879253 implements MigrationInterface {
+export class CreateTablesForToojetAiConversations1737530238311 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create `ai_conversations` table
     await queryRunner.createTable(

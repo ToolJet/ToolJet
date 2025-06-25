@@ -21,6 +21,7 @@ import ChangeRoleModal from '../ChangeRoleModal';
 import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
+import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -876,7 +877,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                               )}
                             </p>
                           </div>
-                          <div className="permission-body">
+                          <div className={`${showPermissionInfo ? 'permissions-body-one' : 'permissions-body-two'}`}>
                             {isLoadingGroup ? (
                               <tr>
                                 <td className="col-auto">
@@ -958,6 +959,13 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                   {/* //App till here */}
                                 </div>
+                                {/* Worklfow Permission */}
+                                <WorkflowPermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disablePermissionUpdate}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
 
                                 {/* Data source */}
                                 <DataSourcePermissionsUI
