@@ -12,9 +12,9 @@ const initialState = {
   idGroupDragged: false,
   openModalWidgetId: null,
   subContainerWidths: {},
-  dynamicElementGuidelines: [],
   moveableRef: null,
   virtualTarget: null,
+  currentDragCanvasId: null,
 };
 
 export const useGridStore = create(
@@ -30,6 +30,7 @@ export const useGridStore = create(
         setSubContainerWidths: (id, width) =>
           set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
         setVirtualTarget: (target) => set({ virtualTarget: target }),
+        setCurrentDragCanvasId: (canvasId) => set({ currentDragCanvasId: canvasId }),
       },
       addToElementGuidelines: (selector) =>
         set((state) => ({

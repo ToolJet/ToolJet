@@ -1,5 +1,5 @@
 // import '@/Editor/wdyr';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
@@ -10,10 +10,8 @@ import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_s
 import toast from 'react-hot-toast';
 import {
   individualGroupableProps,
-  getMouseDistanceFromParentDiv,
   findChildrenAndGrandchildren,
   findHighestLevelofSelection,
-  getOffset,
   hasParentWithClass,
   getPositionForGroupDrag,
   adjustWidth,
@@ -33,6 +31,8 @@ import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
 import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useElementGudelines } from './hooks/useElementGudelines';
+
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
   edge: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
@@ -68,8 +68,16 @@ export default function Grid({ gridWidth, currentLayout }) {
   const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
   const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
   const [dragParentId, setDragParentId] = useState(null);
-  const [elementGuidelines, setElementGuidelines] = useState([]);
-  const dynamicElementGuidelines = useGridStore((state) => state.dynamicElementGuidelines, shallow);
+  const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
+  const { elementGuidelines } = useElementGudelines(
+    boxList,
+    selectedComponents,
+    draggingComponentId,
+    resizingComponentId,
+    dragParentId,
+    getResolvedValue,
+    virtualTarget
+  );
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
@@ -77,7 +85,20 @@ export default function Grid({ gridWidth, currentLayout }) {
   const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
-  const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
+  const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
+  const snapContainer = useMemo(() => {
+    if (currentDragCanvasId) {
+      return `#canvas-${currentDragCanvasId}`;
+    }
+    return '#real-canvas';
+  }, [currentDragCanvasId]);
+  const moveableTarget = useMemo(() => {
+    if (virtualTarget) {
+      return '#moveable-ghost-element';
+    }
+    return groupedTargets?.length > 1 ? groupedTargets : '.target';
+  }, [virtualTarget, groupedTargets]);
+
   // Set moveable reference in grid store for access by other components
   useEffect(() => {
     if (moveableRef.current) {
@@ -86,54 +107,59 @@ export default function Grid({ gridWidth, currentLayout }) {
     return () => {
       useGridStore.getState().setMoveableRef(null);
     };
-  }, [moveableRef.current]);
+  }, []);
 
-  useEffect(() => {
-    const selectedSet = new Set(selectedComponents);
-    const draggingOrResizingId = draggingComponentId || resizingComponentId;
-    const isGrouped = findHighestLevelofSelection().length > 1;
-    const firstSelectedParent =
-      selectedComponents.length > 0 ? boxList.find((b) => b.id === selectedComponents[0])?.parent : null;
-    const selectedParent = dragParentId || firstSelectedParent;
+  // useEffect(() => {
+  //   const selectedSet = new Set(selectedComponents);
+  //   const draggingOrResizingId = draggingComponentId || resizingComponentId;
+  //   const isGrouped = findHighestLevelofSelection().length > 1;
+  //   const firstSelectedParent =
+  //     selectedComponents.length > 0 ? boxList.find((b) => b.id === selectedComponents[0])?.parent : null;
+  //   const selectedParent = dragParentId || firstSelectedParent;
 
-    const guidelines = boxList
-      .filter((box) => {
-        const isVisible =
-          getResolvedValue(box?.component?.definition?.properties?.visibility?.value) ||
-          getResolvedValue(box?.component?.definition?.styles?.visibility?.value);
+  //   const guidelines = boxList
+  //     .filter((box) => {
+  //       const isVisible =
+  //         getResolvedValue(box?.component?.definition?.properties?.visibility?.value) ||
+  //         getResolvedValue(box?.component?.definition?.styles?.visibility?.value);
 
-        // Early return for non-visible elements
-        if (!isVisible) return false;
+  //       // Early return for non-visible elements
+  //       if (!isVisible) return false;
 
-        if (isGrouped) {
-          // If component is selected, don't show its guidelines
-          if (selectedSet.has(box.id)) return false;
-          return selectedParent ? box.parent === selectedParent : !box.parent;
-        }
+  //       // if (virtualTarget) {
+  //       //   return true;
+  //       // }
 
-        if (draggingOrResizingId) {
-          if (box.id === draggingOrResizingId) return false;
-          return dragParentId ? box.parent === dragParentId : !box.parent;
-        }
+  //       if (isGrouped) {
+  //         // If component is selected, don't show its guidelines
+  //         if (selectedSet.has(box.id)) return false;
+  //         return selectedParent ? box.parent === selectedParent : !box.parent;
+  //       }
 
-        return true;
-      })
-      .map((box) => `.ele-${box.id}`);
+  //       if (draggingOrResizingId) {
+  //         if (box.id === draggingOrResizingId) return false;
+  //         return dragParentId ? box.parent === dragParentId : !box.parent;
+  //       }
 
-    // Combine static guidelines with dynamic ones (for ghost elements)
-    const allGuidelines = [...guidelines, ...dynamicElementGuidelines];
-    setElementGuidelines(allGuidelines);
-  }, [
-    boxList,
-    dragParentId,
-    draggingComponentId,
-    resizingComponentId,
-    selectedComponents,
-    getResolvedValue,
-    dynamicElementGuidelines,
-  ]);
+  //       // if (virtualTarget) {
+  //       //   return true;
+  //       // }
 
-  // console.log('boxList', elementGuidelines, dynamicElementGuidelines);
+  //       return true;
+  //     })
+  //     .map((box) => `.ele-${box.id}`);
+
+  //   // Combine static guidelines with dynamic ones (for ghost elements)
+  //   setElementGuidelines(guidelines);
+  // }, [
+  //   boxList,
+  //   dragParentId,
+  //   draggingComponentId,
+  //   resizingComponentId,
+  //   selectedComponents,
+  //   getResolvedValue,
+  // ]);
+
   useEffect(() => {
     setBoxList(
       Object.keys(currentPageComponents)
@@ -608,9 +634,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   }, [draggingComponentId, resizingComponentId, isGroupDragging, selectedComponents]);
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
-
   if (mode !== 'edit') return null;
-
   return (
     <>
       <Moveable
@@ -622,18 +646,12 @@ export default function Grid({ gridWidth, currentLayout }) {
           customMouseInteraction: groupedTargets.length < 2,
           multiComponentHandle: groupedTargets.length > 1,
         }}
-        resizable={{
-          edge: ['e', 'w'],
-          renderDirections: ['w', 'e'],
-        }}
         flushSync={flushSync}
-        // target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
-        target={virtualTarget ? virtualTarget : '.target'}
+        target={moveableTarget}
         origin={false}
-        individualGroupable={groupedTargets.length <= 1}
+        individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze && mode !== 'view'}
-        // resizable={true}
-        // resizable={!shouldFreeze ? RESIZABLE_CONFIG : false && mode !== 'view'}
+        resizable={!shouldFreeze ? RESIZABLE_CONFIG : false && mode !== 'view'}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
@@ -695,7 +713,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             useGridStore.getState().resizingComponentId !== e.target.id &&
             !e.target.classList.contains('delete-icon')
           ) {
-            console.log('resize start', e);
             // When clicked on widget boundary/resizer, select the component
             setSelectedComponents([e.target.id]);
           }
@@ -859,6 +876,9 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         checkInput
         onDragStart={(e) => {
+          if (e.target.id === 'moveable-ghost-element') {
+            return true;
+          }
           // This is to prevent parent component from being dragged and the stop the propagation of the event
           if (getHoveredComponentForGrid() !== e.target.id) {
             return false;
@@ -909,7 +929,13 @@ export default function Grid({ gridWidth, currentLayout }) {
           handleActivateNonDraggingComponents();
         }}
         onDragEnd={(e) => {
+          console.log('e.lastEvent', moveableRef);
           handleDeactivateTargets();
+          if (e.target.id === 'moveable-ghost-element') {
+            console.log('e.target', false);
+            // e.target.remove();
+            return;
+          }
           try {
             if (isDraggingRef.current) {
               useStore.getState().setDraggingComponentId(null);
@@ -922,7 +948,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             setDragParentId(null);
 
             if (!e.lastEvent) return;
-
             // Build the drag context from the event
             const dragContext = dragContextBuilder({ event: e, widgets: boxList, isModuleEditor });
             const { target, source, dragged } = dragContext;
@@ -969,6 +994,21 @@ export default function Grid({ gridWidth, currentLayout }) {
           toggleCanvasUpdater();
         }}
         onDrag={(e) => {
+          if (e.target.id === 'moveable-ghost-element') {
+            // showGridLines();
+            //
+            const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
+            let left = e.translate[0];
+            let top = e.translate[1];
+            // console.log('e.translate', e.translate);
+            if (currentDragCanvasId === 'canvas') {
+              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
+              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+            }
+            e.target.style.transform = `translate(${left}px, ${top}px)`;
+            console.log('e.target', false);
+            return false;
+          }
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
             useStore.getState().setDraggingComponentId(e.target.id);
@@ -1157,8 +1197,10 @@ export default function Grid({ gridWidth, currentLayout }) {
             component.element.classList.add('active-target');
           }
         }}
-        snapGridAll={true}
+        // snapGridAll={true}
         scrollable={true}
+        snapContainer={snapContainer}
+        snapGridWidth={100}
       />
     </>
   );
