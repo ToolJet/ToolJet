@@ -43,7 +43,7 @@ To connect to PostgreSQL using a connection string, select **Connection String**
 
 ToolJet allows you to configure the Host and Database directly within the query instead of setting them in the datasource configuration.
 
-This is particularly useful in multi-tenant applications, where the same ToolJet app needs to connect to different databases based on the active tenant. Instead of creating multiple datasources for each tenant, you can define the host and database dynamically within the query.
+This is particularly useful in multi-tenant applications, where the same ToolJet application needs to connect to different databases based on the active tenant. Instead of creating multiple datasources for each tenant, you can define the host and database dynamically within the query.
 
 To enable this feature, turn on the **Allow dynamic connection parameters** toggle on the datasource configuration page.
 
