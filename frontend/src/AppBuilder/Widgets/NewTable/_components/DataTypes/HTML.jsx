@@ -55,13 +55,14 @@ export const HTMLColumn = ({
         className={`overlay-cell-table ${darkMode && 'dark-theme'}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ color: 'var(--text-primary)' }}
+        style={{ color: 'var(--cc-primary-text)' }}
       >
         <span
           style={{
             width: `${containerWidth}px`,
             whiteSpace: 'pre-wrap',
           }}
+          className="html-cell"
           dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }}
         />
       </div>
@@ -108,7 +109,11 @@ export const HTMLColumn = ({
           e.stopPropagation();
         }}
       >
-        {isEditing ? cellValue : <span dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }} />}
+        {isEditing ? (
+          cellValue
+        ) : (
+          <span className="html-cell" dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }} />
+        )}
       </div>
     );
   };
@@ -145,6 +150,7 @@ export const HTMLColumn = ({
               maxHeight: getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellSize),
               whiteSpace: 'pre-wrap',
             }}
+            className="html-cell"
             dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }}
           />
         </div>
