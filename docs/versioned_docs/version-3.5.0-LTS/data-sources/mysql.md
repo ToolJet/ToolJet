@@ -11,12 +11,6 @@ ToolJet can connect to MySQL databases to read and write data.
 
 To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/addmysql.gif" alt="MySQL data source"/>
-
-:::info
-Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
-:::
-
 **ToolJet requires the following to connect to your MySQL database:**
 
 - **Username**
@@ -38,9 +32,46 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 - **Socket Path**
 
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/mysql/mysqlconnect-v3.png" alt="mysql"/>
+
+### Dynamically Configure Host and Database
+
+ToolJet allows you to configure the Host and Database directly within the query instead of setting them in the datasource configuration.
+
+This is particularly useful in multi-tenant applications, where the same ToolJet application needs to connect to different databases based on the active tenant. Instead of creating multiple datasources for each tenant, you can define the host and database dynamically within the query.
+
+To enable this feature, turn on the **Allow dynamic connection parameters** toggle on the datasource configuration page.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/dynamic-connection.png" alt="PG connection string"/>
+
+Once you enable **Allow dynamic connection parameters**, you can write custom logic directly inside the query editor to determine which Host and Database to use based on the current logged-in user.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/dynamic-query-logic.png" alt="PG connection string"/>
+
+#### Example Logic
+
+You can use the following code to dynamically configure the host based on the current user's email domain:
+
+```js
+{{(() => {
+    const domainMap = {
+      'tooljet.com': 'db1.internal.company.com',
+      'tenantA.com': 'db-tenant-a.company.com',
+      'tenantB.com': 'db-tenant-b.company.com',
+      'tenantC.com': 'db-tenant-c.company.com'
+    };
+    const email = globals.currentUser.email || '';
+    const domain = email.split('@')[1] || '';
+    
+    return domainMap[domain] || 'default-db.company.com';
+  })()}}
+```
+
 **Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect-v2.png" alt="mysql"/>
+:::info
+Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
+:::
 
 </div>
 
