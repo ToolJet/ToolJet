@@ -17,7 +17,7 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { FEATURE_KEY } from './constants';
+import { APP_TYPES, FEATURE_KEY } from './constants';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -40,6 +40,7 @@ import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -55,12 +56,13 @@ export class AppsService implements IAppsService {
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
     protected readonly aiUtilService: AiUtilService,
-    protected readonly componentsService: ComponentsService
-  ) {}
+    protected readonly componentsService: ComponentsService,
+    protected readonly eventEmitter: EventEmitter2
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type, manager);
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
@@ -101,8 +103,8 @@ export class AppsService implements IAppsService {
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
-        ? await this.versionRepository.findByName(versionName, app.id)
-        : // Handle version retrieval based on env
+          ? await this.versionRepository.findByName(versionName, app.id)
+          : // Handle version retrieval based on env
           await this.versionRepository.findLatestVersionForEnvironment(
             app.id,
             envId,
@@ -147,15 +149,18 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    // const prevName = app.name;
     const { name } = appUpdateDto;
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
-      // Can use event emitter
-      //this.appGitUtilService.renameAppOrVersion(user, app.id, prevName);
+      const appRenameDto = {
+        user: user,
+        organizationId: organizationId,
+        app: app,
+        appUpdateDto: appUpdateDto,
+      };
+      await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
-
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
@@ -195,7 +200,8 @@ export class AppsService implements IAppsService {
           user,
           folder,
           parseInt(page || '1'),
-          searchKey
+          searchKey,
+          type as APP_TYPES
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
@@ -210,7 +216,7 @@ export class AppsService implements IAppsService {
         }
       }
 
-      const totalCount = await this.appsUtilService.count(user, searchKey, type);
+      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 

@@ -5,6 +5,7 @@ import AppEnvironments from './AppEnvironments';
 import ThemeSelect from './ThemeSelect';
 import ColorSwatches from './ColorSwatches';
 import AppPermissionsModal from './AppPermissionsModal';
+import ComponentModuleTab from './ComponentModuleTab';
 
 export {
   CreateVersionModal,
@@ -14,4 +15,5 @@ export {
   ThemeSelect,
   ColorSwatches,
   AppPermissionsModal,
+  ComponentModuleTab,
 };
