@@ -1,7 +1,7 @@
 export enum GitErrorMessages {
   BRANCH_NOT_FOUND = 'Specified branch from env variable is \n missing in Github repository',
   BRANCH_NAME_MISMATCH = 'Could not push commit to the repository. Please ensure your default branch name is master and try again.',
-  GENERIC_CLONE_ERROR = 'Issue while cloning',
+  GENERIC_CLONE_ERROR = 'Issue while cloning. Please try again.',
   REPOSITORY_NOT_FOUND = 'Repository not found. Please verify the repository URL is correct and accessible.',
   INVALID_PRIVATE_KEY = "Invalid GitHub private key format. Please check the key and ensure it's properly formatted.",
   INVALID_APP_ID = 'Invalid GitHub App ID. Please verify the App ID and try again.',
