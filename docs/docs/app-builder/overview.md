@@ -17,7 +17,7 @@ Teams across engineering, product, operations, and business can build applicatio
 
 In this guide, we’ll walk you through each step and show you how they fit together to make your app come alive.
 
-<div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/app-builder-flowchart.png" alt="Components Preview" /> </div>
+<div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/banner.png" alt="Components Preview" /> </div>
 
 
 ## 1.  Building the Interface
