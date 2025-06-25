@@ -18947,6 +18947,14 @@ section.ai-message-prompt-input-wrapper {
   }
 }
 
+.codehinter-popup {
+  .single-line-codehinter-input {
+    .cm-editor {
+      max-height: 100% !important;
+    }
+  }
+}
+
 .missing-groups-modal {
   .modal-body {
     padding: 16px;
