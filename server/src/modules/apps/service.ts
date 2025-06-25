@@ -72,7 +72,7 @@ export class AppsService implements IAppsService {
       appUpdateDto.icon = icon;
       await this.appsUtilService.update(app, appUpdateDto, null, manager);
 
-      // Setting data for audit logs
+      //APP_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -163,6 +163,8 @@ export class AppsService implements IAppsService {
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
+
+    //APP_UPDATE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
@@ -180,9 +182,11 @@ export class AppsService implements IAppsService {
     const { id } = app;
 
     await this.appRepository.delete({ id, organizationId });
+    console.log('deleted app');
 
+    //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-      userId: id,
+      userId: user.id,
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
@@ -394,6 +398,7 @@ export class AppsService implements IAppsService {
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 
+      //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,

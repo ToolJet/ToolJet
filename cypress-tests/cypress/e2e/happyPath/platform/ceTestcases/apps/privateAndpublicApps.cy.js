@@ -273,7 +273,6 @@ describe(
 
       cy.createApp(data.appName);
       cy.dragAndDropWidget("Text", 500, 500);
-
       releaseApp();
       setUpSlug(data.slug);
       cy.forceClickOnCanvas();
