@@ -294,6 +294,7 @@ export const PagesSidebarNavigation = ({
           borderRight: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
           boxShadow: 'var(--elevation-100-box-shadow)',
+          scrollbarWidth: 'none',
           // ...(position === 'side' && isSidebarOpen ? { marginLeft: isSidebarPinned ? '574px' : '392px' } : {}),
         }}
       >

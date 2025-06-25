@@ -129,10 +129,11 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
       borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
       height: currentMode === 'edit' ? canvasContainerHeight : '100%',
       background: canvasBgColor,
-      width: currentMode === 'edit' ? `calc(100% - 88px)` : '100%',
+      width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
-      borderRight: currentMode === 'edit' && isRightSidebarOpen && '300' + 'px solid',
+      borderRight: currentMode === 'edit' && isRightSidebarOpen && '299' + 'px solid',
+      padding: '8px',
     };
   }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
 
@@ -198,7 +199,10 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
             style={{
               minWidth: isModuleMode
                 ? '100%'
-                : (isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit')) && `calc((100vw - 329px))`,
+                : isSidebarOpen ||
+                  (isRightSidebarOpen &&
+                    currentMode === 'edit' &&
+                    `calc((100vw - ${isViewerSidebarPinned ? '353px' : '171px'}))`),
               scrollbarWidth: 'none',
               overflow: 'auto',
               // borderLeft: `${
