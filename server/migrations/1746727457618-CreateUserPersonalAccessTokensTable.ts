@@ -53,12 +53,6 @@ export class CreateUserPersonalAccessTokensTable1746727457618 implements Migrati
             isNullable: false,
           },
         ],
-        uniques: [
-          {
-            name: 'UQ_app_id_user_id_unique',
-            columnNames: ['app_id', 'user_id'],
-          },
-        ],
       }),
       true
     );

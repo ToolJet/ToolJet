@@ -37,27 +37,12 @@ export class UserPersonalAccessTokenRepository extends Repository<UserPersonalAc
     rawToken: string,
     app: App,
     options?: { scope: PersonalAccessTokenScope; patExpiryMinutes?: number; sessionExpiryMinutes?: number }
-  ): Promise<UserPersonalAccessToken> {
+  ): Promise<void> {
     const patExpiry = options?.patExpiryMinutes ?? (parseInt(process.env?.PAT_EXPIRY) || defaultPatExpiry) * 24 * 60; // default: 10 days
     const sessionExpiry =
       options?.sessionExpiryMinutes ?? (parseInt(process.env?.PAT_SESSION_EXPIRY) || defaultPatSessionExpiry) * 24 * 60; // default: 10 days
 
     const now = new Date();
-
-    // Step 1: Check if token exists for this user and app
-    const existingToken = await this.findOne({
-      where: { user: { id: user.id }, app: { id: app.id } },
-    });
-
-    // Step 2: If exists and not expired, return it
-    if (existingToken && existingToken.expiresAt > now) {
-      return existingToken;
-    }
-
-    // Step 3: If exists and expired, delete it
-    if (existingToken && existingToken.expiresAt <= now) {
-      await this.delete(existingToken.id);
-    }
 
     const token = this.create({
       user,
@@ -69,13 +54,6 @@ export class UserPersonalAccessTokenRepository extends Repository<UserPersonalAc
       sessionExpiryMinutes: sessionExpiry,
     });
 
-    // Upsert using unique app constraint
-    const result = await this.insert(token);
-
-    return (result.identifiers?.[0]?.id &&
-      (await this.findOne({
-        where: { id: result.identifiers[0].id },
-        relations: ['user', 'app'],
-      }))) as UserPersonalAccessToken;
+    await this.save(token);
   }
 }

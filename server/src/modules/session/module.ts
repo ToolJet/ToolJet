@@ -23,6 +23,25 @@ export class SessionModule {
     const { SessionUtilService } = await import(`${importPath}/session/util.service`);
     const { JwtStrategy } = await import(`${importPath}/session/jwt/jwt.strategy`);
 
+    const providerImports = [
+      RolesRepository,
+      SessionService,
+      SessionUtilService,
+      UserRepository,
+      AppsRepository,
+      OrganizationRepository,
+      OrganizationUsersRepository,
+      GroupPermissionsRepository,
+      JwtStrategy,
+      FeatureAbilityFactory,
+      UserSessionRepository,
+    ];
+
+    if (!config.IS_GET_CONTEXT) {
+      providerImports.push(SessionScheduler);
+    }
+    
+
     return {
       module: SessionModule,
       imports: [
@@ -39,20 +58,7 @@ export class SessionModule {
         }),
       ],
       controllers: [SessionController],
-      providers: [
-        RolesRepository,
-        SessionService,
-        SessionUtilService,
-        UserRepository,
-        AppsRepository,
-        OrganizationRepository,
-        OrganizationUsersRepository,
-        GroupPermissionsRepository,
-        JwtStrategy,
-        SessionScheduler,
-        FeatureAbilityFactory,
-        UserSessionRepository,
-      ],
+      providers: providerImports,
       exports: [SessionUtilService],
     };
   }

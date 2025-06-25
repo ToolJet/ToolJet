@@ -6,12 +6,9 @@ import {
   ManyToOne,
   BaseEntity,
   JoinColumn,
-  BeforeInsert,
-  BeforeUpdate,
 } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
-import * as crypto from 'crypto';
 
 export enum PersonalAccessTokenScope {
   APP = 'app',
@@ -20,15 +17,6 @@ export enum PersonalAccessTokenScope {
 
 @Entity({ name: 'user_personal_access_tokens' })
 export class UserPersonalAccessToken extends BaseEntity {
-  @BeforeInsert()
-  @BeforeUpdate()
-  hashToken(): void {
-    if (this.tokenHash && !this.tokenHash.startsWith('md5:')) {
-      const hash = crypto.createHash('md5').update(this.tokenHash).digest('hex');
-      this.tokenHash = `md5:${hash}`;
-    }
-  }
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
