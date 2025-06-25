@@ -42,6 +42,23 @@ export class UserPersonalAccessTokenRepository extends Repository<UserPersonalAc
     const sessionExpiry =
       options?.sessionExpiryMinutes ?? (parseInt(process.env?.PAT_SESSION_EXPIRY) || defaultPatSessionExpiry) * 24 * 60; // default: 10 days
 
+    const now = new Date();
+
+    // Step 1: Check if token exists for this user and app
+    const existingToken = await this.findOne({
+      where: { user: { id: user.id }, app: { id: app.id } },
+    });
+
+    // Step 2: If exists and not expired, return it
+    if (existingToken && existingToken.expiresAt > now) {
+      return existingToken;
+    }
+
+    // Step 3: If exists and expired, delete it
+    if (existingToken && existingToken.expiresAt <= now) {
+      await this.delete(existingToken.id);
+    }
+
     const token = this.create({
       user,
       app,

@@ -33,9 +33,14 @@ export default function EmbedAppRedirect() {
           credentials: 'include',
           body: JSON.stringify({ appId, accessToken: token }),
         });
-        console.log('result', res);
         if (!res.ok) {
-          parent.postMessage({ error: res.status, message: 'unauthorized' }, '*');
+          if (res.status === 401 || res.status === 403) {
+            // 🔔 Show toast if token is expired or invalid
+            parent.postMessage(
+              { error: res.status, message: 'Your pat is expired. Please refresh or contact your admin.' },
+              '*'
+            );
+          }
           return;
         }
 

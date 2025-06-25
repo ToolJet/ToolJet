@@ -17,6 +17,23 @@ import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/Editor/Components/EmbedApp';
 import Spinner from '@/_ui/Spinner';
+import toast from 'react-hot-toast';
+
+export function useEmbedAppMessageListener() {
+  useEffect(() => {
+    function handleEmbedMessage(event) {
+      if (!event.data) return;
+
+      if (event.data.error) {
+        toast.error(event.data.message);
+      }
+    }
+
+    window.addEventListener('message', handleEmbedMessage);
+    return () => window.removeEventListener('message', handleEmbedMessage);
+  }, []);
+}
+
 
 export const Viewer = ({
   id: appId,
@@ -111,6 +128,7 @@ export const Viewer = ({
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
   const isLicenseValid = useStore((state) => state.isLicenseValid);
   const licenseValid = isLicenseValid();
+  useEmbedAppMessageListener();
   // ---remove
   const handleAppEnvironmentChanged = useCallback((environment) => {
     console.log('setAppVersionCurrentEnvironment', environment);
