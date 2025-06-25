@@ -12,6 +12,7 @@ const initialState = {
     containerId: null,
     triggerUpdate: 0,
   },
+  shouldPreventDrop: false,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -98,5 +99,8 @@ export const createGridSlice = (set, get) => ({
     set((state) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
     }));
+  },
+  setShouldPreventDrop: (shouldPreventDrop) => {
+    set(() => ({ shouldPreventDrop }));
   },
 });

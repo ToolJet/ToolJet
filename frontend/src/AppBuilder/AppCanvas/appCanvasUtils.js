@@ -34,7 +34,7 @@ export const addNewWidgetToTheEditor = (
   parentId,
   moduleInfo = undefined
 ) => {
-  const canvasBoundingRect = realCanvasRef?.current?.getBoundingClientRect();
+  const canvasBoundingRect = realCanvasRef?.current?.getBoundingClientRect() || realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
   const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
 

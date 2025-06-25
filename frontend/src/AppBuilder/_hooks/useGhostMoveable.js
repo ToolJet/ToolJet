@@ -3,7 +3,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { NO_OF_GRIDS, GRID_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { snapToGrid } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 
-export const useGhostMoveable = (canvasId) => {
+export const useGhostMoveable = () => {
   const ghostElementRef = useRef(null);
   const isActiveRef = useRef(false);
 
@@ -29,7 +29,6 @@ export const useGhostMoveable = (canvasId) => {
       left: 0;
     `;
 
-    // const container = document.querySelectorAll(`[component-id="${canvasId}"]`)[0];
     const container = document.getElementById('real-canvas');
     container.appendChild(ghost);
     ghostElementRef.current = ghost;
@@ -49,7 +48,7 @@ export const useGhostMoveable = (canvasId) => {
     const snappedX = Math.round(relativeX / gridWidth) * gridWidth;
     const snappedY = Math.round(relativeY / GRID_HEIGHT) * GRID_HEIGHT;
     console.log(snappedX, snappedY);
-    ghostElementRef.current.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
+    ghostElementRef.current.style.transform = `translate(${relativeX}px, ${relativeY}px)`;
   };
 
   const activateGhost = (componentSize, mousePosition, canvasRef) => {
@@ -98,8 +97,6 @@ export const useGhostMoveable = (canvasId) => {
         ghostElementRef.current = null;
         // End any active drag operation first
         // moveableInstance.dragEnd();
-        
-       
       } catch (error) {
         console.warn('Failed to trigger moveable dragEnd:', error);
       }

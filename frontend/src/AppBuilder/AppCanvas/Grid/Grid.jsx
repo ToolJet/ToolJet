@@ -86,12 +86,17 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
+
   const snapContainer = useMemo(() => {
     if (currentDragCanvasId) {
       return `#canvas-${currentDragCanvasId}`;
     }
+    if (dragParentId) {
+      return `#canvas-${dragParentId}`;
+    }
     return '#real-canvas';
-  }, [currentDragCanvasId]);
+  }, [currentDragCanvasId, dragParentId]);
+
   const moveableTarget = useMemo(() => {
     if (virtualTarget) {
       return '#moveable-ghost-element';
@@ -108,57 +113,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       useGridStore.getState().setMoveableRef(null);
     };
   }, []);
-
-  // useEffect(() => {
-  //   const selectedSet = new Set(selectedComponents);
-  //   const draggingOrResizingId = draggingComponentId || resizingComponentId;
-  //   const isGrouped = findHighestLevelofSelection().length > 1;
-  //   const firstSelectedParent =
-  //     selectedComponents.length > 0 ? boxList.find((b) => b.id === selectedComponents[0])?.parent : null;
-  //   const selectedParent = dragParentId || firstSelectedParent;
-
-  //   const guidelines = boxList
-  //     .filter((box) => {
-  //       const isVisible =
-  //         getResolvedValue(box?.component?.definition?.properties?.visibility?.value) ||
-  //         getResolvedValue(box?.component?.definition?.styles?.visibility?.value);
-
-  //       // Early return for non-visible elements
-  //       if (!isVisible) return false;
-
-  //       // if (virtualTarget) {
-  //       //   return true;
-  //       // }
-
-  //       if (isGrouped) {
-  //         // If component is selected, don't show its guidelines
-  //         if (selectedSet.has(box.id)) return false;
-  //         return selectedParent ? box.parent === selectedParent : !box.parent;
-  //       }
-
-  //       if (draggingOrResizingId) {
-  //         if (box.id === draggingOrResizingId) return false;
-  //         return dragParentId ? box.parent === dragParentId : !box.parent;
-  //       }
-
-  //       // if (virtualTarget) {
-  //       //   return true;
-  //       // }
-
-  //       return true;
-  //     })
-  //     .map((box) => `.ele-${box.id}`);
-
-  //   // Combine static guidelines with dynamic ones (for ghost elements)
-  //   setElementGuidelines(guidelines);
-  // }, [
-  //   boxList,
-  //   dragParentId,
-  //   draggingComponentId,
-  //   resizingComponentId,
-  //   selectedComponents,
-  //   getResolvedValue,
-  // ]);
 
   useEffect(() => {
     setBoxList(
@@ -626,12 +580,12 @@ export default function Grid({ gridWidth, currentLayout }) {
       (component) => !selectedComponents.includes(component.getAttribute('widgetid'))
     );
     const draggingOrResizing = draggingComponentId || resizingComponentId;
-    if (!draggingOrResizing && components.length > 0) {
+    if (!draggingOrResizing && components.length > 0 && !virtualTarget) {
       for (const component of components) {
         component?.classList?.remove('active-target');
       }
     }
-  }, [draggingComponentId, resizingComponentId, isGroupDragging, selectedComponents]);
+  }, [draggingComponentId, resizingComponentId, isGroupDragging, selectedComponents, virtualTarget]);
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
   if (mode !== 'edit') return null;
@@ -995,18 +949,17 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDrag={(e) => {
           if (e.target.id === 'moveable-ghost-element') {
-            // showGridLines();
-            //
+            showGridLines();
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
             let left = e.translate[0];
             let top = e.translate[1];
             // console.log('e.translate', e.translate);
-            if (currentDragCanvasId === 'canvas') {
-              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
-              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
-            }
+            // if (currentDragCanvasId === 'canvas') {
+            // console.log('e.translate', e.translate, _gridWidth);
+            left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
+            top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+            console.log('e.translate', e.translate, left, top);
             e.target.style.transform = `translate(${left}px, ${top}px)`;
-            console.log('e.target', false);
             return false;
           }
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
@@ -1029,10 +982,10 @@ export default function Grid({ gridWidth, currentLayout }) {
           e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
-          if (_dragParentId !== currentParentId) {
-            left = e.translate[0];
-            top = e.translate[1];
-          }
+          // if (_dragParentId !== currentParentId) {
+          //   left = e.translate[0];
+          //   top = e.translate[1];
+          // }
 
           // Special case for Modal
           const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent;
@@ -1200,7 +1153,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         // snapGridAll={true}
         scrollable={true}
         snapContainer={snapContainer}
-        snapGridWidth={100}
+        // snapGridWidth={100}
       />
     </>
   );
