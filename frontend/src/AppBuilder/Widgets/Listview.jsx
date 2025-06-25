@@ -59,6 +59,8 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
+    padding: '7px 2px 7px 7px',
+    scrollbarGutter: 'stable',
   };
 
   const computeCanvasBackgroundColor = useMemo(() => {
@@ -250,7 +252,6 @@ export const Listview = function Listview({
     // Update the customResolvables with the new listItems
     if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId);
   }
-
   return (
     <div
       data-disabled={disabledState}
@@ -258,10 +259,9 @@ export const Listview = function Listview({
       id={id}
       ref={parentRef}
       style={computedStyles}
-      //   onClick={() => containerProps.onComponentClick(id, component)}
       data-cy={dataCy}
     >
-      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
+      <div className={`w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
         {filteredData.map((listItem, index) => (
           <div
             className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder && mode == 'list' ? 'border-bottom' : ''}`}

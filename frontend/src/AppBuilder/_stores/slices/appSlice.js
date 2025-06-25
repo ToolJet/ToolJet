@@ -16,6 +16,11 @@ const initialState = {
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
+  isComponentLayoutReady: false,
+  appPermission: {
+    selectedUsers: [],
+    selectedUserGroups: [],
+  },
   appStore: {
     modules: {
       canvas: {
@@ -286,4 +291,12 @@ export const createAppSlice = (set, get) => ({
     return get().appStore.modules[moduleId].app.homePageId;
   },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
+  setSelectedUserGroups: (groups) =>
+    set((state) => {
+      state.appPermission.selectedUserGroups = groups;
+    }),
+  setSelectedUsers: (users) =>
+    set((state) => {
+      state.appPermission.selectedUsers = users;
+    }),
 });

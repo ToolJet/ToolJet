@@ -7,8 +7,12 @@ import { User } from '@entities/user.entity';
 import { RolesRepository } from '@modules/roles/repository';
 import { PageUsersRepository } from './repositories/page-users.repository';
 import { PagePermissionsRepository } from './repositories/page-permissions.repository';
+import { QueryUsersRepository } from './repositories/query-users.repository';
+import { QueryPermissionsRepository } from './repositories/query-permissions.repository';
 import { PageUser } from '@entities/page_users.entity';
 import { PagePermission } from '@entities/page_permissions.entity';
+import { QueryUser } from '@entities/query_users.entity';
+import { QueryPermission } from '@entities/query_permissions.entity';
 
 export class AppPermissionsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -19,7 +23,9 @@ export class AppPermissionsModule {
 
     return {
       module: AppPermissionsModule,
-      imports: [TypeOrmModule.forFeature([GroupPermissions, User, PageUser, PagePermission])],
+      imports: [
+        TypeOrmModule.forFeature([GroupPermissions, User, PageUser, PagePermission, QueryUser, QueryPermission]),
+      ],
       controllers: [AppPermissionsController],
       providers: [
         AppPermissionsService,
@@ -27,6 +33,8 @@ export class AppPermissionsModule {
         RolesRepository,
         PageUsersRepository,
         PagePermissionsRepository,
+        QueryUsersRepository,
+        QueryPermissionsRepository,
         FeatureAbilityFactory,
       ],
       exports: [AppPermissionsUtilService, AppPermissionsService],

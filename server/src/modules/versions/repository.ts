@@ -107,6 +107,21 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
+  async findDataQueriesForVersionWithPermissions(appVersionId: string, manager?: EntityManager): Promise<DataQuery[]> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(DataQuery, 'query')
+        .where('query.appVersionId = :appVersionId', { appVersionId })
+        .leftJoinAndSelect('query.dataSource', 'dataSource')
+        .leftJoinAndSelect('query.permissions', 'permission')
+        .leftJoinAndSelect('permission.users', 'queryUser')
+        .leftJoinAndSelect('queryUser.user', 'user')
+        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+        .select(['query', 'dataSource.kind', 'permission', 'queryUser', 'user', 'group'])
+        .getMany();
+    }, manager || this.manager);
+  }
+
   async findVersion(id: string, manager?: EntityManager): Promise<AppVersion> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await manager.findOneOrFail(AppVersion, {

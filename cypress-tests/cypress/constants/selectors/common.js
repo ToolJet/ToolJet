@@ -353,7 +353,7 @@ export const commonWidgetSelector = {
   buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
   buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
-  constantInspectorIcon: '[data-cy="inspector-node-constants"]  > .node-key',
+  constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
   inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",

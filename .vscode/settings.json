@@ -8,8 +8,8 @@
         "typescript",
         "typescriptreact"
     ],
-    "eslint.format.enable": true,
-    "editor.formatOnSave": true,
+    "eslint.format.enable": false,
+    "editor.formatOnSave": false,
     "json.schemas": [
         {
             "fileMatch": [
@@ -24,7 +24,5 @@
             "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
         }
     ],
-    "CodeGPT.apiKey": "CodeGPT Plus Beta",
-    "workbench.colorTheme": "Cursor Dark",
-    "workbench.iconTheme": "vs-seti"
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }

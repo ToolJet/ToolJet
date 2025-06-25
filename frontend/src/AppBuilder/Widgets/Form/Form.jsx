@@ -358,6 +358,7 @@ export const Form = function Form(props) {
           isDisabled={isDisabled}
           isActive={activeSlot === `${id}-header`}
           onResize={updateHeaderSizeInStore}
+          componentType="Form"
         />
       )}
       <div
@@ -435,6 +436,7 @@ export const Form = function Form(props) {
           isDisabled={isDisabled}
           onResize={updateFooterSizeInStore}
           isActive={activeSlot === `${id}-footer`}
+          componentType="Form"
         />
       )}
     </form>
