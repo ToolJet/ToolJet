@@ -66,6 +66,17 @@ Each data source node has specific configurations based on its type:
 
 <img className="screenshot-full" src="/img/workflows/nodes/v2/datasources.png" alt="Data Sources Node" />
 
+## Workflow Node
+
+The **Workflow** node is used to trigger another workflow from within a workflow. Parameters can also be passed to another workflow.
+
+:::note
+1. A workflow can call itself recursively. It’s recommended to define an exit condition to avoid an infinite loop.
+2. The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECONDS` environment variable, for more information checkout [Customizing Workflow Configuration](/docs/workflows/overview#customizing-workflow-configuration).
+:::
+
+<img className="screenshot-full" src="/img/workflows/nodes/workflow.png" alt="Data Sources Node" />
+
 ## Response Node
 
 The **Response** node defines the final output of your workflow. You can configure multiple response nodes to return multiple execution results.
