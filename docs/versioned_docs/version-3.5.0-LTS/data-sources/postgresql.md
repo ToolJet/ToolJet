@@ -29,7 +29,7 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 - **Connection Options**
 - **SSL Certificate**
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v2.png" alt="PG connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v3.png" alt="PG connection"/>
 
 ### Connection String
 
@@ -37,9 +37,40 @@ To connect to PostgreSQL using a connection string, select **Connection String**
 
 - **Connection String**
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-string.png" alt="PG connection string"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-string-v2.png" alt="PG connection string"/>
 
-<br/><br/>
+### Dynamically Configure Host and Database
+
+ToolJet allows you to configure the Host and Database directly within the query instead of setting them in the data source configuration.
+
+This is particularly useful in multi-tenant applications, where the same ToolJet application needs to connect to different databases based on the active tenant. Instead of creating multiple data sources for each tenant, you can define the host and database dynamically within the query.
+
+To enable this feature, turn on the **Allow dynamic connection parameters** toggle on the data source configuration page.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/dynamic-connection.png" alt="PG connection string"/>
+
+Once you enable **Allow dynamic connection parameters**, you can write custom logic directly inside the query editor to determine which Host and Database to use based on the current logged-in user.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/dynamic-query-logic.png" alt="PG connection string"/>
+
+#### Example Logic
+
+You can use the following code to dynamically configure the host based on the current user's email domain:
+
+```js
+{{(() => {
+    const domainMap = {
+      'tooljet.com': 'db1.internal.company.com',
+      'tenantA.com': 'db-tenant-a.company.com',
+      'tenantB.com': 'db-tenant-b.company.com',
+      'tenantC.com': 'db-tenant-c.company.com'
+    };
+    const email = globals.currentUser.email || '';
+    const domain = email.split('@')[1] || '';
+    
+    return domainMap[domain] || 'default-db.company.com';
+  })()}}
+```
 
 **Note:** We recommend creating a new PostgreSQL database user to have control over ToolJet's access levels.
 
