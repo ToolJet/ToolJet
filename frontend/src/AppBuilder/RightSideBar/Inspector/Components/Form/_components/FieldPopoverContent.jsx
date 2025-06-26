@@ -60,7 +60,20 @@ const FieldPopoverContent = ({
   }, [localField, onChange, onClose, mode]);
 
   const renderPlaceholder = () => {
-    if (['Checkbox', 'RadioButtonV2', 'Datepicker'].includes(localField.componentType)) return null;
+    if (
+      [
+        'Checkbox',
+        'RadioButtonV2',
+        'Datepicker',
+        'DatetimePickerV2',
+        'Checkbox',
+        'ToggleSwitchV2',
+        'DatePickerV2',
+        'TimePicker',
+        'DaterangePicker',
+      ].includes(localField.componentType)
+    )
+      return null;
     return (
       <div>
         <label className="tw-text-text-default base-medium">Placeholder</label>
