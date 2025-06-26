@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-ToolJet’s app builder offers an AI native, low-code environment that helps you build and deploy internal tools quickly without extensive coding knowledge. You can build internal tools like dashboards, workflow approvals, tracking and scheduling applications quickly. 
+ToolJet’s app builder offers an AI-native, low-code environment that helps you build and deploy internal tools quickly without extensive coding knowledge. You can build internal tools like dashboards, workflow approvals, tracking and scheduling applications in no time. 
 
 Teams across engineering, product, operations, and business can build applications with ease, following four simple steps to get up and running in minutes.
 
@@ -32,12 +32,12 @@ Each component comes with built-in styling options. You can customize text, colo
 
 You can connect your app to multiple [data sources](/docs/data-sources/overview) including SQL, NoSQL or vector databases, APIs, spreadsheets, and cloud services. Once connected, you can fetch, update, or manipulate data using queries.
 
-A query is an action that interacts with your data source, whether it's fetching records, filtering results, or writing back data. It act as the bridge between your UI and your data.
+A query is an action that interacts with your data source, whether it's fetching records, filtering results, or writing back data. It acts as the bridge between your UI and your data.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/queries.png" alt="Queries Preview" /> </div>
 
 
-Use the Query Panel to build queries, either with a form-based interface or by writing code/SQL directly. You can use them to fetch data to display in components or to push user inputs back to your database.They can run manually or be triggered using events like page load, user actions on components, or the success or failure of other queries.
+Use the Query Panel to build queries, either with a form-based interface or by writing code/SQL directly. You can use them to fetch data to display in components or to push user inputs back to your database. They can run manually or be triggered using events like page load, user actions on components, or the success or failure of other queries.
 
 ## 3. Making Apps Interactive 
 
@@ -51,26 +51,27 @@ You can also chain multiple events and actions together, enabling complex multi-
 
 ## 4. Handling Custom Logic
 
-ToolJet makes it easy to build apps without code, but when you need more control, it offers the ability to add custom code to write your custom logic. You can create JavaScript or Python queries in app builder to perform calculations, transform data, trigger other queries, or update UI components. These snippets have full access to the component’s properties, other queries’ outputs, and the entire app’s state, allowing you to write custom logic for any use cases like conditional behavior, data processing, or dynamic UI updates.
+ToolJet makes it easy to build apps without code, but when you need more control, it offers the ability to add custom code to write your logic. You can create JavaScript or Python queries in app builder to perform calculations, transform data, trigger other queries, or update UI components. These snippets have full access to the component’s properties, other queries’ outputs, and the entire app’s state, allowing you to write custom logic for any use cases like conditional behavior, data processing, or dynamic UI updates.
+
 <div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/custom-code.png" alt="Custom Code Preview" /> </div>
 
 This gives developers the ability to handle complex scenarios with code, while still leveraging ToolJet’s low-code environment.
 
-Combining the speed of low-code with the ability to write custom code where needed, you can build any buisness application, from simple dashboards to complex workflows, all in one platform.
 
 ## Use Cases
-Here are some examples of what you can achieve with ToolJet:
-* Store inventory tracker
-* Warehouse picking & packing app
-* Digital loan processing app
-* Underwriting portal
-* Fraud detection app
-* Customer onboarding portal
-* Customer support assistant
-* Digital asset management portal
-* Regulatory compliance reporter
-* Field service dispatch system
-* Time sheet tracker
-* Software license management app
+With ToolJet, you can build a wide range of internal tools including but not limited to:
 
-Learn more about these use cases here: [https://www.tooljet.ai/templates](https://www.tooljet.ai/templates)
+* Inventory management system
+* Purchase order tracker
+* Customer onboarding portal
+* Loan origination and underwriting tool
+* Fraud detection dashboard
+* Expense approval workflow
+* Timesheet tracker
+* Employee onboarding app
+* Internal ticketing system
+* Compliance reporting dashboard
+* Sales pipeline tracker
+* Digital asset management portal
+
+From simple dashboards to complex data-driven tools, ToolJet's app-builder helps you build applications with speed and precision.

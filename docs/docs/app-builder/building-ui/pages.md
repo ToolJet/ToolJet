@@ -1,6 +1,6 @@
 ---
 id: pages
-title: Pages
+title: Multi-Page Applications
 ---
 
 ToolJet allows creation of multi-page applications, helping you break your app into different sections. Instead of building everything on a single screen, you can create separate pages to organize different functionalities or enable navigation within your application.

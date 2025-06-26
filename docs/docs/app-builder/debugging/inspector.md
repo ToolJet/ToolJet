@@ -22,13 +22,14 @@ You can refer to a value using the dot notation (e.g., `{{components.numberInput
 
 For example, let's say you have a **Table** displaying a list of users, and you want to fetch the details of a particular user when they are selected. You can refer to the selected row's data using the reference path in the Inspector. 
 
-You can either type this path manually or hover over the property in the Inspector to copy it's path directly. This path can then be used in your query to refer the value. Additionally, you can add an event handler to the table to automatically run this query whenever a user is selected.
+You can either type this path manually or hover over the property in the Inspector to copy its path directly. This path can then be used in your query to refer the value. Additionally, you can add an event handler to the table to automatically run this query whenever a user is selected.
 
 <img className="screenshot-full img-s" src="/img/app-builder/debugging/inspector/copy-path.png" alt="Events Architecture Diagram"/>
 
 ### Queries
 
 Under the Queries section, you can inspect the specifics of any query you’ve created. The data for a query is only visible after the query has been executed or triggered. This allows you to verify the output and troubleshoot any issues with data retrieval or manipulation. The Inspector exposes the following properties for each query:
+
 - **isLoading** – A boolean indicating whether the query is currently in progress. This can be used to control the loading state of components that depend on the query's result.
 - **data** – The transformed data returned by the query.
 - **rawData** – The original response fetched from the data source.

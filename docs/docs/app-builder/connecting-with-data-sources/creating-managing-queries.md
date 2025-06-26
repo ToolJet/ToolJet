@@ -5,7 +5,7 @@ title: "Creating and Managing Queries"
 
 A query is a way to interact with your **[data sources](/docs/data-sources/overview)** and acts as the link between your app’s UI and your data. You can connect your app to configured data sources—including SQL, NoSQL, vector databases, APIs, spreadsheets, and cloud services—by creating them. Whether it’s retrieving records from your MongoDB collection or updating data in a SQL database, you can use queries to interact with them.
 
-Queries are created in the Query Panel, located at the bottom of the App Builder, where y ou can either use a visual form-based builder or write code/SQL manually.
+Queries are created in the Query Panel, located at the bottom of the App Builder, where you can either use a visual form-based builder or write code/SQL manually.
 
 <img className="screenshot-full img-full" src="/img/app-builder/connecting-with-datasouces/query-panel.png" alt="App Builder: Query Panel"/>
 
@@ -13,7 +13,7 @@ Queries are created in the Query Panel, located at the bottom of the App Builder
 ## Creating a New Query
 
 - Click on the **+** button in the Query Panel to open a menu listing the available data sources or you can add a new data source by clicking on **+ Add new Data Source** button.
-- Select your the desired data source.
+- Select the desired data source.
 
 <img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/create-query.png" alt="App Builder: Create queries"/>
 
@@ -43,7 +43,7 @@ For data sources such as MYSQL, PostgreSQL or SQL Server, you can choose SQL mod
 You can also create JavaScript or Python queries to manipulate your data from other queries, write business logic, or integrate third-party libraries. Learn more about them in **[Running JavaScript](/docs/data-sources/run-js)** and **[Running Python](/docs/data-sources/run-py)** documentation. -->
 
 ## Custom Parameters
-You often need a query to fetch different data based on on user input, component state, or other logic. Custom parameters allow you to pass dynamic values into a query, making it reusable without hardcoding values.
+You often need a query to fetch different data based on user input, component state, or other logic. Custom parameters allow you to pass dynamic values into a query, making it reusable without hard-coding values.
 
 Let's say you have a query that fetches employee details based on department. Instead of creating a separate query for each department, you can define a parameter like `departmentName`, and use it to filter results dynamically.
 
@@ -98,8 +98,9 @@ For actions that modify or delete data, enable this to prompt users for confirma
 ### Show notification on success 
 Let users know when actions are completed successfully. This improves UX by giving real-time feedback. You can customize the message and how long it stays visible.
         <img className="screenshot-full img-l" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/notification.png" alt="App Builder: notification on query run"/>
+
 ### Retry on network errors 
-This setting is only available forREST API queries. Here, you get an option to automatically retry REST API requests in case of certain network errors or specific HTTP status codes. By default, it retries a failed API request up to 3 times before marking it as failed. Refer to [REST API Documentation](/docs/data-sources/restapi/querying-rest-api/#retry-on-network-errors) for more details.
+This setting is only available for REST API queries. Here, you get an option to automatically retry REST API requests in case of certain network errors or specific HTTP status codes. By default, it retries a failed API request up to 3 times before marking it as failed. Refer to [REST API Documentation](/docs/data-sources/restapi/querying-rest-api/#retry-on-network-errors) for more details.
 
 
 

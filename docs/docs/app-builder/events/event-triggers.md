@@ -1,6 +1,6 @@
 ---
 id: event-triggers
-title: Event Handler
+title: Setting Up Events
 ---
 
 Events are used to define how your app should respond when a user interacts with a component or when a specific system condition is met. Whether it's clicking a **Button** component, selecting an item from a **Dropdown**, or completing a data query, events let you tie in logic that makes your app interactive and reactive.

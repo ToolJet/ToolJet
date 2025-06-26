@@ -4,7 +4,7 @@ title: Using RunJS
 ---
 
 
-ToolJet allows you to use external JavaScript libraries such as Compromise for Natural language processing or PapaParse for CSV parsing into your application using RunJS queries. This saves you from having to write complex code from scratch. 
+ToolJet allows you to use external JavaScript libraries such as Compromise for Natural language processing or PapaParse for CSV parsing into your application using RunJS queries. This helps you avoid writing complex logic from scratch.
 
 This guide walks you through the process of importing and utilizing these libraries effectively.
 
@@ -46,7 +46,7 @@ try {
 }
 ```
 
-After adding the code, click on the **Run** button in the query panel, an alert should pop up with the message "Compromise and PapaParse imported"
+After adding the code, click on the **Run** button in the query panel. An alert should pop up with the message "Compromise and PapaParse imported".
 
  <img className="screenshot-full img-full" src="/img/app-builder/custom-code/import_library.png" alt="Use FlattenJS" />
 :::tip
@@ -55,9 +55,9 @@ Enable the **Run this query on application load** option in the query settings t
 
 ## Use cases
 
-Now that we have successfully imported both libraries, let's explore some use cases where they can be applied.
+Let’s look at how you can apply these libraries in real-world use cases.
 
-### Auto-tagging Customer Support Tickets with Compromise (NLP) 
+### Extracting Action Items from Meeting Notes using Compromise (NLP)
 
 Let's say you are building an internal project management tool where users paste raw meeting notes. You want to auto-extract action items, dates, and team names.
 
@@ -98,7 +98,7 @@ ToolJet comes with some essential JavaScript libraries preloaded in the RunJS en
 - [Lodash](https://lodash.com/docs/) – for working with arrays, objects, and collections
 - [Axios](https://axios-http.com/docs/intro) – for making HTTP requests
 
-You can use these libraries directly in RunJS blocks to simplify your logic, transform data, or integrate with APIs.
+You can use these libraries directly in RunJS to simplify your logic, transform data, or integrate with APIs.
 
 Example:
 

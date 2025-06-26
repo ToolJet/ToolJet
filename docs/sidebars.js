@@ -159,15 +159,9 @@ const sidebars = {
           'items': [
             'app-builder/events/overview',
             'app-builder/events/event-triggers',
-            {
-              'type': 'category',
-              'label': 'Use Cases',
-              'items': [
-                'app-builder/events/use-case/csa',
-                'app-builder/events/use-case/page-nav',
-                'app-builder/events/use-case/variables'
-              ],
-            },
+            'app-builder/events/use-case/csa',
+            'app-builder/events/use-case/page-nav',
+            'app-builder/events/use-case/variables'
           ],
         },
         {

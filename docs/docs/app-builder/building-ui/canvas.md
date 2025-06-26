@@ -3,26 +3,26 @@ id: canvas
 title: Canvas and Layout
 ---
 
-**Canvas** is the main area in the ToolJet App Builder where the application is built and the user interface is designed.
+**Canvas** is the main area in the app-builder where you build your application and design the user interface..
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/canvas.png" alt="App Builder: Canvas"/>
 
 ## Customizing Canvas
 
-Through Global Settings, you can costomize the following properties of the **Canvas**:
+Through Global Settings, you can customize the following properties of the **Canvas**:
 
-- **Max width of canvas**: Defines the maximum width of the canvas, which can be set in pixels or as a percentage of the screen size. The height of the canvas expands automatically as more components are added.
+- **Max width of canvas**: Defines the maximum width of the canvas, which can be set in pixels or percentage of the screen size. The height of the canvas expands automatically as more components are added.
 - **Canvas background**: Sets the background color of the canvas. This can also be controlled dynamically by clicking on **fx** and entering a logical expression.
-- **App mode**:  Select between three theme modes:
+- **App mode**: Select between three theme modes
     - **Auto**: Adapts to the browser's theme settings or allows the user to switch between light and dark modes.
-    - **Light**: Keeps the app in light mode, user cannot switch to dark mode.
-    - **Dark**: Keeps the app in dark mode, user cannot switch to light mode.
+    - **Light**: Keeps the app in light mode, the user cannot switch to dark mode.
+    - **Dark**: Keeps the app in dark mode, the user cannot switch to light mode.
 
 <img className="screenshot-full img-s" src="/img/app-builder/canvas/global-settings.png" alt="App Builder: Canvas"/>
 
 ## Building the User Interface
 
-To build the user interface, components can be dragged from the [Component Library](#) on the right. The Component Handle can be used to reposition a component. A component can be resized from any of its edges or corners.
+To build the user interface, components can be dragged from the [Components Library](#) on the right. The Component Handle can be used to reposition a component. A component can be resized from any of its edges or corners.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/drag.gif" alt="App Builder: Canvas"/>
 
@@ -42,7 +42,7 @@ In ToolJet, components can be grouped using a layout component such as a **[Cont
 
 #### Select and Move Multiple Components
 
-Multiple components on the canvas can be selected by either clicking and dragging the cursor to cover them or by selecting individual components while holding the Shift key. Once selected, all components can be moved together as a group.
+You can select multiple components by clicking and dragging over them, or by clicking individually while holding the Shift key. Once selected, all components can be moved together as a group.
 
 ***Select and Move Multiple Components GIF***
 
@@ -60,7 +60,7 @@ Copied components can be pasted onto the canvas using **Cmd/Ctrl + V**.
 
 #### Clone Component
 
-Components on the canvas can be cloned using **Cmd/Ctrl + D**. Unlike copy and paste, cloning creates a duplicate of the selected component instantly
+Components on the canvas can be cloned using **Cmd/Ctrl + D**. Unlike copy and paste, cloning creates a duplicate of the selected component instantly.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/clone.png" alt="App Builder: Canvas"/>
 

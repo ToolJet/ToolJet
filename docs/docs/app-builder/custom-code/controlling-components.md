@@ -3,39 +3,39 @@ id: control-components
 title: Controlling Components Using Code
 ---
 
-In ToolJet, components can be controlled using code, enabling you to build interactive UIs. This is made possible through Component-Specific Actions (CSAs), which allow you to modify a component’s properties like value, loading state, and other component properties in the app.
+Apart from [**events**](/docs/docs/app-builder/events/use-case/csa.md), Component-Specific Actions (CSAs) can also be triggered using code to modify component properties and state.
 
 Let’s say you want to:
-- Automatically reset a form after submission.
-- Show or hide a component based on a condition.
-- Update the value of a text input based on another field.
-- Disable a button during API calls.
-- Change tab selection programmatically.
+- Reset a form automatically after submission
+- Show or hide components based on a condition
+- Update a text input based on another field’s value
+- Disable a button during API calls
+- Change the active tab programmatically
 
-In each of these cases, CSAs help you control components using simple JavaScript logic.
+In each of these cases, you can use CSAs with JavaScript or Python queries.
 
 ## How It Works
 
-Each component in ToolJet comes with a set of Component-Specific Actions (CSAs) as follows:
-- setValue(): Set or update a component’s value.
-- clear(): Clear the value of an input.
-- setLoading(): Set or unset the loading state of a component.
-- setDisable(true/false): Enable/disable a component.
-- setVisibility(true/false): Dynamically control visibility.
+Each component in ToolJet comes with a set of CSAs. Below are some examples of CSAs that can be used in
+- setValue() – Sets or updates a component’s value
+- clear() – Clears the value of an input
+- setLoading() – Sets or unsets the loading state
+- setDisable() – Enables or disables a component
+- setVisibility() – Dynamically controls component visibility
 
-You can trigger these actions from within your app by writing JavaScript code. 
+You can trigger these actions from your JavaScript or Python queries. 
 
-For example, if you have a button that triggers an API call and want to show a loader till the time data is loaded. You could use `setLoading()` to show a spinner. You can use this code snippet as follows:
+For example, if you have a **Button** that triggers a query and want to show a loader until the data is loaded. You could use `setLoading()` to show a spinner:
 
 ```js
-await components.button1.setLoading(true)
+await components.button1.setLoading(queries.getData.isLoading)
 ```
 
 ## Use Cases
 
 ### Pre-fill a form field based on user selection
 
-When a user selects a product from a dropdown, automatically set the price in a text input:
+When a user selects a product from a **Dropdown**, automatically set the price in a **Text Input** component:
 
 ```js
 await components.textInput1.setValue(components.dropdown1.value)
@@ -43,19 +43,18 @@ await components.textInput1.setValue(components.dropdown1.value)
 
 ### Clear fields after submitting a form:
 
-After a user submits a form, reset all inputs:
+After a user submits a **Form**, reset all inputs:
 
 ```js
-await components.nameInput.clear()
-await components.emailInput.clear()
-await components.commentsInput.clear()
+await components.formInput.resetForm()
 ```
-### Close the modal after form submission:
 
-If you are using a modal for collecting data, close it once the form has been submitted successfully:
+### Close the modal after Form submission:
+
+If you are using a **Modal** for collecting data, close it once the **Form** has been submitted successfully:
 
 ```js
 await components.modal1.close()
 ```
 
-Along with the power of low-code, ToolJet also lets you control components using code. This means you can manage a component’s properties based on your own custom logic. With a few lines of JavaScript, you can show or hide components, set values, and handle actions more easily. It’s a simple way to make your app more interactive and responsive to your users.
+The ability to use CSAs in your code lets you manage a component’s properties based on your own custom logic. 

@@ -1,6 +1,6 @@
 ---
 id: component-state
-title: Accessing Components State
+title: Component State
 ---
 
 Each component in ToolJet maintains a state — a collection of values that represent its current data and configuration. This state can be accessed through exposed variables, which allow components to interact with other parts of the application. For example, the value entered into a text input component can be passed to a query to fetch data from the database.
@@ -19,7 +19,7 @@ In the App Builder, you can view all available component states using the Inspec
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-s" src="/img/app-builder/access-comp-data/inspector.png" alt="App Builder: Properties Panel"/>
 
-- Open the Component dropdown inside the Inspector.
+- Open the Components dropdown inside the Inspector.
 - Select the component whose state you want to inspect.
 - A secondary dropdown will appear showing all the available states.
 

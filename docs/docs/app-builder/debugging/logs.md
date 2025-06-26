@@ -3,7 +3,7 @@ id: understanding-logs
 title: Understanding Logs
 ---
 
-Debugging is a critical part of building applications, and ToolJet makes it easier with a built-in Debugger that tracks and displays logs in real time. Whether it’s a query success or failure, or a component malfunction, the debugger will have a logs that will help you get to the root of the problem quickly.
+Debugging is a critical part of building applications, and ToolJet makes it easier with a built-in Debugger that tracks and displays logs in real time. Whether it’s a query success or failure, or a component malfunction, the debugger will have logs that will help you get to the root of the problem quickly.
 
 This guide walks you through how to make the most of ToolJet’s logs, with practical examples to understand why they matter and how to use them effectively.
 

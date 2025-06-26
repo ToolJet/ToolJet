@@ -1,6 +1,6 @@
 ---
 id: "binding-data-to-components"
-title: Binding data to components
+title: Binding Data to Components
 ---
 
 In this section, you’ll learn how to connect and bind data to components within ToolJet, whether the data comes from a datasource or other components in your app.

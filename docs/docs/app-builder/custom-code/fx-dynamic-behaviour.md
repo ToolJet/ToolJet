@@ -16,7 +16,9 @@ With ToolJet’s fx support, you can achieve this in the Disabled property of th
 
 <img className="screenshot-full img-m" src="/img/app-builder/custom-code/button-disable.png" alt=" button disable "/>
 
-This expression disables the button when the form is invalid, no manual toggling needed. Similaryly, you could use the same approach to update other properties such as visibility, background color, font size etc., for different components. If you are new to ToolJet and want to learn how to access component propetries, check out [this guide](/docs/app-builder/building-ui/component-state#available-component-states).
+This expression disables the button when the form is invalid, no manual toggling needed. Similarly, you could use the same approach to update other properties such as visibility, background color, font size etc., for different components. 
+
+If you are new to ToolJet and want to learn how to access component properties, check out [this guide](/docs/app-builder/building-ui/component-state#available-component-states).
 
 ## Use Cases
 
@@ -25,20 +27,23 @@ This expression disables the button when the form is invalid, no manual toggling
 Display loading indicators until the data is loaded.
 
 Example: In an app where you are loading data in the table component, you might want to show a loading spinner in the table component while fetching employee data.
+
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/loading.png" alt=" button disable "/>
 
 ### Conditional Styling
 
 Apply conditional styling (colors, fonts, sizes) based on values from queries or application state.
 
-Example: In an app like a employee directory with a user list, you can display different text colors based on whether the user is active or inactive.
+Example: In an employee directory with a user list, you can display different background colors on **Table** cells based on whether the user is active or inactive.
+
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/style.png" alt=" button disable "/>
 
 ### Form Validation 
 
 Enable or disable submit buttons based on the validity of form inputs.
 
-Example: In an app where you are using forms, you can enable the “Submit” button only when all required fields are correctly filled.
+Example: In **Forms**, you can enable the Submit button only when all required fields are correctly filled.
+
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/form.png" alt=" button disable "/>
 
 ### Conditional Visibility
@@ -49,4 +54,4 @@ Example: In an employee directory app, within the personal details form, you can
 
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/conditional_visibility.png" alt=" button disable "/>
 
-Using fx expressions it is easy to add dynamic behavior to your applications without writing any boilerplate code. Whether it’s showing or hiding components, validating forms, applying styles, or managing loading states with fx you can build more responsive and interactive interfaces.
+Using the fx editor, you can easily add dynamic behavior to your applications with minimal code. Whether it’s showing or hiding components, validating forms, applying styles, or managing loading states with fx you can build more responsive and interactive interfaces.

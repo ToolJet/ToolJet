@@ -5,7 +5,7 @@ title: Using RunPy
 
 RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries, you can add more functionality to your applications without needing a full backend. In this guide, we will learn to import external python packages and use them in the application.
 
-If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy. ToolJet supports installing libraries using micropip only. Checkout [this](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) documentation for a list of supported libraries.
+If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy. ToolJet supports installing libraries using micropip. Checkout [this](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) documentation for a list of supported libraries.
 
 
 ## Installing Python Packages
@@ -33,7 +33,7 @@ Enable the **Run this query on application load?** option in the query settings 
 
 ### Parse CSV data
 
-Say you want users to upload a CSV and view the parsed output. Here’s how you can use pandas and Python’s csv module. Create a RunPy query to parse CSV data using `StringIO`, `csv`, and `Pandas` module.
+Say you want users to upload a CSV and view the parsed output. Here’s how you can use pandas and Python’s CSV module. Create a RunPy query to parse CSV data using `StringIO`, `csv`, and `Pandas` module.
 
 ```python
 from io import StringIO

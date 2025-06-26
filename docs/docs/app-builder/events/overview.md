@@ -29,6 +29,7 @@ Component-Specific Actions (CSAs) are built-in functions that allow you to contr
 
 Variables let you store and manage data either across your entire application or within specific pages. They're essential for maintaining state, controlling logic, and creating personalized user experiences.
 ToolJet supports the following types of variables:
+
 - App-level variables – accessible throughout the entire app.
 - Page-level variables – scoped to a specific page.
 

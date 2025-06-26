@@ -1,6 +1,6 @@
 ---
 id: csa
-title: Control Component State
+title: Controlling Component State
 ---
 
 Component-Specific Actions (CSAs) are built-in functions that allow you to control a component state and behavior in the application. Each component has its own set of CSAs based on its capabilities. 

@@ -3,7 +3,8 @@ id: transform-data
 title: Transforming Data
 ---
 
-In your applications, the data you need will not always be in a ready-to-use format from a single source. Often, you’ll need to transform or combine data before displaying. Common use cases include:
+Data isn’t always available in a ready-to-use format from a single source. Often, you’ll need to transform or combine data before displaying it. Common use cases include:
+
 - Merging results from multiple data sources
 - Restructuring API responses before rendering in the components
 - Applying business logic such as filtering, sorting, or grouping
@@ -19,21 +20,21 @@ For example, let's say you're building an inventory management application and w
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/custom-code/transformation_with_code.png" alt="App Builder: query transformations"/>
 
-ToolJet allows you to write JavaScript or Python queries to perform these transformations without requiring changes to your backend. This doc explores practical use cases where transforming data becomes essential and shows how you can write code to shape data the way your app needs.
+ToolJet allows you to write RunJS or RunPy queries to perform these transformations without requiring changes to your backend. This guide demonstrates how to transform data for real-world use cases.
 
-## How it works?
+## How It Works
 
-ToolJet allows access to data from:
+ToolJet allows you to access data from:
 - Configured Datasource queries (e.g., PostgreSQL, REST APIs, MongoDB, etc.)
 - Component values (like inputs, dropdowns, tables)
 
-With RunJs or RunPy queries, you can write code to manipulate data from multiple sources. You don’t need to modify your backend or write middleware, just write the logic where it’s needed.
+With RunJS or RunPy queries, you can write code to manipulate data from multiple sources. 
 
 ## Use Cases 
 
 ### 1. Merging Data from Two APIs
 
-Let's say you want to show a list of users with their order counts. The user data comes from a REST API, and the order data comes from a MySQL database. Now, if you want to show a combined list of users along with their respective order counts, you can use can use a RunJS query to combine the results.
+Let's say you want to show a list of users with their order counts. The user data comes from a REST API, and the order data comes from a MySQL database. Now, if you want to show a combined list of users along with their respective order counts, you can use a RunJS or RunPy query to combine the results:
 
 ```js
 // Assuming getUsers and getOrders are already defined as queries
@@ -112,13 +113,14 @@ return usersWithOrderCount;
 
 </details>
 
-Now you reference this data in your app, for instance, in a **Table** component.
+Now you can reference this data in your app, for instance, in a **Table** component.
 
 ### 2. Grouping and Sorting Data with Custom Business Logic [change the example]
 
-Let's say you have a list of products and want to group them by category and sort each group by stock (highest to lowest). This helps display organized inventory in a component like a nested list or grouped table. You can a JS query to transform the data.
+Let's say you have a list of products and want to group them by category and sort each group by stock (highest to lowest). This helps display organized inventory in a component like a nested list or grouped table. You can use a RunJS or RunPy query to transform the data:
 
 ```js
+// Trigger the query and retreive the data 
 await queries.getProducts.run();
 const products = queries.getProducts.getData();
 
@@ -140,4 +142,4 @@ for (const category in grouped) {
 return grouped;
 ```
 
-This is how you can use RunJS or RunPy queries to transform data in ToolJet. With these examples, you should now have a clear understanding of how to use code to manipulate data from various sources and present it in the desired format. Keep in mind that while writing code offers flexibility, it can also introduce complexity. Always consider performance implications when writing complex transformations.
+This is how you can use RunJS or RunPy queries to transform data in ToolJet. Keep in mind that while writing code offers flexibility, it can also introduce complexity. Always consider performance implications when writing complex transformations.
