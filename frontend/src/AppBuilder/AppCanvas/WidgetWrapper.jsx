@@ -126,6 +126,7 @@ const WidgetWrapper = memo(
             onOptionChange={onOptionChange}
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}
+            moduleId={moduleId}
           />
         </div>
         <DragGhostWidget isDragging={isDragging} />
