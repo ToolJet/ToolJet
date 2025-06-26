@@ -8,6 +8,8 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsService } from '@modules/plugins/service';
 import { getEnvVars } from './database-config-utils';
 import { validateSync } from 'class-validator';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 const ENV_VARS = getEnvVars();
 
@@ -23,6 +25,8 @@ async function bootstrap() {
 }
 
 async function validateAndUninstallPlugins(nestApp: INestApplicationContext) {
+  const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+  const { PluginsService } = await import(`${await getImportPath(true, edition)}/plugins/service`);
   const pluginsService = nestApp.get(PluginsService);
   const pluginsToUninstall = fetchPluginsToUninstall();
   const validPluginDtos: CreatePluginDto[] = [];
