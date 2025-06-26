@@ -929,7 +929,14 @@ export const createEventsSlice = (set, get) => ({
     }),
 
     generateAppActions: (queryId, mode, isPreview = false, moduleId = 'canvas') => {
-      const { getCurrentPageComponents, dataQuery, eventsSlice, queryPanel, modules, globalSettings: { appMode  } = get();
+      const {
+        getCurrentPageComponents,
+        dataQuery,
+        eventsSlice,
+        queryPanel,
+        modules,
+        globalSettings: { appMode },
+      } = get();
       const { previewQuery } = queryPanel;
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
@@ -1186,7 +1193,6 @@ export const createEventsSlice = (set, get) => ({
         };
         return executeAction(event, mode, {}, moduleId);
       };
-      
 
       const log = (log, isFromTransformation = false) => {
         const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
@@ -1204,7 +1210,7 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {}, moduleId);
       };
 
-       const toggleAppMode = (value) => {
+      const toggleAppMode = (value) => {
         if (!value) {
           value = appMode === 'dark' ? 'light' : 'dark';
         }
