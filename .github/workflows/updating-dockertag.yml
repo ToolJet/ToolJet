@@ -1,0 +1,39 @@
+name: Update LTS Table
+
+on:
+  workflow_dispatch:  # manually triggered
+  # schedule:
+  #   - cron: '0 1 * * *'  # runs daily at 1:00 AM UTC
+
+jobs:
+  update-lts:
+    name: Regenerate LTS Version Table
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed for branching
+
+      - name: 🛠 Setup Git
+        run: |
+          git config user.name "tooljet-bot"
+          git config user.email "bot@tooljet.com"
+
+      - name: 💻 Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: 🧠 Run regenerate_lts_table.sh
+        run: bash ./regenerate_lts_table.sh
+
+      - name: 📦 Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs: update LTS version table"
+          branch: "auto/update-lts-$(date +%Y%m%d)"
+          title: "docs: update LTS version table"
+          body: "Automated update of the LTS table from DockerHub."
+          base: develop
