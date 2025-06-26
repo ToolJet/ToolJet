@@ -93,6 +93,22 @@ const RenderWidget = ({
   const { t } = useTranslation();
   const transformedStyles = getDefaultStyles(resolvedStyles, componentType);
 
+  const isDisabled = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedDisabled = state.getExposedValueOfComponent(id, moduleId)?.isDisabled;
+    if (typeof componentExposedDisabled === 'boolean') return componentExposedDisabled;
+    if (component?.properties?.disabledState === true || component?.styles?.disabledState === true) return true;
+    return false;
+  });
+
+  const isLoading = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedLoading = state.getExposedValueOfComponent(id, moduleId)?.isLoading;
+    if (typeof componentExposedLoading === 'boolean') return componentExposedLoading;
+    if (component?.properties?.loadingState === true || component?.styles?.loadingState === true) return true;
+    return false;
+  });
+
   const obj = {
     properties: { ...resolvedGeneralProperties, ...resolvedProperties },
     styles: { ...resolvedGeneralStyles, ...transformedStyles },
@@ -155,8 +171,6 @@ const RenderWidget = ({
   }, []);
   if (!componentDefinition?.component) return null;
 
-  const disabledState = resolvedProperties?.disabledState;
-  const loadingState = resolvedProperties?.loadingState;
 
   return (
     <ErrorBoundary>
@@ -193,7 +207,7 @@ const RenderWidget = ({
           role={'Box'}
           className={`canvas-component ${
             inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          } ${disabledState || loadingState ? 'disabled' : ''}`} //required for custom CSS
+          } ${isDisabled || isLoading ? 'disabled' : ''}`} //required for custom CSS
         >
           <ComponentToRender
             id={id}
