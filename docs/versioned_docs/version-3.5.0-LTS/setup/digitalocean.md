@@ -1,6 +1,6 @@
 ---
 id: digitalocean
-title: DigitalOcean 
+title: DigitalOcean
 ---
 
 :::warning
@@ -10,7 +10,7 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-
 Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
 
 **1. Navigate to the Droplets section in DigitalOcean.**
-   
+
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/setup/digitalocean/droplet_1.png" alt="create a Droplet" />
@@ -18,9 +18,9 @@ Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
   </div>
 
 **2. Configure the **Droplet** with the following options:**
-   
- - **Image**: Ubuntu 
- - **Plan**: Choose a plan (e.g., Basic, 4GB RAM, 2 vCPU)
+
+- **Image**: Ubuntu
+- **Plan**: Choose a plan (e.g., Basic, 4GB RAM, 2 vCPU)
 
   <div style={{textAlign: 'center'}}>
      <img className="screenshot-full" src="/img/setup/digitalocean/droplet_plan.png" alt="use a droplet plan" />
@@ -30,15 +30,15 @@ Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
   - Click **Create Droplet** and note the assigned public IP
 
 **3. Create a Firewall for the **Droplets** to allow required ports.**
-   
-   protocol | port     | allowed_cidr|
-   :---| :----------  | :---------- |
-   tcp | 22           | your IP     |
-   tcp | 80           | 0.0.0.0/0   |
-   tcp | 443          | 0.0.0.0/0   |
+
+| protocol | port | allowed_cidr |
+| :------- | :--- | :----------- |
+| tcp      | 22   | your IP      |
+| tcp      | 80   | 0.0.0.0/0    |
+| tcp      | 443  | 0.0.0.0/0    |
 
 **4. Connect to the **Droplets** via SSH.**
- 
+
 **5. Install Docker and Docker Compose using the following commands:**
 
 ```bash
@@ -49,22 +49,22 @@ apt install -y docker.io
 Enable and start Docker:
 
 ```bash
-systemctl enable docker 
+systemctl enable docker
 systemctl start docker
 ```
 
 Install Docker Compose:
 
 ```bash
-apt install -y curl 
-curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose 
+apt install -y curl
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 ```
 
 Verify installation:
 
 ```bash
-docker --version 
+docker --version
 docker-compose --version
 ```
 
@@ -73,7 +73,6 @@ docker-compose --version
 `TOOLJET_HOST=http://<public_ip>:80`
 
 **7. Use the [Docker Documentation](https://docs.tooljet.ai/docs/setup/docker) to deploy ToolJet.**
-
 
 ## Upgrading to the Latest LTS Version
 
@@ -87,5 +86,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-
-If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
+If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.

@@ -17,7 +17,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
 
-2. Create a k8s Deployment: 
+2. Create a k8s Deployment:
 
 The file below is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
 
@@ -39,11 +39,13 @@ PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
 PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
 ```
+
 Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
 
 3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
 
 **Example:**
+
 - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
 
 ## ToolJet Database
@@ -72,7 +74,7 @@ Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniq
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
 :::tip
-If you have openssl installed, you can run the 
+If you have openssl installed, you can run the
 command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -109,5 +111,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._

@@ -34,20 +34,20 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/d
 Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
 
 :::info
-        For the setup, ToolJet requires:
-        <ul> 
-        - **TOOLJET_DB** 
-        - **TOOLJET_DB_HOST**
-        - **TOOLJET_DB_USER**
-        - **TOOLJET_DB_PASS**
-        - **PG_HOST**
-        - **PG_DB**
-        - **PG_USER**
-        - **PG_PASS**
-        - **SECRET_KEY_BASE** 
-        - **LOCKBOX_KEY**
-        </ul>
-        Read **[environment variables reference](/docs/setup/env-vars)**
+For the setup, ToolJet requires:
+<ul> 
+   - **TOOLJET_DB** 
+   - **TOOLJET_DB_HOST** 
+   - **TOOLJET_DB_USER** 
+   - **TOOLJET_DB_PASS** 
+   - **PG_HOST** 
+   - **PG_DB** 
+   - **PG_USER** 
+   - **PG_PASS** 
+   - **SECRET_KEY_BASE** 
+   - **LOCKBOX_KEY**
+</ul>
+Read **[environment variables reference](/docs/setup/env-vars)**
 :::
 
 :::info
@@ -104,4 +104,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._
