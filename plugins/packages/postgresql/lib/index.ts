@@ -15,6 +15,7 @@ export default class PostgresqlQueryService implements QueryService {
   private STATEMENT_TIMEOUT;
 
   constructor() {
+    // Default 120 secs
     this.STATEMENT_TIMEOUT =
       process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT && !isNaN(Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT))
         ? Number(process.env.PLUGINS_SQL_DB_STATEMENT_TIMEOUT)
@@ -33,14 +34,30 @@ export default class PostgresqlQueryService implements QueryService {
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
+    let pgPool;
+    let pgConnection;
     try {
       const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
       switch (queryOptions.mode) {
-        case 'sql':
-          return await this.handleRawQuery(knexInstance, queryOptions);
-        case 'gui':
+        case 'sql': {
+          if (this.isSqlParametersUsed(queryOptions)) {
+            return await this.handleRawQuery(knexInstance, queryOptions);
+          } else {
+            pgPool = knexInstance.client.pool;
+            pgConnection = await pgPool.acquire().promise;
+            const query = queryOptions.query;
+            let result = { rows: [] };
+            result = await pgConnection.query(query);
+            return {
+              status: 'ok',
+              data: result.rows,
+            };
+          }
+        }
+        case 'gui': {
           return await this.handleGuiQuery(knexInstance, queryOptions);
+        }
         default:
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
@@ -56,6 +73,8 @@ export default class PostgresqlQueryService implements QueryService {
         errorDetails.routine = routine || null;
       }
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+    } finally {
+      if (pgPool && pgConnection) pgPool.release(pgConnection);
     }
   }
 
@@ -72,6 +91,13 @@ export default class PostgresqlQueryService implements QueryService {
 
     const query = this.buildBulkUpdateQuery(queryOptions);
     return await this.executeQuery(knexInstance, query);
+  }
+
+  private isSqlParametersUsed(queryOptions: QueryOptions): boolean {
+    const { query_params } = queryOptions;
+    const queryParams = query_params || [];
+    const sanitizedQueryParams: string[][] = queryParams.filter(([key]) => !isEmpty(key));
+    return !!sanitizedQueryParams.length;
   }
 
   private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
