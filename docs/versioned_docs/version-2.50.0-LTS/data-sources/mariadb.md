@@ -56,7 +56,7 @@ Query results can be transformed using Transformation. For more information on t
 
 ## CRUD Queries
 
-Suppose there exists a MariaDB database named _customers_. We can create an example table called _users_ with the following columns:
+Suppose there exists a MariaDB database named *customers*. We can create an example table called *users* with the following columns:
 
 - **id** (integer, auto-increment)
 - **name** (varchar)
@@ -72,7 +72,7 @@ CREATE TABLE user(
 );
 ```
 
-The above command will create the _users_ table within the _customers_ database. Now, let's explore the CRUD commands for this table in MariaDB:
+The above command will create the *users* table within the *customers* database. Now, let's explore the CRUD commands for this table in MariaDB:
 
 ### Create (Insert)
 
@@ -175,16 +175,14 @@ DELETE FROM user WHERE id = 1;
 
 </div>
 
-Remember to adjust the values and conditions based on your specific needs. These commands will allow you to create the table, insert data, retrieve data, update data, and delete data in the _users_ table in MariaDB.
+Remember to adjust the values and conditions based on your specific needs. These commands will allow you to create the table, insert data, retrieve data, update data, and delete data in the *users* table in MariaDB.
 
 </div>
 
 <div style={{paddingTop:'24px'}}>
 
 ## Troubleshooting Tips
-
 If you are having trouble connecting a MariaDB data source to ToolJet, try the following:
-
 - Make sure that your MariaDB server is running and accessible from the ToolJet server.
 - Check the spelling and capitalization of your credentials.
 - Try restarting the ToolJet server.

@@ -8,12 +8,11 @@ title: Deploying ToolJet client
 ToolJet client is a standalone application and can be deployed on static website hosting services such as Netlify, Firebase, S3/Cloudfront, etc.
 
 You can build standalone client with the below command:
-
 ```bash
 SERVE_CLIENT=false npm run build
 ```
 
-_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
 
 ## Deploying ToolJet client on Firebase
 
@@ -38,6 +37,7 @@ For example: `SERVE_CLIENT=false TOOLJET_SERVER_URL=https://server.tooljet.com n
 :::tip
 You should set the environment variable `TOOLJET_SERVER_URL` ( URL of the server ) while building the frontend.
 
+
 For example: `SERVE_CLIENT=false TOOLJET_SERVER_URL=https://server.tooljet.io npm run build`
 :::
 
@@ -47,12 +47,11 @@ ToolJet client can be hosted from Cloud Storage bucket just like hosting any oth
 Follow the instructions from google documentation [here](https://cloud.google.com/storage/docs/hosting-static-website).
 
 Summarizing the steps below:
-
 1. Create a bucket and upload files within the build folder such that the `index.html` is at the bucket root.
 
-2. Edit permissions for the bucket to assign _New principal_ as `allUsers` with role as `Storage Object Viewer` and permit for public access for the bucket.
+2. Edit permissions for the bucket to assign *New principal* as `allUsers` with role as `Storage Object Viewer` and permit for public access for the bucket.
 
-3. Click on _Edit website configuration_ from the [buckets browser](https://console.cloud.google.com/storage/browser?_ga=2.180838119.1530169400.1637242882-657891227.1637242882) and specify the main page as `index.html`
+3. Click on *Edit website configuration* from the [buckets browser](https://console.cloud.google.com/storage/browser?_ga=2.180838119.1530169400.1637242882-657891227.1637242882) and specify the main page as `index.html`
 
 4. Follow the [instructions](https://cloud.google.com/storage/docs/hosting-static-website#lb-ssl) on creating a load balancer for hosting a static website.
 
@@ -74,23 +73,21 @@ Summarizing the steps below:
    threadsafe: true
 
    handlers:
-     - url: /
-       static_files: build/index.html
-       upload: build/index.html
+   - url: /
+     static_files: build/index.html
+     upload: build/index.html
 
-     - url: /(.*)
-       static_files: build/\1
-       upload: build/(.*)
+   - url: /(.*)
+     static_files: build/\1
+     upload: build/(.*)
    ```
 
 3. Activate cloud shell on your browser and create build folder
-
    ```bash
    mkdir tooljet-assets
    ```
 
 4. Copy the uploaded files onto an assets folder which is to be served
-
    ```bash
    gsutil rsync -r gs://your-bucket-name/path-to-assets ./tooljet-assets
    ```

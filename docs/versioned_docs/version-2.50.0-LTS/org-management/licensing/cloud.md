@@ -80,10 +80,10 @@ Your business plan subscription cost is based on the total number of builder and
 
 **Seat Pricing**
 
-| <div style={{ width:"100px"}}> Seat Type </div> | <div style={{ width:"135px"}}> Annual Billing </div> | <div style={{width: "200px"}}> Monthly Billing </div> |
-| :---------------------------------------------- | :--------------------------------------------------- | :---------------------------------------------------- |
-| Builder                                         | $24 per month                                        | $30 per month                                         |
-| End User                                        | $8 per month                                         | $10 per month                                         |
+| <div style={{ width:"100px"}}> Seat Type </div> | <div style={{ width:"135px"}}> Annual Billing </div> | <div style={{width: "200px"}}> Monthly Billing </div>|
+| :------------ | :---------- | :------------ |
+| Builder     | $24 per month    | $30 per month |
+| End User        | $8 per month      | $10 per month |
 
 **Pro-rated charges for added seats**
 

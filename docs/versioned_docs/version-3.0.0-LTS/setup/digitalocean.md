@@ -1,12 +1,12 @@
 ---
 id: digitalocean
-title: DigitalOcean
+title: DigitalOcean 
 ---
 
 Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
 
 **1. Navigate to the Droplets section in DigitalOcean.**
-
+   
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/setup/digitalocean/droplet_1.png" alt="create a Droplet" />
@@ -14,9 +14,9 @@ Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
   </div>
 
 **2. Configure the **Droplet** with the following options:**
-
-- **Image**: Ubuntu
-- **Plan**: Choose a plan (e.g., Basic, 4GB RAM, 2 vCPU)
+   
+ - **Image**: Ubuntu 
+ - **Plan**: Choose a plan (e.g., Basic, 4GB RAM, 2 vCPU)
 
   <div style={{textAlign: 'center'}}>
      <img className="screenshot-full" src="/img/setup/digitalocean/droplet_plan.png" alt="use a droplet plan" />
@@ -26,15 +26,15 @@ Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
   - Click **Create Droplet** and note the assigned public IP
 
 **3. Create a Firewall for the **Droplets** to allow required ports.**
-
-| protocol | port | allowed_cidr |
-| :------- | :--- | :----------- |
-| tcp      | 22   | your IP      |
-| tcp      | 80   | 0.0.0.0/0    |
-| tcp      | 443  | 0.0.0.0/0    |
+   
+   protocol | port     | allowed_cidr|
+   :---| :----------  | :---------- |
+   tcp | 22           | your IP     |
+   tcp | 80           | 0.0.0.0/0   |
+   tcp | 443          | 0.0.0.0/0   |
 
 **4. Connect to the **Droplets** via SSH.**
-
+ 
 **5. Install Docker and Docker Compose using the following commands:**
 
 ```bash
@@ -45,14 +45,14 @@ apt install -y docker.io
 Enable and start Docker:
 
 ```bash
-systemctl enable docker
+systemctl enable docker 
 systemctl start docker
 ```
 
 Install Docker Compose:
 
 ```bash
-apt install -y curl
+apt install -y curl 
 curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 ```
@@ -60,7 +60,7 @@ chmod +x /usr/local/bin/docker-compose
 Verify installation:
 
 ```bash
-docker --version
+docker --version 
 docker-compose --version
 ```
 

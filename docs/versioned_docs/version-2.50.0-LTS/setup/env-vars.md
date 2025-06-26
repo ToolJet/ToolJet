@@ -7,7 +7,7 @@ title: Environment variables
 
 Both the ToolJet server and client requires some environment variables to start running.
 
-_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
 
 ## ToolJet server
 
@@ -70,7 +70,6 @@ Use this environment variable to enable/disable the feature that allows you to a
 | COMMENT_FEATURE_ENABLE | `true` or `false` |
 
 ### Marketplace
-
 #### Marketplace feature enable ( optional )
 
 Use this environment variable to enable/disable the feature that allows users to use the marketplace.
@@ -83,14 +82,14 @@ Use this environment variable to enable/disable the feature that allows users to
 
 Use this environment variable to enable/disable the developement mode that allows developers to build the plugin.
 
-| variable                    | value             |
-| --------------------------- | ----------------- |
+| variable                   | value             |
+| -------------------------- | ----------------- |
 | ENABLE_MARKETPLACE_DEV_MODE | `true` or `false` |
 
 ### User Session Expiry Time (Optional)
 
-| variable            | description                                                                                                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
 | USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after **10** days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
 
 ### Enable ToolJet Database ( optional )
@@ -212,8 +211,8 @@ Prints logs for sentry.
 
 This is used to set up for CSP headers and put trace info to be used with APM vendors.
 
-| variable           | description                                                    |
-| ------------------ | -------------------------------------------------------------- |
+| variable           | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
 
 ### RELEASE VERSION ( optional)
@@ -259,9 +258,9 @@ Configurations for instance level SSO.
 
 By default, the ToolJet server does not forward cookies along with the REST API requests. You can enable this functionality by setting the `FORWARD_RESTAPI_COOKIES` environment variable to `true`. This option is available only in the self-hosted version of ToolJet.
 
-| variable                | description       |
-| ----------------------- | ----------------- |
-| FORWARD_RESTAPI_COOKIES | `true` or `false` |
+| variable                | description        |
+| ----------------------- | -------------------|
+| FORWARD_RESTAPI_COOKIES | `true` or `false`  |
 
 ## ToolJet client
 
@@ -277,8 +276,8 @@ This is required when client is built separately.
 
 This could be used to for local development, it will set the server url like so: `http://localhost:<TOOLJET_SERVER_PORT>`
 
-| variable            | description                             |
-| ------------------- | --------------------------------------- |
+| variable           | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_PORT | the port of ToolJet server ( eg: 3000 ) |
 
 ### Asset path ( optionally required )
@@ -306,7 +305,7 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
 :::tip
-If you have openssl installed, you can run the
+If you have openssl installed, you can run the 
 command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -320,8 +319,8 @@ Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PAS
 
 If a log file path is specified in environment variables, a log file containing all the data from audit logs will be created at the specified path. The file will be updated every time a new audit log is created.
 
-| Variable      | Description                                                                      |
-| ------------- | -------------------------------------------------------------------------------- |
+| Variable | Description                                                                 |
+| -------- | --------------------------------------------------------------------------- |
 | LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
 
 ## ToolJet Apps
@@ -330,8 +329,8 @@ If a log file path is specified in environment variables, a log file containing 
 
 By default, only embedding of public apps is permitted. By setting this variable, users will be able to embed private ToolJet Apps.
 
-| Variable                 | Description       |
-| ------------------------ | ----------------- |
+| Variable        | Description                           |
+| --------------- | ------------------------------------- |
 | ENABLE_PRIVATE_APP_EMBED | `true` or `false` |
 
 :::caution
@@ -340,26 +339,26 @@ The option is only available starting from ToolJet Enterprise Edition `2.8.0` or
 
 ## Configuring the Default Language
 
-To change the default language, set the LANGUAGE variable to your desired language code.
+To change the default language, set the LANGUAGE variable to your desired language code. 
 
-| Variable | Description     |
-| -------- | --------------- |
+| Variable        | Description                           |
+| --------------- | ------------------------------------- |
 | LANGUAGE | `LANGUAGE_CODE` |
 
 Available Languages with their codes and native names:
 
-| Language   | Code | Native Name      |
-| ---------- | ---- | ---------------- |
-| English    | en   | English          |
-| French     | fr   | Français         |
-| Spanish    | es   | Español          |
-| Italian    | it   | Italiano         |
-| Indonesian | id   | Bahasa Indonesia |
-| Ukrainian  | uk   | Українська       |
-| Russian    | ru   | Русский          |
-| German     | de   | Deutsch          |
+| Language    | Code | Native Name       |
+|-------------|------|-------------------|
+| English     | en   | English           |
+| French      | fr   | Français          |
+| Spanish     | es   | Español           |
+| Italian     | it   | Italiano          |
+| Indonesian  | id   | Bahasa Indonesia  |
+| Ukrainian   | uk   | Українська        |
+| Russian     | ru   | Русский           |
+| German      | de   | Deutsch           |
 
-For instance, to set the language to French, you can set the LANGUAGE variable to `fr`.
+For instance, to set the language to French, you can set the LANGUAGE variable to `fr`. 
 
 :::info
 The option to set a default language is not available on cloud version of ToolJet.

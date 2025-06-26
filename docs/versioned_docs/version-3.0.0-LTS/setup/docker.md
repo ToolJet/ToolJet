@@ -15,11 +15,9 @@ If you rather want to try out ToolJet on your local machine with Docker, you can
 :::
 
 ### Installing Docker and Docker Compose
-
 Install docker and docker-compose on the server.
-
-- Docs for [Docker Installation](https://docs.docker.com/engine/install/)
-- Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
+  - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
+  - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
 ### Deployment options
 

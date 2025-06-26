@@ -7,10 +7,10 @@ ToolJet can now be deployed at a subpath rather than the root (`/`) of a public 
 
 You'll need to setup the following environment variables if ToolJet installation is on a domain subpath:
 
-| variable     | value                                                                                                                                                                      |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL ( eg: https://www.yourcompany.com )                                                                                                                         |
-| SUB_PATH     | Set a subpath to this variable. The subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client. ( eg: `/apps/tooljet/` ) |
+| variable | value |
+| -------- | ---------------------- |
+| TOOLJET_HOST | the public URL ( eg: https://www.yourcompany.com )  |
+| SUB_PATH | Set a subpath to this variable. The subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client. ( eg: `/apps/tooljet/` )  |
 
 :::info
 See all **[Environment Variables](/docs/setup/env-vars)** here.
@@ -26,8 +26,8 @@ If this is a new installation of the application, you may start directly with th
 
 - It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading.
+- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
 - Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
-_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*

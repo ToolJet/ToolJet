@@ -25,9 +25,9 @@ ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJe
 
 </div>
 
-## AI Credit System
+## AI Credit System 
 
-Starting from **`v3.5.0-ee-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to **[Build with AI](/docs/build-with-ai/overview)** guide for more information.
+Starting from **`v3.5.0-ee-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to **[Build with AI](/docs/build-with-ai/overview)** guide for more information. 
 
 The AI credits are consumed on every AI operation performed in ToolJet. Credits operate at an instance level and are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month, they expire at the end of each billing cycle. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
 
@@ -50,6 +50,7 @@ AI-powered assistance for the following actions consumes **3 credits**:
 
 The entire app UI generation consumes **10 credits**.
 
+
 ### Credit Calculation
 
 AI credits are calculated based on the pricing plan and are assigned per builder in an instance. These credits are then available for use by all users in the instance across all workspaces.
@@ -60,27 +61,27 @@ Once you have received the license key from the ToolJet Team, you can update the
 
 Role Required: **Super Admin**
 
-1. Go to the Settings page. <br/>
-   (Example URL - `https://app.corp.com/instance-settings/license`)
+1. Go to the Settings page. <br/> 
+    (Example URL - `https://app.corp.com/instance-settings/license`)
 
 2. In the license key tab, update the provided license key.
-   <img className="screenshot-full" src="/img/licensing/self-hosted-license.png" alt="Licensing" />
+    <img className="screenshot-full" src="/img/licensing/self-hosted-license.png" alt="Licensing" />
 
 3. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.
-   <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
+    <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
 
 ## Migrating to New Pricing Plan
 
 Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the following limitations and users on a previous version, will be impacted in the following ways:
 
-| Resource     | Allowed Limit | Impact on Existing Users                                                                                                                                      |
-| ------------ | :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Super Admin  |       1       | No Impact                                                                                                                                                     |
-| Builder      |       2       | All builders will be automatically archived, except for two random builders (including 1 Super Admin).                                                        |
-| End User     |      50       | All users beyond 50 will be archived automatically.                                                                                                           |
-| Applications |       2       | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
-| Workflows    |       2       | Users can create upto two workflows.                                                                                                                          |
-| Workspaces   |       1       | All the previously created workspaces will be accessible, but the users will not be able to create any new workspace.                                         |
+| Resource | Allowed Limit | Impact on Existing Users |
+|----------|:-------------:|--------------------------|
+| Super Admin | 1 | No Impact |
+| Builder | 2 | All builders will be automatically archived, except for two random builders (including 1 Super Admin). |
+| End User | 50 | All users beyond 50 will be archived automatically. |
+| Applications | 2 | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
+| Workflows | 2 | Users can create upto two workflows. |
+| Workspaces | 1 | All the previously created workspaces will be accessible, but the users will not be able to create any new workspace. |
 
 ### Unarchiving Desired Users Affected Due to New Pricing Plan
 
