@@ -1941,11 +1941,13 @@ export const createComponentsSlice = (set, get) => ({
 
     const childComponents = getAllChildComponents(allComponents, componentId);
     const maxHeight = Object.values(childComponents).reduce((max, component) => {
+      // Added this logic to handle the top alignment for the component
+      const top = component?.component?.definition?.styles?.alignment?.value === 'top' ? 20 : 0;
       const layout = component?.layouts?.[currentLayout];
       if (!layout) {
         return max;
       }
-      const sum = layout.top + layout.height;
+      const sum = layout.top + layout.height + top;
       return Math.max(max, sum);
     }, 0);
 

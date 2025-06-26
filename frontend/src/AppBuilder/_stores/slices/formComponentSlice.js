@@ -23,7 +23,8 @@ export const createFormComponentSlice = (set, get) => ({
     return { generateFormFrom, JSONData };
   },
   saveFormDataSectionData: (componentId, data, fields, moduleId = 'canvas') => {
-    const { getComponentDefinition, withUndoRedo, getCurrentPageIndex, saveComponentPropertyChanges } = get();
+    const { getComponentDefinition, updateContainerAutoHeight, getCurrentPageIndex, saveComponentPropertyChanges } =
+      get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return;
 
@@ -38,6 +39,8 @@ export const createFormComponentSlice = (set, get) => ({
       false,
       'saveFormDataSectionData'
     );
+
+    updateContainerAutoHeight(componentId);
 
     saveComponentPropertyChanges(
       componentId,
