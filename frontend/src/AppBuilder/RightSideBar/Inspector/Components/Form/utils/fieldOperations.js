@@ -229,6 +229,11 @@ const setValuesBasedOnType = (column, componentType, formField, isTypeChange = f
     }
   }
 
+  if (isTypeChange && componentType === 'TextArea') {
+    set(formField, 'layouts.desktop.height', 50);
+    set(formField, 'layouts.mobile.height', 50);
+  }
+
   if (
     column.placeholder &&
     componentType !== 'Checkbox' &&

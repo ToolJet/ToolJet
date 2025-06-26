@@ -56,7 +56,8 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
           <Button
             variant="ghost"
             size="default"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               const newValue = !isCurrentlyMandatory;
               handleFieldChange({
                 ...fieldData,
@@ -77,7 +78,8 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
           <Button
             variant="ghost"
             size="default"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               onMenuToggle(null);
               setSelectedComponents([field.componentId]);
             }}
