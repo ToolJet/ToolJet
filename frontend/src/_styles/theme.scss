@@ -4274,7 +4274,6 @@ input[type="text"] {
 
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
-
 }
 
 .jet-listview::-webkit-scrollbar-thumb {
@@ -16048,9 +16047,7 @@ textarea.tj-text-input-widget {
 }
 
 .jet-listview {
-  &:hover {
-    scrollbar-color: #6a727c4d;
-
+  &:hover {      
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -16070,7 +16067,6 @@ textarea.tj-text-input-widget {
 
   .jet-listview {
     &:hover {
-      scrollbar-color: #6a727c4d;
 
       &::-webkit-scrollbar-thumb {
         background-color: #6a727c4d !important;
@@ -18948,6 +18944,14 @@ section.ai-message-prompt-input-wrapper {
 .single-line-codehinter-input {
   .cm-editor {
     max-height: 100px !important;
+  }
+}
+
+.codehinter-popup {
+  .single-line-codehinter-input {
+    .cm-editor {
+      max-height: 100% !important;
+    }
   }
 }
 

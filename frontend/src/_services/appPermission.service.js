@@ -7,6 +7,10 @@ export const appPermissionService = {
   createPagePermission,
   updatePagePermission,
   deletePagePermission,
+  getQueryPermission,
+  createQueryPermission,
+  updateQueryPermission,
+  deleteQueryPermission,
 };
 
 function getPagePermission(appId, pageId) {
@@ -46,4 +50,42 @@ function deletePagePermission(appId, pageId) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`, requestOptions).then(handleResponse);
+}
+
+function getQueryPermission(appId, queryId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
+}
+
+function createQueryPermission(appId, queryId, body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
+}
+
+function updateQueryPermission(appId, queryId, body) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
+}
+
+function deleteQueryPermission(appId, queryId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
 }
