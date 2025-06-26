@@ -24,7 +24,7 @@ const DataSectionUI = ({
   darkMode = false,
   currentStatusRef,
   openModalFromParent = false,
-  closeModalParent,
+  setParentModalState,
   performColumnMapping,
   newResolvedJsonData,
   existingResolvedJsonData,
@@ -58,10 +58,10 @@ const DataSectionUI = ({
   const addFieldButtonRef = useRef(null);
 
   useEffect(() => {
-    if (openModalFromParent) {
+    if (openModalFromParent && openModalFromParent !== isModalOpen) {
       setIsModalOpen(true);
     } else if (!openModalFromParent) setIsModalOpen(false);
-  }, [openModalFromParent]);
+  }, [openModalFromParent, isModalOpen]);
 
   const handleDeleteField = (field) => {
     const updatedFields = formFields.filter((f) => f.componentId !== field.componentId);
@@ -115,6 +115,7 @@ const DataSectionUI = ({
         size="small"
         onClick={() => {
           currentStatusRef.current = FORM_STATUS.MANAGE_FIELDS;
+          setParentModalState(true);
           setIsModalOpen(true);
         }}
       />
@@ -154,13 +155,9 @@ const DataSectionUI = ({
     );
   };
 
-  const openModal = useCallback(() => {
-    setIsModalOpen(true);
-  }, [setIsModalOpen]);
-
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
-    closeModalParent();
+    setParentModalState(false);
   }, [setIsModalOpen]);
 
   return (
@@ -177,7 +174,6 @@ const DataSectionUI = ({
       <FormFieldsList
         fields={formFieldsWithComponentDefinition}
         onDeleteField={handleDeleteField}
-        setIsModalOpen={setIsModalOpen}
         currentStatusRef={currentStatusRef}
         onSave={performColumnMapping}
       />
