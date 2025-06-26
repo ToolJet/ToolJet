@@ -119,7 +119,12 @@ export const TableRow = ({
                 cell.column.columnDef?.meta?.columnType === 'image' && 'jet-table-image-column h-100'
               } ${cell.column.columnDef?.meta?.columnType !== 'image' && `w-100 h-100`}`}
             >
-              {flexRender(cell.column?.columnDef?.cell, cell.getContext())}
+              {flexRender(cell.column?.columnDef?.cell, {
+                ...cell.getContext(),
+                handleRowClick: () => {
+                  handleRowClick(row);
+                },
+              })}
             </div>
           </td>
         );
