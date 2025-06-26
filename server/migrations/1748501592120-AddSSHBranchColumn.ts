@@ -34,4 +34,3 @@ export class AddSSHBranchColumn1748501592120 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
 }
-// Migration Dev testing pending
