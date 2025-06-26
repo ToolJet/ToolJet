@@ -56,7 +56,6 @@ export default function EmbedAppRedirect() {
         // ✅ Store PAT in memory
         setPatToken(result.signedPat);
         window.name = result.signedPat;
-        console.log('patToken', result.signedPat);
         window.location.href = `applications/${appId}`;
       } catch (error) {
         parent.postMessage({ error: 500, message: 'Network error' }, '*');
