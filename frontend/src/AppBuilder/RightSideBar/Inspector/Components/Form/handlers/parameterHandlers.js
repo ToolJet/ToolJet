@@ -39,7 +39,8 @@ export const createParamUpdatedInterceptor = ({
         } else if (value === 'rawJson') {
           shouldFocusJSONDataEditor.current = true;
           setJSONData({
-            value: "{{{ 'name': 'John Doe', 'age': 35 }}}",
+            value:
+              "{{{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }}}",
           });
           return setSource((prev) => ({ ...prev, value }));
         } else if (value !== 'rawJson' && value !== 'jsonSchema') {
