@@ -48,24 +48,22 @@ export const selectAndAddDataSource = (
   dataSourceName
 ) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
-  cy.wait(1000)
+  cy.wait(1000);
   cy.get(`[data-cy="${cyParamName(dscategory)}-datasource-button"]`).click();
-  cy.wait(500)
+  cy.wait(500);
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
-  cy.get(`[data-cy="data-source-${(dataSource).toLowerCase()}"]`)
+  cy.get(`[data-cy="data-source-${dataSource.toLowerCase()}"]`)
     .parent()
     .within(() => {
       cy.get(
-        `[data-cy="data-source-${(
-          dataSource
-        ).toLowerCase()}"]>>>.datasource-card-title`
+        `[data-cy="data-source-${dataSource.toLowerCase()}"]>>>.datasource-card-title`
       ).realHover("mouse");
       cy.get(
         `[data-cy="${cyParamName(dataSource).toLowerCase()}-add-button"]`
       ).click();
     });
 
-  cy.get(postgreSqlSelector.buttonSave).should("be.disabled")
+  cy.get(postgreSqlSelector.buttonSave).should("be.disabled");
   cy.clearAndType(
     '[data-cy="data-source-name-input-field"]',
     cyParamName(`cypress-${dataSourceName}-${dataSource}`)
@@ -176,11 +174,11 @@ export const addEventHandlerToRunQuery = (query) => {
 
 export const addWidgetsToAddUser = () => {
   cy.dragAndDropWidget("Text Input", 200, 160);
-  cy.dragAndDropWidget("Text Input", 400, 160);
+  cy.dragAndDropWidget("Text Input", 200, 300);
   cy.dragAndDropWidget("Button", 600, 160);
   openEditorSidebar("button1");
   openAccordion(commonWidgetText.accordionEvents);
   addEventHandlerToRunQuery("add_data_using_widgets");
 };
 
-export const addListviewToVerifyData = () => { };
+export const addListviewToVerifyData = () => {};

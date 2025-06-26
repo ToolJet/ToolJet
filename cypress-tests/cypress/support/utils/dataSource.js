@@ -8,12 +8,16 @@ import { dataSourceText } from "Texts/dataSource";
 import { navigateToAppEditor } from "Support/utils/common";
 import { verifyAppDelete } from "Support/utils/dashboard";
 
-export const verifyCouldnotConnectWithAlert = (dangerText) => {
+export const verifyCouldnotConnectWithAlert = (alertText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
     timeout: 10000,
   }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
     timeout: 5000,
   });
+  cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+    "contain",
+    alertText
+  );
 };
 
 export const resizeQueryPanel = (height = "90") => {

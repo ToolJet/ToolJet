@@ -314,7 +314,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion('Layout', []);
+    openAccordion("Layout", []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",
@@ -1317,9 +1317,9 @@ describe("Table", () => {
         { key: "ssl_certificate", value: "none", encrypted: false },
       ]
     );
-    cy.apiAddQueryToApp(
-      "q112",
-      {
+    cy.apiAddQueryToApp({
+      queryName: "q112",
+      options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
@@ -1328,9 +1328,9 @@ describe("Table", () => {
         ORDER BY id
         LIMIT 10 OFFSET {{(components.table1.pageIndex-1)*10}};`,
       },
-      `cypress-${dsName}-postgresql`,
-      "postgresql"
-    );
+      dsName: `cypress-${dsName}-postgresql`,
+      dsKind: "postgresql",
+    });
     cy.reload();
     openEditorSidebar(tableText.defaultWidgetName);
     cy.get("[data-state=off]:eq(3)").click();

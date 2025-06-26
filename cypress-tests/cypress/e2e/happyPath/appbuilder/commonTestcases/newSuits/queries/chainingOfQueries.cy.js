@@ -14,7 +14,7 @@ describe("Chaining of queries", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-chaining-App`);
     cy.openApp();
-    cy.apiFetchDataSourcesId()
+    cy.apiFetchDataSourcesId();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
@@ -24,38 +24,38 @@ describe("Chaining of queries", () => {
     const data = {};
     let dsName = fake.companyName;
     data.customText = randomString(12);
-    cy.apiAddQueryToApp(
-      "runjs",
-      { code: "return true", hasParamSupport: true, parameters: [] },
-      null,
-      "runjs"
-    );
-    cy.apiAddQueryToApp(
-      "runpy",
-      { code: "True", hasParamSupport: true, parameters: [] },
-      null,
-      "runpy"
-    );
-    cy.apiAddQueryToApp(
-      "restapi",
-      {
+    cy.apiAddQueryToApp({
+      queryName: "runjs",
+      options: { code: "return true", hasParamSupport: true, parameters: [] },
+      dsName: "runjsdefault",
+      dsKind: "runjs",
+    });
+    cy.apiAddQueryToApp({
+      queryName: "runpy",
+      options: { code: "True", hasParamSupport: true, parameters: [] },
+      dsName: "runpydefault",
+      dsKind: "runpy",
+    });
+    cy.apiAddQueryToApp({
+      queryName: "restapi",
+      options: {
         method: "get",
         url: "https://gorest.co.in/public/v2/users",
         url_params: [["", ""]],
       },
-      null,
-      "restapi"
-    );
-    cy.apiAddQueryToApp(
-      "tjdb",
-      {
+      dsName: "restapidefault",
+      dsKind: "restapi",
+    });
+    cy.apiAddQueryToApp({
+      queryName: "tjdb",
+      options: {
         operation: "",
         transformationLanguage: "javascript",
         enableTransformation: false,
       },
-      null,
-      "tooljetdb"
-    );
+      dsName: "tooljetdbdefault",
+      dsKind: "tooljetdb",
+    });
 
     cy.apiCreateGDS(
       `http://localhost:3000/api/data-sources`,
@@ -69,21 +69,21 @@ describe("Chaining of queries", () => {
         { key: "password", value: Cypress.env("pg_password"), encrypted: true },
         { key: "ssl_enabled", value: false, encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
-        { key: "connection_type", value: "manual", encrypted: false }
+        { key: "connection_type", value: "manual", encrypted: false },
       ]
     );
     cy.log("Data source created");
-    cy.apiAddQueryToApp(
-      "psql",
-      {
+    cy.apiAddQueryToApp({
+      queryName: "psql",
+      options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
         query: `SELECT * FROM pg_stat_activity;`,
       },
-      `cypress-${dsName}-qc-postgresql`,
-      "postgresql"
-    );
+      dsName: `cypress-${dsName}-qc-postgresql`,
+      dsKind: "postgresql",
+    });
     cy.reload();
     resizeQueryPanel("80");
     chainQuery("psql", "runjs");
@@ -101,7 +101,7 @@ describe("Chaining of queries", () => {
     cy.get('[data-cy="debounce-input-field"]')
       .click()
       .type(`{selectAll}{backspace}2000{enter}`);
-    cy.wait(1000)
+    cy.wait(1000);
     cy.get('[data-cy="query-tab-setup"]').click();
 
     openEditorSidebar(buttonText.defaultWidgetName);
@@ -112,7 +112,7 @@ describe("Chaining of queries", () => {
       .find("input")
       .type(`{selectAll}{backspace}psql{enter}`);
     cy.forceClickOnCanvas();
-    cy.wait(2500)
+    cy.wait(2500);
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "psql");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
@@ -123,7 +123,6 @@ describe("Chaining of queries", () => {
   });
 
   it.skip("should verify query duplication", () => {
-
     const data = {};
     let dsName = fake.companyName;
     data.customText = randomString(12);
@@ -154,7 +153,7 @@ describe("Chaining of queries", () => {
       .find("input")
       .type(`{selectAll}{backspace}runjs{enter}`);
     cy.forceClickOnCanvas();
-    cy.wait(2500)
+    cy.wait(2500);
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runpy");
