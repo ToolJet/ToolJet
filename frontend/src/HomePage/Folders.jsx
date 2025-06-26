@@ -57,7 +57,7 @@ export const Folders = function Folders({
 
   useEffect(() => {
     if (_.isEmpty(currentFolder)) {
-      updateSidebarNAV(`All ${appType === 'workflow' ? 'workflows' : 'apps'}`);
+      updateSidebarNAV(`All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`);
       setActiveFolder({});
     } else {
       updateSidebarNAV(currentFolder.name);
@@ -104,7 +104,9 @@ export const Folders = function Folders({
       setActiveFolder(folder);
     }
     folderChanged(folder);
-    updateSidebarNAV(folder?.name ?? 'All apps');
+    updateSidebarNAV(
+      folder?.name ?? `All ${appType === 'front-end' ? 'apps' : appType === 'module' ? 'modules' : 'workflows'}`
+    );
     //update the url query parameter with folder name
     updateFolderQuery(folder?.name);
   }
@@ -112,7 +114,12 @@ export const Folders = function Folders({
   function updateFolderQuery(name) {
     const search = `${name ? `?folder=${name}` : ''}`;
     navigate(
-      { pathname: `/${getWorkspaceId()}${appType === 'workflow' ? '/workflows' : ''}`, search },
+      {
+        pathname: `/${getWorkspaceId()}${
+          appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
+        }`,
+        search,
+      },
       { replace: true }
     );
   }
@@ -286,10 +293,12 @@ export const Folders = function Folders({
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >
-            {t(
-              `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
-              'All apps'
-            )}
+            {appType === 'module'
+              ? 'All modules'
+              : t(
+                  `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
+                  'All apps'
+                )}
           </a>
         </div>
       )}

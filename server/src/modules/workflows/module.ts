@@ -31,6 +31,7 @@ import { AiModule } from '@modules/ai/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { RolesRepository } from '@modules/roles/repository';
+import { AppGitRepository } from '@modules/app-git/repository';
 export class WorkflowsModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -71,7 +72,6 @@ export class WorkflowsModule {
           WorkflowExecutionNode,
           WorkflowExecutionNode,
           WorkflowExecutionEdge,
-          RolesRepository,
         ]),
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
@@ -105,6 +105,7 @@ export class WorkflowsModule {
         DataSourcesRepository,
         OrganizationConstantRepository,
         VersionRepository,
+        AppGitRepository,
         AppsService,
         PageService,
         EventsService,

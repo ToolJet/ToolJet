@@ -3,7 +3,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -21,7 +20,6 @@ export class GroupPermissions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
   @Column({ name: 'organization_id', nullable: false })
   organizationId: string;
 
@@ -36,6 +34,12 @@ export class GroupPermissions extends BaseEntity {
 
   @Column({ name: 'app_delete', default: false })
   appDelete: boolean;
+
+  @Column({ name: 'workflow_create', default: false })
+  workflowCreate: boolean;
+
+  @Column({ name: 'workflow_delete', default: false })
+  workflowDelete: boolean;
 
   @Column({ name: 'folder_crud', default: false })
   folderCRUD: boolean;

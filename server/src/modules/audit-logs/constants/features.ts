@@ -8,5 +8,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.VIEW_LOGS]: {
       license: LICENSE_FIELD.AUDIT_LOGS,
     },
+    [FEATURE_KEY.VIEW_RESOURCES]: {
+      license: LICENSE_FIELD.AUDIT_LOGS,
+    },
   },
 };
