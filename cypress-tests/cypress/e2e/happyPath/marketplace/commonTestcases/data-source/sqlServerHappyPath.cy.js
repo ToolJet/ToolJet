@@ -5,6 +5,8 @@ import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
+import { sqlServerSelector } from "Selectors/sqlServer";
+import { sqlServerText } from "Texts/sqlServer";
 
 import {
   addQuery,
@@ -19,7 +21,7 @@ import {
 
 const data = {};
 
-describe("Data sources", () => {
+describe("Data sources SQL server connection and query", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -28,7 +30,7 @@ describe("Data sources", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on connection form", () => {
+  it("Should verify elements on connection form with validation", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
@@ -76,34 +78,86 @@ describe("Data sources", () => {
       `cypress-${data.dataSourceName}-sql-server`
     );
 
-    cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
+    const requiredFields = [
+      postgreSqlText.labelHost,
+      postgreSqlText.labelPort,
+      postgreSqlText.labelDbName,
+      postgreSqlText.labelUserName,
+      postgreSqlText.labelPassword,
+    ];
+    const sections = [
+      postgreSqlText.labelHost,
+      postgreSqlText.labelPort,
+      postgreSqlText.labelDbName,
+      postgreSqlText.labelUserName,
+      postgreSqlText.labelPassword,
+      postgreSqlText.labelConnectionOptions,
+    ];
+    sections.forEach((section) => {
+      if (section === postgreSqlText.labelConnectionOptions) {
+        cy.get(dataSourceSelector.keyInputField(section, 0)).should(
+          "be.visible"
+        );
+        cy.get(dataSourceSelector.valueInputField(section, 0)).should(
+          "be.visible"
+        );
+        cy.get(dataSourceSelector.deleteButton(section, 0)).should(
+          "be.visible"
+        );
+        cy.get(dataSourceSelector.addMoreButton(section)).should("be.visible");
+      } else if (requiredFields.includes(section)) {
+        cy.get(dataSourceSelector.labelFieldName(section)).verifyVisibleElement(
+          "have.text",
+          `${section}*`
+        );
+        cy.get(dataSourceSelector.textField(section)).should("be.visible");
+        if (section === postgreSqlText.labelPassword) {
+          cy.get(
+            dataSourceSelector.button(postgreSqlText.editButtonText)
+          ).click();
+          cy.verifyRequiredFieldValidation(section, "rgb(215, 45, 57)");
+        } else {
+          cy.get(dataSourceSelector.textField(section)).click();
+          cy.get(commonSelectors.textField(section)).should(
+            "have.css",
+            "border-color",
+            "rgba(0, 0, 0, 0)"
+          );
+          cy.get(dataSourceSelector.textField(section))
+            .type("123")
+            .clear()
+            .blur();
+          cy.verifyRequiredFieldValidation(section, "rgb(215, 45, 57)");
+        }
+      } else {
+        cy.get(dataSourceSelector.labelFieldName(section)).verifyVisibleElement(
+          "have.text",
+          section
+        );
+        cy.get(dataSourceSelector.textField(section)).should("be.visible");
+      }
+    });
+
+    cy.get(sqlServerSelector.labelInstance).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelHost
+      sqlServerText.labelInstance
     );
-    cy.get('[data-cy="label-instance"]').verifyVisibleElement(
+    cy.get(sqlServerSelector.labelAzureEncryptConnection).verifyVisibleElement(
       "have.text",
-      "Instance"
-    );
-    cy.get(postgreSqlSelector.labelPort).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelPort
-    );
-    cy.get(postgreSqlSelector.labelDbName).verifyVisibleElement(
-      "have.text",
-      "Database Name"
-    );
-    cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelUserName
-    );
-    cy.get(postgreSqlSelector.labelPassword).verifyVisibleElement(
-      "have.text",
-      "Password"
+      sqlServerText.labelAzureEncryptConnection
     );
 
-    cy.get('[data-cy^="label-azure-"]').verifyVisibleElement(
-      "contain",
-      "Azure"
+    cy.get(postgreSqlSelector.labelSsl).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.labelSSL
+    );
+    cy.get(postgreSqlSelector.sslToggleInput).should("be.visible");
+    cy.get(postgreSqlSelector.labelSSLCertificate).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.sslCertificate
+    );
+    cy.get(dataSourceSelector.toggleInput(sqlServerText.azureText)).should(
+      "be.visible"
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
@@ -124,14 +178,10 @@ describe("Data sources", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.couldNotConnect
-    );
-    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.buttonTextSave
-    );
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .and("be.disabled");
+    //verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
     cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
       "Failed to connect to localhost:1433 - Could not connect (sequence)"
