@@ -56,16 +56,16 @@ export const createFormComponentSlice = (set, get) => ({
   saveFormFields: (componentId, fields, moduleId = 'canvas') => {
     if (!componentId) return;
 
-    const { getComponentDefinition, withUndoRedo, getCurrentPageIndex, saveComponentPropertyChanges } = get();
+    const { getComponentDefinition, getCurrentPageIndex, saveComponentPropertyChanges } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return;
 
     const currentPageIndex = getCurrentPageIndex(moduleId);
     set(
-      withUndoRedo((state) => {
+      (state) => {
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
         lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], cleanupFormFields(fields));
-      }),
+      },
       false,
       'saveFormFields'
     );

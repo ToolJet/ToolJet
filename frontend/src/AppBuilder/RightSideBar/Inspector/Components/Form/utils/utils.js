@@ -1,7 +1,7 @@
 import React from 'react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { DATATYPE_TO_COMPONENT, JSON_DIFFERENCE, INPUT_COMPONENTS_FOR_FORM } from '../constants';
-import { startCase, omit } from 'lodash';
+import { startCase, omit, uniqBy } from 'lodash';
 import { getFieldDataFromComponent } from './fieldOperations';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 
@@ -264,7 +264,10 @@ export const mergeFormFieldsWithNewData = (existingFields, newFields) => {
 };
 
 export const cleanupFormFields = (fields) => {
-  return fields.map((field) => ({
+  return uniqBy(
+    fields.filter((field) => !!field.componentId),
+    'componentId'
+  ).map((field) => ({
     componentId: field.componentId,
     isCustomField: field.isCustomField,
     dataType: field.dataType,
