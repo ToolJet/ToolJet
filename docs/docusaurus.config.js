@@ -207,6 +207,10 @@ module.exports = {
             from: '/',
           },
           {
+            to: 'https://join.slack.com/t/tooljet/shared_invite/zt-38298nyhf-hK7tNkKNPwYSg1BhRU5mTA',
+            from: '/docs/slack',
+          },
+          {
             to: '/docs/security/constants/',
             from: '/docs/org-management/workspaces/workspace_constants/',
           },
