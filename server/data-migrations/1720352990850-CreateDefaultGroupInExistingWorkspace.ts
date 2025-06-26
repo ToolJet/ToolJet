@@ -31,7 +31,7 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition = getTooljetEdition() as TOOLJET_EDITIONS;
     if (edition === TOOLJET_EDITIONS.Cloud) {
-      console.log('Migration is only restricted for cloud edition.');
+      console.log('Migration is only restricted for non cloud edition.');
       return; // Exit the migration early
     }
     const manager = queryRunner.manager;
