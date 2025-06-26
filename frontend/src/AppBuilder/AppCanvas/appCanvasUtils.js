@@ -85,6 +85,7 @@ export const addNewWidgetToTheEditor = (
     left = Math.max(0, NO_OF_GRIDS - width);
     width = Math.min(width, NO_OF_GRIDS);
   }
+
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;
