@@ -169,7 +169,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   private getSslConfig(sourceOptions: SourceOptions) {
-    if (!sourceOptions.ssl_enabled) return undefined;
+    if (!sourceOptions.ssl_enabled) return false;
 
     return {
       rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none',
