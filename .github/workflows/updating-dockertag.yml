@@ -2,8 +2,8 @@ name: Update LTS Table
 
 on:
   workflow_dispatch:  # manually triggered
-  schedule:
-    - cron: '0 1 * * *'  # runs daily at 1:00 AM UTC
+  # schedule:
+  #   - cron: '0 1 * * *'  # runs daily at 1:00 AM UTC
 
 jobs:
   update-lts:
