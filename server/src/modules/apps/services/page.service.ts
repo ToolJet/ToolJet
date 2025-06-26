@@ -23,7 +23,7 @@ export class PageService implements IPageService {
     protected eventHandlerService: EventsService
   ) {}
 
-  async findPagesForVersion(appVersionId: string): Promise<Page[]> {
+  async findPagesForVersion(appVersionId: string, mode?: string): Promise<Page[]> {
     // const allPages = await this.pageRepository.find({ where: { appVersionId }, order: { index: 'ASC' } });
     const allPages = await this.pageHelperService.fetchPages(appVersionId);
     const pagesWithComponents = await Promise.all(
