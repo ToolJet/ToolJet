@@ -3,7 +3,7 @@ id: canvas
 title: Canvas and Layout
 ---
 
-**Canvas** is the main area in the app-builder where you build your application and design the user interface..
+**Canvas** is the main area in the app-builder where you build your application and design the user interface.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/canvas.png" alt="App Builder: Canvas"/>
 
