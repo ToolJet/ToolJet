@@ -2,7 +2,7 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
-export class AddUniqueAppSlug1749765848193 implements MigrationInterface {
+export class AddUniqueAppSlug1698222463379 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     // If edition is not cloud, skip this migration
