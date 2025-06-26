@@ -2,8 +2,8 @@ name: Update LTS Table
 
 on:
   workflow_dispatch:  # manually triggered
-  # schedule:
-  #   - cron: '0 1 * * *'  # runs daily at 1:00 AM UTC
+  schedule:
+    - cron: '30 5 * * 1,4'
 
 jobs:
   update-lts:
@@ -14,7 +14,7 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # needed for branching
+          ref: develop
 
       - name: 🛠 Setup Git
         run: |
@@ -30,6 +30,7 @@ jobs:
         run: bash ./docs/regenerate_lts_table.sh
 
       - name: 📦 Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "docs: update LTS version table"
@@ -37,3 +38,10 @@ jobs:
           title: "docs: update LTS version table"
           body: "Automated update of the LTS version table from DockerHub."
           base: develop
+
+      - name: 🤖 Enable auto-merge for the PR
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.TOKEN_PR }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
