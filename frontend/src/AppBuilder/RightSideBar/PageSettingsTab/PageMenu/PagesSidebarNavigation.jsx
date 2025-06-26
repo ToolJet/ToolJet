@@ -64,7 +64,7 @@ export const PagesSidebarNavigation = ({
     const tempOverflow = [];
 
     const measuredNavItems = Array.from(measurementContainerRef.current.children);
-    const MORE_BUTTON_WIDTH_ESTIMATE = 180;
+    const MORE_BUTTON_WIDTH_ESTIMATE = 250;
 
     for (let i = 0; i < pages.length; i++) {
       const link = pages[i];
@@ -283,7 +283,11 @@ export const PagesSidebarNavigation = ({
         {pages
           .filter((p) => !p.pageGroupId)
           .map((link) => (
-            <div style={{ padding: '0px 10px' }} key={`measure-${link.id}`} data-id={link.id}>
+            <div
+              style={{ padding: `0px ${style === 'texticon' ? '22px' : '10px'}` }}
+              key={`measure-${link.id}`}
+              data-id={link.id}
+            >
               {link?.name}
             </div>
           ))}
