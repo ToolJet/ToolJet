@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "ClickUp datasource",
+  "description": "Clickup plugin for task, list, and doc management",
+  "type": "api",
+  "source": {
+    "name": "ClickUp",
+    "kind": "clickup",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Personal API Token"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}

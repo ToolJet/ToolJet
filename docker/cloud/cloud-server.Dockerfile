@@ -91,11 +91,12 @@ COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
-COPY --from=builder /app/server/entrypoint.sh ./app/server/entrypoint.sh
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+
+COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
 # Define non-sudo user
 RUN useradd --create-home --home-dir /home/appuser appuser \
@@ -108,10 +109,14 @@ RUN useradd --create-home --home-dir /home/appuser appuser \
 ENV npm_config_cache /home/appuser/.npm
 
 ENV HOME=/home/appuser
+
+# Installing git for simple git commands
+RUN apt-get update && apt-get install -y git && apt-get clean
+
 USER appuser
 
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
 
-ENTRYPOINT ["./server/entrypoint.sh"]
+ENTRYPOINT ["./server/cloud-entrypoint.sh"]

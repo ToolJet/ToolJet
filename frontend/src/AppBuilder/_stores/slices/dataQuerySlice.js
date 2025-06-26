@@ -1,4 +1,4 @@
-import { dataqueryService } from '@/_services';
+import { dataqueryService, appPermissionService } from '@/_services';
 import { getDefaultOptions } from '@/_stores/storeHelper';
 import { v4 as uuidv4 } from 'uuid';
 import _, { isEmpty, throttle } from 'lodash';
@@ -22,10 +22,20 @@ const initialState = {
 };
 
 export const createDataQuerySlice = (set, get) => ({
+  initializeDataQuerySlice: (moduleId = 'canvas') => {
+    set(
+      (state) => {
+        state.dataQuery.queries.modules[moduleId] = [];
+      },
+      false,
+      'initializeDataQuerySlice'
+    );
+  },
   dataQuery: {
     ...initialState,
-    checkExistingQueryName: (newName) => get().dataQuery.queries.modules.canvas.some((query) => query.name === newName),
-    getCurrentModuleQueries: (moduleId) => get().dataQuery.queries.modules[moduleId],
+    checkExistingQueryName: (newName, moduleId = 'canvas') =>
+      get().dataQuery.queries.modules[moduleId].some((query) => query.name === newName),
+    getCurrentModuleQueries: (moduleId = 'canvas') => get().dataQuery.queries.modules[moduleId],
     setQueries: (queries, moduleId = 'canvas') => {
       set(
         (state) => {
@@ -49,7 +59,7 @@ export const createDataQuerySlice = (set, get) => ({
     },
     createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas') => {
       const appVersionId = get().currentVersionId;
-      const appId = get().app.appId;
+      const appId = get().appStore.modules[moduleId].app.appId;
       const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource);
       const options = { ...defaultOptions, ...customOptions };
       const kind = selectedDataSource.kind;
@@ -101,7 +111,7 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
-          setSelectedQuery(data.id, data);
+          setSelectedQuery(data.id, moduleId);
           if (shouldRunQuery) setQueryToBeRun(data);
 
           /** Checks if there is an API call cached. If yes execute it */
@@ -121,12 +131,16 @@ export const createDataQuerySlice = (set, get) => ({
 
           get().addNewQueryMapping(data.id, data.name, moduleId);
           //! we need default value in store so that query can be resolved if referenced from other entity
-          get().setResolvedQuery(data.id, {
-            isLoading: false,
-            data: [],
-            rawData: [],
-            id: data.id,
-          });
+          get().setResolvedQuery(
+            data.id,
+            {
+              isLoading: false,
+              data: [],
+              rawData: [],
+              id: data.id,
+            },
+            moduleId
+          );
         })
         .catch((error) => {
           set((state) => {
@@ -220,8 +234,8 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .finally(() => setIsAppSaving(false));
 
-      get().removeNode(`queries.${queryId}`);
-      get().updateDependencyValues(`queries.${queryId}`);
+      get().removeNode(`queries.${queryId}`, moduleId);
+      get().updateDependencyValues(`queries.${queryId}`, moduleId);
     },
     duplicateQuery: (id, appId, moduleId = 'canvas') => {
       set((state) => {
@@ -256,7 +270,6 @@ export const createDataQuerySlice = (set, get) => ({
         )
         .then((data) => {
           set((state) => {
-            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = [
               {
                 ...data,
@@ -266,16 +279,20 @@ export const createDataQuerySlice = (set, get) => ({
               ...state.dataQuery.queries.modules[moduleId],
             ];
           });
-          setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
+          setSelectedQuery(data.id, moduleId);
 
           get().addNewQueryMapping(data.id, data.name, moduleId);
           //! we need default value in store so that query can be resolved if referenced from other entity
-          get().setResolvedQuery(data.id, {
-            isLoading: false,
-            data: [],
-            rawData: [],
-            id: data.id,
-          });
+          get().setResolvedQuery(
+            data.id,
+            {
+              isLoading: false,
+              data: [],
+              rawData: [],
+              id: data.id,
+            },
+            moduleId
+          );
 
           const events = getEventsByComponentsId(queryToClone.id);
 
@@ -289,6 +306,42 @@ export const createDataQuerySlice = (set, get) => ({
               index: event.index,
             };
             createAppVersionEventHandlers(newEvent, moduleId);
+          });
+
+          if (queryToClone.permissions && queryToClone.permissions.length !== 0) {
+            const body = {
+              type: queryToClone.permissions[0]?.type,
+              ...(queryToClone.permissions[0]?.type === 'GROUP'
+                ? {
+                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                      (group) => group.permissionGroupsId || group.permission_groups_id
+                    ),
+                  }
+                : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
+            };
+            appPermissionService
+              .createQueryPermission(appId, data.id, body)
+              .then((newQuery) => {
+                const dataQueries = get().dataQuery.queries.modules[moduleId];
+                const updatedDataQueries = dataQueries.map((query) => {
+                  if (query.id === data.id) {
+                    return {
+                      ...query,
+                      permissions: newQuery.length === 0 || newQuery.length === undefined ? [] : [newQuery[0]],
+                    };
+                  }
+                  return query;
+                });
+                get().dataQuery.setQueries(updatedDataQueries);
+              })
+              .catch(() => {
+                toast.error('Permission could not be created. Please try again!', {
+                  className: 'text-nowrap w-auto mw-100',
+                });
+              });
+          }
+          set((state) => {
+            state.dataQuery.creatingQueryInProcessId = null;
           });
         })
         .catch((error) => {
@@ -416,12 +469,26 @@ export const createDataQuerySlice = (set, get) => ({
           });
         });
     }, 500),
-    runOnLoadQueries: async () => {
-      const queries = get().dataQuery.queries.modules.canvas;
+    runOnLoadQueries: async (moduleId = 'canvas') => {
+      const queries = get().dataQuery.queries.modules[moduleId];
       try {
         for (const query of queries) {
-          if ((query.options.runOnPageLoad || query.options.run_on_page_load) && isQueryRunnable(query)) {
-            await get().queryPanel.runQuery(query.id, query.name, undefined, undefined, {}, false, true, 'canvas');
+          if (
+            (query.options?.runOnPageLoad || query.options?.run_on_page_load) &&
+            (query.restricted || isQueryRunnable(query))
+          ) {
+            await get().queryPanel.runQuery(
+              query.id,
+              query.name,
+              undefined,
+              undefined,
+              {},
+              undefined,
+              undefined,
+              false,
+              true,
+              moduleId
+            );
           }
         }
         return Promise.resolve();

@@ -38,6 +38,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
           FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
           FEATURE_KEY.DELETE_PAGE_PERMISSIONS,
+          FEATURE_KEY.FETCH_QUERY_PERMISSIONS,
+          FEATURE_KEY.CREATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.UPDATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.DELETE_QUERY_PERMISSIONS,
         ],
         App
       );
@@ -56,6 +60,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
           FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
           FEATURE_KEY.DELETE_PAGE_PERMISSIONS,
+          FEATURE_KEY.FETCH_QUERY_PERMISSIONS,
+          FEATURE_KEY.CREATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.UPDATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.DELETE_QUERY_PERMISSIONS,
         ],
         App
       );
@@ -66,7 +74,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       isAllAppsViewable ||
       (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
     ) {
-      can([FEATURE_KEY.FETCH_USERS, FEATURE_KEY.FETCH_USER_GROUPS, FEATURE_KEY.FETCH_PAGE_PERMISSIONS], App);
+      can(
+        [
+          FEATURE_KEY.FETCH_USERS,
+          FEATURE_KEY.FETCH_USER_GROUPS,
+          FEATURE_KEY.FETCH_PAGE_PERMISSIONS,
+          FEATURE_KEY.FETCH_QUERY_PERMISSIONS,
+        ],
+        App
+      );
     }
   }
 }

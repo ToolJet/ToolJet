@@ -79,4 +79,8 @@ export class PageHelperService implements IPageHelperService {
     page.index = dto.index;
     return page;
   }
+
+  public async findModuleContainer(appVersionId: string): Promise<void> {
+    return null;
+  }
 }

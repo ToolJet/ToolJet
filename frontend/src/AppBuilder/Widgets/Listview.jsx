@@ -9,6 +9,7 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Listview = function Listview({
   id,
@@ -21,8 +22,9 @@ export const Listview = function Listview({
   darkMode,
   dataCy,
 }) {
+  const { moduleId } = useModuleContext();
   const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
-  const childComponents = useStore((state) => state.getChildComponents(id), shallow);
+  const childComponents = useStore((state) => state.getChildComponents(id, moduleId), shallow);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -53,6 +55,8 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
+    padding: '7px 2px 7px 7px',
+    scrollbarGutter: 'stable',
   };
 
   const computeCanvasBackgroundColor = useMemo(() => {
@@ -69,7 +73,7 @@ export const Listview = function Listview({
   const onOptionChange = useCallback(
     (optionName, value, componentId, index) => {
       setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId);
+        const componentName = getComponentNameFromId(componentId, moduleId);
         const changedData = { [componentName]: { [optionName]: value } };
         const existingDataAtIndex = prevData[index] ?? {};
         const newDataAtIndex = {
@@ -84,13 +88,13 @@ export const Listview = function Listview({
         return { ...prevData, ...newChildrenData };
       });
     },
-    [getComponentNameFromId, setChildrenData]
+    [getComponentNameFromId, setChildrenData, moduleId]
   );
 
   const onOptionsChange = useCallback(
     (exposedVariables, componentId, index) => {
       setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId);
+        const componentName = getComponentNameFromId(componentId, moduleId);
         const existingDataAtIndex = prevData[index] ?? {};
         const changedData = {};
         Object.keys(exposedVariables).forEach((key) => {
@@ -108,7 +112,7 @@ export const Listview = function Listview({
         return { ...prevData, ...newChildrenData };
       });
     },
-    [getComponentNameFromId, setChildrenData]
+    [getComponentNameFromId, setChildrenData, moduleId]
   );
 
   function onRecordOrRowClicked(index) {
@@ -231,9 +235,8 @@ export const Listview = function Listview({
       };
     });
     // Update the customResolvables with the new listItems
-    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem');
+    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId);
   }
-
   return (
     <div
       data-disabled={disabledState}
@@ -241,10 +244,9 @@ export const Listview = function Listview({
       id={id}
       ref={parentRef}
       style={computedStyles}
-      //   onClick={() => containerProps.onComponentClick(id, component)}
       data-cy={dataCy}
     >
-      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
+      <div className={`w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
         {filteredData.map((listItem, index) => (
           <div
             className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder && mode == 'list' ? 'border-bottom' : ''}`}

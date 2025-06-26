@@ -189,17 +189,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         /* 
           Basic plan customer. lets update all environment options. 
           this will help us to run the queries successfully when the user buys enterprise plan 
-        */
-        await Promise.all(
-          allEnvs.map(async (envToUpdate) => {
-            dataSource.options = (
-              await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
-            ).options;
+          */
 
-            const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
-            await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
-          })
-        );
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
+        for (const env of allEnvs) {
+          dataSource.options = (
+            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
+          ).options;
+
+          await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
+        }
       }
       const updatableParams = {
         id: dataSourceId,
@@ -711,24 +710,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       ];
       await this.updateOptions(dataSourceId, tokenOptions, organizationId, environmentId);
     }
-  }
-
-  async findDefaultDataSource(
-    kind: string,
-    appVersionId: string,
-    organizationId: string,
-    manager: EntityManager
-  ): Promise<DataSource> {
-    const defaultDataSource = await manager.findOne(DataSource, {
-      where: { kind, appVersionId, type: DataSourceTypes.STATIC },
-    });
-
-    if (defaultDataSource) {
-      return defaultDataSource;
-    }
-    const dataSource = await this.dataSourceRepository.createDefaultDataSource(kind, appVersionId, manager);
-    await this.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
-    return dataSource;
   }
 
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {

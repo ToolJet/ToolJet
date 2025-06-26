@@ -30,6 +30,7 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
@@ -49,10 +50,13 @@ export const EventManager = ({
   customEventRefs = undefined,
   component,
 }) => {
+  const { moduleId, isModuleEditor } = useModuleContext();
   const components = useStore((state) => state.getCurrentPageComponents());
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
+  const moduleInputDummyQueries = useStore((state) => state?.getModuleInputDummyQueries?.(), shallow) || {};
+
   const dataQueries = useStore((state) => {
     const queries = state.dataQuery?.queries?.modules?.canvas || [];
     if (callerQueryId) {
@@ -63,7 +67,7 @@ export const EventManager = ({
   const allAppEvents = useEvents();
   const { createAppVersionEventHandlers, deleteAppVersionEventHandler, updateAppVersionEventHandlers } =
     useEventActions();
-  const appId = useStore((state) => state.app.appId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const eventsUpdatedLoader = useStore((state) => state.eventsSlice.getEventsUpdatedLoader(), shallow);
   const eventsCreatedLoader = useStore((state) => state.eventsSlice.getEventsCreatedLoader(), shallow);
@@ -102,9 +106,9 @@ export const EventManager = ({
       return a.index - b.index;
     });
 
-    setEvents(sortedEvents || []);
+    setEvents(sortedEvents || [], moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(currentEvents)]);
+  }, [JSON.stringify(currentEvents), moduleId]);
 
   let groupedOptions = ActionTypes.reduce((acc, action) => {
     const groupName = action.group;
@@ -454,11 +458,16 @@ export const EventManager = ({
     return defaultValue;
   };
 
+  const constructDataQueryOptions = () => {
+    const queries = dataQueries.filter((qry) => isQueryRunnable(qry)).map((qry) => ({ name: qry.name, value: qry.id }));
+    const moduleInputs = Object.entries(moduleInputDummyQueries).map(([key, value]) => ({ name: value, value: key }));
+    return [...moduleInputs, ...queries];
+  };
   const formatGroupLabel = (data) => {
     if (data.label === 'run-action') return;
     return (
       <div
-        className="tw-border-x-0 tw-border-t-0 tw-border-b-[0.5px] tw-border-solid tw-my-[4px]"
+        className="tw-border-x-0 tw-border-t-0 tw-border-b-[1px] tw-border-solid tw-my-[4px]"
         style={{ borderColor: 'var(--border-weak)' }}
       ></div>
     );
@@ -687,27 +696,34 @@ export const EventManager = ({
                   <div className="col-9" data-cy="query-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={dataQueries
-                        .filter((qry) => isQueryRunnable(qry))
-                        .map((qry) => ({ name: qry.name, value: qry.id }))}
+                      options={constructDataQueryOptions()}
                       value={event?.queryId}
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
 
-                        const parameters = (query?.options?.parameters ?? []).reduce(
-                          (paramObj, param) => ({
-                            ...paramObj,
-                            [param.name]: param.defaultValue,
-                          }),
-                          {}
-                        );
+                        // If it is a module editor and the query is not found in the data queries, then it is a module input dummy query
+                        if (isModuleEditor && query === undefined) {
+                          handleQueryChange(index, {
+                            queryId: value,
+                            queryName: moduleInputDummyQueries[value],
+                            parameters: {},
+                          });
+                        } else {
+                          const parameters = (query?.options?.parameters ?? []).reduce(
+                            (paramObj, param) => ({
+                              ...paramObj,
+                              [param.name]: param.defaultValue,
+                            }),
+                            {}
+                          );
 
-                        handleQueryChange(index, {
-                          queryId: query.id,
-                          queryName: query.name,
-                          parameters: parameters,
-                        });
+                          handleQueryChange(index, {
+                            queryId: query.id,
+                            queryName: query.name,
+                            parameters: parameters,
+                          });
+                        }
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}

@@ -13,6 +13,7 @@ import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -90,13 +91,14 @@ export const PreviewBox = ({
   isWorkspaceVariable,
   validationFn,
 }) => {
+  const { moduleId } = useModuleContext();
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
   const [largeDataset, setLargeDataset] = useState(false);
-  const globals = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
+  const globals = useStore((state) => state.getAllExposedValues(moduleId).constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
-  const globalServerConstantsRegex = /^\{\{.*globals\.server.*\}\}$/;
+  const globalServerConstantsRegex = /\{\{.*globals\.server.*\}\}/;
 
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;
@@ -249,7 +251,10 @@ const RenderResolvedValue = ({
   isServerConstant = false,
   isLargeDataset,
 }) => {
-  const isServerSideGlobalEnabled = useStore((state) => !!state?.license?.featureAccess?.serverSideGlobal, shallow);
+  const isServerSideGlobalResolveEnabled = useStore(
+    (state) => !!state?.license?.featureAccess?.serverSideGlobalResolve,
+    shallow
+  );
 
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
@@ -274,7 +279,7 @@ const RenderResolvedValue = ({
     : previewType;
 
   const previewContent = isServerConstant
-    ? isServerSideGlobalEnabled
+    ? isServerSideGlobalResolveEnabled
       ? 'Server variables would be resolved at runtime'
       : 'Server variables are only available in paid plans'
     : isSecretConstant

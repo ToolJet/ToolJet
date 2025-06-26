@@ -1,3 +1,5 @@
+import { DefaultDataSourceKind } from '../types';
+
 export enum FEATURE_KEY {
   GET = 'GET',
   GET_FOR_APP = 'GET_FOR_APP',
@@ -9,6 +11,8 @@ export enum FEATURE_KEY {
   TEST_CONNECTION = 'TEST_CONNECTION',
   GET_OAUTH2_BASE_URL = 'GET_OAUTH2_BASE_URL',
   AUTHORIZE = 'AUTHORIZE',
+  QUERIES_LINKED_TO_DATASOURCE = 'QUERIES_LINKED_TO_DATASOURCE',
+  QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN = 'QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN',
 }
 
 export enum DataSourceTypes {
@@ -21,3 +25,5 @@ export enum DataSourceScopes {
   LOCAL = 'local',
   GLOBAL = 'global',
 }
+
+export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
