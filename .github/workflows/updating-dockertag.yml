@@ -33,7 +33,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "docs: update LTS version table"
-          branch: "auto/update-lts-$(date +%Y%m%d)"
+          branch: auto/update-lts-${{ github.run_id }}
           title: "docs: update LTS version table"
-          body: "Automated update of the LTS table from DockerHub."
+          body: "Automated update of the LTS version table from DockerHub."
           base: develop
