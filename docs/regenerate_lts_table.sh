@@ -81,7 +81,7 @@ get_lts_tags() {
         fi
         
         local page_tags
-        page_tags=$(echo "$resp" | jq -r '.results[]? | select(.name | test("ee-lts$")) | .name' 2>/dev/null)
+        page_tags=$(echo "$resp" | jq -r '.results[]? | select(.name | test("^v.*ee-lts$")) | .name' 2>/dev/null)
         
         if [[ -n "$page_tags" ]]; then
             while IFS= read -r tag; do
