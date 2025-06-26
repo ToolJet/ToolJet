@@ -1,7 +1,7 @@
 import { getEnvVars } from './database-config-utils';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
-import { INestApplication } from '@nestjs/common';
+import { INestApplicationContext } from '@nestjs/common';
 import { PluginsService } from '@modules/plugins/service';
 import { CreatePluginDto } from '@modules/plugins/dto';
 import * as availablePlugins from 'src/assets/marketplace/plugins.json';
@@ -12,7 +12,7 @@ import { Plugin } from 'src/entities/plugin.entity';
 const ENV_VARS = getEnvVars();
 
 async function bootstrap() {
-  const nestApp = await NestFactory.create(AppModule, {
+  const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }), {
     logger: ['error', 'warn'],
   });
 
@@ -22,7 +22,7 @@ async function bootstrap() {
   process.exit(0);
 }
 
-async function validateAndReloadPlugins(nestApp: INestApplication) {
+async function validateAndReloadPlugins(nestApp: INestApplicationContext) {
   const pluginsService = nestApp.get(PluginsService);
   const pluginsToReload = fetchPluginsToReload();
   const validPluginDtos: CreatePluginDto[] = [];

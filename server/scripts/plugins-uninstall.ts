@@ -2,7 +2,7 @@ import * as availablePlugins from 'src/assets/marketplace/plugins.json';
 import { AppModule } from '@modules/app/module';
 import { CreatePluginDto } from '@modules/plugins/dto';
 import { EntityManager } from 'typeorm';
-import { INestApplication } from '@nestjs/common';
+import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsService } from '@modules/plugins/service';
@@ -12,7 +12,7 @@ import { validateSync } from 'class-validator';
 const ENV_VARS = getEnvVars();
 
 async function bootstrap() {
-  const nestApp = await NestFactory.create(AppModule, {
+  const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }), {
     logger: ['error', 'warn'],
   });
 
@@ -22,7 +22,7 @@ async function bootstrap() {
   process.exit(0);
 }
 
-async function validateAndUninstallPlugins(nestApp: INestApplication) {
+async function validateAndUninstallPlugins(nestApp: INestApplicationContext) {
   const pluginsService = nestApp.get(PluginsService);
   const pluginsToUninstall = fetchPluginsToUninstall();
   const validPluginDtos: CreatePluginDto[] = [];
