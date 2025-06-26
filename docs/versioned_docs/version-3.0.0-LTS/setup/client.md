@@ -12,7 +12,7 @@ You can build standalone client with the below command:
 SERVE_CLIENT=false npm run build
 ```
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
 
 ## Deploying ToolJet client on Firebase
 
@@ -109,4 +109,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+For specific issues or questions, refer to our **[Slack](/docs/slack)**.

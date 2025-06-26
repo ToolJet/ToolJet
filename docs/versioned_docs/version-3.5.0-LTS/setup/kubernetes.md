@@ -33,6 +33,7 @@ PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
 PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
 ```
+
 Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
 
 3. Create a Kubernetes deployment
@@ -92,7 +93,7 @@ Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniq
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
 :::tip
-If you have openssl installed, you can run the 
+If you have openssl installed, you can run the
 command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -117,7 +118,6 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 
 **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet deployment.**
 
-
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -130,5 +130,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._

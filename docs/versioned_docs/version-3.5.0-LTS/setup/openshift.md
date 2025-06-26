@@ -29,6 +29,7 @@ PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
 PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
 ```
+
 Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
 
 3. Once you have logged into the Openshift developer dashboard click on `+Add` tab. Select import YAML from the local machine.
@@ -37,7 +38,7 @@ Also, for setting up additional environment variables in the .env file, please c
 When entering one or more files and use --- to separate each definition
 :::
 
-Copy paste deployment.yaml to the online editor 
+Copy paste deployment.yaml to the online editor
 
 ```
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
@@ -61,8 +62,7 @@ Once you have added the files click on create.
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
 :::
 
-
-4. Navigate to topology tab and use the visual connector to establish the connect between tooljet-deployment and postgresql as shown in the screenshot below. 
+4. Navigate to topology tab and use the visual connector to establish the connect between tooljet-deployment and postgresql as shown in the screenshot below.
 
 <div style={{textAlign: 'center'}}>
 
@@ -89,14 +89,14 @@ TOOLJET_DB_USER=<username>
 TOOLJET_DB_PASS=<password>
 ```
 
-:::note 
+:::note
 Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
 :::
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
 :::tip
-If you have openssl installed, you can run the 
+If you have openssl installed, you can run the
 command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -133,4 +133,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._

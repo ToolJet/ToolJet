@@ -63,10 +63,10 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
   </div>
 
 
-Click on deploy once the above parameters are set. 
+Click on deploy once the above parameters are set.
 
 :::info
-Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+Once the Service is created and live, to make the Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
 ## Deploying ToolJet Database 
@@ -83,8 +83,8 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
    docker tag postgrest/postgrest:v10.1.1.20221215 gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
    docker push gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
    ```
-  
-  Please run the above command by launching googleCLI which will help to push the PostgREST image to Google container registry. 
+
+  Please run the above command by launching googleCLI which will help to push the PostgREST image to Google container registry.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/CLI.png" alt="CLI" />
@@ -97,7 +97,7 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/create-service-cloud-run-postgrest.png" alt="create-service-cloud-run-postgrest" />
-  </div>  
+  </div>
 
 
 3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
@@ -121,12 +121,13 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/Cloud-SQL-instance.png" alt="Cloud-SQL-instance" />
   </div>
-  
 
-Click on deploy once the above parameters are set. 
+
+
+Click on deploy once the above parameters are set.
 
 :::info
-Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+Once the Service is created and live, to make the Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
 
@@ -151,4 +152,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*

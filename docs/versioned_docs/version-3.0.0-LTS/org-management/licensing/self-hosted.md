@@ -15,7 +15,7 @@ This is a free license where a user can access basic offerings such as creating 
 
 ### Trial License
 
-ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
+ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
 
 ### Paid License
 
@@ -36,7 +36,7 @@ Role Required: **Super Admin**
 3. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.
     <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
 
-If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
+If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.
 
 ## FAQs
 

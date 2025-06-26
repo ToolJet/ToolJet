@@ -112,7 +112,7 @@ You can join two or more tables in the ToolJet database by using the **Join** op
 </div>
 
 :::info
-If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com/slack)**
+If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](/docs/slack)**
 :::
 
 </div>

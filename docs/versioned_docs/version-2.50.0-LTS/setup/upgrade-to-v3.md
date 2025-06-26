@@ -236,8 +236,7 @@ Please check the environment variables that you need to configure to set up:
 
 <!-- Don't use relative path. Needs to redirect to current docs instead of versioned -->
 
-
 ## Help and Support
 
-- Feel free to join our [Slack Community](https://tooljet.com/slack) or you can also e-mail us at hello@tooljet.com.
+- Feel free to join our [Slack Community](/docs/slack) or you can also e-mail us at hello@tooljet.com.
 - If you have found a bug, please create a [GitHub issue](https://github.com/ToolJet/ToolJet/issues) for the same.

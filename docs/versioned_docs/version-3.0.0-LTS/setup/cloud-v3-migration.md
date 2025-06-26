@@ -170,6 +170,7 @@ If you haven't migrated your local data sources to global data sources, you will
 ### Workspace Variables
 
 #### Action Required
+
 - Identify all uses of Workspace Variables
 - Replace them with Workspace Constants
 - Update all components and queries using these variables
@@ -204,5 +205,5 @@ The `metadata` object will contain detailed information about the request and re
 
 ## Help and Support
 
-- Feel free to join our [Slack Community](https://tooljet.com/slack) or you can also e-mail us at hello@tooljet.com.
+- Feel free to join our [Slack Community](/docs/slack) or you can also e-mail us at hello@tooljet.com.
 - If you have found a bug, please create a [GitHub issue](https://github.com/ToolJet/ToolJet/issues) for the same.

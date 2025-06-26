@@ -17,7 +17,7 @@ This is a free license where a user can access basic offerings such as creating 
 
 ### Trial License
 
-ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
+ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
 
 ### Paid License
 
@@ -87,7 +87,7 @@ Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the 
 
 If a user is automatically archived due to the new pricing plan, the Super Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
-If you have any questions, feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
+If you have any questions, feel free to join our [Slack Community](/docs/slack) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
 
 ## FAQs
 

@@ -73,13 +73,13 @@ Parameters can also be used to trigger other queries and pass custom values. Bel
     <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/multiply-v2.png" alt="Run JavaScript code" />
 
 2. Now, let's create another RunJS query called *callMultiply*, where we will invoke the *multiply* query created earlier using custom parameter values. Here's the code snippet for *callMultiply*:
- 
+
     ```js
     queries.multiply.run({num1: 20, num2: 7})
     ```
- 
+
     By executing this code within *callMultiply*, we trigger the *multiply* query with specific values for its parameters.
- 
+
     <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/call-multiply-v2.png" alt="Run JavaScript code" />
 
 With this setup, the *multiply* query can be called from other queries, such as *callMultiply*, by providing custom parameter values. This allows you to reuse the *multiply* query with different inputs and display the results accordingly.
@@ -159,7 +159,7 @@ ToolJet allows you to internally utilize these libraries:
 | Axios       | [https://axios-http.com/docs/intro](https://axios-http.com/docs/intro) |
 
 :::info
-Issues with writing custom JavaScript code? Ask in our [Slack Community](https://tooljet.com/slack).
+Issues with writing custom JavaScript code? Ask in our [Slack Community](/docs/slack).
 :::
 
 </div>

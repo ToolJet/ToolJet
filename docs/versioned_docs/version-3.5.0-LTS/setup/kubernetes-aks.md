@@ -9,7 +9,6 @@ title: Kubernetes (AKS)
 To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
 
-
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using **Azure Database for PostgreSQL** since this guide is for deploying using AKS. You can find the system requirements [here](/docs/setup/system-requirements#postgresql).
 
@@ -38,6 +37,7 @@ PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
 PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
 ```
+
 Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
 
 :::info
@@ -45,6 +45,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 :::
 
 3. Create k8s service and reserve a static IP and expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
+
    ```bash
     curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/service.yaml
    ```
@@ -76,14 +77,14 @@ TOOLJET_DB_USER=<username>
 TOOLJET_DB_PASS=<password>
 ```
 
-:::note 
+:::note
 Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
 :::
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
 :::tip
-If you have openssl installed, you can run the 
+If you have openssl installed, you can run the
 command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -120,4 +121,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._

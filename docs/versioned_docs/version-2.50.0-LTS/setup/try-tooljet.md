@@ -45,4 +45,4 @@ docker run \
 
 By following these instructions, you can easily run the ToolJet server on the port of your choice, ensuring flexibility in your setup.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*

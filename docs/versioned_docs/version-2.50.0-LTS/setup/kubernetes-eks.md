@@ -36,7 +36,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
         - **LOCKBOX_KEY**
         </ul>
         <br/>
-        Read **[environment variables reference](/docs/setup/env-vars)**
+        Read **[environment variables reference](/docs/setup/env-vars)**v
 :::
 
 3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
@@ -69,4 +69,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*

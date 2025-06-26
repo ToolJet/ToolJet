@@ -19,14 +19,14 @@ Install docker and docker-compose on the server.
    - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
    - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
+
 ### Deployment options
 
 There are two options to deploy ToolJet using Docker Compose:
 1. **With in-built PostgreSQL database (recommended)**. This setup uses the official Docker image of PostgreSQL.
-2.   **With external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
+2. **With external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 
-Confused about which setup to select? Feel free to ask the community via Slack: https://tooljet.com/slack.
-
+Confused about which setup to select? Feel free to ask the community via [Slack](/docs/slack).
 
 <Tabs>
   <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
@@ -61,7 +61,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   Examples:
   `TOOLJET_HOST=http://12.34.56.78` or
   `TOOLJET_HOST=https://tooljet.yourdomain.com`
-  
+
   If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server. 
 
   :::info
@@ -72,6 +72,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   iii. If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
   `sudo docker-compose up -d`
   :::
+
 
 ### Docker Backup (Only For In-Built PostgreSQL)
 
@@ -132,7 +133,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
   Examples:
   `TOOLJET_HOST=http://12.34.56.78` or
   `TOOLJET_HOST=https://tooljet.yourdomain.com`
-  
+
   If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
   :::info
@@ -162,4 +163,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*

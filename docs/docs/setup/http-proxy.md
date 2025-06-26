@@ -9,7 +9,7 @@ The server will connect to the internet via the configured HTTP proxy when the b
 | :--------------------- | :------------------------------------ |
 | TOOLJET_HTTP_PROXY     | Used for both HTTP and HTTPS requests |
 
-*If you have any questions, feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions, feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
 
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

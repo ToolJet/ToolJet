@@ -189,7 +189,7 @@ The date with time column stores data in the ISO 8601 format. When querying a ta
 
 
 :::info
-If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com/slack)**
+If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](/docs/slack)**
 :::
 
 </div>

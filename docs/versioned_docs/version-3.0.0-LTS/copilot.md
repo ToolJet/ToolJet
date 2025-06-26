@@ -90,7 +90,6 @@ This example demonstrates the usage of copilot by generating a SQL query to fetc
     assume we have a database with two tables: "customer" and "orders." The "customer" table has columns such as "customer_id," "customer_name," and "country." The "orders" table has columns such as "order_id," "customer_id," "order_date," and "total_amount."
     return a SQL query to retrieve the total order amounts for customers from the email key retrieved from the data, who have placed more than three orders.*/
     ```
-
 - Click on the "Generate Code" button to generate the SQL query.
 
 - Once the code is generated, add a return statement below the code to return the generated SQL query. The variable name for the query might be different in your generated code.
@@ -103,9 +102,9 @@ This example demonstrates the usage of copilot by generating a SQL query to fetc
 
 - Once the query is executed, create a new PostgreSQL query in SQL mode and use JavaScript to get the data query data dynamically:
 
-    ```js
-    {{queries.restapi1.data}}
-    ```
+  ```js
+  {{queries.restapi1.data}}
+  ```
 
     <div style={{textAlign: 'center'}}>
 
@@ -119,5 +118,4 @@ This example demonstrates the usage of copilot by generating a SQL query to fetc
 While using ToolJet Copilot, it is important to note that the accuracy of the output cannot be guaranteed by the platform. Ultimately, it is your responsibility to assess and evaluate any query before executing it.
 :::
 
-If you have feedback or questions about ToolJet Copilot, feel free to join our **[slack community](https://tooljet.com/slack)**.
-
+If you have feedback or questions about ToolJet Copilot, feel free to join our **[slack community](/docs/slack)**.

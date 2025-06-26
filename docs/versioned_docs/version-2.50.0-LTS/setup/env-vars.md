@@ -7,7 +7,7 @@ title: Environment variables
 
 Both the ToolJet server and client requires some environment variables to start running.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
 
 ## ToolJet server
 
@@ -258,9 +258,9 @@ Configurations for instance level SSO.
 
 By default, the ToolJet server does not forward cookies along with the REST API requests. You can enable this functionality by setting the `FORWARD_RESTAPI_COOKIES` environment variable to `true`. This option is available only in the self-hosted version of ToolJet.
 
-| variable                | description                                                  |
-| ----------------------- | ------------------------------------------------------------ |
-| FORWARD_RESTAPI_COOKIES | `true` or `false`     
+| variable                | description        |
+| ----------------------- | -------------------|
+| FORWARD_RESTAPI_COOKIES | `true` or `false`  |
 
 ## ToolJet client
 
@@ -268,16 +268,16 @@ By default, the ToolJet server does not forward cookies along with the REST API 
 
 This is required when client is built separately.
 
-| variable           | description                                                  |
-| ------------------ | ------------------------------------------------------------ |
+| variable           | description                                                    |
+| ------------------ | -------------------------------------------------------------- |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
 
 ### Server Port ( optional)
 
 This could be used to for local development, it will set the server url like so: `http://localhost:<TOOLJET_SERVER_PORT>`
 
-| variable            | description                             |
-| ------------------- | --------------------------------------- |
+| variable           | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_PORT | the port of ToolJet server ( eg: 3000 ) |
 
 ### Asset path ( optionally required )
@@ -338,6 +338,7 @@ The option is only available starting from ToolJet Enterprise Edition `2.8.0` or
 :::
 
 ## Configuring the Default Language
+
 To change the default language, set the LANGUAGE variable to your desired language code. 
 
 | Variable        | Description                           |

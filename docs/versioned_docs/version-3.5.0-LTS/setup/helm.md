@@ -10,12 +10,14 @@ This repository contains Helm charts for deploying [ToolJet](https://github.com/
 ## Installation
 
 ### From Helm repo
+
 ```bash
 helm repo add tooljet https://github.com/ToolJet/helm-charts.git
 helm install tooljet tooljet/tooljet
 ```
 
 ### From the Source
+
 1. Clone the repository and navigate to this directory
 2. Run `helm dependency update`
 3. It is recommended but optional to modify the values in the `values.yaml` file, such as usernames, passwords, persistence settings, etc.
@@ -33,33 +35,37 @@ ToolJet offers a hosted database solution that allows you to build applications 
 
 For more information about the ToolJet database, you can visit [here](/docs/tooljet-db/tooljet-database).
 
-## Redis Configuration  
+## Redis Configuration
+
 For a multi-service or multi-pod setup, it is recommended to use an external Redis instance.
 
-**Default Behavior:**  
-- Redis is included in the Helm chart but **disabled by default**.  
+**Default Behavior:**
 
-**When to Enable Redis?**  
-- If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.  
+- Redis is included in the Helm chart but **disabled by default**.
 
-Enabling or Disabling Redis in `values.yaml`  
+**When to Enable Redis?**
 
-To **enable Redis**, modify the following section in `values.yaml`: 
+- If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.
+
+Enabling or Disabling Redis in `values.yaml`
+
+To **enable Redis**, modify the following section in `values.yaml`:
 
 ```yaml
 redis:
-  enabled: true  # Set to true if ReplicaSet > 1
+  enabled: true # Set to true if ReplicaSet > 1
   fullnameOverride: redis
   auth:
     enabled: true
     password: "tooljet"
   master:
     service:
-      port: 6379 
-``` 
+      port: 6379
+```
 
-**Using an External Redis Instance:**  
-- To configure an external Redis, update the `values.yaml` with the following variables:  
+**Using an External Redis Instance:**
+
+- To configure an external Redis, update the `values.yaml` with the following variables:
 
   ```yaml
   REDIS_HOST=<external_redis_host>
@@ -67,7 +73,6 @@ redis:
   REDIS_USER=<external_redis_user>
   REDIS_PASSWORD=<external_redis_password>
   ```
-
 
 ## Upgrading to the Latest LTS Version
 
@@ -81,4 +86,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._

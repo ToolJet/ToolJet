@@ -68,7 +68,7 @@ Create workflow deployment:
 ```bash
 kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/workflow-deployment.yaml
 ```
-**Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment. 
+**Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment.
 
 `ENABLE_WORKFLOW_SCHEDULING=true`
 `TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default`
@@ -87,4 +87,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
