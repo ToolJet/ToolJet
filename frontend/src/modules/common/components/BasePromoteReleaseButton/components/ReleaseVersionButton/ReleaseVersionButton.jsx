@@ -47,7 +47,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
         setShowConfirmation(false);
       })
       .catch((_error) => {
-        toast.error('Oops, something went wrong');
+        toast.error(`${name} could not be released. Please try again!`);
         setIsReleasing(false);
       });
   };

@@ -43,7 +43,7 @@ export function defineAppVersionAbility(
 
   const isAllEditable = !!userAppPermissions?.isAllEditable;
   const isAllViewable = !!userAppPermissions?.isAllViewable;
-  if (isAdmin || superAdmin || userPermission.appPromote) {
+  if (userPermission.appPromote) {
     can([FEATURE_KEY.PROMOTE], App);
   }
 
@@ -62,7 +62,6 @@ export function defineAppVersionAbility(
         FEATURE_KEY.DELETE_COMPONENTS,
         FEATURE_KEY.CREATE_PAGES,
         FEATURE_KEY.CLONE_PAGES,
-        FEATURE_KEY.PROMOTE,
         FEATURE_KEY.UPDATE_PAGES,
         FEATURE_KEY.DELETE_PAGE,
         FEATURE_KEY.REORDER_PAGES,
@@ -86,7 +85,6 @@ export function defineAppVersionAbility(
         FEATURE_KEY.GET_ONE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
-        FEATURE_KEY.PROMOTE,
         FEATURE_KEY.CREATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
