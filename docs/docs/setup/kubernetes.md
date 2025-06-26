@@ -15,8 +15,8 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not have plans to support other databases such as MySQL.
 2. **Create a Kubernetes secret with name `server`.** <br/>
    For the setup, ToolJet requires:
-
-   - **TOOLJET_DB**
+   
+   - **TOOLJET_DB** 
    - **TOOLJET_DB_HOST**
    - **TOOLJET_DB_USER**
    - **TOOLJET_DB_PASS**
