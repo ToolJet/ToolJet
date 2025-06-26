@@ -19,6 +19,12 @@ export default function EmbedAppRedirect() {
   const { appId } = router.query;
 
   useEffect(() => {
+    // 🔐 Ensure the page is embedded
+    if (window.self === window.top) {
+      // Not inside an iframe
+      toast.error('This page must be embedded inside a parent application.');
+      return;
+    }
     const token = new URLSearchParams(window.location.search).get('personal-access-token');
 
     if (!token || typeof appId !== 'string') {
@@ -47,14 +53,12 @@ export default function EmbedAppRedirect() {
         }
 
         const result = await res.json();
-        console.log('Response data:', result);
         // ✅ Store PAT in memory
         setPatToken(result.signedPat);
         window.name = result.signedPat;
         console.log('patToken', result.signedPat);
         window.location.href = `applications/${appId}`;
       } catch (error) {
-        console.log(error, 'error');
         parent.postMessage({ error: 500, message: 'Network error' }, '*');
       }
     };

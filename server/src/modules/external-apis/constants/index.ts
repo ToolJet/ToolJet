@@ -47,3 +47,13 @@ export const NewRevampedComponents: NewRevampedComponent[] = [
   'Checkbox',
   'Button',
 ];
+
+export enum SessionType {
+  USER = 'user',
+  PAT = 'pat',
+}
+
+export enum PersonalAccessTokenScope {
+  APP = 'app',
+  WORKSPACE = 'workspace',
+}

@@ -28,10 +28,11 @@ export class AddSessionTypeAndPatIdToUserSessions1746728003499 implements Migrat
         columnNames: ['pat_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'user_personal_access_tokens',
-        onDelete: 'SET NULL',
+        onDelete: 'CASCADE',
       })
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+  }
 }

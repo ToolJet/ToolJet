@@ -29,6 +29,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
+import { SessionType } from '@modules/external-apis/constants';
 
 @Injectable()
 export class SessionUtilService {
@@ -463,7 +464,7 @@ export class SessionUtilService {
             status: USER_STATUS.ACTIVE,
           },
         },
-        relations: ['user', 'pat'], // Include PAT relation
+        relations: [SessionType.USER, SessionType.PAT], // Include PAT relation
       });
 
       if (!session) {
@@ -473,7 +474,7 @@ export class SessionUtilService {
       const now = new Date();
 
       // ✅ Check for PAT session
-      if (session.sessionType === 'pat') {
+      if (session.sessionType === SessionType.PAT) {
         if (!session.pat) {
           throw new UnauthorizedException('Invalid PAT session');
         }

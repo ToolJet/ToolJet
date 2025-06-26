@@ -23,10 +23,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: (request: Request) => {
         // Ensure PAT is processed correctly without bypassing JWT validation
         if (request.headers['tj_auth_token']) {
-          console.log('Found tj_auth_token header:', request.headers['tj_auth_token']);
-          return request.headers['tj_auth_token']; // Return null to bypass JWT token, but PAT will still be handled
+          return request.headers['tj_auth_token'];
         }
-        console.log('Found auth token:', request.cookies['tj_auth_token']);
         return request.cookies['tj_auth_token'];
       },
       ignoreExpiration: true,
@@ -42,42 +40,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const bypassOrganizationValidation = !req['isFetchingOrganization'] && !req['isSwitchingOrganization'];
     /* User is going through invite flow */
     const isInviteSession = !!req['isInviteSession'];
-
-    //Pat validation for embed app
-    // if (payload?.isPatLogin) {
-    //   const session = await this.sessionRepository.findOne({
-    //     where: {
-    //       pat: {
-    //         tokenHash: payload.token,
-    //         user: { id: payload.username },
-    //         app: { id: payload.appId },
-    //       },
-    //     },
-    //     relations: ['pat'],
-    //   });
-
-    //   if (!session || !session.pat) {
-    //     throw new ForbiddenException('Invalid or expired PAT session');
-    //   }
-
-    //   const now = new Date();
-    //   if (session.pat.expiresAt < now) throw new ForbiddenException('PAT has expired');
-    //   if (session.expiry < now) throw new ForbiddenException('Session has expired');
-
-    //   const user = await this.userRepository.getUser({ id: payload.username }, undefined, [
-    //     'organizationUsers',
-    //     'organizationUsers.organization',
-    //   ]);
-
-    //   const orgIds = user.organizationUsers.map((ou) => ou.organizationId);
-    //   user.organizationIds = payload.appId ? [payload.organizationId] : orgIds;
-    //   user.organizationId = payload.organizationId;
-    //   user.sessionId = session.id;
-    //   user.isPasswordLogin = false;
-    //   user.isSSOLogin = false;
-
-    //   return user;
-    // }
 
     if (isUserMandatory || isGetUserSession || isInviteSession) {
       await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId);

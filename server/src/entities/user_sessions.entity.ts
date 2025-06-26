@@ -1,12 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, JoinColumn, BaseEntity, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
 import { UserPersonalAccessToken } from './user_personal_access_tokens.entity';
-
-export enum SessionType {
-  USER = 'user',
-  PAT = 'pat',
-}
-
+import { SessionType } from '@modules/external-apis/constants';
 
 @Entity({ name: 'user_sessions' })
 export class UserSessions extends BaseEntity {

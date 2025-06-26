@@ -9,11 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
-
-export enum PersonalAccessTokenScope {
-  APP = 'app',
-  WORKSPACE = 'workspace',
-}
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 
 @Entity({ name: 'user_personal_access_tokens' })
 export class UserPersonalAccessToken extends BaseEntity {

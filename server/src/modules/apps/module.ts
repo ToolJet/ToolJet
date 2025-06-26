@@ -22,7 +22,6 @@ import { AiModule } from '@modules/ai/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { UsersModule } from '@modules/users/module';
-import { SessionModule } from '@modules/session/module';
 import { UserSessionRepository } from '@modules/session/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 @Module({})
@@ -52,7 +51,6 @@ export class AppsModule {
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
         await UsersModule.register(configs),
-        await SessionModule.register(configs),
       ],
       controllers: [AppsController],
       providers: [

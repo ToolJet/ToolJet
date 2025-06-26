@@ -11,7 +11,7 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
     const hasPatHeader = !!request.headers['tj_auth_token'];
 
     if (!hasJwtCookie && !hasPatHeader) {
-      throw new UnauthorizedException('Missing authentication token');
+      return false;
     }
 
     request.isGetUserSession = true;
