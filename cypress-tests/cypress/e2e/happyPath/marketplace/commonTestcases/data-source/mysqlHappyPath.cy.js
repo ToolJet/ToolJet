@@ -23,8 +23,7 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { realHover } from "cypress-real-events/commands/realHover";
 
 const data = {};
-
-describe("Data sources MySql", () => {
+describe("Data sources MySql connection and query", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -33,7 +32,7 @@ describe("Data sources MySql", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("Should verify elements on MySQL connection form", () => {
+  it("Should verify elements on MySQL connection form with validation", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
@@ -63,15 +62,16 @@ describe("Data sources MySql", () => {
       `cypress-${data.dataSourceName}-mysql`,
       "mysql",
       [
-        { key: "connection_type", value: "hostname" },
-        { key: "host", value: "localhost" },
-        { key: "port", value: 3306 },
-        { key: "database", value: "" },
-        { key: "socket", value: "", encrypted: false },
-        { key: "username", value: "" },
-        { key: "password", value: "", encrypted: true },
+        { key: "connection_type", value: "hostname", encrypted: false },
+        { key: "host", value: "localhost", encrypted: false },
+        { key: "port", value: 3306, encrypted: false },
         { key: "ssl_enabled", value: false, encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "password", value: null, encrypted: true },
+        { key: "ca_cert", value: null, encrypted: true },
+        { key: "client_key", value: null, encrypted: true },
+        { key: "client_cert", value: null, encrypted: true },
+        { key: "root_cert", value: null, encrypted: true },
       ]
     );
     cy.reload();
@@ -83,31 +83,77 @@ describe("Data sources MySql", () => {
       `cypress-${data.dataSourceName}-mysql`
     );
 
-    cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelHost
-    );
-    cy.get(postgreSqlSelector.labelPort).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelPort
-    );
+    const requiredFields = [
+      postgreSqlText.labelUserName,
+      postgreSqlText.labelPassword,
+      postgreSqlText.labelDbName,
+      postgreSqlText.labelHost,
+      postgreSqlText.labelPort,
+    ];
+    const sections = [
+      postgreSqlText.labelUserName,
+      postgreSqlText.labelPassword,
+      postgreSqlText.labelDbName,
+      postgreSqlText.labelHost,
+      postgreSqlText.labelPort,
+    ];
+    sections.forEach((section) => {
+      if (section === postgreSqlText.labelConnectionOptions) {
+        cy.get(dataSourceSelector.keyInputField(section, 0)).should(
+          "be.visible"
+        );
+        cy.get(dataSourceSelector.valueInputField(section, 0)).should(
+          "be.visible"
+        );
+        cy.get(dataSourceSelector.deleteButton(section, 0)).should(
+          "be.visible"
+        );
+        cy.get(dataSourceSelector.addMoreButton(section)).should("be.visible");
+      } else if (requiredFields.includes(section)) {
+        cy.get(dataSourceSelector.labelFieldName(section)).verifyVisibleElement(
+          "have.text",
+          `${section}*`
+        );
+        cy.get(dataSourceSelector.textField(section)).should("be.visible");
+        if (section === postgreSqlText.labelPassword) {
+          cy.get(
+            dataSourceSelector.button(postgreSqlText.editButtonText)
+          ).click();
+          cy.verifyRequiredFieldValidation(section, "rgb(215, 45, 57)");
+        } else {
+          cy.get(dataSourceSelector.textField(section)).click();
+          cy.get(commonSelectors.textField(section)).should(
+            "have.css",
+            "border-color",
+            "rgba(0, 0, 0, 0)"
+          );
+          cy.get(dataSourceSelector.textField(section))
+            .type("123")
+            .clear()
+            .blur();
+          cy.verifyRequiredFieldValidation(section, "rgb(215, 45, 57)");
+        }
+      } else {
+        cy.get(dataSourceSelector.labelFieldName(section)).verifyVisibleElement(
+          "have.text",
+          section
+        );
+        cy.get(dataSourceSelector.textField(section)).should("be.visible");
+      }
+    });
+    cy.get(
+      dataSourceSelector.dropdownLabel(postgreSqlText.labelConnectionType)
+    ).verifyVisibleElement("have.text", postgreSqlText.labelConnectionType);
+
     cy.get(postgreSqlSelector.labelSsl).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelSSL
     );
-    cy.get(postgreSqlSelector.labelDbName).verifyVisibleElement(
+    cy.get(postgreSqlSelector.sslToggleInput).should("be.visible");
+    cy.get(postgreSqlSelector.labelSSLCertificate).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelDbName
+      postgreSqlText.sslCertificate
     );
-    cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelUserName
-    );
-    cy.get(postgreSqlSelector.labelPassword).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelPassword
-    );
-
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
       postgreSqlText.whiteListIpText
@@ -127,110 +173,156 @@ describe("Data sources MySql", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.buttonTextSave
-    );
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .and("be.disabled");
     verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
-    deleteDatasource(`cypress-${data.dataSourceName}-mysql`);
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-mysql`);
   });
 
   it("Should verify the functionality of MySQL connection form.", () => {
-    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
-
-    fillDataSourceTextField(
-      postgreSqlText.labelHost,
-      postgreSqlText.placeholderEnterHost,
-      Cypress.env("mysql_host")
+    const dsName = `cypress-${data.dataSourceName}-mysql`;
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    //invalid database
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      dsName,
+      "mysql",
+      [
+        { key: "connection_type", value: "hostname", encrypted: false },
+        {
+          key: "host",
+          value: `${Cypress.env("mysql_host")}`,
+          encrypted: false,
+        },
+        { key: "port", value: 3318, encrypted: false },
+        { key: "ssl_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        {
+          key: "username",
+          value: `${Cypress.env("mysql_user")}`,
+          encrypted: false,
+        },
+        {
+          key: "password",
+          value: `${Cypress.env("mysql_password")}`,
+          encrypted: true,
+        },
+        { key: "database", value: "unknowndb", encrypted: false },
+        { key: "ca_cert", value: null, encrypted: true },
+        { key: "client_key", value: null, encrypted: true },
+        { key: "client_cert", value: null, encrypted: true },
+        { key: "root_cert", value: null, encrypted: true },
+      ]
     );
-    fillDataSourceTextField(
-      postgreSqlText.labelPort,
-      postgreSqlText.placeholderEnterPort,
-      "3318"
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelDbName,
-      postgreSqlText.placeholderNameOfDB,
-      "unknowndb"
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelUserName,
-      postgreSqlText.placeholderEnterUserName,
-      Cypress.env("mysql_user")
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelPassword,
-      "**************",
-      Cypress.env("mysql_password")
-    );
-
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.wait(500);
-    verifyCouldnotConnectWithAlert("");
-    fillDataSourceTextField(
-      postgreSqlText.labelDbName,
-      postgreSqlText.placeholderNameOfDB,
-      "test_db"
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelUserName,
-      postgreSqlText.placeholderEnterUserName,
-      "admin1"
-    );
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.wait(500);
-    verifyCouldnotConnectWithAlert(
-      "ER_NOT_SUPPORTED_AUTH_MODE: Client does not support authentication protocol requested by server; consider upgrading MySQL client"
-    );
-
-    fillDataSourceTextField(
-      postgreSqlText.labelUserName,
-      postgreSqlText.placeholderEnterUserName,
-      Cypress.env("mysql_user")
-    );
-    cy.get(postgreSqlSelector.passwordTextField).type("testpassword");
-
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.wait(500);
-    verifyCouldnotConnectWithAlert(
-      "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)"
-    );
-    cy.get('[data-cy="ssl-enabled-toggle-input"]').then(($el) => {
-      if ($el.is(":checked")) {
-        cy.get('[data-cy="ssl-enabled-toggle-input"]').uncheck();
-      }
+    verifyCouldnotConnectWithAlert(mySqlText.errorUnknownDb);
+    //invalid username
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "connection_type", value: "hostname", encrypted: false },
+        {
+          key: "host",
+          value: `${Cypress.env("mysql_host")}`,
+          encrypted: false,
+        },
+        { key: "port", value: 3318, encrypted: false },
+        { key: "ssl_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "database", value: "test_db", encrypted: false },
+        {
+          key: "username",
+          value: "admin1",
+          encrypted: false,
+        },
+        {
+          key: "password",
+          value: `${Cypress.env("mysql_password")}`,
+          encrypted: true,
+        },
+      ],
     });
-
-    fillDataSourceTextField(
-      postgreSqlText.labelPassword,
-      "**************",
-      Cypress.env("mysql_password")
-    );
-
-    // cy.get(postgreSqlSelector.passwordTextField).should("be.visible");
-    // cy.get(".datasource-edit-btn").should("be.visible").click();
-    // cy.get(postgreSqlSelector.passwordTextField).type(
-    //   `{selectAll}{backspace}${Cypress.env("mysql_password")}`,
-    //   { log: false }
-    // );
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert(mySqlText.errorAccessDeniedAdmin1);
+    //invalid password
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "connection_type", value: "hostname", encrypted: false },
+        {
+          key: "host",
+          value: `${Cypress.env("mysql_host")}`,
+          encrypted: false,
+        },
+        { key: "port", value: 3318, encrypted: false },
+        { key: "ssl_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        { key: "database", value: "test_db", encrypted: false },
+        {
+          key: "username",
+          value: `${Cypress.env("mysql_user")}`,
+          encrypted: false,
+        },
+        {
+          key: "password",
+          value: "testpassword",
+          encrypted: true,
+        },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert(mySqlText.errorAccessDeniedAdmin);
+    //valid data
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "connection_type", value: "hostname", encrypted: false },
+        {
+          key: "host",
+          value: `${Cypress.env("mysql_host")}`,
+          encrypted: false,
+        },
+        { key: "port", value: 3318, encrypted: false },
+        { key: "ssl_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+        {
+          key: "username",
+          value: `${Cypress.env("mysql_user")}`,
+          encrypted: false,
+        },
+        {
+          key: "password",
+          value: `${Cypress.env("mysql_password")}`,
+          encrypted: true,
+        },
+        { key: "database", value: "test_db", encrypted: false },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
 
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.get(postgreSqlSelector.buttonSave).click();
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      postgreSqlText.toastDSSaved
-    );
-
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-mysql-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.dataSourceName}-mysql`);
-
-    deleteDatasource(`cypress-${data.dataSourceName}-mysql`);
+    cy.apiDeleteGDS(dsName);
   });
 
   it.skip("Should verify elements of the Query section.", () => {
