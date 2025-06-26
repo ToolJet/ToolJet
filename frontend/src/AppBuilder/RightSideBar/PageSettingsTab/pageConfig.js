@@ -5,6 +5,7 @@ export const pageConfig = {
     hideHeader: false,
     position: 'top',
     name: '',
+    hideLogo: false,
     disableMenu: {
       value: `{{false}}`,
       fxActive: false,
@@ -66,6 +67,7 @@ export const pageConfig = {
       hideHeader: false,
       position: 'top',
       name: '',
+      hideLogo: false,
       disableMenu: {
         value: '{{false}}',
         fxActive: false,

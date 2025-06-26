@@ -314,7 +314,7 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseVali
   const [appName] = useStore((state) => [state.appStore.modules[moduleId].app.appName], shallow);
 
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { hideHeader, name } = properties ?? {};
+  const { hideHeader, name, hideLogo } = properties ?? {};
   const [_name, _setName] = useState(name?.trim() ? name : appName);
 
   return (
@@ -337,6 +337,21 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseVali
             disabled={!licenseValid}
             onChange={(e) => {
               pageSettingChanged({ hideHeader: !e.target.checked }, 'properties');
+            }}
+          />
+        </label>
+      </div>
+      <div className=" d-flex justify-content-between align-items-center pb-2">
+        <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+          Show logo
+        </label>
+        <label className={`form-switch`}>
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={!hideLogo}
+            onChange={(e) => {
+              pageSettingChanged({ hideLogo: !e.target.checked }, 'properties');
             }}
           />
         </label>

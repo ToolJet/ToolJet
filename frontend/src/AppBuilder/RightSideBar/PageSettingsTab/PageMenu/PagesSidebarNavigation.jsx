@@ -51,7 +51,7 @@ export const PagesSidebarNavigation = ({
   const [visibleLinks, setVisibleLinks] = useState(pages);
   const [showPopover, setShowPopover] = useState(false);
 
-  const { disableMenu, hideHeader, position, style, collapsable, name } = properties ?? {};
+  const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || !measurementContainerRef.current || pages.length === 0) {
@@ -68,9 +68,7 @@ export const PagesSidebarNavigation = ({
 
     for (let i = 0; i < pages.length; i++) {
       const link = pages[i];
-      const correspondingMeasuredElement = measuredNavItems.find(
-        (item) => item.dataset.id === String(link.id) && !link?.pageGroupId
-      );
+      const correspondingMeasuredElement = measuredNavItems.find((item) => item.dataset.id === String(link.id));
 
       if (!correspondingMeasuredElement) {
         continue;
@@ -88,6 +86,8 @@ export const PagesSidebarNavigation = ({
       }
     }
 
+    console.log({ tempOverflow, tempVisible });
+
     if (tempOverflow.length > 0 && currentWidth + MORE_BUTTON_WIDTH_ESTIMATE > containerWidth) {
       if (tempVisible.length > 0) {
         const lastVisible = tempVisible.pop();
@@ -98,7 +98,7 @@ export const PagesSidebarNavigation = ({
 
     setVisibleLinks(tempVisible);
     setOverflowLinks(tempOverflow);
-  }, [pages, position]);
+  }, [pages, position, style]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -281,7 +281,7 @@ export const PagesSidebarNavigation = ({
         }}
       >
         {pages
-          .filter((p) => !p.pageGroupId)
+          // .filter((p) => !p.pageGroupId || p.isPageGroup)
           .map((link) => (
             <div
               style={{ padding: `0px ${style === 'texticon' ? '22px' : '10px'}` }}
@@ -328,15 +328,13 @@ export const PagesSidebarNavigation = ({
             }}
             className="app-name"
           >
-            {!headerHidden && (
-              <>
-                <div onClick={switchToHomePage} className="cursor-pointer">
-                  <AppLogo isLoadingFromHeader={false} />
-                </div>
-                {((isPinnedWithLabel && !labelHidden) || position === 'top') && (
-                  <span>{name?.trim() ? name : appName}</span>
-                )}
-              </>
+            {!hideLogo && (
+              <div onClick={switchToHomePage} className="cursor-pointer">
+                <AppLogo isLoadingFromHeader={false} />
+              </div>
+            )}
+            {!headerHidden && ((isPinnedWithLabel && !labelHidden) || position === 'top') && (
+              <span>{name?.trim() ? name : appName}</span>
             )}
             {collapsable && !isTopPositioned && style == 'texticon' && position === 'side' && (
               <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">

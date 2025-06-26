@@ -446,10 +446,12 @@
             .accordion-item {
                 .page-group-collapse {
                     right: 4px;
+                    top: 9px;
                     transform: rotate(30deg);
                 }
                 .tj-list-item {
-                    padding-right: 22px;
+                    padding-right: 0px !important;
+                    width: unset !important;
                 }
             }
 
@@ -463,7 +465,7 @@
                     padding: 4px !important;
 
                     .tj-list-item {
-                        padding: 6px 12px;
+                        padding: 6px 12px !important;
                     }
                 }
             }
@@ -523,7 +525,7 @@
         width: fit-content;
 
         .tj-list-item{
-            padding: 6px 12px;
+            padding: 8px 12px;
             color: var(--text-placeholder);
             justify-content: flex-start;
 
@@ -542,13 +544,19 @@
 
         .accordion-item {
             border: 0px !important;
-            .tj-list-item {
-                padding-right: 22px;
-            }
         }
 
+        .accordion-body {
+            padding: 0px 12px !important;
+            padding-left: 28px !important;
+        }
+
+        .accordion-body {
+
+            }
+
         .page-group-collapse {
-            right: 4px;
+            // right: 4px;
             transform: rotate(30deg);
         }
 
@@ -560,6 +568,10 @@
         }
 
         .tj-list-item-selected {
+            color: var(--text-default) !important;
+            font-weight: 500;
+            background: var(--background-accent-weak);
+            outline: none !important;
             .custom-icon {
                 svg {
                     color: var(--icon-accent);
@@ -583,6 +595,25 @@
                   }
               }
           }
+
+          .page-group-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 0px;
+            .tj-list-item {
+                padding-right: 0px;
+                width: unset !important;
+            }
+            &.tj-list-item-selected {
+                border-radius: 6px;
+                background: var(--background-accent-weak);
+
+            .page-name {
+                color: var(--text-default) !important;
+                font-weight: 500;
+            }
+            }
+        }
     }
 }
 

@@ -405,6 +405,14 @@ export const PageMenuItem = withRouter(
                         placement="bottom-end"
                         rootClose
                         container={treeRef}
+                        modifiers={[
+                          {
+                            name: 'preventOverflow',
+                            options: {
+                              boundary: 'viewport',
+                            },
+                          },
+                        ]}
                         onHide={() => {
                           setEditingPage(null);
                           toggleShowPageOptions(false);
