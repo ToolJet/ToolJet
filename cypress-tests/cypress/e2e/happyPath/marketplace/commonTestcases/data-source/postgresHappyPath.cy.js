@@ -415,50 +415,17 @@ describe("PostgreSQL data source connection and query", () => {
       ".flex-grow-1 > :nth-child(1) > :nth-child(1) > .justify-content-center"
     ).should("be.visible");
     cy.get(".flex-grow-1 > :nth-child(1) > .tj-base-btn").should("be.visible");
-    cy.get(dataSourceSelector.labelQueryTab())
-      .scrollIntoView()
-      .verifyVisibleElement("have.text", postgreSqlText.headerTransformations);
-    cy.get(postgreSqlSelector.toggleTransformation).click();
+    cy.get(
+      postgreSqlSelector.labelQueryTab(postgreSqlText.queryTabTransformation)
+    )
+      .verifyVisibleElement("have.text", postgreSqlText.queryTabTransformation)
+      .click();
+    cy.get(postgreSqlSelector.toggleTransformation).should("be.visible");
+
     cy.get(postgreSqlSelector.inputFieldTransformation).should("be.visible");
 
-    cy.get(postgreSqlSelector.headerQueryPreview).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.buttonLabelPreview
-    );
-    cy.get(postgreSqlSelector.previewTabJson).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.json
-    );
-    cy.get(postgreSqlSelector.previewTabRaw).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.raw
-    );
-
-    selectQueryMode(postgreSqlText.queryModeGui, "4");
-    cy.get(postgreSqlSelector.operationsDropDownLabel).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelOperation
-    );
-    cy.get(`${postgreSqlSelector.querySelectDropdown}:eq(1)`).click();
-    cy.contains('[id*="react-select"]', postgreSqlText.guiOptionBulkUpdate)
-      .should("have.text", postgreSqlText.guiOptionBulkUpdate)
-      .click();
-
-    cy.get(postgreSqlSelector.labelTableNameInputField).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelTable
-    );
-    cy.get(postgreSqlSelector.labelPrimaryKeyColoumn).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelPrimaryKeyColumn
-    );
-    cy.get(postgreSqlSelector.labelRecordsToUpdate).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelRecordsToUpdate
-    );
-
-    cy.get(postgreSqlSelector.queryTabAdvanced)
-      .verifyVisibleElement("contain", postgreSqlText.tabAdvanced)
+    cy.get(postgreSqlSelector.labelQueryTab(postgreSqlText.queryTabSettings))
+      .verifyVisibleElement("have.text", postgreSqlText.queryTabSettings)
       .click();
 
     cy.get(postgreSqlSelector.labelRunQueryOnPageLoad).verifyVisibleElement(
