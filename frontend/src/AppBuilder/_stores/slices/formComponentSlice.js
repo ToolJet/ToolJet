@@ -302,7 +302,7 @@ export const createFormComponentSlice = (set, get) => ({
     let upatedDiff = {};
 
     // Process create operations
-    const handleCreate = () => {
+    const handleCreate = async () => {
       if (!operations.added || Object.keys(operations.added).length === 0) return {};
 
       // Convert create operations format to match addComponentToCurrentPage expectations
