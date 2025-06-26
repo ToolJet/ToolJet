@@ -106,7 +106,7 @@ export class VersionService implements IVersionService {
         updatedVersionId = appVersion.id;
       }
 
-      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
+      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId, user.organizationId);
       const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
 
       const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
