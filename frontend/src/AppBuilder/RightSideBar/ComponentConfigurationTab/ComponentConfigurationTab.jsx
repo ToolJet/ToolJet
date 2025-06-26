@@ -19,7 +19,7 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
         <div className="empty-configuration-header">
           <div className="header">Component properties</div>
           <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
-            <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin01' : 'pin'} width="16" />
+            <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin' : 'pin'} width="16" />
           </div>
         </div>
         <div className="d-flex align-items-center justify-content-center no-component-selected">

@@ -117,6 +117,7 @@
             opacity: 0;
         }
         &:hover{
+            background-color: var(--interactive-hover);
             button.edit-page-overlay-toggle{
                 opacity: 1;
             }
@@ -443,7 +444,7 @@
 
     .form-control {
         border-radius: 6px;
-        color: var(--text-brand);
+        color: var(--text-black);
         font-weight: 400;
         font-size: 12px;
 
@@ -460,6 +461,10 @@
             gap: 8px;
             padding: 8px;
             color: var(--text-placeholder);
+        }
+
+        button {
+            font-size: 12px;
         }
     }
 }

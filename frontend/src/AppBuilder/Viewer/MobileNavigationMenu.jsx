@@ -201,6 +201,9 @@ const MobileNavigationMenu = ({
     _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
+  const { definition: { properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
+  const { name } = properties ?? {};
+
   return (
     <>
       <MobileMenu
@@ -237,11 +240,9 @@ const MobileNavigationMenu = ({
                   }}
                 >
                   <AppLogo isLoadingFromHeader={false} viewer={true} />
-                  {appName && (
-                    <div className="d-flex align-items-center app-title">
-                      <span>{appName}</span>
-                    </div>
-                  )}
+                  <div className="d-flex align-items-center app-title">
+                    <span>{name?.trim() ? name : appName}</span>
+                  </div>
                 </Link>
               </h1>
             </div>

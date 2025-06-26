@@ -215,10 +215,20 @@
 
         .page-dark-mode-btn-wrapper {
             position: relative;
-            bottom: 0;
+            bottom: 2px;
             justify-content: center;
             padding-top: 32px;
             margin-top: auto;
+
+            .sidebar-svg-icon {
+                width: 32px;
+                height: 32px;
+                &:hover {
+                background: var(--slate5);
+                border-radius: 6px;
+                }
+            }
+            
         }
 
         .app-name {
@@ -255,12 +265,14 @@
             padding: 8px 12px;
             font-weight: 400;
             color: var(--text-placeholder);
+            outline: none !important;
         }
 
         .tj-list-item-selected {
             color: var(--text-default) !important;
             font-weight: 500;
             background: var(--background-accent-weak);
+            outline: none !important;
         }
 
         .page-group-wrapper {
@@ -409,9 +421,9 @@
 
         &.position-top {
             flex-direction: row;
-            position: fixed !important;
-            top: 47px !important;
-            width: calc(100% - 86px) !important;
+            position: sticky !important;
+            top: 55px !important;
+            width: 100% !important;
             height: 60px !important;
             display: flex;
             padding-top: 0px;
@@ -428,6 +440,7 @@
                 margin-left: auto;
                 margin-top: 0px;
                 padding-left: 15px;
+                bottom: 0px !important;
             }
 
             .accordion-item {
@@ -483,6 +496,23 @@
             .page-handler-wrapper {
                 display: flex;
             }
+        }
+
+        &.right-sidebar-open {
+            width: calc(100% + 299px) !important;
+            position: sticky !important;
+
+        }
+
+        &.left-sidebar-open {
+            width: calc(100% + 348px) !important;
+            position: sticky !important;
+
+        }
+
+        &.right-sidebar-open.left-sidebar-open {
+            width: calc(100% + 646px) !important;
+            position: sticky !important;
         }
     }
 }
@@ -557,13 +587,6 @@
 }
 
 .viewer {
-
-    .page-name,
-    .navigation-area,
-    .tj-list-item,
-    .canvas-box {
-        transition: var(--tran-01);
-    }
 
     .page-name {
         font-size: 14px;

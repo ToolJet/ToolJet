@@ -33,7 +33,7 @@ export const PAGE_TYPES = {
 };
 
 export const PageMenuItem = withRouter(
-  memo(({ darkMode, page, navigate }) => {
+  memo(({ darkMode, page, navigate, treeRef }) => {
     const { moduleId } = useModuleContext();
     const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
     const isHomePage = page.id === homePageId;
@@ -378,7 +378,11 @@ export const PageMenuItem = withRouter(
                     // </button>
                     <div className={cx('action-btn-wrapper', { 'options-opened': showPageOptions })}>
                       <div onClick={handlePageSwitch} className="icon-btn">
-                        <SolidIcon name="arrowright01" fill="var(--icons-strong)" />
+                        <ToolTip message="Go to page" placement="bottom">
+                          <div className=" d-flex align-items-center justify-content-center">
+                            <SolidIcon name="arrowright01" fill="var(--icons-strong)" />
+                          </div>
+                        </ToolTip>
                       </div>
                       <div
                         ref={moreBtnRef}
@@ -400,12 +404,13 @@ export const PageMenuItem = withRouter(
                         show={showPageOptions && isEditingPage}
                         placement="bottom-end"
                         rootClose
+                        container={treeRef}
                         onHide={() => {
                           setEditingPage(null);
                           toggleShowPageOptions(false);
                         }}
                       >
-                        <Popover id="edit-page-popover">
+                        <Popover style={{ zIndex: '99999', position: 'absolute' }} id="edit-page-popover">
                           <div className="menu-options mb-0">
                             <PageOptions
                               text="Edit page details"

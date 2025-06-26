@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
@@ -31,6 +31,8 @@ import EditAppName from '@/AppBuilder/Header/EditAppName';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import PagePermission from './PageMenu/PagePermission';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { shallow } from 'zustand/shallow';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -44,6 +46,7 @@ export const PageSettings = () => {
   const switchPage = useStore((state) => state.switchPage);
   const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  const treeRef = useRef(null);
 
   const license = useStore((state) => state.license);
   const isLicensed =
@@ -102,10 +105,18 @@ export const PageSettings = () => {
           <>
             <PagePermission darkMode={darkMode} />
 
-            <SortableTree darkMode={darkMode} collapsible indicator={true} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} ref={treeRef}>
+              <SortableTree darkMode={darkMode} collapsible indicator={true} treeRef={treeRef} />
+            </div>
           </>
         ) : (
-          <SortableList Element={PageMenuItem} darkMode={darkMode} switchPage={switchPage} classNames="page-handler" />
+          <SortableList
+            Element={PageMenuItem}
+            darkMode={darkMode}
+            switchPage={switchPage}
+            treeRef={treeRef}
+            classNames="page-handler"
+          />
         ),
         <AddNewPageMenu isLicensed={isLicensed} key="new-page" darkMode={darkMode} />,
       ],
@@ -163,7 +174,7 @@ export const PageSettings = () => {
           <div className={`col-9 p-0 mx-2 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
           <div className="d-flex">
             <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
-              <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin01' : 'pin'} width="16" />
+              <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin' : 'pin'} width="16" />
             </div>
           </div>
         </div>
@@ -299,9 +310,13 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
 });
 
 const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseValid }) => {
+  const { moduleId } = useModuleContext();
+  const [appName] = useStore((state) => [state.appStore.modules[moduleId].app.appName], shallow);
+
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { hideHeader, name, position, style } = properties ?? {};
-  const [_name, _setName] = useState(name);
+  const { hideHeader, name } = properties ?? {};
+  const [_name, _setName] = useState(name?.trim() ? name : appName);
+
   return (
     <>
       <div className="section-header pb-2">
@@ -329,7 +344,16 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseVali
       <div className="pb-2">
         <div className="col pb-1">
           <label className="form-label font-weight-400 mb-0">Title</label>
-          <EditAppName />
+          <input
+            type="text"
+            onBlur={(e) => {
+              pageSettingChanged({ name: e.target.value }, 'properties');
+            }}
+            onChange={(e) => _setName(e.target.value)}
+            className="form-control"
+            value={_name}
+            minLength="1"
+          />
         </div>
       </div>
     </>

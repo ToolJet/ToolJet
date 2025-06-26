@@ -75,7 +75,10 @@ export const EditorHeader = ({ darkMode }) => {
                   }}
                 >
                   <div className="global-settings-app-wrapper p-0 m-0 ">
-                    <div className="d-flex flex-row">{isModuleEditor && <ModuleEditorBanner />}</div>
+                    <div className="d-flex flex-row">
+                      {isModuleEditor && <ModuleEditorBanner />}
+                      <EditAppName />
+                    </div>
                   </div>
                   <HeaderActions darkMode={darkMode} />
                   <div className="d-flex align-items-center">

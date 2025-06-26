@@ -148,7 +148,7 @@ const RenderPageGroup = ({
       className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
     >
       <div
-        className={`page-group-wrapper ${active || isExpanded ? 'tj-list-item-selected' : ''}`}
+        className={`page-group-wrapper ${active && !isExpanded ? 'tj-list-item-selected' : ''}`}
         style={{
           position: 'relative',
         }}
