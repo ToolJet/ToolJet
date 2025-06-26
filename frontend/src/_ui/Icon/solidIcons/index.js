@@ -239,6 +239,9 @@ import EnterpriseCrown from './EnterrpiseCrown.jsx';
 import FileCode from './FileCode.jsx';
 import Corners from './Corners.jsx';
 import Moon from './Moon.jsx';
+import SourceControl from './SourceControl.jsx';
+import Push from './PushIcon.jsx';
+import Pull from './PullIcon.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
 
 const Icon = (props) => {
@@ -725,6 +728,12 @@ const Icon = (props) => {
       return <Play01 {...props} />;
     case 'moon':
       return <Moon {...props} />;
+    case 'source-control':
+      return <SourceControl {...props} />;
+    case 'push-changes':
+      return <Push {...props} />;
+    case 'pull-changes':
+      return <Pull {...props} />;
     default:
       return <Apps {...props} />;
   }

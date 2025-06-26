@@ -70,7 +70,7 @@ const EducativeLabel = ({ darkMode }) => {
             faster. It uses OpenAI&apos;s GPT-3.5 to suggest queries based on your data.
           </p>
           <Button
-            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
+            onClick={() => window.open('https://docs.tooljet.ai/docs/tooljet-copilot', '_blank')}
             darkMode={darkMode}
             size="sm"
             classNames="default-secondary-button"

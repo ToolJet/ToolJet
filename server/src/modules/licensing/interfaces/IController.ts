@@ -33,7 +33,7 @@ export interface ILicenseController {
    * @param licenseUpdateDto - The DTO containing the update information for the license.
    * @returns A promise that resolves when the license is updated.
    */
-  updateLicense(licenseUpdateDto: LicenseUpdateDto): Promise<void>;
+  updateLicense(licenseUpdateDto: LicenseUpdateDto, user: User): Promise<void>;
 }
 
 export interface ILicenseAppsController {

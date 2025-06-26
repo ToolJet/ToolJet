@@ -24,6 +24,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { UsersModule } from '@modules/users/module';
 import { UserSessionRepository } from '@modules/session/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { AppGitRepository } from '@modules/app-git/repository';
 @Module({})
 export class AppsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -57,6 +58,7 @@ export class AppsModule {
         AppsService,
         VersionRepository,
         AppsRepository,
+        AppGitRepository,
         AppEnvironmentUtilService,
         PageService,
         EventsService,
