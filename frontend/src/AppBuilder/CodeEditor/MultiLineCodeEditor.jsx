@@ -55,6 +55,8 @@ const MultiLineCodeEditor = (props) => {
     editable = true,
     renderCopilot,
     setCodeEditorView,
+    showWorkflowSuggestions = false,
+    getWorkflowSuggestions,
   } = props;
   const editorRef = useRef(null);
 
@@ -156,8 +158,7 @@ const MultiLineCodeEditor = (props) => {
     const currentCurosorPos = currentCursor;
     const nearestSubstring = removeNestedDoubleCurlyBraces(findNearestSubstring(inputStr, currentCurosorPos));
 
-    const hints = getSuggestions();
-
+    const hints = showWorkflowSuggestions && getWorkflowSuggestions ? getWorkflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {
