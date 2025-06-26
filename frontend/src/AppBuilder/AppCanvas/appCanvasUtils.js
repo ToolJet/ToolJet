@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { findHighestLevelofSelection } from './Grid/gridUtils';
+import { findHighestLevelofSelection, getMouseDistanceFromParentDiv } from './Grid/gridUtils';
 import {
   CANVAS_WIDTHS,
   NO_OF_GRIDS,
@@ -34,26 +34,28 @@ export const addNewWidgetToTheEditor = (
   parentId,
   moduleInfo = undefined
 ) => {
-  const canvasBoundingRect = realCanvasRef?.current?.getBoundingClientRect() || realCanvasRef?.getBoundingClientRect();
+  const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
   const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
-
+  const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const offsetFromTopOfWindow = canvasBoundingRect?.top;
-  const offsetFromLeftOfWindow = canvasBoundingRect?.left;
-  const currentOffset = eventMonitorObject?.getSourceClientOffset();
+  const { e } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
-  let left = Math.round(currentOffset?.x - offsetFromLeftOfWindow);
-  let top = Math.round(currentOffset?.y - offsetFromTopOfWindow);
-
-  [left, top] = snapToGrid(subContainerWidth, left, top);
+  const { left: left3, top: top3 } = getMouseDistanceFromParentDiv(
+    e,
+    parentId === 'canvas' ? 'real-canvas' : parentId,
+    parentCanvasType
+  );
+  // [left, top] = snapToGrid(subContainerWidth, left, top);
+  let [left, top] = snapToGrid(subContainerWidth, left3, top3);
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
+
   // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
   let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);

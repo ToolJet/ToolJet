@@ -15,11 +15,12 @@ const initialState = {
   moveableRef: null,
   virtualTarget: null,
   currentDragCanvasId: null,
+  ghostDragPosition: null,
 };
 
 export const useGridStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
         setResizingComponentId: (id) => set({ resizingComponentId: id }),
@@ -31,6 +32,7 @@ export const useGridStore = create(
           set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
         setVirtualTarget: (target) => set({ virtualTarget: target }),
         setCurrentDragCanvasId: (canvasId) => set({ currentDragCanvasId: canvasId }),
+        setGhostDragPosition: (position) => set({ ghostDragPosition: position }),
       },
       addToElementGuidelines: (selector) =>
         set((state) => ({
@@ -42,6 +44,8 @@ export const useGridStore = create(
         })),
       clearDynamicElementGuidelines: () => set({ dynamicElementGuidelines: [] }),
       setMoveableRef: (ref) => set({ moveableRef: ref }),
+
+      getGhostDragPosition: () => get().ghostDragPosition,
     }),
     { name: 'Grid Store' }
   )

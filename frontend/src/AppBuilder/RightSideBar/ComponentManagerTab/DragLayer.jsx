@@ -16,7 +16,6 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
   const handleDrop = useCanvasDropHandler({ appType: isModuleTab ? 'module' : 'app' }) || noop;
-  const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -25,16 +24,10 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item, monitor) => {
         const clientOffset = monitor.getClientOffset();
-        console.log('end', item, monitor.getDropResult(), monitor.getClientOffset());
-        console.log('currentDragCanvasId', currentDragCanvasId);
+        const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
         if (clientOffset) {
-          // const canvas = document.getElementById(`canvas-${currentDragCanvasId}`);
-          const realCanvas = document.getElementById(`real-canvas`);
-          handleDrop(item, monitor, realCanvas, currentDragCanvasId);
+          handleDrop(item, monitor, currentDragCanvasId);
         }
-        // if (didDrop) {
-        //   handleDrop(item, monitor);
-        // }
       },
     }),
     [component.component]
@@ -59,15 +52,7 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
   return (
     <>
       {/* {isDragging && <CustomDragLayer size={size} />} */}
-      <div
-        ref={drag}
-        className="draggable-box"
-        style={{ height: '100%', width: isModuleTab && '100%' }}
-        // onDragEnd={(e) => {
-        //   const realCanvas = document.getElementById(`real-canvas`);
-        //   handleDrop(e, realCanvas, currentDragCanvasId);
-        // }}
-      >
+      <div ref={drag} className="draggable-box" style={{ height: '100%', width: isModuleTab && '100%' }}>
         {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
       </div>
     </>

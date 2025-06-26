@@ -44,10 +44,9 @@ export const useGhostMoveable = () => {
     const relativeY = mousePosition.y - canvasRect.top;
 
     // Apply grid snapping
-    const gridWidth = canvasRef.current.offsetWidth / NO_OF_GRIDS;
-    const snappedX = Math.round(relativeX / gridWidth) * gridWidth;
-    const snappedY = Math.round(relativeY / GRID_HEIGHT) * GRID_HEIGHT;
-    console.log(snappedX, snappedY);
+    // const gridWidth = canvasRef.current.offsetWidth / NO_OF_GRIDS;
+    // const snappedX = Math.round(relativeX / gridWidth) * gridWidth;
+    // const snappedY = Math.round(relativeY / GRID_HEIGHT) * GRID_HEIGHT;
     ghostElementRef.current.style.transform = `translate(${relativeX}px, ${relativeY}px)`;
   };
 
@@ -95,25 +94,14 @@ export const useGhostMoveable = () => {
         setVirtualTarget(null);
         ghostElementRef.current.remove();
         ghostElementRef.current = null;
-        // End any active drag operation first
-        // moveableInstance.dragEnd();
       } catch (error) {
         console.warn('Failed to trigger moveable dragEnd:', error);
       }
     }
   };
 
-  // New function to update ghost position during continuous hover
-  const updateGhostOnHover = (mousePosition, canvasRef) => {
-    if (isActiveRef.current) {
-      updateGhostPosition(mousePosition, canvasRef);
-    }
-  };
-
   return {
     activateGhost,
     deactivateGhost,
-    updateGhostOnHover, // New function for continuous updates
-    isActive: isActiveRef.current,
   };
 };

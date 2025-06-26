@@ -9,6 +9,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useGhostMoveable } from '../_hooks/useGhostMoveable';
+import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
 export const useCanvasDropHandler = ({ appType }) => {
   const { moduleId } = useModuleContext();
@@ -20,20 +21,17 @@ export const useCanvasDropHandler = ({ appType }) => {
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
   const { deactivateGhost } = useGhostMoveable();
-  const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
-
-  // console.log('currentDragCanvasId', currentDragCanvasId);
-
   const handleDrop = ({ componentType: draggedComponentType, component }, monitor, canvasId) => {
     const realCanvasRef =
-      document.getElementById(`canvas-${currentDragCanvasId}`) || document.getElementById(`real-canvas`);
-    // Reset canvas ID when dropping
-    setCurrentDragCanvasId(null);
+      !canvasId || canvasId === 'canvas'
+        ? document.getElementById(`real-canvas`)
+        : document.getElementById(`canvas-${canvasId}`);
 
     // Ensure ghost is deactivated before processing drop
     deactivateGhost();
+    handleDeactivateTargets();
+    hideGridLines();
 
-    // Deactivate ghost when dropping
     setShowModuleBorder(false); // Hide the module border when dropping
 
     if (currentMode === 'view' || (appType === 'module' && draggedComponentType !== 'ModuleContainer')) {
@@ -69,7 +67,7 @@ export const useCanvasDropHandler = ({ appType }) => {
         monitor,
         currentLayout,
         realCanvasRef,
-        currentDragCanvasId,
+        canvasId,
         moduleInfo
       );
       const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
@@ -82,12 +80,14 @@ export const useCanvasDropHandler = ({ appType }) => {
         monitor,
         currentLayout,
         realCanvasRef,
-        currentDragCanvasId,
+        canvasId,
         moduleInfo
       );
       addComponentToCurrentPage([newComponent]);
       setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
     }
+    // Reset canvas ID when dropping
+    setCurrentDragCanvasId(null);
   };
 
   return handleDrop;

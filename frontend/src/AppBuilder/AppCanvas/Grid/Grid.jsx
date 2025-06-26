@@ -86,6 +86,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
+  const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
 
   const snapContainer = useMemo(() => {
     if (currentDragCanvasId) {
@@ -97,12 +98,12 @@ export default function Grid({ gridWidth, currentLayout }) {
     return '#real-canvas';
   }, [currentDragCanvasId, dragParentId]);
 
-  const moveableTarget = useMemo(() => {
+  const getMoveableTarget = () => {
     if (virtualTarget) {
       return '#moveable-ghost-element';
     }
     return groupedTargets?.length > 1 ? groupedTargets : '.target';
-  }, [virtualTarget, groupedTargets]);
+  };
 
   // Set moveable reference in grid store for access by other components
   useEffect(() => {
@@ -325,8 +326,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       }
     });
   }, [selectedComponents]);
-
-  const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
 
   useEffect(() => {
     reloadGrid();
@@ -601,7 +600,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           multiComponentHandle: groupedTargets.length > 1,
         }}
         flushSync={flushSync}
-        target={moveableTarget}
+        target={getMoveableTarget()}
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze && mode !== 'view'}
@@ -883,11 +882,8 @@ export default function Grid({ gridWidth, currentLayout }) {
           handleActivateNonDraggingComponents();
         }}
         onDragEnd={(e) => {
-          console.log('e.lastEvent', moveableRef);
           handleDeactivateTargets();
           if (e.target.id === 'moveable-ghost-element') {
-            console.log('e.target', false);
-            // e.target.remove();
             return;
           }
           try {
@@ -953,12 +949,13 @@ export default function Grid({ gridWidth, currentLayout }) {
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
             let left = e.translate[0];
             let top = e.translate[1];
-            // console.log('e.translate', e.translate);
-            // if (currentDragCanvasId === 'canvas') {
-            // console.log('e.translate', e.translate, _gridWidth);
-            left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
-            top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
-            console.log('e.translate', e.translate, left, top);
+
+            if (currentDragCanvasId === 'canvas') {
+              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
+              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+            }
+
+            useGridStore.getState().actions.setGhostDragPosition({ left, top, e });
             e.target.style.transform = `translate(${left}px, ${top}px)`;
             return false;
           }
@@ -1152,7 +1149,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         // snapGridAll={true}
         scrollable={true}
-        snapContainer={snapContainer}
+        // snapContainer={snapContainer}
         // snapGridWidth={100}
       />
     </>

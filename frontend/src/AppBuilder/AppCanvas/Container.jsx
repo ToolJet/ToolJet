@@ -105,7 +105,7 @@ export const Container = React.memo(
           const canvasId =
             closestCanvas?.getAttribute('data-parentId') ||
             closestCanvas?.id?.replace('canvas-', '') ||
-            (closestCanvas?.id === 'real-canvas' ? 'canvas' : null);
+            (closestCanvas?.id === 'real-canvas' ? 'real-canvas' : null);
 
           // Only update if this container is the most specific one under the mouse
           if (canvasId === id) {
@@ -126,7 +126,6 @@ export const Container = React.memo(
         }
       },
       drop: (item, monitor) => {
-        console.log('Container drop', item, monitor.getClientOffset());
         handleDrop(item, monitor, id);
       },
       collect: (monitor) => ({
