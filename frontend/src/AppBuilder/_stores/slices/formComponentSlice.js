@@ -1,6 +1,7 @@
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cleanupFormFields } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/utils/utils';
 import { set as lodashSet } from 'lodash';
+import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 
 const initialState = {};
 
@@ -103,21 +104,7 @@ export const createFormComponentSlice = (set, get) => ({
     if (!parentId) return;
     const componentType = component?.component?.component;
 
-    const inputComponents = [
-      'TextInput',
-      'NumberInput',
-      'PasswordInput',
-      'TextArea',
-      'DaterangePicker',
-      'DatePickerV2',
-      'Checkbox',
-      'DropdownV2',
-      'MultiselectV2',
-      'RadioButtonV2',
-      'ToggleSwitchV2',
-    ];
-
-    if (!inputComponents.includes(componentType)) return;
+    if (!INPUT_COMPONENTS_FOR_FORM.includes(componentType)) return;
 
     if (getParentComponentType(parentId, moduleId) === 'Form') {
       const newField = {

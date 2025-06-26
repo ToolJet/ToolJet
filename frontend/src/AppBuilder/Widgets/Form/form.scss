@@ -137,12 +137,12 @@
 
 /* Scrollbar styling when visible on hover */
 .show-scrollbar-on-hover:hover::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: #e7eaef;
   border-radius: 4px;
 }
 
 .show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: #a0a6ae;
   border-radius: 4px;
 }
 

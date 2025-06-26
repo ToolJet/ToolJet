@@ -19,10 +19,12 @@ export const INPUT_COMPONENTS_FOR_FORM = [
   'MultiselectV2',
   'RadioButtonV2',
   'DatetimePickerV2',
+  'Checkbox',
+  'ToggleSwitchV2',
   'DatePickerV2',
   'TimePicker',
+  'DaterangePicker',
   'TextArea',
-  'Checkbox',
 ];
 
 export const JSON_DIFFERENCE = {
