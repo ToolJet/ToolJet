@@ -16,6 +16,7 @@ import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import Spinner from '@/_ui/Spinner';
+import TooljetBanner from './TooljetBanner';
 
 export const Viewer = ({
   id: appId,
@@ -261,6 +262,7 @@ export const Viewer = ({
                                 appType={appType}
                               />
                             </div>
+                            {!licenseValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>
