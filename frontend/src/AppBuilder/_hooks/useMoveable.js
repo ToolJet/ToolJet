@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 const defaultProps = {
   minHeight: 50,
@@ -17,15 +17,21 @@ const defaultProps = {
 
 export const useResizable = (options = {}) => {
   const props = { ...defaultProps, ...options };
-  const parentRef = useRef(null);
+  const internalRef = useRef(null);
+  const parentRef = props.parentRef || internalRef;
   const [isDragging, setIsDragging] = useState(false); // ✅ Track dragging state
 
   const [height, setHeight] = useState(
     typeof props.initialHeight === 'string' ? props.initialHeight : `${props.initialHeight || 200}px`
   );
+
   const [width, setWidth] = useState(
     typeof props.initialWidth === 'string' ? props.initialWidth : `${props.initialWidth || 200}px`
   );
+
+  useEffect(() => {
+    setHeight(typeof props.initialHeight === 'string' ? props.initialHeight : `${props.initialHeight || 200}px`);
+  }, [props.initialHeight]);
 
   const getRootProps = () => ({
     ref: parentRef,
@@ -46,8 +52,8 @@ export const useResizable = (options = {}) => {
       if (!parentRef.current) return;
       e.stopPropagation();
       e.preventDefault();
-      const startHeight = parseInt(parentRef.current.clientHeight);
-      const startWidth = parseInt(parentRef.current.clientWidth);
+      const startHeight = Number.parseInt(parentRef.current.clientHeight);
+      const startWidth = Number.parseInt(parentRef.current.clientWidth);
       const parentWidth = parentRef.current.parentElement ? parentRef.current.parentElement.clientWidth : startWidth;
       const startY = e.clientY;
       const startX = e.clientX;
@@ -99,8 +105,8 @@ export const useResizable = (options = {}) => {
             newWidth,
             heightDiff: newHeight - startHeight,
             widthDiff: isPercentage
-              ? parseInt(newWidth) - (startWidth / parentWidth) * 100
-              : parseInt(newWidth) - startWidth,
+              ? Number.parseInt(newWidth) - (startWidth / parentWidth) * 100
+              : Number.parseInt(newWidth) - startWidth,
           });
         }
       };
@@ -113,8 +119,12 @@ export const useResizable = (options = {}) => {
 
         if (props.onDragEnd) {
           // Get the updated height and width from the DOM instead of relying on state
-          const finalHeight = parentRef.current ? parseInt(parentRef.current.clientHeight) : parseInt(height);
-          const finalWidth = parentRef.current ? parseInt(parentRef.current.clientWidth) : parseInt(width);
+          const finalHeight = parentRef.current
+            ? Number.parseInt(parentRef.current.clientHeight)
+            : Number.parseInt(height);
+          const finalWidth = parentRef.current
+            ? Number.parseInt(parentRef.current.clientWidth)
+            : Number.parseInt(width);
 
           props.onDragEnd({ newHeight: finalHeight, newWidth: finalWidth });
         }
