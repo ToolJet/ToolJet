@@ -232,23 +232,26 @@ function InviteUsersForm({
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
-          groupsToRemove.length ||
-          newRole ||
-          newGroupsToAdd.length ||
-          JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
+      groupsToRemove.length ||
+      newRole ||
+      newGroupsToAdd.length ||
+      JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
       : !inValidUserDetail || activeTab == 2;
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
-  let fillColor;
-  if (activeTab == 1) {
-    fillColor = darkmode ? '#FFFFFF' : '#11181C';
-  } else {
-    fillColor = darkmode ? '#AAAAAA' : '#687076';
-  }
 
   const metadataChanged = (newOptions) => {
     setUserMetadata(newOptions);
+  };
+
+  // Returns the fill color based on active tab and theme
+  const getFillColor = (tabIndex) => {
+    if (activeTab !== tabIndex) {
+      return darkMode ? '#545B64' : '#687076'; // returning fill color for inactive tab wrt theme
+    }
+    
+    return darkMode ? '#FAFCFF' : '#313739'; // returning fill color for active tab wrt theme
   };
 
   return (
@@ -308,7 +311,7 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(1)}
                     data-cy="button-invite-with-email"
                   >
-                    <SolidIcon name="mail" width="14" fill={fillColor} />
+                    <SolidIcon name="mail" width="14" fill={getFillColor(1)} />
                     <span> Invite with email</span>
                   </button>
                   <button
@@ -316,7 +319,7 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(2)}
                     data-cy="button-upload-csv-file"
                   >
-                    <SolidIcon name="fileupload" width="14" fill={fillColor} />
+                    <SolidIcon name="fileupload" width="14" fill={getFillColor(2)} />
                     <span>Upload CSV file</span>
                   </button>
                 </div>
@@ -424,7 +427,7 @@ function InviteUsersForm({
                     <ButtonSolid
                       href={`${window.public_config?.TOOLJET_HOST}${
                         window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                      }assets/csv/sample_upload.csv`}
+                        }assets/csv/sample_upload.csv`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
