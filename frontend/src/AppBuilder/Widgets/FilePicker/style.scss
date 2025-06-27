@@ -27,10 +27,10 @@
 
   &:hover {
     background: var(--surfaces-surface-02);
+
     .delete-button {
       opacity: 1;
       visibility: visible;
-      transform: translateX(0);
     }
   }
 
@@ -72,9 +72,12 @@
     padding: 0;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(-2px);
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out,
-      transform 0.15s ease-in-out;
+    background-color: var(--cc-surface1-surface);
+    border-color: var(--cc-default-border);
+
+    &:hover {
+      background-color: var(--file-picker-delete-button-hover-bg) !important;
+    }
   }
 }
 
@@ -97,23 +100,28 @@
   height: 100%;
   min-height: 52px;
   cursor: pointer;
+  margin-top: 0.5rem;
 
   &:hover {
-    border-color: var(--borders-strong);
+    border-color: var(--cc-primary-brand);
     color: var(--cc-primary-text);
+    border-width: 2px;
   }
-  
-  &:focus, &:active {
+
+  &:focus,
+  &:active {
     border-color: var(--cc-primary-brand);
     color: var(--cc-primary-text);
   }
 
   &.is-dragging {
     border-color: var(--cc-primary-brand);
+    border-width: 2px;
   }
 
   &.is-accepting {
     border-color: var(--cc-primary-brand);
+    border-width: 2px;
   }
 
   &.is-rejecting {
@@ -124,7 +132,7 @@
     // border-style: solid;
     // border-color: var(--primary-accent-strong);
     box-shadow: 0 0 0 2px var(--surfaces-surface-01),
-                0 0 0 4px var(--interactive-overlays-focus-outline);
+      0 0 0 4px var(--interactive-overlays-focus-outline);
   }
 
   &.is-disabled {
@@ -134,6 +142,7 @@
   }
 
   .dropzone {
+
     &-instruction,
     &-message {
       text-align: center;
@@ -146,16 +155,12 @@
       color: var(--cc-primary-brand);
       font-weight: 500;
       cursor: pointer;
-      
+
       &:hover {
         text-decoration: underline;
       }
     }
   }
-}
-
-.file-picker-title {
-  color: var(--cc-primary-text);
 }
 
 // Validation Bar
@@ -166,7 +171,7 @@
   width: 100%;
   box-sizing: border-box;
   color: var(--text-placeholder);
-  font-weight: 500;
+  font-weight: 400;
   font-size: 12px;
   line-height: 20px;
   letter-spacing: 0;
@@ -184,21 +189,21 @@
 // File Picker Widget
 .file-picker {
   &-title {
-    color: var(--file-picker-text-primary);
+    color: var(--cc-primary-text);
     text-align: left;
     width: 100%;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 20px;
     letter-spacing: 0;
     margin: 0;
   }
 
   &-widget-wrapper {
-    padding: var(--file-picker-padding);
+    // padding: var(--file-picker-padding);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    // gap: 12px;
     background-color: var(--file-picker-background-color);
     border-radius: var(--file-picker-border-radius);
     border: var(--file-picker-border);
@@ -206,10 +211,10 @@
   }
 
   &-files-pane {
-    margin: 0 -16px;
-    padding-top: 16px;
+    margin: 0;
     min-height: 0;
-    border-top: 1px solid var(--borders-default);
+    padding: 0 0.75rem;
+    padding-top: 0.5rem;
     display: flex;
     flex-direction: column;
 
@@ -222,9 +227,7 @@
 .file-list-container {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 4px;
   width: 100%;
-  padding: 0 16px 8px;
   height: auto;
 }
 
@@ -235,7 +238,7 @@
   gap: 7px;
   margin-bottom: 0;
   color: var(--status-error-strong);
-  
+
   .error-icon {
     display: flex;
     align-items: center;
@@ -243,7 +246,7 @@
     flex-shrink: 0;
     color: var(--status-error-strong);
   }
-  
+
   .error-text {
     font-size: 14px;
     line-height: 20px;
@@ -252,8 +255,34 @@
 }
 
 .files-pane-scrollable {
-  // max-height: max(180px, 38.2%);
   overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  height: 100%;
+  overflow: hidden auto;
+
+  /* Hide scrollbar by default */
+  &::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
+  /* Show scrollbar only on hover */
+  &:hover {
+    &::-webkit-scrollbar-thumb {
+      background-color: #6a727c4d;
+      border-radius: 3px;
+    }
+  }
+
+  &:hover {
+    scrollbar-color: #6a727c4d transparent;
+  }
 }
 
 .files-pane-auto-height {

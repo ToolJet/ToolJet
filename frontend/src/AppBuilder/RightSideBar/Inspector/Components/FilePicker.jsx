@@ -24,6 +24,12 @@ const FILE_TYPE_OPTIONS = [
 
 const FxSelect = ({ label, paramName, initialValue, darkMode, paramUpdated, options, onValueChange }) => {
   const [isFxActive, setIsFxActive] = useState(false);
+
+  const handleFxButtonClick = () => {
+    paramUpdated({ name: paramName }, 'fxActive', !isFxActive, 'properties');
+    setIsFxActive(!isFxActive);
+  };
+
   return (
     <div
       data-cy={`input-date-display-format`}
@@ -33,18 +39,8 @@ const FxSelect = ({ label, paramName, initialValue, darkMode, paramUpdated, opti
       <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
         <div className="d-flex justify-content-between mb-1">
           <label className="form-label">{label}</label>
-          <div
-            className={cx({
-              'hide-fx': !isFxActive,
-            })}
-          >
-            <FxButton
-              active={isFxActive}
-              onPress={() => {
-                paramUpdated({ name: paramName }, 'fxActive', !isFxActive, 'properties');
-                setIsFxActive(!isFxActive);
-              }}
-            />
+          <div className={cx({ 'hide-fx': !isFxActive })}>
+            <FxButton active={isFxActive} onPress={handleFxButtonClick} />
           </div>
         </div>
         {isFxActive ? (
@@ -53,15 +49,15 @@ const FxSelect = ({ label, paramName, initialValue, darkMode, paramUpdated, opti
             theme={darkMode ? 'monokai' : 'default'}
             mode="javascript"
             lineNumbers={false}
-            onChange={(value) => onValueChange(value)}
+            onChange={onValueChange}
           />
         ) : (
           <Select
             options={options}
-            value={initialValue ?? 'image/*'}
+            value={initialValue ?? '*/*'}
             search={true}
             closeOnSelect={true}
-            onChange={(value) => onValueChange(value)}
+            onChange={onValueChange}
             fuzzySearch
             placeholder="Select.."
             useCustomStyles={true}
@@ -71,6 +67,47 @@ const FxSelect = ({ label, paramName, initialValue, darkMode, paramUpdated, opti
       </div>
     </div>
   );
+};
+
+/** Remove minFileCount and maxFileCount validations if multiple file selection is disabled */
+const getValidations = (componentMeta, component) => {
+  const validations = Object.keys(componentMeta.validation || {});
+  const enableMultipleValue = resolveReferences(component.component.definition.properties.enableMultiple?.value ?? false);
+  const enableMultipleFxActive = component.component.definition.properties.enableMultiple?.fxActive;
+
+  if (!enableMultipleValue && !enableMultipleFxActive) {
+    return validations.filter((validation) => !['minFileCount', 'maxFileCount'].includes(validation));
+  }
+  return validations;
+};
+
+const getPropertiesBySection = (propertiesMeta) => {
+  const properties = [];
+  const additionalActions = [];
+  const dataProperties = [];
+
+  for (const [key, value] of Object.entries(propertiesMeta)) {
+    if (value?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else if (value?.accordian === 'Data') {
+      dataProperties.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
+  return { properties, additionalActions, dataProperties };
+};
+
+const getConditionalAccordionItems = (component, renderCustomElement) => {
+  const parseContent = resolveReferences(component.component.definition.properties.parseContent?.value ?? false);
+  const options = ['parseContent'];
+  let renderOptions = options.map((option) => renderCustomElement(option));
+
+  const conditionalOptions = [{ name: 'parseFileType', condition: parseContent }];
+  conditionalOptions.forEach(({ name, condition }) => {
+    if (condition) renderOptions.push(renderCustomElement(name));
+  });
+  return renderOptions;
 };
 
 export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
@@ -88,41 +125,18 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
   const resolvedValidations = useStore((state) => state.getResolvedComponent(component.id)?.validation);
   const fileTypeValue = resolvedValidations?.fileType;
 
-  const renderCustomElement = (param, paramType = 'properties') => {
-    return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
-  };
+  const renderCustomElement = (param, paramType = 'properties') =>
+    renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
 
-  const conditionalAccordionItems = (component) => {
-    const parseContent = resolveReferences(component.component.definition.properties.parseContent?.value ?? false);
-    const options = ['parseContent'];
-
-    let renderOptions = [];
-
-    options.map((option) => renderOptions.push(renderCustomElement(option)));
-    const conditionalOptions = [{ name: 'parseFileType', condition: parseContent }];
-
-    conditionalOptions.map(({ name, condition }) => {
-      if (condition) renderOptions.push(renderCustomElement(name));
-    });
-    return renderOptions;
-  };
-
-  let properties = [];
-  let additionalActions = [];
-  let dataProperties = [];
+  // Debug logs
+  // console.log('component.component.definition', component.component.definition);
 
   const events = Object.keys(componentMeta.events);
-  const validations = Object.keys(componentMeta.validation || {});
+  const validations = getValidations(componentMeta, component);
 
-  for (const [key] of Object.entries(componentMeta?.properties)) {
-    if (componentMeta?.properties[key]?.section === 'additionalActions') {
-      additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Data') {
-      dataProperties.push(key);
-    } else {
-      properties.push(key);
-    }
-  }
+  // console.log('validations', validations, enableMultipleValue, component.component.definition.properties.enableMultiple?.value, enableMultipleFxActive);
+
+  const { additionalActions, dataProperties } = getPropertiesBySection(componentMeta?.properties);
   const filteredProperties = [...dataProperties];
 
   const accordionItems = baseComponentProperties(
@@ -142,9 +156,11 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
     [],
     additionalActions
   );
-  // accordionItems.splice(1, 0, ...conditionalAccordionItems(component));
 
-  accordionItems[0].children.push(...conditionalAccordionItems(component));
+  // Insert conditional accordion items
+  accordionItems[0].children.push(...getConditionalAccordionItems(component, renderCustomElement));
+
+  // Insert FxSelect for file type
   accordionItems[2].children[1] = (
     <FxSelect
       label={'File type'}
