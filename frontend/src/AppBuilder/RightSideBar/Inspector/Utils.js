@@ -133,7 +133,8 @@ export function renderElement(
   darkMode = false,
   placeholder = '',
   validationFn,
-  customMeta
+  setCodeEditorView = null,
+  customMeta = null
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -182,6 +183,7 @@ export function renderElement(
       placeholder={placeholder}
       validationFn={validationFn}
       isHidden={isHidden}
+      setCodeEditorView={setCodeEditorView}
       customMeta={customMeta}
     />
   );

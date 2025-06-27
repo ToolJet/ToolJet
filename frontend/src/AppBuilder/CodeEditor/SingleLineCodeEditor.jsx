@@ -33,6 +33,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
+import Icon from '@/_ui/Icon/solidIcons/index';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
@@ -80,7 +81,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
-
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
@@ -210,6 +210,7 @@ const EditorInput = ({
   onInputChange,
   wrapperRef,
   showSuggestions,
+  setCodeEditorView = null, // Function to set the CodeMirror view
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
@@ -217,7 +218,10 @@ const EditorInput = ({
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
 
-  const getServerSideGlobalResolveSuggestions = useStore((state) => state.getServerSideGlobalResolveSuggestions, shallow);
+  const getServerSideGlobalResolveSuggestions = useStore(
+    (state) => state.getServerSideGlobalResolveSuggestions,
+    shallow
+  );
 
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
@@ -447,6 +451,9 @@ const EditorInput = ({
             <CodeMirror
               onCreateEditor={(view) => {
                 setCodeMirrorView(view);
+                if (setCodeEditorView) {
+                  setCodeEditorView(view);
+                }
               }}
               value={currentValue}
               placeholder={placeholder}
@@ -519,9 +526,27 @@ const DynamicEditorBridge = (props) => {
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
-  const { isFxNotRequired } = fieldMeta;
+  const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
+  const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
-  const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
+  let newInitialValue = initialValue,
+    shouldResolve = true;
+
+  // This is to handle the case when the initial value is a string and contains components or queries
+  // and we need to replace the ids with names
+  // but we don't want to resolve the references as it needs to be displayed as it is
+  if (paramName === 'generateFormFrom') {
+    if (
+      typeof initialValue === 'string' &&
+      (initialValue?.includes('components') || initialValue?.includes('queries'))
+    ) {
+      newInitialValue = replaceIdsWithName(initialValue);
+      shouldResolve = false;
+    }
+  }
+  const [_, error, value] =
+    type === 'fxEditor' ? (shouldResolve ? resolveReferences(newInitialValue) : [false, '', newInitialValue]) : [];
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   useEffect(() => {
@@ -566,9 +591,9 @@ const DynamicEditorBridge = (props) => {
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
 
-  return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+  const renderedLabel = () => {
+    return (
+      <>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
@@ -578,32 +603,51 @@ const DynamicEditorBridge = (props) => {
                 darkMode && 'color-whitish-darkmode'
               }`}
             />
+            {isDeprecated && (
+              <span className={'list-item-deprecated-column-type'}>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
+            )}
           </div>
         )}
+      </>
+    );
+  };
+
+  const renderDynamicFx = () => {
+    if (codeShow) return null;
+    return (
+      <DynamicFxTypeRenderer
+        value={!error ? value : ''}
+        onChange={onChange}
+        paramName={paramName}
+        paramLabel={paramLabel}
+        paramType={paramType}
+        forceCodeBox={() => {
+          setForceCodeBox(true);
+          onFxPress(true);
+        }}
+        meta={fieldMeta}
+        cyLabel={cyLabel}
+        styleDefinition={styleDefinition}
+        component={component}
+        onVisibilityChange={onVisibilityChange}
+      />
+    );
+  };
+
+  return (
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
+      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+        {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {renderFx()}
           </div>
         </div>
-        {!codeShow && (
-          <DynamicFxTypeRenderer
-            value={!error ? value : ''}
-            onChange={onChange}
-            paramName={paramName}
-            paramLabel={paramLabel}
-            paramType={paramType}
-            forceCodeBox={() => {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }}
-            meta={fieldMeta}
-            cyLabel={cyLabel}
-            styleDefinition={styleDefinition}
-            component={component}
-            onVisibilityChange={onVisibilityChange}
-          />
-        )}
+        {!newLine && renderDynamicFx()}
       </div>
+      {newLine && renderDynamicFx()}
       {codeShow && (
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>

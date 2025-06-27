@@ -16,15 +16,11 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation = () => { },
 }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
-  const gitSyncEnabled =
-    orgGit?.org_git?.git_https?.is_enabled ||
-    orgGit?.org_git?.git_ssh?.is_enabled ||
-    orgGit?.org_git?.git_lab?.is_enabled;
 
   const {
     createNewVersionAction,
@@ -106,8 +102,8 @@ const CreateVersionModal = ({
           });
       },
       (error) => {
-        if (error?.data?.code === '23505') {
-          toast.error('Version name already exists.');
+        if (error?.data?.code === "23505") {
+          toast.error("Version name already exists.");
         } else {
           toast.error(error?.error);
         }
@@ -176,7 +172,7 @@ const CreateVersionModal = ({
             </div>
           </div>
 
-          {gitSyncEnabled && (
+          {orgGit?.org_git?.is_enabled && (
             <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
               <div>
                 <input

@@ -3,7 +3,7 @@ export const formConfig = {
   displayName: 'Form',
   description: 'Wrapper for multiple components',
   defaultSize: {
-    width: 13,
+    width: 15,
     height: 450,
   },
   defaultChildren: [
@@ -41,84 +41,6 @@ export const formConfig = {
         padding: 'none',
       },
     },
-    {
-      componentName: 'TextInput',
-      layout: {
-        top: 20,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: [
-        'placeholder',
-        'label',
-        'textColor',
-        'borderColor',
-        'accentColor',
-        'errTextColor',
-        'borderRadius',
-        'backgroundColor',
-        'color',
-      ],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction', 'boxShadow'],
-      defaultValue: {
-        placeholder: 'Enter your name',
-        label: 'Name',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-        textColor: 'var(--cc-primary-text)',
-        borderColor: 'var(--cc-default-border)',
-        accentColor: 'var(--cc-primary-brand)',
-        errTextColor: 'var(--cc-error-systemStatus)',
-        color: 'var(--cc-primary-text)',
-        borderRadius: '{{6}}',
-        backgroundColor: 'var(--cc-surface1-surface)',
-        boxShadow: '0px 0px 0px 0px #00000090',
-      },
-    },
-    {
-      componentName: 'NumberInput',
-      layout: {
-        top: 80,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: ['placeholder', 'label'],
-      styles: [
-        'alignment',
-        'width',
-        'auto',
-        'padding',
-        'direction',
-        'borderColor',
-        'accentColor',
-        'errTextColor',
-        'textColor',
-        'color',
-        'backgroundColor',
-        'boxShadow',
-      ],
-      defaultValue: {
-        placeholder: 'Age',
-        label: 'Age',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-        borderColor: 'var(--cc-default-border)',
-        accentColor: 'var(--cc-primary-brand)',
-        errTextColor: 'var(--cc-error-systemStatus)',
-        textColor: 'var(--cc-primary-text)',
-        color: 'var(--cc-primary-text)',
-        backgroundColor: 'var(--cc-surface1-surface)',
-        boxShadow: '0px 0px 0px 0px #00000090',
-      },
-    },
   ],
   component: 'Form',
   others: {
@@ -126,9 +48,11 @@ export const formConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    showHeader: { type: 'toggle', displayName: 'Header' },
+    showFooter: { type: 'toggle', displayName: 'Footer' },
     buttonToSubmit: {
       type: 'select',
-      displayName: 'Button to submit form',
+      displayName: 'Submit button',
       options: [{ name: 'None', value: 'none' }],
       validation: {
         schema: { type: 'string' },
@@ -137,6 +61,65 @@ export const formConfig = {
       conditionallyRender: {
         key: 'advanced',
         value: false,
+      },
+    },
+    generateFormFrom: {
+      type: 'dropdownMenu',
+      displayName: 'Generate form from',
+      options: [
+        { name: 'Raw JSON', value: 'rawJson' },
+        { name: 'JSON schema', value: 'jsonSchema' },
+      ],
+      section: 'data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
+      newLine: true,
+    },
+    JSONData: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'rawJson',
+      },
+      section: 'data',
+      showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    newJsonSchema: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'jsonSchema',
+      },
+      section: 'data',
+      showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    fields: {
+      type: 'array',
+      displayName: 'Table Columns',
+    },
+    validateOnSubmit: {
+      type: 'toggle',
+      displayName: 'Validate all fields on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    resetOnSubmit: {
+      type: 'toggle',
+      displayName: 'Reset form on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
       },
     },
     loadingState: {
@@ -160,17 +143,17 @@ export const formConfig = {
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
+      section: 'deprecated',
     },
     JSONSchema: {
       type: 'code',
       displayName: 'JSON Schema',
+      section: 'deprecated',
       conditionallyRender: {
         key: 'advanced',
         value: true,
       },
     },
-    showHeader: { type: 'toggle', displayName: 'Header' },
-    showFooter: { type: 'toggle', displayName: 'Footer' },
     headerHeight: {
       type: 'numberInput',
       displayName: 'Header height',
@@ -308,12 +291,25 @@ export const formConfig = {
         value:
           "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
       },
+      newJsonSchema: {
+        value:
+          "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
+      },
       showHeader: { value: '{{true}}' },
       showFooter: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       headerHeight: { value: 60 },
       footerHeight: { value: 60 },
+      validateOnSubmit: { value: '{{true}}' },
+      resetOnSubmit: { value: '{{true}}' },
+      generateFormFrom: '',
+      fields: {
+        value: [],
+      },
+      JSONData: {
+        value: undefined,
+      },
     },
     events: [],
     styles: {

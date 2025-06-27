@@ -241,6 +241,10 @@ import EmptyStateModules from './EmptyStateModules.jsx';
 import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
+import CurlyBraces from './CurlyBraces.jsx';
+import Sliders from './Sliders.jsx';
+import Asterix from './Asterix.jsx';
+import ArrowDirectionLoop from './ArrowDirectionLoop.jsx';
 import EnterpriseCrown from './EnterrpiseCrown.jsx';
 import FileCode from './FileCode.jsx';
 import Corners from './Corners.jsx';
@@ -292,6 +296,8 @@ const Icon = (props) => {
       return <ArrowRight01 {...props} />;
     case 'arrowdown':
       return <ArrowDown {...props} />;
+    case 'arrowdirectionloop':
+      return <ArrowDirectionLoop {...props} />;
     case 'arroweft':
       return <Arroweft {...props} />;
     case 'arrowreturn':
@@ -306,6 +312,8 @@ const Icon = (props) => {
       return <ArrowTransfer {...props} />;
     case 'arrowup':
       return <ArrowUp {...props} />;
+    case 'asterix':
+      return <Asterix {...props} />;
     case 'auditlogs':
       return <AuditLogs {...props} />;
     case 'booksearch':
@@ -354,6 +362,8 @@ const Icon = (props) => {
       return <Computer {...props} />;
     case 'copy':
       return <Copy {...props} />;
+    case 'curlybraces':
+      return <CurlyBraces {...props} />;
     case 'darkmode':
       return <DarkMode {...props} />;
     case 'datasource':
@@ -584,6 +594,8 @@ const Icon = (props) => {
       return <Skip {...props} />;
     case 'signpost':
       return <Signpost {...props} />;
+    case 'sliders':
+      return <Sliders {...props} />;
     case 'smilerectangle':
       return <SmileRectangle {...props} />;
     case 'sortarrowdown':

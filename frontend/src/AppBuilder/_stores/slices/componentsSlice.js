@@ -25,6 +25,7 @@ import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/re
 import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
@@ -824,7 +825,7 @@ export const createComponentsSlice = (set, get) => ({
   addComponentToCurrentPage: (
     componentDefinitions,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true } = {}
+    { skipUndoRedo = false, saveAfterAction = true, skipFormUpdate = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -834,6 +835,8 @@ export const createComponentsSlice = (set, get) => ({
       canAddToParent,
       getComponentNameFromId,
       deleteComponentNameIdMapping,
+      checkIfParentIsFormAndAddField,
+      buildComponentDefinition,
       getCurrentPageId,
     } = get();
     const currentPageId = getCurrentPageId(moduleId);
@@ -848,34 +851,7 @@ export const createComponentsSlice = (set, get) => ({
       ) {
         return false;
       }
-      const newComponents = componentDefinitions.reduce((acc, componentDefinition) => {
-        const currentComponents = {
-          ...getCurrentPageComponents(moduleId),
-          ...Object.fromEntries(acc.map((component) => [component.id, component])),
-        };
-        const componentName =
-          componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
-        const newComponent = {
-          id: componentDefinition.id,
-          name: componentName,
-          component: {
-            component: componentDefinition.component.component,
-            definition: {
-              general: componentDefinition.component.definition?.general,
-              generalStyles: componentDefinition.component.definition?.generalStyles,
-              others: componentDefinition.component.definition?.others,
-              properties: componentDefinition.component.definition?.properties,
-              styles: componentDefinition.component.definition?.styles,
-              validation: componentDefinition.component.definition?.validation,
-            },
-            name: componentName,
-            parent: componentDefinition.component.parent,
-          },
-          layouts: componentDefinition.layouts,
-        };
-
-        return [...acc, newComponent];
-      }, []);
+      const newComponents = buildComponentDefinition(componentDefinitions, moduleId);
 
       const diff = newComponents.reduce((acc, newComponent) => {
         acc[newComponent.id] = {
@@ -896,6 +872,8 @@ export const createComponentsSlice = (set, get) => ({
         }
         updateComponentDependencyGraph(moduleId, newComponent);
         const parentId = newComponent.component.parent || 'canvas';
+        // Check if parent is a Form and add the component to form fields if needed
+        !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
         set(
           withUndoRedo((state) => {
             if (!state.containerChildrenMapping[parentId]) {
@@ -911,8 +889,11 @@ export const createComponentsSlice = (set, get) => ({
           'addComponentToCurrentPage'
         );
       });
-      const selectedComponents = findHighestLevelofSelection(newComponents);
-      get().setSelectedComponents(selectedComponents.map((component) => component.id));
+
+      if (!skipFormUpdate) {
+        const selectedComponents = findHighestLevelofSelection(newComponents);
+        get().setSelectedComponents(selectedComponents.map((component) => component.id));
+      }
 
       if (saveAfterAction) {
         saveComponentChanges(diff, 'components', 'create', moduleId)
@@ -925,13 +906,14 @@ export const createComponentsSlice = (set, get) => ({
           });
         get().multiplayer.broadcastUpdates(newComponents, 'components', 'create');
       }
+      if (skipFormUpdate) resolve(diff);
     });
   },
 
   deleteComponents: (
     selected,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true, isCut = false } = {}
+    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -941,6 +923,7 @@ export const createComponentsSlice = (set, get) => ({
       deleteComponentNameIdMapping,
       getResolvedComponent,
       removeNode,
+      checkIfParentIsFormAndDeleteField,
       deleteTemporaryLayouts,
       currentLayout,
       adjustComponentPositions,
@@ -958,7 +941,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
-    const allComponents = getCurrentPageComponents();
+    const allComponents = getCurrentPageComponents(moduleId);
 
     const findAllChildComponents = (componentId) => {
       if (!toDeleteComponents.includes(componentId)) {
@@ -976,6 +959,7 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     _selectedComponents.forEach((componentId) => {
+      !skipFormUpdate && checkIfParentIsFormAndDeleteField(componentId, moduleId);
       findAllChildComponents(componentId);
     });
 
@@ -988,29 +972,6 @@ export const createComponentsSlice = (set, get) => ({
 
     set(
       withUndoRedo((state) => {
-        const toDeleteComponents = [];
-        const toDeleteEvents = [];
-        const allComponents = getCurrentPageComponents(moduleId);
-
-        const findAllChildComponents = (componentId) => {
-          if (!toDeleteComponents.includes(componentId)) {
-            toDeleteComponents.push(componentId);
-
-            // Find the children of this component
-            const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
-            if (children.length > 0) {
-              // Recursively find children of children
-              children.forEach((child) => {
-                findAllChildComponents(child);
-              });
-            }
-          }
-        };
-
-        _selectedComponents.forEach((componentId) => {
-          findAllChildComponents(componentId);
-        });
-
         const page = state.modules?.[moduleId]?.pages.find((page) => page.id === currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
@@ -1047,7 +1008,7 @@ export const createComponentsSlice = (set, get) => ({
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
-          state.selectedComponents = []; // Empty the selected components
+          if (!skipFormUpdate) state.selectedComponents = []; // Empty the selected components
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
@@ -1140,12 +1101,14 @@ export const createComponentsSlice = (set, get) => ({
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
+      checkParentAndUpdateFormFields,
       deleteTemporaryLayouts,
       getCurrentPageIndex,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
+    updateParent && checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
     set(
       withUndoRedo((state) => {
         const page = state.modules[moduleId].pages[currentPageIndex];
@@ -1278,6 +1241,27 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
+  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+    const { getCurrentPageIndex, getCurrentMode, saveComponentChanges } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
+    const currentMode = getCurrentMode(moduleId);
+    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
+    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
+
+    const diff = {
+      [componentId]: {
+        component: {
+          ...oldComponent,
+          definition: filteredDefinition,
+        },
+      },
+    };
+
+    if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+
+    get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+  },
+
   setComponentProperty: (
     componentId,
     property,
@@ -1300,6 +1284,7 @@ export const createComponentsSlice = (set, get) => ({
       checkValueAndResolve,
       getResolvedComponent,
       setResolvedComponent,
+      saveComponentPropertyChanges,
       getCurrentMode,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
@@ -1334,23 +1319,8 @@ export const createComponentsSlice = (set, get) => ({
         'setComponentProperty'
       );
 
-      const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-      const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-      const diff = {
-        [componentId]: {
-          component: {
-            ...oldComponent,
-            definition: filteredDefinition,
-          },
-        },
-      };
-
       if (saveAfterAction) {
-        const currentMode = getCurrentMode(moduleId);
-        if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update', moduleId);
-
-        get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+        saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
       }
       return;
     }
@@ -1386,23 +1356,8 @@ export const createComponentsSlice = (set, get) => ({
       );
     }
 
-    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-    const diff = {
-      [componentId]: {
-        component: {
-          ...oldComponent,
-          definition: filteredDefinition,
-        },
-      },
-    };
-
     if (saveAfterAction) {
-      const currentMode = getCurrentMode(moduleId);
-      if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update', moduleId);
-
-      get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+      saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
     }
 
     if (attr !== 'value' || skipResolve) return;
@@ -1990,24 +1945,7 @@ export const createComponentsSlice = (set, get) => ({
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (
-      ![
-        'TextInput',
-        'PasswordInput',
-        'EmailInput',
-        'PhoneInput',
-        'CurrencyInput',
-        'NumberInput',
-        'DropdownV2',
-        'MultiselectV2',
-        'RadioButtonV2',
-        'DatetimePickerV2',
-        'DaterangePicker',
-        'DatePickerV2',
-        'TimePicker',
-        'TextArea',
-      ].includes(componentType)
-    ) {
+    if (!INPUT_COMPONENTS_FOR_FORM.includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
@@ -2062,15 +2000,69 @@ export const createComponentsSlice = (set, get) => ({
 
     const childComponents = getAllChildComponents(allComponents, componentId);
     const maxHeight = Object.values(childComponents).reduce((max, component) => {
+      // Added this logic to handle the top alignment for the component
+      const top = component?.component?.definition?.styles?.alignment?.value === 'top' ? 20 : 0;
       const layout = component?.layouts?.[currentLayout];
       if (!layout) {
         return max;
       }
-      const sum = layout.top + layout.height;
+      const sum = layout.top + layout.height + top;
       return Math.max(max, sum);
     }, 0);
 
     setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+  },
+
+  /**
+   * Generates a unique component name from the base name by appending a number if necessary.
+   * @param {string} baseName - The base name for the component
+   * @returns {string} Unique component name
+   */
+  generateUniqueComponentNameFromBaseName: (baseName, moduleId = 'canvas') => {
+    const { getComponentNameIdMapping } = get();
+    const componentNameIdMapping = getComponentNameIdMapping(moduleId);
+
+    let uniqueName = baseName;
+    let counter = 1;
+
+    while (Object.keys(componentNameIdMapping).includes(uniqueName)) {
+      uniqueName = `${baseName}${counter}`;
+      counter++;
+    }
+
+    return uniqueName;
+  },
+  buildComponentDefinition: (componentDefinitions, moduleId = 'canvas') => {
+    const { getCurrentPageComponents } = get();
+    return componentDefinitions.reduce((acc, componentDefinition) => {
+      const currentComponents = {
+        ...getCurrentPageComponents(moduleId),
+        ...Object.fromEntries(acc.map((component) => [component.id, component])),
+      };
+
+      const componentName =
+        componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
+      const newComponent = {
+        id: componentDefinition.id,
+        name: componentName,
+        component: {
+          component: componentDefinition.component.component,
+          definition: {
+            general: componentDefinition.component.definition?.general,
+            generalStyles: componentDefinition.component.definition?.generalStyles,
+            others: componentDefinition.component.definition?.others,
+            properties: componentDefinition.component.definition?.properties,
+            styles: componentDefinition.component.definition?.styles,
+            validation: componentDefinition.component.definition?.validation,
+          },
+          name: componentName,
+          parent: componentDefinition.component.parent,
+        },
+        layouts: componentDefinition.layouts,
+      };
+
+      return [...acc, newComponent];
+    }, []);
   },
   toggleComponentPermissionModal: (show) => {
     set((state) => {

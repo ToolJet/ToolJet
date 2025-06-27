@@ -1,93 +1,10 @@
 import React from 'react';
-import Accordion from '@/_ui/Accordion';
-import { EventManager } from '../EventManager';
-import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { EventManager } from '../../../EventManager';
+import { renderElement } from '../../../Utils';
 
-export const Form = ({
-  componentMeta,
-  darkMode,
-  layoutPropertyChanged,
-  component,
-  paramUpdated,
-  dataQueries,
-  currentState,
-  eventsChanged,
-  apps,
-  allComponents,
-  pages,
-}) => {
-  const tempComponentMeta = deepClone(componentMeta);
-
-  let properties = [];
-  let additionalActions = [];
-  let dataProperties = [];
-
-  const events = Object.keys(componentMeta.events);
-  const validations = Object.keys(componentMeta.validation || {});
-
-  for (const [key] of Object.entries(componentMeta?.properties)) {
-    if (componentMeta?.properties[key]?.section === 'additionalActions') {
-      additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Data') {
-      dataProperties.push(key);
-    } else {
-      properties.push(key);
-    }
-  }
-
-  const { id } = component;
-  const newOptions = [{ name: 'None', value: 'none' }];
-
-  Object.entries(allComponents).forEach(([componentId, _component]) => {
-    const validParent =
-      _component.component.parent === id ||
-      _component.component.parent === `${id}-footer` ||
-      _component.component.parent === `${id}-header`;
-    if (validParent && _component?.component?.component === 'Button') {
-      newOptions.push({ name: _component.component.name, value: componentId });
-    }
-  });
-
-  tempComponentMeta.properties.buttonToSubmit.options = newOptions;
-
-  // Hide header footer if custom schema is turned on
-
-  if (component.component.definition.properties.advanced.value === '{{true}}') {
-    component.component.properties.showHeader = {
-      ...component.component.properties.headerHeight,
-      isHidden: true,
-    };
-    component.component.properties.showFooter = {
-      ...component.component.properties.headerHeight,
-      isHidden: true,
-    };
-  }
-
-  const accordionItems = baseComponentProperties(
-    properties,
-    events,
-    component,
-    tempComponentMeta,
-    layoutPropertyChanged,
-    paramUpdated,
-    dataQueries,
-    currentState,
-    eventsChanged,
-    apps,
-    allComponents,
-    validations,
-    darkMode,
-    pages,
-    additionalActions
-  );
-
-  return <Accordion items={accordionItems} />;
-};
-
-export const baseComponentProperties = (
+export const createAccordionItems = ({
   properties,
   events,
   component,
@@ -102,12 +19,16 @@ export const baseComponentProperties = (
   validations,
   darkMode,
   pages,
-  additionalActions
-) => {
+  additionalActions,
+  deprecatedProperties,
+  renderDataElement,
+}) => {
   let items = [];
+
+  // Structure section
   if (properties.length > 0) {
     items.push({
-      title: `${i18next.t('widget.common.properties', 'Properties')}`,
+      title: `${i18next.t('widget.common.structure', 'Structure')}`,
       children: properties.map((property) =>
         renderElement(
           component,
@@ -124,6 +45,14 @@ export const baseComponentProperties = (
     });
   }
 
+  // Data section
+  items.push({
+    title: 'Data',
+    isOpen: true,
+    children: renderDataElement(),
+  });
+
+  // Events section
   if (events.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.events', 'Events')}`,
@@ -145,6 +74,7 @@ export const baseComponentProperties = (
     });
   }
 
+  // Additional actions section
   items.push({
     title: 'Additional actions',
     isOpen: true,
@@ -163,6 +93,7 @@ export const baseComponentProperties = (
     ),
   });
 
+  // Validation section
   if (validations.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.validation', 'Validation')}`,
@@ -182,6 +113,7 @@ export const baseComponentProperties = (
     });
   }
 
+  // Devices section
   items.push({
     title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
@@ -208,6 +140,25 @@ export const baseComponentProperties = (
           allComponents
         )}
       </>
+    ),
+  });
+
+  // Deprecated section
+  items.push({
+    title: 'Deprecated',
+    isOpen: true,
+    children: deprecatedProperties?.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode
+      )
     ),
   });
 

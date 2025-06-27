@@ -54,11 +54,15 @@ const MultiLineCodeEditor = (props) => {
     readOnly = false,
     editable = true,
     renderCopilot,
+    setCodeEditorView,
   } = props;
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
-  const getServerSideGlobalResolveSuggestions = useStore((state) => state.getServerSideGlobalResolveSuggestions, shallow);
+  const getServerSideGlobalResolveSuggestions = useStore(
+    (state) => state.getServerSideGlobalResolveSuggestions,
+    shallow
+  );
 
   const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
   const isInsideQueryManager = useMemo(
@@ -399,7 +403,12 @@ const MultiLineCodeEditor = (props) => {
                 indentWithTab={false}
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager
-                onCreateEditor={(view) => setEditorView(view)}
+                onCreateEditor={(view) => {
+                  setEditorView(view);
+                  if (setCodeEditorView) {
+                    setCodeEditorView(view);
+                  }
+                }}
                 onUpdate={(view) => {
                   setIsSearchPanelOpen(searchPanelOpen(view.state));
                   updateCurrentLineObserver(view);

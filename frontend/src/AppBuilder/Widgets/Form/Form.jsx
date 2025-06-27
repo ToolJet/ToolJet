@@ -18,10 +18,14 @@ import {
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { HorizontalSlot } from './Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
+import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
+import Spinner from '@/_ui/Spinner';
 
 import './form.scss';
 
-export const Form = function Form(props) {
+const FormComponent = (props) => {
   const {
     id,
     component,
@@ -40,20 +44,28 @@ export const Form = function Form(props) {
     componentCount,
     onComponentClick,
   } = props;
-  const childComponents = useStore((state) => state.getChildComponents(id), shallow);
+  const childComponents = useStore((state) => state.getChildComponents(id), checkDiff);
+  const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id), shallow);
+
   const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
 
   const {
     buttonToSubmit,
-    advanced,
-    JSONSchema,
+    advanced: _deprecatedAdvanced,
+    JSONSchema: _deprecatedJSONSchema,
     showHeader = false,
     showFooter = false,
     headerHeight = 80,
     footerHeight = 80,
     canvasHeight,
+    validateOnSubmit = true,
+    resetOnSubmit = true,
+    newJsonSchema,
     dynamicHeight,
   } = properties;
+
+  const advanced = _deprecatedAdvanced || isJSONSchema;
+  const JSONSchema = _deprecatedAdvanced ? _deprecatedJSONSchema : newJsonSchema;
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -137,17 +149,18 @@ export const Form = function Form(props) {
         resetComponent();
       },
       submitForm: async function () {
-        if (isValid) {
-          fireEvent('onSubmit').then(() => resetComponent());
-        } else {
-          fireEvent('onInvalid');
+        if (validateOnSubmit) {
+          if (!isValid) {
+            return fireEvent('onInvalid');
+          }
         }
+        fireEvent('onSubmit').then(() => resetOnSubmit && resetComponent());
       },
     };
 
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [resetOnSubmit, validateOnSubmit]);
 
   const extractData = (data) => {
     const result = {};
@@ -192,10 +205,13 @@ export const Form = function Form(props) {
   useEffect(() => {
     let formattedChildData = {};
     let childValidation = true;
+    let formData = {}; // New object to store form data
+
     if (!childComponents) {
       const exposedVariables = {
         data: formattedChildData,
         isValid: childValidation,
+        formData, // Expose formData
         ...(!advanced && { children: formattedChildData }),
       };
 
@@ -210,21 +226,39 @@ export const Form = function Form(props) {
       Object.keys(childComponents ?? {}).forEach((childId) => {
         if (childrenData?.[childId]?.name) {
           const componentName = childComponents?.[childId]?.component?.component?.name;
+          const componentValue = (() => {
+            const childData = childrenData[childId];
+            if (!childData) return null; // Default to null if childData is undefined
+
+            if (childData.hasOwnProperty('value')) return childData.value;
+            if (childData.hasOwnProperty('values')) return childData.values;
+            if (childData.hasOwnProperty('file')) return childData.file;
+            if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
+
+            return null; // Default to null if no matching key is found
+          })();
+
+          if (componentValue !== null) {
+            formData[componentName] = componentValue; // Populate formData
+          }
           formattedChildData[componentName] = { ...omit(childrenData[childId], 'name'), id: childId };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
     }
+
     formattedChildData = Object.fromEntries(
-      // eslint-disable-next-line no-unused-vars
-      Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
+      Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formKey from final exposed data
     );
+
     const formattedChildDataClone = deepClone(formattedChildData);
     const exposedVariables = {
       ...(!advanced && { children: formattedChildDataClone }),
       data: removeFunctionObjects(formattedChildData),
       isValid: childValidation,
+      formData, // Expose formData
     };
+
     setExposedVariables(exposedVariables);
     setValidation(childValidation);
   }, [childrenData, advanced]);
@@ -233,19 +267,22 @@ export const Form = function Form(props) {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents)]);
+  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
   };
   const fireSubmissionEvent = () => {
-    if (isValid) {
-      fireEvent('onSubmit').then(() => {
-        debounce(() => resetComponent(), 100)();
-      });
-    } else {
-      fireEvent('onInvalid');
+    if (validateOnSubmit) {
+      if (!isValid) {
+        return fireEvent('onInvalid');
+      }
     }
+    fireEvent('onSubmit').then(() => {
+      if (resetOnSubmit) {
+        debounce(() => resetComponent(), 100)();
+      }
+    });
   };
 
   const handleFormSubmission = ({ detail: { buttonComponentId } }) => {
@@ -363,12 +400,14 @@ export const Form = function Form(props) {
         />
       )}
       <div
-        className={`jet-form-body sub-container-overflow-wrap ${properties.dynamicHeight && `dynamic-${id}`}`}
+        className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
+          properties.dynamicHeight && `dynamic-${id}`
+        }`}
         style={formContent}
       >
         {isLoading ? (
           <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
-            <div className="spinner-border" role="status"></div>
+            <Spinner />
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
@@ -444,3 +483,21 @@ export const Form = function Form(props) {
     </form>
   );
 };
+
+// Avoid rendering the Form component if there are no changes in properties or
+// changes are only in `generateFormFrom` as it is not required to re-render
+export const Form = React.memo(FormComponent, (prevProps, nextProps) => {
+  const diffInProps = diff(prevProps, nextProps) ?? {};
+
+  if (Object.keys(diffInProps).length === 0) return true; // No changes detected, no need to re-render
+  if (Object.keys(diffInProps).length === 1) {
+    if (
+      diffInProps['properties'] &&
+      diffInProps['properties']['generateFormFrom'] &&
+      diffInProps['properties']['generateFormFrom'] !== 'jsonSchema'
+    ) {
+      return true; // No changes detected in childrenData, no need to re-render
+    }
+  }
+  return false; // Changes detected, re-render the component
+});

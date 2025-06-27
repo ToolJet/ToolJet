@@ -10,6 +10,7 @@ import {
   addNewWidgetToTheEditor,
   computeViewerBackgroundColor,
   getSubContainerWidthAfterPadding,
+  addDefaultButtonIdToForm,
 } from './appCanvasUtils';
 import {
   CANVAS_WIDTHS,
@@ -104,7 +105,7 @@ export const Container = React.memo(
         let addedComponent;
 
         if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
-          const parentComponent = addNewWidgetToTheEditor(
+          let parentComponent = addNewWidgetToTheEditor(
             componentType,
             monitor,
             currentLayout,
@@ -113,6 +114,9 @@ export const Container = React.memo(
             moduleInfo
           );
           const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
+          if (componentType === 'Form') {
+            parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
+          }
           addedComponent = [parentComponent, ...childComponents];
           await addComponentToCurrentPage(addedComponent);
         } else {
