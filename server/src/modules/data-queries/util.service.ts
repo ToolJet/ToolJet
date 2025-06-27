@@ -432,12 +432,31 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           }
         }
 
+        // d: Simple variable replacement for single {{variable}}
+        if (
+          typeof resolvedValue === 'string' &&
+          (resolvedValue.match(/^{{{.*}}}$/) || // Triple brace objects - accepts anything between {{{ }}}
+            (resolvedValue.startsWith('{{') &&
+              resolvedValue.endsWith('}}') &&
+              (resolvedValue.match(/{{/g) || [])?.length === 1)) // Single variables
+        ) {
+          resolvedValue = options[resolvedValue];
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
+        }
+
         // c: Replace all occurrences of {{ }} variables
-        if (typeof resolvedValue === 'string' && resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0) {
+        else if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          !resolvedValue.match(/^\{\{[^}]*\}\}$/) // Only exclude if entire string is one template variable
+        ) {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
           for (const variable of variables || []) {
             let replacement = options[variable];
+
             // Check if the replacement is an object
             if (typeof replacement === 'object' && replacement !== null) {
               // Ensure parent is a non-empty array before attempting to access its first element
@@ -455,19 +474,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
             }
           }
-          if (parent && key !== null) {
-            parent[key] = resolvedValue;
-          }
-        }
-
-        // d: Simple variable replacement for single {{variable}}
-        if (
-          typeof resolvedValue === 'string' &&
-          resolvedValue.startsWith('{{') &&
-          resolvedValue.endsWith('}}') &&
-          (resolvedValue.match(/{{/g) || [])?.length === 1
-        ) {
-          resolvedValue = options[resolvedValue];
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }

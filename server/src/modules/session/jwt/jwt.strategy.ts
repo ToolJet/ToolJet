@@ -5,20 +5,27 @@ import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { Request } from 'express';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
+import { ForbiddenException } from '@nestjs/common';
+import { UserSessionRepository } from '@modules/session/repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     protected readonly configService: ConfigService,
     protected readonly sessionUtilService: SessionUtilService,
-    protected readonly userRepository: UserRepository
+    protected readonly userRepository: UserRepository,
+    protected readonly sessionRepository: UserSessionRepository
   ) {
     super({
-      jwtFromRequest: (request) => {
-        return request?.cookies['tj_auth_token'];
+      jwtFromRequest: (request: Request) => {
+        // Ensure PAT is processed correctly without bypassing JWT validation
+        if (request.headers['tj_auth_token']) {
+          return request.headers['tj_auth_token'];
+        }
+        return request.cookies['tj_auth_token'];
       },
       ignoreExpiration: true,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),
@@ -45,13 +52,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       return user;
     }
 
-    const organizationId =
+    let organizationId =
       typeof req.headers['tj-workspace-id'] === 'object'
         ? req.headers['tj-workspace-id'][0]
         : req.headers['tj-workspace-id'];
 
+    if (!organizationId && payload?.isPATLogin && payload?.appId) {
+      organizationId = payload.organizationIds[0];
+    }
+
     if (isUserMandatory) {
-      // header deos not exist
+      // header does not exist
       if (!organizationId) return false;
 
       // No authenticated workspaces

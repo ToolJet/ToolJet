@@ -8,6 +8,9 @@ import { OrganizationStatusUpdateDto, OrganizationUpdateDto } from '@modules/org
 import { IOrganizationsService } from '@modules/organizations/interfaces/IService';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
+import { User } from '@entities/user.entity';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
@@ -36,19 +39,40 @@ export class OrganizationsService implements IOrganizationsService {
     }
   }
 
-  async updateOrganizationNameAndSlug(
-    organizationId: string,
-    updatableData: OrganizationUpdateDto
-  ): Promise<Organization> {
+  async updateOrganizationNameAndSlug(user: User, updatableData: OrganizationUpdateDto): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationId = user.organizationId;
+      const organization = await manager.findOne(Organization, { where: { id: organizationId } });
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
+
+      //WORKSPACE_UPDATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: organizationId,
+        resourceName: organization.name,
+        resourceData: {
+          previous_workspace_details: {
+            id: organizationId,
+            name: organization.name,
+            slug: organization.slug,
+          },
+          updated_workspace_details: {
+            id: organizationId,
+            name: updatableData.name,
+            slug: updatableData.slug,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return;
     });
   }
 
   async updateOrganizationStatus(
     organizationId: string,
-    updatableData: OrganizationStatusUpdateDto
+    updatableData: OrganizationStatusUpdateDto,
+    user: User
   ): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const organization = await this.organizationRepository.findOne({ where: { id: organizationId } });
@@ -60,6 +84,31 @@ export class OrganizationsService implements IOrganizationsService {
       if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
         await this.licenseOrganizationService.validateOrganization(manager, organizationId); //Check for only unarchiving
       }
+
+      //WORKSPACE_ARCHIVE audit WORKSPACE_UNARCHIVE audit
+      const resourceData =
+        updatableData.status === WORKSPACE_STATUS.ACTIVE
+          ? {
+              unarchived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            }
+          : {
+              archived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            };
+
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: organizationId,
+        resourceName: organization.name,
+        resourceData: resourceData,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return;
     });
   }

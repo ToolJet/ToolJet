@@ -1,6 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { FilesRepository } from '@modules/files/repository';
 import { FeatureAbilityFactory } from './ability';
 

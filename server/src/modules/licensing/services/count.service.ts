@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { Brackets, EntityManager, In, Not } from 'typeorm';
 import { App } from 'src/entities/app.entity';
 import { Organization } from '@entities/organization.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { ILicenseCountsService } from '../interfaces/IService';
 import { ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';

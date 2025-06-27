@@ -8,6 +8,8 @@ import { LicenseUpdateDto } from './dto';
 import { FeatureAbilityGuard } from './ability/guard';
 import { FEATURE_KEY } from './constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { User as UserEntity } from '@entities/user.entity';
+import { User } from '@modules/app/decorators/user.decorator';
 
 @InitModule(MODULES.LICENSING)
 @Controller('license')
@@ -34,7 +36,7 @@ export class LicenseController implements ILicenseController {
   getLicenseTerms(@Req() req: Request): Promise<{ terms: Terms }> {
     throw new Error('Method not implemented.');
   }
-  updateLicense(licenseUpdateDto: LicenseUpdateDto): Promise<void> {
+  updateLicense(licenseUpdateDto: LicenseUpdateDto, @User() user: UserEntity): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

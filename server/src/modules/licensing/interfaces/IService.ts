@@ -1,6 +1,7 @@
 import { EntityManager } from 'typeorm';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
 import LicenseBase from '../configs/LicenseBase';
+import { User } from '@entities/user.entity';
 
 export interface ILicenseWorkflowsService {
   getWorkflowLimit(params: { limitFor: string; workspaceId?: string }): Promise<any>;
@@ -56,6 +57,6 @@ export interface ILicenseService {
   getFeatureAccess(organizationId: string): Promise<any>;
   getDomains(organizationId: string): Promise<{ domains: any; licenseStatus: any }>;
   getLicenseTerms(organizationId: string): Promise<{ terms: any }>;
-  updateLicense(dto: any): Promise<void>;
+  updateLicense(dto: any, user: User): Promise<void>;
   plans(): Promise<{ plans: any }>;
 }
