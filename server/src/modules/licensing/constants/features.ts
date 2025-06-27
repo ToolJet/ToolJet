@@ -4,7 +4,9 @@ import { MODULES } from '@modules/app/constants/modules';
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.LICENSING]: {
-    [FEATURE_KEY.GET_ACCESS]: {},
+    [FEATURE_KEY.GET_ACCESS]: {
+      isPublic: true,
+    },
     [FEATURE_KEY.GET_PLANS]: {
       isPublic: true,
     },

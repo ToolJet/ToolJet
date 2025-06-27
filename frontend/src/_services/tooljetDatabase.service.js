@@ -1,5 +1,6 @@
 import HttpClient from '@/_helpers/http-client';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { authHeader } from '@/_helpers';
 import _ from 'lodash';
 
 const tooljetAdapter = new HttpClient();
@@ -13,7 +14,9 @@ function findAll(organizationId) {
 }
 
 async function getTablesLimit() {
-  const res = await tooljetAdapter.get(`/tooljet-db/tables/limits`);
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const res = await tooljetAdapter.get(`/tooljet-db/tables/limits/${organizationId}`);
   return res;
 }
 

@@ -1,4 +1,4 @@
-import { Controller, Body, Put, Get, Param } from '@nestjs/common';
+import { Controller, Body, Put, Get, Param, Query } from '@nestjs/common';
 import { UpdateWhiteLabellingDto } from './dto';
 import { IWhiteLabellingController } from './Interfaces/IController';
 import { NotFoundException } from '@nestjs/common';
@@ -17,7 +17,7 @@ export class WhiteLabellingController implements IWhiteLabellingController {
 
   @Get()
   @InitFeature(FEATURE_KEY.GET)
-  async get() {
+  async get(@Query('organizationId') organizationId: string) {
     return this.whiteLabellingService.getProcessedSettings(null);
   }
 

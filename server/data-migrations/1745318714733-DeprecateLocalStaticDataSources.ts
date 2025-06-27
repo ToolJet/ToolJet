@@ -1,12 +1,23 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationProgress } from '@helpers/migration.helper';
 
-export class DeprecateLocalStaticDataSourcesb1745318714733 implements MigrationInterface {
+export class DeprecateLocalStaticDataSources1745318714733 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get all organization IDs
     const organizationsResult = await queryRunner.query(`SELECT id FROM organizations`);
     const organizationIds = organizationsResult.map((row) => row.id);
 
     console.log(`Found ${organizationIds.length} organizations to process`);
+    
+    if (organizationIds.length === 0) {
+      console.log('No organizations found. Migration will not proceed.');
+      return;
+    }
+
+    const migrationProgress = new MigrationProgress(
+      'DeprecateLocalStaticDataSources1745318714733',
+      organizationIds.length
+    );
 
     // Process each organization
     for (const orgId of organizationIds) {
@@ -136,6 +147,7 @@ export class DeprecateLocalStaticDataSourcesb1745318714733 implements MigrationI
 
         console.log(`Deleted ${deleteResult.length || duplicateDataSourceIds.length} duplicate data sources`);
       }
+      migrationProgress.show();
     }
 
     console.log('Data source consolidation complete.');

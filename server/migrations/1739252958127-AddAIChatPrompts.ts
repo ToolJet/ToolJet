@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class CreateAIChatPrompts1740400945411 implements MigrationInterface {
+export class CreateAIChatPrompts1739252958127 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -15,19 +15,18 @@ export class CreateAIChatPrompts1740400945411 implements MigrationInterface {
           },
           {
             name: 'prompt',
-            type: 'varchar',
-            length: '65535',
+            type: 'json',
+            isNullable: true,
           },
           {
             name: 'response',
-            type: 'varchar',
-            length: '65535',
+            type: 'json',
             isNullable: true,
           },
           {
             name: 'provider',
             type: 'enum',
-            enum: ['openai', 'claude', 'docs', 'copilot'],
+            enum: ['openai', 'claude'],
           },
           {
             name: 'operation_id',

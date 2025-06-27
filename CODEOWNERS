@@ -17,6 +17,9 @@
 /package.json @shah21 @gsmithun4 @adishm98
 /package-lock.json @shah21 @gsmithun4 @adishm98
 
-# Server service files
-/server/src/services/email.service.ts @shah21 @gsmithun4
-/server/src/mails @shah21 @gsmithun4
+# Code owners for all module.ts files
+**/module.ts @shah21 @gsmithun4
+
+# Server migration directories
+/server/migrations/* @shah21 @gsmithun4
+/server/data-migrations/* @shah21 @gsmithun4

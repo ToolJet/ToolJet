@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { validateEmail, validatePassword } from '@/_helpers/utils';
-import { OnboardingFormInsideWrapper, OnboardingUIWrapper } from '@/modules/onboarding/components';
+// import { OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
+import OnboardingUIWrapper from '../../../../../onboarding/components/OnboardingUIWrapper';
+import OnboardingFormInsideWrapper from '../../../../../onboarding/components/OnboardingFormInsideWrapper/OnboardingFormInsideWrapper';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
 import { redirectToDashboard } from '@/_helpers/routes';
 import './resources/styles/login-form.styles.scss';
@@ -111,88 +113,86 @@ const LoginForm = ({
 
   return (
     <div className="login-form">
-      <OnboardingUIWrapper>
-        <OnboardingFormInsideWrapper>
-          {noLoginMethodsEnabled ? (
-            <div className="text-center-onboard">
-              <h2 data-cy="no-login-methods-warning">
-                {t('loginSignupPage.noLoginMethodsEnabled', 'No login methods enabled for this workspace')}
-              </h2>
-            </div>
-          ) : (
-            <>
-              <FormHeader>{t('loginSignupPage.signIn', 'Sign in')}</FormHeader>
-              {organizationId || isSignUpCTAEnabled ? (
-                <p className="signup-info" data-cy="signup-info">
-                  {organizationId && (
-                    <>
-                      Sign in to the workspace -{' '}
-                      <span className="workspace-name" data-cy="workspace-name">
-                        {configs?.name}
-                      </span>
-                      .
-                    </>
-                  )}{' '}
-                  {isSignUpCTAEnabled && (
-                    <>
-                      {' '}
-                      {signupText}{' '}
-                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
-                        {t('createToolJetAccount', signUpCTA)}
-                      </Link>
-                    </>
-                  )}
-                </p>
-              ) : (
-                <>
-                  <span className="free-space"></span>
-                </>
-              )}
-              {configs?.form?.enabled && (
-                <form onSubmit={handleSubmit} className="form-input-area">
-                  <FormTextInput
-                    label={t('loginSignupPage.workEmail', 'Email?')}
-                    name="email"
-                    value={email}
-                    onChange={handleInputChange}
-                    placeholder={t('loginSignupPage.enterWorkEmail', 'Enter your email')}
-                    error={errors.email}
-                  />
-                  <PasswordInput
-                    name="password"
-                    value={password}
-                    onChange={handleInputChange}
-                    placeholder={t('loginSignupPage.enterPassword', 'Enter your password')}
-                    error={errors.password}
-                    showForgotPassword={true}
-                    hint={''}
-                  />
-                  <SubmitButton
-                    buttonText={t('loginSignupPage.sigin', 'Sign in')}
-                    disabled={!isFormValid || isLoading}
-                    isLoading={isLoading}
-                  />
-                </form>
-              )}
-              {isAnySSOEnabled && configs?.form?.enabled && <SepratorComponent />}
-              <SSOAuthModule
-                configs={configs}
-                organizationSlug={paramOrganizationSlug}
-                setRedirectUrlToCookie={setRedirectUrlToCookie}
-                buttonText="Sign in with"
-              />
-              {currentOrganizationName && organizationId && (
-                <div
-                  className="text-center-onboard mt-3"
-                  data-cy={`back-to-${String(currentOrganizationName).toLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  back to&nbsp; <Link onClick={() => redirectToDashboard()}>{currentOrganizationName}</Link>
-                </div>
-              )}
-            </>
-          )}
-        </OnboardingFormInsideWrapper>
-      </OnboardingUIWrapper>
+      <OnboardingFormInsideWrapper>
+        {noLoginMethodsEnabled ? (
+          <div className="text-center-onboard">
+            <h2 data-cy="no-login-methods-warning">
+              {t('loginSignupPage.noLoginMethodsEnabled', 'No login methods enabled for this workspace')}
+            </h2>
+          </div>
+        ) : (
+          <>
+            <FormHeader>{t('loginSignupPage.signIn', 'Sign in')}</FormHeader>
+            {organizationId || isSignUpCTAEnabled ? (
+              <p className="signup-info" data-cy="signup-info">
+                {organizationId && (
+                  <>
+                    Sign in to the workspace -{' '}
+                    <span className="workspace-name" data-cy="workspace-name">
+                      {configs?.name}
+                    </span>
+                    .
+                  </>
+                )}{' '}
+                {isSignUpCTAEnabled && (
+                  <>
+                    {' '}
+                    {signupText}{' '}
+                    <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
+                      {t('createToolJetAccount', signUpCTA)}
+                    </Link>
+                  </>
+                )}
+              </p>
+            ) : (
+              <>
+                <span className="free-space"></span>
+              </>
+            )}
+            {configs?.form?.enabled && (
+              <form onSubmit={handleSubmit} className="form-input-area">
+                <FormTextInput
+                  label={t('loginSignupPage.workEmail', 'Email?')}
+                  name="email"
+                  value={email}
+                  onChange={handleInputChange}
+                  placeholder={t('loginSignupPage.enterWorkEmail', 'Enter your email')}
+                  error={errors.email}
+                />
+                <PasswordInput
+                  name="password"
+                  value={password}
+                  onChange={handleInputChange}
+                  placeholder={t('loginSignupPage.enterPassword', 'Enter your password')}
+                  error={errors.password}
+                  showForgotPassword={true}
+                  hint={''}
+                />
+                <SubmitButton
+                  buttonText={t('loginSignupPage.sigin', 'Sign in')}
+                  disabled={!isFormValid || isLoading}
+                  isLoading={isLoading}
+                />
+              </form>
+            )}
+            {isAnySSOEnabled && configs?.form?.enabled && <SepratorComponent />}
+            <SSOAuthModule
+              configs={configs}
+              organizationSlug={paramOrganizationSlug}
+              setRedirectUrlToCookie={setRedirectUrlToCookie}
+              buttonText="Sign in with"
+            />
+            {currentOrganizationName && organizationId && (
+              <div
+                className="text-center-onboard mt-3"
+                data-cy={`back-to-${String(currentOrganizationName).toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                back to&nbsp; <Link onClick={() => redirectToDashboard()}>{currentOrganizationName}</Link>
+              </div>
+            )}
+          </>
+        )}
+      </OnboardingFormInsideWrapper>
     </div>
   );
 };

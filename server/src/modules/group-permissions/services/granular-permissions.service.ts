@@ -41,7 +41,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         createResourcePermissionObject,
         manager
       );
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
 
       //GRANULAR_PERMISSION_APP_CREATE audit
       const auditLogsData = {
@@ -117,7 +117,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         updateGranularPermissionDto,
       });
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
 
       //GRANULAR_PERMISSION_APP_UPDATE audit
       const auditLogsData = {

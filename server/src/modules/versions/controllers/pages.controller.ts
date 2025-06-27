@@ -24,7 +24,6 @@ export class PagesController implements IPagesController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/versions/:versionId/pages')
   async updatePages(@App() app: AppEntity, @Body() updatePageDto) {
-    console.log({ updatePageDto });
     await this.pageService.updatePage(updatePageDto, app.appVersions[0].id);
     return;
   }
@@ -33,7 +32,7 @@ export class PagesController implements IPagesController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/versions/:versionId/pages')
   async createPages(@App() app: AppEntity, @Body() createPageDto: CreatePageDto) {
-    await this.pageService.createPage(createPageDto, app.appVersions[0].id);
+    await this.pageService.createPage(createPageDto, app.appVersions[0].id, app.organizationId);
     return;
   }
 
@@ -41,14 +40,14 @@ export class PagesController implements IPagesController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/versions/:versionId/pages/:pageId/clone')
   clonePage(@App() app: AppEntity, @Param('pageId') pageId) {
-    return this.pageService.clonePage(pageId, app.appVersions[0].id);
+    return this.pageService.clonePage(pageId, app.appVersions[0].id, app.organizationId);
   }
 
   @InitFeature(FEATURE_KEY.REORDER_PAGES)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/versions/:versionId/pages/reorder')
   async reorderPages(@App() app: AppEntity, @Body() reorderPagesDto) {
-    await this.pageService.reorderPages(reorderPagesDto, app.appVersions[0].id);
+    await this.pageService.reorderPages(reorderPagesDto, app.appVersions[0].id, app.organizationId);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_PAGE)
@@ -59,7 +58,8 @@ export class PagesController implements IPagesController {
       deletePageDto.pageId,
       app.appVersions[0].id,
       app.editingVersion,
-      deletePageDto.deleteAssociatedPages
+      deletePageDto.deleteAssociatedPages,
+      app.organizationId
     );
     return;
   }

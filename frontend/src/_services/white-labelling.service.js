@@ -7,18 +7,29 @@ export const whiteLabellingService = {
 };
 
 function get(organizationId = null) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/white-labelling?organizationId=${organizationId}`, requestOptions).then(
+  const headers = authHeader();
+  const requestOptions = {
+    method: 'GET',
+    headers: headers,
+    credentials: 'include',
+  };
+  const orgId = headers['tj-workspace-id'];
+  console.log(headers, 'headers');
+  return fetch(`${config.apiUrl}/white-labelling?organizationId=${organizationId || orgId}`, requestOptions).then(
     handleResponseWithoutValidation
   );
 }
 
 function update(settings) {
+  const headers = authHeader();
   const requestOptions = {
     method: 'PUT',
-    headers: authHeader(),
+    headers: headers,
     credentials: 'include',
     body: JSON.stringify(settings),
   };
-  return fetch(`${config.apiUrl}/white-labelling`, requestOptions).then(handleResponseWithoutValidation);
+  const organizationId = headers['tj-workspace-id'];
+  return fetch(`${config.apiUrl}/white-labelling/${organizationId}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
 }

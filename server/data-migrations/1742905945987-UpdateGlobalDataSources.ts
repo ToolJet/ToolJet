@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateGlobalDataSources1742888566919 implements MigrationInterface {
+export class UpdateGlobalDataSources1742905945987 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Step 1: Set app_version_id to NULL for existing global data sources
     await queryRunner.query(`

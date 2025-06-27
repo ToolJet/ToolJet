@@ -109,14 +109,14 @@ export class VersionService implements IVersionService {
         updatedVersionId = appVersion.id;
       }
 
-      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
+      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId, user.organizationId);
       const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
 
       const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
       if (
         appCurrentEditingVersion &&
-        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))
+        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT,app.organizationId))
       ) {
         const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
@@ -124,7 +124,7 @@ export class VersionService implements IVersionService {
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
-        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId);
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -231,7 +231,7 @@ export class VersionService implements IVersionService {
           });
         }
 
-        if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))) {
           throw new BadRequestException('You do not have permissions to perform this action');
         }
 

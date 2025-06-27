@@ -82,7 +82,7 @@ export class OrganizationsService implements IOrganizationsService {
 
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
       if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
-        await this.licenseOrganizationService.validateOrganization(manager); //Check for only unarchiving
+        await this.licenseOrganizationService.validateOrganization(manager, organizationId); //Check for only unarchiving
       }
 
       //WORKSPACE_ARCHIVE audit WORKSPACE_UNARCHIVE audit

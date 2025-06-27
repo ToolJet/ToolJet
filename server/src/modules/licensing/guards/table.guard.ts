@@ -14,7 +14,12 @@ export class TableCountGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const tablesCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TABLE_COUNT);
+    const request = context.switchToHttp().getRequest();
+    const organizationId =
+      typeof request.headers['tj-workspace-id'] === 'object'
+        ? request.headers['tj-workspace-id'][0]
+        : request.headers['tj-workspace-id'];
+    const tablesCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TABLE_COUNT, organizationId);
     if (tablesCount === LICENSE_LIMIT.UNLIMITED) {
       return true;
     }

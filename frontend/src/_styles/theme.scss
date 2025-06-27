@@ -7979,11 +7979,6 @@ tbody {
   display: grid;
   grid-template-rows: auto 1fr auto;
 
-  // Added to work with AppTypeTab component
-  &:has(:nth-child(4):last-child) {
-    grid-template-rows: auto auto 1fr auto;
-  }
-
   @media only screen and (max-width: 767px) {
     display: none;
   }
