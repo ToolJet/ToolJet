@@ -140,9 +140,11 @@ function getApp(id, accessType) {
   );
 }
 
-function deleteApp(id) {
+function deleteApp(id, appType) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/${appType === 'module' ? 'modules' : 'apps'}/${id}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function getAppByVersion(appId, versionId) {
@@ -150,14 +152,16 @@ function getAppByVersion(appId, versionId) {
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function saveApp(id, attributes) {
+function saveApp(id, attributes, appType) {
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify({ app: attributes }),
   };
-  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/${appType === 'module' ? 'modules' : 'apps'}/${id}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function getAppUsers(id) {
@@ -195,36 +199,46 @@ function setSlug(appId, slug) {
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }
 
-function exportResource(body) {
+function exportResource(body, appType) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     body: JSON.stringify(body),
     credentials: 'include',
   };
-
-  return fetch(`${config.apiUrl}/v2/resources/export`, requestOptions).then(handleResponse);
+  if (appType === 'module') {
+    return fetch(`${config.apiUrl}/modules/export`, requestOptions).then(handleResponse);
+  } else {
+    return fetch(`${config.apiUrl}/v2/resources/export`, requestOptions).then(handleResponse);
+  }
 }
 
-function importResource(body) {
+function importResource(body, appType) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
+  if (appType === 'module') {
+    return fetch(`${config.apiUrl}/modules/import`, requestOptions).then(handleResponse);
+  } else {
+    return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
+  }
 }
 
-function cloneResource(body) {
+function cloneResource(body, appType) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     body: JSON.stringify(body),
     credentials: 'include',
   };
-
-  return fetch(`${config.apiUrl}/v2/resources/clone`, requestOptions).then(handleResponse);
+  if (appType === 'module') {
+    return fetch(`${config.apiUrl}/modules/clone`, requestOptions).then(handleResponse);
+  } else {
+    return fetch(`${config.apiUrl}/v2/resources/clone`, requestOptions).then(handleResponse);
+  }
 }
 
 function getTables(id) {

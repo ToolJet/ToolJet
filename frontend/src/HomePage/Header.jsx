@@ -8,7 +8,9 @@ export default function HomeHeader({ onSearchSubmit, darkMode, appType }) {
 
   const placeholderText =
     page === 'apps'
-      ? t('globals.searchItem', 'Search apps in this workspace')
+      ? appType == 'module'
+        ? 'Search modules in this workspace'
+        : t('globals.searchItem', 'Search apps in this workspace')
       : t('globals.workflowsSearchItem', 'Search workflows in this workspace');
 
   return (
