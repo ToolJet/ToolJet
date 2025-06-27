@@ -88,6 +88,7 @@ export function getSuggestionKeys(refState) {
     'unsetPageVariable',
     'unsetAllPageVariables',
     'switchPage',
+    'toggleAppMode',
   ];
 
   // eslint-disable-next-line no-unused-vars
