@@ -37,6 +37,15 @@ export const richtextareaConfig = {
       },
       section: 'additionalActions',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
   },
   events: {},
   styles: {
@@ -95,6 +104,7 @@ export const richtextareaConfig = {
       placeholder: { value: 'Placeholder text' },
       defaultValue: { value: '' },
       loadingState: { value: `{{false}}` },
+      dynamicHeight: { value: '{{false}}' },
     },
     events: [],
     styles: {

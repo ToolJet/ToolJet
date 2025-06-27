@@ -4,6 +4,7 @@ import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 import { isDateRangeValid, isDateValid } from './utils';
+import './styles.scss';
 
 export const DaterangePicker = ({
   height,

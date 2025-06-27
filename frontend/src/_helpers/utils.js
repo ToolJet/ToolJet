@@ -19,6 +19,16 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 
 export const reservedKeyword = ['app', 'window'];
 
+// Function to format file size
+export function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024; // Use 1024 for binary KB/MB etc
+  const dm = 2;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 export const Constants = {
   Global: 'Global',
   Secret: 'Secret',
@@ -1387,7 +1397,7 @@ export const computeColor = (styleDefinition, value, meta) => {
       return value;
     }
     if (meta?.displayName == 'Text color') {
-      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      value = value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
       return value;
     }
     if (meta?.displayName == 'Icon color') {

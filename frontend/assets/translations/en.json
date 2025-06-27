@@ -572,6 +572,7 @@
             "styles": "Styles",
             "general": "General",
             "validation": "Validation",
+            "structure": "Structure",
             "documentation": "Read documentation for {{componentMeta}}",
             "widgetNameEmptyError": "Widget name cannot be empty",
             "componentNameExistsError": "Component name already exists",

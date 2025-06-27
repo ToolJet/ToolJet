@@ -2,9 +2,10 @@ import { Page } from '@entities/page.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { CreatePageDto, UpdatePageDto } from '@modules/apps/dto/page';
+import { EntityManager } from 'typeorm';
 
 export interface IPageService {
-  findPagesForVersion(appVersionId: string): Promise<Page[]>;
+  findPagesForVersion(appVersionId: string, mode?:string, manager?: EntityManager): Promise<Page[]>;
   findOne(id: string): Promise<Page>;
   createPage(page: CreatePageDto, appVersionId: string): Promise<Page>;
   clonePage(pageId: string, appVersionId: string): Promise<{ pages: Page[]; events: EventHandler[] }>;

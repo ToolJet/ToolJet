@@ -11,7 +11,7 @@ export interface IVersionService {
 
   deleteVersion(app: App, user: User): Promise<void>;
 
-  getVersion(app: App, user: User): Promise<any>;
+  getVersion(app: App, user: User, mode?: string): Promise<any>;
 
   update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto): Promise<void>;
 

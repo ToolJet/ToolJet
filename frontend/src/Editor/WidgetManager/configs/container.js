@@ -47,11 +47,6 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Header height',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
-    },
   },
   defaultChildren: [
     {
@@ -61,10 +56,10 @@ export const containerConfig = {
         top: 20,
         left: 1,
         height: 40,
+        width: 20,
       },
       displayName: 'ContainerText',
       properties: ['text'],
-      slotName: 'header',
       accessorKey: 'text',
       styles: ['fontWeight', 'textSize', 'textColor'],
       defaultValue: {

@@ -78,11 +78,11 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
       borderRadius: '0px 0px 8px 8px',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: 'var(--cc-surface1-surface)',
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isSelected ? '#4368E31A' : 'var(--surfaces-surface-01)',
+      backgroundColor: state.isSelected ? '#4368E31A' : 'var(--cc-surface1-surface)',
       ...(state.isSelected && { borderRadius: '8px' }),
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -123,9 +123,9 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
               : () => (
                   <div style={{ position: 'relative', display: 'flex', left: '-2px' }}>
                     {menuIsOpen ? (
-                      <SolidIcon name="TriangleDownCenter" width="16" height="16" />
+                      <SolidIcon name="TriangleDownCenter" fill="var(--cc-default-icon)" width="16" height="16" />
                     ) : (
-                      <SolidIcon name="TriangleUpCenter" width="16" height="16" />
+                      <SolidIcon name="TriangleUpCenter" fill="var(--cc-default-icon)" width="16" height="16" />
                     )}
                   </div>
                 ),

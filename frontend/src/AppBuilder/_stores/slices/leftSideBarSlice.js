@@ -8,9 +8,9 @@ const storedSelectedSidebarItem = !storedIsSidebarPinned
   : 'page';
 
 const initialState = {
-  isLeftSideBarPinned: storedIsSidebarPinned,
-  selectedSidebarItem: storedIsSidebarPinned ? storedSelectedSidebarItem : null,
-  isSidebarOpen: storedIsSidebarPinned,
+  isLeftSideBarPinned: false,
+  selectedSidebarItem: null,
+  isSidebarOpen: false,
   pathToBeInspected: null,
 };
 

@@ -10,8 +10,10 @@ import { resolveReferences } from '@/_helpers/utils';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import { useTranslation } from 'react-i18next';
 import { Confirm } from '@/Editor/Viewer/Confirm';
+import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { getCssVarValue } from '@/Editor/Components/utils';
 
 const CanvasSettings = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -117,77 +119,64 @@ const CanvasSettings = ({ darkMode }) => {
         </div>
       </div>
 
-      <div className="d-flex justify-content-between mb-3">
+      <div className="d-flex mb-3" style={{ height: '42px', gap: '20px' }}>
         <span className="pt-2" data-cy={`label-bg-canvas`}>
           {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
         </span>
         <div className="canvas-codehinter-container">
-          {showPicker && (
-            <div>
-              <div style={coverStyles} onClick={() => setShowPicker(false)} />
-              <SketchPicker
-                data-cy={`color-picker-canvas`}
-                className="canvas-background-picker"
-                onFocus={() => setShowPicker(true)}
-                color={canvasBackgroundColor}
-                onChangeComplete={(color) => {
+          <div className={`fx-canvas `}>
+            <FxButton
+              dataCy={`canvas-bg-color`}
+              active={!forceCodeBox ? true : false}
+              onPress={async () => {
+                if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
+                  const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
                   const options = {
-                    canvasBackgroundColor: [color.hex, color.rgb],
-                    backgroundFxQuery: '',
+                    canvasBackgroundColor: value,
+                    backgroundFxQuery: value,
                   };
-                  globalSettingsChanged(options);
-                  resolveOthers('canvas', true, { canvasBackgroundColor: [color.hex, color.rgb] });
-                }}
-              />
-            </div>
-          )}
+                  await Promise.resolve(globalSettingsChanged(options));
+                  await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
+                }
+                setForceCodeBox(!forceCodeBox);
+              }}
+            />
+          </div>
           {forceCodeBox && (
-            <div className="row mx-0 color-picker-input d-flex" onClick={() => setShowPicker(true)} style={outerStyles}>
-              <div
-                data-cy={`canvas-bg-color-picker`}
-                className="col-auto"
-                style={{
-                  float: 'right',
-                  width: '24px',
-                  height: '24px',
-                  backgroundColor: canvasBackgroundColor,
-                  borderRadius: ' 6px',
-                  border: `1px solid var(--slate7, #D7DBDF)`,
-                  boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
-                }}
-              ></div>
-              <div style={{ height: '20px' }} className="col">
-                {canvasBackgroundColor}
-              </div>
-            </div>
+            <ColorSwatches
+              data-cy={`color-picker-canvas`}
+              outerWidth="155px"
+              value={canvasBackgroundColor}
+              onChange={(color) => {
+                const options = {
+                  canvasBackgroundColor: resolveReferences(color),
+                  backgroundFxQuery: color,
+                };
+                globalSettingsChanged(options);
+                resolveOthers('canvas', true, { canvasBackgroundColor: color });
+              }}
+            />
           )}
           <div className={`${!forceCodeBox && 'hinter-canvas-input'} `}>
             {!forceCodeBox && (
-              <CodeHinter
-                cyLabel={`canvas-bg-colour`}
-                initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                lang="javascript"
-                className="canvas-hinter-wrap"
-                lineNumbers={false}
-                onChange={(color) => {
-                  const options = {
-                    canvasBackgroundColor: resolveReferences(color),
-                    backgroundFxQuery: color,
-                  };
-                  globalSettingsChanged(options);
-                  resolveOthers('canvas', true, { canvasBackgroundColor: color });
-                }}
-              />
+              <div className="canvas-hinter-wrap-container">
+                <CodeHinter
+                  cyLabel={`canvas-bg-colour`}
+                  initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                  lang="javascript"
+                  className="canvas-hinter-wrap"
+                  lineNumbers={false}
+                  onChange={(color) => {
+                    const options = {
+                      canvasBackgroundColor: resolveReferences(color),
+                      backgroundFxQuery: color,
+                    };
+                    globalSettingsChanged(options);
+                    resolveOthers('canvas', true, { canvasBackgroundColor: color });
+                  }}
+                />
+              </div>
             )}
-            <div className={`fx-canvas `}>
-              <FxButton
-                dataCy={`canvas-bg-color`}
-                active={!forceCodeBox ? true : false}
-                onPress={() => {
-                  setForceCodeBox(!forceCodeBox);
-                }}
-              />
-            </div>
           </div>
         </div>
       </div>

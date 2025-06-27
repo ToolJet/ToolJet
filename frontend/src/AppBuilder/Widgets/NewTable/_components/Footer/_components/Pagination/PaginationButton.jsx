@@ -10,7 +10,7 @@ export const PaginationButton = memo(({ onClick, disabled, icon, dataCy }) => {
         cursor: disabled ? 'not-allowed' : 'pointer',
       }}
       leftIcon={icon}
-      fill={`var(--icons-default)`}
+      fill={`var(--cc-default-icon)`}
       iconWidth="14"
       size="md"
       onClick={onClick}

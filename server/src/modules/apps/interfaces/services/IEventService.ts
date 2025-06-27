@@ -1,9 +1,10 @@
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { CreateEventHandlerDto, UpdateEvent } from '@modules/apps/dto/event';
 import { App } from '@entities/app.entity';
+import { EntityManager } from 'typeorm';
 
 export interface IEventsService {
-  findEventsForVersion(appVersionId: string): Promise<EventHandler[]>;
+  findEventsForVersion(appVersionId: string, manager?: EntityManager): Promise<EventHandler[]>;
   findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]>;
   cascadeDeleteEvents(sourceId: string): Promise<void>;
   createEvent(eventHandler: CreateEventHandlerDto, versionId: string): Promise<EventHandler>;

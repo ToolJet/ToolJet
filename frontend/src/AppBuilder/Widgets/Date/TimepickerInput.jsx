@@ -45,7 +45,7 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
   };
 
   return (
-    <div className={cx('custom-time-input ', { 'dark-time-input': darkMode })}>
+    <div className={cx('custom-time-input ')}>
       <div className={cx('d-flex')}>
         {headers.map((header) => (
           <span key={header} className={cx('time-header')}>

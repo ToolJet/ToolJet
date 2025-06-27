@@ -1,6 +1,6 @@
 {
     "[javascript, typescript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "eslint.validate": [
         "javascript",
@@ -8,8 +8,8 @@
         "typescript",
         "typescriptreact"
     ],
-    "eslint.format.enable": false,
-    "editor.formatOnSave": false,
+    "eslint.format.enable": true,
+    "editor.formatOnSave": true,
     "json.schemas": [
         {
             "fileMatch": [

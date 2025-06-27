@@ -63,7 +63,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     dataQuery: any,
     queryOptions: object,
     response: Response,
-    environmentId?: string
+    environmentId?: string,
+    mode?: string
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
@@ -320,7 +321,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     return { service, sourceOptions, parsedQueryOptions };
   }
 
-  private getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+  protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
     if (isMultiAuthEnabled) {
       if (!tokenData || !Array.isArray(tokenData)) return null;
       return !isAppPublic

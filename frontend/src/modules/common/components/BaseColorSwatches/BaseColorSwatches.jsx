@@ -4,6 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
+import { Tooltip } from 'react-bootstrap';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const BaseColorSwatches = ({
   value,
@@ -19,6 +21,7 @@ const BaseColorSwatches = ({
   componentType = 'color',
   CustomOptionList = () => {},
   SwatchesToggle = () => {},
+  onReset,
 }) => {
   value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
   const [showPicker, setShowPicker] = useState(false);
@@ -58,12 +61,17 @@ const BaseColorSwatches = ({
       <Popover
         className={classNames(
           { 'dark-theme': darkMode },
-          // This is fix when color picker don't have much space to open in bottom side
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
-        style={{ zIndex: 10000 }}
+        style={{ zIndex: 999999 }}
       >
-        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'} style={{ padding: '0px' }}>
+        <Popover.Body
+          className={!asBoxShadowPopover && 'boxshadow-picker'}
+          style={{
+            padding: '0px',
+            marginLeft: '-16px',
+          }}
+        >
           <>{ColorPicker()}</>
         </Popover.Body>
       </Popover>
@@ -74,7 +82,23 @@ const BaseColorSwatches = ({
     return (
       <div className="codebuilder-color-picker">
         {SwatchesToggle()}
-        {showPicker && componentType === 'swatches' && CustomOptionList()}
+        {showPicker && componentType === 'swatches' && (
+          <div
+            style={{
+              maxHeight: '200px',
+              overflowY: 'auto',
+              padding: '8px',
+              paddingTop: '0px',
+              '&::-webkit-scrollbar': {
+                display: 'none',
+              },
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none',
+            }}
+          >
+            {CustomOptionList()}
+          </div>
+        )}
         {showPicker && componentType === 'color' && (
           <div>
             {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
@@ -92,6 +116,7 @@ const BaseColorSwatches = ({
     );
   };
   const ColorPickerInputBox = () => {
+    console.log('onReset', onReset);
     return (
       <div
         className="row mx-0 color-picker-input d-flex"
@@ -99,13 +124,33 @@ const BaseColorSwatches = ({
         data-cy={`${String(cyLabel)}-picker`}
         style={outerStyles}
       >
-        <div className="color-icon" style={{ backgroundColor: value, marginLeft: '8px' }} />
+        <div className="color-icon" style={{ backgroundColor: value, marginLeft: '4px' }} />
 
-        <div className="col tj-text-xsm p-0 color-slate12" data-cy={`${String(cyLabel)}-value`}>
+        <div
+          className="col tj-text-xsm p-0 color-slate12"
+          data-cy={`${String(cyLabel)}-value`}
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {colorMap?.[value]
-            ? 'Brand/' + colorMap?.[value]?.charAt(0).toUpperCase() + colorMap?.[value]?.slice(1)
+            ? colorMap[value]
+                .split('/')
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('/')
             : value}
         </div>
+        {typeof onReset === 'function' && (
+          <div className="col-auto p-0">
+            <OverlayTrigger placement="left" overlay={<Tooltip id="reset-default-color">Reset to default</Tooltip>}>
+              <div onClick={onReset} className="color-reset">
+                <SolidIcon name="reset" />
+              </div>
+            </OverlayTrigger>
+          </div>
+        )}
       </div>
     );
   };

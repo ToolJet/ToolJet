@@ -10,6 +10,7 @@ export const Input = ({ value, onChange, cyLabel, meta }) => {
         className="tj-input-element tj-text-xsm"
         value={value}
         placeholder=""
+        key={`${String(cyLabel)}-input`}
         id="labelId"
         onChange={(e) => {
           onChange(e.target.value);
