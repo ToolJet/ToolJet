@@ -1211,6 +1211,9 @@ export const createEventsSlice = (set, get) => ({
       };
 
       const toggleAppMode = (value) => {
+        if (value && value !== 'light' && value !== 'dark' && value !== 'auto') {
+          return;
+        }
         if (!value) {
           value = appMode === 'dark' ? 'light' : 'dark';
         }
