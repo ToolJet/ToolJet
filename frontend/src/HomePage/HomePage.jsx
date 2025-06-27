@@ -43,7 +43,6 @@ import {
   ImportAppMenu,
   AppActionModal,
   OrganizationList,
-  UserGroupMigrationBanner,
   ConsultationBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';

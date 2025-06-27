@@ -1,4 +1,7 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import { filePathForEnvVars } from '../scripts/database-config-utils';
 
 export class AddSSHBranchColumn1748501592120 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -16,7 +19,12 @@ export class AddSSHBranchColumn1748501592120 implements MigrationInterface {
     }
     // For older users: if the GITSYNC_TARGET_BRANCH environment variable is configured, use the branch from .env variable in all the workspaces of that instance
     // Otherwise, we default to 'master' since it was the default branch used previously.
-    const branch_name = process.env.GITSYNC_TARGET_BRANCH;
+    let data: any = process.env;
+    const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
+    if (fs.existsSync(envVarsFilePath)) {
+      data = { ...data, ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
+    }
+    const branch_name = data.GITSYNC_TARGET_BRANCH;
     if (branch_name && branch_name !== 'master') {
       await queryRunner.query(`UPDATE organization_git_ssh SET git_branch = '${branch_name}'`);
     } else {
@@ -26,4 +34,3 @@ export class AddSSHBranchColumn1748501592120 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
 }
-// Migration Dev testing pending

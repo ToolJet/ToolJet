@@ -45,9 +45,7 @@ const Menu = (props) => {
                   {props?.selectProps?.value?.appVersionName &&
                     decodeEntities(props?.selectProps?.value?.appVersionName)}
                 </div>
-                <div
-                  className={cx('col-1', { 'disabled-action-tooltip': props?.selectProps?.appCreationMode === 'GIT' })}
-                >
+                <div className={cx('col-1', { 'disabled-action-tooltip': !isVersionCreationEnabled })}>
                   <EditWhite />
                 </div>
               </div>

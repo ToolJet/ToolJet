@@ -6,7 +6,7 @@ export enum GitErrorMessages {
   INVALID_PRIVATE_KEY = "Invalid GitHub private key format. Please check the key and ensure it's properly formatted.",
   INVALID_APP_ID = 'Invalid GitHub App ID. Please verify the App ID and try again.',
   INVALID_INSTALLATION_ID = 'Invalid Installation ID. Please verify the GitHub installation ID and try again.',
-  INVALID_BRANCH_NAME = 'Invalid Branch Name. Please ensure the branch exists in the repository and try again.',
+  INVALID_BRANCH_NAME = 'Invalid Branch Name. Please ensure the \nbranch exists in the repository and try again.',
   COMMIT_FAILED = 'Failed to commit changes to Git repository. Please try again',
   CLONE_FAILED = 'Failed to clone Git repository. Please try again.',
   PUSH_FAILED = 'Failed to push commits to remote. Please try again',
