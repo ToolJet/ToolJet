@@ -249,6 +249,9 @@ import NoPageEvents from './NoPageEvents.jsx';
 import ArrowRight01 from './ArrowRight01.jsx';
 import DuplicatePage from './DuplicatePage.jsx';
 import Delete01 from './Delete01.jsx';
+import SourceControl from './SourceControl.jsx';
+import Push from './PushIcon.jsx';
+import Pull from './PullIcon.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
 
 const Icon = (props) => {
@@ -755,6 +758,12 @@ const Icon = (props) => {
       return <Play01 {...props} />;
     case 'moon':
       return <Moon {...props} />;
+    case 'source-control':
+      return <SourceControl {...props} />;
+    case 'push-changes':
+      return <Push {...props} />;
+    case 'pull-changes':
+      return <Pull {...props} />;
     default:
       return <Apps {...props} />;
   }

@@ -22,6 +22,7 @@ import { IVersionService } from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AppGitRepository } from '@modules/app-git/repository';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -35,7 +36,8 @@ export class VersionService implements IVersionService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
     protected readonly versionsUtilService: VersionUtilService,
-    protected readonly eventEmitter: EventEmitter2
+    protected readonly eventEmitter: EventEmitter2,
+    protected readonly appGitRepository: AppGitRepository
   ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
@@ -72,6 +74,7 @@ export class VersionService implements IVersionService {
 
       await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
 
+      //APP_VERSION_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -149,15 +152,17 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
+      }
       editingVersion['globalSettings']['theme'] = appTheme;
-
       return {
         ...appData,
         editing_version: editingVersion,
         pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
         events: eventsForVersion,
-        should_freeze_editor: app.creationMode === 'GIT' || shouldFreezeEditor,
+        should_freeze_editor: shouldFreezeEditor,
       };
     };
 
@@ -256,6 +261,7 @@ export class VersionService implements IVersionService {
         await this.versionRepository.update(version.id, editableParams);
         const environments = await this.appEnvironmentUtilService.getAll(user.organizationId, app.id, manager);
 
+        //APP_PROMOTE audit
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
           userId: user.id,
           organizationId: user.organizationId,

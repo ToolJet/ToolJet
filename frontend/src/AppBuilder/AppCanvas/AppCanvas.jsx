@@ -21,6 +21,7 @@ import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/Pag
 import { resolveReferences } from '@/_helpers/utils';
 import useRightSidebarMargin from './userRightSidebarMargin';
 import { DragGhostWidget } from './GhostWidgets';
+import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 
 export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -108,15 +109,15 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
 
-  useEffect(() => {}, [isViewerSidebarPinned]);
+  useEffect(() => { }, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -168,8 +169,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
       id="main-editor-canvas"
       onMouseUp={handleCanvasContainerMouseUp}
     >
-      {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
-      {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
+      <AppCanvasBanner appId={appId} />
       <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
         <div
           ref={canvasContainerRef}

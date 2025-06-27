@@ -10,6 +10,8 @@ export enum FEATURE_KEY {
   GET_ALL_WORKSPACE_APPS = 'GET_ALL_WORKSPACE_APPS',
   IMPORT_APP = 'IMPORT_APP',
   EXPORT_APP = 'EXPORT_APP',
+  GENERATE_PAT = 'GENERATE_PAT',
+  VALIDATE_PAT_SESSION = 'VALIDATE_PAT_SESSION',
 }
 
 export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
@@ -45,3 +47,13 @@ export const NewRevampedComponents: NewRevampedComponent[] = [
   'Checkbox',
   'Button',
 ];
+
+export enum SessionType {
+  USER = 'user',
+  PAT = 'pat',
+}
+
+export enum PersonalAccessTokenScope {
+  APP = 'app',
+  WORKSPACE = 'workspace',
+}

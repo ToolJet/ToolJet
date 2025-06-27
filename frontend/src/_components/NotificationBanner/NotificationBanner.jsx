@@ -3,7 +3,7 @@ import { Alert } from '@/_ui/Alert/Alert';
 import './resources/styles.scss';
 
 const DEFAULT_CONFIG = {
-  docsLink: ' https://docs.tooljet.com/docs/data-sources/local-data-sources-migration',
+  docsLink: ' https://docs.tooljet.ai/docs/data-sources/local-data-sources-migration',
 };
 
 const DEFAULT_MESSAGES = {

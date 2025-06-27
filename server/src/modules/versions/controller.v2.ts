@@ -30,7 +30,7 @@ export class VersionControllerV2 implements IVersionControllerV2 {
     return this.versionService.getVersion(app, user, mode);
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE)
+  @InitFeature(FEATURE_KEY.APP_VERSION_UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/versions/:versionId')
   updateVersion(@User() user, @App() app: AppEntity, @Body() appVersionUpdateDto: AppVersionUpdateDto) {
