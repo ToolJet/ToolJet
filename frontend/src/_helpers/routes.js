@@ -18,6 +18,7 @@ export const getPrivateRoute = (page, params = {}) => {
     integrations: '/integrations/marketplace',
     data_sources: '/data-sources',
     audit_logs: '/audit-logs',
+    home: '/home',
     workflows: '/workflows',
     workspace_constants: '/workspace-constants',
     profile_settings: '/profile-settings',
