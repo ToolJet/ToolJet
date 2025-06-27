@@ -86,6 +86,7 @@ import NewTab from './NewTab.jsx';
 import Open from './Open.jsx';
 import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
+import PageUpload from './PageUpload.jsx';
 import Pin from './Pin.jsx';
 import Unpin from './Unpin.jsx';
 import AlignRight from './AlignRight';
@@ -502,6 +503,8 @@ const Icon = (props) => {
       return <Page {...props} />;
     case 'pageAdd':
       return <PageAdd {...props} />;
+    case 'pageUpload':
+      return <PageUpload {...props} />;
     case 'pin':
       return <Pin {...props} />;
     case 'unpin01':

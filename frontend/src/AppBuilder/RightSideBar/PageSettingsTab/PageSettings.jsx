@@ -7,7 +7,7 @@ import Tab from '@/ToolJetUI/Tabs/Tab';
 import CollapsableToggle from './CollapsableToggle';
 import { pageConfig } from './pageConfig';
 import Accordion from '@/_ui/Accordion';
-import { Color } from '@/Editor/CodeBuilder/Elements/Color';
+import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { NumberInput } from '@/Editor/CodeBuilder/Elements/NumberInput';
 import LabelStyleToggle from './LabelStyleToggle';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
@@ -77,8 +77,8 @@ export const PageSettings = () => {
               {style.displayName}
             </OverflowTooltip>
           </div>
-          {style.type === 'color' && (
-            <Color
+          {style.type === 'colorSwatches' && (
+            <ColorSwatches
               onReset={handleReset}
               value={currentStyles[name]?.value}
               onChange={(value) => handleStyleChange(name, value, false)}

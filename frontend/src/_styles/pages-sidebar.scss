@@ -89,11 +89,11 @@
     }
 }
 
-.active-group{
+.active-group {
     border-left: 2px solid red;
 }
 
-.page-group-collapse-icon{
+.page-group-collapse-icon {
     margin-right: 6px;
     position: relative;
     top: 1px;
@@ -101,22 +101,25 @@
 
 .page-drag-overlay {
     background: var(--slate5);
+
     svg {
         margin-right: 12px;
         width: 20px !important;
         height: 20px !important;
-        color:#6A727C;
+        color: #6A727C;
     }
-    &.dark-theme{
+
+    &.dark-theme {
         color: #fff;
-        svg{
-            color:#fff;
+
+        svg {
+            color: #fff;
         }
     }
 }
 
-.rename-input-buttons{
-    button{
+.rename-input-buttons {
+    button {
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
         border: 1px solid #CCD1D5;
     }

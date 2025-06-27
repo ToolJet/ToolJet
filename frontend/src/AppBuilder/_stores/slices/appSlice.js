@@ -16,6 +16,7 @@ const initialState = {
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
+  themeChanged: false,
   isComponentLayoutReady: false,
   appPermission: {
     selectedUsers: [],
@@ -44,6 +45,7 @@ export const createAppSlice = (set, get) => ({
       'initializeAppSlice'
     );
   },
+  detectThemeChange: () => set((state) => ({ themeChanged: !state.themeChanged })),
   setIsViewer: (isViewer, moduleId = 'canvas') =>
     set(
       (state) => {

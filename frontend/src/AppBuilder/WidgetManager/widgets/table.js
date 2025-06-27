@@ -301,22 +301,19 @@ export const tableConfig = {
     onTableDataDownload: { displayName: 'Download data' },
   },
   styles: {
-    textColor: {
+    columnTitleColor: {
       type: 'colorSwatches',
-      displayName: 'Text Color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#000',
-      },
-      accordian: 'Data',
+      displayName: 'Column title',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'Column Header',
     },
     columnHeaderWrap: {
       type: 'switch',
-      displayName: 'Column header',
+      displayName: 'Overflow',
       validation: { schema: { type: 'string' } },
-      accordian: 'Data',
+      accordian: 'Column Header',
       options: [
-        { displayName: 'Fixed', value: 'fixed' },
+        { displayName: 'None', value: 'fixed' },
         { displayName: 'Wrap', value: 'wrap' },
       ],
     },
@@ -324,11 +321,26 @@ export const tableConfig = {
       type: 'switch',
       displayName: 'Header casing',
       validation: { schema: { type: 'string' } },
-      accordian: 'Data',
+      accordian: 'Column Header',
       options: [
-        { displayName: 'AA', value: 'uppercase' },
         { displayName: 'As typed', value: 'none' },
+        { displayName: 'AA', value: 'uppercase' },
       ],
+    },
+    columnBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface2-surface)' },
+      accordian: 'Column Header',
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-primary-text)',
+      },
+      accordian: 'Data',
     },
     tableType: {
       type: 'select',
@@ -401,11 +413,17 @@ export const tableConfig = {
     },
     actionButtonRadius: {
       type: 'numberInput',
-      displayName: 'Button radius',
+      displayName: 'Action button radius',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
       },
-      accordian: 'Action button',
+      accordian: 'Data',
+    },
+    containerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      accordian: 'Container',
     },
     borderRadius: {
       type: 'numberInput',
@@ -677,12 +695,16 @@ export const tableConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#000' },
+      columnTitleColor: { value: 'var(--cc-placeholder-text)' },
+      columnBackgroundColor: { value: 'var(--cc-surface2-surface)' },
+      containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      textColor: { value: 'var(--cc-primary-text)' },
       columnHeaderWrap: { value: 'fixed' },
       headerCasing: { value: 'uppercase' },
       actionButtonRadius: { value: '0' },
       cellSize: { value: 'regular' },
-      borderRadius: { value: '8' },
+      borderRadius: { value: '6' },
+      borderColor: { value: 'var(--cc-default-border)' },
       tableType: { value: 'table-classic' },
       maxRowHeight: { value: 'auto' },
       maxRowHeightValue: { value: '{{0}}' }, // Setting it here as 0 since TableRowHeightInput component will set the value

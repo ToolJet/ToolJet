@@ -70,7 +70,9 @@ type NewRevampedComponent =
   | 'Checkbox'
   | 'Divider'
   | 'VerticalDivider'
-  | 'Link';
+  | 'Link'
+  | 'DaterangePicker'
+  | 'TextArea';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -90,6 +92,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Divider',
   'VerticalDivider',
   'Link',
+  'DaterangePicker',
+  'TextArea',
 ];
 
 @Injectable()
@@ -2133,9 +2137,10 @@ function migrateProperties(
       delete generalStyles?.boxShadow;
     }
 
+    // Set empty label for specific components
     if (
-      shouldHandleBackwardCompatibility &&
-      (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput')
+      (shouldHandleBackwardCompatibility && ['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) ||
+      (['TextArea', 'DaterangePicker'].includes(componentType) && !properties.label)
     ) {
       properties.label = '';
     }

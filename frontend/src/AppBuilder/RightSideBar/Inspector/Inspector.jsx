@@ -98,6 +98,9 @@ const NEW_REVAMPED_COMPONENTS = [
   'ToggleSwitchV2',
   'Checkbox',
   'DatetimePickerV2',
+  'DatePickerV2',
+  'TimePicker',
+  'DaterangePicker',
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
@@ -109,8 +112,10 @@ const NEW_REVAMPED_COMPONENTS = [
   'VerticalDivider',
   'ModalV2',
   'Tabs',
+  'RangeSlider',
   'Link',
   'Steps',
+  'FilePicker',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {

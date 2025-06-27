@@ -2,6 +2,7 @@ import React from 'react';
 import { components } from 'react-select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
+import './styles.scss';
 
 export const CustomMenuList = (props) => {
   const { children, selectProps } = props;
@@ -17,7 +18,7 @@ export const CustomMenuList = (props) => {
     >
       <div className="dropdown-multiselect-widget-search-box-wrapper">
         <span>
-          <SolidIcon name="search01" width="14" />
+          <SolidIcon name="search01" fill="var(--cc-default-icon)" width="14" />
         </span>
         <input
           autoCorrect="off"
@@ -25,7 +26,7 @@ export const CustomMenuList = (props) => {
           spellCheck="false"
           type="text"
           placeholder="Search"
-          className="dropdown-multiselect-widget-search-box"
+          className="dropdown-multiselect-widget-search-box currency-select-search-box"
           value={inputValue}
           onChange={(e) => {
             onInputChange(e.currentTarget.value, {

@@ -43,6 +43,7 @@ export function createModalStyles({
       display: isVisible ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
+      borderColor: triggerButtonBackgroundColor
     },
   };
 }
