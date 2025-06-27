@@ -23,7 +23,7 @@ export class AddPromoteAndReleaseAppColumn1749810303901 implements MigrationInte
 
     for (const group of permissionGroups) {
       const { name, type, appCreate, appDelete } = group;
-      const hasAppPermissions = appCreate === true || appDelete;
+      const hasAppPermissions = appCreate === true || appDelete === true;
 
       // For custom groups and builders :
       // If the group has  -> app create || app delete permissions  : assign promote and release permissions to the group otherwise false
