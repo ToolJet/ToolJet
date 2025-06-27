@@ -42,6 +42,7 @@ export abstract class AbilityGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+    const orgId = request.headers['tj-workspace-id'];
     const user = request.user;
     const app: App = request.tj_app;
     if (app) {
@@ -62,7 +63,7 @@ export abstract class AbilityGuard implements CanActivate {
       const licenseRequired: LICENSE_FIELD = featureInfo?.license;
       if (
         licenseRequired &&
-        !(await this.licenseTermsService.getLicenseTerms(licenseRequired, app.organizationId || ORGANIZATION_INSTANCE_KEY))
+        !(await this.licenseTermsService.getLicenseTerms(licenseRequired, app?.organizationId || orgId))
       ) {
         throw new HttpException(
           `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,

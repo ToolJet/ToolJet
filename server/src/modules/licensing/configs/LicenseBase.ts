@@ -5,7 +5,6 @@ import {
   ENTERPRISE_PLAN_TERMS,
   WORKFLOW_TEAM_PLAN_TERMS,
 } from '@modules/licensing/constants/PlanTerms';
-
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
@@ -93,7 +92,7 @@ export default class LicenseBase {
     this._updatedDate = updatedDate;
     this._isLicenseValid = true;
     this._workspacesCount = licenseData?.workspaces;
-    this._type = licenseData?.type;
+    this._type = licenseData?.type || LICENSE_TYPE.BASIC;
     this._plan = plan || licenseData?.plan?.name;
     this._domainsList = licenseData?.domains;
     this._metaData = licenseData?.meta;

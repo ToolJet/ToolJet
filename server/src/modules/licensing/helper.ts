@@ -87,7 +87,7 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
         total: licenseInstance?.users,
         editors: licenseInstance?.editorUsers,
         viewers: licenseInstance?.viewerUsers,
-        superadmins: licenseInstance.superadminUsers,
+        superadmins: licenseInstance?.superadminUsers,
       };
 
     case LICENSE_FIELD.FEATURES:
