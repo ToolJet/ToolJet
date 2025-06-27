@@ -34,6 +34,7 @@ export function defineAppAbility(
         FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
         FEATURE_KEY.UPDATE_ICON,
         FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
+        FEATURE_KEY.APP_PUBLIC_UPDATE,
       ],
       App
     );
@@ -59,6 +60,7 @@ export function defineAppAbility(
         FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
         FEATURE_KEY.UPDATE_ICON,
         FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
+        FEATURE_KEY.APP_PUBLIC_UPDATE,
       ],
       App
     );
