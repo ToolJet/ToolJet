@@ -9,6 +9,7 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Listview = function Listview({
@@ -19,6 +20,8 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariables,
+  adjustComponentPositions,
+  currentLayout,
   darkMode,
   dataCy,
 }) {
@@ -40,6 +43,7 @@ export const Listview = function Listview({
     enablePagination = false,
     mode = 'list',
     columns = 1,
+    dynamicHeight,
   } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
   const backgroundColor =
@@ -51,7 +55,7 @@ export const Listview = function Listview({
     backgroundColor,
     border: '1px solid',
     borderColor,
-    height: enablePagination ? height - 54 : height,
+    height: dynamicHeight ? '100%' : enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
@@ -69,7 +73,18 @@ export const Listview = function Listview({
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const parentRef = useRef(null);
+
   const [childrenData, setChildrenData] = useState({});
+
+  useDynamicHeight({
+    dynamicHeight: dynamicHeight,
+    id: id,
+    height,
+    value: data,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+  });
   const onOptionChange = useCallback(
     (optionName, value, componentId, index) => {
       setChildrenData((prevData) => {
