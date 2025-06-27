@@ -16,6 +16,11 @@ const initialState = {
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
+  isComponentLayoutReady: false,
+  appPermission: {
+    selectedUsers: [],
+    selectedUserGroups: [],
+  },
   appStore: {
     modules: {
       canvas: {
@@ -87,10 +92,12 @@ export const createAppSlice = (set, get) => ({
       false,
       'setCanvasHeight'
     ),
+
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight } = get();
+    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts } = get();
     const currentMode = getCurrentMode(moduleId);
-    const maxHeight = Object.values(components).reduce((max, component) => {
+
+    const maxPermanentHeight = Object.values(components).reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
       if (!layout) {
         return max;
@@ -98,6 +105,14 @@ export const createAppSlice = (set, get) => ({
       const sum = layout.top + layout.height;
       return Math.max(max, sum);
     }, 0);
+
+    const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts).reduce((max, layout) => {
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
+
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
@@ -276,4 +291,12 @@ export const createAppSlice = (set, get) => ({
     return get().appStore.modules[moduleId].app.homePageId;
   },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
+  setSelectedUserGroups: (groups) =>
+    set((state) => {
+      state.appPermission.selectedUserGroups = groups;
+    }),
+  setSelectedUsers: (users) =>
+    set((state) => {
+      state.appPermission.selectedUsers = users;
+    }),
 });

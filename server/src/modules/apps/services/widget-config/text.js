@@ -29,6 +29,15 @@ export const textConfig = {
       },
       showLabel: false,
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
@@ -269,6 +278,7 @@ export const textConfig = {
       textFormat: { value: 'html' },
       text: { value: `Hello {{globals.currentUser.firstName}}👋` },
       loadingState: { value: `{{false}}` },
+      dynamicHeight: { value: `{{false}}` },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
     },

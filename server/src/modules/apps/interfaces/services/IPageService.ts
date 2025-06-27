@@ -5,7 +5,7 @@ import { CreatePageDto, UpdatePageDto } from '@modules/apps/dto/page';
 import { EntityManager } from 'typeorm';
 
 export interface IPageService {
-  findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]>;
+  findPagesForVersion(appVersionId: string, mode?:string, manager?: EntityManager): Promise<Page[]>;
   findOne(id: string): Promise<Page>;
   createPage(page: CreatePageDto, appVersionId: string): Promise<Page>;
   clonePage(pageId: string, appVersionId: string): Promise<{ pages: Page[]; events: EventHandler[] }>;

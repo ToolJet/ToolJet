@@ -21,6 +21,15 @@ export const containerConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -47,11 +56,6 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Header height',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
-    },
   },
   defaultChildren: [
     {
@@ -61,10 +65,10 @@ export const containerConfig = {
         top: 20,
         left: 1,
         height: 40,
+        width: 20,
       },
       displayName: 'ContainerText',
       properties: ['text'],
-      slotName: 'header',
       accessorKey: 'text',
       styles: ['fontWeight', 'textSize', 'textColor'],
       defaultValue: {
@@ -155,6 +159,7 @@ export const containerConfig = {
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       headerHeight: { value: `{{80}}` },
     },
     events: [],

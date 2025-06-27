@@ -31,7 +31,7 @@ export class ImportResourcesDto {
 
   @IsOptional()
   @IsBoolean()
-  skip_page_permissions_group_check?: boolean;
+  skip_permissions_group_check?: boolean;
 }
 
 export class ImportAppDto {
