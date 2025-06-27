@@ -15,6 +15,7 @@ import { findNearestSubstring, generateHints } from './autocompleteExtensionConf
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import WorkflowEditorContext from '@/WorkflowEditor/context';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
@@ -55,8 +56,6 @@ const MultiLineCodeEditor = (props) => {
     editable = true,
     renderCopilot,
     setCodeEditorView,
-    showWorkflowSuggestions = false,
-    getWorkflowSuggestions,
   } = props;
   const editorRef = useRef(null);
 
@@ -75,6 +74,8 @@ const MultiLineCodeEditor = (props) => {
   );
 
   const context = useContext(CodeHinterContext);
+
+  const { getWorkflowSuggestions } = useContext(WorkflowEditorContext);
 
   const { suggestionList: paramList } = createReferencesLookup(context, true);
 
@@ -158,7 +159,7 @@ const MultiLineCodeEditor = (props) => {
     const currentCurosorPos = currentCursor;
     const nearestSubstring = removeNestedDoubleCurlyBraces(findNearestSubstring(inputStr, currentCurosorPos));
 
-    const hints = showWorkflowSuggestions && getWorkflowSuggestions ? getWorkflowSuggestions : getSuggestions();
+    const hints = getWorkflowSuggestions ?? getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {
