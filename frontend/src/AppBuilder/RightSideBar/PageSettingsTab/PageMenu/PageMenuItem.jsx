@@ -1,9 +1,5 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
 import cx from 'classnames';
-// import { RenameInput } from './RenameInput';
-// import { PagehandlerMenu } from './PagehandlerMenu';
-// import { EditModal } from './EditModal';
-// import { SettingsModal } from './SettingsModal';
 import * as Icons from '@tabler/icons-react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -358,25 +354,11 @@ export const PageMenuItem = withRouter(
                 </div>
                 <div>
                   {!shouldFreeze && (
-                    // <button
-                    //   style={{
-                    //     backgroundColor: 'transparent',
-                    //     border: 'none',
-                    //     color: 'var(--color-slate12)',
-                    //     cursor: 'pointer',
-                    //     padding: '0',
-                    //     ...((isEditingPage || currentPageId === page?.id) && {
-                    //       opacity: 1,
-                    //     }),
-                    //   }}
-                    //   className="edit-page-overlay-toggle"
-                    //   onClick={handlePageMenuSettings}
-                    //   ref={popoverRef}
-                    //   id={`edit-popover-${page.id}`}
-                    // >
-                    //   <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
-                    // </button>
-                    <div className={cx('action-btn-wrapper', { 'options-opened': showPageOptions })}>
+                    <div
+                      className={cx('action-btn-wrapper', {
+                        'options-opened': showPageOptions && editingPage?.id == page?.id,
+                      })}
+                    >
                       <div onClick={handlePageSwitch} className="icon-btn">
                         <ToolTip message="Go to page" placement="bottom">
                           <div className=" d-flex align-items-center justify-content-center">
@@ -404,7 +386,6 @@ export const PageMenuItem = withRouter(
                         show={showPageOptions && isEditingPage}
                         placement="bottom-end"
                         rootClose
-                        container={treeRef}
                         modifiers={[
                           {
                             name: 'preventOverflow',
