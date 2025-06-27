@@ -1,6 +1,6 @@
 import { authenticationService } from '@/_services';
 import { handleUnSubscription } from './utils';
-import { getPatToken } from '@/Editor/Components/EmbedApp'; // used for embedded iframe auth
+import { getPatToken } from '@/AppBuilder/EmbedApp';
 
 export function authHeader(isMultipartData = false, current_organization_id) {
   let session = authenticationService.currentSessionValue;

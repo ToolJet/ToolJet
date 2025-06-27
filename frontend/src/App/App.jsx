@@ -42,7 +42,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
-import EmbedApp from '@/Editor/Components/EmbedApp';
+import EmbedApp from '@/AppBuilder/EmbedApp';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();

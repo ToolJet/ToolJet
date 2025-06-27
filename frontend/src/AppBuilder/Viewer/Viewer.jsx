@@ -15,7 +15,7 @@ import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
-import { getPatToken, setPatToken } from '@/Editor/Components/EmbedApp';
+import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
 import toast from 'react-hot-toast';
 
