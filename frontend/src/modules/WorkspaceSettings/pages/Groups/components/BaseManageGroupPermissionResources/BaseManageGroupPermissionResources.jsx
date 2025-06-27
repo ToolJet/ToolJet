@@ -22,6 +22,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -955,6 +956,14 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           Delete any app in this workspace
                                         </span>
                                       </label>
+
+                                      {/* Promote and release app permissions */}
+                                      <AppPromoteReleasePermissionsUI
+                                        groupPermission={groupPermission}
+                                        disablePermissionUpdate={disablePermissionUpdate}
+                                        updateGroupPermission={this.updateGroupPermission}
+                                        updateState={this.updateParamState}
+                                      />
                                     </div>
                                   </div>
                                   {/* //App till here */}

@@ -25,9 +25,7 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
 
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
-
     const { id: versionToBeReleased, name, app_id, appId } = editingVersion;
-
     appsService
       .releaseVersion(app_id || appId, versionToBeReleased)
       .then(() => {
@@ -39,7 +37,7 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
         setShowConfirmation(false);
       })
       .catch((_error) => {
-        toast.error('Oops, something went wrong');
+        toast.error(`${name} could not be released. Please try again!`);
         setIsReleasing(false);
       });
   };

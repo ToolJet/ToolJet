@@ -8,12 +8,15 @@ import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
+import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const ReleaseVersionButton = function DeployVersionButton() {
   const { moduleId } = useModuleContext();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
+  const { isReleaseVersionEnabled } = getCanPromoteAndRelease();
   const { isVersionReleased, editingVersion, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
     (state) => ({
       isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
@@ -27,7 +30,6 @@ const ReleaseVersionButton = function DeployVersionButton() {
     }),
     shallow
   );
-
   const { t } = useTranslation();
 
   const releaseVersion = (editingVersion) => {
@@ -45,7 +47,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
         setShowConfirmation(false);
       })
       .catch((_error) => {
-        toast.error('Oops, something went wrong');
+        toast.error(`${name} could not be released. Please try again!`);
         setIsReleasing(false);
       });
   };
@@ -57,7 +59,6 @@ const ReleaseVersionButton = function DeployVersionButton() {
   const onReleaseConfirm = () => {
     releaseVersion(editingVersion);
   };
-
   return (
     <>
       <ReleaseConfirmation
@@ -72,10 +73,16 @@ const ReleaseVersionButton = function DeployVersionButton() {
             'btn-loading': isReleasing,
             'released-button': isVersionReleased,
           })}
-          disabled={isVersionReleased}
+          disabled={isVersionReleased || !isReleaseVersionEnabled}
           onClick={onReleaseButtonClick}
         >
-          {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
+          <ToolTip
+            message="You don't have access to release application. Contact admin to know more."
+            placement="bottom"
+            show={!isReleaseVersionEnabled}
+          >
+            <div>{isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}</div>
+          </ToolTip>
         </ButtonSolid>
       </div>
     </>

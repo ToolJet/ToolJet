@@ -43,7 +43,9 @@
         "page": "Page",
         "searchItem": "Search apps in this workspace",
         "workflowsSearchItem": "Search workflows in this workspace",
-        "searchComponents": "Search components"
+        "searchComponents": "Search components",
+        "promote": "Promote",
+        "release": "Release"
     },
     "errorBoundary": "Something went wrong.",
     "viewer": "Sorry!. This app is under maintenance",
