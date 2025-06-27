@@ -7,6 +7,7 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
     let user;
     const request = context.switchToHttp().getRequest();
     request.isGetUserSession = true;
+    this.handleAICookie(request);
     if (request?.cookies['tj_auth_token']) {
       try {
         user = await super.canActivate(context);
@@ -16,5 +17,11 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
       return user;
     }
     return false;
+  }
+
+  async handleAICookie(request: any) {
+    const { tj_ai_prompt, tj_template_id } = request?.cookies;
+    request.cookies['tj_ai_prompt'] = tj_ai_prompt;
+    request.cookies['tj_template_id'] = tj_template_id;
   }
 }
