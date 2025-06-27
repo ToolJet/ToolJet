@@ -71,7 +71,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                 onClick={props.onClick}
                 data-cy="preview-settings"
               >
-                <Icon name="settings" height={12} width={12} fill="#889099" />
+                <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
               </span>
             </div>
           )}
@@ -125,7 +125,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       </span>
       <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
         <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
-          <Icon name="settings" height={12} width={12} fill="#889099" />
+          <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
         </span>
       </OverlayTrigger>
     </div>

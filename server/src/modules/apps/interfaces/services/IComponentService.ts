@@ -16,7 +16,7 @@ export interface IComponentsService {
     componenstLayoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
     appVersionId: string
   ): Promise<void | { error: { message: string } }>;
-  getAllComponents(pageId: string): Promise<Record<string, any>>;
+  getAllComponents(pageId: string, manager?: EntityManager): Promise<Record<string, any>>;
   transformComponentData(data: object): Component[];
   createComponentWithLayout(
     componentData: Component,

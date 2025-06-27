@@ -59,13 +59,13 @@ export const TreeItem = forwardRef(
             ...style,
             width: '100%',
             ...(value?.pageGroupId && {
-              borderLeft: '1px solid var(--slate7)',
-              padding: '0 0 0 6px',
+              borderLeft: '1px dashed var(--icon-weak)',
+              padding: '0 0 0 15px',
             }),
           }}
         >
           {!value?.isPageGroup ? (
-            <PageMenuItem darkMode={darkMode} page={value} />
+            <PageMenuItem darkMode={darkMode} page={value} treeRef={props?.treeRef} />
           ) : (
             <PageGroupItem
               darkMode={darkMode}
@@ -73,6 +73,7 @@ export const TreeItem = forwardRef(
               collapsed={collapsed}
               onCollapse={onCollapse}
               page={value}
+              treeRef={props?.treeRef}
             />
           )}
         </div>

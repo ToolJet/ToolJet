@@ -7,6 +7,7 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ModuleManager } from '@/modules/Modules/components';
 import { ComponentModuleTab } from '@/modules/Appbuilder/components';
 
@@ -28,7 +29,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
-
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const handleSearchQueryChange = useCallback(
     debounce((e) => {
       const { value } = e.target;

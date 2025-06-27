@@ -50,7 +50,7 @@ const dropAnimationConfig = {
   },
 };
 
-export function SortableTree({ collapsible, indicator = false, indentationWidth = 15, darkMode }) {
+export function SortableTree({ collapsible, indicator = false, indentationWidth = 15, darkMode, treeRef }) {
   const reorderPages = useStore((state) => state.reorderPages);
   const debouncedReorderPages = _.debounce(reorderPages, 500);
 
@@ -157,6 +157,7 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
           return (
             <SortableTreeItem
               key={id}
+              treeRef={treeRef}
               overId={overId}
               pageGroupToHighlight={pageGroupToHighlight}
               disabledBorder={false}

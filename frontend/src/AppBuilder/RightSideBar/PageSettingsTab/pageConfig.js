@@ -2,10 +2,16 @@ export const pageConfig = {
   properties: {
     collapsable: true,
     style: 'texticon',
+    hideHeader: false,
+    position: 'top',
+    name: '',
+    hideLogo: false,
     disableMenu: {
       value: `{{false}}`,
       fxActive: false,
     },
+    showOnDesktop: true,
+    showOnMobile: true,
   },
   styles: {
     textColor: {
@@ -58,10 +64,16 @@ export const pageConfig = {
     properties: {
       collapsable: true,
       style: 'texticon',
+      hideHeader: false,
+      position: 'top',
+      name: '',
+      hideLogo: false,
       disableMenu: {
         value: '{{false}}',
         fxActive: false,
       },
+      showOnDesktop: true,
+      showOnMobile: true,
     },
     styles: {
       textColor: {
