@@ -42,6 +42,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
+import EmbedApp from '@/AppBuilder/EmbedApp';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -144,7 +145,7 @@ class AppComponent extends React.Component {
     const pathname = this.props.location.pathname;
     if (pathname.includes('/apps/')) {
       return 'editor';
-    } else if (pathname.includes('/applications/')) {
+    } else if (pathname.includes('/applications/') || pathname.includes('/embed-apps/')) {
       return 'viewer';
     }
     return '';
@@ -282,9 +283,9 @@ class AppComponent extends React.Component {
                     exact
                     path="/:workspaceId/workflows/*"
                     element={
-                      <AdminRoute {...this.props}>
+                      <PrivateRoute>
                         <Workflows switchDarkMode={this.switchDarkMode} darkMode={this.darkMode} />
-                      </AdminRoute>
+                      </PrivateRoute>
                     }
                   />
                 )}
@@ -404,6 +405,7 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
+                <Route exact path="/embed-apps/:appId" element={<EmbedApp />} />
                 <Route
                   path="*"
                   render={() => {

@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../entities/user.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
@@ -348,7 +348,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       // IF current role is empty -> user not exist
       // IF new role not equals current one
-      if (!currentRole || (newRole !== currentRole && groups.length > 0)) {
+      if (!currentRole || newRole !== currentRole) {
         await this.roleUtilService.editDefaultGroupUserRole(
           organizationId,
           { newRole, userId, currentRole: currentRoleObj },
@@ -379,7 +379,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       await Promise.all(
         groups.map(async (group) => {
-          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, manager);
+          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, group?.organizationId, manager);
           builderLevelRole = builderLevelRole || isBuilderGroup;
         })
       );

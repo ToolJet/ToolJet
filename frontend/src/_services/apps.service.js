@@ -176,7 +176,7 @@ function setVisibility(appId, visibility) {
     credentials: 'include',
     body: JSON.stringify({ app: { is_public: visibility } }),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${appId}/public`, requestOptions).then(handleResponse);
 }
 
 function setMaintenance(appId, value) {

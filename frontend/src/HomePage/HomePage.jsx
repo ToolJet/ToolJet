@@ -65,6 +65,7 @@ class HomePageComponent extends React.Component {
         id: currentSession?.current_user.id,
         organization_id: currentSession?.current_organization_id,
       },
+      shouldRedirect: false,
       users: null,
       isLoading: true,
       creatingApp: false,
@@ -118,6 +119,8 @@ class HomePageComponent extends React.Component {
       shouldAutoImportPlugin: false,
       dependentPlugins: [],
       dependentPluginsDetail: {},
+      importedAppName: {},
+      isAppImportEditable: false,
       showMissingGroupsModal: false,
       missingGroups: [],
       missingGroupsExpanded: false,
@@ -132,6 +135,13 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
+    if (this.props.appType === 'workflow') {
+      if (!this.canViewWorkflow()) {
+        toast.error('You do not have permission to view workflows');
+        this.setState({ shouldRedirect: true });
+        return;
+      }
+    }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
@@ -149,13 +159,17 @@ class HomePageComponent extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (prevProps.appType != this.props.appType) {
       this.fetchFolders();
       this.fetchApps(1);
     }
     if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
       this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
+    }
+    if (this.state.shouldRedirect && !prevState.shouldRedirect) {
+      const workspaceId = getWorkspaceId();
+      this.props.navigate(`/${workspaceId}`);
     }
   }
 
@@ -465,37 +479,70 @@ class HomePageComponent extends React.Component {
     }
   };
 
+  canViewWorkflow = () => {
+    return this.canUserPerform(this.state.currentUser, 'view');
+  };
+
   canUserPerform(user, action, app) {
-    if (authenticationService.currentSessionValue?.super_admin) return true;
     const currentSession = authenticationService.currentSessionValue;
-    const appPermission = currentSession.app_group_permissions;
-    const canUpdateApp =
-      appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.includes(app?.id));
-    const canReadApp =
-      (appPermission && canUpdateApp) ||
-      appPermission.is_all_viewable ||
-      appPermission.viewable_apps_id.includes(app?.id);
-    let permissionGrant;
+    const { user_permissions, app_group_permissions, workflow_group_permissions, super_admin, admin } = currentSession;
 
-    switch (action) {
-      case 'create':
-        permissionGrant = currentSession.user_permissions.app_create;
-        break;
-      case 'read':
-        permissionGrant = this.isUserOwnerOfApp(user, app) || canReadApp;
-        break;
-      case 'update':
-        permissionGrant = canUpdateApp || this.isUserOwnerOfApp(user, app);
-        break;
-      case 'delete':
-        permissionGrant = currentSession.user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
-        break;
-      default:
-        permissionGrant = false;
-        break;
+    if (super_admin) return true;
+
+    if (this.props.appType === 'workflow') {
+      const canCreateWorkflow = admin || user_permissions?.workflow_create;
+      const canUpdateWorkflow =
+        workflow_group_permissions?.is_all_editable ||
+        workflow_group_permissions?.editable_workflows_id?.includes(app?.id);
+      const canExecuteWorkflow =
+        canUpdateWorkflow ||
+        workflow_group_permissions?.is_all_executable ||
+        workflow_group_permissions?.executable_workflows_id?.includes(app?.id);
+      const canDeleteWorkflow = user_permissions?.workflow_delete || admin;
+
+      switch (action) {
+        case 'create':
+          return canCreateWorkflow;
+        case 'read':
+          return canCreateWorkflow || canUpdateWorkflow || canDeleteWorkflow || canExecuteWorkflow;
+        case 'update':
+          return canUpdateWorkflow;
+        case 'delete':
+          return canDeleteWorkflow;
+        case 'view':
+          return (
+            canCreateWorkflow ||
+            canUpdateWorkflow ||
+            canDeleteWorkflow ||
+            canExecuteWorkflow ||
+            workflow_group_permissions?.editable_workflows_id?.length > 0 ||
+            workflow_group_permissions?.executable_workflows_id?.length > 0
+          );
+        default:
+          return false;
+      }
+    } else {
+      const canUpdateApp =
+        app_group_permissions &&
+        (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
+      const canReadApp =
+        (app_group_permissions && canUpdateApp) ||
+        app_group_permissions.is_all_viewable ||
+        app_group_permissions.viewable_apps_id.includes(app?.id);
+
+      switch (action) {
+        case 'create':
+          return user_permissions.app_create;
+        case 'read':
+          return this.isUserOwnerOfApp(user, app) || canReadApp;
+        case 'update':
+          return canUpdateApp || this.isUserOwnerOfApp(user, app);
+        case 'delete':
+          return user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
+        default:
+          return false;
+      }
     }
-
-    return permissionGrant;
   }
 
   isUserOwnerOfApp(user, app) {
@@ -625,6 +672,8 @@ class HomePageComponent extends React.Component {
       lastCommitUser: last_commit_user,
       lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
+      appName: this.state.importedAppName,
+      allowEditing: this.state.isAppImportEditable,
     };
     gitSyncService
       .importGitApp(body)
@@ -881,6 +930,25 @@ class HomePageComponent extends React.Component {
       new Date(currentSessionValue?.current_user?.created_at) < new Date('2025-02-01') &&
       appType !== 'workflow'
     );
+  };
+  handleAppNameChange = (e) => {
+    const newAppName = e.target.value;
+    const { appsFromRepos } = this.state;
+    let validationMessage = {};
+    if (!newAppName.trim()) {
+      validationMessage = { message: 'App name cannot be empty' };
+    } else if (newAppName.length > 50) {
+      validationMessage = { message: 'App name cannot exceed 50 characters' };
+    } else {
+      const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
+      if (matchingApp?.app_name_exist === 'EXIST') {
+        validationMessage = { message: 'App name already exists' };
+      }
+    }
+    this.setState({
+      importedAppName: newAppName,
+      importingGitAppOperations: validationMessage,
+    });
   };
   render() {
     const {
@@ -1176,13 +1244,16 @@ class HomePageComponent extends React.Component {
                       options={this.generateOptionsForRepository()}
                       disabled={importingApp}
                       onChange={(newVal) => {
-                        this.setState({ selectedAppRepo: newVal }, () => {
-                          if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                            this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
-                          } else {
-                            this.setState({ importingGitAppOperations: {} });
+                        this.setState(
+                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
+                          () => {
+                            if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
+                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
+                            } else {
+                              this.setState({ importingGitAppOperations: {} });
+                            }
                           }
-                        });
+                        );
                       }}
                       width={'100%'}
                       value={selectedAppRepo}
@@ -1201,12 +1272,11 @@ class HomePageComponent extends React.Component {
                       <div className="tj-app-input">
                         <input
                           type="text"
-                          disabled={true}
-                          value={appsFromRepos[selectedAppRepo].git_app_name}
-                          className={cx('form-control font-weight-400 disabled', {
+                          value={this.state.importedAppName}
+                          className={cx('form-control font-weight-400', {
                             'tj-input-error-state': importingGitAppOperations?.message,
                           })}
-                          data-cy="app-name-field"
+                          onChange={this.handleAppNameChange}
                         />
                       </div>
                       <div>
@@ -1217,9 +1287,24 @@ class HomePageComponent extends React.Component {
                           )}
                           data-cy="app-name-helper-text"
                         >
-                          {importingGitAppOperations?.message
-                            ? importingGitAppOperations?.message
-                            : 'App name is inherited from git repository and cannot be edited'}
+                          {importingGitAppOperations?.message}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="application-editable-checkbox-container">
+                      <input
+                        className="form-check-input"
+                        checked={this.state.isAppImportEditable}
+                        type="checkbox"
+                        onChange={() =>
+                          this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                        }
+                      />
+                      Make application editable
+                      <div className="helper-text">
+                        <div className="tj-text tj-text-xsm"></div>
+                        <div className="tj-text-xxsm">
+                          Enabling this allows editing and git sync push/pull access in development.
                         </div>
                       </div>
                     </div>
@@ -1452,12 +1537,6 @@ class HomePageComponent extends React.Component {
                     classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
                   />
                 )}
-              {this.shouldShowMigrationBanner() && (
-                <UserGroupMigrationBanner
-                  classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
-                  closeBanner={this.setShowGroupMigrationBanner}
-                />
-              )}
 
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>

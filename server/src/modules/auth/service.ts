@@ -15,7 +15,7 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { EMAIL_EVENTS } from '@modules/email/constants';
-import { UserRepository } from '../users/repository';
+import { UserRepository } from '../users/repositories/repository';
 import { AuthUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { IAuthService } from './interfaces/IService';

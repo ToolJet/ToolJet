@@ -15,6 +15,7 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { FeatureAbilityFactory } from './ability';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { RolesRepository } from '@modules/roles/repository';
+import { AppGitRepository } from '@modules/app-git/repository';
 @Module({})
 export class ModulesModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -54,6 +55,7 @@ export class ModulesModule {
         DataSourcesRepository,
         FeatureAbilityFactory,
         RolesRepository,
+        AppGitRepository
       ],
     };
   }

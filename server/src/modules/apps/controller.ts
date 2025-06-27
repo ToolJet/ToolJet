@@ -58,6 +58,13 @@ export class AppsController implements IAppsController {
     return this.appsService.update(app, appUpdateDto, user);
   }
 
+  @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Put(':id/public')
+  updatePublic(@User() user, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+    return this.appsService.update(app, appUpdateDto, user);
+  }
+
   @InitFeature(FEATURE_KEY.DELETE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Delete(':id')
