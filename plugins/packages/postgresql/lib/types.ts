@@ -13,6 +13,7 @@ export type SourceOptions = {
   connection_type: string;
   connection_string: string;
   connection_options: string[][];
+  allow_dynamic_connection_parameters: boolean;
 };
 export type QueryOptions = {
   operation: string;
