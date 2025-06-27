@@ -8,6 +8,7 @@ import ArrowReturn from './ArrowReturn.jsx';
 import ArrowRight from './ArrowRight.jsx';
 import ArrowSort from './ArrowSort.jsx';
 import ArrowSortRectangle from './ArrowSortRectangle.jsx';
+import AddNavItemURL from './AddNavItemURL.jsx';
 import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
 import BookSearch from './BookSearch.jsx';
@@ -21,6 +22,7 @@ import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
 import Clock from './Clock.jsx';
+import CursorClick from './CursorClick.jsx';
 import LockGradient from './LockGradient.jsx';
 import DatasourceGradient from './DatasourceGradient.jsx';
 import Column from './Column.jsx';
@@ -74,6 +76,7 @@ import Minus01 from './Minus01.jsx';
 import Mobile from './Mobile.jsx';
 import MoreHorizontal from './MoreHorizontal.jsx';
 import MoreVertical from './MoreVertical.jsx';
+import MoreVertical01 from './MoreVertical01.jsx';
 import Notification from './Notification.jsx';
 import NotificationRinging from './NotificationRinging.jsx';
 import NotificationSide from './NotificationSide.jsx';
@@ -83,6 +86,7 @@ import NewTab from './NewTab.jsx';
 import Open from './Open.jsx';
 import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
+import PageUpload from './PageUpload.jsx';
 import Pin from './Pin.jsx';
 import Unpin from './Unpin.jsx';
 import AlignRight from './AlignRight';
@@ -95,6 +99,7 @@ import Read from './Read.jsx';
 import ReloadError from './ReloadError.jsx';
 import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
+import Remove03 from './Remove03.jsx';
 import RemoveRectangle from './RemoveRectangle.jsx';
 import RightArrow from './RightArrow.jsx';
 import RightOuterJoin from './RightOuterJoin.jsx';
@@ -110,6 +115,7 @@ import Settings from './Settings.jsx';
 import Share from './Share.jsx';
 import Shield from './Shield.jsx';
 import ShieldCheck from './ShieldCheck.jsx';
+import Skip from './Skip.jsx';
 import Signpost from './Signpost.jsx';
 import SmileRectangle from './SmileRectangle.jsx';
 import SortArrowDown from './SortArrowDown.jsx';
@@ -243,7 +249,10 @@ import EnterpriseCrown from './EnterrpiseCrown.jsx';
 import FileCode from './FileCode.jsx';
 import Corners from './Corners.jsx';
 import Moon from './Moon.jsx';
-import MoreVertical01 from './MoreVertical01.jsx';
+import NoPageEvents from './NoPageEvents.jsx';
+import ArrowRight01 from './ArrowRight01.jsx';
+import DuplicatePage from './DuplicatePage.jsx';
+import Delete01 from './Delete01.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
 
 const Icon = (props) => {
@@ -256,6 +265,8 @@ const Icon = (props) => {
       return <DarkIcon {...props} />;
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'addnavitemurl':
+      return <AddNavItemURL {...props} />;
     case 'alignleftinspector':
       return <AlignLeftinspector {...props} />;
     case 'alignrightinspector':
@@ -278,6 +289,8 @@ const Icon = (props) => {
       return <ArrowBack {...props} />;
     case 'arrowbackdown':
       return <ArrowBackDown {...props} />;
+    case 'arrowright01':
+      return <ArrowRight01 {...props} />;
     case 'arrowdown':
       return <ArrowDown {...props} />;
     case 'arrowdirectionloop':
@@ -334,6 +347,8 @@ const Icon = (props) => {
       return <Code {...props} />;
     case 'clock':
       return <Clock {...props} />;
+    case 'cursorclick':
+      return <CursorClick {...props} />;
     case 'column':
       return <Column {...props} />;
     case 'columns':
@@ -356,16 +371,22 @@ const Icon = (props) => {
       return <DangerDark {...props} />;
     case 'delete':
       return <Delete {...props} />;
+    case 'delete01':
+      return <Delete01 {...props} />;
     case 'diamond':
       return <Diamond {...props} />;
     case 'downarrow':
       return <DownArrow {...props} />;
+    case 'duplicatepage':
+      return <DuplicatePage {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
     case 'enterprise':
       return <Enterprise {...props} />;
     case 'enterpriseGradient':
       return <EnterpriseGradient {...props} />;
+    case 'nopageevents':
+      return <NoPageEvents {...props} />;
     case 'enterprisesmall':
       return <EnterpriseSmall {...props} />;
     case 'enterprise-new':
@@ -470,6 +491,8 @@ const Icon = (props) => {
       return <MoreHorizontal {...props} />;
     case 'morevertical':
       return <MoreVertical {...props} />;
+    case 'morevertical01':
+      return <MoreVertical01 {...props} />;
     case 'notification':
       return <Notification {...props} />;
     case 'notificationringing':
@@ -490,6 +513,8 @@ const Icon = (props) => {
       return <Page {...props} />;
     case 'pageAdd':
       return <PageAdd {...props} />;
+    case 'pageUpload':
+      return <PageUpload {...props} />;
     case 'pin':
       return <Pin {...props} />;
     case 'unpin01':
@@ -562,6 +587,8 @@ const Icon = (props) => {
       return <Shield {...props} />;
     case 'shieldcheck':
       return <ShieldCheck {...props} />;
+    case 'skip':
+      return <Skip {...props} />;
     case 'signpost':
       return <Signpost {...props} />;
     case 'sliders':
@@ -712,6 +739,8 @@ const Icon = (props) => {
       return <ReplaceAll {...props} />;
     case 'remove02':
       return <Remove02 {...props} />;
+    case 'remove03':
+      return <Remove03 {...props} />;
     case 'bookdemo':
       return <BookDemo {...props} />;
     case 'contactv3':
@@ -738,8 +767,6 @@ const Icon = (props) => {
       return <Play01 {...props} />;
     case 'moon':
       return <Moon {...props} />;
-    case 'morevertical01':
-      return <MoreVertical01 {...props} />;
     default:
       return <Apps {...props} />;
   }

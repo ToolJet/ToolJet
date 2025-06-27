@@ -45,10 +45,6 @@ export const createCodeHinterSlice = (set, get) => ({
       hints?.appHints?.forEach((appHint) => {
         if (appHint?.hint?.startsWith('globals.currentUser')) {
           const key = appHint?.hint?.replace('globals.currentUser', 'globals.server.currentUser');
-          console.log({
-            hint: key,
-            type: appHint?.type,
-          });
           serverHints.push({
             hint: key,
             type: appHint?.type,

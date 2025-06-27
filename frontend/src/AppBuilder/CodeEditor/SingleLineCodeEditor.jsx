@@ -28,6 +28,7 @@ import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { getCssVarValue } from '@/Editor/Components/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
@@ -217,7 +218,10 @@ const EditorInput = ({
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
 
-  const getServerSideGlobalResolveSuggestions = useStore((state) => state.getServerSideGlobalResolveSuggestions, shallow);
+  const getServerSideGlobalResolveSuggestions = useStore(
+    (state) => state.getServerSideGlobalResolveSuggestions,
+    shallow
+  );
 
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
@@ -521,7 +525,7 @@ const DynamicEditorBridge = (props) => {
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
-  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
   const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
   const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
@@ -549,10 +553,16 @@ const DynamicEditorBridge = (props) => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
+  let modifiedValue = initialValue;
+  if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
+    modifiedValue = getCssVarValue(document.documentElement, initialValue);
+  }
+
   const renderFx = () => {
     if (paramType === 'query' || !(paramLabel !== 'Type' && isFxNotRequired === undefined)) {
       return null;
     }
+
     return (
       <div
         className={`col-auto pt-0 fx-common fx-button-container ${
@@ -565,6 +575,9 @@ const DynamicEditorBridge = (props) => {
             if (codeShow) {
               setForceCodeBox(false);
               onFxPress(false);
+              if (paramType === 'colorSwatches') {
+                onChange(modifiedValue);
+              }
             } else {
               setForceCodeBox(true);
               onFxPress(true);
@@ -639,7 +652,7 @@ const DynamicEditorBridge = (props) => {
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <SingleLineCodeEditor initialValue {...props} />
+              <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
             </div>
           </div>
         </div>

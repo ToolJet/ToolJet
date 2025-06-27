@@ -17,12 +17,13 @@ export const formConfig = {
       },
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
       defaultValue: {
         text: 'Form title',
         textSize: 16,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
         fontWeight: 'bold',
+        boxShadow: '0px 0px 0px 0px #00000090',
       },
     },
     {
@@ -130,6 +131,15 @@ export const formConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
@@ -194,19 +204,19 @@ export const formConfig = {
   },
   styles: {
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     footerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     backgroundColor: {
@@ -275,6 +285,7 @@ export const formConfig = {
     },
     properties: {
       loadingState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
         value:
@@ -302,11 +313,11 @@ export const formConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '0' },
-      borderColor: { value: '#fff' },
-      headerBackgroundColor: { value: '#fff' },
-      footerBackgroundColor: { value: '#fff' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

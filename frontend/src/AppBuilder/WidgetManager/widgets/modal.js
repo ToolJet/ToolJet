@@ -85,7 +85,7 @@ export const modalConfig = {
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     headerTextColor: {
@@ -93,7 +93,7 @@ export const modalConfig = {
       displayName: 'Header title color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     bodyBackgroundColor: {
@@ -101,7 +101,7 @@ export const modalConfig = {
       displayName: 'Body background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     disabledState: {
@@ -170,12 +170,12 @@ export const modalConfig = {
     },
     events: [],
     styles: {
-      headerBackgroundColor: { value: '#ffffffff' },
-      headerTextColor: { value: '#000000' },
-      bodyBackgroundColor: { value: '#ffffffff' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerTextColor: { value: 'var(--cc-primary-text)' },
+      bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
-      triggerButtonBackgroundColor: { value: 'var(--primary-brand)' },
+      triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
   },

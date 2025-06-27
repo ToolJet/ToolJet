@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table } from './Components/Table/Table.jsx';
+import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
 import { renderElement, renderCustomStyles } from './Utils';
@@ -97,6 +98,9 @@ const NEW_REVAMPED_COMPONENTS = [
   'ToggleSwitchV2',
   'Checkbox',
   'DatetimePickerV2',
+  'DatePickerV2',
+  'TimePicker',
+  'DaterangePicker',
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
@@ -107,8 +111,11 @@ const NEW_REVAMPED_COMPONENTS = [
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'Tabs',
+  'RangeSlider',
   'Link',
   'Steps',
+  'FilePicker',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -484,6 +491,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
@@ -787,6 +796,9 @@ const GetAccordion = React.memo(
     switch (componentName) {
       case 'Table':
         return <Table {...restProps} />;
+
+      case 'Tabs':
+        return <TabsLayout {...restProps} />;
 
       case 'Chart':
         return <Chart {...restProps} />;

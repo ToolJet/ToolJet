@@ -53,6 +53,7 @@ export const Container = React.memo(
     canvasMaxWidth,
     isViewerSidebarPinned,
     pageSidebarStyle,
+    pagePositionType,
     componentType,
     appType,
   }) => {
@@ -85,18 +86,12 @@ export const Container = React.memo(
         item.canvasWidth = getContainerCanvasWidth();
       },
       drop: async ({ componentType, component }, monitor) => {
-        setShowModuleBorder(false); // Hide the module border when dropping
+        setShowModuleBorder(false);
         if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
+
         const didDrop = monitor.didDrop();
         if (didDrop) return;
-        if (componentType === 'PDF' && !isPDFSupported()) {
-          toast.error(
-            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
-          );
-          return;
-        }
 
-        // IMPORTANT: This logic needs to be changed when we implement the module versioning
         const moduleInfo = component?.moduleId
           ? {
               moduleId: component.moduleId,
@@ -106,6 +101,8 @@ export const Container = React.memo(
               moduleContainer: component.moduleContainer,
             }
           : undefined;
+
+        let addedComponent;
 
         if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
           let parentComponent = addNewWidgetToTheEditor(
@@ -120,11 +117,8 @@ export const Container = React.memo(
           if (componentType === 'Form') {
             parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
           }
-
-          const newComponents = [parentComponent, ...childComponents];
-          await addComponentToCurrentPage(newComponents);
-          // setSelectedComponents([parentComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          addedComponent = [parentComponent, ...childComponents];
+          await addComponentToCurrentPage(addedComponent);
         } else {
           const newComponent = addNewWidgetToTheEditor(
             componentType,
@@ -134,11 +128,32 @@ export const Container = React.memo(
             id,
             moduleInfo
           );
-          await addComponentToCurrentPage([newComponent]);
-          // setSelectedComponents([newComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          addedComponent = [newComponent];
+          await addComponentToCurrentPage(addedComponent);
+        }
+
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+
+        const canvas = document.querySelector('.canvas-container');
+        const sidebar = document.querySelector('.editor-sidebar');
+        const droppedElem = document.getElementById(addedComponent?.[0]?.id);
+
+        if (!canvas || !sidebar || !droppedElem) return;
+
+        const droppedRect = droppedElem.getBoundingClientRect();
+        const sidebarRect = sidebar.getBoundingClientRect();
+
+        const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
+
+        if (isOverlapping) {
+          const overlap = droppedRect.right - sidebarRect.left;
+          canvas.scrollTo({
+            left: canvas.scrollLeft + overlap,
+            behavior: 'smooth',
+          });
         }
       },
+
       collect: (monitor) => ({
         isOverCurrent: monitor.isOver({ shallow: true }),
       }),
@@ -166,18 +181,27 @@ export const Container = React.memo(
     }, [canvasWidth, listViewMode, columns]);
 
     const getCanvasWidth = useCallback(() => {
-      if (
-        id === 'canvas' &&
-        !isPagesSidebarHidden &&
-        isViewerSidebarPinned &&
-        currentLayout !== 'mobile' &&
-        currentMode !== 'edit' &&
-        appType !== 'module'
-      ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
-      }
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side' &&
+      //   appType !== 'module'
+      // ) {
+      //   return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
+      // }
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   !isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side'
+      // ) {
+      //   return `calc(100% - ${'44px'})`;
+      // }
       return '100%';
-    }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
+    }, [id, isPagesSidebarHidden, isViewerSidebarPinned, currentLayout, pagePositionType, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {
@@ -229,7 +253,7 @@ export const Container = React.memo(
               : id === 'canvas'
               ? canvasBgColor
               : '#f0f0f0',
-          width: getCanvasWidth(),
+          width: '100%',
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {

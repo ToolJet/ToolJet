@@ -11,7 +11,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import AppCanvas from '@/AppBuilder/AppCanvas';
 import DesktopHeader from './DesktopHeader';
 import MobileHeader from './MobileHeader';
-import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
@@ -48,6 +47,7 @@ export const Viewer = ({
     isMaintenanceOn,
     setIsViewer,
     toggleCurrentLayout,
+    isReleasedVersionId,
   } = useStore(
     (state) => ({
       isEditorLoading: state.loaderStore.modules[moduleId].isEditorLoading,
@@ -68,6 +68,7 @@ export const Viewer = ({
       isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
       setIsViewer: state.setIsViewer,
       toggleCurrentLayout: state.toggleCurrentLayout,
+      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
     }),
     shallow
   );
@@ -99,6 +100,9 @@ export const Viewer = ({
     setIsSidebarPinned(newValue);
     localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
   }, [isSidebarPinned]);
+
+  const { definition: { properties = {} } = {} } = pageSettings ?? {};
+  const { position, hideHeader } = properties ?? {};
 
   const canvasRef = useRef(null);
   const isLoading = false;
@@ -193,7 +197,12 @@ export const Viewer = ({
         <ErrorBoundary>
           <Suspense fallback={<div>Loading...</div>}>
             <div
-              className={cx('viewer wrapper', { 'mobile-layout': currentLayout, 'theme-dark dark-theme': darkMode })}
+              className={cx('viewer wrapper', {
+                'mobile-layout': currentLayout,
+                'theme-dark dark-theme': darkMode,
+                'offset-top-bar-navigation': !isReleasedVersionId,
+                'mobile-view': currentLayout === 'mobile',
+              })}
             >
               <DndProvider backend={HTML5Backend}>
                 <ModuleProvider moduleId={moduleId} isModuleMode={moduleMode} appType={appType} isModuleEditor={false}>
@@ -207,8 +216,8 @@ export const Viewer = ({
                         }}
                       >
                         <div className={`areas d-flex flex-rows app-${appId}`}>
-                          {currentLayout !== 'mobile' && !hideSidebar && !moduleMode && (
-                            <ViewerSidebarNavigation
+                          {/* {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
+                            <PagesSidebarNavigation
                               showHeader={showHeader}
                               isMobileDevice={currentLayout === 'mobile'}
                               pages={pages}
@@ -218,7 +227,7 @@ export const Viewer = ({
                               toggleSidebarPinned={toggleSidebarPinned}
                               switchPage={switchPage}
                             />
-                          )}
+                          )} */}
 
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
@@ -227,21 +236,26 @@ export const Viewer = ({
                             })}
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
-                              marginLeft: hideSidebar || currentLayout === 'mobile' ? 'auto' : '210px',
+                              marginLeft:
+                                isPagesSidebarHidden || currentLayout === 'mobile'
+                                  ? 'auto'
+                                  : position === 'top'
+                                  ? '0px'
+                                  : '226px',
                             }}
                           >
                             <div
                               className="canvas-area"
                               ref={canvasRef}
                               style={{
-                                width: isMobilePreviewMode ? '450px' : currentCanvasWidth,
-                                maxWidth: isMobilePreviewMode ? '450px' : computeCanvasMaxWidth(),
+                                width: isMobilePreviewMode ? '390px' : currentCanvasWidth,
+                                maxWidth: isMobilePreviewMode ? '390px' : computeCanvasMaxWidth(),
                                 margin: 0,
                                 padding: 0,
                                 position: 'relative',
                               }}
                             >
-                              {currentLayout === 'mobile' && isMobilePreviewMode && !moduleMode && (
+                              {currentLayout === 'mobile' && isMobilePreviewMode && (
                                 <MobileHeader
                                   showHeader={showHeader && isAppLoaded}
                                   appName={appName}
@@ -255,10 +269,14 @@ export const Viewer = ({
                                 />
                               )}
                               <AppCanvas
+                                moduleId={moduleId}
                                 isViewerSidebarPinned={isSidebarPinned}
-                                isViewer={true}
+                                toggleSidebarPinned={toggleSidebarPinned}
                                 appId={appId}
                                 appType={appType}
+                                isViewer={true}
+                                switchDarkMode={changeToDarkMode}
+                                darkMode={darkMode}
                               />
                             </div>
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
@@ -270,11 +288,11 @@ export const Viewer = ({
                   </div>
                 </ModuleProvider>
               </DndProvider>
-            </div >
-          </Suspense >
+            </div>
+          </Suspense>
           <Popups darkMode={darkMode} />
-        </ErrorBoundary >
-      </div >
+        </ErrorBoundary>
+      </div>
     );
   }
 };

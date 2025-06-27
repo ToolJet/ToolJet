@@ -921,8 +921,12 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       selectedComponents,
       deleteComponentNameIdMapping,
+      getResolvedComponent,
       removeNode,
       checkIfParentIsFormAndDeleteField,
+      deleteTemporaryLayouts,
+      currentLayout,
+      adjustComponentPositions,
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
@@ -930,6 +934,8 @@ export const createComponentsSlice = (set, get) => ({
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
+    const componentIds = [];
+    const childParentMapping = {};
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
 
@@ -957,17 +963,28 @@ export const createComponentsSlice = (set, get) => ({
       findAllChildComponents(componentId);
     });
 
+    toDeleteComponents.forEach((componentId) => {
+      const isDynamicHeightEnabled = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamicHeightEnabled) {
+        adjustComponentPositions(componentId, currentLayout, true);
+      }
+    });
+
     set(
       withUndoRedo((state) => {
         const page = state.modules?.[moduleId]?.pages.find((page) => page.id === currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
-
         toDeleteComponents.forEach((id) => {
           // Remove from containerChildrenMapping
           Object.keys(state.containerChildrenMapping).forEach((containerId) => {
             state.containerChildrenMapping[containerId] = state.containerChildrenMapping[containerId].filter(
-              (componentId) => componentId !== id
+              (componentId) => {
+                if (componentId === id) {
+                  childParentMapping[id] = containerId;
+                }
+                return componentId !== id;
+              }
             );
           });
 
@@ -985,6 +1002,7 @@ export const createComponentsSlice = (set, get) => ({
             );
           }
           componentNames.push(page.components[id]?.component?.name);
+          componentIds.push(id);
           const eventsToRemove = appEvents.filter((event) => event.sourceId === id).map((event) => event.id);
           toDeleteEvents.push(...eventsToRemove);
           delete page.components[id]; // Remove the component from the page
@@ -1024,8 +1042,15 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponents'
     );
+
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName, moduleId);
+    });
+    componentIds.forEach((componentId) => {
+      if (childParentMapping[componentId]) {
+        adjustComponentPositions(childParentMapping[componentId], currentLayout, false, true);
+      }
+      deleteTemporaryLayouts(componentId);
     });
   },
 
@@ -1071,10 +1096,13 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
+      getResolvedComponent,
+      adjustComponentPositions,
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
       checkParentAndUpdateFormFields,
+      deleteTemporaryLayouts,
       getCurrentPageIndex,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
@@ -1123,6 +1151,7 @@ export const createComponentsSlice = (set, get) => ({
                 state.containerChildrenMapping[moduleId].push(componentId);
               }
             }
+
             // ============ Parent update logic ends ============
           });
         }
@@ -1135,6 +1164,22 @@ export const createComponentsSlice = (set, get) => ({
       const newParentComponentType = getComponentTypeFromId(newParentId, moduleId);
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
       const { component } = getComponentDefinition(componentId, moduleId);
+
+      // Adjust component positions
+
+      //If new parent is dynamic, adjust the parent positions
+      const isParentDynamic = getResolvedComponent(newParentId)?.properties?.dynamicHeight;
+      if (isParentDynamic) {
+        adjustComponentPositions(newParentId, currentLayout, false, true);
+      }
+
+      // If the parent is changed, adjust the old parent positions
+      if (oldParentId !== newParentId) {
+        const isParentDynamic = getResolvedComponent(oldParentId)?.properties?.dynamicHeight;
+        if (isParentDynamic) {
+          adjustComponentPositions(oldParentId, currentLayout, false, true);
+        }
+      }
 
       if (
         newParentComponentType === 'Listview' ||
@@ -1185,6 +1230,10 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
+
+    Object.keys(componentLayouts).forEach((componentId) => {
+      deleteTemporaryLayouts(componentId);
+    });
 
     if (saveAfterAction) {
       saveComponentChanges(diff, 'components/layout', 'update', moduleId);
@@ -1418,12 +1467,12 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
   setSelectedComponents: (components) => {
-    get().togglePageSettingMenu(false);
     set(
       (state) => {
         state.selectedComponents = components;
         if (components.length === 1) {
           state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          state.isRightSidebarOpen = true;
         }
       },
       false,
@@ -1491,7 +1540,13 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   handleCanvasContainerMouseUp: (e) => {
-    const { selectedComponents, clearSelectedComponents, setActiveRightSideBarTab } = get();
+    const {
+      selectedComponents,
+      clearSelectedComponents,
+      setActiveRightSideBarTab,
+      setRightSidebarOpen,
+      isRightSidebarPinned,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -1503,6 +1558,9 @@ export const createComponentsSlice = (set, get) => ({
     ) {
       clearSelectedComponents();
       setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      // if (!isRightSidebarPinned) {
+      //   setRightSidebarOpen(false);
+      // }
     }
   },
 

@@ -12,7 +12,7 @@ const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) { }
+  constructor(protected eventHandlerService: EventsService) {}
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -82,7 +82,7 @@ export class ComponentsService implements IComponentsService {
     }, appVersionId);
   }
 
-  async getAllComponents(pageId: string) {
+  async getAllComponents(pageId: string, manager?: EntityManager) {
     // need to get all components for a page with their layouts
 
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -116,7 +116,7 @@ export class ComponentsService implements IComponentsService {
             return acc;
           }, {});
         });
-    });
+    }, manager);
   }
 
   transformComponentData(data: object): Component[] {
@@ -314,9 +314,11 @@ export class ComponentsService implements IComponentsService {
                 // Handle Form component with object srcValue like JSONData & JSONSchema
                 return srcValue;
               } else if (
-                (componentData.type === 'DropdownV2' ||
-                  componentData.type === 'MultiselectV2' ||
-                  componentData.type === 'Steps') &&
+                  (componentData.type === 'DropdownV2' ||
+                    componentData.type === 'MultiselectV2' ||
+                    componentData.type === 'ModuleContainer' ||
+                    componentData.type === 'Tabs' ||
+                    componentData.type === 'Steps') &&
                 _.isArray(objValue)
               ) {
                 return _.isArray(srcValue) ? srcValue : Object.values(srcValue);

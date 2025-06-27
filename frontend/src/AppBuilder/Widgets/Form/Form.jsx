@@ -4,7 +4,9 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import _, { debounce, omit } from 'lodash';
 import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { removeFunctionObjects } from '@/_helpers/appUtils';
+import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
+import { useAppInfo } from '@/_stores/appDataStore';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
@@ -37,12 +39,16 @@ const FormComponent = (props) => {
     properties,
     resetComponent = () => {},
     dataCy,
+    adjustComponentPositions,
+    currentLayout,
+    componentCount,
     onComponentClick,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), checkDiff);
   const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id), shallow);
 
   const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
+
   const {
     buttonToSubmit,
     advanced: _deprecatedAdvanced,
@@ -55,6 +61,7 @@ const FormComponent = (props) => {
     validateOnSubmit = true,
     resetOnSubmit = true,
     newJsonSchema,
+    dynamicHeight,
   } = properties;
 
   const advanced = _deprecatedAdvanced || isJSONSchema;
@@ -77,7 +84,7 @@ const FormComponent = (props) => {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height,
+    height: dynamicHeight ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     position: 'relative',
     boxShadow,
@@ -88,12 +95,45 @@ const FormComponent = (props) => {
   const formContent = {
     overflow: 'hidden auto',
     display: 'flex',
-    height: '100%',
+    height: canHeight || '100%',
     paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
   };
+
+  const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
+  const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
+
+  const formFooter = {
+    flexShrink: 0,
+    paddingTop: '3px',
+    paddingBottom: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${footerMaxHeight}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
+  };
+  const formHeader = {
+    flexShrink: 0,
+    paddingBottom: '3px',
+    paddingTop: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${headerMaxHeight}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+  };
+  useDynamicHeight({
+    dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+  });
 
   const parentRef = useRef(null);
   const childDataRef = useRef({});
@@ -331,28 +371,6 @@ const FormComponent = (props) => {
     const roundedHeight = Math.round(maxHeight / 10) * 10;
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
-  const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
-  const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
-  const formFooter = {
-    flexShrink: 0,
-    paddingTop: '3px',
-    paddingBottom: '7px',
-    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    maxHeight: `${footerMaxHeight}px`,
-    backgroundColor:
-      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
-  };
-  const formHeader = {
-    flexShrink: 0,
-    paddingBottom: '3px',
-    paddingTop: '7px',
-    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    maxHeight: `${headerMaxHeight}px`,
-    backgroundColor:
-      ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-  };
 
   return (
     <form
@@ -381,9 +399,10 @@ const FormComponent = (props) => {
           componentType="Form"
         />
       )}
-
       <div
-        className="jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover"
+        className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
+          properties.dynamicHeight && `dynamic-${id}`
+        }`}
         style={formContent}
       >
         {isLoading ? (
@@ -391,9 +410,9 @@ const FormComponent = (props) => {
             <Spinner />
           </div>
         ) : (
-          <fieldset disabled={isDisabled} style={{ width: '100%' }}>
+          <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
             {!advanced && (
-              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: canHeight || '100%' }}>
+              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                 <SubContainer
                   id={id}
                   canvasHeight={parseInt(computedFormBodyHeight, 10)}
@@ -402,7 +421,8 @@ const FormComponent = (props) => {
                   onOptionsChange={onOptionsChange}
                   styles={{
                     backgroundColor: computedStyles.backgroundColor,
-                    height: canHeight,
+                    overflow: 'hidden auto',
+                    height: '100%',
                   }}
                   darkMode={darkMode}
                   componentType="Form"
