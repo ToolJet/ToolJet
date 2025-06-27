@@ -54,7 +54,7 @@ const ModalFooter = ({ currentStatus, refreshData, handleSubmit, isSaving, allSe
   <div
     className={`tw-flex ${
       currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'tw-justify-between' : 'tw-justify-end'
-    } tw-items-center tw-mt-4`}
+    } tw-items-center`}
   >
     {currentStatus !== FORM_STATUS.GENERATE_FIELDS && (
       <Button fill={'#ACB2B9'} leadingIcon={'arrowdirectionloop'} variant="outline" onClick={refreshData}>
@@ -325,7 +325,7 @@ const RenderSection = ({
   };
 
   return (
-    <div className="tw-w-full column-mapping-modal-body-content tw-mb-6">
+    <div className="tw-w-full column-mapping-modal-body-content">
       <div
         className={cx('large-medium column-mapping-modal-title', {
           new: sectionType === 'isNew',
@@ -338,7 +338,7 @@ const RenderSection = ({
 
       {renderHeader()}
 
-      <div className="tw-max-h-[400px] tw-overflow-y-auto">
+      <div>
         {columnsArray.length > 0 ? (
           columnsArray.map((column, index) => (
             <ColumnMappingRow
@@ -458,44 +458,48 @@ const ColumnMappingComponent = ({
   }, [groupedColumns]);
 
   const modalBody = (
-    <div className="tw-w-full column-mapping-modal-body-container">
-      {showLoader && <LoaderComponent />}
+    <>
+      <div className="tw-w-full column-mapping-modal-body-container tw-max-h-[500px] tw-overflow-y-auto tw-p-4 tw-pb-0">
+        {showLoader && <LoaderComponent />}
 
-      {!showLoader && (
-        <>
-          {sectionTypes.map((sectionType) => {
-            return (
-              groupedColumns[sectionType]?.length > 0 && (
-                <RenderSection
-                  key={sectionType}
-                  mappedColumns={groupedColumns[sectionType]}
-                  setMappedColumns={(updatedColumns) => updateSectionColumns(sectionType, updatedColumns)}
-                  darkMode={darkMode}
-                  sectionType={sectionType}
-                  sectionDisplayName={
-                    currentStatus !== FORM_STATUS.GENERATE_FIELDS ? getSectionDisplayName(sectionType) : ''
-                  }
-                  disabled={sectionType === 'isRemoved'}
-                />
-              )
-            );
-          })}
-        </>
-      )}
-      <ModalFooter
-        currentStatus={currentStatus}
-        refreshData={refreshData}
-        handleSubmit={handleSubmit}
-        isSaving={isSaving}
-        allSectionsEmpty={allSectionsEmpty}
-      />
-    </div>
+        {!showLoader && (
+          <div>
+            {sectionTypes.map((sectionType) => {
+              return (
+                groupedColumns[sectionType]?.length > 0 && (
+                  <RenderSection
+                    key={sectionType}
+                    mappedColumns={groupedColumns[sectionType]}
+                    setMappedColumns={(updatedColumns) => updateSectionColumns(sectionType, updatedColumns)}
+                    darkMode={darkMode}
+                    sectionType={sectionType}
+                    sectionDisplayName={
+                      currentStatus !== FORM_STATUS.GENERATE_FIELDS ? getSectionDisplayName(sectionType) : ''
+                    }
+                    disabled={sectionType === 'isRemoved'}
+                  />
+                )
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div className="tw-p-4 tw-border-t tw-border-border-lighter">
+        <ModalFooter
+          currentStatus={currentStatus}
+          refreshData={refreshData}
+          handleSubmit={handleSubmit}
+          isSaving={isSaving}
+          allSectionsEmpty={allSectionsEmpty}
+        />
+      </div>
+    </>
   );
 
   return (
     <Modal show={isOpen} onHide={onClose} size="lg">
       <ModalHeader currentStatus={currentStatus} onClose={onClose} />
-      <div className="tw-p-4 column-mapping-modal-body">{modalBody}</div>
+      <div className="column-mapping-modal-body">{modalBody}</div>
     </Modal>
   );
 };

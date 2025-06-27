@@ -20,6 +20,11 @@
     .column-mapping-modal-body-content {
         background-color: var(--primary-white) !important;
         border-radius: 8px;
+        margin-bottom: 1rem;
+
+        &:last-child {
+            margin-bottom: 0px;
+        }
 
         .column-mapping-modal-title {
             padding-left: 10px;
