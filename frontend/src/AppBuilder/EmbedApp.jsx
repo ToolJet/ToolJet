@@ -28,7 +28,7 @@ export default function EmbedAppRedirect() {
     const token = new URLSearchParams(window.location.search).get('personal-access-token');
 
     if (!token || typeof appId !== 'string') {
-      parent.postMessage({ error: 400, message: 'Missing token or appId' }, '*');
+      parent?.postMessage({ type: 'TJ_EMBED_APP_LOGOUT', error: 400, message: 'Missing token or appId' }, '*');
       return;
     }
 
@@ -44,8 +44,12 @@ export default function EmbedAppRedirect() {
           if (res.status === 401 || res.status === 403) {
             toast.error('Your pat is expired. Please refresh or contact your admin.');
             // 🔔 Show toast if token is expired or invalid
-            parent.postMessage(
-              { error: res.status, message: 'Your pat is expired. Please refresh or contact your admin.' },
+            parent?.postMessage(
+              {
+                type: 'TJ_EMBED_APP_LOGOUT',
+                error: res.status,
+                message: 'Your pat is expired. Please refresh or contact your admin.',
+              },
               '*'
             );
           }
@@ -58,7 +62,7 @@ export default function EmbedAppRedirect() {
         window.name = result.signedPat;
         window.location.href = `applications/${appId}`;
       } catch (error) {
-        parent.postMessage({ error: 500, message: 'Network error' }, '*');
+        parent?.postMessage({ type: 'TJ_EMBED_APP_LOGOUT', error: 500, message: 'Network error' }, '*');
       }
     };
 
