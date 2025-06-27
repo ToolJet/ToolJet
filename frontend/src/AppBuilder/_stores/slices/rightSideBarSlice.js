@@ -1,8 +1,8 @@
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const initialState = {
-  activeRightSideBarTab: RIGHT_SIDE_BAR_TAB.COMPONENTS,
-  isRightSidebarOpen: true,
+  activeRightSideBarTab: null,
+  isRightSidebarOpen: false,
   isRightSidebarPinned: false,
 };
 

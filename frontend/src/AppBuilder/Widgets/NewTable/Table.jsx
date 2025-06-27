@@ -10,10 +10,23 @@ import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/Editor/Components/utils';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Table = memo(
-  ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {
+  ({
+    id,
+    componentName,
+    width,
+    height,
+    properties,
+    styles,
+    darkMode,
+    fireEvent,
+    setExposedVariables,
+    adjustComponentPositions,
+    currentLayout,
+  }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
@@ -128,13 +141,23 @@ export const Table = memo(
       return transformTableData(restOfProperties.data, transformations, getResolvedValue);
     }, [getResolvedValue, restOfProperties.data, transformations]);
 
+    useDynamicHeight({
+      dynamicHeight: properties.dynamicHeight,
+      id: id,
+      height,
+      value: JSON.stringify(tableData),
+      adjustComponentPositions,
+      currentLayout,
+      width,
+    });
+
     return (
       <div
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: `${height}px`,
+          height: properties.dynamicHeight ? 'auto' : `${height}px`,
           display: visibility === 'none' ? 'none' : '',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,

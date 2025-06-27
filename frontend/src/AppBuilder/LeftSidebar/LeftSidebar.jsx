@@ -59,7 +59,6 @@ export const BaseLeftSidebar = ({
   const sideBarBtnRefs = useRef({});
 
   const handleSelectedSidebarItem = (item) => {
-    pinned && localStorage.setItem('selectedSidebarItem', item);
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
     if (item === selectedSidebarItem && !pinned) {

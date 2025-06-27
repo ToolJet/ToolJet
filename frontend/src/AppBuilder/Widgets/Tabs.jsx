@@ -11,6 +11,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { shallow } from 'zustand/shallow';
 const tinycolor = require('tinycolor2');
 
 const TabsNavShimmer = ({ divider, headerBackground }) => {
@@ -52,6 +54,8 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   setExposedVariables,
+  adjustComponentPositions,
+  currentLayout,
   fireEvent,
   styles,
   darkMode,
@@ -66,7 +70,7 @@ export const Tabs = function Tabs({
     setExposedVariables,
     setExposedVariable
   );
-  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions } = properties;
+  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions, dynamicHeight } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
 
   const widgetVisibility = styles?.visibility ?? true;
@@ -129,9 +133,24 @@ export const Tabs = function Tabs({
 
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
+  const componentCount = useStore(
+    (state) => state.getContainerChildrenMapping(`${id}-${currentTab}`)?.length || 0,
+    shallow
+  );
   const [tabItems, setTabItems] = useState(parsedTabs);
   const tabItemsRef = useRef(tabItems);
   const [bgColor, setBgColor] = useState('#fff');
+
+  useDynamicHeight({
+    dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    value: currentTab,
+    componentCount,
+  });
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
@@ -304,7 +323,7 @@ export const Tabs = function Tabs({
       data-disabled={isDisabled}
       className="card tabs-component"
       style={{
-        height: padding === 'default' ? height : height + 4,
+        height: dynamicHeight ? '100%' : padding === 'default' ? height : height + 4,
         display: isVisible ? 'flex' : 'none',
         backgroundColor: darkMode ? '#324156' : '#fff',
         boxShadow,
@@ -461,7 +480,7 @@ export const Tabs = function Tabs({
           style={{
             overflow: 'hidden',
             width: '100%',
-            height: parsedHideTabs ? height : height - 41,
+            height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
             position: 'relative',
           }}
         >
@@ -471,6 +490,7 @@ export const Tabs = function Tabs({
               width: `${tabItems.length * 100}%`,
               transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
               transition: 'transform 0.3s ease-in-out',
+              height: '100%',
             }}
           >
             {tabItems.map((tab) => (
@@ -490,6 +510,8 @@ export const Tabs = function Tabs({
                   parsedHideTabs={parsedHideTabs}
                   bgColor={bgColor}
                   darkMode={darkMode}
+                  dynamicHeight={dynamicHeight}
+                  currentTab={currentTab}
                 />
               </div>
             ))}
@@ -517,7 +539,17 @@ const areEqual = (prevProps, nextProps) => {
   return !hasChanges;
 };
 
-const TabContent = memo(function TabContent({ id, tab, height, width, parsedHideTabs, bgColor, darkMode }) {
+const TabContent = memo(function TabContent({
+  id,
+  tab,
+  height,
+  width,
+  parsedHideTabs,
+  bgColor,
+  darkMode,
+  dynamicHeight,
+  currentTab,
+}) {
   const loading = tab?.loading;
   const disable = tab?.disable;
   const visible = tab?.visible;
@@ -528,11 +560,12 @@ const TabContent = memo(function TabContent({ id, tab, height, width, parsedHide
   return (
     <div
       data-disabled={disable}
-      className="tab-pane active"
+      activetab={currentTab}
+      className={`tab-pane active ${dynamicHeight && currentTab === tab.id && `dynamic-${id}`}`}
       style={{
         display: disable ? 'none' : 'block',
-        height: parsedHideTabs ? height : height - 41,
-        position: 'absolute',
+        height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
+        position: 'relative',
         top: '0px',
         width: '100%',
       }}
@@ -551,13 +584,14 @@ const TabContent = memo(function TabContent({ id, tab, height, width, parsedHide
       ) : (
         <SubContainer
           id={`${id}-${tab.id}`}
-          canvasHeight={'200'}
+          canvasHeight={dynamicHeight ? '100%' : '200'}
           canvasWidth={width}
           allowContainerSelect={true}
-          styles={{ backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor }}
+          styles={{ overflow: 'hidden auto', backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor }}
           darkMode={darkMode}
         />
       )}
     </div>
   );
-}, areEqual);
+},
+areEqual);

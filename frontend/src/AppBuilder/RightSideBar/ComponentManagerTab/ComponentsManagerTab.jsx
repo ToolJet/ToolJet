@@ -9,6 +9,7 @@ import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ModuleManager } from '@/modules/Modules/components';
 import { ComponentModuleTab } from '@/modules/Appbuilder/components';
 

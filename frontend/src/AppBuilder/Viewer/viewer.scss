@@ -230,11 +230,10 @@
 }
 
 .page-group-collapse{
-  bottom: 7px;
-  right: 12px;
-  position: absolute;
+  // right: 12px;
+  // position: absolute;
   display: block !important;
   &.expanded{
-    transform: rotate(60deg) !important;
+    transform: rotate(0deg) !important;
   }
 }

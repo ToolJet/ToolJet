@@ -14,6 +14,7 @@ import { RenderPageAndPageGroup } from './PageGroup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import toast from 'react-hot-toast';
+import { shallow } from 'zustand/shallow';
 // import useSidebarMargin from './useSidebarMargin';
 
 export const PagesSidebarNavigation = ({
@@ -38,6 +39,7 @@ export const PagesSidebarNavigation = ({
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -49,7 +51,7 @@ export const PagesSidebarNavigation = ({
   const [visibleLinks, setVisibleLinks] = useState(pages);
   const [showPopover, setShowPopover] = useState(false);
 
-  const { disableMenu, hideHeader, position, style, collapsable } = properties ?? {};
+  const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || !measurementContainerRef.current || pages.length === 0) {
@@ -62,13 +64,11 @@ export const PagesSidebarNavigation = ({
     const tempOverflow = [];
 
     const measuredNavItems = Array.from(measurementContainerRef.current.children);
-    const MORE_BUTTON_WIDTH_ESTIMATE = 180;
+    const MORE_BUTTON_WIDTH_ESTIMATE = 250;
 
     for (let i = 0; i < pages.length; i++) {
       const link = pages[i];
-      const correspondingMeasuredElement = measuredNavItems.find(
-        (item) => item.dataset.id === String(link.id) && !link?.pageGroupId
-      );
+      const correspondingMeasuredElement = measuredNavItems.find((item) => item.dataset.id === String(link.id));
 
       if (!correspondingMeasuredElement) {
         continue;
@@ -86,6 +86,8 @@ export const PagesSidebarNavigation = ({
       }
     }
 
+    console.log({ tempOverflow, tempVisible });
+
     if (tempOverflow.length > 0 && currentWidth + MORE_BUTTON_WIDTH_ESTIMATE > containerWidth) {
       if (tempVisible.length > 0) {
         const lastVisible = tempVisible.pop();
@@ -96,7 +98,7 @@ export const PagesSidebarNavigation = ({
 
     setVisibleLinks(tempVisible);
     setOverflowLinks(tempOverflow);
-  }, [pages]);
+  }, [pages, position, style]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -112,7 +114,7 @@ export const PagesSidebarNavigation = ({
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [pages, calculateOverflow]);
+  }, [pages, calculateOverflow, position]);
 
   if (isMobileDevice) {
     return null;
@@ -236,6 +238,21 @@ export const PagesSidebarNavigation = ({
     currentMode !== 'view' && setCurrentPageHandle(page.handle);
   };
 
+  const switchToHomePage = () => {
+    const page = pages.find((p) => p.id === homePageId);
+
+    const queryParams = {
+      version: selectedVersionName,
+      env: selectedEnvironmentName,
+    };
+
+    switchPage(
+      page?.id,
+      pages.find((p) => page.id === p?.id)?.handle,
+      currentMode === 'view' ? Object.entries(queryParams) : []
+    );
+  };
+
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
     _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
@@ -264,9 +281,13 @@ export const PagesSidebarNavigation = ({
         }}
       >
         {pages
-          .filter((p) => !p.pageGroupId)
+          // .filter((p) => !p.pageGroupId || p.isPageGroup)
           .map((link) => (
-            <div style={{ padding: '0px 10px' }} key={`measure-${link.id}`} data-id={link.id}>
+            <div
+              style={{ padding: `0px ${style === 'texticon' ? '22px' : '10px'}` }}
+              key={`measure-${link.id}`}
+              data-id={link.id}
+            >
               {link?.name}
             </div>
           ))}
@@ -279,6 +300,8 @@ export const PagesSidebarNavigation = ({
           'icon-only': style === 'icon' || (style === 'texticon' && !isSidebarPinned && position === 'side'),
           'position-top': position === 'top',
           'text-only': style === 'text',
+          'right-sidebar-open': isRightSidebarOpen && position === 'top',
+          'left-sidebar-open': isSidebarOpen && position === 'top',
         })}
         style={{
           width: 226,
@@ -287,13 +310,14 @@ export const PagesSidebarNavigation = ({
           // height,
           height: '100%',
           // top: showHeader ? '47px' : '0px',
-          top: '0px',
+          top: '4px',
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
           border: `${styles?.pillRadius?.value}px`,
           borderRight: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
           boxShadow: 'var(--elevation-100-box-shadow)',
+          scrollbarWidth: 'none',
           // ...(position === 'side' && isSidebarOpen ? { marginLeft: isSidebarPinned ? '574px' : '392px' } : {}),
         }}
       >
@@ -304,13 +328,13 @@ export const PagesSidebarNavigation = ({
             }}
             className="app-name"
           >
-            {!headerHidden && (
-              <>
-                <div className="cursor-pointer">
-                  <AppLogo isLoadingFromHeader={false} />
-                </div>
-                {((isPinnedWithLabel && !labelHidden) || position === 'top') && <span>{appName}</span>}
-              </>
+            {!hideLogo && (
+              <div onClick={switchToHomePage} className="cursor-pointer">
+                <AppLogo isLoadingFromHeader={false} />
+              </div>
+            )}
+            {!headerHidden && ((isPinnedWithLabel && !labelHidden) || position === 'top') && (
+              <span>{name?.trim() ? name : appName}</span>
             )}
             {collapsable && !isTopPositioned && style == 'texticon' && position === 'side' && (
               <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
@@ -396,7 +420,12 @@ export const PagesSidebarNavigation = ({
           )}
         </div>
         <div className="d-flex align-items-center page-dark-mode-btn-wrapper">
-          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
+          <DarkModeToggle
+            toggleForCanvas={true}
+            switchDarkMode={switchDarkMode}
+            darkMode={darkMode}
+            tooltipPlacement="right"
+          />
         </div>
       </div>
     </div>

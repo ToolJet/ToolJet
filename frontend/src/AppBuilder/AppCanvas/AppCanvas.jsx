@@ -20,6 +20,7 @@ import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { resolveReferences } from '@/_helpers/utils';
 import useRightSidebarMargin from './userRightSidebarMargin';
+import { DragGhostWidget } from './GhostWidgets';
 
 export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -129,10 +130,12 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
       borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
       height: currentMode === 'edit' ? canvasContainerHeight : '100%',
       background: canvasBgColor,
-      width: currentMode === 'edit' ? `calc(100% - 88px)` : '100%',
+      width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
-      borderRight: currentMode === 'edit' && isRightSidebarOpen && '300' + 'px solid',
+      borderRight: currentMode === 'edit' && isRightSidebarOpen && '299' + 'px solid',
+      padding: currentMode === 'edit' && '8px',
+      paddingBottom: currentMode === 'edit' && '2px',
     };
   }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
 
@@ -142,23 +145,22 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
   }, [isViewerSidebarPinned]);
 
-  const getMinWidth = () => {
-    if (isModuleMode) {
-      return '100%';
+  function getMinWidth() {
+    if (isModuleMode) return '100%';
+
+    const shouldAdjust = isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit');
+
+    if (!shouldAdjust) return '';
+
+    let offset;
+    if (isViewerSidebarPinned) {
+      offset = position === 'side' ? '352px' : '126px';
+    } else {
+      offset = position === 'side' ? '171px' : '126px';
     }
 
-    let offsetPx;
-    if (isViewerSidebarPinned && editorMarginLeft) {
-      offsetPx = '84px';
-    } else if (isViewerSidebarPinned) {
-      // This case will be hit if isViewerSidebarPinned is true, but editorMarginLeft is false
-      offsetPx = '-94px';
-    } else {
-      // This case will be hit if isViewerSidebarPinned is false
-      offsetPx = '146px';
-    }
-    return `calc(100vw - ${offsetPx})`;
-  };
+    return `calc(100vw - ${offset})`;
+  }
 
   return (
     <div
@@ -196,28 +198,10 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
           )}
           <div
             style={{
-              minWidth: isModuleMode
-                ? '100%'
-                : (isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit')) && `calc((100vw - 329px))`,
+              minWidth: getMinWidth(),
               scrollbarWidth: 'none',
               overflow: 'auto',
-              // borderLeft: `${
-              //   editorMarginLeft
-              //     ? '0px'
-              //     : currentLayout === 'mobile'
-              //     ? '0px'
-              //     : isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && position === 'side'
-              //     ? pageSidebarStyle === 'icon' && position == 'side'
-              //       ? '44px'
-              //       : '226px'
-              //     : isPagesSidebarHidden
-              //     ? 'auto'
-              //     : position == 'top'
-              //     ? 'auto'
-              //     : '44px'
-              // } solid`,
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
-              // flex: 1,
             }}
             className={`app-${appId} _tooljet-page-${getPageId()}`}
           >
@@ -240,6 +224,8 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
                     pagePositionType={position}
                     appType={appType}
                   />
+                  <DragGhostWidget />
+                  <div id="component-portal" />
                   {appType !== 'module' && <div id="component-portal" />}
                 </div>
               )}

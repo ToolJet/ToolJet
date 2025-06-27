@@ -103,6 +103,15 @@ export const tabsConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -347,6 +356,7 @@ export const tabsConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      dynamicHeight: { value: '{{false}}' },
       useDynamicOptions: { value: '{{false}}' },
       tabs: {
         value:

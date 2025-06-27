@@ -9,17 +9,20 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import { SidebarItem } from './SidebarItem';
 
 const RightSidebarToggle = ({ darkMode = false }) => {
-  const [isRightSidebarOpen, toggleRightSidebar] = useStore(
-    (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
+  const [isRightSidebarOpen, setRightSidebarOpen] = useStore(
+    (state) => [state.isRightSidebarOpen, state.setRightSidebarOpen],
     shallow
   );
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
-  const handleToggle = () => {
-    if (!isRightSidebarPinned) {
-      toggleRightSidebar();
+  const handleToggle = (item) => {
+    setActiveRightSideBarTab(item);
+    if (item === activeRightSideBarTab && !isRightSidebarPinned) {
+      setActiveRightSideBarTab('');
+      return setRightSidebarOpen(false);
     }
+    if (!isRightSidebarOpen) setRightSidebarOpen(true);
   };
 
   return (
@@ -30,10 +33,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS}
         onClick={() => {
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-          if (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS) {
-            handleToggle();
-          }
+          handleToggle(RIGHT_SIDE_BAR_TAB.COMPONENTS);
         }}
         darkMode={darkMode}
         icon="plus"
@@ -43,10 +43,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION}
         onClick={() => {
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-          if (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION) {
-            handleToggle();
-          }
+          handleToggle(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
         }}
         darkMode={darkMode}
         icon="inspect"
@@ -56,10 +53,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES}
         onClick={() => {
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-          if (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES) {
-            handleToggle();
-          }
+          handleToggle(RIGHT_SIDE_BAR_TAB.PAGES);
         }}
         darkMode={darkMode}
         icon="file01"

@@ -27,6 +27,10 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Button',
   'RichTextEditor',
   'Image',
+  'CodeEditor',
+  'TextArea',
+  'Container',
+  'Form',
   'Divider',
   'VerticalDivider',
   'ModalV2',
@@ -34,6 +38,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RangeSlider',
   'Link',
   'FilePicker',
+  'Listview',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -154,6 +159,7 @@ export const baseComponentProperties = (
       'VerticalDivider',
       'Link',
       'FilePicker',
+      'Tabs',
     ],
     Layout: [],
   };

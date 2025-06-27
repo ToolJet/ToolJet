@@ -29,16 +29,12 @@ export function createModalStyles({
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-      height: headerHeightPx,
       overflowY: isDisabledModal ? 'hidden' : 'auto',
-      padding: `${4.5}px ${MODAL_CANVAS_PADDING}px`,
     },
     modalFooter: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
-      height: footerHeightPx,
       overflowY: isDisabledModal ? 'hidden' : 'auto',
-      padding: `${4.5}px ${MODAL_CANVAS_PADDING}px`,
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,

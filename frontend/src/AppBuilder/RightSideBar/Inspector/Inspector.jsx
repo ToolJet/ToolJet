@@ -44,6 +44,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
+import { ToolTip } from '@/_components/ToolTip';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
+import { appPermissionService } from '@/_services';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -61,6 +64,19 @@ const INSPECTOR_HEADER_OPTIONS = [
     label: 'Duplicate',
     value: 'duplicate',
     icon: <Copy width={16} />,
+  },
+  {
+    label: 'Component permission',
+    value: 'permission',
+    icon: (
+      <img
+        alt="permission-icon"
+        src="assets/images/icons/editor/left-sidebar/authorization.svg"
+        width="16"
+        height="16"
+      />
+    ),
+    trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
   },
   {
     label: 'Delete',
@@ -111,6 +127,11 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
+  const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
+  const setComponentPermission = useStore((state) => state.setComponentPermission);
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -385,9 +406,14 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     if (value === 'delete') {
       setWidgetDeleteConfirmation(true);
     }
+    if (value === 'permission') {
+      if (!licenseValid) return;
+      toggleComponentPermissionModal(true);
+    }
     if (value === 'duplicate') {
       copyComponents({ isCloning: true });
     }
+    setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
     if (!componentMeta?.definition?.generalStyles) {
@@ -453,7 +479,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
 
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showHeaderActionsMenu && event.target.closest('.list-menu') === null) {
+      if (showHeaderActionsMenu && event.target.closest('#list-menu') === null) {
         setShowHeaderActionsMenu(false);
       }
     };
@@ -511,71 +537,82 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-7 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
-          <div className="col-3" data-cy={'component-inspector-options'}>
-            <OverlayTrigger
-              trigger={'click'}
-              placement={'bottom-end'}
-              rootClose={false}
-              show={showHeaderActionsMenu}
-              overlay={
-                <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                  <Popover.Body bsPrefix="list-item-popover-body">
-                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
-                      <div
-                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                        className="list-item-popover-option"
-                        key={option?.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInspectorHeaderActions(option.value);
-                        }}
-                      >
-                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                        <div
-                          data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                          className="list-item-popover-option"
-                          key={option?.value}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleInspectorHeaderActions(option.value);
-                          }}
-                        >
-                          <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                          <div
-                            className={classNames('list-item-option-menu-label', {
-                              'color-tomato9': option.value === 'delete',
-                            })}
-                          >
-                            {option?.label}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </Popover.Body>
-                </Popover>
-              }
-            >
-              <div className="d-flex">
-                <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
-                  <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin01' : 'pin'} width="16" />
-                </div>
-                <div className="cursor-pointer icon-btn" onClick={() => setShowHeaderActionsMenu(true)}>
-                  <SolidIcon data-cy={'menu-icon'} name="morevertical01" width="16" fill="var(--icon-strong)" />
-                </div>
+          <div className={`col-9 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          {!isModuleContainer && (
+            <>
+              <div className="col-2" data-cy={'component-inspector-options'}>
+                <OverlayTrigger
+                  trigger={'click'}
+                  placement={'bottom-end'}
+                  rootClose={false}
+                  show={showHeaderActionsMenu}
+                  overlay={
+                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                      <Popover.Body bsPrefix="list-item-popover-body">
+                        {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                          const optionBody = (
+                            <div
+                              data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                              className="list-item-popover-option"
+                              key={option?.value}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleInspectorHeaderActions(option.value);
+                              }}
+                            >
+                              <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                              <div
+                                className={classNames('list-item-option-menu-label', {
+                                  'color-tomato9': option.value === 'delete',
+                                  'color-disabled': option.value === 'permission' && !licenseValid,
+                                })}
+                              >
+                                {option?.label}
+                              </div>
+                              {option.value === 'permission' &&
+                                !licenseValid &&
+                                option.trailingIcon &&
+                                option.trailingIcon}
+                            </div>
+                          );
+
+                          return option.value === 'permission' ? (
+                            <ToolTip
+                              key={option.value}
+                              message={'Component permissions are available only in paid plans'}
+                              placement="left"
+                              show={!licenseValid}
+                            >
+                              {optionBody}
+                            </ToolTip>
+                          ) : (
+                            optionBody
+                          );
+                        })}
+                      </Popover.Body>
+                    </Popover>
+                  }
+                >
+                  <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+                    <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
+                  </span>
+                </OverlayTrigger>
               </div>
-            </OverlayTrigger>
-          </div>
-        </div>
-        <div className={`${shouldFreeze && 'disabled'}`}>
-          <Tabs defaultActiveKey={'properties'} id="inspector">
-            <Tab eventKey="properties" title="Properties">
-              {propertiesTab}
-            </Tab>
-            <Tab eventKey="styles" title="Styles">
-              {stylesTab}
-            </Tab>
-          </Tabs>
+              <AppPermissionsModal
+                modalType="component"
+                resourceId={selectedComponentId}
+                resourceName={allComponents[selectedComponentId]?.component?.name}
+                showModal={showComponentPermissionModal}
+                toggleModal={toggleComponentPermissionModal}
+                darkMode={darkMode}
+                fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
+                createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
+                updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+                deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
+                onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
+              />
+            </>
+          )}
         </div>
 
         <div className={`${shouldFreeze && 'disabled'}`}>{renderTabs()}</div>

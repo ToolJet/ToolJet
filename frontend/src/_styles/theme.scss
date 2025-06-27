@@ -631,7 +631,7 @@ button {
 
     .empty-configuration-header {
       display: flex;
-      padding: 0 12px;
+      padding: 4px 12px;
       align-items: center;
       justify-content: space-between;
 
@@ -805,7 +805,7 @@ button {
       position: fixed;
       // right: 300px;
       left: 48px;
-      overflow-y: scroll;
+      overflow-y: hidden;
       overflow-x: hidden;
       -webkit-box-pack: center;
       justify-content: center;
@@ -2823,7 +2823,7 @@ hr {
 }
 
 .config-handle {
-  display: block;
+  display: flex;
 }
 
 .apps-table {
@@ -4292,7 +4292,6 @@ input[type="text"] {
 
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
-
 }
 
 .jet-listview::-webkit-scrollbar-thumb {
@@ -16107,9 +16106,7 @@ textarea.tj-text-input-widget {
 }
 
 .jet-listview {
-  &:hover {
-    scrollbar-color: #6a727c4d;
-
+  &:hover {      
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -16129,7 +16126,6 @@ textarea.tj-text-input-widget {
 
   .jet-listview {
     &:hover {
-      scrollbar-color: #6a727c4d;
 
       &::-webkit-scrollbar-thumb {
         background-color: #6a727c4d !important;
@@ -19303,6 +19299,14 @@ section.ai-message-prompt-input-wrapper {
     margin-left: 4px;
   }
 }
+.codehinter-popup {
+  .single-line-codehinter-input {
+    .cm-editor {
+      max-height: 100% !important;
+    }
+  }
+}
+
 .missing-groups-modal {
   .modal-body {
     padding: 16px;

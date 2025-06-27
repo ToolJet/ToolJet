@@ -85,18 +85,12 @@ export const Container = React.memo(
         item.canvasWidth = getContainerCanvasWidth();
       },
       drop: async ({ componentType, component }, monitor) => {
-        setShowModuleBorder(false); // Hide the module border when dropping
+        setShowModuleBorder(false);
         if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
+
         const didDrop = monitor.didDrop();
         if (didDrop) return;
-        if (componentType === 'PDF' && !isPDFSupported()) {
-          toast.error(
-            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
-          );
-          return;
-        }
 
-        // IMPORTANT: This logic needs to be changed when we implement the module versioning
         const moduleInfo = component?.moduleId
           ? {
               moduleId: component.moduleId,
@@ -106,6 +100,8 @@ export const Container = React.memo(
               moduleContainer: component.moduleContainer,
             }
           : undefined;
+
+        let addedComponent;
 
         if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
           const parentComponent = addNewWidgetToTheEditor(
@@ -117,10 +113,8 @@ export const Container = React.memo(
             moduleInfo
           );
           const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
-          const newComponents = [parentComponent, ...childComponents];
-          await addComponentToCurrentPage(newComponents);
-          // setSelectedComponents([parentComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          addedComponent = [parentComponent, ...childComponents];
+          await addComponentToCurrentPage(addedComponent);
         } else {
           const newComponent = addNewWidgetToTheEditor(
             componentType,
@@ -130,11 +124,32 @@ export const Container = React.memo(
             id,
             moduleInfo
           );
-          await addComponentToCurrentPage([newComponent]);
-          // setSelectedComponents([newComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          addedComponent = [newComponent];
+          await addComponentToCurrentPage(addedComponent);
+        }
+
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+
+        const canvas = document.querySelector('.canvas-container');
+        const sidebar = document.querySelector('.editor-sidebar');
+        const droppedElem = document.getElementById(addedComponent?.[0]?.id);
+
+        if (!canvas || !sidebar || !droppedElem) return;
+
+        const droppedRect = droppedElem.getBoundingClientRect();
+        const sidebarRect = sidebar.getBoundingClientRect();
+
+        const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
+
+        if (isOverlapping) {
+          const overlap = droppedRect.right - sidebarRect.left;
+          canvas.scrollTo({
+            left: canvas.scrollLeft + overlap,
+            behavior: 'smooth',
+          });
         }
       },
+
       collect: (monitor) => ({
         isOverCurrent: monitor.isOver({ shallow: true }),
       }),
@@ -150,10 +165,11 @@ export const Container = React.memo(
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
         if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id);
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }
       return realCanvasRef?.current?.offsetWidth;
     }
+
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);

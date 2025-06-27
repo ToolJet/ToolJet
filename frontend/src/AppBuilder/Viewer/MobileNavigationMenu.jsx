@@ -201,6 +201,9 @@ const MobileNavigationMenu = ({
     _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
+  const { definition: { properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
+  const { name, hideLogo, hideHeader } = properties ?? {};
+
   return (
     <>
       <MobileMenu
@@ -236,10 +239,10 @@ const MobileNavigationMenu = ({
                     redirectToDashboard();
                   }}
                 >
-                  <AppLogo isLoadingFromHeader={false} viewer={true} />
-                  {appName && (
+                  {!hideLogo && <AppLogo isLoadingFromHeader={false} viewer={true} />}
+                  {!hideHeader && (
                     <div className="d-flex align-items-center app-title">
-                      <span>{appName}</span>
+                      <span>{name?.trim() ? name : appName}</span>
                     </div>
                   )}
                 </Link>

@@ -148,27 +148,11 @@ const RenderPageGroup = ({
       className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
     >
       <div
-        className={`page-group-wrapper ${active || isExpanded ? 'tj-list-item-selected' : ''}`}
+        className={`page-group-wrapper tj-list-item ${active && !isExpanded ? 'tj-list-item-selected' : ''}`}
         style={{
           position: 'relative',
         }}
       >
-        <svg
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          onClick={handleToggle}
-          className={`page-group-collapse ${isExpanded ? 'expanded' : 'collapsed'}`}
-          width={17}
-          height={16}
-          viewBox="0 0 17 16"
-          fill="black"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M11.1257 4L5.27446 4C4.50266 4 4.02179 4.83721 4.41068 5.50387L7.33631 10.5192C7.72218 11.1807 8.67798 11.1807 9.06386 10.5192L11.9895 5.50387C12.3784 4.83721 11.8975 4 11.1257 4Z"
-            fill="#ACB2B9"
-          />
-        </svg>
         <FolderList
           key={pageGroup.id}
           onClick={isSidebarPinned && handleToggle}
@@ -185,6 +169,24 @@ const RenderPageGroup = ({
             </span>
           )}
         </FolderList>
+        <div style={{ marginRight: '12px' }}>
+          <svg
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            onClick={handleToggle}
+            className={`page-group-collapse ${isExpanded ? 'expanded' : 'collapsed'}`}
+            width={17}
+            height={16}
+            viewBox="0 0 17 16"
+            fill="black"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11.1257 4L5.27446 4C4.50266 4 4.02179 4.83721 4.41068 5.50387L7.33631 10.5192C7.72218 11.1807 8.67798 11.1807 9.06386 10.5192L11.9895 5.50387C12.3784 4.83721 11.8975 4 11.1257 4Z"
+              fill="#ACB2B9"
+            />
+          </svg>
+        </div>
       </div>
 
       <div className={`accordion-body ${isExpanded ? 'show' : 'hide'}`}>
