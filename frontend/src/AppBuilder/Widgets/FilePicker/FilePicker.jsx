@@ -9,6 +9,8 @@ import ValidationBar from './Components/ValidationBar';
 import ErrorMessage from './Components/ErrorMessage';
 import './style.scss';
 import { useFilePicker } from './hooks/useFilePicker';
+import Loader from '@/ToolJetUI/Loader/Loader';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const FilePicker = (props) => {
   const {
@@ -96,6 +98,7 @@ const FilePicker = (props) => {
         typeof containerPadding === 'number' ? `${containerPadding}px` : containerPadding
       );
     }
+
   }, [
     dropzoneActiveColor,
     dropzoneErrorColor,
@@ -105,6 +108,7 @@ const FilePicker = (props) => {
     containerBorder,
     containerBoxShadow,
     containerPadding,
+    darkMode,
   ]);
 
   const [isFocused, setIsFocused] = useState(false);
@@ -120,6 +124,13 @@ const FilePicker = (props) => {
     }),
     [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState]
   );
+
+  if (rootRef?.current) {
+    rootRef.current.style.setProperty(
+      '--file-picker-delete-button-hover-bg',
+      getModifiedColor('var(--cc-surface1-surface)', 'hover')
+    );
+  }
 
   const dropzoneClasses = clsx('file-picker-dropzone', {
     'is-dragging': isDragActive,
@@ -156,24 +167,28 @@ const FilePicker = (props) => {
   const { enableMultiple } = properties;
   const { minSize, maxSize, fileType } = validation;
 
+  // const filePaneClasses = clsx(
+  //   'file-picker-files-pane',
+  //   isSmallWidget
+  //     ? 'h-auto overflow-y-visible'
+  //     : selectedFiles.length > 4
+  //       ? 'overflow-y-auto max-h-[38.2%] min-h-[180px]'
+  //       : 'h-auto overflow-y-auto'
+  // );
+
   const filePaneClasses = clsx(
-    'file-picker-files-pane',
-    isSmallWidget
-      ? 'h-auto overflow-y-visible'
-      : selectedFiles.length > 4
-      ? 'overflow-y-auto max-h-[38.2%] min-h-[180px]'
-      : 'h-auto overflow-y-auto'
+    'file-picker-files-pane tw-p-2 tw-pt-0'
   );
 
-  const topSectionClasses = clsx('tw-flex tw-flex-col tw-gap-3 tw-shrink-0 tw-grow', {
+  const topSectionClasses = clsx('tw-flex tw-flex-col tw-shrink-0 tw-grow tw-p-4', {
     'tw-flex-grow': selectedFiles.length === 0,
   });
 
   return (
-    <div ref={rootRef} className="file-picker-widget-wrapper" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
+    <div ref={rootRef} className="file-picker-widget-wrapper files-pane-scrollable" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
       {isLoading ? (
         <div className="p-2 tw-flex tw-items-center tw-justify-center h-full">
-          <div className="spinner-border" role="status" />
+          <Loader width={16} />
         </div>
       ) : (
         <>
@@ -181,7 +196,14 @@ const FilePicker = (props) => {
             <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
               {labelText || 'Upload files'}
             </h3>
-
+            <ValidationBar
+              minSize={minSize}
+              maxSize={maxSize}
+              selectedFileCount={selectedFiles.length}
+              minFileCount={minFileCount}
+              maxFileCount={maxFileCount}
+              enableMultiple={enableMultiple}
+            />
             <UploadArea
               getRootProps={getRootProps}
               getInputProps={getInputProps}
@@ -202,15 +224,6 @@ const FilePicker = (props) => {
               borderRadius={borderRadius}
               height={height}
               selectedFilesLength={selectedFiles.length}
-            />
-
-            <ValidationBar
-              minSize={minSize}
-              maxSize={maxSize}
-              selectedFileCount={selectedFiles.length}
-              minFileCount={minFileCount}
-              maxFileCount={maxFileCount}
-              enableMultiple={enableMultiple}
             />
           </div>
           {selectedFiles.length > 0 && (
@@ -248,9 +261,9 @@ FilePicker.defaultProps = {
   darkMode: false,
   styles: {},
   properties: {},
-  fireEvent: () => {},
-  setExposedVariable: () => {},
-  setExposedVariables: () => {},
+  fireEvent: () => { },
+  setExposedVariable: () => { },
+  setExposedVariables: () => { },
 };
 
 export default FilePicker;

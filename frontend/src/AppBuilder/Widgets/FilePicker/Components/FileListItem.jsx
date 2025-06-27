@@ -32,7 +32,7 @@ const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, 
             onDelete();
           }}
         >
-          <Trash width={12} />
+          <Trash width={12} fill="var(--icon-strong)" />
         </ButtonSolid>
       )}
     </div>
