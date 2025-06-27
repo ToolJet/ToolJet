@@ -29,6 +29,7 @@ const CreateVersionModal = ({
     appId,
     setCurrentVersionId,
     selectedVersion,
+    currentMode,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -41,6 +42,7 @@ const CreateVersionModal = ({
       currentVersionId: state.currentVersionId,
       setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
+      currentMode: state.currentMode,
     }),
     shallow
   );
@@ -90,7 +92,7 @@ const CreateVersionModal = ({
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         appVersionService
-          .getAppVersionData(appId, newVersion.id)
+          .getAppVersionData(appId, newVersion.id, currentMode)
           .then((data) => {
             setCurrentVersionId(newVersion.id);
             handleCommitOnVersionCreation(data);

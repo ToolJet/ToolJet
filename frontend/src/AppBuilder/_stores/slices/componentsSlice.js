@@ -47,6 +47,7 @@ const initialState = {
   showWidgetDeleteConfirmation: false,
   focusedParentId: null,
   modalsOpenOnCanvas: [],
+  showComponentPermissionModal: false,
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -2004,5 +2005,26 @@ export const createComponentsSlice = (set, get) => ({
 
       return [...acc, newComponent];
     }, []);
+  },
+  toggleComponentPermissionModal: (show) => {
+    set((state) => {
+      state.showComponentPermissionModal = show;
+    });
+  },
+  setComponentPermission: (componentId, data) => {
+    const { modules } = get();
+    const currentPageIndex = modules.canvas.currentPageIndex;
+    const component = modules.canvas.pages[currentPageIndex]?.components?.[componentId];
+
+    if (component) {
+      const updatedComponent = {
+        ...component,
+        permissions: data.length === 0 || data.length === undefined ? [] : [data[0]],
+      };
+
+      set((state) => {
+        state.modules.canvas.pages[currentPageIndex].components[componentId] = updatedComponent;
+      });
+    }
   },
 });

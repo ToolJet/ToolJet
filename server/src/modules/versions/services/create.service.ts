@@ -91,87 +91,44 @@ export class VersionsCreateService implements IVersionsCreateService {
       manager
     );
 
-    if (!versionFrom) {
-      //create default data sources
-      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb', 'workflows']) {
-        const dataSource = await this.dataSourceRepository.createDefaultDataSource(
-          defaultSource,
-          appVersion.id,
-          manager
-        );
-        await this.dataSourceUtilService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
-      }
-    } else {
-      const globalQueries: DataQuery[] = await this.dataQueryRepository.getQueriesByVersionId(
-        versionFrom.id,
-        DataSourceScopes.GLOBAL,
-        manager
-      );
-      const dataSources = versionFrom?.dataSources.filter((ds) => ds.scope == DataSourceScopes.LOCAL); //Local data sources
-      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+    const globalQueries: DataQuery[] = await this.dataQueryRepository.getQueriesByVersionId(
+      versionFrom.id,
+      DataSourceScopes.GLOBAL,
+      manager
+    );
+    const dataSources = versionFrom?.dataSources.filter((ds) => ds.scope == DataSourceScopes.LOCAL); //Local data sources
+    const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
 
-      const dataSourceMapping = {};
-      const newDataQueries = [];
-      const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
-      });
+    const dataSourceMapping = {};
+    const newDataQueries = [];
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
+    });
 
-      if (dataSources?.length > 0 || globalDataSources?.length > 0) {
-        if (dataSources?.length > 0) {
-          for (const dataSource of dataSources) {
-            const dataSourceParams: Partial<DataSource> = {
-              name: dataSource.name,
-              kind: dataSource.kind,
-              type: dataSource.type,
-              appVersionId: appVersion.id,
-            };
-            const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-            dataSourceMapping[dataSource.id] = newDataSource.id;
+    if (dataSources?.length > 0 || globalDataSources?.length > 0) {
+      if (dataSources?.length > 0) {
+        for (const dataSource of dataSources) {
+          const dataSourceParams: Partial<DataSource> = {
+            name: dataSource.name,
+            kind: dataSource.kind,
+            type: dataSource.type,
+            appVersionId: appVersion.id,
+          };
+          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+          dataSourceMapping[dataSource.id] = newDataSource.id;
 
-            const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
+          const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
 
-            for (const dataQuery of dataQueries) {
-              const dataQueryParams = {
-                name: dataQuery.name,
-                options: dataQuery.options,
-                dataSourceId: newDataSource.id,
-                appVersionId: appVersion.id,
-              };
-              const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-
-              const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
-
-              dataQueryEvents.forEach(async (event, index) => {
-                const newEvent = new EventHandler();
-
-                newEvent.id = uuid.v4();
-                newEvent.name = event.name;
-                newEvent.sourceId = newQuery.id;
-                newEvent.target = event.target;
-                newEvent.event = event.event;
-                newEvent.index = event.index ?? index;
-                newEvent.appVersionId = appVersion.id;
-
-                await manager.save(newEvent);
-              });
-
-              oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-              newDataQueries.push(newQuery);
-            }
-          }
-        }
-
-        if (globalQueries?.length > 0) {
-          for (const globalQuery of globalQueries) {
+          for (const dataQuery of dataQueries) {
             const dataQueryParams = {
-              name: globalQuery.name,
-              options: globalQuery.options,
-              dataSourceId: globalQuery.dataSourceId,
+              name: dataQuery.name,
+              options: dataQuery.options,
+              dataSourceId: newDataSource.id,
               appVersionId: appVersion.id,
             };
-
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-            const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
 
             dataQueryEvents.forEach(async (event, index) => {
               const newEvent = new EventHandler();
@@ -186,45 +143,70 @@ export class VersionsCreateService implements IVersionsCreateService {
 
               await manager.save(newEvent);
             });
-            oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+
+            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
         }
+      }
 
-        for (const newQuery of newDataQueries) {
-          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-            newQuery.options,
-            oldDataQueryToNewMapping
-          );
-          newQuery.options = newOptions;
+      if (globalQueries?.length > 0) {
+        for (const globalQuery of globalQueries) {
+          const dataQueryParams = {
+            name: globalQuery.name,
+            options: globalQuery.options,
+            dataSourceId: globalQuery.dataSourceId,
+            appVersionId: appVersion.id,
+          };
 
-          await manager.save(newQuery);
+          const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+          const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+
+          dataQueryEvents.forEach(async (event, index) => {
+            const newEvent = new EventHandler();
+
+            newEvent.id = uuid.v4();
+            newEvent.name = event.name;
+            newEvent.sourceId = newQuery.id;
+            newEvent.target = event.target;
+            newEvent.event = event.event;
+            newEvent.index = event.index ?? index;
+            newEvent.appVersionId = appVersion.id;
+
+            await manager.save(newEvent);
+          });
+          oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+          newDataQueries.push(newQuery);
         }
+      }
 
-        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
-          appVersion.definition,
-          oldDataQueryToNewMapping
-        );
-        await manager.save(appVersion);
+      for (const newQuery of newDataQueries) {
+        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
+        newQuery.options = newOptions;
 
-        for (const appEnvironment of appEnvironments) {
-          for (const dataSource of dataSources) {
-            const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-              where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
-            });
+        await manager.save(newQuery);
+      }
 
-            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-            const newOptions = await this.dataSourceUtilService.parseOptionsForCreate(convertedOptions, false, manager);
-            await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+      appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
+      await manager.save(appVersion);
 
-            await manager.save(
-              manager.create(DataSourceOptions, {
-                options: newOptions,
-                dataSourceId: dataSourceMapping[dataSource.id],
-                environmentId: appEnvironment.id,
-              })
-            );
-          }
+      for (const appEnvironment of appEnvironments) {
+        for (const dataSource of dataSources) {
+          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
+            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+          });
+
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const newOptions = await this.dataSourceUtilService.parseOptionsForCreate(convertedOptions, false, manager);
+          await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+
+          await manager.save(
+            manager.create(DataSourceOptions, {
+              options: newOptions,
+              dataSourceId: dataSourceMapping[dataSource.id],
+              environmentId: appEnvironment.id,
+            })
+          );
         }
       }
     }

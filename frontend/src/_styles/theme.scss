@@ -2800,7 +2800,7 @@ hr {
 }
 
 .config-handle {
-  display: block;
+  display: flex;
 }
 
 .apps-table {
@@ -4274,7 +4274,6 @@ input[type="text"] {
 
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
-
 }
 
 .jet-listview::-webkit-scrollbar-thumb {
@@ -10661,7 +10660,6 @@ tbody {
 .manage-groups-body {
   padding: 12px 12px 10px 12px;
   font-size: 12px;
-  overflow-y: auto;
   height: calc(100vh - 300px);
 
   .group-users-list-container {
@@ -10882,6 +10880,7 @@ tbody {
 }
 
 .permission-body {
+
   .form-check {
     margin-bottom: 0px !important;
   }
@@ -16049,8 +16048,6 @@ textarea.tj-text-input-widget {
 
 .jet-listview {
   &:hover {
-    scrollbar-color: #6a727c4d;
-
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -16070,7 +16067,6 @@ textarea.tj-text-input-widget {
 
   .jet-listview {
     &:hover {
-      scrollbar-color: #6a727c4d;
 
       &::-webkit-scrollbar-thumb {
         background-color: #6a727c4d !important;
@@ -18982,6 +18978,15 @@ section.ai-message-prompt-input-wrapper {
   font-weight: 500;
   line-height: 20px;
 }
+
+.codehinter-popup {
+  .single-line-codehinter-input {
+    .cm-editor {
+      max-height: 100% !important;
+    }
+  }
+}
+
 .missing-groups-modal {
   .modal-body {
     padding: 16px;

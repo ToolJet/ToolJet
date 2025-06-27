@@ -378,6 +378,7 @@ const FormComponent = (props) => {
           isDisabled={isDisabled}
           isActive={activeSlot === `${id}-header`}
           onResize={updateHeaderSizeInStore}
+          componentType="Form"
         />
       )}
 
@@ -456,6 +457,7 @@ const FormComponent = (props) => {
           isDisabled={isDisabled}
           onResize={updateFooterSizeInStore}
           isActive={activeSlot === `${id}-footer`}
+          componentType="Form"
         />
       )}
     </form>

@@ -17,7 +17,7 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { FEATURE_KEY } from './constants';
+import { APP_TYPES, FEATURE_KEY } from './constants';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -62,7 +62,7 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type, manager);
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
@@ -200,7 +200,8 @@ export class AppsService implements IAppsService {
           user,
           folder,
           parseInt(page || '1'),
-          searchKey
+          searchKey,
+          type as APP_TYPES
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
@@ -215,7 +216,7 @@ export class AppsService implements IAppsService {
         }
       }
 
-      const totalCount = await this.appsUtilService.count(user, searchKey, type);
+      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 
