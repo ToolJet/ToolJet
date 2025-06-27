@@ -52,6 +52,10 @@ export const useFormState = (component) => {
   useEffect(() => {
     if (codeEditorView && shouldFocusJSONDataEditor.current) {
       codeEditorView.focus();
+      // Add 'focused' class to the parent of codeEditorView.dom
+      if (codeEditorView.dom && codeEditorView.dom.parentNode) {
+        codeEditorView.dom.parentNode.classList.add('focused');
+      }
     }
   }, [codeEditorView, shouldFocusJSONDataEditor]);
 

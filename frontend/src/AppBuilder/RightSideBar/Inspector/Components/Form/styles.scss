@@ -127,7 +127,7 @@
 
             .no-mapped-column {
                 border-radius: 9px;
-                background-color: #88909914;
+                background-color: var(--interactive-default);
                 height: 18px;
                 padding: 0px 6px;
                 color: var(--text-placeholder, #6A727C);
@@ -138,10 +138,18 @@
 }
 
 .field-item {
-    background-color: #88909914;
+    background-color: var(--interactive-default);
     border-radius: 6px;
     padding: 7px 8px;
     height: 32px;
+
+    &:hover {
+        background-color: var(--interactive-hover)
+    }
+
+    &.selected {
+        background-color: var(--interactive-selected) !important;
+    }
 
     .field-name {
         overflow: hidden;
@@ -162,7 +170,7 @@
 }
 
 .field-icon {
-    background-color: #f3f4f6;
+    background-color: inherit;
     color: #6b7280;
 }
 
@@ -196,7 +204,7 @@
         color: var(--text-default, #1B1F24);
 
         &:hover {
-            background-color: #88909914;
+            background-color: var(--interactive-default);
         }
     }
 }

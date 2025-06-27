@@ -151,6 +151,15 @@ export const findNextElementTop = (childComponents, currentLayout = 'desktop', c
   }
 };
 
+export const getComponentIcon = (componentType, darkMode) => {
+  if (!componentType) return null;
+
+  const component = componentTypeDefinitionMap[componentType];
+
+  const iconName = component.name.toLowerCase();
+  return <WidgetIcon name={iconName} version={component?.version} fill={darkMode ? '#3A3F42' : '#D7DBDF'} width="16" />;
+};
+
 export const getInputTypeOptions = (darkMode) => {
   const constructOptions = (component) => {
     return {

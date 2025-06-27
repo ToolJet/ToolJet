@@ -217,7 +217,7 @@ const FieldPopoverContent = ({
           )}
           <Button
             leadingIcon={mode === 'edit' ? 'save' : 'plus'}
-            variant="primary"
+            variant="secondary"
             onClick={handleSubmit}
             className="tw-w-full tw-rounded-[6px]"
             disabled={field && isEqual(localField, field)}

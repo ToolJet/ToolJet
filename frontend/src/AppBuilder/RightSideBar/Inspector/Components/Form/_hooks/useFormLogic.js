@@ -63,6 +63,7 @@ export const useFormLogic = (component, paramUpdated) => {
     getComponentDefinition,
     performColumnMapping,
     saveDataSection,
+    codeEditorView: formState.codeEditorView,
   });
 
   // Create parameter updated interceptor

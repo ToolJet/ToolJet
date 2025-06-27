@@ -57,6 +57,8 @@ const DataSectionUI = ({
   const [showAddFieldPopover, setShowAddFieldPopover] = useState(false);
   const addFieldButtonRef = useRef(null);
 
+  const hideManageFields = formFields.length === 0 || savedSourceValue === 'rawJson';
+
   useEffect(() => {
     if (openModalFromParent && openModalFromParent !== isModalOpen) {
       setIsModalOpen(true);
@@ -106,7 +108,6 @@ const DataSectionUI = ({
   };
 
   const renderManageFieldsIcon = () => {
-    if (formFields.length === 0 || savedSourceValue === 'rawJson') return;
     return (
       <Button
         iconOnly
@@ -164,10 +165,10 @@ const DataSectionUI = ({
     <>
       <div className="tw-flex tw-justify-between tw-items-center tw-gap-1.5">
         <div className="tw-flex-1">
-          <LabeledDivider label="Fields" />
+          <LabeledDivider label="Fields" rightContentCount={hideManageFields ? 1 : 2} />
         </div>
         <div className="tw-flex tw-items-center">
-          {renderManageFieldsIcon()}
+          {!hideManageFields && renderManageFieldsIcon()}
           {renderAddCustomFieldButton()}
         </div>
       </div>

@@ -19,8 +19,13 @@ export const createJSONDataBlurHandler = ({
   getComponentDefinition,
   performColumnMapping,
   saveDataSection,
+  codeEditorView,
 }) => {
   return async (newJSONValue = null) => {
+    if (codeEditorView.dom && codeEditorView.dom.parentNode) {
+      codeEditorView.dom.parentNode.classList.remove('focused');
+    }
+
     const existingData = getFormDataSectionData(component?.id);
     const isFormGenerated = existingData && existingData.generateFormFrom && existingData.JSONData;
 

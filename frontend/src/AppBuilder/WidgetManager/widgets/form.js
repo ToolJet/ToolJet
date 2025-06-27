@@ -47,6 +47,8 @@ export const formConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    showHeader: { type: 'toggle', displayName: 'Header' },
+    showFooter: { type: 'toggle', displayName: 'Footer' },
     buttonToSubmit: {
       type: 'select',
       displayName: 'Submit button',
@@ -142,8 +144,6 @@ export const formConfig = {
         value: true,
       },
     },
-    showHeader: { type: 'toggle', displayName: 'Header' },
-    showFooter: { type: 'toggle', displayName: 'Footer' },
     headerHeight: {
       type: 'numberInput',
       displayName: 'Header height',

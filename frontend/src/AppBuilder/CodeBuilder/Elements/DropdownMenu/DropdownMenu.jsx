@@ -124,7 +124,11 @@ export const DropdownMenu = (props) => {
             )}
           </div>
           <span className="tw-ml-2">
-            {isOpen ? <SolidIcon name="TriangleDownCenter" /> : <SolidIcon name="TriangleUpCenter" />}
+            {isOpen ? (
+              <SolidIcon name="TriangleDownCenter" width={16} />
+            ) : (
+              <SolidIcon name="TriangleUpCenter" width={16} />
+            )}
           </span>
         </button>
 
