@@ -9,20 +9,25 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 const PromoteVersionButton = () => {
   const { moduleId } = useModuleContext();
   const [promoteModalData, setPromoteModalData] = useState(null);
-  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } = useStore(
-    (state) => ({
-      isSaving: state.appStore.modules[moduleId].app.isSaving,
-      editingVersion: state.currentVersionId,
-      selectedEnvironment: state.selectedEnvironment,
-      environments: state.environments,
-      appVersionEnvironment: state.appVersionEnvironment,
-      currentEnvIndex: state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
-    }),
-    shallow
-  );
+  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } =
+    useStore(
+      (state) => ({
+        isSaving: state.appStore.modules[moduleId].app.isSaving,
+        editingVersion: state.currentVersionId,
+        selectedEnvironment: state.selectedEnvironment,
+        environments: state.environments,
+        appVersionEnvironment: state.appVersionEnvironment,
+        currentEnvIndex: state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
+      }),
+      shallow
+    );
 
   // enable only after the environment details are loaded
-  const shouldDisablePromote = isSaving || selectedEnvironment?.priority < appVersionEnvironment?.priority || !appVersionEnvironment || !environments?.[currentEnvIndex + 1];
+  const shouldDisablePromote =
+    isSaving ||
+    selectedEnvironment?.priority < appVersionEnvironment?.priority ||
+    !appVersionEnvironment ||
+    !environments?.[currentEnvIndex + 1];
 
   const handlePromote = () => {
     setPromoteModalData({
@@ -57,7 +62,7 @@ const PromoteVersionButton = () => {
         data={promoteModalData}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
-        fetchEnvironments={() => { }}
+        fetchEnvironments={() => {}}
       />
     </>
   );

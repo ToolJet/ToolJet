@@ -944,10 +944,10 @@ class DataSourceManagerComponent extends React.Component {
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
-      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
+      ? 'https://docs.tooljet.ai/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       pluginsLoaded && (
         <div>
@@ -1206,8 +1206,8 @@ class DataSourceManagerComponent extends React.Component {
                         data-cy="link-read-documentation"
                         href={
                           selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-                            ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
-                            : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource.kind}`
+                            ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
+                            : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource.kind}`
                         }
                         target="_blank"
                         rel="noreferrer"
