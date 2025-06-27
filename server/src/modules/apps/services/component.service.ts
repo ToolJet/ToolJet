@@ -20,6 +20,23 @@ export class ComponentsService implements IComponentsService {
     });
   }
 
+  async findOneWithLayouts(id: string): Promise<Component> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const component = await manager
+        .createQueryBuilder(Component, 'component')
+        .leftJoinAndSelect('component.layouts', 'layout')
+        .where('component.id = :id', { id })
+        .getOne();
+
+      if (!component) {
+        throw new Error(`Component with id ${id} not found`);
+      }
+
+      return component;
+    });
+  }
+
+
   async create(componentDiff: object, pageId: string, appVersionId: string) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const page = await manager.findOne(Page, {
