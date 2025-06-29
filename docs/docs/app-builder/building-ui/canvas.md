@@ -30,13 +30,13 @@ To build the user interface, components can be dragged from the [Components Libr
 
 ToolJet's Canvas provides a grid background, smart snapping, and visual markers to support precise alignment and positioning of components. Components automatically snap to grid lines and nearby elements, reducing the need for manual adjustments. Each cell on the canvas grid has a fixed height of 10 pixels. The width of each cell adjusts based on the screen size.
 
-<img className="screenshot-full img-full" src="/img/app-builder/canvas/snap.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-m" src="/img/app-builder/canvas/snap.png" alt="App Builder: Canvas"/>
 
 ## Creating Layout
 
 In ToolJet, components can be grouped using a layout component such as a **[Container](#)** or a **[Form](#)**. Relevant components can be dragged and dropped into the layout component on the canvas to create a section.
 
-<img className="screenshot-full img-full" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-m" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
 
 ## Managing Components on Canvas
 
@@ -50,19 +50,19 @@ You can select multiple components by clicking and dragging over them, or by cli
 
 Components on the canvas can be copied using **Cmd/Ctrl + C**.
 
-<img className="screenshot-full img-full" src="/img/app-builder/canvas/copy.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-m" src="/img/app-builder/canvas/copy.png" alt="App Builder: Canvas"/>
 
 #### Paste Component
 
 Copied components can be pasted onto the canvas using **Cmd/Ctrl + V**.
 
-<img className="screenshot-full img-full" src="/img/app-builder/canvas/paste.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-m" src="/img/app-builder/canvas/paste.png" alt="App Builder: Canvas"/>
 
 #### Clone Component
 
 Components on the canvas can be cloned using **Cmd/Ctrl + D**. Unlike copy and paste, cloning creates a duplicate of the selected component instantly.
 
-<img className="screenshot-full img-full" src="/img/app-builder/canvas/clone.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-m" src="/img/app-builder/canvas/clone.png" alt="App Builder: Canvas"/>
 
 <br/><br/>
 

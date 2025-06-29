@@ -15,3 +15,5 @@ Each component has its own set of properties based on its functionality. Here’
 - **Device**: Configure whether the component should be visible on specific devices, such as mobile or desktop.
 
 These are just some common examples. For detailed information on any specific component and its properties, refer to the [individual component guide](#).
+
+<img className="screenshot-full img-full" src="/img/app-builder/components/properties-panel.png" alt="App Builder: Component library"/>
