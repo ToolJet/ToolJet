@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
-ARG BRANCH_NAME=main
+ARG BRANCH_NAME
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
