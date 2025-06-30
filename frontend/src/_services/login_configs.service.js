@@ -15,7 +15,10 @@ function getOrganizationConfigs(organizationId) {
   const headers = authHeader();
   const orgId = headers['tj-workspace-id'];
 
-  return fetch(`${config.apiUrl}/login-configs/${orgId ? `${orgId}/` : ''}public`, requestOptions)
+  return fetch(
+    `${config.apiUrl}/login-configs/${orgId || organizationId ? `${orgId || organizationId}/` : ''}public`,
+    requestOptions
+  )
     .then(handleResponse)
     .then((configs) => configs?.sso_configs);
 }
