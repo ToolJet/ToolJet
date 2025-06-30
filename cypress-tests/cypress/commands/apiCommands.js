@@ -513,7 +513,7 @@ Cypress.Commands.add("apiDeleteGranularPermission", (groupName, typesToDelete = 
         permissionsToDelete.forEach((permission) => {
           cy.request({
             method: "DELETE",
-            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/${permission.id}`,
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${permission.id}`,
             headers,
             log: false,
           }).then((deleteResponse) => {

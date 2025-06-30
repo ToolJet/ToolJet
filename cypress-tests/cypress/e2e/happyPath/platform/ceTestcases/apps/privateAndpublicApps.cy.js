@@ -13,6 +13,7 @@ import {
   onboardUserFromAppLink,
 } from "Support/utils/apps";
 import { appPromote } from "Support/utils/platform/multiEnv";
+import { InstanceSSO } from "Support/utils/platform/eeCommon";
 
 describe(
   "Private and Public apps",
@@ -184,6 +185,9 @@ describe(
       setupAppWithSlug(data.appName, data.slug);
 
       cy.apiLogout();
+      cy.ifEnv("Enterprise", () => {
+        InstanceSSO(true, true, true);
+      });
       userSignUp(data.firstName, data.email, data.workspaceName);
       cy.wait(1000);
       cy.visitSlug({
