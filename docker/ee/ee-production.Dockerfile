@@ -49,7 +49,7 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server ci --omit=dev
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli && npm --prefix server run build
+RUN npm install -g @nestjs/cli && npm install -g copyfiles && npm --prefix server run build
 RUN npm prune --production --prefix server
 
 # Install dependencies for PostgREST, curl, unzip, etc.
@@ -150,13 +150,13 @@ COPY --from=builder --chown=appuser:0 /app/plugins/package.json ./app/plugins/pa
 COPY --from=builder --chown=appuser:0 /app/frontend/build ./app/frontend/build
 COPY --from=builder --chown=appuser:0 /app/server/package.json ./app/server/package.json
 COPY --from=builder --chown=appuser:0 /app/server/.version ./app/server/.version
-COPY --from=builder --chown=appuser:0 /app/server/keys ./app/server/keys
+COPY --from=builder --chown=appuser:0 /app/server/ee/keys ./app/server/ee/keys
 COPY --from=builder --chown=appuser:0 /app/server/node_modules ./app/server/node_modules
 COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templates
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/src/assets ./app/server/src/assets
-COPY --from=builder --chown=appuser:0 ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
+COPY ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \
     chown -R appuser:0 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
