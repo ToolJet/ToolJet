@@ -35,12 +35,6 @@ export class AppGitModule {
     const { GitLabAppGitUtilityService } = await import(
       `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/gitlab/util.service`
     );
-    const { BaseGitUtilService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git-util.service`
-    );
-    const { BaseGitSyncService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git.service`
-    );
     const { AppVersionRenameListener } = await import(
       `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/listener`
     );
@@ -67,8 +61,6 @@ export class AppGitModule {
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
         VersionRepository,
-        BaseGitUtilService,
-        BaseGitSyncService,
         AppGitAbilityFactory,
         AppVersionRenameListener,
       ],
