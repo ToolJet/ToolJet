@@ -72,7 +72,8 @@ type NewRevampedComponent =
   | 'VerticalDivider'
   | 'Link'
   | 'DaterangePicker'
-  | 'TextArea';
+  | 'TextArea'
+  | 'Tabs';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -94,6 +95,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Link',
   'DaterangePicker',
   'TextArea',
+  'Tabs',
 ];
 
 @Injectable()
@@ -2156,6 +2158,15 @@ function migrateProperties(
         delete properties.maxValue;
       }
     }
+
+    if (componentType === 'Tabs') {
+      if (properties.useDynamicOptions === undefined) {
+        properties.useDynamicOptions = { value: true };
+      }
+    }
+
+    
+    
   }
   return { properties, styles, general, generalStyles, validation };
 }
