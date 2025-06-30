@@ -39,9 +39,13 @@ jobs:
           body: "Automated update of the LTS version table from DockerHub."
           base: develop
 
-      - name: 🤖 Enable auto-merge for the PR
-        uses: peter-evans/enable-pull-request-automerge@v3
-        with:
-          token: ${{ secrets.TOKEN_PR }}
-          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
+      - name: 🤖 Auto-merge the PR (fallback if needed)
+        run: |
+          echo "ℹ️  Attempting auto-merge of PR #${PR_NUMBER}..."
+          gh pr merge --squash --auto "$PR_NUMBER" --repo ToolJet/ToolJet || {
+            echo "⚠️ Auto-merge failed. Trying direct squash merge instead..."
+            gh pr merge --squash --admin "$PR_NUMBER" --repo ToolJet/ToolJet
+          }
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
