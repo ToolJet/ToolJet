@@ -43,7 +43,6 @@ import {
   ImportAppMenu,
   AppActionModal,
   OrganizationList,
-  UserGroupMigrationBanner,
   ConsultationBanner,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';

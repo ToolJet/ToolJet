@@ -35,12 +35,6 @@ export class AppGitModule extends SubModule {
       'providers/gitlab/util.service',
       'listener',
     ]);
-
-    const { BaseGitUtilService, BaseGitSyncService } = await this.getProviders(configs, 'git-sync', [
-      'base-git-util.service',
-      'base-git.service',
-    ]);
-
     return {
       module: AppGitModule,
       imports: [
@@ -64,8 +58,6 @@ export class AppGitModule extends SubModule {
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
         VersionRepository,
-        BaseGitUtilService,
-        BaseGitSyncService,
         AppGitAbilityFactory,
         AppVersionRenameListener,
       ],
