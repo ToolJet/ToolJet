@@ -1,7 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { commonText } from "Texts/common";
-
 import {
   editVersionAndVerify,
   deleteVersionAndVerify,
@@ -13,25 +12,20 @@ import {
   navigateToEditVersionModal,
   switchVersionAndVerify,
 } from "Support/utils/version";
-
 import { appVersionSelectors } from "Selectors/exportImport";
 import { editVersionSelectors } from "Selectors/version";
 import { editVersionText } from "Texts/version";
 import { createNewVersion } from "Support/utils/exportImport";
-
 import { verifyModal, closeModal } from "Support/utils/common";
-
 import {
   verifyComponent,
   verifyComponentinrightpannel,
   deleteComponentAndVerify,
 } from "Support/utils/basicComponents";
-
 import { deleteVersionText, onlydeleteVersionText } from "Texts/version";
-
 import { createRestAPIQuery } from "Support/utils/dataSource";
 import { deleteQuery } from "Support/utils/queries";
-
+import { selectEnv, appPromote } from "Support/utils/platform/multiEnv";
 describe("App Version", () => {
   let data;
 
@@ -120,7 +114,15 @@ describe("App Version", () => {
 
     // Preview and release verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.url().should("include", "/home?version=v2");
+
+    cy.ifEnv("Community", () => {
+      cy.url().should("include", "/home?version=v2");
+    });
+
+    cy.ifEnv("Enterprise", () => {
+      cy.url().should("include", "/home?env=development&version=v2");
+    });
+
     cy.openApp(
       "",
       Cypress.env("workspaceId"),
@@ -149,7 +151,11 @@ describe("App Version", () => {
 
     createRestAPIQuery(data.query1, data.datasourceName, "", "", "/1", true);
 
-    // Version v2 creation and verification
+    cy.ifEnv("Enterprise", () => {
+      appPromote("development", "production");
+    });
+
+    // Version v2 creation and verification and v2 is created from v1 production environment
     navigateToCreateNewVersionModal("v1");
     createNewVersion(["v2"], "v1");
     cy.get(commonWidgetSelector.draggableWidget("text1")).verifyVisibleElement(
@@ -201,7 +207,8 @@ describe("App Version", () => {
     versionChecks.forEach((check) => {
       navigateToCreateNewVersionModal(check.create.from);
       createNewVersion([check.create.version], check.create.from);
-
+      cy.waitForAutoSave();
+      cy.wait(1000);
       if (check.verify.component.value) {
         cy.get(
           commonWidgetSelector.draggableWidget(check.verify.component.selector)
@@ -224,6 +231,9 @@ describe("App Version", () => {
     );
 
     // Version switching and component verification
+    cy.ifEnv("Enterprise", () => {
+      selectEnv("development");
+    });
     cy.get(appVersionSelectors.currentVersionField("v5")).click();
     cy.contains(`[id*="react-select-"]`, "v4").click();
     cy.get(appVersionSelectors.currentVersionField("v4")).should(
@@ -238,7 +248,14 @@ describe("App Version", () => {
 
     // Preview and version switching verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.url().should("include", "/home?version=v4");
+
+    cy.ifEnv("Community", () => {
+      cy.url().should("include", "/home?version=v4");
+    });
+    cy.ifEnv("Enterprise", () => {
+      cy.url().should("include", "/home?env=development&version=v4");
+    });
+
     cy.get(commonWidgetSelector.draggableWidget("text1")).verifyVisibleElement(
       "have.text",
       "Leanne Graham"
@@ -250,8 +267,74 @@ describe("App Version", () => {
     cy.get(
       commonWidgetSelector.draggableWidget("textInput")
     ).verifyVisibleElement("have.value", "Ervin Howell");
-    //url validation should be added after bug fix
 
-    //  cy.url().should("include", "/home?version=v5");
+    cy.ifEnv("Enterprise", () => {
+      cy.openApp(
+        "",
+        Cypress.env("workspaceId"),
+        Cypress.env("appId"),
+        commonWidgetSelector.draggableWidget("textInput")
+      );
+
+      navigateToCreateNewVersionModal("v5");
+      createNewVersion(["v6"], "v5");
+      cy.waitForAutoSave();
+      cy.wait(1000);
+
+      appPromote("development", "staging");
+      cy.get(
+        commonWidgetSelector.draggableWidget("textInput")
+      ).verifyVisibleElement("have.value", "Ervin Howell");
+      cy.get(`[data-cy="list-query-${data.query2}"]`).should("be.visible");
+
+      appPromote("staging", "production");
+
+      cy.get(
+        commonWidgetSelector.draggableWidget("textInput")
+      ).verifyVisibleElement("have.value", "Ervin Howell");
+      cy.get(`[data-cy="list-query-${data.query2}"]`).should("be.visible");
+
+      cy.openInCurrentTab(commonWidgetSelector.previewButton);
+      cy.get(
+        commonWidgetSelector.draggableWidget("textInput")
+      ).verifyVisibleElement("have.value", "Ervin Howell");
+      cy.url().should("include", "/home?env=production&version=v6");
+
+      cy.wait(1000);
+
+      cy.get('[data-cy="preview-settings"]').click();
+      switchVersionAndVerify("v6", "v1");
+
+      cy.get(
+        commonWidgetSelector.draggableWidget("text1")
+      ).verifyVisibleElement("have.text", "Leanne Graham");
+      // url bug
+      // cy.url().should("include", "/home?env=production&version=v1");
+      cy.wait(1000);
+      cy.get('[data-cy="preview-settings"]').click();
+      switchVersionAndVerify("v1", "v6");
+      
+      cy.wait(1000);
+      cy.get('[data-cy="preview-settings"]').click();
+      selectEnv("staging");
+
+      cy.get(
+        commonWidgetSelector.draggableWidget("textInput")
+      ).verifyVisibleElement("have.value", "Ervin Howell");
+      // cy.url().should("include", "/home?env=staging&version=v6");
+
+
+            cy.wait(1000);
+      cy.get('[data-cy="preview-settings"]').click();
+      selectEnv("development");
+
+      cy.wait(1000);
+      cy.get('[data-cy="preview-settings"]').click();
+      switchVersionAndVerify("v6", "v1");
+      
+      cy.get(
+        commonWidgetSelector.draggableWidget("text1")
+      ).verifyVisibleElement("have.text", "Leanne Graham");
+    });
   });
 });

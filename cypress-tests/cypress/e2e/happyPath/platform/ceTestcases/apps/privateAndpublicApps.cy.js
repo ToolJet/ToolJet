@@ -12,6 +12,7 @@ import {
   verifyRestrictedAccess,
   onboardUserFromAppLink,
 } from "Support/utils/apps";
+import { appPromote } from "Support/utils/platform/multiEnv";
 
 describe(
   "Private and Public apps",
@@ -312,7 +313,9 @@ describe(
       cy.apiLogout();
       cy.apiLogin();
       cy.visit(`${data.workspaceSlug}`);
-      cy.apiDeleteGranularPermission("end-user");
+
+      cy.apiDeleteGranularPermission("end-user", ["app", "workflow"]);
+
       setSignupStatus(true, data.workspaceName);
 
       setupAppWithSlug(data.appName, data.slug);
