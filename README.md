@@ -1,4 +1,4 @@
-ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag-and-drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
+ToolJet is an **AI-powered open-source low-code** platform for building and deploying internal tools with minimal engineering effort. With a drag-and-drop app builder, you can create complex, responsive applications in minutes. ToolJet supports integration with a wide range of data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; object storage services like S3, Google Cloud Storage, and MinIO; and AI plugins like OpenAI, Hugging Face, Mistral, and more — enabling you to fetch, transform, and write data with ease.
 
 :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
@@ -23,11 +23,11 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 ## All features
 
-- **Visual App Builder:** 45+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
+- **Visual App Builder:** 60+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
 - **ToolJet Database:** Built-in no-code database.
 - **Multi-Page:** Build an application with multiple pages.
 - **Multiplayer editing:** Allows simultaneous app building by multiple developers.
-- **50+ data sources:** Integrate with external databases, cloud storage, and APIs.
+- **65+ data sources:** Integrate with external databases, cloud storage, and APIs.
 - **Desktop & mobile:** Customize layout widths to fit various screen sizes.
 - **Self-host:** Supports Docker, Kubernetes, AWS AMI, Google Cloud Run, and more.
 - **Collaborate:** Add comments anywhere on the canvas and tag your team members.
