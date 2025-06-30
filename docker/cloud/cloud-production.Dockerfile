@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
-ARG BRANCH_NAME=feat/cloud-licensing
+ARG BRANCH_NAME
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
@@ -21,7 +21,7 @@ RUN git config --global http.postBuffer 524288000
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout feat/cloud-licensing
+RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
