@@ -2394,6 +2394,12 @@ function migrateProperties(
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
     }
+
+    if (componentType === 'Tabs') {
+      if (properties.useDynamicOptions === undefined) {
+        properties.useDynamicOptions = { value: true };
+      }
+    }
   }
   return { properties, styles, general, generalStyles, validation };
 }
