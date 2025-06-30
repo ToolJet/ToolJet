@@ -46,6 +46,9 @@ export function defineAppVersionAbility(
 
   const isAllEditable = !!userAppPermissions?.isAllEditable;
   const isAllViewable = !!userAppPermissions?.isAllViewable;
+  if (userPermission.appPromote) {
+    can([FEATURE_KEY.PROMOTE], App);
+  }
 
   if (isAllEditable) {
     can(
@@ -56,7 +59,6 @@ export function defineAppVersionAbility(
         FEATURE_KEY.GET_ONE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
-        FEATURE_KEY.PROMOTE,
         FEATURE_KEY.CREATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
@@ -89,7 +91,6 @@ export function defineAppVersionAbility(
         FEATURE_KEY.GET_ONE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
-        FEATURE_KEY.PROMOTE,
         FEATURE_KEY.CREATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,

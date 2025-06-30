@@ -39,7 +39,6 @@ import { TemplatesModule } from '@modules/templates/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { WorkflowsModule } from '@modules/workflows/module';
-import { ModulesModule } from '@modules/modules/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
@@ -49,6 +48,10 @@ import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
+import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
+import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.scheduler';
+import { SessionScheduler } from '@modules/session/scheduler';
+import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -115,7 +118,14 @@ export class AppModule implements OnModuleInit {
       module: AppModule,
       imports: [...modules, ...imports],
       controllers: [AppController],
-      providers: [ShutdownHook, GetConnection],
+      providers: [
+        ShutdownHook,
+        GetConnection,
+        ClearSSOResponseScheduler,
+        SampleDBScheduler,
+        SessionScheduler,
+        AuditLogsClearScheduler,
+      ],
     };
   }
 

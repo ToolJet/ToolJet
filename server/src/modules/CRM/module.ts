@@ -1,13 +1,11 @@
 import { Module, DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { EmailModule } from '@modules/email/module';
+import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
-export class CrmModule {
+export class CrmModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-
-    const { CrmListenerService } = await import(`${importPath}/CRM/listener`);
+    const { CrmListenerService } = await this.getProviders(configs, 'CRM', ['listener']);
 
     return {
       module: CrmModule,

@@ -15,14 +15,20 @@ export class environmentDataSourceMappingFix1683022868045 implements MigrationIn
       console.log('Skipping migration as it is not EE edition');
       return;
     }
-    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
-    
-    const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
-    const encryptionService = nestApp.get(EncryptionService);
+
     const entityManager = queryRunner.manager;
     const organizations = await entityManager.find(Organization, {
       relations: ['appEnvironments'],
     });
+    if (organizations?.length === 0) {
+      console.log('No organizations found, skipping migration.');
+      return;
+    }
+
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+
+    const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
+    const encryptionService = nestApp.get(EncryptionService);
 
     for (const organization of organizations) {
       const appEnvironments = organization.appEnvironments;

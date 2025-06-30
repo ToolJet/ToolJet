@@ -8,36 +8,37 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { reconfigurePostgrest } from './helper';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
-import { getImportPath } from '@modules/app/constants';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
+import { SubModule } from '@modules/app/sub-module';
 
-export class TooljetDbModule implements OnModuleInit {
+export class TooljetDbModule extends SubModule implements OnModuleInit {
   constructor(
     private logger: Logger,
     private configService: ConfigService,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
-  ) {}
+  ) {
+    super();
+  }
 
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-
-    const { TooljetDbController } = await import(`${importPath}/tooljet-db/controller`);
-    const { TooljetDbTableOperationsService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-table-operations.service`
-    );
-    const { TooljetDbBulkUploadService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-bulk-upload.service`
-    );
-    const { TooljetDbDataOperationsService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-data-operations.service`
-    );
-    const { TooljetDbImportExportService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-import-export.service`
-    );
-    const { PostgrestProxyService } = await import(`${importPath}/tooljet-db/services/postgrest-proxy.service`);
+    const {
+      TooljetDbController,
+      TooljetDbTableOperationsService,
+      TooljetDbBulkUploadService,
+      TooljetDbDataOperationsService,
+      TooljetDbImportExportService,
+      PostgrestProxyService,
+    } = await this.getProviders(configs, 'tooljet-db', [
+      'controller',
+      'services/tooljet-db-table-operations.service',
+      'services/tooljet-db-bulk-upload.service',
+      'services/tooljet-db-data-operations.service',
+      'services/tooljet-db-import-export.service',
+      'services/postgrest-proxy.service',
+    ]);
 
     return {
       module: TooljetDbModule,
