@@ -15,11 +15,19 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
     }
 
     request.isGetUserSession = true;
+    this.handleAICookie(request);
+
     try {
       user = await super.canActivate(context);
     } catch (err) {
       return false;
     }
     return user;
+  }
+
+  async handleAICookie(request: any) {
+    const { tj_ai_prompt, tj_template_id } = request?.cookies;
+    request.cookies['tj_ai_prompt'] = tj_ai_prompt;
+    request.cookies['tj_template_id'] = tj_template_id;
   }
 }

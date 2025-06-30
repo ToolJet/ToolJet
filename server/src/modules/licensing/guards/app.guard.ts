@@ -26,8 +26,13 @@ export class AppCountGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const organizationId =
+      typeof request.headers['tj-workspace-id'] === 'object'
+        ? request.headers['tj-workspace-id'][0]
+        : request.headers['tj-workspace-id'];
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const appCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.APP_COUNT);
+      const appCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.APP_COUNT, organizationId);
 
       if (appCount === LICENSE_LIMIT.UNLIMITED) {
         return true;

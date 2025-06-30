@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
-export class CreateSelfhostCustomersAiFeature1740400796314 implements MigrationInterface {
+export class CreateSelfhostCustomersAiFeature1738580526309 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({

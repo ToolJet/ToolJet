@@ -21,7 +21,7 @@ export class LicenseWorkflowsService implements ILicenseWorkflowsService {
     const licenseTerms = await this.licenseTermsService.getLicenseTerms([
       LICENSE_FIELD.WORKFLOWS,
       LICENSE_FIELD.STATUS,
-    ]);
+    ], params.workspaceId);
     const totalCount =
       params.limitFor === 'workspace'
         ? licenseTerms[LICENSE_FIELD.WORKFLOWS].workspace.total
