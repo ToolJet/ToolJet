@@ -28,6 +28,7 @@ export interface AuditLogFields {
 
 export interface Features {
   [FEATURE_KEY.VIEW_LOGS]: FeatureConfig;
+  [FEATURE_KEY.VIEW_RESOURCES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

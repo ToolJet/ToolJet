@@ -29,6 +29,10 @@ function logout(avoidRedirection = false, organizationId = null) {
   const workspaceId = getWorkspaceId() || organizationId;
 
   const redirectToLoginPage = () => {
+    // ✅ Notify parent if embedded
+    if (window.self !== window.top) {
+      window.parent.postMessage({ type: 'TJ_EMBED_APP_LOGOUT' }, '*');
+    }
     const loginPath = (window.public_config?.SUB_PATH || '/') + 'login' + `${workspaceId ? `/${workspaceId}` : ''}`;
     if (avoidRedirection) {
       window.location.href = loginPath;

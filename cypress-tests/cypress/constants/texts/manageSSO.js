@@ -59,4 +59,9 @@ export const ssoText = {
   alertText: "Danger zone",
   disablePasswordHelperText:
     "Disable password login only if your SSO is configured otherwise you will get locked out",
+  disablePasswordHelperText:
+    "Disable password login only if your SSO is configured otherwise you will get locked out",
+  toggleUpdateToast: (toggle) => {
+    return `Saved ${toggle} SSO configurations`
+  }
 };

@@ -63,7 +63,7 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
         <a
           data-cy="querymanager-doc-link"
           target="_blank"
-          href="https://docs.tooljet.com/docs/app-builder/query-panel"
+          href="https://docs.tooljet.ai/docs/app-builder/query-panel"
           rel="noreferrer"
         >
           documentation

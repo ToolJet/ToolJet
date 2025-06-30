@@ -17,7 +17,7 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { FEATURE_KEY } from './constants';
+import { APP_TYPES, FEATURE_KEY } from './constants';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -31,6 +31,7 @@ import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
 import { PageService } from './services/page.service';
 import { EventsService } from './services/event.service';
+import { ComponentsService } from './services/component.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
@@ -38,7 +39,9 @@ import { IAppsService } from './interfaces/IService';
 import { AiUtilService } from '@modules/ai/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AppGitRepository } from '@modules/app-git/repository';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -54,12 +57,14 @@ export class AppsService implements IAppsService {
     protected readonly eventService: EventsService,
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
     protected readonly aiUtilService: AiUtilService,
-    protected readonly eventEmitter: EventEmitter2
-  ) {}
+    protected readonly componentsService: ComponentsService,
+    protected readonly eventEmitter: EventEmitter2,
+    protected readonly appGitRepository: AppGitRepository
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type, manager);
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
@@ -67,7 +72,7 @@ export class AppsService implements IAppsService {
       appUpdateDto.icon = icon;
       await this.appsUtilService.update(app, appUpdateDto, null, manager);
 
-      // Setting data for audit logs
+      //APP_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -158,6 +163,8 @@ export class AppsService implements IAppsService {
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
+
+    //APP_UPDATE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
@@ -175,9 +182,11 @@ export class AppsService implements IAppsService {
     const { id } = app;
 
     await this.appRepository.delete({ id, organizationId });
+    console.log('deleted app');
 
+    //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-      userId: id,
+      userId: user.id,
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
@@ -197,7 +206,8 @@ export class AppsService implements IAppsService {
           user,
           folder,
           parseInt(page || '1'),
-          searchKey
+          searchKey,
+          type as APP_TYPES
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
@@ -205,7 +215,14 @@ export class AppsService implements IAppsService {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type);
       }
 
-      const totalCount = await this.appsUtilService.count(user, searchKey, type);
+      if (type === 'module') {
+        for (const app of apps) {
+          const appVersionId = app?.appVersions[0]?.id;
+          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId);
+        }
+      }
+
+      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 
@@ -284,7 +301,11 @@ export class AppsService implements IAppsService {
         appVersionEnvironment = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
-      response['should_freeze_editor'] = app.creationMode === 'GIT' || shouldFreezeEditor;
+      response['should_freeze_editor'] = shouldFreezeEditor;
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
+      }
       response['editorEnvironment'] = {
         id: appVersionEnvironment.id,
         name: appVersionEnvironment.name,
@@ -301,42 +322,53 @@ export class AppsService implements IAppsService {
   }
 
   async getBySlug(app: App, user: User): Promise<any> {
-    const versionToLoad = app.currentVersionId
-      ? await this.versionRepository.findVersion(app.currentVersionId)
-      : await this.versionRepository.findVersion(app.editingVersion?.id);
+    const prepareResponse = async (app) => {
+      const versionToLoad = app.currentVersionId
+        ? await this.versionRepository.findVersion(app.currentVersionId)
+        : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
-    const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
-    const appTheme = await this.organizationThemeUtilService.getTheme(
-      app.organizationId,
-      versionToLoad?.globalSettings?.theme?.id
-    );
+      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+      const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
+      const appTheme = await this.organizationThemeUtilService.getTheme(
+        app.organizationId,
+        versionToLoad?.globalSettings?.theme?.id
+      );
 
-    if (app?.isPublic && user) {
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceName: app.name,
-      });
-    }
+      if (app?.isPublic && user) {
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: app.id,
+          resourceName: app.name,
+          resourceType: MODULES.APP,
+        });
+      }
 
-    // serialize
-    return {
-      current_version_id: app['currentVersionId'],
-      data_queries: versionToLoad?.dataQueries,
-      definition: versionToLoad?.definition,
-      is_public: app.isPublic,
-      is_maintenance_on: app.isMaintenanceOn,
-      name: app.name,
-      slug: app.slug,
-      events: eventsForVersion,
-      pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
-      homePageId: versionToLoad.homePageId,
-      globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
-      showViewerNavigation: versionToLoad.showViewerNavigation,
-      pageSettings: versionToLoad?.pageSettings,
+      // serialize
+      return {
+        current_version_id: app['currentVersionId'],
+        data_queries: versionToLoad?.dataQueries,
+        definition: versionToLoad?.definition,
+        is_public: app.isPublic,
+        is_maintenance_on: app.isMaintenanceOn,
+        name: app.name,
+        slug: app.slug,
+        events: eventsForVersion,
+        pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
+        homePageId: versionToLoad.homePageId,
+        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        showViewerNavigation: versionToLoad.showViewerNavigation,
+        pageSettings: versionToLoad?.pageSettings,
+      };
     };
+
+    const response = await prepareResponse(app);
+
+    const modules = await this.appsUtilService.fetchModules(app, false, undefined);
+
+    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
+
+    return response;
   }
 
   async release(app: App, user: User, versionReleaseDto: VersionReleaseDto) {
@@ -366,6 +398,7 @@ export class AppsService implements IAppsService {
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 
+      //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,

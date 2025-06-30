@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
 describe('ToggleSwitch Component Tests', () => {
@@ -88,7 +88,7 @@ describe('ToggleSwitch Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("toggleswitch1", exposedValues, verifyValue);
+        openAndVerifyNode("toggleswitch1", exposedValues, verifyNodeData);
         verifyNodes(functions, verifyfunctions);
         //id is pending
 
