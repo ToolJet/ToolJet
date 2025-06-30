@@ -11,7 +11,7 @@ export class AddSMTPEnvConfiguredToTable1732273175402 implements MigrationInterf
     await entityManager.insert(InstanceSettings, {
       label: 'SMTP ENV CONFIGURED',
       dataType: 'boolean',
-      value: getTooljetEdition() === TOOLJET_EDITIONS.Cloud ? 'true' : 'false',
+      value: getTooljetEdition() !== TOOLJET_EDITIONS.EE ? 'true' : 'false',
       key: INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED,
       type: INSTANCE_SETTINGS_TYPE.SYSTEM,
     });

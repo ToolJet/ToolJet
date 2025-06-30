@@ -27,6 +27,18 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       return; // Exit the migration early
     }
     const manager = queryRunner.manager;
+
+    const organizationIds = (
+      await manager.find(Organization, {
+        select: ['id'],
+      })
+    ).map((organization) => organization.id);
+
+    if (organizationIds?.length === 0) {
+      console.log('No organizations found, skipping migration.');
+      return;
+    }
+
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const licenseService = nestApp.get(LicenseInitService);
 
@@ -37,12 +49,6 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       console.log('Not considering groups for basic plans');
       return;
     }
-
-    const organizationIds = (
-      await manager.find(Organization, {
-        select: ['id'],
-      })
-    ).map((organization) => organization.id);
 
     const migrationProgress = new MigrationProgress(
       'MigrateCustomGroupToNewUserGroup1720434737529',

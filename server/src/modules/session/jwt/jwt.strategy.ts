@@ -8,7 +8,6 @@ import { Request } from 'express';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
-import { ForbiddenException } from '@nestjs/common';
 import { UserSessionRepository } from '@modules/session/repository';
 
 @Injectable()

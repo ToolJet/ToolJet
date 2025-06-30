@@ -48,7 +48,7 @@ async function handleLicensingInit(app: NestExpressApplication) {
   const licenseInitService = app.get<LicenseInitService>(LicenseInitService);
   const licenseUtilService = app.get<ILicenseUtilService>(LicenseUtilService);
 
-  await licenseInitService.init()
+  await licenseInitService.init();
 
   const License = await import(`${importPath}/licensing/configs/License`);
   const license = License.default;
@@ -176,7 +176,7 @@ async function bootstrap() {
   }
   console.log(getTooljetEdition(), 'ToolJet Edition 🚀');
 
-  if(getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
+  if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
     await handleLicensingInit(app);
   }
 
@@ -267,6 +267,7 @@ export function getAppContext(): INestApplicationContext {
   return appContext;
 }
 if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   process.env.WORKER ? bootstrapWorker() : bootstrap();
 } else {
   bootstrap();
