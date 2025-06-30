@@ -15,6 +15,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
+import { resolveReferences } from '@/_helpers/utils';
 // import useSidebarMargin from './useSidebarMargin';
 
 export const PagesSidebarNavigation = ({
@@ -85,8 +86,6 @@ export const PagesSidebarNavigation = ({
         tempOverflow.push(link);
       }
     }
-
-    console.log({ tempOverflow, tempVisible });
 
     if (tempOverflow.length > 0 && currentWidth + MORE_BUTTON_WIDTH_ESTIMATE > containerWidth) {
       if (tempVisible.length > 0) {
@@ -264,6 +263,7 @@ export const PagesSidebarNavigation = ({
   const sidebarCollapsed = !isSidebarPinned;
   const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
+  const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
   return (
     <div>
@@ -315,6 +315,7 @@ export const PagesSidebarNavigation = ({
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
           border: `${styles?.pillRadius?.value}px`,
           borderRight: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
+          borderTop: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
           boxShadow: 'var(--elevation-100-box-shadow)',
           scrollbarWidth: 'none',
@@ -347,19 +348,7 @@ export const PagesSidebarNavigation = ({
               </div>
             )}
           </div>
-          {/* <ButtonSolid
-          onClick={() => {
-            toggleSidebarPinned();
-          }}
-          as="a"
-          variant="tertiary"
-          className={cx('left-sidebar-header-btn pin', { 'd-none': !properties?.collapsable })}
-          fill={`var(--slate12)`}
-          darkMode={darkMode}
-          leftIcon={isSidebarPinned ? 'unpin01' : 'pin'}
-          iconWidth="18"
-        ></ButtonSolid> */}
-          {isLicensed ? (
+          {isLicensed && !isPagesSidebarHidden ? (
             <RenderPageAndPageGroup
               switchPageWrapper={switchPageWrapper}
               pages={pages}
@@ -376,47 +365,49 @@ export const PagesSidebarNavigation = ({
               isSidebarPinned={isSidebarPinned}
             />
           ) : (
-            <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
-              {pages.map((page) => {
-                const isHomePage = page.id === homePageId;
-                const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-                const IconElement = (props) => {
-                  // eslint-disable-next-line import/namespace
-                  const Icon = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+            !isPagesSidebarHidden && (
+              <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
+                {pages.map((page) => {
+                  const isHomePage = page.id === homePageId;
+                  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+                  const IconElement = (props) => {
+                    // eslint-disable-next-line import/namespace
+                    const Icon = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
 
-                  if (!isSidebarPinned || labelStyle?.label?.hidden) {
-                    return (
-                      <ToolTip message={page?.name} placement={'right'}>
-                        <Icon {...props} />
-                      </ToolTip>
-                    );
-                  }
+                    if (!isSidebarPinned || labelStyle?.label?.hidden) {
+                      return (
+                        <ToolTip message={page?.name} placement={'right'}>
+                          <Icon {...props} />
+                        </ToolTip>
+                      );
+                    }
 
-                  return <Icon {...props} />;
-                };
-                return page.hidden || page.disabled || page?.restricted ? null : (
-                  <FolderList
-                    key={page.handle}
-                    onClick={() => switchPageWrapper(page)}
-                    selectedItem={page?.id === currentPageId}
-                    CustomIcon={!labelStyle?.icon?.hidden && IconElement}
-                    customStyles={computeStyles}
-                    darkMode={darkMode}
-                  >
-                    {!labelStyle?.label?.hidden && (
-                      <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
-                        <OverflowTooltip
-                          style={{ width: '110px', position: 'relative' }}
-                          childrenClassName={'page-name'}
-                        >
-                          {page.name}
-                        </OverflowTooltip>
-                      </span>
-                    )}
-                  </FolderList>
-                );
-              })}
-            </div>
+                    return <Icon {...props} />;
+                  };
+                  return page.hidden || page.disabled || page?.restricted ? null : (
+                    <FolderList
+                      key={page.handle}
+                      onClick={() => switchPageWrapper(page)}
+                      selectedItem={page?.id === currentPageId}
+                      CustomIcon={!labelStyle?.icon?.hidden && IconElement}
+                      customStyles={computeStyles}
+                      darkMode={darkMode}
+                    >
+                      {!labelStyle?.label?.hidden && (
+                        <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+                          <OverflowTooltip
+                            style={{ width: '110px', position: 'relative' }}
+                            childrenClassName={'page-name'}
+                          >
+                            {page.name}
+                          </OverflowTooltip>
+                        </span>
+                      )}
+                    </FolderList>
+                  );
+                })}
+              </div>
+            )
           )}
         </div>
         <div className="d-flex align-items-center page-dark-mode-btn-wrapper">

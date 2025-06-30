@@ -162,15 +162,6 @@ export const PageSettings = () => {
     <div className="inspector pages-settings">
       <div>
         <div className="row inspector-component-title-input-holder d-flex align-items-center">
-          <div className="col-1" onClick={() => setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS)}>
-            <span
-              data-cy={`inspector-close-icon`}
-              className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px', width: '28px' }}
-            >
-              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
-            </span>
-          </div>
           <div className={`col-9 p-0 mx-2 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
           <div className="d-flex">
             <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
@@ -496,6 +487,8 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
 const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { showOnDesktop, showOnMobile } = properties ?? {};
+  const [_showOnDesktop, _setShowOnDesktop] = useState(showOnDesktop);
+  const [_showOnMobile, _setShowOnMobile] = useState(showOnMobile);
 
   return (
     <>
@@ -506,7 +499,8 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
             className="form-check-input"
             type="checkbox"
             checked={showOnDesktop}
-            onBlur={(e) => {
+            onChange={(e) => {
+              _setShowOnDesktop(e.target.checked);
               pageSettingChanged({ showOnDesktop: e.target.checked }, 'properties');
             }}
           />
@@ -519,7 +513,8 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
             className="form-check-input"
             type="checkbox"
             checked={showOnMobile}
-            onBlur={(e) => {
+            onChange={(e) => {
+              _setShowOnMobile(e.target.checked);
               pageSettingChanged({ showOnMobile: e.target.checked }, 'properties');
             }}
           />

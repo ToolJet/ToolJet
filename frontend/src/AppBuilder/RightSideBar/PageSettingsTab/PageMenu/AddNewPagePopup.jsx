@@ -15,7 +15,7 @@ import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
 
 const POPOVER_TITLES = {
@@ -77,6 +77,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const [handle, setHandle] = useState('');
   const [pageURL, setPageURL] = useState('');
   const [hasAutoSaved, setHasAutoSaved] = useState(false);
+  const [error, setError] = useState(null);
 
   const allpages = pages.filter((p) => p.id !== page?.id);
   const isHomePage = page?.id === homePageId;
@@ -84,6 +85,10 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   //Nav item with app
   const [appOptions, setAppOptions] = useState([]);
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
+
+  useEffect(() => {
+    setError(null);
+  }, [show]);
 
   useEffect(() => {
     if (mode === 'add' && type === 'default' && !hasAutoSaved) {
@@ -215,6 +220,34 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
     setCurrentPageHandle(page.handle);
   }, [currentPageId, page?.id, page?.handle, switchPage, setCurrentPageHandle]);
 
+  const onChangePageHandleValue = (event) => {
+    setError(null);
+    const newHandle = event.target.value;
+
+    if (newHandle === '') setError('Page handle cannot be empty');
+    if (newHandle === handle) setError('Page handle cannot be same as the existing page handle');
+    const isValidKebabCase = validateKebabCase(newHandle);
+    if (!isValidKebabCase.isValid) {
+      setError(isValidKebabCase.error);
+    }
+    setHandle(newHandle);
+  };
+
+  const handleSave = () => {
+    if (handle === page.handle) {
+      setError(null);
+      return;
+    }
+    const { isValid, error } = validateKebabCase(handle);
+    if (!isValid) {
+      setError(error);
+      return;
+    }
+    const transformedPageHandle = kebabCase(handle);
+    updatePageHandle(page.id, transformedPageHandle);
+    setError(null);
+  };
+
   return (
     <Popover id="add-new-page-popup" ref={ref} {...props} className={`${darkMode && 'dark-theme'}`}>
       <Popover.Header>
@@ -275,12 +308,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 <label className="form-label font-weight-400 mb-0">Handle</label>
                 <input
                   type="text"
-                  className="form-control"
-                  onChange={(e) => setHandle(e.target.value)}
-                  onBlur={() => updatePageHandle(page?.id, handle)}
+                  className={`form-control ${error ? 'is-invalid' : ''}`}
+                  onChange={(e) => onChangePageHandleValue(e)}
+                  onBlur={(e) => handleSave(e)}
                   value={handle}
                   minLength="1"
                 />
+                <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
+                  {error}
+                </div>
               </div>
             </div>
             <div className="pb-1">
