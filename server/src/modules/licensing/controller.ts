@@ -13,7 +13,7 @@ import { User } from '@modules/app/decorators/user.decorator';
 
 @InitModule(MODULES.LICENSING)
 @Controller('license')
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+@UseGuards(FeatureAbilityGuard)
 export class LicenseController implements ILicenseController {
   getLicense(): Promise<any> {
     throw new Error('Method not implemented.');
