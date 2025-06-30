@@ -15,6 +15,7 @@ export const appEnvironmentService = {
 function getEnvironment(id, queryParams) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = queryString.stringify(queryParams);
+  console.log(query, 'query');
   return fetch(
     `${config.apiUrl}/app-environments/${id ? id : 'default'}${query && !id ? `?${query}` : ''}`,
     requestOptions

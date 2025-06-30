@@ -52,6 +52,7 @@ export function AppModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isNameChanged, setIsNameChanged] = useState(false);
   const inputRef = useRef(null);
+  console.log(appType, 'appType');
 
   const appTypeName = APP_TYPE.WORKFLOW == appType ? 'Workflow' : APP_TYPE.MODULE == appType ? 'Module' : 'App';
 

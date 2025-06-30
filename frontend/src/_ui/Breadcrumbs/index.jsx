@@ -10,29 +10,39 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
   const location = useLocation();
   const search = location.search || '';
+  console.log(breadcrumbs, 'breadcrumbs');
+  const breadcrumbsLength = breadcrumbs.length;
+  let parent = null;
+  let current = null;
+
+  if (breadcrumbsLength >= 2) {
+    parent = breadcrumbs[breadcrumbsLength - 2]; // Applications
+    current = breadcrumbs[breadcrumbsLength - 1]; // All modules (or whatever)
+  } else if (breadcrumbsLength === 1) {
+    parent = breadcrumbs[0]; // Applications
+    current = null; // fallback to sidebarNav
+  }
 
   return (
     <ol className="breadcrumb breadcrumb-arrows">
-      {breadcrumbs.map(({ breadcrumb, beta }, i) => {
-        if (i == 1 || breadcrumbs?.length == 1) {
-          return (
-            <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
-              <p className=" tj-text-xsm ">{breadcrumb}</p>
-              {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
-              <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
-                {' '}
-                {sidebarNav && decodeEntities(sidebarNav)}
-              </li>
-            </div>
-          );
-        }
-      })}
+      <div key={parent?.key || 'breadcrumb'} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+        {parent && <p className="tj-text-xsm">{parent.breadcrumb}</p>}
+
+        {(current || sidebarNav) && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
+
+        {(sidebarNav || current) && (
+          <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+            {sidebarNav ? decodeEntities(sidebarNav) : current?.breadcrumb}
+          </li>
+        )}
+      </div>
     </ol>
   );
 };
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   { path: '/:worspace_id', breadcrumb: 'Applications' },
+  { path: '/:workspace_id/modules', breadcrumb: 'All modules' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/:worpsace_id/audit-logs', breadcrumb: ' ' },

@@ -314,7 +314,7 @@ class HomePageComponent extends React.Component {
         },
         this.props.appType
       );
-      toast.success('App cloned successfully!');
+      toast.success(`${this.getAppType()} cloned successfully!`);
       this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -464,7 +464,7 @@ class HomePageComponent extends React.Component {
         this.state.shouldAutoImportPlugin
       );
       this.setState({ deploying: false });
-      toast.success('App created successfully!', { position: 'top-center' });
+      toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -1028,11 +1028,12 @@ class HomePageComponent extends React.Component {
         closeModal: () => this.setState({ showCloneAppModal: false }),
         processApp: this.cloneApp,
         show: () => this.setState({ showCloneAppModal: true }),
-        title: 'Clone app',
-        actionButton: 'Clone app',
+        title: `Clone ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `Clone ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Cloning',
         selectedAppId: appOperations?.selectedApp?.id,
         selectedAppName: appOperations?.selectedApp?.name,
+        appType: this.props.appType,
       },
       import: {
         modalType: 'import',
