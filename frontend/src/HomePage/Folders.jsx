@@ -287,8 +287,7 @@ export const Folders = function Folders({
             className={cx(
               `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
               {
-                'bg-light-indigo': _.isEmpty(activeFolder) && !darkMode,
-                'bg-dark-indigo': _.isEmpty(activeFolder) && darkMode,
+                'tw-bg-interactive-default': _.isEmpty(activeFolder),
               }
             )}
             style={{ height: '32px' }}
@@ -314,8 +313,7 @@ export const Folders = function Folders({
             className={cx(
               `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
               {
-                'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
+                'tw-bg-interactive-default': activeFolder.id === folder.id,
               }
             )}
             onClick={() => {
