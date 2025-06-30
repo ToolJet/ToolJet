@@ -127,5 +127,4 @@ This example demonstrates the usage of copilot by generating a SQL query to fetc
 While using ToolJet Copilot, it is important to note that the accuracy of the output cannot be guaranteed by the platform. Ultimately, it is your responsibility to assess and evaluate any query before executing it.
 :::
 
-If you have feedback or questions about ToolJet Copilot, feel free to join our **[slack community](https://tooljet.com/slack)**.
-
+If you have feedback or questions about ToolJet Copilot, feel free to join our **[slack community](/docs/slack)**.

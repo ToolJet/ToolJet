@@ -36,57 +36,59 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 1. Setup a PostgreSQL database, ToolJet uses a postgres database as the persistent storage for storing data related to users and apps.
 2. Create a target group and an application load balancer to route traffic onto ToolJet containers. You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
 3. Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
-    1. Select Fargate as launch type compatibility
-    2. Configure IAM roles and set operating system family as Linux. 
-    3. Select task size to have 3GB of memory and 1vCpu
 
-        <img className="screenshot-full" src="/img/setup/ecs/ecs-4.png" alt="ECS Setup" />
+   1. Select Fargate as launch type compatibility
+   2. Configure IAM roles and set operating system family as Linux.
+   3. Select task size to have 3GB of memory and 1vCpu
 
-    4. Add container details that is shown: <br/>
-       Specify your container name ex: `ToolJet` <br/>
-       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
-       Update port mappings at container port `3000` for tcp protocol. 
-        <img className="screenshot-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
+   <img className="screenshot-full" src="/img/setup/ecs/ecs-4.png" alt="ECS Setup" />
 
-        Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) . 
-        <img className="screenshot-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
+   4. Add container details that is shown: <br/>
+      Specify your container name ex: `ToolJet` <br/>
+      Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
+      Update port mappings at container port `3000` for tcp protocol.
+      <img className="screenshot-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
 
-        For the setup, ToolJet requires:
+      Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) .
+      <img className="screenshot-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
 
-        ```
-        TOOLJET_HOST=<Endpoint url>
-        LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-        SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+      For the setup, ToolJet requires:
 
-        PG_USER=<username>
-        PG_HOST=<postgresql-instance-ip>
-        PG_PASS=<password>
-        PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-        ```
-        Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
+      ```
+      TOOLJET_HOST=<Endpoint url>
+      LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+      SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
-    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
-        <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
+      PG_USER=<username>
+      PG_HOST=<postgresql-instance-ip>
+      PG_PASS=<password>
+      PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
+      ```
+
+      Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
+
+   5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
+      <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
 
 4. Create a service to run your task definition within your cluster.
 
-  - Select the cluster which you have created
-  - Select launch type as Fargate 
+- Select the cluster which you have created
+- Select launch type as Fargate
 
-    <img className="screenshot-full" src="/img/setup/ecs/ecs-9.png" alt="ECS Setup" />
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-9.png" alt="ECS Setup" />
 
-  - Select the cluster and set the service name
-  - You can set the number of tasks to start with as two
-  - Rest of the values can be kept as default
+- Select the cluster and set the service name
+- You can set the number of tasks to start with as two
+- Rest of the values can be kept as default
 
-    <img className="screenshot-full" src="/img/setup/ecs/ecs-10.png" alt="ECS Setup" />
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-10.png" alt="ECS Setup" />
 
-  - Click on next step to configure networking options
-  - Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
+- Click on next step to configure networking options
+- Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
 
-    <img className="screenshot-full" src="/img/setup/ecs/ecs-11.png" alt="ECS Setup" />
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-11.png" alt="ECS Setup" />
 
-  - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds. Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
+- Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds. Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
 
 :::info
 The setup above is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
@@ -118,7 +120,7 @@ Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniq
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
 :::tip
-If you have openssl installed, you can run the 
+If you have openssl installed, you can run the
 command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -143,7 +145,6 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 
 **Ensure these configurations are correctly set up before proceeding with deployment. Please make sure these environment variables are set in the same ToolJet task definition's environment variables.**
 
-
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -156,5 +157,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._

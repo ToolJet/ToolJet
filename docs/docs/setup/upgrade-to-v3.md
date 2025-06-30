@@ -43,10 +43,11 @@ The following patterns are no longer supported:
 1. Using variables to construct component names:
    ```javascript
    // This will no longer work
-   {{components[variables.componentNameVariable].value}}
+   {{components[variables.componentNameVariable].value;}}
    ```
 
 2. Dynamically referencing components:
+
    ```javascript
    // This is not supported
    {{components['textinput' + components.tabs1.currentTab].value}}
@@ -183,6 +184,7 @@ If you haven't migrated your local data sources to global data sources, you will
 ### Workspace Variables
 
 #### Action Required
+
 - Identify all uses of Workspace Variables
 - Replace them with Workspace Constants
 - Update all components and queries using these variables
@@ -227,5 +229,5 @@ Please check the environment variables that you need to configure to set up:
 
 ## Help and Support
 
-- Feel free to join our [Slack Community](https://tooljet.com/slack) or you can also e-mail us at hello@tooljet.com.
+- Feel free to join our [Slack Community](/docs/slack) or you can also e-mail us at hello@tooljet.com.
 - If you have found a bug, please create a [GitHub issue](https://github.com/ToolJet/ToolJet/issues) for the same.

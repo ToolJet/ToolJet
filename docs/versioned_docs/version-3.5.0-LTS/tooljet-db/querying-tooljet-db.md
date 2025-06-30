@@ -233,5 +233,5 @@ A nested JSON object is a JSON structure that contains key-value pairs, where so
 </details>
 
 :::info
-If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com/slack)**
+If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](/docs/slack)**
 :::

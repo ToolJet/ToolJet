@@ -20,7 +20,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
 - **Port:** The port number of the MariaDB server.
 - **Database:** The name of the database that you want to connect to.
 - **SSL:** Whether or not to use SSL to connect to the MariaDB server.
-- **SSL Certificate:**  There are three options for the SSL Certificate connection detail:
+- **SSL Certificate:** There are three options for the SSL Certificate connection detail:
   - **CA Certificate:** This option allows you to use a certificate issued by a Certificate Authority (CA). This is the most secure option, as it ensures that the identity of the MariaDB server has been verified by a trusted third party.
   - **Self-Signed Certificate:** This option allows you to use a self-signed certificate. This is less secure than using a CA certificate, as it does not ensure the identity of the MariaDB server has been verified by a trusted third party. However, it is a good option if you do not have access to a CA certificate.
   - **None:** This option does not use SSL. This is the least secure option, as it allows anyone to intercept your communications with the MariaDB server.
@@ -73,7 +73,6 @@ CREATE TABLE user(
 ```
 
 The above command will create the *users* table within the *customers* database. Now, let's explore the CRUD commands for this table in MariaDB:
-
 ### Create (Insert)
 
 #### To Insert a Single User:
@@ -187,6 +186,6 @@ If you are having trouble connecting a MariaDB data source to ToolJet, try the f
 - Check the spelling and capitalization of your credentials.
 - Try restarting the ToolJet server.
 
-If you are still having trouble, please contact [ToolJet support](mailto:hello@tooljet.com) or ask on [slack](https://tooljet.com/slack) for assistance.
+If you are still having trouble, please contact [ToolJet support](mailto:hello@tooljet.com) or ask on [slack](/docs/slack) for assistance.
 
 </div>
