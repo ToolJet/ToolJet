@@ -80,7 +80,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isLicenseValid = await this.licenseUtilService.isValidLicense();
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
       const groupPermission = await this.groupPermissionRepository.getGroup({
         id: groupId,
         organizationId,
