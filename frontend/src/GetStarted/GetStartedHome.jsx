@@ -1,9 +1,19 @@
 import React, { useCallback } from 'react';
+import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AiBuilder from './AiBuilder';
 import GetStartedCard from './GetStartedCard';
+import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
+import toast from 'react-hot-toast';
+import { appsService } from '@/_services';
+import { v4 as uuidv4 } from 'uuid';
+import { sample } from 'lodash';
+import { useNavigate } from 'react-router-dom';
+import { getWorkspaceId } from '@/_helpers/utils';
+import iconConfig from '../HomePage/Configs/AppIcon.json';
 
-// Constants
+const { iconList, defaultIcon } = iconConfig;
+
 const WIDGET_TYPES = {
   APP: {
     title: 'Create an application',
@@ -23,18 +33,48 @@ const WIDGET_TYPES = {
     icon: 'workflows',
     iconColor: 'var(--icon-warning)',
   },
+  EXPLORE_TEMPLATES: {
+    title: 'Explore templates',
+    description: 'Get started quickly with ready-to-deploy applications',
+    icon: 'corners',
+    iconColor: 'var(--icon-danger)',
+  },
 };
 
 function Hero() {
-  const handleAiBuilderChange = useCallback((value) => {
-    try {
-      // Handle AI builder value
+  const navigate = useNavigate();
+  const createApp = useCallback(
+    async (appName, _unused, prompt) => {
+      try {
+        const data = await appsService.createApp({
+          icon: sample(iconList) || defaultIcon,
+          name: appName,
+          type: 'front-end',
+          prompt,
+        });
+        const workspaceId = getWorkspaceId();
+        navigate(`/${workspaceId}/apps/${data.id}`);
+        toast.success('App created successfully!');
+        return true;
+      } catch (error) {
+        if (error.statusCode === 409) return false;
+        toast.error(error?.error || 'Failed to create app');
+        throw error;
+      }
+    },
+    [navigate]
+  );
+
+  const handleAiBuilderChange = useCallback(
+    (value) => {
       if (!value) return;
-    } catch (error) {
-      console.error('Error in AI builder:', error);
-      // Add proper error handling/notification
-    }
-  }, []);
+      if (!value.trim()) {
+        return toast.error('Prompt can not be empty');
+      }
+      createApp(`Untitled App: ${uuidv4()}`, undefined, value);
+    },
+    [createApp]
+  );
 
   return (
     <div className="tw-relative tw-shrink-0 tw-w-full tw-mb-3" role="banner">
@@ -86,10 +126,10 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
   );
 }
 
-function GetStartedWidget({ type }) {
+function GetStartedWidget({ type, to }) {
   const { title, description } = WIDGET_TYPES[type];
   return (
-    <GetStartedCard>
+    <GetStartedCard to={to}>
       <WidgetIcon type={type} />
       <ContentBlock
         title={title}
@@ -100,22 +140,33 @@ function GetStartedWidget({ type }) {
   );
 }
 
-function GetStartedOptionsRow() {
+function GetStartedOptionsRow({ edition }) {
+  if (edition === 'cloud') {
+    return (
+      <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
+        <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
+        <GetStartedWidget type="DATASOURCE" to={getPrivateRoute('data_sources')} />
+        <GetStartedWidget type="EXPLORE_TEMPLATES" to={`${getPrivateRoute('dashboard')}?fromtemplate=true`} />
+      </div>
+    );
+  }
   return (
     <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
-      <GetStartedWidget type="APP" />
-      <GetStartedWidget type="DATASOURCE" />
-      <GetStartedWidget type="WORKFLOW" />
+      <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
+      <GetStartedWidget type="DATASOURCE" to={getPrivateRoute('data_sources')} />
+      <GetStartedWidget type="WORKFLOW" to={getPrivateRoute('workflows')} />
     </div>
   );
 }
 
-export default function GetStartedHome() {
+function GetStartedHome({ edition }) {
   return (
     <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
       <Hero />
       <DividerWithText />
-      <GetStartedOptionsRow />
+      <GetStartedOptionsRow edition={edition} />
     </div>
   );
 }
+
+export default withAdminOrBuilderOnly(GetStartedHome);
