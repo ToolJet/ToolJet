@@ -7,6 +7,7 @@ import {
   verifyURLs,
   resolveHost,
 } from "Support/utils/apps";
+import { appPromote } from "Support/utils/platform/multiEnv";
 
 describe("App Slug", () => {
   const data = {};
@@ -153,6 +154,7 @@ describe("App Slug", () => {
     cy.visit("/my-workspace");
     cy.apiCreateApp(data.slug);
     cy.openApp("my-workspace");
+
     releaseApp();
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
