@@ -6,7 +6,7 @@ import EncryptedFieldWrapper from '@/_components/EncyrptedFieldWrapper';
 
 const CommonOAuthFields = ({ clientConfig, tokenConfig, authConfig, workspaceConfig, opt, handlers }) => {
   const { access_token_url, access_token_custom_headers } = tokenConfig;
-  const { client_id, client_secret } = clientConfig;
+  const { client_id, client_secret, client_auth } = clientConfig;
   const { scopes } = authConfig;
   const { optionchanged, optionsChanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
@@ -74,6 +74,19 @@ const CommonOAuthFields = ({ clientConfig, tokenConfig, authConfig, workspaceCon
           workspaceConstants={workspaceConstants}
         />
       </div>
+      <div className="col-md-12">
+        <label className="form-label mt-3">Client authentication</label>
+        <Select
+          options={[
+            { name: 'Send as basic auth header', value: 'header' },
+            { name: 'Send client credentials in body', value: 'body' },
+          ]}
+          value={client_auth}
+          onChange={(value) => optionchanged('client_auth', value)}
+          width={'100%'}
+          useMenuPortal={false}
+        />
+      </div>
     </>
   );
 };
@@ -98,11 +111,10 @@ const ClientCredentialsFields = ({ authConfig, workspaceConfig, handlers }) => {
   );
 };
 
-const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceConfig, opt, handlers }) => {
+const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, opt, handlers }) => {
   const { optionchanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
   const { custom_query_params, add_token_to, header_prefix } = tokenConfig;
-  const { client_auth } = clientConfig;
   const { auth_url, custom_auth_params, multiple_auth_enabled } = authConfig;
   return (
     <>
@@ -150,19 +162,6 @@ const AuthorizationCode = ({ authConfig, clientConfig, tokenConfig, workspaceCon
         optionchanged={optionchanged}
         workspaceConstants={workspaceConstants}
       />
-      <div className="col-md-12">
-        <label className="form-label mt-3">Client authentication</label>
-        <Select
-          options={[
-            { name: 'Send as basic auth header', value: 'header' },
-            { name: 'Send client credentials in body ', value: 'body' },
-          ]}
-          value={client_auth}
-          onChange={(value) => optionchanged('client_auth', value)}
-          width={'100%'}
-          useMenuPortal={false}
-        />
-      </div>
       <div>
         <label className="form-check form-switch my-4">
           <input
