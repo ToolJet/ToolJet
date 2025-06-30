@@ -1,12 +1,11 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
+import { SubModule } from '@modules/app/sub-module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MetaModule } from '@modules/meta/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionModule } from '@modules/encryption/module';
-import { SessionScheduler } from './scheduler';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
@@ -15,13 +14,13 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { FeatureAbilityFactory } from './ability';
 import { UserSessionRepository } from './repository';
 
-export class SessionModule {
+export class SessionModule extends SubModule {
   static async register(config: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(config.IS_GET_CONTEXT);
-    const { SessionService } = await import(`${importPath}/session/service`);
-    const { SessionController } = await import(`${importPath}/session/controller`);
-    const { SessionUtilService } = await import(`${importPath}/session/util.service`);
-    const { JwtStrategy } = await import(`${importPath}/session/jwt/jwt.strategy`);
+    const { SessionService, SessionController, SessionUtilService, JwtStrategy } = await this.getProviders(
+      config,
+      'session',
+      ['service', 'controller', 'util.service', 'jwt/jwt.strategy']
+    );
 
     const providerImports = [
       RolesRepository,
@@ -37,11 +36,6 @@ export class SessionModule {
       UserSessionRepository,
     ];
 
-    if (!config.IS_GET_CONTEXT) {
-      providerImports.push(SessionScheduler);
-    }
-    
-
     return {
       module: SessionModule,
       imports: [
@@ -49,11 +43,9 @@ export class SessionModule {
         await MetaModule.register(config),
         PassportModule,
         JwtModule.registerAsync({
-          useFactory: (config: ConfigService) => {
-            return {
-              secret: config.get<string>('SECRET_KEY_BASE'),
-            };
-          },
+          useFactory: (config: ConfigService) => ({
+            secret: config.get<string>('SECRET_KEY_BASE'),
+          }),
           inject: [ConfigService],
         }),
       ],

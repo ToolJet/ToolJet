@@ -1,4 +1,3 @@
-import { getImportPath } from '@modules/app/constants';
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,13 +8,15 @@ import { PageUsersRepository } from './repositories/page-users.repository';
 import { PagePermissionsRepository } from './repositories/page-permissions.repository';
 import { PageUser } from '@entities/page_users.entity';
 import { PagePermission } from '@entities/page_permissions.entity';
+import { SubModule } from '@modules/app/sub-module';
 
-export class AppPermissionsModule {
+export class AppPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs.IS_GET_CONTEXT);
-    const { AppPermissionsController } = await import(`${importPath}/app-permissions/controller`);
-    const { AppPermissionsService } = await import(`${importPath}/app-permissions/service`);
-    const { AppPermissionsUtilService } = await import(`${importPath}/app-permissions/util.service`);
+    const { AppPermissionsController, AppPermissionsService, AppPermissionsUtilService } = await this.getProviders(
+      configs,
+      'app-permissions',
+      ['controller', 'service', 'util.service']
+    );
 
     return {
       module: AppPermissionsModule,

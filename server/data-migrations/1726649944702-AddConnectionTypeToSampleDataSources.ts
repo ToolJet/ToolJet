@@ -3,9 +3,19 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import { Organization } from '@entities/organization.entity';
 
 export class AddConnectionTypeToSampleDataSources1726649944702 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const manager = queryRunner.manager;
+
+    const organizationsCount = await manager.count(Organization);
+
+    if (organizationsCount === 0) {
+      console.log('No organizations found, skipping migration.');
+      return;
+    }
+
     const app = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }), {
       logger: ['error', 'warn'],
     });

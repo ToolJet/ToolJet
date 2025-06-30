@@ -18,7 +18,10 @@ const withEditionSpecificModule = (moduleName, options = {}) => {
   } = options;
 
   return React.forwardRef((props, ref) => {
-    const edition = fetchEdition();
+    let edition = fetchEdition();
+    if (edition === 'cloud') {
+      edition = 'ee'; // Treat cloud as enterprise edition for module loading
+    }
     const [ModuleComponent, setModuleComponent] = useState(null);
     const [error, setError] = useState(null);
 

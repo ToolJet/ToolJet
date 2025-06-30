@@ -1,14 +1,16 @@
-FROM node:18.18.2-buster as builder
+FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@9.8.1
+RUN npm i -g npm@10.9.2
+RUN npm cache clean --force
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
 WORKDIR /app
 
+# Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME=main
 
@@ -37,28 +39,32 @@ ENV NODE_ENV=production
 RUN npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
+ENV TOOLJET_EDITION=cloud
+ENV NODE_ENV=production
+
 # Building ToolJet server
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install --only=production
 COPY ./server/ ./server/
 RUN npm --prefix server run build
 
-FROM debian:11
+FROM debian:12
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
 
-RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
-    && tar -xf node-v18.18.2-linux-x64.tar.xz \
-    && mv node-v18.18.2-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
+    && tar -xf node-v22.15.1-linux-x64.tar.xz \
+    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v18.18.2-linux-x64.tar.xz
+    && rm node-v22.15.1-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
+ENV TOOLJET_EDITION=cloud
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
 
@@ -91,10 +97,12 @@ COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/keys ./app/server/keys
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+COPY --from=builder /app/server/src/assets ./app/server/src/assets
 
 COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
@@ -105,18 +113,25 @@ RUN useradd --create-home --home-dir /home/appuser appuser \
     && chmod u+x /app \
     && chmod -R g=u /app
 
+RUN mkdir -p /home/appuser/.npm/_cacache \
+    mkdir -p /home/appuser/.npm_cache_tmp \
+    mkdir -p /home/appuser/.npm/_logs \
+    && chown -R appuser:0 /home/appuser/.npm \
+    && chmod g+s /home/appuser/.npm_cache_tmp
+
 # Set npm cache directory
-ENV npm_config_cache /home/appuser/.npm
+RUN npm config set cache /tmp/npm-cache --global
+ENV npm_config_cache /tmp/npm-cache
 
 ENV HOME=/home/appuser
 
-# Installing git for simple git commands
-RUN apt-get update && apt-get install -y git && apt-get clean
-
+# Switch back to appuser
 USER appuser
 
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
+
+RUN npm cache clean --force
 
 ENTRYPOINT ["./server/cloud-entrypoint.sh"]
