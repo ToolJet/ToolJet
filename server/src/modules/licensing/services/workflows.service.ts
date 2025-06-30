@@ -22,10 +22,11 @@ export class LicenseWorkflowsService implements ILicenseWorkflowsService {
       LICENSE_FIELD.WORKFLOWS,
       LICENSE_FIELD.STATUS,
     ], params.workspaceId);
+    console.log(licenseTerms,'terms');
     const totalCount =
       params.limitFor === 'workspace'
-        ? licenseTerms[LICENSE_FIELD.WORKFLOWS].workspace.total
-        : licenseTerms[LICENSE_FIELD.WORKFLOWS].instance.total;
+        ? licenseTerms[LICENSE_FIELD.WORKFLOWS].workspace?.total
+        : licenseTerms[LICENSE_FIELD.WORKFLOWS].instance?.total;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return {

@@ -93,7 +93,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     organizationId: string,
     manager?: EntityManager
   ): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
-    const isLicenseValid = await this.licenseUtilService.isValidLicense();
+    const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
     const noLicenseFilter = { type: GROUP_PERMISSIONS_TYPE.DEFAULT };
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Get Group details
@@ -214,7 +214,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const { group, isBuilderLevel } = await this.getGroupWithBuilderLevel(groupId, organizationId, manager);
-      const isLicenseValid = await this.licenseUtilService.isValidLicense();
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
 
       if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
         // Basic plan - not allowed to update custom groups
@@ -292,7 +292,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async getAllGroupByOrganization(organizationId: string): Promise<GetUsersResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isLicenseValid = await this.licenseUtilService.isValidLicense();
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
       const result = await manager.findAndCount(GroupPermissions, {
         where: { organizationId },
         order: { type: 'DESC' },

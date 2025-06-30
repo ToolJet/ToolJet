@@ -6,7 +6,6 @@ import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { filterEncryptedFromOptions } from '@helpers/migration.helper';
-import { ConfigService } from '@nestjs/config';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 
 export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInterface {
@@ -16,6 +15,18 @@ export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInt
       console.log('Skipping migration as it is not EE edition');
       return;
     }
+
+    const entityManager = queryRunner.manager;
+    // Fetch all organizations with their app environments
+    const organizations = await entityManager.find(Organization, {
+      relations: ['appEnvironments'],
+    });
+
+    if (organizations?.length === 0) {
+      console.log('No organizations found, skipping migration.');
+      return;
+    }
+
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
     const { CredentialsService } = await import(
@@ -23,11 +34,6 @@ export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInt
     );
     const encryptionService = nestApp.get(EncryptionService);
     const credentialService = nestApp.get(CredentialsService);
-    const entityManager = queryRunner.manager;
-
-    const organizations = await entityManager.find(Organization, {
-      relations: ['appEnvironments'],
-    });
 
     for (const organization of organizations) {
       const appEnvironments = organization.appEnvironments;

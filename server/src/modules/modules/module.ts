@@ -51,7 +51,7 @@ export class ModulesModule {
         OrganizationRepository,
         DataSourcesRepository,
         RolesRepository,
-        AppGitRepository
+        AppGitRepository,
       ],
     };
   }
