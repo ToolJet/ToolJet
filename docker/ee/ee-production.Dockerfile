@@ -20,7 +20,7 @@ RUN git config --global http.postBuffer 524288000
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout ${BRANCH_NAME}
+RUN git checkout fix/new-dockerfile-main
 
 RUN git submodule update --init --recursive
 
@@ -49,7 +49,9 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server ci --omit=dev
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli && npm install -g copyfiles && npm --prefix server run build
+RUN npm install -g @nestjs/cli 
+RUN npm install -g copyfiles
+RUN npm --prefix server run build
 RUN npm prune --production --prefix server
 
 # Install dependencies for PostgREST, curl, unzip, etc.
