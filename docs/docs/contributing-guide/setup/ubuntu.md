@@ -79,8 +79,8 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
    
    ```envs
    TOOLJET_HOST=http://localhost:8082
-   LOCKBOX_MASTER_KEY= < generate using openssl >
-   SECRET_KEY_BASE= < generate using openssl >
+   LOCKBOX_MASTER_KEY= <generate using 'openssl rand -hex 32'>
+   SECRET_KEY_BASE= <generate using 'openssl rand -hex 64'>
    NODE_ENV=development
    PG_HOST=localhost
    PG_PORT=5432
