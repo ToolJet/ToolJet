@@ -71,7 +71,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
 
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { styles = {}, properties = {} } = {} } = pageSettings ?? {};
-  const { position, disableMenu } = properties ?? {};
+  const { position, disableMenu, showOnDesktop } = properties ?? {};
   const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
   const hideSidebar = isModuleMode || isPagesSidebarHidden || appType === 'module';
@@ -182,7 +182,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
           )}
           style={canvasContainerStyles}
         >
-          {!isPagesSidebarHidden && (
+          {showOnDesktop && (
             <PagesSidebarNavigation
               showHeader={showHeader}
               isMobileDevice={currentLayout === 'mobile'}

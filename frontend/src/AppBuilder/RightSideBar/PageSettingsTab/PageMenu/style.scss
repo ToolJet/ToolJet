@@ -451,6 +451,10 @@
         &:active {
             border-color: var(--border-accent-weak);
         }
+
+        &:focus {
+            box-shadow: none !important;
+        }
     }
 
     .page-events {

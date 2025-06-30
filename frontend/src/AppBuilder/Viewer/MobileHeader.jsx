@@ -34,7 +34,7 @@ const MobileHeader = ({
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { disableMenu } = properties ?? {};
+  const { disableMenu, showOnMobile } = properties ?? {};
   const resolvedDisableMenu = resolveReferences(disableMenu?.value);
 
   // Fetch the version parameter from the query string
@@ -96,7 +96,7 @@ const MobileHeader = ({
   };
 
   if (!showHeader && isReleasedVersionId) {
-    return <>{showViewerNavigation ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}</>;
+    return <>{showViewerNavigation && showOnMobile ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}</>;
   }
 
   if (!showHeader && !isReleasedVersionId) {
@@ -131,7 +131,7 @@ const MobileHeader = ({
         className={'mobile-nav-container'}
       >
         <div className="d-flex w-100">
-          {!resolvedDisableMenu && _renderMobileNavigationMenu()}
+          {!resolvedDisableMenu && showOnMobile && _renderMobileNavigationMenu()}
           <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
         </div>
         {/* {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })} */}

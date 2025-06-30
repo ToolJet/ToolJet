@@ -85,6 +85,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
+  const toggleRightSidebar = useStore((state) => state.toggleRightSidebar, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -870,6 +871,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (getHoveredComponentForGrid() !== e.target.id) {
             return false;
           }
+          toggleRightSidebar();
           newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
 

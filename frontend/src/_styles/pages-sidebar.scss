@@ -126,6 +126,7 @@
 }
 
 #page-settings-tabpane-properties {
+    border: 0px !important;
     padding: 0px !important;
     .app-name {
         width: 100% !important;
@@ -436,6 +437,7 @@
             .page-handler-wrapper {
                 width: 100%;
                 align-items: center;
+                gap: 1px;
             }
 
             .page-dark-mode-btn-wrapper {
