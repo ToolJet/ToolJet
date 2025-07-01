@@ -8,7 +8,7 @@ export const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const location = useLocation();
   const search = location.search || '';
-  const breadcrumbsLength = breadcrumbs.length;
+  const breadcrumbsLength = breadcrumbs?.length || 0;
   let parent = null;
   let current = null;
 
