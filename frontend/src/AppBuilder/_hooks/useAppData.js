@@ -176,7 +176,7 @@ const useAppData = (
       }
       styleTag.innerHTML = data?.css || null;
     } catch (error) {
-      console.log('Failed to fetch custom styles:', error);
+      // Silently handle error - custom styles are optional
     }
   };
 

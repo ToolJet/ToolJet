@@ -151,6 +151,10 @@ class HomePageComponent extends React.Component {
     this.fetchWorkflowsWorkspaceLimit();
     this.fetchOrgGit();
     this.setQueryParameter();
+
+    // Check module access permission
+    this.props.checkModuleAccess();
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
@@ -585,7 +589,6 @@ class HomePageComponent extends React.Component {
     this.setState({ isDeletingApp: true });
     appsService
       .deleteApp(this.state.appToBeDeleted.id, this.props.appType)
-      // eslint-disable-next-line no-unused-vars
       .then((data) => {
         toast.success(`${this.getAppType()} deleted successfully.`);
         this.fetchApps(
@@ -606,7 +609,6 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
-        console.log(error);
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -1560,6 +1562,7 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       navigate={this.props.navigate}
                       darkMode={this.props.darkMode}
+                      hasModuleAccess={this.props.hasModuleAccess}
                     />
                   </>
                 ) : (
@@ -1722,15 +1725,25 @@ class HomePageComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { featureAccess, featuresLoaded } = useLicenseStore(
+  const { featureAccess, featuresLoaded, hasModuleAccess } = useLicenseStore(
     (state) => ({
       featureAccess: state.featureAccess,
       featuresLoaded: state.featuresLoaded,
+      hasModuleAccess: state.hasModuleAccess,
     }),
     shallow
   );
+  const { checkModuleAccess } = useLicenseStore((state) => state.actions, shallow);
 
-  return <Component {...props} featureAccess={featureAccess} featuresLoaded={featuresLoaded} />;
+  return (
+    <Component
+      {...props}
+      featureAccess={featureAccess}
+      featuresLoaded={featuresLoaded}
+      checkModuleAccess={checkModuleAccess}
+      hasModuleAccess={hasModuleAccess}
+    />
+  );
 };
 
 export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));

@@ -43,7 +43,6 @@ export const Folders = function Folders({
   const [errorText, setErrorText] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  console.log(appType, 'po');
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -62,8 +61,6 @@ export const Folders = function Folders({
     const label = noFolder
       ? `All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`
       : currentFolder.name;
-
-    console.log('Setting breadcrumb to:', label);
 
     updateSidebarNAV(label);
     setActiveFolder(currentFolder || {});
@@ -111,7 +108,6 @@ export const Folders = function Folders({
       setActiveFolder(folder);
     }
     folderChanged(folder);
-    console.log('hehe');
     updateSidebarNAV(updateSidebarNAV(folder?.name ?? getDefaultLabel()));
     //update the url query parameter with folder name
     updateFolderQuery(folder?.name);

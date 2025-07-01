@@ -1,16 +1,13 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SolidIcon from '../Icon/SolidIcons';
-import { BreadCrumbContext } from '../../App/App';
-import useBreadcrumbs from 'use-react-router-breadcrumbs';
-import { decodeEntities } from '@/_helpers/utils';
+import { BreadCrumbContext } from '@/_contexts/BreadCrumbContext';
+import cx from 'classnames';
 
-export const Breadcrumbs = ({ darkMode, dataCy }) => {
-  const { sidebarNav } = useContext(BreadCrumbContext);
-  const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
+const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const location = useLocation();
   const search = location.search || '';
-  console.log(breadcrumbs, 'breadcrumbs');
   const breadcrumbsLength = breadcrumbs.length;
   let parent = null;
   let current = null;
@@ -25,20 +22,25 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
 
   return (
     <ol className="breadcrumb breadcrumb-arrows">
-      <div key={parent?.key || 'breadcrumb'} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+      <div
+        key={parent?.key || 'breadcrumb'}
+        className="tj-dashboard-header-title-wrap"
+        data-cy={parent?.props?.dataCy ?? ''}
+      >
         {parent && <p className="tj-text-xsm">{parent.breadcrumb}</p>}
 
-        {(current || sidebarNav) && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
+        {(current || updateSidebarNAV) && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
 
-        {(sidebarNav || current) && (
+        {(updateSidebarNAV || current) && (
           <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
-            {sidebarNav ? decodeEntities(sidebarNav) : current?.breadcrumb}
+            {updateSidebarNAV ? updateSidebarNAV : current?.breadcrumb}
           </li>
         )}
       </div>
     </ol>
   );
 };
+
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   { path: '/:worspace_id', breadcrumb: 'Applications' },

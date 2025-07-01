@@ -368,6 +368,9 @@ export class AppsUtilService implements IAppsUtilService {
       case APP_TYPES.FRONT_END:
         resourceType = MODULES.APP;
         break;
+      case APP_TYPES.MODULE:
+        resourceType = MODULES.MODULES;
+        break;
       default:
         resourceType = MODULES.APP;
     }
