@@ -37,20 +37,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # Create Docker Buildx builder with platform configuration
-      - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
-          docker buildx use mybuilder
-
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
-      - name: use mybuilder buildx
-        run: docker buildx use mybuilder
 
       - name: Docker Login
         uses: docker/login-action@v2

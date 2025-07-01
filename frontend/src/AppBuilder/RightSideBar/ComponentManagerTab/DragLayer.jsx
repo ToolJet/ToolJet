@@ -13,6 +13,11 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/useCanvasDropHandler';
 
 export const DragLayer = ({ index, component, isModuleTab = false }) => {
+  const [isRightSidebarOpen, toggleRightSidebar] = useStore(
+    (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
+    shallow
+  );
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
   const handleDrop = useCanvasDropHandler({ appType: isModuleTab ? 'module' : 'app' }) || noop;
@@ -39,11 +44,14 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
 
   useEffect(() => {
     if (isDragging && !isModuleEditor) {
+      if (!isRightSidebarPinned) {
+        toggleRightSidebar(!isRightSidebarOpen);
+      }
       setShowModuleBorder(true);
     } else {
       setShowModuleBorder(false);
     }
-  }, [isDragging, setShowModuleBorder, isModuleEditor]);
+  }, [isDragging, setShowModuleBorder, isModuleEditor, toggleRightSidebar]);
 
   // const size = isModuleTab
   //   ? component.module_container.layouts[currentLayout]

@@ -803,3 +803,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   }
   return canvasWidth - padding;
 };
+
+export const addDefaultButtonIdToForm = (formComponent, defaultChildComponents) => {
+  const { id } = defaultChildComponents[defaultChildComponents.length - 1]; // Assuming the last child is the button
+  formComponent.component.definition.properties.buttonToSubmit = { value: id };
+  return formComponent;
+};

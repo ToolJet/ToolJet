@@ -221,21 +221,21 @@ Cypress.Commands.add(
     const requestBody =
       envVar === "Enterprise"
         ? {
-            email: userEmail,
-            firstName: userName,
-            groups: [],
-            lastName: "",
-            role: userRole,
-            userMetadata: metaData,
-          }
+          email: userEmail,
+          firstName: userName,
+          groups: [],
+          lastName: "",
+          role: userRole,
+          userMetadata: metaData,
+        }
         : {
-            email: userEmail,
-            firstName: userName,
-            groups: [],
-            lastName: "",
-            role: userRole,
-            userMetadata: metaData,
-          };
+          email: userEmail,
+          firstName: userName,
+          groups: [],
+          lastName: "",
+          role: userRole,
+          userMetadata: metaData,
+        };
 
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request(
@@ -509,7 +509,7 @@ Cypress.Commands.add("apiDeleteGranularPermission", (groupName) => {
         // Delete the granular permission
         cy.request({
           method: "DELETE",
-          url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/${granularPermissionId}`,
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${granularPermissionId}`,
           headers,
           log: false,
         }).then((deleteResponse) => {
