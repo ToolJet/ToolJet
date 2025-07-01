@@ -7,6 +7,8 @@ import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
+import { User as UserEntity } from '@entities/user.entity';
+import { User } from '@modules/app/decorators/user.decorator';
 
 @InitModule(MODULES.INSTANCE_SETTINGS)
 @Controller('instance-settings')
@@ -28,7 +30,7 @@ export class InstanceSettingsController implements IInstanceSettingsController {
 
   @InitFeature(FEATURE_KEY.UPDATE)
   @Patch()
-  async update(@Body() body: UpdateUserSettingsDto) {
+  async update(@Body() body: UpdateUserSettingsDto, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 

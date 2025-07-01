@@ -8,6 +8,11 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { VersionModule } from '@modules/versions/module';
+import { UserPersonalAccessTokenRepository } from '../users/repositories/UserPersonalAccessTokens.repository';
+import { AppsRepository } from '@modules/apps/repository';
+import { SessionModule } from '@modules/session/module';
+import { UserRepository } from '@modules/users/repositories/repository';
+import { OrganizationRepository } from '@modules/organizations/repository';
 import { UsersModule } from '@modules/users/module';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -26,8 +31,18 @@ export class ExternalApiModule {
         await AppsModule.register(configs),
         await OrganizationsModule.register(configs),
         await VersionModule.register(configs),
+        await SessionModule.register(configs),
       ],
-      providers: [ExternalApiUtilService, ExternalApisService, FeatureAbilityFactory, RolesRepository],
+      providers: [
+        ExternalApiUtilService,
+        ExternalApisService,
+        FeatureAbilityFactory,
+        RolesRepository,
+        UserPersonalAccessTokenRepository,
+        AppsRepository,
+        UserRepository,
+        OrganizationRepository,
+      ],
       controllers: [ExternalApisController],
       exports: [ExternalApiUtilService],
     };

@@ -126,6 +126,7 @@ const Button = forwardRef(
       asChild = false,
       fill = '',
       iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
+      loaderText = null,
       ...props
     },
     ref
@@ -149,6 +150,23 @@ const Button = forwardRef(
       </div>
     );
 
+    const renderLoader = () => {
+      if (loaderText) {
+        return (
+          <div className="tw-flex tw-justify-center tw-items-center tw-gap-1.5">
+            <Loader color={iconFillColor} width={getIconSize(size)} position="relative" />
+            <span>{loaderText}</span>
+          </div>
+        );
+      }
+      return (
+        <div className="tw-flex tw-justify-center tw-items-center">
+          <Loader color={iconFillColor} width={getIconSize(size)} />
+          <a className="tw-invisible">{props.children}</a>
+        </div>
+      );
+    };
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, iconOnly, className }))}
@@ -157,10 +175,7 @@ const Button = forwardRef(
         {...props}
       >
         {isLoading ? (
-          <div className="tw-flex tw-justify-center tw-items-center">
-            <Loader color={iconFillColor} width={getIconSize(size)} />
-            <a className="tw-invisible">{props.children}</a>
-          </div>
+          renderLoader()
         ) : (
           <>
             {leadingIconElement}

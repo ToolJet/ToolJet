@@ -12,6 +12,11 @@ import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 
 export const DragLayer = ({ index, component, isModuleTab = false }) => {
+  const [isRightSidebarOpen, toggleRightSidebar] = useStore(
+    (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
+    shallow
+  );
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
   const [{ isDragging }, drag, preview] = useDrag(
@@ -31,25 +36,23 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
 
   useEffect(() => {
     if (isDragging && !isModuleEditor) {
+      if (!isRightSidebarPinned) {
+        toggleRightSidebar(!isRightSidebarOpen);
+      }
       setShowModuleBorder(true);
     } else {
       setShowModuleBorder(false);
     }
-  }, [isDragging, setShowModuleBorder, isModuleEditor]);
+  }, [isDragging, setShowModuleBorder, isModuleEditor, toggleRightSidebar]);
 
   // const size = isModuleTab
   //   ? component.module_container.layouts[currentLayout]
   //   : component.defaultSize || { width: 30, height: 40 };
 
-
   return (
     <>
       {/* {isDragging && <CustomDragLayer size={size} />} */}
-      <div
-        ref={drag}
-        className="draggable-box"
-        style={{ height: '100%', width: isModuleTab && '100%' }}
-      >
+      <div ref={drag} className="draggable-box" style={{ height: '100%', width: isModuleTab && '100%' }}>
         {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
       </div>
     </>

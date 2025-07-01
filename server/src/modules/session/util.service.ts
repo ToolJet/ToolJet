@@ -13,7 +13,7 @@ import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
 import { JWTPayload } from '@modules/session/interfaces/IService';
 import { Response } from 'express';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import * as _ from 'lodash';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -29,6 +29,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
+import { SessionType } from '@modules/external-apis/constants';
 
 @Injectable()
 export class SessionUtilService {
@@ -64,7 +65,8 @@ export class SessionUtilService {
     loggedInUser?: User,
     manager?: EntityManager,
     invitedOrganizationId?: string,
-    extraData?: any
+    extraData?: any,
+    isPatLogin?: boolean
   ): Promise<any> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const request = RequestContext?.currentContext?.req;
@@ -72,8 +74,8 @@ export class SessionUtilService {
         ...(loggedInUser?.id === user.id ? loggedInUser?.organizationIds || [] : []),
         ...(organization ? [organization.id] : []),
       ]);
-      let sessionId = loggedInUser?.sessionId; // logged in user and new user are different -> creating session
-      if (loggedInUser?.id !== user.id) {
+      let sessionId = isPatLogin ? user.sessionId : loggedInUser?.sessionId; // logged in user and new user are different -> creating session
+      if (loggedInUser?.id !== user.id && !isPatLogin) {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
@@ -90,9 +92,12 @@ export class SessionUtilService {
         username: user.id,
         sub: user.email,
         organizationIds: [...organizationIds],
-        isSSOLogin: loggedInUser?.isSSOLogin || isInstanceSSO,
-        isPasswordLogin: loggedInUser?.isPasswordLogin || isPasswordLogin,
+        isSSOLogin: isPatLogin ? false : loggedInUser?.isSSOLogin || isInstanceSSO,
+        isPasswordLogin: isPatLogin ? false : loggedInUser?.isPasswordLogin || isPasswordLogin,
         ...(invitedOrganizationId ? { invitedOrganizationId } : {}),
+        ...(isPatLogin ? { isPATLogin: true } : {}),
+        ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
+        ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
       };
 
       if (organization) user.organizationId = organization.id;
@@ -109,8 +114,12 @@ export class SessionUtilService {
         cookieOptions.sameSite = 'none';
         cookieOptions.secure = true;
       }
-      response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
-
+      let signedPat;
+      if (isPatLogin) {
+        signedPat = this.sign(JWTPayload);
+      } else {
+        response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
+      }
       const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
 
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
@@ -126,6 +135,7 @@ export class SessionUtilService {
         ...permissionData,
         noActiveWorkspaces,
         ...(extraData ? extraData : {}),
+        ...(isPatLogin ? { signedPat } : {}),
       };
 
       return decamelizeKeys(responsePayload);
@@ -454,18 +464,46 @@ export class SessionUtilService {
             status: USER_STATUS.ACTIVE,
           },
         },
-        relations: ['user'],
+        relations: [SessionType.USER, SessionType.PAT], // Include PAT relation
       });
 
       if (!session) {
         throw new UnauthorizedException();
       }
 
-      // extending expiry asynchronously
-      session.expiry = this.getSessionExpiry();
-      //Updating last_logged_in
+      const now = new Date();
+
+      // ✅ Check for PAT session
+      if (session.sessionType === SessionType.PAT) {
+        if (!session.pat) {
+          throw new UnauthorizedException('Invalid PAT session');
+        }
+
+        if (session.pat.expiresAt < now) {
+          throw new UnauthorizedException('PAT token expired');
+        }
+
+        if (session.expiry < now) {
+          throw new UnauthorizedException('PAT session expired');
+        }
+
+        // Extend PAT session expiry
+        session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+      } else {
+        // Regular session extension
+        if (session.expiry < now) {
+          throw new UnauthorizedException('User session expired');
+        }
+
+        session.expiry = this.getSessionExpiry();
+      }
+
+      // Update last_logged_in
       session.lastLoggedIn = new Date();
-      manager.save(session).catch((err) => console.error('error while extending user session expiry', err));
+
+      manager.save(session).catch((err) => {
+        console.error('error while extending session expiry', err);
+      });
     });
   }
 

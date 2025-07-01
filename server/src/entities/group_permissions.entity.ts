@@ -14,6 +14,8 @@ import { GroupUsers } from './group_users.entity';
 import { GranularPermissions } from './granular_permissions.entity';
 import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 import { PageUser } from './page_users.entity';
+import { QueryUser } from './query_users.entity';
+import { ComponentUser } from './component_users.entity';
 
 @Entity({ name: 'permission_groups' })
 export class GroupPermissions extends BaseEntity {
@@ -34,6 +36,12 @@ export class GroupPermissions extends BaseEntity {
 
   @Column({ name: 'app_delete', default: false })
   appDelete: boolean;
+
+  @Column({ name: 'workflow_create', default: false })
+  workflowCreate: boolean;
+
+  @Column({ name: 'workflow_delete', default: false })
+  workflowDelete: boolean;
 
   @Column({ name: 'folder_crud', default: false })
   folderCRUD: boolean;
@@ -65,6 +73,12 @@ export class GroupPermissions extends BaseEntity {
 
   @OneToMany(() => PageUser, (pageUser) => pageUser.permissionGroup)
   pageUsers: PageUser[];
+
+  @OneToMany(() => QueryUser, (queryUser) => queryUser.permissionGroup)
+  queryUsers: QueryUser[];
+
+  @OneToMany(() => ComponentUser, (componentUser) => componentUser.permissionGroup)
+  componentUsers: ComponentUser[];
 
   disabled?: boolean;
 }
