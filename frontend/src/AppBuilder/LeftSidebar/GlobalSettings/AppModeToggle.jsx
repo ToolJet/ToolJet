@@ -15,12 +15,7 @@ export const APP_MODES = [
 const AppModeToggle = ({ darkMode }) => {
   const { onAppModeChange, appMode } = useAppDarkMode();
   const { t } = useTranslation();
-  const { globalSettingsChanged } = useStore(
-    (state) => ({
-      globalSettingsChanged: state.globalSettingsChanged,
-    }),
-    shallow
-  );
+
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
 
   return (
@@ -33,8 +28,7 @@ const AppModeToggle = ({ darkMode }) => {
             if (value === 'auto') {
               exposedTheme = darkMode ? 'dark' : 'light';
             }
-            onAppModeChange({ appMode: value });
-            // globalSettingsChanged({ theme: { name: exposedTheme } });
+            onAppModeChange(value);
             setResolvedGlobals('theme', { name: exposedTheme });
           }}
           defaultValue={appMode}

@@ -871,8 +871,8 @@ export const createEventsSlice = (set, get) => ({
             }
           }
           case 'toggle-app-mode': {
-            const { globalSettingsChanged } = get();
-            globalSettingsChanged({ appMode: event.appMode });
+            const { updateAppMode } = get();
+            updateAppMode(event.appMode);
             return Promise.resolve();
           }
           case 'switch-page': {

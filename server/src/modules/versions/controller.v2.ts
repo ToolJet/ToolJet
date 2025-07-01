@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -36,6 +36,13 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   updateVersion(@User() user, @App() app: AppEntity, @Body() appVersionUpdateDto: AppVersionUpdateDto) {
     return this.versionService.update(app, user, appVersionUpdateDto);
   }
+ 
+  // If we want to update app mode in public app, we use this endpoint
+  @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
+  @Put(':id/versions/:versionId/global_settings/app_mode')
+  updateAppMode(@Body() @Param('appMode') appMode: 'light' | 'dark' | 'auto', @Param('id') appId: string, @Param('versionId') versionId: string) {
+    return this.versionService.updateAppMode(appId, versionId, appMode);
+  }
 
   @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
@@ -47,6 +54,8 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   ) {
     return this.versionService.updateSettings(app, user, appVersionUpdateDto);
   }
+
+ 
 
   @InitFeature(FEATURE_KEY.PROMOTE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
