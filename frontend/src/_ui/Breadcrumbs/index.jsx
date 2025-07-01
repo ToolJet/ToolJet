@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SolidIcon from '../Icon/SolidIcons';
-import { BreadCrumbContext } from '@/_contexts/BreadCrumbContext';
+import { BreadCrumbContext } from '../../App/App';
 import cx from 'classnames';
 
-const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
+export const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const location = useLocation();
   const search = location.search || '';
