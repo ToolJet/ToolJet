@@ -2,6 +2,8 @@ import { useGridStore } from '@/_stores/gridStore';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
+import { NO_OF_GRIDS } from '../appCanvasConstants';
+
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
   const collidesWith = [];
@@ -517,3 +519,35 @@ export const computeScrollDelta = ({ source }) => {
 };
 
 export const computeScrollDeltaOnDrag = computeScrollDelta;
+
+export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
+  const targetCanvasWidth =
+    document.getElementById(`canvas-${canvasParentId}`)?.offsetWidth ||
+    document.getElementById('real-canvas')?.offsetWidth;
+  const gridUnitWidth = targetCanvasWidth / NO_OF_GRIDS;
+  const gridUnits = Math.round(widgetWidth / gridUnitWidth);
+  const draggingWidgetWidth = gridUnits * gridUnitWidth;
+  return draggingWidgetWidth;
+};
+
+export const positionDragGhostWidget = (draggedElement) => {
+  const ghostElement = document.getElementById('moveable-drag-ghost');
+
+  if (!ghostElement || !draggedElement) return;
+
+  const mainCanvas = document.getElementById('real-canvas');
+  if (!mainCanvas) return;
+
+  const mainCanvasRect = mainCanvas.getBoundingClientRect();
+  const draggedRect = draggedElement.getBoundingClientRect();
+
+  // Calculate position relative to main canvas
+  const relativeLeft = draggedRect.left - mainCanvasRect.left;
+  const relativeTop = draggedRect.top - mainCanvasRect.top;
+
+  // Apply the position
+  ghostElement.style.left = `${relativeLeft}px`;
+  ghostElement.style.top = `${relativeTop}px`;
+  ghostElement.style.width = `${draggedRect.width}px`;
+  ghostElement.style.height = `${draggedRect.height}px`;
+};

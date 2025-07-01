@@ -3,7 +3,7 @@ export const formConfig = {
   displayName: 'Form',
   description: 'Wrapper for multiple components',
   defaultSize: {
-    width: 13,
+    width: 15,
     height: 450,
   },
   defaultChildren: [
@@ -17,12 +17,13 @@ export const formConfig = {
       },
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
       defaultValue: {
         text: 'Form title',
         textSize: 16,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
         fontWeight: 'bold',
+        boxShadow: '0px 0px 0px 0px #00000090',
       },
     },
     {
@@ -40,46 +41,6 @@ export const formConfig = {
         padding: 'none',
       },
     },
-    {
-      componentName: 'TextInput',
-      layout: {
-        top: 20,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: ['placeholder', 'label'],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
-      defaultValue: {
-        placeholder: 'Enter your name',
-        label: 'Name',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-      },
-    },
-    {
-      componentName: 'NumberInput',
-      layout: {
-        top: 80,
-        left: 1,
-        height: 40,
-        width: 41,
-      },
-      properties: ['placeholder', 'label'],
-      styles: ['alignment', 'width', 'auto', 'padding', 'direction'],
-      defaultValue: {
-        placeholder: 'Age',
-        label: 'Age',
-        width: '{{60}}',
-        direction: 'left',
-        alignment: 'side',
-        auto: '{{false}}',
-        padding: 'default',
-      },
-    },
   ],
   component: 'Form',
   others: {
@@ -87,9 +48,11 @@ export const formConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    showHeader: { type: 'toggle', displayName: 'Header' },
+    showFooter: { type: 'toggle', displayName: 'Footer' },
     buttonToSubmit: {
       type: 'select',
-      displayName: 'Button to submit form',
+      displayName: 'Submit button',
       options: [{ name: 'None', value: 'none' }],
       validation: {
         schema: { type: 'string' },
@@ -98,6 +61,65 @@ export const formConfig = {
       conditionallyRender: {
         key: 'advanced',
         value: false,
+      },
+    },
+    generateFormFrom: {
+      type: 'dropdownMenu',
+      displayName: 'Generate form from',
+      options: [
+        { name: 'Raw JSON', value: 'rawJson' },
+        { name: 'JSON schema', value: 'jsonSchema' },
+      ],
+      section: 'data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
+      newLine: true,
+    },
+    JSONData: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'rawJson',
+      },
+      section: 'data',
+      showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    newJsonSchema: {
+      type: 'code',
+      displayName: '',
+      conditionallyRender: {
+        key: 'generateFormFrom',
+        value: 'jsonSchema',
+      },
+      section: 'data',
+      showLabel: false,
+      validation: {
+        schema: { type: 'object' },
+      },
+    },
+    fields: {
+      type: 'array',
+      displayName: 'Table Columns',
+    },
+    validateOnSubmit: {
+      type: 'toggle',
+      displayName: 'Validate all fields on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    resetOnSubmit: {
+      type: 'toggle',
+      displayName: 'Reset form on submission',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
       },
     },
     loadingState: {
@@ -109,20 +131,29 @@ export const formConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
+      section: 'deprecated',
     },
     JSONSchema: {
       type: 'code',
       displayName: 'JSON Schema',
+      section: 'deprecated',
       conditionallyRender: {
         key: 'advanced',
         value: true,
       },
     },
-    showHeader: { type: 'toggle', displayName: 'Header' },
-    showFooter: { type: 'toggle', displayName: 'Footer' },
     headerHeight: {
       type: 'numberInput',
       displayName: 'Header height',
@@ -173,19 +204,19 @@ export const formConfig = {
   },
   styles: {
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     footerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     backgroundColor: {
@@ -254,8 +285,13 @@ export const formConfig = {
     },
     properties: {
       loadingState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
+        value:
+          "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
+      },
+      newJsonSchema: {
         value:
           "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
       },
@@ -265,14 +301,23 @@ export const formConfig = {
       disabledState: { value: '{{false}}' },
       headerHeight: { value: 60 },
       footerHeight: { value: 60 },
+      validateOnSubmit: { value: '{{true}}' },
+      resetOnSubmit: { value: '{{true}}' },
+      generateFormFrom: '',
+      fields: {
+        value: [],
+      },
+      JSONData: {
+        value: undefined,  
+      }
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '0' },
-      borderColor: { value: '#fff' },
-      headerBackgroundColor: { value: '#fff' },
-      footerBackgroundColor: { value: '#fff' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

@@ -196,7 +196,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   },
   changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure) => {
     try {
-      const data = await appVersionService.getAppVersionData(appId, versionId);
+      const data = await appVersionService.getAppVersionData(appId, versionId, get().currentMode);
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
