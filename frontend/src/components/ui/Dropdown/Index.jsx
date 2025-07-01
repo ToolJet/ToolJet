@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './Select';
 import { DropdownLabel, HelperMessage, ValidationMessage } from './DropdownUtils/DropdownUtils';
@@ -15,6 +15,26 @@ const DropdownComponent = ({ options = {}, ...props }) => {
       setTriggerWidth(triggerRef.current.offsetWidth);
     }
   }, []);
+
+  // Enhanced container resolution for better Firefox support
+  const getContainer = useCallback(() => {
+    if (props.container) {
+      return typeof props.container === 'function' ? props.container() : props.container;
+    }
+
+    // Auto-detect container based on context
+    if (triggerRef.current) {
+      // Check if inside a modal
+      const modal = triggerRef.current.closest('.modal-dialog');
+      if (modal) return modal;
+
+      // Check if inside a popover
+      const popover = triggerRef.current.closest('.popover');
+      if (popover) return popover;
+    }
+
+    return document.body;
+  }, [props.container]);
 
   const dropdownStyle = `${
     isValid === true ? '!tw-border-border-success-strong' : isValid === false ? '!tw-border-border-danger-strong' : ''
@@ -43,7 +63,10 @@ const DropdownComponent = ({ options = {}, ...props }) => {
         <SelectTrigger ref={triggerRef} open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
-        <SelectContent style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}>
+        <SelectContent
+          style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}
+          container={getContainer()}
+        >
           <SelectGroup>
             {Object.keys(options).map((key) => (
               <SelectItem
@@ -93,6 +116,7 @@ DropdownComponent.propTypes = {
   leadingIcon: PropTypes.bool,
   trailingAction: PropTypes.oneOf(['icon', 'counter']),
   helperText: PropTypes.string,
+  container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
 };
 
 DropdownComponent.defaultProps = {
