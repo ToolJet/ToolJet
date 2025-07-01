@@ -134,7 +134,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
       width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
-      borderRight: currentMode === 'edit' && isRightSidebarOpen && '299' + 'px solid',
+      borderRight: currentMode === 'edit' && isRightSidebarOpen && '300' + 'px solid',
       padding: currentMode === 'edit' && '8px',
       paddingBottom: currentMode === 'edit' && '2px',
     };

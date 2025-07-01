@@ -217,7 +217,7 @@
             position: relative;
             bottom: 2px;
             justify-content: center;
-            padding-top: 32px;
+            padding-top: 16px;
             margin-top: auto;
 
             .sidebar-svg-icon {
@@ -502,7 +502,7 @@
         }
 
         &.right-sidebar-open {
-            width: calc(100% + 299px) !important;
+            width: calc(100% + 300px) !important;
             position: sticky !important;
 
         }
