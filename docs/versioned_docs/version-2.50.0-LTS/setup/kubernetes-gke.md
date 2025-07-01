@@ -35,7 +35,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. You can ch
 
 :::info
 For the setup, ToolJet requires:
-<ul> 
+
         For the setup, ToolJet requires:
         <ul> 
         - **TOOLJET_DB** 
