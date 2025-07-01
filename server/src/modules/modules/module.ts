@@ -55,7 +55,7 @@ export class ModulesModule {
         DataSourcesRepository,
         FeatureAbilityFactory,
         RolesRepository,
-        AppGitRepository
+        AppGitRepository,
       ],
     };
   }

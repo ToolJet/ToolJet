@@ -1,16 +1,17 @@
-import { getImportPath } from '@modules/app/constants';
 import { DynamicModule } from '@nestjs/common';
 import { UserRepository } from './repositories/repository';
 import { SessionModule } from '@modules/session/module';
 import { FeatureAbilityFactory } from './ability';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
+import { SubModule } from '@modules/app/sub-module';
 
-export class UsersModule {
+export class UsersModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { UsersService } = await import(`${importPath}/users/service`);
-    const { UsersController } = await import(`${importPath}/users/controller`);
-    const { UsersUtilService } = await import(`${importPath}/users/util.service`);
+    const { UsersService, UsersController, UsersUtilService } = await this.getProviders(configs, 'users', [
+      'service',
+      'util.service',
+      'controller',
+    ]);
 
     return {
       module: UsersModule,

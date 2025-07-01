@@ -34,6 +34,7 @@ export interface Terms {
   };
   type?: LICENSE_TYPE;
   plan?: {
+    name?: string;
     isFlexible: boolean;
   };
   auditLogs?: {

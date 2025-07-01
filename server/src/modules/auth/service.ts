@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { User } from '../../entities/user.entity';
+import { User } from '@entities/user.entity';
 import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -10,7 +10,7 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Response } from 'express';
 import { AppAuthenticationDto } from './dto';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '@modules/organizations/repository';

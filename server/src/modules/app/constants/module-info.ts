@@ -20,6 +20,7 @@ import { FEATURES as ONBOARDING_FEATURES } from '@modules/onboarding/constants/f
 import { FEATURES as AUTH_FEATURES } from '@modules/auth/constants/feature';
 import { FEATURES as ORGANIZATIONS_FEATURES } from '@modules/organizations/constants/feature';
 import { FEATURES as ORGANIZATION_CONSTANT } from '@modules/organization-constants/constants/feature';
+import { FEATURES as ORGANIZATION_PAYMENTS } from '@modules/organization-payments/constants/feature';
 import { FEATURES as ORGANIZATION_USERS_FEATURES } from '@modules/organization-users/constants/feature';
 import { FEATURES as APP_ENVIRONMENTS_FEATURES } from '@modules/app-environments/constants/feature';
 import { FEATURES as LICENSING_FEATURES } from '@modules/licensing/constants/features';
@@ -76,6 +77,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...IMPORT_EXPORT_RESOURCES_FEATURES,
   ...TEMPLATES_FEATURES,
   ...ORGANIZATION_CONSTANT,
+  ...ORGANIZATION_PAYMENTS,
   ...AI_FEATURES,
   ...WHITE_LABELLING_FEATURES,
   ...APP_PERMISSIONS_FEATURES,
