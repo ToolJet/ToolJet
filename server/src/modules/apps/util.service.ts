@@ -223,13 +223,10 @@ export class AppsUtilService implements IAppsUtilService {
       currentVersionId,
       icon,
     };
-    console.log('updatableParams', updatableParams);
 
     // removing keys with undefined values
     cleanObject(updatableParams);
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log('updatableParams11');
-
       if (updatableParams.currentVersionId) {
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
@@ -238,8 +235,6 @@ export class AppsUtilService implements IAppsUtilService {
           LICENSE_FIELD.MULTI_ENVIRONMENT,
           organizationId
         );
-
-        console.log('updatableParams22');
 
         /* 
         Allow version release only if the environment is on 
@@ -253,8 +248,6 @@ export class AppsUtilService implements IAppsUtilService {
 
         let promotedFromQuery: string;
         if (!isMultiEnvironmentEnabled) {
-          console.log('updatableParams44');
-
           if (!currentEnvironment.isDefault) {
             /* For basic plan users, Promote to the production environment first then release it */
             const productionEnv = await this.appEnvironmentUtilService.get(organizationId, null, false, manager);
@@ -282,18 +275,11 @@ export class AppsUtilService implements IAppsUtilService {
           }
         }
 
-        console.log('updatableParams55');
-
-
         if (promotedFromQuery) {
           await manager.query(promotedFromQuery, [lastReleasedVersion]);
         }
       }
-      console.log('updatableParams88');
-
       return await catchDbException(async () => {
-      console.log('updatableParams99');
-
         return await manager.update(App, appId, updatableParams);
       }, [
         { dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' },

@@ -65,7 +65,6 @@ export class AppsService implements IAppsService {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
-      console.log('created app', app);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
@@ -183,7 +182,6 @@ export class AppsService implements IAppsService {
     const { id } = app;
 
     await this.appRepository.delete({ id, organizationId });
-    console.log('deleted app');
 
     //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
