@@ -293,7 +293,7 @@ const EditorInput = ({
         validFor: /^\{\{.*\}\}$/,
         filter: false,
       };
-    } else return getSuggestionsForMultiLine(context, hints); //Need multiline behaviour inside workflows editor, where suggestions are shown on each keystroke
+    } else return getSuggestionsForMultiLine(context, hints, hintsWithoutParamHints, lang, paramHints); //Need multiline behaviour inside workflows editor, where suggestions are shown on each keystroke
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
