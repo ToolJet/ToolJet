@@ -14,12 +14,12 @@ You can reference `ssoUserInfo` directly in queries or components to dynamically
 Use the following syntax to refer to any exposed variable from `ssoUserInfo`:
 
 ```js
-{{globals.ssoUserInfo.<variable-name>}}
+{{globals.currentUser.ssoUserInfo.<variable-name>}}
 ```
 
 ### Commonly Exposed SSO Variables
 
-The exposed variables may vary depending on the identity provider. You can view all available variables in the Inspector panel under `globals` > `ssoUserInfo`. Below are some commonly exposed variables:
+The exposed variables may vary depending on the identity provider. You can view all available variables in the Inspector panel under `globals` > `currentUser` > `ssoUserInfo`. Below are some commonly exposed variables:
 
 | Variable | Description |
 |:----------|:-------------|
