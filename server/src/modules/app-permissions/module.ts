@@ -28,18 +28,6 @@ export class AppPermissionsModule extends SubModule {
 
     return {
       module: AppPermissionsModule,
-      imports: [
-        TypeOrmModule.forFeature([
-          GroupPermissions,
-          User,
-          PageUser,
-          PagePermission,
-          QueryUser,
-          QueryPermission,
-          ComponentUser,
-          ComponentPermission,
-        ]),
-      ],
       controllers: [AppPermissionsController],
       providers: [
         AppPermissionsService,
