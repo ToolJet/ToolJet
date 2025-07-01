@@ -388,6 +388,11 @@ export class AppsUtilService implements IAppsUtilService {
         type
       );
 
+      // Eagerly load appVersions for modules
+      if (type === APP_TYPES.MODULE) {
+        viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+      }
+
       if (page) {
         return await viewableAppsQb
           .take(9)
