@@ -819,7 +819,7 @@ const GetAccordion = React.memo(
         return <Icon {...restProps} />;
 
       case 'Form':
-        return <Form {...restProps} />;
+        return <Form {...restProps} key={restProps.component?.id} />;
 
       case 'DropdownV2':
       case 'MultiselectV2':
