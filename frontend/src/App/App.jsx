@@ -284,7 +284,7 @@ class AppComponent extends React.Component {
                     path="/:workspaceId/workflows/*"
                     element={
                       <PrivateRoute>
-                        <Workflows switchDarkMode={this.switchDarkMode} darkMode={this.darkMode} />
+                        <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
                     }
                   />
@@ -293,8 +293,13 @@ class AppComponent extends React.Component {
                   path="/:workspaceId/workspace-settings/*"
                   element={<WorkspaceSettings {...mergedProps} />}
                 ></Route>
-                <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
-                <Route path="/:workspaceId/settings/*" element={<InstanceSettings {...this.props} />}></Route>
+                <Route
+                  path="settings/*"
+                  element={
+                    <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
+                  }
+                ></Route>
+                <Route path="/:workspaceId/settings/*" element={<InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />}></Route>
                 <Route
                   exact
                   path="/:workspaceId/modules"
