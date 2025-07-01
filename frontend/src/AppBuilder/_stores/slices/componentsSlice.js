@@ -1570,7 +1570,8 @@ export const createComponentsSlice = (set, get) => ({
     const currentPageId = getCurrentPageId(moduleId);
     set(
       (state) => {
-        state.modules[moduleId].pages[state.currentPageIndex].autoComputeLayout = false;
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+        state.modules[moduleId].pages[currentPageIndex].autoComputeLayout = false;
       },
       false,
       'turnOffAutoComputeLayout'
