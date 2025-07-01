@@ -80,7 +80,7 @@ function Hero() {
     <div className="tw-relative tw-shrink-0 tw-w-full tw-mb-3" role="banner">
       <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-1 tw-items-center tw-justify-start tw-p-0 tw-relative tw-w-full">
         <SolidIcon name="tooljetai" width={24} height={24} className="" data-name="TJ AI" aria-label="ToolJet AI" />
-        <h1 className="tw-text-2xl tw-font-medium tw-text-center tw-text-text-default tw-mb-2">
+        <h1 className="tw-font-display-small tw-text-center tw-text-text-default tw-mb-2">
           What do you want to build today?
         </h1>
         <AiBuilder onSubmit={handleAiBuilderChange} />
@@ -93,7 +93,7 @@ function DividerWithText() {
   return (
     <div className="tw-flex tw-items-center tw-justify-center tw-w-full">
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-mr-4" />
-      <p className="tw-flex tw-items-center tw-text-text-placeholder tw-font-medium tw-text-sm tw-uppercase tw-m-0">
+      <p className="tw-flex tw-items-center tw-font-body-default tw-text-text-placeholder tw-uppercase tw-m-0">
         OR START WITH
       </p>
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-ml-4" />
@@ -113,13 +113,11 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
       {...props}
     >
       <p
-        className={`tw-block tw-text-text-default tw-leading-[20px] tw-text-[12px] tw-font-medium tw-whitespace-pre tw-m-0 ${titleClassName}`}
+        className={`tw-block tw-text-text-default tw-font-title-large tw-whitespace-pre tw-m-0 tw-mb-0.5 ${titleClassName}`}
       >
         {title}
       </p>
-      <p
-        className={`tw-block tw-leading-[20px] tw-text-[12px] tw-text-text-placeholder tw-m-0 ${descriptionClassName}`}
-      >
+      <p className={`tw-block tw-font-body-default tw-text-text-placeholder tw-m-0 tw-mb-0.5 ${descriptionClassName}`}>
         {description}
       </p>
     </article>

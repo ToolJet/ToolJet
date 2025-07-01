@@ -124,130 +124,147 @@ module.exports = {
     require('tailwindcss-animate'),
     plugin(({ addUtilities }) => {
       const newUtilities = {
-        '.tw-font-display-small': {
+        '.font-display-small': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-display-small)',
           lineHeight: 'var(--line-height-display-medium)',
           letterSpacing: 'var(--letter-spacing-display-medium)',
+          fontSmoothing: 'antialiased',
         },
-        '.tw-font-title-heavy-xx-large': {
+        '.font-title-heavy-xx-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-xx-large)',
           lineHeight: 'var(--line-height-xx-large)',
           letterSpacing: 'var(--letter-spacing-xx-large)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-title-xx-large': {
+        '.font-title-xx-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-xx-large)',
           lineHeight: 'var(--line-height-xx-large)',
           letterSpacing: 'var(--letter-spacing-xx-large)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-body-xx-large': {
+        '.font-body-xx-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-xx-large)',
           lineHeight: 'var(--line-height-xx-large)',
           letterSpacing: 'var(--letter-spacing-xx-large)',
+          fontSmoothing: 'antialiased',
         },
-        '.tw-font-code-regular': {
+        '.font-code-regular': {
           fontFamily: 'var(--font-family-geist-mono)',
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-default)',
           lineHeight: 'var(--line-height-default)',
         },
-        '.tw-font-title-heavy-x-large': {
+        '.font-title-heavy-x-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-x-large)',
           lineHeight: 'var(--line-height-x-large)',
           letterSpacing: 'var(--letter-spacing-x-large)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-title-x-large': {
+        '.font-title-x-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-x-large)',
           lineHeight: 'var(--line-height-x-large)',
           letterSpacing: 'var(--letter-spacing-x-large)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-body-x-large': {
+        '.font-body-x-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-x-large)',
           lineHeight: 'var(--line-height-x-large)',
           letterSpacing: 'var(--letter-spacing-x-large)',
+          fontSmoothing: 'antialiased',
         },
-        '.tw-font-title-heavy-large': {
+        '.font-title-heavy-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-large)',
           lineHeight: 'var(--line-height-large)',
           letterSpacing: 'var(--letter-spacing-large)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-title-large': {
+        '.font-title-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-large)',
           lineHeight: 'var(--line-height-large)',
           letterSpacing: 'var(--letter-spacing-large)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-body-large': {
+        '.font-body-large': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-large)',
           lineHeight: 'var(--line-height-large)',
           letterSpacing: 'var(--letter-spacing-large)',
+          fontSmoothing: 'antialiased',
         },
-        '.tw-font-title-heavy-medium': {
+        '.font-title-heavy-medium': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-default)',
           lineHeight: 'var(--line-height-default)',
           letterSpacing: 'var(--letter-spacing-default)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-title-default': {
+        '.font-title-default': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-default)',
           lineHeight: 'var(--line-height-default)',
           letterSpacing: 'var(--letter-spacing-default)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-body-default': {
+        '.font-body-default': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-default)',
           lineHeight: 'var(--line-height-default)',
           letterSpacing: 'var(--letter-spacing-default)',
+          fontSmoothing: 'antialiased',
         },
-        '.tw-font-title-heavy-small': {
+        '.font-title-heavy-small': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',
           letterSpacing: 'var(--letter-spacing-small)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-title-small': {
+        '.font-title-small': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',
           letterSpacing: 'var(--letter-spacing-small)',
+          fontSmoothing: 'subpixel-antialiased',
         },
-        '.tw-font-body-small': {
+        '.font-body-small': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',
           letterSpacing: 'var(--letter-spacing-small)',
+          fontSmoothing: 'antialiased',
         },
-        '.tw-font-title-section-title': {
+        '.font-title-section-title': {
           fontFamily: 'var(--font-family-inter)',
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',
           letterSpacing: 'var(--letter-spacing-small)',
+          fontSmoothing: 'subpixel-antialiased',
         },
       };
       addUtilities(newUtilities, ['responsive', 'hover']);
