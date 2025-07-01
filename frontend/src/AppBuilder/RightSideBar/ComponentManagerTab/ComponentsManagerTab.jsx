@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { isEmpty, debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { LEGACY_ITEMS, IGNORED_ITEMS } from './constants';
@@ -9,6 +9,32 @@ import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
 import { ModuleManager } from '@/modules/Modules/components';
 import { ComponentModuleTab } from '@/modules/Appbuilder/components';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
+
+// Simple error boundary component for module errors
+class ModuleErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Module error:', error, errorInfo);
+    this.props.onError();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null; // Let parent handle the fallback
+    }
+    return this.props.children;
+  }
+}
 
 // TODO: Hardcode all the component-section mapping in a constant file and just loop over it
 // TODO: styling
@@ -25,9 +51,25 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(1);
+  const [moduleError, setModuleError] = useState(false);
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
+
+  const { hasModuleAccess } = useLicenseStore(
+    (state) => ({
+      hasModuleAccess: state.hasModuleAccess,
+    }),
+    shallow
+  );
+
+  // Force re-render when hasModuleAccess changes
+  useEffect(() => {
+    // If modules access is denied and we're on the modules tab, switch to components
+    if (!hasModuleAccess && activeTab === 2) {
+      setActiveTab(1);
+    }
+  }, [hasModuleAccess, activeTab]);
 
   const handleSearchQueryChange = useCallback(
     debounce((e) => {
@@ -172,16 +214,38 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   }
 
   const handleChangeTab = (tab) => {
+    if (tab === 2 && !hasModuleAccess) {
+      setActiveTab(1);
+      return;
+    }
     setActiveTab(tab);
+    if (tab === 1) setModuleError(false);
     // When changing tabs, we don't need to reset the search
     // The search query will be applied to the new tab
   };
+
+  // Handle module errors by redirecting to components tab
+  useEffect(() => {
+    if (moduleError && activeTab === 2) {
+      setActiveTab(1);
+    }
+  }, [moduleError, activeTab]);
 
   const renderSection = () => {
     if (activeTab === 1) {
       return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
     }
-    return <ModuleManager searchQuery={searchQuery} />;
+
+    // If there was an error accessing modules, redirect to components tab
+    if (moduleError) {
+      return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
+    }
+
+    return (
+      <ModuleErrorBoundary onError={() => setModuleError(true)}>
+        <ModuleManager searchQuery={searchQuery} />
+      </ModuleErrorBoundary>
+    );
   };
 
   return (
@@ -189,7 +253,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       {isModuleEditor ? (
         <p className="widgets-manager-header">Components</p>
       ) : (
-        <ComponentModuleTab onChangeTab={handleChangeTab} />
+        <ComponentModuleTab onChangeTab={handleChangeTab} hasModuleAccess={hasModuleAccess} />
       )}
       <div className="input-icon tj-app-input">
         <SearchBox

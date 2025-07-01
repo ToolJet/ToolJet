@@ -10,7 +10,8 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { noop } from 'lodash';
 
-export const DragLayer = ({ index, component, isModuleTab = false }) => {
+export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
+  console.log(disabled, 'disabled');
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
   const [{ isDragging }, drag, preview] = useDrag(
@@ -43,8 +44,16 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
   return (
     <>
       {isDragging && <CustomDragLayer size={size} />}
-      <div ref={drag} className="draggable-box" style={{ height: '100%', width: isModuleTab && '100%' }}>
-        {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
+      <div
+        ref={disabled ? undefined : drag}
+        className={`draggable-box${disabled ? ' disabled' : ''}`}
+        style={{ height: '100%', width: isModuleTab && '100%' }}
+      >
+        {isModuleTab ? (
+          <ModuleWidgetBox module={component} disabled={disabled} />
+        ) : (
+          <WidgetBox index={index} component={component} />
+        )}
       </div>
     </>
   );

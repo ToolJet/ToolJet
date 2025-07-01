@@ -139,6 +139,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         },
         ...(priorityCheck && { order: { priority: 'ASC' } }),
       };
+      console.log(condition, 'condition for get app environment');
       return await manager.findOneOrFail(AppEnvironment, condition);
     }, manager);
   }

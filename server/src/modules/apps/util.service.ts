@@ -387,6 +387,9 @@ export class AppsUtilService implements IAppsUtilService {
       case APP_TYPES.FRONT_END:
         resourceType = MODULES.APP;
         break;
+      case APP_TYPES.MODULE:
+        resourceType = MODULES.APP;
+        break;
       default:
         resourceType = MODULES.APP;
     }
@@ -403,6 +406,11 @@ export class AppsUtilService implements IAppsUtilService {
         undefined,
         type
       );
+
+      // Eagerly load appVersions for modules
+      if (type === APP_TYPES.MODULE) {
+        viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+      }
 
       if (page) {
         return await viewableAppsQb
@@ -429,7 +437,7 @@ export class AppsUtilService implements IAppsUtilService {
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
     if (type === APP_TYPES.MODULE) {
-      viewableAppsQb.leftJoinAndSelect('viewable_apps.appVersions', 'versions');
+      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
     }
 
     if (type) {
