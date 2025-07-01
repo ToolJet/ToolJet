@@ -22,7 +22,7 @@ const TextAreaComponent = ({ onChange, ...props }) => {
   };
 
   return (
-    <div>
+    <div className="tw-w-full">
       {props.label && <InputLabel label={props.label} disabled={props.disabled} required={props.required} />}
       <Textarea {...props} onValueChange={handleChange} className={inputStyle} />
       {props.helperText && (
