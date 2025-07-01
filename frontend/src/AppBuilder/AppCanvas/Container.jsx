@@ -109,7 +109,6 @@ export const Container = React.memo(
 
           // Only update if this container is the most specific one under the mouse
           if (canvasId === id) {
-            // console.log('Container hover', canvasId, id);
             setCurrentDragCanvasId(id);
           }
         }
