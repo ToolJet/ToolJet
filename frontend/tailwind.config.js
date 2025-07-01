@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require('tailwindcss/plugin');
+
 module.exports = {
   darkMode: ['class'],
   content: [
@@ -132,5 +134,137 @@ module.exports = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    plugin(({ addUtilities }) => {
+      const newUtilities = {
+        '.tw-font-display-small': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-medium)',
+          fontSize: 'var(--font-size-display-small)',
+          lineHeight: 'var(--line-height-display-medium)',
+          letterSpacing: 'var(--letter-spacing-display-medium)',
+        },
+        '.tw-font-title-heavy-xx-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-semi-bold)',
+          fontSize: 'var(--font-size-xx-large)',
+          lineHeight: 'var(--line-height-xx-large)',
+          letterSpacing: 'var(--letter-spacing-xx-large)',
+        },
+        '.tw-font-title-xx-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-medium)',
+          fontSize: 'var(--font-size-xx-large)',
+          lineHeight: 'var(--line-height-xx-large)',
+          letterSpacing: 'var(--letter-spacing-xx-large)',
+        },
+        '.tw-font-body-xx-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-regular)',
+          fontSize: 'var(--font-size-xx-large)',
+          lineHeight: 'var(--line-height-xx-large)',
+          letterSpacing: 'var(--letter-spacing-xx-large)',
+        },
+        '.tw-font-code-regular': {
+          fontFamily: 'var(--font-family-geist-mono)',
+          fontWeight: 'var(--font-weight-regular)',
+          fontSize: 'var(--font-size-default)',
+          lineHeight: 'var(--line-height-default)',
+        },
+        '.tw-font-title-heavy-x-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-semi-bold)',
+          fontSize: 'var(--font-size-x-large)',
+          lineHeight: 'var(--line-height-x-large)',
+          letterSpacing: 'var(--letter-spacing-x-large)',
+        },
+        '.tw-font-title-x-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-medium)',
+          fontSize: 'var(--font-size-x-large)',
+          lineHeight: 'var(--line-height-x-large)',
+          letterSpacing: 'var(--letter-spacing-x-large)',
+        },
+        '.tw-font-body-x-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-regular)',
+          fontSize: 'var(--font-size-x-large)',
+          lineHeight: 'var(--line-height-x-large)',
+          letterSpacing: 'var(--letter-spacing-x-large)',
+        },
+        '.tw-font-title-heavy-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-semi-bold)',
+          fontSize: 'var(--font-size-large)',
+          lineHeight: 'var(--line-height-large)',
+          letterSpacing: 'var(--letter-spacing-large)',
+        },
+        '.tw-font-title-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-medium)',
+          fontSize: 'var(--font-size-large)',
+          lineHeight: 'var(--line-height-large)',
+          letterSpacing: 'var(--letter-spacing-large)',
+        },
+        '.tw-font-body-large': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-regular)',
+          fontSize: 'var(--font-size-large)',
+          lineHeight: 'var(--line-height-large)',
+          letterSpacing: 'var(--letter-spacing-large)',
+        },
+        '.tw-font-title-heavy-medium': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-semi-bold)',
+          fontSize: 'var(--font-size-default)',
+          lineHeight: 'var(--line-height-default)',
+          letterSpacing: 'var(--letter-spacing-default)',
+        },
+        '.tw-font-title-default': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-medium)',
+          fontSize: 'var(--font-size-default)',
+          lineHeight: 'var(--line-height-default)',
+          letterSpacing: 'var(--letter-spacing-default)',
+        },
+        '.tw-font-body-default': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-regular)',
+          fontSize: 'var(--font-size-default)',
+          lineHeight: 'var(--line-height-default)',
+          letterSpacing: 'var(--letter-spacing-default)',
+        },
+        '.tw-font-title-heavy-small': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-semi-bold)',
+          fontSize: 'var(--font-size-small)',
+          lineHeight: 'var(--line-height-small)',
+          letterSpacing: 'var(--letter-spacing-small)',
+        },
+        '.tw-font-title-small': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-medium)',
+          fontSize: 'var(--font-size-small)',
+          lineHeight: 'var(--line-height-small)',
+          letterSpacing: 'var(--letter-spacing-small)',
+        },
+        '.tw-font-body-small': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-regular)',
+          fontSize: 'var(--font-size-small)',
+          lineHeight: 'var(--line-height-small)',
+          letterSpacing: 'var(--letter-spacing-small)',
+        },
+        '.tw-font-title-section-title': {
+          fontFamily: 'var(--font-family-inter)',
+          fontWeight: 'var(--font-weight-semi-bold)',
+          fontSize: 'var(--font-size-small)',
+          lineHeight: 'var(--line-height-small)',
+          letterSpacing: 'var(--letter-spacing-small)',
+        },
+      };
+      addUtilities(newUtilities, ['responsive', 'hover']);
+    }),
+  ],
 };
