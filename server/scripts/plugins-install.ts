@@ -2,17 +2,18 @@ import * as availablePlugins from '../src/assets/marketplace/plugins.json';
 import { AppModule } from '@modules/app/module';
 import { CreatePluginDto } from '@modules/plugins/dto';
 import { EntityManager } from 'typeorm';
-import { INestApplication } from '@nestjs/common';
+import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Plugin } from 'src/entities/plugin.entity';
-import { PluginsService } from '@modules/plugins/service';
 import { getEnvVars } from './database-config-utils';
 import { validateSync } from 'class-validator';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 const ENV_VARS = getEnvVars();
 
 async function bootstrap() {
-  const nestApp = await NestFactory.create(AppModule, {
+  const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }), {
     logger: ['error', 'warn'],
   });
 
@@ -22,7 +23,9 @@ async function bootstrap() {
   process.exit(0);
 }
 
-async function validateAndInstallPlugins(nestApp: INestApplication) {
+async function validateAndInstallPlugins(nestApp: INestApplicationContext) {
+  const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+  const { PluginsService } = await import(`${await getImportPath(true, edition)}/plugins/service`);
   const pluginsService = nestApp.get(PluginsService);
   const pluginsToInstall = fetchPluginsToInstall();
   const validPluginDtos: CreatePluginDto[] = [];

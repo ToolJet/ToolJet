@@ -16,7 +16,6 @@ export const AppMenu = function AppMenu({
   popoverVisible,
   setMenuOpen,
   appType,
-  appCreationMode,
 }) {
   const { t } = useTranslation();
   const isModuleApp = appType === 'module';
@@ -56,12 +55,11 @@ export const AppMenu = function AppMenu({
               <div data-cy="card-options">
                 {canUpdateApp && (
                   <Field
-                    customClass={appCreationMode === 'GIT' && 'disabled-action-tooltip'}
                     text={t(
                       'homePage.appCard.renameApp',
                       appType === 'workflow' ? 'Rename workflow' : appType === 'module' ? 'Rename module' : 'Rename app'
                     )}
-                    onClick={() => appCreationMode !== 'GIT' && openAppActionModal('rename-app')}
+                    onClick={() => openAppActionModal('rename-app')}
                   />
                 )}
                 {canUpdateApp && (

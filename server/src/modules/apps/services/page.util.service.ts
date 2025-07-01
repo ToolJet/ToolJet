@@ -11,7 +11,7 @@ import { IPageHelperService } from '../interfaces/services/IPageUtilService';
 export class PageHelperService implements IPageHelperService {
   constructor(protected eventHandlerService: EventsService, protected licenseTermsService: LicenseTermsService) {}
 
-  public async fetchPages(appVersionId: string): Promise<Page[]> {
+  public async fetchPages(appVersionId: string, organizationId: string): Promise<Page[]> {
     let allPages = [];
     return await dbTransactionWrap(async (manager: EntityManager) => {
       allPages = await manager.find(Page, {
@@ -28,7 +28,7 @@ export class PageHelperService implements IPageHelperService {
     });
   }
 
-  public async reorderPages(udpateObject, appVersionId: string): Promise<void> {
+  public async reorderPages(udpateObject, appVersionId: string, organizationId: string): Promise<void> {
     await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const updateArr = [];
       const diff = udpateObject.diff;
@@ -40,7 +40,7 @@ export class PageHelperService implements IPageHelperService {
     }, appVersionId);
   }
 
-  public async rearrangePagesOrderPostDeletion(pageDeleted: Page, manager: EntityManager): Promise<void> {
+  public async rearrangePagesOrderPostDeletion(pageDeleted: Page, manager: EntityManager, organizationId: string): Promise<void> {
     const appVersionId = pageDeleted.appVersionId;
     // if user is not licensed, then just update the index of the pages
     await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -65,11 +65,11 @@ export class PageHelperService implements IPageHelperService {
     }, appVersionId);
   }
 
-  public async deletePageGroup(page: Page, appVersionId: string, deleteAssociatedPages: boolean): Promise<void> {
+  public async deletePageGroup(page: Page, appVersionId: string, deleteAssociatedPages: boolean, organizationId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  public async preparePageObject(dto: CreatePageDto, appVersionId: string): Promise<Page> {
+  public async preparePageObject(dto: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
     const page = new Page();
     page.id = dto.id;
     page.name = dto.name;
@@ -80,7 +80,7 @@ export class PageHelperService implements IPageHelperService {
     return page;
   }
 
-  public async findModuleContainer(appVersionId: string): Promise<void> {
+  public async findModuleContainer(appVersionId: string, organizationId: string): Promise<void> {
     return null;
   }
 }
