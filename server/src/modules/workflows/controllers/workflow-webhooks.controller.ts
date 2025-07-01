@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, Patch, Query, Res } from '@nestjs/common';
+import { Controller, Post, Param, Body, Patch, Query, Res, Get, Sse } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowWebhooksController } from '../interfaces/IWorkflowWebhooksController';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -22,6 +22,29 @@ export class WorkflowWebhooksController implements IWorkflowWebhooksController {
     @Query('environment') environment: string,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.WEBHOOK_TRIGGER_WORKFLOW)
+  @Post('workflows/:idOrName/trigger-async')
+  async triggerWorkflowAsync(
+    @Param('app') app: any,
+    @Param('idOrName') idOrName: string,
+    @Body() workflowParams: Record<string, unknown>,
+    @Query('environment') environment: string
+  ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.WEBHOOK_TRIGGER_WORKFLOW)
+  @Get('workflows/:idOrName/status/:executionId')
+  async getExecutionStatus(@Param('executionId') executionId: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.WEBHOOK_TRIGGER_WORKFLOW)
+  @Sse('workflows/:idOrName/execution/:executionId/stream')
+  async triggerWorkflowStream(@Param('executionId') executionId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

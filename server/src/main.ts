@@ -49,8 +49,12 @@ async function handleLicensingInit(app: NestExpressApplication) {
   const License = LicenseModule.default;
   licenseUtilService.validateHostnameSubpath(License.Instance()?.domains);
 
+  const { isValid, licenseType, terms } = License.Instance();
   console.log(
-    `License valid : ${License.Instance().isValid} License Terms : ${JSON.stringify(License.Instance().terms)} 🚀`
+    `\n📑 License Information:
+    - Valid: ${isValid}
+    - Type: ${licenseType}
+    - Terms:\n${JSON.stringify(terms, null, 2)}\n`
   );
 }
 function replaceSubpathPlaceHoldersInStaticAssets() {

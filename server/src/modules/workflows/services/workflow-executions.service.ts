@@ -40,4 +40,8 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
   ): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  async findOne(id: string, relations?: string[]): Promise<WorkflowExecution> {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+import { AsyncQueryHandler } from '@/AppBuilder/_utils/async-query-handler';
 import _, { isEmpty } from 'lodash';
 import { resolveReferences, loadPyodide, hasCircularDependency } from '@/_helpers/utils';
 import { fetchOAuthToken, fetchOauthTokenForSlackAndGSheet } from '@/AppBuilder/_utils/auth';
@@ -7,7 +9,6 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import toast from 'react-hot-toast';
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
 const initialState = {
@@ -26,6 +27,7 @@ const initialState = {
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
+  asyncQueryRuns: [], // Array to track active AsyncQueryHandler instances
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -162,6 +164,19 @@ export const createQueryPanelSlice = (set, get) => ({
         'setLoadingDataQueries'
       ),
 
+    setAsyncQueryRuns: (updater) =>
+      set(
+        (state) => {
+          if (typeof updater === 'function') {
+            state.queryPanel.asyncQueryRuns = updater(state.queryPanel.asyncQueryRuns);
+          } else {
+            state.queryPanel.asyncQueryRuns = updater;
+          }
+        },
+        false,
+        'setAsyncQueryRuns'
+      ),
+
     onQueryConfirmOrCancel: (queryConfirmationData, isConfirm = false, mode = 'edit', moduleId = 'canvas') => {
       const { queryPanel, dataQuery, setResolvedQuery } = get();
       const { runQuery } = queryPanel;
@@ -202,6 +217,70 @@ export const createQueryPanelSlice = (set, get) => ({
         );
     },
 
+    createWorkflowAsyncHandler: ({
+      executionId,
+      queryId,
+      processQueryResults,
+      handleFailure,
+      shouldSetPreviewData,
+      setPreviewData,
+      setResolvedQuery,
+    }) => {
+      const asyncHandler = new AsyncQueryHandler({
+        streamSSE: (jobId) => {
+          return workflowExecutionsService.streamSSE(jobId);
+        },
+        extractJobId: () => executionId,
+        classifyEventStatus: (eventData) => {
+          // hardcoded for workflows
+          if (eventData.type === 'workflow_connection_close') {
+            return { status: 'CLOSE', data: eventData };
+          } else if (eventData.type === 'workflow_execution_completed') {
+            return { status: 'COMPLETE', result: eventData.result, data: eventData };
+          } else if (eventData.type === 'workflow_execution_error') {
+            return { status: 'ERROR', data: eventData };
+          } else {
+            return { status: 'PROGRESS', data: eventData };
+          }
+        },
+        callbacks: {
+          onProgress: (progressData) => {
+            // Update UI with progress information
+            if (shouldSetPreviewData) {
+              setPreviewData({ ...progressData });
+            }
+            setResolvedQuery(queryId, {
+              isLoading: true,
+              progress: progressData.progress,
+              currentData: progressData.partialData || [],
+            });
+          },
+          onComplete: async (result) => {
+            await processQueryResults(result);
+            // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
+            get().queryPanel.setAsyncQueryRuns((currentRuns) =>
+              currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
+            );
+          },
+          onError: (e) => {
+            handleFailure({
+              status: 'failed',
+              data: {
+                message: e.message || 'Error in async processing',
+                error: e.error,
+              },
+            });
+            // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
+            get().queryPanel.setAsyncQueryRuns((currentRuns) =>
+              currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
+            );
+          },
+        },
+      });
+
+      return asyncHandler;
+    },
+
     runQuery: (
       queryId,
       queryName,
@@ -231,7 +310,7 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
-        executeWorkflow,
+        triggerWorkflow,
         executeMultilineJS,
       } = queryPanel;
       const queryUpdatePromise = dataQuerySlice.queryUpdates[queryId];
@@ -332,6 +411,97 @@ export const createQueryPanelSlice = (set, get) => ({
         }
       }
 
+      // Handler for transformation and completion of query results
+      const processQueryResults = async (data, rawData = null) => {
+        let finalData = data;
+        rawData = rawData || data;
+
+        if (dataQuery.options.enableTransformation) {
+          finalData = await runTransformation(
+            finalData,
+            query.options.transformation,
+            query.options.transformationLanguage,
+            query,
+            mode,
+            moduleId
+          );
+
+          if (finalData.status === 'failed') {
+            handleFailure(finalData);
+            return finalData;
+          }
+        }
+
+        if (shouldSetPreviewData) {
+          setPreviewLoading(false);
+          setPreviewData(finalData);
+        }
+
+        if (dataQuery.options.showSuccessNotification) {
+          const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+          toast.success(dataQuery.options.successMessage, {
+            duration: notificationDuration,
+          });
+        }
+
+        get().debugger.log({
+          logLevel: 'success',
+          type: 'query',
+          kind: query.kind,
+          key: query.name,
+          message: 'Query executed successfully',
+          isQuerySuccessLog: true,
+          errorTarget: 'Queries',
+        });
+
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: false,
+            data: finalData,
+            rawData,
+            metadata: data?.metadata,
+            request: data?.metadata?.request,
+            response: data?.metadata?.response,
+          },
+          moduleId
+        );
+
+        onEvent('onDataQuerySuccess', queryEvents, mode);
+        return { status: 'ok', data: finalData };
+      };
+
+      // Handler for query failures
+      const handleFailure = (errorData) => {
+        if (shouldSetPreviewData) {
+          setPreviewLoading(false);
+          setPreviewData(errorData);
+        }
+
+        get().debugger.log({
+          logLevel: 'error',
+          type: 'query',
+          kind: query.kind,
+          key: query.name,
+          message: errorData?.description || 'Query failed',
+          errorTarget: 'Queries',
+          error: errorData,
+          isQuerySuccessLog: false,
+        });
+
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: false,
+            error: errorData,
+          },
+          moduleId
+        );
+
+        onEvent('onDataQueryFailure', queryEvents);
+        return errorData;
+      };
+
       // eslint-disable-next-line no-unused-vars
       return new Promise(function (resolve, reject) {
         if (shouldSetPreviewData) {
@@ -356,7 +526,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState, moduleId);
         } else if (query.kind === 'workflows') {
-          queryExecutionPromise = executeWorkflow(
+          queryExecutionPromise = triggerWorkflow(
             moduleId,
             query.options.workflowId,
             query.options.blocking,
@@ -385,6 +555,53 @@ export const createQueryPanelSlice = (set, get) => ({
               const url = data.data.auth_url; // Backend generates and return sthe auth url
               fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
             }
+
+            // Asynchronous query execution
+            // Currently async query resolution is applicable only to workflows
+            // Change this conditional to async query type check for other
+            // async queries in the future
+            if (query.kind === 'workflows') {
+              try {
+                const asyncHandler = get().queryPanel.createWorkflowAsyncHandler({
+                  executionId: data.data.executionId,
+                  queryId,
+                  processQueryResults,
+                  handleFailure,
+                  shouldSetPreviewData,
+                  setPreviewData,
+                  setResolvedQuery,
+                });
+
+                // Process initial response and start SSE monitoring
+                asyncHandler.processInitialResponse(data.data);
+
+                // Add the AsyncQueryHandler instance to asyncQueryRuns
+                get().queryPanel.setAsyncQueryRuns((currentRuns) => [...currentRuns, asyncHandler]);
+
+                // Set initial state with jobId
+                setResolvedQuery(
+                  queryId,
+                  {
+                    isLoading: true,
+                    jobId: asyncHandler.jobId,
+                    // data: data.data,
+                  },
+                  moduleId
+                );
+
+                // Resolve with async status
+                resolve({
+                  jobId: asyncHandler.jobId,
+                  // data: data.data,
+                });
+              } catch (error) {
+                toast.error(error.message || 'Failed to start async query');
+                resolve({ status: 'failed', message: error.message });
+              }
+              return;
+            }
+
+            // Handle synchronous queries (original code)
 
             let queryStatusCode = data?.status ?? null;
             const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
@@ -420,114 +637,15 @@ export const createQueryPanelSlice = (set, get) => ({
                   errorData = data;
                   break;
               }
-              if (shouldSetPreviewData) {
-                setPreviewLoading(false);
-                setPreviewData(errorData);
-              }
+
               errorData = query.kind === 'runpy' || query.kind === 'runjs' ? data?.data : data;
-              get().debugger.log({
-                logLevel: 'error',
-                type: 'query',
-                kind: query.kind,
-                key: query.name,
-                message: errorData?.description,
-                errorTarget: 'Queries',
-                error:
-                  query.kind === 'restapi'
-                    ? {
-                        substitutedVariables: options,
-                        request: data?.data?.requestObject,
-                        response: data?.data?.responseObject,
-                      }
-                    : errorData,
-                isQuerySuccessLog: false,
-              });
-
-              setResolvedQuery(
-                queryId,
-                {
-                  isLoading: false,
-                  ...(query.kind === 'restapi'
-                    ? {
-                        metadata: data.metadata,
-                        request: data.data.requestObject,
-                        response: data.data.responseObject,
-                        responseHeaders: data.data.responseHeaders,
-                      }
-                    : {}),
-                },
-                moduleId
-              );
-
-              resolve(data);
-              onEvent('onDataQueryFailure', queryEvents);
+              const result = handleFailure(errorData);
+              resolve(result);
               return;
             } else {
-              let rawData = data.data;
-              let finalData = data.data;
-              if (dataQuery.options.enableTransformation) {
-                finalData = await runTransformation(
-                  finalData,
-                  query.options.transformation,
-                  query.options.transformationLanguage,
-                  query,
-                  'edit',
-                  moduleId
-                );
-                if (finalData.status === 'failed') {
-                  setResolvedQuery(
-                    queryId,
-                    {
-                      isLoading: false,
-                    },
-                    moduleId
-                  );
-
-                  resolve(finalData);
-                  onEvent('onDataQueryFailure', queryEvents);
-                  setPreviewLoading(false);
-                  if (shouldSetPreviewData) setPreviewData(finalData);
-                  return;
-                }
-              }
-
-              if (shouldSetPreviewData) {
-                setPreviewLoading(false);
-                setPreviewData(finalData);
-              }
-
-              if (dataQuery.options.showSuccessNotification) {
-                const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-                toast.success(dataQuery.options.successMessage, {
-                  duration: notificationDuration,
-                });
-              }
-
-              get().debugger.log({
-                logLevel: 'success',
-                type: 'query',
-                kind: query.kind,
-                key: query.name,
-                message: 'Query executed successfully',
-                isQuerySuccessLog: true,
-                errorTarget: 'Queries',
-              });
-
-              setResolvedQuery(
-                queryId,
-                {
-                  isLoading: false,
-                  data: finalData,
-                  rawData,
-                  metadata: data?.metadata,
-                  request: data?.metadata?.request,
-                  response: data?.metadata?.response,
-                },
-                moduleId
-              );
-
-              resolve({ status: 'ok', data: finalData });
-              onEvent('onDataQuerySuccess', queryEvents, mode);
+              const rawData = data.data;
+              const result = await processQueryResults(data.data, rawData);
+              resolve(result);
             }
           })
           .catch((e) => {
@@ -547,7 +665,7 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
-        executeWorkflow,
+        triggerWorkflow,
         executeMultilineJS,
         setIsPreviewQueryLoading,
       } = queryPanel;
@@ -607,7 +725,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
         } else if (query.kind === 'workflows') {
-          queryExecutionPromise = executeWorkflow(
+          queryExecutionPromise = triggerWorkflow(
             moduleId,
             query.options.workflowId,
             query.options.blocking,
@@ -620,11 +738,72 @@ export const createQueryPanelSlice = (set, get) => ({
 
         queryExecutionPromise
           .then(async (data) => {
+            // Asynchronous query execution
+            // Currently async query resolution is applicable only to workflows
+            // Change this conditional to async query type check for other
+            // async queries in the future
+            if (query.kind === 'workflows') {
+              const processQueryResultsPreview = async (result) => {
+                let finalData = result;
+                if (query.options.enableTransformation) {
+                  finalData = await runTransformation(
+                    finalData,
+                    query.options.transformation,
+                    query.options.transformationLanguage,
+                    query,
+                    'edit',
+                    moduleId
+                  );
+                  if (finalData.status === 'failed') {
+                    setPreviewLoading(false);
+                    setIsPreviewQueryLoading(false);
+                    if (!calledFromQuery) setPreviewData(finalData);
+                    resolve({ status: 'failed', data: finalData });
+                    return finalData;
+                  }
+                }
+                setPreviewLoading(false);
+                setIsPreviewQueryLoading(false);
+                if (!calledFromQuery) setPreviewData(finalData);
+                resolve({ status: 'ok', data: finalData });
+                return { status: 'ok', data: finalData };
+              };
+              const handleFailurePreview = (errorData) => {
+                setPreviewLoading(false);
+                setIsPreviewQueryLoading(false);
+                if (!calledFromQuery) setPreviewData(errorData);
+                resolve({ status: 'failed', data: errorData });
+                return errorData;
+              };
+
+              try {
+                const asyncHandler = get().queryPanel.createWorkflowAsyncHandler({
+                  executionId: data.data.executionId,
+                  queryId: query.id,
+                  processQueryResults: processQueryResultsPreview,
+                  handleFailure: handleFailurePreview,
+                  shouldSetPreviewData: true,
+                  setPreviewData,
+                  setResolvedQuery: () => {}, // No resolvedQuery for preview
+                });
+                // Process initial response and start SSE monitoring
+                asyncHandler.processInitialResponse(data.data);
+                get().queryPanel.setAsyncQueryRuns((currentRuns) => [...currentRuns, asyncHandler]);
+                // Resolve immediately with jobId for UI tracking
+                resolve({ jobId: asyncHandler.jobId });
+              } catch (error) {
+                toast.error(error.message || 'Failed to start async preview query');
+                setPreviewLoading(false);
+                setIsPreviewQueryLoading(false);
+                resolve({ status: 'failed', message: error.message });
+              }
+              return;
+            }
+
             let finalData = data.data;
             let queryStatusCode = data?.status ?? null;
             const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
             switch (true) {
-              // Note: Need to move away from statusText -> statusCode
               case queryStatus === 'Bad Request' ||
                 queryStatus === 'Not Found' ||
                 queryStatus === 'Unprocessable Entity' ||
@@ -656,9 +835,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 }
 
                 onEvent('onDataQueryFailure', queryEvents);
-
                 if (!calledFromQuery) setPreviewData(errorData);
-
                 break;
               }
               case queryStatus === 'needs_oauth': {
@@ -721,11 +898,19 @@ export const createQueryPanelSlice = (set, get) => ({
       });
     },
 
-    executeRunPycode: async (code, query, isPreview, mode, currentState) => {
+    executeRunPycode: async (code, query, isPreview, mode, currentState, _moduleId = 'canvas') => {
       const {
         queryPanel: { evaluatePythonCode },
       } = get();
-      return { data: await evaluatePythonCode({ code, query, isPreview, mode, currentState }) };
+      return {
+        data: await evaluatePythonCode({
+          code,
+          query,
+          isPreview,
+          mode,
+          currentState,
+        }),
+      };
     },
 
     evaluatePythonCode: async (options, moduleId = 'canvas') => {
@@ -919,7 +1104,13 @@ export const createQueryPanelSlice = (set, get) => ({
       const {
         queryPanel: { evaluatePythonCode },
       } = get();
-      return await evaluatePythonCode({ queryResult, code, query, mode, currentState });
+      return await evaluatePythonCode({
+        queryResult,
+        code,
+        query,
+        mode,
+        currentState,
+      });
     },
 
     updateQuerySuggestions: (oldName, newName) => {
@@ -940,7 +1131,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       delete updatedQueries[oldName];
 
-      const oldSuggestions = Object.keys(queries[oldName]).map((key) => `queries.${oldName}.${key}`);
+      const _oldSuggestions = Object.keys(queries[oldName]).map((key) => `queries.${oldName}.${key}`);
       // useResolveStore.getState().actions.removeAppSuggestions(oldSuggestions);
 
       // useCurrentStateStore.getState().actions.setCurrentState({
@@ -959,6 +1150,18 @@ export const createQueryPanelSlice = (set, get) => ({
         return { data: response.result, status: 'ok' };
       } catch (e) {
         return { data: undefined, status: 'failed' };
+      }
+    },
+    triggerWorkflow: async (moduleId, workflowAppId, _blocking = false, params = {}, appEnvId) => {
+      const { getAllExposedValues } = get();
+      const currentState = getAllExposedValues();
+      const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      try {
+        const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
+        return { data: executionResponse.result, status: 'ok' };
+      } catch (e) {
+        return { data: e?.message, status: 'failed' };
       }
     },
 

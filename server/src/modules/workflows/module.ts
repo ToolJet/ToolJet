@@ -55,7 +55,8 @@ export class WorkflowsModule {
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
     const { WorkflowSchedulesService } = await import(`${importPath}/workflows/services/workflow-schedules.service`);
     const { TemporalService } = await import(`${importPath}/workflows/services/temporal.service`);
-    const { WorkflowWebhooksListener } = await import(`${importPath}/workflows/listeners/workflow-webhooks.listener`);
+    const { WorkflowStreamService } = await import(`${importPath}/workflows/services/workflow-stream.service`);
+    const { WorkflowTriggersListener } = await import(`${importPath}/workflows/listeners/workflow-triggers.listener`);
     const { FeatureAbilityFactory } = await import(`${importPath}/workflows/ability/app`);
 
     return {
@@ -110,7 +111,8 @@ export class WorkflowsModule {
         PageService,
         EventsService,
         WorkflowExecutionsService,
-        WorkflowWebhooksListener,
+        WorkflowStreamService,
+        WorkflowTriggersListener,
         WorkflowWebhooksService,
         OrganizationConstantsService,
         ComponentsService,

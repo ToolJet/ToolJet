@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res, Sse } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowExecutionController } from '../interfaces/IWorkflowExecutionController';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
@@ -9,6 +9,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/workflows/constants';
+import { Observable } from 'rxjs';
 
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow_executions')
@@ -50,6 +51,23 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     @Body() previewNodeDto: PreviewWorkflowNodeDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<{ result: any }> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW)
+  @Post(':id/trigger')
+  async trigger(
+    @Param('id') id: string,
+    @Body() createWorkflowExecutionDto: CreateWorkflowExecutionDto,
+    @User() user,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<{ result: any }> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.WORKFLOW_EXECUTION_STATUS)
+  @Sse(':id/stream')
+  streamWorkflowExecution(@Param('id') id: string): Observable<MessageEvent> {
     throw new Error('Method not implemented.');
   }
 }

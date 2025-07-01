@@ -40,38 +40,38 @@ export class WebhookGuard implements CanActivate {
     // Workspace Level -
     if (workflowsLimit.workspace) {
       // Daily Limit
-      if (
-        workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
-        (
-          await this.manager.query(
-            `SELECT COUNT(*)
+      const workspaceDailyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
         WHERE a.organization_id = $1
-        AND DATE(we.created_at) = current_date`,
-            [workflowApp.organizationId]
-          )
-        )[0].count >= workflowsLimit.workspace.daily_executions
+        AND DATE(we.created_at) = current_date
+      `;
+
+      if (
+        workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(workspaceDailyExecutionsQuery, [workflowApp.organizationId]))[0].count >=
+          workflowsLimit.workspace.daily_executions
       ) {
         throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
       }
 
       // Monthly Limit
-      if (
-        workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
-        (
-          await this.manager.query(
-            `SELECT COUNT(*)
+      const workspaceMonthlyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
         WHERE a.organization_id = $1
         AND extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)`,
-            [workflowApp.organizationId]
-          )
-        )[0].count >= workflowsLimit.workspace.monthly_executions
+        AND extract (month from we.created_at) = extract (month from current_date)
+      `;
+
+      if (
+        workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(workspaceMonthlyExecutionsQuery, [workflowApp.organizationId]))[0].count >=
+          workflowsLimit.workspace.monthly_executions
       ) {
         throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
       }
@@ -80,30 +80,35 @@ export class WebhookGuard implements CanActivate {
     // Instance Level -
     if (workflowsLimit.instance) {
       // Daily Limit
-      if (
-        workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
-        (
-          await this.manager.query(`SELECT COUNT(*)
+      const instanceDailyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
-        WHERE DATE(we.created_at) = current_date`)
-        )[0].count >= workflowsLimit.instance.daily_executions
+        WHERE DATE(we.created_at) = current_date
+      `;
+
+      if (
+        workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(instanceDailyExecutionsQuery))[0].count >= workflowsLimit.instance.daily_executions
       ) {
         throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
       }
 
       // Monthly Limit
-      if (
-        workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
-        (
-          await this.manager.query(`SELECT COUNT(*)
+      const instanceMonthlyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
         WHERE extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)`)
-        )[0].count >= workflowsLimit.instance.monthly_executions
+        AND extract (month from we.created_at) = extract (month from current_date)
+      `;
+
+      if (
+        workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(instanceMonthlyExecutionsQuery))[0].count >=
+          workflowsLimit.instance.monthly_executions
       ) {
         throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
       }
