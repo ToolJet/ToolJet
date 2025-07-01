@@ -3,7 +3,6 @@ import { ILicenseController } from './interfaces/IController';
 import { Terms } from './interfaces/terms';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { LicenseUpdateDto } from './dto';
 import { FeatureAbilityGuard } from './ability/guard';
 import { FEATURE_KEY } from './constants';
@@ -13,12 +12,12 @@ import { User } from '@modules/app/decorators/user.decorator';
 
 @InitModule(MODULES.LICENSING)
 @Controller('license')
-@UseGuards(FeatureAbilityGuard)
 export class LicenseController implements ILicenseController {
   getLicense(): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
+  @UseGuards(FeatureAbilityGuard)
   @InitFeature(FEATURE_KEY.GET_ACCESS)
   @Get('access')
   getFeatureAccess(@Req() req: Request): Promise<Terms> {
