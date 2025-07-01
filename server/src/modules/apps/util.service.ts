@@ -369,7 +369,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
         break;
       case APP_TYPES.MODULE:
-        resourceType = MODULES.MODULES;
+        resourceType = MODULES.APP;
         break;
       default:
         resourceType = MODULES.APP;
@@ -418,7 +418,7 @@ export class AppsUtilService implements IAppsUtilService {
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
     if (type === APP_TYPES.MODULE) {
-      viewableAppsQb.leftJoinAndSelect('viewable_apps.appVersions', 'versions');
+      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
     }
 
     if (type) {
