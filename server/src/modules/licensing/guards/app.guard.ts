@@ -1,24 +1,35 @@
-import { Injectable, CanActivate, ExecutionContext, HttpException } from '@nestjs/common';
-import { LICENSE_FIELD, LICENSE_LIMIT } from '@modules/licensing/constants';
+import { Injectable, CanActivate, ExecutionContext, HttpException, BadRequestException } from '@nestjs/common';
+import { LICENSE_FIELD, LICENSE_LIMIT, ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
 import { LicenseTermsService } from '../interfaces/IService';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { App } from '@entities/app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 @Injectable()
 export class AppCountGuard implements CanActivate {
   constructor(protected licenseTermsService: LicenseTermsService) {}
 
   //Dependancy error using licenseCountsService need to check
-  async fetchTotalAppCount(manager: EntityManager): Promise<number> {
-    const apps = await manager.find(App, {
-      where: {
-        type: APP_TYPES.FRONT_END,
-        organization: {
-          status: 'active',
-        },
+  async fetchTotalAppCount(manager: EntityManager, organizationId: string): Promise<number> {
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const whereCondition: any = {
+      type: APP_TYPES.FRONT_END,
+      organization: {
+        status: 'active',
       },
+    };
+    // Fetch apps using organization ID only for cloud
+    if (edition === TOOLJET_EDITIONS.Cloud) {
+      if (!organizationId || organizationId === ORGANIZATION_INSTANCE_KEY) {
+        throw new BadRequestException('Invalid Organization Id');
+      }
+      whereCondition.organization.id = organizationId;
+    }
+    const apps = await manager.find(App, {
+      where: whereCondition,
       relations: ['organization'],
     });
 
@@ -38,7 +49,7 @@ export class AppCountGuard implements CanActivate {
         return true;
       }
 
-      if ((await this.fetchTotalAppCount(manager)) >= appCount) {
+      if ((await this.fetchTotalAppCount(manager, organizationId)) >= appCount) {
         throw new HttpException('You have reached your maximum limit for apps.', 451);
       }
 

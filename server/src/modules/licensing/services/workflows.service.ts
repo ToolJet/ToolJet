@@ -18,11 +18,10 @@ export class LicenseWorkflowsService implements ILicenseWorkflowsService {
       throw new BadRequestException(`workspaceId is doesn't exist`);
     }
 
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
-      LICENSE_FIELD.WORKFLOWS,
-      LICENSE_FIELD.STATUS,
-    ], params.workspaceId);
-    console.log(licenseTerms,'terms');
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.WORKFLOWS, LICENSE_FIELD.STATUS],
+      params.workspaceId
+    );
     const totalCount =
       params.limitFor === 'workspace'
         ? licenseTerms[LICENSE_FIELD.WORKFLOWS].workspace?.total
@@ -33,7 +32,7 @@ export class LicenseWorkflowsService implements ILicenseWorkflowsService {
         appsCount: generatePayloadForLimits(
           totalCount !== LICENSE_LIMIT.UNLIMITED
             ? await this.licenseCountService.fetchTotalWorkflowsCount(
-                params.limitFor === 'workspace' ? params?.workspaceId ?? '' : '',
+                params.limitFor === 'workspace' ? (params?.workspaceId ?? '') : '',
                 manager
               )
             : 0,
