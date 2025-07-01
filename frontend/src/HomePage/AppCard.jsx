@@ -275,7 +275,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {LaunchButton}
+            {appType !== 'module' && LaunchButton}
           </div>
         </div>
       </div>
