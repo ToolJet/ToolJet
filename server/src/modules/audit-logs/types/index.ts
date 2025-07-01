@@ -18,14 +18,17 @@ export interface AuditLogFields {
   organizationId: string;
   resourceId: string;
   resourceType: MODULES;
+  resourceData?: object;
   actionType: string;
   resourceName?: string;
   ipAddress?: string;
   metadata?: object;
+  organizationIds?: Array<string>;
 }
 
 export interface Features {
   [FEATURE_KEY.VIEW_LOGS]: FeatureConfig;
+  [FEATURE_KEY.VIEW_RESOURCES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

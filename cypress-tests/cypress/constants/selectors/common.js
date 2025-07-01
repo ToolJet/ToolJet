@@ -1,5 +1,5 @@
 export const cyParamName = (paramName = "") => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
+  return String(paramName).toLowerCase().replace(/\s+/g, "-");
 };
 
 export const commonSelectors = {
@@ -18,7 +18,7 @@ export const commonSelectors = {
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
-  nameInputFieldd: "[data-cy=name-input-field]",
+  inputFieldName: "[data-cy=name-input-field]",
   valueInputFieldd: "[data-cy=value-input-field]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
@@ -278,6 +278,16 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+
+  textField: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
+  },
+  labelFieldValidation: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-validation-label"]`;
+  },
+  labelFieldAlert: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
+  },
 };
 
 export const commonWidgetSelector = {
@@ -343,7 +353,7 @@ export const commonWidgetSelector = {
   buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
   buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
-  constantInspectorIcon: '[data-cy="inspector-node-constants"]  > .node-key',
+  constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
   inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",

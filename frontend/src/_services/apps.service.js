@@ -67,16 +67,28 @@ function getAll(page, folder, searchKey, type = 'front-end') {
 }
 
 function createApp(body = {}) {
-  if (body.type === 'workflow') {
-    return createWorkflow(body);
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  switch (body.type) {
+    case 'workflow':
+      return createWorkflow(requestOptions);
+    case 'module':
+      return createModule(requestOptions);
+    default:
+      return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   }
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
 
-function createWorkflow(body = {}) {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+function createWorkflow(requestOptions) {
   return fetch(`${config.apiUrl}/workflows`, requestOptions).then(handleResponse);
+}
+
+function createModule(requestOptions) {
+  return fetch(`${config.apiUrl}/modules`, requestOptions).then(handleResponse);
 }
 
 function cloneApp(id, name) {
@@ -160,7 +172,7 @@ function setVisibility(appId, visibility) {
     credentials: 'include',
     body: JSON.stringify({ app: { is_public: visibility } }),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${appId}/public`, requestOptions).then(handleResponse);
 }
 
 function setMaintenance(appId, value) {

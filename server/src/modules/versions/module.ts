@@ -7,8 +7,10 @@ import { DataQueryRepository } from '@modules/data-queries/repository';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsRepository } from '@modules/apps/repository';
+import { AppGitRepository } from '@modules/app-git/repository';
 import { FeatureAbilityFactory } from './ability';
 import { getImportPath } from '@modules/app/constants';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
 
 export class VersionModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -33,6 +35,7 @@ export class VersionModule {
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await ThemesModule.register(configs),
+        await AppPermissionsModule.register(configs),
       ],
       controllers: [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2],
       providers: [
@@ -44,6 +47,7 @@ export class VersionModule {
         DataSourcesRepository,
         VersionRepository,
         AppsRepository,
+        AppGitRepository,
         VersionsCreateService,
         PageService,
         EventsService,

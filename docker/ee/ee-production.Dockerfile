@@ -1,17 +1,16 @@
-FROM node:18.18.2-buster AS builder
+FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@9.8.1
-RUN mkdir -p /app
-# RUN npm cache clean --force
+RUN npm i -g npm@10.9.2 && npm cache clean --force
 
+RUN mkdir -p /app
 WORKDIR /app
 
 # Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
-ARG BRANCH_NAME=main
+ARG BRANCH_NAME
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
@@ -21,7 +20,7 @@ RUN git config --global http.postBuffer 524288000
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout main
+RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
@@ -33,86 +32,86 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
+RUN npm --prefix plugins ci --omit=dev
 COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
-RUN npm --prefix plugins prune --production
-
-ENV TOOLJET_EDITION=ee
+RUN npm --prefix plugins prune --omit=dev
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build --production
-RUN npm --prefix frontend prune --production
+RUN npm --prefix frontend run build --production && npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
-ENV TOOLJET_EDITION=ee
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install
+RUN npm --prefix server ci --omit=dev
 COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli 
+RUN npm install -g copyfiles
 RUN npm --prefix server run build
+RUN npm prune --production --prefix server
 
-FROM debian:11
-
-RUN apt-get update -yq \
-    && apt-get install curl gnupg zip -yq \
-    && apt-get install -yq build-essential \
-    && apt -y install redis \
-    && apt-get clean -y
-
-# Install required dependencies for downloading and extracting files
+# Install dependencies for PostgREST, curl, unzip, etc.
 RUN apt-get update && apt-get install -y \
-    curl tar xz-utils postgresql postgresql-contrib postgresql-client && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    curl ca-certificates unzip tar \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install PostgREST from official Docker image
-COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+ENV POSTGREST_VERSION=v12.2.0
 
-RUN apt-get update && apt-get install -y supervisor
+RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/download/${POSTGREST_VERSION}/postgrest-v12.2.0-linux-static-x64.tar.xz && \
+    tar -xf postgrest.tar.xz && \
+    mv postgrest /postgrest && \
+    rm postgrest.tar.xz && \
+    chmod +x /postgrest
 
-# Create supervisord configuration file
-RUN echo "[supervisord]\n" \
-    "nodaemon=true\n" \
-    "\n" \
-    "[program:postgrest]\n" \
-    "command=/bin/postgrest \n" \
-    "autostart=true\n" \
-    "autorestart=true\n" \
-    "stdout_logfile=/dev/stdout\n" \
-    "stderr_logfile=/dev/stderr\n" \
-    "stdout_logfile_maxbytes=0\n" \
-    "stderr_logfile_maxbytes=0\n" \
-    "\n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
+FROM debian:12-slim
 
-# Create a wrapper for PostgREST to prefix its logs
-RUN mv /bin/postgrest /bin/postgrest-original && \
-    echo '#!/bin/bash\n\
-exec /bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"\n\
-' > /bin/postgrest && \
-    chmod +x /bin/postgrest
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        curl \
+        wget \
+        gnupg \
+        unzip \
+        ca-certificates \
+        xz-utils \
+        tar \
+        zip \
+        postgresql-client \
+        redis \
+        libaio1 \
+        git \
+        freetds-dev \
+    && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
+    && apt-get autoremove -y \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
-    && tar -xf node-v18.18.2-linux-x64.tar.xz \
-    && mv node-v18.18.2-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
+    && tar -xf node-v22.15.1-linux-x64.tar.xz \
+    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v18.18.2-linux-x64.tar.xz
+    && rm node-v22.15.1-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
-    apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
-    apt-get -y autoremove && \
-    apt-get -y autoclean
+
+# Install Neo4j + APOC
+RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
+    echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
+    apt-get update && apt-get install -y neo4j=1:5.26.6 && apt-mark hold neo4j && \
+    mkdir -p /var/lib/neo4j/plugins && \
+    wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
+    echo "dbms.security.procedures.unrestricted=apoc.*" >> /etc/neo4j/neo4j.conf && \
+    echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" >> /etc/neo4j/neo4j.conf && \
+    echo "dbms.directories.plugins=/var/lib/neo4j/plugins" >> /etc/neo4j/neo4j.conf && \
+    echo "dbms.security.auth_enabled=true" >> /etc/neo4j/neo4j.conf && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -127,48 +126,55 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
 # Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
+RUN rm -f *.zip *.key && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /
 
 RUN mkdir -p /app
-# copy npm scripts
-COPY --from=builder /app/package.json ./app/package.json
-# copy plugins dependencies
-COPY --from=builder /app/plugins/dist ./app/plugins/dist
-COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
-COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
-COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
-COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
-# copy frontend build
-COPY --from=builder /app/frontend/build ./app/frontend/build
-# copy server build
-COPY --from=builder /app/server/package.json ./app/server/package.json
-COPY --from=builder /app/server/.version ./app/server/.version
-COPY --from=builder /app/server/ee/keys ./app/server/ee/keys
-COPY --from=builder /app/server/node_modules ./app/server/node_modules
-COPY --from=builder /app/server/templates ./app/server/templates
-COPY --from=builder /app/server/scripts ./app/server/scripts
-COPY --from=builder /app/server/dist ./app/server/dist
 
-COPY  ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
+RUN useradd --create-home --home-dir /home/appuser appuser
 
-# Define non-sudo user
-RUN useradd --create-home --home-dir /home/appuser appuser \
-    && chown -R appuser:0 /app \
-    && chown -R appuser:0 /home \
-    && chmod u+x /app \
-    && chmod u+x /home \
-    && chmod -R g=u /app \
-    && chmod -R g=u /home
+# Use the PostgREST binary from the builder stage
+COPY --from=builder --chown=appuser:0 /postgrest /usr/local/bin/postgrest
 
-# Create directory /home/appuser and set ownership to appuser (Refer doc for understanding the changes https://app.clickup.com/37484951/v/dc/13qycq-4081)
+RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
+    echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
+    chmod +x /usr/local/bin/postgrest
+
+
+# Copy application with ownership set directly to avoid chown -R
+COPY --from=builder --chown=appuser:0 /app/package.json ./app/package.json
+COPY --from=builder --chown=appuser:0 /app/plugins/dist ./app/plugins/dist
+COPY --from=builder --chown=appuser:0 /app/plugins/client.js ./app/plugins/client.js
+COPY --from=builder --chown=appuser:0 /app/plugins/node_modules ./app/plugins/node_modules
+COPY --from=builder --chown=appuser:0 /app/plugins/packages/common ./app/plugins/packages/common
+COPY --from=builder --chown=appuser:0 /app/plugins/package.json ./app/plugins/package.json
+COPY --from=builder --chown=appuser:0 /app/frontend/build ./app/frontend/build
+COPY --from=builder --chown=appuser:0 /app/server/package.json ./app/server/package.json
+COPY --from=builder --chown=appuser:0 /app/server/.version ./app/server/.version
+COPY --from=builder --chown=appuser:0 /app/server/ee/keys ./app/server/ee/keys
+COPY --from=builder --chown=appuser:0 /app/server/node_modules ./app/server/node_modules
+COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templates
+COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
+COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
+COPY --from=builder --chown=appuser:0 /app/server/src/assets ./app/server/src/assets
+COPY ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
+
+RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \
+    chown -R appuser:0 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
+    chmod -R 770 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
+    chmod -R 644 /var/lib/neo4j/plugins/*.jar && \
+    chown -R appuser:0 /var/lib/neo4j/plugins && \
+    chmod 755 /var/lib/neo4j/plugins
+
+# Create directory /home/appuser and set ownership to appuser
 RUN mkdir -p /home/appuser \
     && chown -R appuser:0 /home/appuser \
     && chmod g+s /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
 
-# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser (Refer doc for understanding the changes https://app.clickup.com/37484951/v/dc/13qycq-4081)
+# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
 RUN mkdir -p /tmp/.npm/npm-cache/ \
     && chown -R appuser:0 /tmp/.npm/npm-cache/ \
     && chmod g+s /tmp/.npm/npm-cache/ \
@@ -191,28 +197,11 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
-# Set permissions for PostgREST binary
-RUN chown appuser:0 /bin/postgrest && chmod u+x /bin/postgrest && chmod g=u /bin/postgrest
-
-RUN touch /tmp/postgrest.conf \
-    && chown appuser:0 /tmp/postgrest.conf \
-    && chmod 640 /tmp/postgrest.conf
-
-# Create PostgREST data, log, and configuration directories
-RUN mkdir -p /var/lib/postgrest /var/log/postgrest /etc/postgrest \
-    && chown -R appuser:0 /var/lib/postgrest /var/log/postgrest /etc/postgrest \
-    && chmod g+s /var/lib/postgrest /var/log/postgrest /etc/postgrest \
-    && chmod -R g=u /var/lib/postgrest /var/log/postgrest /etc/postgrest
-
 ENV HOME=/home/appuser
-
 # Switch back to appuser
 USER appuser
-
 WORKDIR /app
-# Dependencies for scripts outside nestjs
-RUN npm install dotenv@10.0.0 joi@17.4.1
 
-RUN npm cache clean --force
+RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
 
 ENTRYPOINT ["./server/ee-entrypoint.sh"]

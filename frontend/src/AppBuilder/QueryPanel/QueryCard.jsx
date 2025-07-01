@@ -13,9 +13,11 @@ import useStore from '@/AppBuilder/_stores/store';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
 import { debounce } from 'lodash';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
-  const appId = useStore((state) => state.app.appId);
+  const { moduleId } = useModuleContext();
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
@@ -126,7 +128,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                   <a
                     className="text-truncate"
                     data-tooltip-id="query-card-local-ds-info"
-                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                    href="https://docs.tooljet.ai/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
                     target="_blank"
                     rel="noreferrer"
                   >

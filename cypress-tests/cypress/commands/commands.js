@@ -11,7 +11,7 @@ import { selectAppCardOption } from "Support/utils/common";
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
     ? "/api/library_apps"
-    : "/api/library_apps/";
+    : "/api/library_apps";
 
 Cypress.Commands.add(
   "appUILogin",
@@ -429,7 +429,6 @@ Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   });
 });
 
-
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {
     cy.get(commonEeSelectors.promoteButton).click();
@@ -604,4 +603,30 @@ Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
         }
       });
   });
+});
+
+Cypress.Commands.add(
+  "verifyRequiredFieldValidation",
+  (fieldName, expectedColor) => {
+    cy.get(commonSelectors.textField(fieldName)).should(
+      "have.css",
+      "border-color",
+      expectedColor
+    );
+    cy.get(commonSelectors.labelFieldValidation(fieldName))
+      .should("be.visible")
+      .and("have.text", `${fieldName} is required`);
+    cy.get(commonSelectors.labelFieldAlert(fieldName))
+      .should("be.visible")
+      .and("have.text", `${fieldName} is required`);
+  }
+);
+
+Cypress.Commands.add('ifEnv', (expectedEnvs, callback) => {
+  const actualEnv = Cypress.env("environment");
+  const envArray = Array.isArray(expectedEnvs) ? expectedEnvs : [expectedEnvs];
+
+  if (envArray.includes(actualEnv)) {
+    callback();
+  }
 });

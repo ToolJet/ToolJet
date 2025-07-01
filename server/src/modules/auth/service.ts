@@ -15,7 +15,7 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { EMAIL_EVENTS } from '@modules/email/constants';
-import { UserRepository } from '../users/repository';
+import { UserRepository } from '../users/repositories/repository';
 import { AuthUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { IAuthService } from './interfaces/IService';
@@ -124,6 +124,9 @@ export class AuthService implements IAuthService {
           organizationId: organization.id,
           resourceId: user.id,
           resourceName: user.email,
+          resourceData: {
+            auth_method: 'password',
+          },
         });
       }
 
@@ -184,6 +187,13 @@ export class AuthService implements IAuthService {
         forgotPasswordToken: null,
         passwordRetryCount: 0,
       });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     }
   }
 
@@ -195,6 +205,13 @@ export class AuthService implements IAuthService {
     }
     const forgotPasswordToken = uuid.v4();
     await this.userRepository.updateOne(user.id, { forgotPasswordToken });
+    const auditLogEntry = {
+      userId: user.id,
+      organizationId: user.defaultOrganizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     this.eventEmitter.emit('emailEvent', {
       type: EMAIL_EVENTS.SEND_PASSWORD_RESET_EMAIL,
       payload: {

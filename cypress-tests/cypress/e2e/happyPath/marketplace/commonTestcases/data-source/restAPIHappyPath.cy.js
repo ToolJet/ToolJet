@@ -337,7 +337,7 @@ describe("Data source Rest API", () => {
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
       [
-        { key: "url", value: Cypress.env("restAPI_BaseURL") },
+        { key: "url", value: "https://jsonplaceholder.typicode.com" },
         { key: "auth_type", value: "none" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
@@ -370,62 +370,101 @@ describe("Data source Rest API", () => {
     cy.apiCreateApp(`${fake.companyName}-restAPI-CURD-App`);
     cy.openApp();
     createAndRunRestAPIQuery({
-      queryName: "get_beeceptor_data",
+      queryName: "get_all_users",
       dsName: `cypress-${data.dataSourceName}-restapi`,
       method: "GET",
-      urlSuffix: "/api/users",
+      urlSuffix: "/users",
       run: true,
+      expectedResponseShape: {
+        "0.id": true,
+        "0.name": true,
+        "0.email": true,
+      },
     });
     createAndRunRestAPIQuery({
       queryName: "post_restapi",
       dsName: `cypress-${data.dataSourceName}-restapi`,
       method: "POST",
       headersList: [["Content-Type", "application/json"]],
-      rawBody: '{"price": 200,"name": "Violin"}',
-      urlSuffix: "/api/users",
-      expectedResponseShape: { price: 200, name: "Violin", id: true },
+      rawBody: `{
+        "name": "Test User",
+        "username": "testuser",
+        "email": "test@example.com",
+        "address": {
+          "street": "123 Test St",
+          "city": "Testville",
+          "zipcode": "12345"
+        }
+      }`,
+      urlSuffix: "/users",
+      run: true,
+      expectedResponseShape: {
+        id: true,
+        name: "Test User",
+        email: "test@example.com",
+      },
     });
-    cy.readFile("cypress/fixtures/restAPI/storedId.json").then(
-      (postResponseID) => {
-        const id1 = postResponseID.id;
+    const id1 = 1;
 
-        createAndRunRestAPIQuery({
-          queryName: "put_restapi_id",
-          dsName: `cypress-${data.dataSourceName}-restapi`,
-          method: "PUT",
-          headersList: [["Content-Type", "application/json"]],
-          rawBody: '{"price": 500,"name": "Guitar"}',
-          urlSuffix: `/api/users/${id1}`,
-          expectedResponseShape: { price: 500, name: "Guitar", id: id1 },
-        });
-        createAndRunRestAPIQuery({
-          queryName: "patch_restapi_id",
-          dsName: `cypress-${data.dataSourceName}-restapi`,
-          method: "PATCH",
-          headersList: [["Content-Type", "application/json"]],
-          rawBody: '{"price": 999 }',
-          urlSuffix: `/api/users/${id1}`,
-          run: true,
-          expectedResponseShape: { price: 999, id: id1 },
-        });
-        createAndRunRestAPIQuery({
-          queryName: "get_restapi_id",
-          dsName: `cypress-${data.dataSourceName}-restapi`,
-          method: "GET",
-          urlSuffix: `/api/users/${id1}`,
-          run: true,
-          expectedResponseShape: { price: 999, name: "Guitar", id: id1 },
-        });
-        createAndRunRestAPIQuery({
-          queryName: "delete_restapi_id",
-          dsName: `cypress-${data.dataSourceName}-restapi`,
-          method: "DELETE",
-          urlSuffix: `/api/users/${id1}`,
-          run: true,
-          expectedResponseShape: { success: true },
-        });
-      }
-    );
+    createAndRunRestAPIQuery({
+      queryName: "put_restapi_id",
+      dsName: `cypress-${data.dataSourceName}-restapi`,
+      method: "PUT",
+      headersList: [["Content-Type", "application/json"]],
+      rawBody: `{
+        "id": 1,
+        "name": "Fully Updated User",
+        "username": "updateduser",
+        "email": "updated@example.com",
+        "address": {
+          "street": "456 Updated St",
+          "city": "Updatedville",
+          "zipcode": "54321"
+        }
+      }`,
+      urlSuffix: `/users/${id1}`,
+      run: true,
+      expectedResponseShape: {
+        id: id1,
+        name: "Fully Updated User",
+        email: "updated@example.com",
+      },
+    });
+    createAndRunRestAPIQuery({
+      queryName: "patch_restapi_id",
+      dsName: `cypress-${data.dataSourceName}-restapi`,
+      method: "PATCH",
+      headersList: [["Content-Type", "application/json"]],
+      rawBody: `{
+        "email": "partially.updated@example.com"
+      }`,
+      urlSuffix: `/users/${id1}`,
+      run: true,
+      expectedResponseShape: {
+        id: id1,
+        email: "partially.updated@example.com",
+      },
+    });
+    createAndRunRestAPIQuery({
+      queryName: "get_restapi_id",
+      dsName: `cypress-${data.dataSourceName}-restapi`,
+      method: "GET",
+      urlSuffix: `/users/${id1}`,
+      run: true,
+      expectedResponseShape: {
+        id: id1,
+        email: "Sincere@april.biz",
+      },
+    });
+    createAndRunRestAPIQuery({
+      queryName: "delete_restapi_id",
+      dsName: `cypress-${data.dataSourceName}-restapi`,
+      method: "DELETE",
+      urlSuffix: `/users/${id1}`,
+      run: true,
+      expectedResponseShape: {},
+    });
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-CURD-App`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for basic authentication type connection", () => {
@@ -488,6 +527,7 @@ describe("Data source Rest API", () => {
       method: "GET",
       urlSuffix: "/basic-auth/invaliduser/invalidpass",
     });
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-Basic-App`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for bearer authentication type connection", () => {
@@ -545,6 +585,7 @@ describe("Data source Rest API", () => {
       urlSuffix: "/bearer",
       expectedResponseShape: { authenticated: true, token: "my-token-123" },
     });
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-Bearer-App`);
     cy.intercept("GET", "api/data_sources?**").as("datasource");
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
@@ -597,6 +638,7 @@ describe("Data source Rest API", () => {
       method: "GET",
       urlSuffix: "/bearer",
     });
+    cy.apiDeleteApp(`${fake.companyName}-restAPI-Bearer-invalid`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
   });
   it.skip("Should verify response for authentication code grant type connection", () => {

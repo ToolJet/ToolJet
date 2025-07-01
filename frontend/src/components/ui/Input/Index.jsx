@@ -13,6 +13,7 @@ InputComponent.propTypes = {
   type: PropTypes.oneOf(['text', 'number', 'editable title', 'password', 'email']),
   value: PropTypes.string,
   onChange: PropTypes.func,
+  onClear: PropTypes.func,
   placeholder: PropTypes.string,
   name: PropTypes.string,
   id: PropTypes.string,
@@ -32,6 +33,7 @@ InputComponent.propTypes = {
 InputComponent.defaultProps = {
   type: 'text',
   onChange: (e, validateObj) => {},
+  onClear: () => {},
   placeholder: '',
   name: '',
   id: '',

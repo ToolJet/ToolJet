@@ -3,8 +3,8 @@
   "version": "1.18.0",
   "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
   "engines": {
-    "node": "18.18.2",
-    "npm": "9.8.1"
+    "node": "22.15.1",
+    "npm": "10.9.2"
   },
   "lint-staged": {
     "./frontend/src/**/*.{js,jsx}": [
@@ -19,11 +19,11 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
-    "eslint": "^8.56.0",
-    "eslint-plugin-jest": "^28.6.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "husky": "^8.0.3",
-    "lint-staged": "^13.1.2"
+    "eslint": "^9.28.0",
+    "eslint-plugin-jest": "^28.13.3",
+    "eslint-plugin-prettier": "^5.4.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0"
   },
   "scripts": {
     "prebuild:plugins": "npm run install:plugins",
@@ -40,6 +40,8 @@
     "postbuild:server": "npm --prefix server prune --production",
     "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
     "start:prod": "npm --prefix server run start:prod",
+    "cloud:setup": "npm run db:setup && npm run plugins:install && npm run plugins:uninstall && npm run plugins:reload",
+    "cloud:setup:prod": "npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod && npm run plugins:reload:prod",
     "db:create": "npm --prefix server run db:create",
     "db:create:prod": "npm --prefix server run db:create:prod",
     "db:migrate": "npm --prefix server run db:migrate",
@@ -51,12 +53,18 @@
     "db:reset": "npm --prefix server run db:reset",
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
+    "plugins:install": "npm --prefix server run plugins:install",
+    "plugins:install:prod": "npm --prefix server run plugins:install:prod",
+    "plugins:uninstall": "npm --prefix server run plugins:uninstall",
+    "plugins:uninstall:prod": "npm --prefix server run plugins:uninstall:prod",
+    "plugins:reload": "npm --prefix server run plugins:reload",
+    "plugins:reload:prod": "npm --prefix server run plugins:reload:prod",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.12.0",
-    "eslint-config-prettier": "^9.1.0"
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "eslint-config-prettier": "^10.1.5"
   }
 }
