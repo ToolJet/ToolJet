@@ -55,4 +55,3 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
-
