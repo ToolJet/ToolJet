@@ -336,7 +336,7 @@ const useAppData = (
         setApp(
           {
             appName: appData.name,
-            appId: appData.id,
+            appId,
             slug: appData.slug,
             currentAppEnvironmentId: editorEnvironment.id,
             isMaintenanceOn:
