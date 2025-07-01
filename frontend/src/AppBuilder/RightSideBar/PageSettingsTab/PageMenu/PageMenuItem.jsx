@@ -454,7 +454,7 @@ export const PageMenuItem = withRouter(
                                   placement="right"
                                   show={!licenseValid}
                                 >
-                                  <div className="d-flex align-items-center">
+                                  <div className="d-flex align-items-center enterprise-feature">
                                     <div>Page permission</div>
                                     {!licenseValid && <SolidIcon name="enterprisecrown" />}
                                   </div>
@@ -462,7 +462,7 @@ export const PageMenuItem = withRouter(
                               }
                               icon="lock"
                               darkMode={darkMode}
-                              disabled={isHomePage}
+                              disabled={!licenseValid}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();

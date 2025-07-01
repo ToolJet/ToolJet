@@ -10,12 +10,13 @@ import { APP_HEADER_HEIGHT } from '../../../AppCanvas/appCanvasConstants';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle, ToolTip } from '@/_components';
-import { RenderPageAndPageGroup } from './PageGroup';
+import { RenderPage, RenderPageAndPageGroup } from './PageGroup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { resolveReferences } from '@/_helpers/utils';
+import { Overlay, Popover } from 'react-bootstrap';
 // import useSidebarMargin from './useSidebarMargin';
 
 export const PagesSidebarNavigation = ({
@@ -366,47 +367,20 @@ export const PagesSidebarNavigation = ({
             />
           ) : (
             !isPagesSidebarHidden && (
-              <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
-                {pages.map((page) => {
-                  const isHomePage = page.id === homePageId;
-                  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-                  const IconElement = (props) => {
-                    // eslint-disable-next-line import/namespace
-                    const Icon = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
-
-                    if (!isSidebarPinned || labelStyle?.label?.hidden) {
-                      return (
-                        <ToolTip message={page?.name} placement={'right'}>
-                          <Icon {...props} />
-                        </ToolTip>
-                      );
-                    }
-
-                    return <Icon {...props} />;
-                  };
-                  return page.hidden || page.disabled || page?.restricted ? null : (
-                    <FolderList
-                      key={page.handle}
-                      onClick={() => switchPageWrapper(page)}
-                      selectedItem={page?.id === currentPageId}
-                      CustomIcon={!labelStyle?.icon?.hidden && IconElement}
-                      customStyles={computeStyles}
-                      darkMode={darkMode}
-                    >
-                      {!labelStyle?.label?.hidden && (
-                        <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
-                          <OverflowTooltip
-                            style={{ width: '110px', position: 'relative' }}
-                            childrenClassName={'page-name'}
-                          >
-                            {page.name}
-                          </OverflowTooltip>
-                        </span>
-                      )}
-                    </FolderList>
-                  );
-                })}
-              </div>
+              <RenderPagesWithoutGroup
+                darkMode={darkMode}
+                homePageId={homePageId}
+                labelStyle={labelStyle}
+                isSidebarPinned={isSidebarPinned}
+                pages={pages}
+                currentPageId={currentPageId}
+                computeStyles={computeStyles}
+                switchPageWrapper={switchPageWrapper}
+                moreBtnRef={moreRef}
+                visibleLinks={visibleLinks}
+                overflowLinks={overflowLinks}
+                position={position}
+              />
             )
           )}
         </div>
@@ -419,6 +393,94 @@ export const PagesSidebarNavigation = ({
           />
         </div>
       </div>
+    </div>
+  );
+};
+
+const RenderPagesWithoutGroup = ({
+  darkMode,
+  homePageId,
+  labelStyle,
+  isSidebarPinned,
+  pages,
+  currentPageId,
+  computeStyles,
+  switchPageWrapper,
+  visibleLinks,
+  overflowLinks,
+  linkRefs,
+  handleToggle,
+  position,
+  moreBtnRef,
+}) => {
+  const [showPopover, setShowPopover] = useState(false);
+  const filteredPagesVisible = visibleLinks.filter(
+    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
+  );
+  const filteredPagesOverflow = overflowLinks.filter(
+    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
+  );
+  return (
+    <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
+      {filteredPagesVisible.map((page) => {
+        return (
+          <RenderPage
+            key={page.handle}
+            page={page}
+            currentPageId={currentPageId}
+            switchPageWrapper={switchPageWrapper}
+            labelStyle={labelStyle}
+            computeStyles={computeStyles}
+            darkMode={darkMode}
+            homePageId={homePageId}
+            linkRefs={linkRefs}
+            callback={handleToggle}
+            position={position}
+          />
+        );
+      })}
+      {filteredPagesOverflow.length > 0 && position === 'top' && (
+        <>
+          <button
+            ref={moreBtnRef}
+            onClick={() => setShowPopover(!showPopover)}
+            className="tj-list-item page-name"
+            style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
+          >
+            <SolidIcon fill={'var(--icon-weak)'} viewBox="0 3 21 18" width="16px" name="morevertical" />
+            <div style={{ marginLeft: '6px' }}>More</div>
+          </button>
+
+          <Overlay
+            show={showPopover}
+            target={moreBtnRef.current}
+            placement="bottom-end"
+            onHide={() => setShowPopover(false)}
+            rootClose
+          >
+            <Popover id="more-nav-btns">
+              <Popover.Body>
+                {filteredPagesOverflow.map((page, index) => {
+                  return (
+                    <RenderPage
+                      key={page.handle}
+                      page={page}
+                      currentPageId={currentPageId}
+                      switchPageWrapper={switchPageWrapper}
+                      labelStyle={labelStyle}
+                      computeStyles={computeStyles}
+                      darkMode={darkMode}
+                      homePageId={homePageId}
+                      linkRefs={linkRefs}
+                      isSidebarPinned={isSidebarPinned}
+                    />
+                  );
+                })}
+              </Popover.Body>
+            </Popover>
+          </Overlay>
+        </>
+      )}
     </div>
   );
 };

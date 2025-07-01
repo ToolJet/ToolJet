@@ -28,8 +28,12 @@
             flex: 1;
             display: flex;
             align-items: center;
-            width: 73%;
+            width: 88%;
+        }
 
+        .icon-holder {
+            width: unset;
+            padding: unset;
         }
     }
 
@@ -125,7 +129,7 @@
     }
 }
 
-#page-settings-tabpane-properties {
+#page-settings-tabpane-properties, #page-settings-tabpane-styles {
     border: 0px !important;
     padding: 0px !important;
     .app-name {
@@ -168,14 +172,6 @@
 
         .add-new-page {
             width: 100%;
-        }
-    }
-}
-
-#page-settings-tabpane-styles {
-    .settings-tab {
-        .accordion-button {
-            padding: 0px !important;
         }
     }
 }
@@ -273,7 +269,7 @@
         }
 
         .tj-list-item-selected {
-            color: var(--text-default) !important;
+            color: var(--text-default);
             font-weight: 500;
             background: var(--background-accent-weak);
             outline: none !important;

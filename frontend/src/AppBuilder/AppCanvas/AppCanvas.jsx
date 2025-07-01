@@ -109,15 +109,15 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
 
-  useEffect(() => { }, [isViewerSidebarPinned]);
+  useEffect(() => {}, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {

@@ -12,8 +12,9 @@ import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { resolveReferences } from '@/_helpers/utils';
 
-const RenderPage = ({
+export const RenderPage = ({
   page,
   currentPageId,
   switchPageWrapper,
@@ -42,7 +43,7 @@ const RenderPage = ({
 
     return <Icon {...props} />;
   };
-  return (page.hidden || page.disabled) && page?.restricted ? null : (
+  return resolveReferences(page?.hidden?.value) || page.disabled || page?.restricted ? null : (
     <div
       key={page.name}
       data-id={page.id}
