@@ -75,18 +75,20 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
    `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
 
-   Under are the environment variables required for ToolJet.
+    ToolJet requires the following environment variables to be set.   
    
    ```envs
    TOOLJET_HOST=http://localhost:8082
    LOCKBOX_MASTER_KEY= <generate using 'openssl rand -hex 32'>
    SECRET_KEY_BASE= <generate using 'openssl rand -hex 64'>
    NODE_ENV=development
+
    PG_HOST=localhost
    PG_PORT=5432
    PG_USER=postgres
    PG_PASS=postgres
    PG_DB=tooljet_development
+   
    TOOLJET_DB=tooljet_db
    TOOLJET_DB_USER=postgres
    TOOLJET_DB_HOST=localhost
