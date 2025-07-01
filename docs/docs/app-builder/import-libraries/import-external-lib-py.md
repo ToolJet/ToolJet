@@ -3,17 +3,15 @@ id: runpy
 title: Using RunPy
 ---
 
-RunPy lets you use Python code inside your ToolJet apps and by installing supported libraries, you can add more functionality to your applications without needing a full backend. In this guide, we will learn to import external python packages and use them in the application.
+In this guide, we will learn to import Python libraries in your applications.
 
-If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy. ToolJet supports installing libraries using micropip. Checkout [this](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) documentation for a list of supported libraries.
-
+If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy. ToolJet supports installing libraries using **micropip**. Check out [this](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) documentation for a list of supported libraries.
 
 ## Installing Python Packages
 
-In ToolJet, you can write Python code for custom logic, and for intensive data processing tasks, you can use Python packages like pandas and NumPy without needing to write complex code from scratch. Here’s how you can use them:
+In ToolJet, you can write Python code for custom logic, and for intensive data processing tasks, you can use Python libraries without needing to write complex code from scratch. Here’s how you can use them:
 
-
-You can use micropip to install packages like Pandas and NumPy as follows:
+You can use **micropip** to install packages like Pandas and NumPy as follows:
 
 ```python
 import micropip
@@ -26,14 +24,14 @@ Trigger this RunPy query once to install these packages.
  <img className="screenshot-full img-full" src="/img/app-builder/custom-code/install_py.png" alt="Installing py modules" />
 
 :::tip
-Enable the **Run this query on application load?** option in the query settings to make the libraries available throughout the application as soon as the app is loaded.
+Enable the **Run this query on application load** option in the query settings to make the libraries available throughout the application as soon as the app is loaded.
 :::
 
-## Use cases
+## Use Cases
 
-### Parse CSV data
+### Parse CSV Data
 
-Say you want users to upload a CSV and view the parsed output. Here’s how you can use pandas and Python’s CSV module. Create a RunPy query to parse CSV data using `StringIO`, `csv`, and `Pandas` module.
+Let’s say you want users to upload a CSV and view the parsed output. Here’s how you can use pandas and Python’s CSV module. Create a RunPy query to parse CSV data using `StringIO`, `csv`, and `Pandas` module.
 
 ```python
 from io import StringIO
@@ -57,8 +55,7 @@ print(df)
 - In the File Picker’s event settings:
     - Event: On File Loaded
     - Action: Run Query → choose your RunPy script
-- Upload a CSV file. Now when you trigger the RunPy query, it will parse the data and output it in the browser console.
-
+- Upload a CSV file. When you trigger the RunPy query, it will parse the data and output it in the browser console
 
 ### Prompt Preprocessing for AI APIs
 
@@ -89,7 +86,7 @@ print({"chunks": chunks})
 
 <details id="tj-dropdown">
 
-<summary>Input - Meenting notes</summary>
+<summary>Input - Meeting notes</summary>
 
 We discussed the Q3 roadmap and agreed to prioritize performance improvements. There were also suggestions to improve the onboarding experience.
 

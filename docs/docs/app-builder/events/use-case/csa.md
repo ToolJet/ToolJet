@@ -3,7 +3,7 @@ id: csa
 title: Controlling Component State
 ---
 
-Component-Specific Actions (CSAs) are built-in functions that allow you to control a component state and behavior in the application. Each component has its own set of CSAs based on its capabilities. 
+Component-Specific Actions (CSAs) are built-in functions that allow you to control the component state and behavior in the application. Each component has its own set of CSAs based on its capabilities. 
 
 For example, a Text component supports the `setText()` action, while a Radio Button component offers `selectOption()`. 
 
@@ -36,3 +36,5 @@ Alternatively, you can reset the **Form** directly within your query by appendin
 ```js
 await components.feedbackForm.resetForm()
 ```
+
+Component-Specific Actions give you precise control over how components behave at runtime, making your applications more interactive and responsive.

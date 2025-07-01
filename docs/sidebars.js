@@ -145,7 +145,7 @@ const sidebars = {
         },
         {
           'type': 'category',
-          'label': 'Connecting with Data Sources',
+          'label': 'Connecting Data Sources',
           'items': [
             'app-builder/connecting-with-data-sources/creating-managing-queries',
             'app-builder/connecting-with-data-sources/accessing-query-results',
@@ -174,7 +174,7 @@ const sidebars = {
             'app-builder/custom-code/managing-variables',
             {
               'type': 'category',
-              'label': 'Using External Libraries',
+              'label': 'Importing External Libraries',
               'items': [
                 'app-builder/import-libraries/runjs',
                 'app-builder/import-libraries/runpy',

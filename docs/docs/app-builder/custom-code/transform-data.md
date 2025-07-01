@@ -6,11 +6,11 @@ title: Transforming Data
 Data isn’t always available in a ready-to-use format from a single source. Often, you’ll need to transform or combine data before displaying it. Common use cases include:
 
 - Merging results from multiple data sources
-- Restructuring API responses before rendering in the components
+- Restructuring API responses before referencing them to components
 - Applying business logic such as filtering, sorting, or grouping
 - Formatting fields like dates, currency values, or nested JSON objects
 
-If you need to transform data from a single query, you can use the [transformation](/docs/app-builder/connecting-with-data-sources/transforming-data) option available directly within the query itself as shown below.
+If you need to transform data from a single query, you can use the [transformation](/docs/app-builder/connecting-with-data-sources/transforming-data) option within the query.
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_js.png" alt="App Builder: query transformations"/>
 
@@ -25,7 +25,7 @@ ToolJet allows you to write RunJS or RunPy queries to perform these transformati
 ## How It Works
 
 ToolJet allows you to access data from:
-- Configured Datasource queries (e.g., PostgreSQL, REST APIs, MongoDB, etc.)
+- Configured data source queries (e.g., PostgreSQL, REST APIs, MongoDB, etc.)
 - Component values (like inputs, dropdowns, tables)
 
 With RunJS or RunPy queries, you can write code to manipulate data from multiple sources. 
@@ -115,12 +115,12 @@ return usersWithOrderCount;
 
 Now you can reference this data in your app, for instance, in a **Table** component.
 
-### 2. Grouping and Sorting Data with Custom Business Logic [change the example]
+### 2. Grouping and Sorting Data with Custom Business Logic
 
-Let's say you have a list of products and want to group them by category and sort each group by stock (highest to lowest). This helps display organized inventory in a component like a nested list or grouped table. You can use a RunJS or RunPy query to transform the data:
+Let's say you have a list of products and want to group them by category and sort each group by stock (highest to lowest). This helps display organized inventory in a component like a nested list or grouped table. You can use a RunJS query to transform the data:
 
 ```js
-// Trigger the query and retreive the data 
+// Trigger the query and retrieve the data 
 await queries.getProducts.run();
 const products = queries.getProducts.getData();
 

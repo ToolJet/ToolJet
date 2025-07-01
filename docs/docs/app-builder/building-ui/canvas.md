@@ -11,18 +11,18 @@ title: Canvas and Layout
 
 Through Global Settings, you can customize the following properties of the **Canvas**:
 
-- **Max width of canvas**: Defines the maximum width of the canvas, which can be set in pixels or percentage of the screen size. The height of the canvas expands automatically as more components are added.
+- **Max width of canvas**: Defines the maximum width of the canvas, which can be set in pixels or as a percentage of the screen size. The height of the canvas expands automatically as more components are added.
 - **Canvas background**: Sets the background color of the canvas. This can also be controlled dynamically by clicking on **fx** and entering a logical expression.
-- **App mode**: Select between three theme modes
-    - **Auto**: Adapts to the browser's theme settings or allows the user to switch between light and dark modes.
-    - **Light**: Keeps the app in light mode, the user cannot switch to dark mode.
-    - **Dark**: Keeps the app in dark mode, the user cannot switch to light mode.
+- **App mode**: You can choose from three theme modes
+    - **Auto**: Adapts to the browser's theme settings or allows users to switch between light and dark modes.
+    - **Light**: Keeps the app in light mode, users cannot switch to dark mode.
+    - **Dark**: Keeps the app in dark mode, users cannot switch to light mode.
 
 <img className="screenshot-full img-s" src="/img/app-builder/canvas/global-settings.png" alt="App Builder: Canvas"/>
 
 ## Building the User Interface
 
-To build the user interface, components can be dragged from the [Components Library](#) on the right. The Component Handle can be used to reposition a component. A component can be resized from any of its edges or corners.
+To build the user interface, components can be dragged from the [Components Library](#) on the right. Use the Component Handle to reposition a component. A component can be resized from any of its edges or corners.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/drag.gif" alt="App Builder: Canvas"/>
 
@@ -34,7 +34,7 @@ ToolJet's Canvas provides a grid background, smart snapping, and visual markers 
 
 ## Creating Layout
 
-In ToolJet, components can be grouped using a layout component such as a **[Container](#)** or a **[Form](#)**. Relevant components can be dragged and dropped into the layout component on the canvas to create a section.
+In ToolJet, components can be grouped using a Layout component such as a **[Container](#)** or a **[Form](#)**. You can drag and drop the relevant components into the layout components on the canvas to create a section.
 
 <img className="screenshot-full img-m" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
 
@@ -46,19 +46,19 @@ You can select multiple components by clicking and dragging over them, or by cli
 
 ***Select and Move Multiple Components GIF***
 
-#### Copy Component
+#### Copy Components
 
 Components on the canvas can be copied using **Cmd/Ctrl + C**.
 
 <img className="screenshot-full img-m" src="/img/app-builder/canvas/copy.png" alt="App Builder: Canvas"/>
 
-#### Paste Component
+#### Paste Components
 
 Copied components can be pasted onto the canvas using **Cmd/Ctrl + V**.
 
 <img className="screenshot-full img-m" src="/img/app-builder/canvas/paste.png" alt="App Builder: Canvas"/>
 
-#### Clone Component
+#### Clone Components
 
 Components on the canvas can be cloned using **Cmd/Ctrl + D**. Unlike copy and paste, cloning creates a duplicate of the selected component instantly.
 

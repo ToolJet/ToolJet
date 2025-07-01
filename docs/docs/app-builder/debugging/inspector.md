@@ -1,6 +1,6 @@
 ---
 id: inspector
-title: Using Inspector
+title: Inspecting Values
 ---
 
 ToolJet's Inspector is a built-in utility that provides real-time visibility into the data and state of your application. With Inspector, developers can quickly diagnose issues, understand the flow of data, and ensure that all components, queries, and variables are functioning as intended.
@@ -22,13 +22,13 @@ You can refer to a value using the dot notation (e.g., `{{components.numberInput
 
 For example, let's say you have a **Table** displaying a list of users, and you want to fetch the details of a particular user when they are selected. You can refer to the selected row's data using the reference path in the Inspector. 
 
-You can either type this path manually or hover over the property in the Inspector to copy its path directly. This path can then be used in your query to refer the value. Additionally, you can add an event handler to the table to automatically run this query whenever a user is selected.
+You can either type this path manually or hover over the property in the Inspector to copy its path directly. This path can then be used in your query to refer to the value. Additionally, you can add an event handler to the table to automatically run this query whenever a user is selected.
 
 <img className="screenshot-full img-s" src="/img/app-builder/debugging/inspector/copy-path.png" alt="Events Architecture Diagram"/>
 
 ### Queries
 
-Under the Queries section, you can inspect the specifics of any query you’ve created. The data for a query is only visible after the query has been executed or triggered. This allows you to verify the output and troubleshoot any issues with data retrieval or manipulation. The Inspector exposes the following properties for each query:
+Under the Queries section, you can inspect the specifics of any query you’ve created. The data for a query is only visible after the query has been executed. This allows you to verify the output and troubleshoot any issues with data retrieval or manipulation. The Inspector exposes the following properties for each query:
 
 - **isLoading** – A boolean indicating whether the query is currently in progress. This can be used to control the loading state of components that depend on the query's result.
 - **data** – The transformed data returned by the query.
@@ -54,7 +54,7 @@ Refer to the [Accessing Component State](#) guide to learn how to use component 
 By using the Globals properties in the Inspector, you can view various details about your application and its environment, such as:
 - **Current User** - Information about the logged-in user, including email, name, avatar, groups, roles, and SSO details. Useful for building role-based UI or showing personalized content.
 - **Environment** - Indicates the current ToolJet environment — development, staging, or production.
-- **Mode** - Signify whether the app is opened in the editor or not.
+- **Mode** - Indicates whether the app is opened in the editor or not.
 - **Theme** - Refers to the active UI theme (light or dark). You can use this to dynamically style components based on the selected theme.
 - **URL Params** - These are query parameters appended to the page URL, commonly used to pass data between pages.
 
@@ -64,7 +64,7 @@ The Variables section in the Inspector lets you view all app-level variables ava
 
 ### Page
 
-Page-specific properties (page handle and page name) and page variables are visible in the Page section. Unlike app-level variables, page-level variables are only accessible within their respective pages.
+The Page section displays page-specific properties (such as page handle and name) and page-level variables. Unlike app-level variables, page-level variables are only accessible within their respective pages.
 
 - **handle** - The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL.
 - **id** - A unique identifier automatically assigned to every page in ToolJet.

@@ -13,10 +13,10 @@ Follow these steps to build a custom navigation menu:
 2. Place icons, text or button components inside the container for each page you want to link to.
 3. For each navigation item:
     - Select the component (icon or text).
-    - Add a event handler.
+    - Add an event handler.
         - Event: **On click**
         - Action: **Switch page**
-        - Page: *Select the target page from the dropdown.*
+        - Page: *Select the target page from the dropdown*
 
 <img className="screenshot-full img-full" src="/img/app-builder/events/page-nav/nav-bar.png" alt="Events Architecture Diagram"/> <br/><br/>
 

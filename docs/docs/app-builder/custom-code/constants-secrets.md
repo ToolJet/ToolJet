@@ -3,7 +3,7 @@ id: constants-secrets
 title: Referencing Constants and Secrets 
 ---
 
-When building applications in ToolJet, you often need to reuse fixed values (such as URLs, or environment flags) or securely handle sensitive information (such as API keys or database credentials). [Workspace Constants and Secrets](/docs/security/constants/) make this process easy, safe, and maintainable, especially when working across multiple apps or with larger teams. 
+When building applications in ToolJet, you often need to reuse fixed values (such as URLs or environment flags) or securely handle sensitive information (such as API keys or database credentials). [Workspace Constants and Secrets](/docs/security/constants/) make this process easy, safe, and maintainable, especially when working across multiple apps or with larger teams. 
 
 In this guide, you'll learn how to use Workspace Constants and Secrets within your ToolJet apps. 
 
@@ -48,11 +48,11 @@ You can now reference it in your queries or custom code:
 
 ### Handling Sensitive Credentials with Secrets
 
-Let’s say your application uses a third-party service such as Open AI that requires an API key. Storing this key directly in queries or code isn’t a good practice. Instead, define a Secret:
+Let’s say your application uses a third-party service such as OpenAI that requires an API key. Storing this key directly in queries or code isn’t a good practice. Instead, define a Secret:
 
 - Name: `OPENAI_API_KEY`
 - Value: `sk_****************`
 
 <img className="screenshot-full img-l" style={{marginBottom:"15px"}} src="/img/app-builder/custom-code/secret_usecase.png" alt="secret usecase"/>
 
-Secrets are encrypted and only available in queries and data sources. They are not accessible in app-builder components, ensuring your credentials remain secure.
+Secrets are encrypted and can only be accessed within queries and data sources. They are not accessible in components, ensuring your credentials remain secure.

@@ -6,9 +6,9 @@ title: Controlling Components Using Code
 Apart from [**events**](/docs/docs/app-builder/events/use-case/csa.md), Component-Specific Actions (CSAs) can also be triggered using code to modify component properties and state.
 
 Let’s say you want to:
-- Reset a form automatically after submission
+- Reset a **Form** automatically after submission
 - Show or hide components based on a condition
-- Update a text input based on another field’s value
+- Update a **Text Input** based on another field’s value
 - Disable a button during API calls
 - Change the active tab programmatically
 
@@ -16,7 +16,7 @@ In each of these cases, you can use CSAs with JavaScript or Python queries.
 
 ## How It Works
 
-Each component in ToolJet comes with a set of CSAs. Below are some examples of CSAs that can be used in
+Each component in ToolJet comes with a set of CSAs. Below are some examples of CSAs:
 - setValue() – Sets or updates a component’s value
 - clear() – Clears the value of an input
 - setLoading() – Sets or unsets the loading state
@@ -33,7 +33,7 @@ await components.button1.setLoading(queries.getData.isLoading)
 
 ## Use Cases
 
-### Pre-fill a form field based on user selection
+### Pre-fill a Form Field Based on User Selection
 
 When a user selects a product from a **Dropdown**, automatically set the price in a **Text Input** component:
 
@@ -41,7 +41,7 @@ When a user selects a product from a **Dropdown**, automatically set the price i
 await components.textInput1.setValue(components.dropdown1.value)
 ```
 
-### Clear fields after submitting a form:
+### Clear Fields After Submitting a Form:
 
 After a user submits a **Form**, reset all inputs:
 
@@ -49,7 +49,7 @@ After a user submits a **Form**, reset all inputs:
 await components.formInput.resetForm()
 ```
 
-### Close the modal after Form submission:
+### Close the Modal after Form Submission:
 
 If you are using a **Modal** for collecting data, close it once the **Form** has been submitted successfully:
 
@@ -57,4 +57,4 @@ If you are using a **Modal** for collecting data, close it once the **Form** has
 await components.modal1.close()
 ```
 
-The ability to use CSAs in your code lets you manage a component’s properties based on your own custom logic. 
+Using CSAs in your code lets you dynamically control component behavior based on custom logic.

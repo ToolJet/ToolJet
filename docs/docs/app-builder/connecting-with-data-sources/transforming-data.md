@@ -3,7 +3,7 @@ id: transforming-data
 title: Transforming Data
 ---
 
-Transformations help you clean-up your data before passing it to UI components. While building applications, the raw data you fetch from an API or database often needs customization before displaying it in the components. You might need to:
+Transformations help you clean up your data before passing it to UI components. While building applications, the raw data you fetch from an API or database often needs customization before displaying it in the components. You might need to:
 
 -	 Convert raw ISO timestamps into DD/MM/YYYY.
 -	 Flatten deeply nested objects for use in tables or dropdowns.
@@ -52,14 +52,13 @@ If you’re more comfortable with Python, just switch the language in the transf
 
 ```python
 [
-    {"id":item.['id'],
+    {"id":item['id'],
      "name": item['name'],
      "designation": item['designation']
-     } for item in data
+    } for item in data
 ]
 ```
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_python.png" alt="App Builder: query transformations"/>
 
-
-Transformations provide you with an easy way to clean-up your data before using it in your applications.
+Transformations provide you with an easy way to adjust your data before using it in your applications.

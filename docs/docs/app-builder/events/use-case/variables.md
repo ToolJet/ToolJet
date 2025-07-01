@@ -3,7 +3,7 @@ id: variables
 title: Setting Variables
 ---
 
-Variables let you store and manage data across your entire application. You can use them to manage component state, control logic, store user input or to create personalized user experiences. By setting a value once in a variable, you can reuse it across different parts of your app. This makes your app easier to build and maintain, without needing to store everything in a database.
+Variables let you store and manage data across your entire application. You can use them to manage component state, control logic, store user input or to create a personalized user experiences. By setting a value once in a variable, you can reuse it across different parts of your app. This makes your app easier to build and maintain, without needing to store everything in a database.
 
 ToolJet supports two types of variables:
 
@@ -14,7 +14,7 @@ ToolJet supports two types of variables:
 
 ### App Level Variable
 
-Suppose you are building a multi-page app where, on the first page, you ask the user for their name and want to use it in the other pages. Here’s how to do it:
+Suppose you are building a multi-page application where, on the first page, you ask the user for their name and want to use it in the other pages. Here’s how to do it:
 1. Add a **Text Input** component to collect the user’s name.
 2. Add a **Button** component to submit the name.
 3. Set up this event handler on the **Button** component:
