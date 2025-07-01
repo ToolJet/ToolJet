@@ -462,7 +462,7 @@ export const PageMenuItem = withRouter(
                               }
                               icon="lock"
                               darkMode={darkMode}
-                              disabled={isHomePage}
+                              disabled={!licenseValid}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();

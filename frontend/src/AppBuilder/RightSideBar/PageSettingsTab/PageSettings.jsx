@@ -161,8 +161,8 @@ export const PageSettings = () => {
     <div className="inspector pages-settings">
       <div>
         <div className="row inspector-component-title-input-holder d-flex align-items-center">
-          <div className={`col-9 p-0 mx-2 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
-          <div className="d-flex">
+          <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
+          <div className="d-flex icon-holder">
             <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
               <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin' : 'pin'} width="16" />
             </div>

@@ -28,8 +28,12 @@
             flex: 1;
             display: flex;
             align-items: center;
-            width: 73%;
+            width: 88%;
+        }
 
+        .icon-holder {
+            width: unset;
+            padding: unset;
         }
     }
 

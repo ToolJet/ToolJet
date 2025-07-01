@@ -16,25 +16,25 @@ export const RightSideBar = ({ darkMode }) => {
 
   const sidebarRef = useRef(null);
 
-  // useEffect(() => {
-  //   const rigthSidebarMenu = document.querySelector('.right-sidebar-toggle');
-  //   function handleClickOutside(event) {
-  //     if (
-  //       sidebarRef.current &&
-  //       !sidebarRef.current.contains(event.target) &&
-  //       !rigthSidebarMenu.contains(event.target) &&
-  //       !isRightSidebarPinned
-  //     ) {
-  //       setRightSidebarOpen(false);
-  //       setActiveRightSideBarTab(null);
-  //     }
-  //   }
+  useEffect(() => {
+    const rigthSidebarMenu = document.querySelector('.right-sidebar-toggle');
+    function handleClickOutside(event) {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !rigthSidebarMenu.contains(event.target) &&
+        !isRightSidebarPinned
+      ) {
+        setRightSidebarOpen(false);
+        setActiveRightSideBarTab(null);
+      }
+    }
 
-  //   document.addEventListener('mousedown', handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleClickOutside);
-  //   };
-  // }, [isRightSidebarPinned, setActiveRightSideBarTab, setRightSidebarOpen]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isRightSidebarPinned, setActiveRightSideBarTab, setRightSidebarOpen]);
 
   if (!isRightSidebarOpen) return null;
 
