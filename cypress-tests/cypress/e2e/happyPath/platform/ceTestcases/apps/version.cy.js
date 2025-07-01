@@ -44,6 +44,8 @@ describe("App Version", () => {
     cy.defaultWorkspaceLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.viewport(1400, 1400);
+
   });
 
   it("should verify basic version management operations", () => {
@@ -313,7 +315,7 @@ describe("App Version", () => {
       cy.wait(1000);
       cy.get('[data-cy="preview-settings"]').click();
       switchVersionAndVerify("v1", "v6");
-      
+
       cy.wait(1000);
       cy.get('[data-cy="preview-settings"]').click();
       selectEnv("staging");
@@ -324,14 +326,14 @@ describe("App Version", () => {
       // cy.url().should("include", "/home?env=staging&version=v6");
 
 
-            cy.wait(1000);
+      cy.wait(1000);
       cy.get('[data-cy="preview-settings"]').click();
       selectEnv("development");
 
       cy.wait(1000);
       cy.get('[data-cy="preview-settings"]').click();
       switchVersionAndVerify("v6", "v1");
-      
+
       cy.get(
         commonWidgetSelector.draggableWidget("text1")
       ).verifyVisibleElement("have.text", "Leanne Graham");
