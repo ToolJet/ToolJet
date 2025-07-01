@@ -72,6 +72,10 @@
             scrollbar-color: #6a727c4d transparent;
         }
     }
+    &.disabled{
+        pointer-events: none;
+        opacity: 0.5;
+    }
 }
 
 .empty-module-container{
