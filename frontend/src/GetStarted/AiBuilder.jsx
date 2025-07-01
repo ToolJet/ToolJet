@@ -93,7 +93,9 @@ const AiBuilder = ({ onSubmit }) => {
           initialHeight="100px"
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          className={`!tw-p-3 tw-scroll-pb-10 tw-resize-none ${isSubmitting ? 'tw-opacity-50' : ''}`}
+          className={`!tw-p-3 tw-scroll-pb-10 tw-max-h-[180px] tw-h-[100px] tw-resize-none ${
+            isSubmitting ? 'tw-opacity-50' : ''
+          }`}
           disabled={isSubmitting}
         />
         {/* Only show the animated placeholder if textarea is empty */}

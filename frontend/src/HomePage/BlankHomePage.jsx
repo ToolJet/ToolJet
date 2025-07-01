@@ -11,10 +11,11 @@ import './styles/get-started.scss';
 
 class HomePageComponent extends React.Component {
   render() {
+    const { isToolJetCloud } = this.props;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} collapseSidebar={true}>
         <div className="wrapper get-started-page">
-          <GetStartedHome />
+          <GetStartedHome isToolJetCloud={isToolJetCloud} />
           <div className="get-started-footer">
             <OrganizationList />
           </div>

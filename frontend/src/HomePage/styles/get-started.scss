@@ -67,9 +67,25 @@
   }
 }
 
+.example-prompts-dropdown button[role="combobox"] {
+  width: 124px !important;
+  gap: 4px !important;
+  padding: 2px 8px !important;
+
+  > div {
+    max-width: 89px !important;
+    width: 89px !important;
+  }
+  > div > div {
+    max-width: 89px !important;
+    width: 89px !important;
+  }
+}
+
 div[role="listbox"].example-prompts-dropdown__content {
   width: 220px !important;
   padding: 8px !important;
+  gap: 4px !important;
 
   div[role="option"] {
     padding: 8px 6px !important;
