@@ -84,7 +84,7 @@ To add regex inside `Custom Validation`, you can use the below format:
 | Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility         | Controls component visibility.       | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable            | Enables or disables the component.    | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover.    | String (e.g., `Enter your password here.` ).                      |
+| Tooltip            | Provides additional information on hover.    | String (e.g., `Select your date of birth.` ).                      |
 
 ## Devices
 
