@@ -38,7 +38,7 @@ Role Required: **Admin** <br/>
 3. Select the group to configure permissions.
 
 4. Switch to the **Permissions** tab and configure the required permissions.
-    <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-permission.png" alt="Create Custom Group" />
+    <img className="screenshot-full img-full" src="/img/user-management/rbac/access-control/workflow_config.png" alt="Create Custom Group" />
 
 
 ## Granular Access Control
