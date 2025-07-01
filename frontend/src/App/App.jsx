@@ -408,18 +408,19 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
-                {true && (
-                  <Route
-                    exact
-                    path="/:workspaceId/home"
-                    element={
-                      <PrivateRoute>
-                        <GuardedHomePage />
-                      </PrivateRoute>
-                    }
-                  />
-                )}
-
+                <Route
+                  exact
+                  path="/:workspaceId/home"
+                  element={
+                    <PrivateRoute>
+                      <GuardedHomePage
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                        version={this.state.tooljetVersion}
+                      />
+                    </PrivateRoute>
+                  }
+                />
                 <Route exact path="/embed-apps/:appId" element={<EmbedApp />} />
                 <Route
                   path="*"

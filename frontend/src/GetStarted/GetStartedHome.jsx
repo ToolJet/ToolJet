@@ -77,7 +77,7 @@ function Hero() {
   );
 
   return (
-    <div className="tw-relative tw-shrink-0 tw-w-full tw-mb-3" role="banner">
+    <div className="tw-relative tw-shrink-0 tw-w-full tw-mb-5" role="banner">
       <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-1 tw-items-center tw-justify-start tw-p-0 tw-relative tw-w-full">
         <SolidIcon name="tooljetai" width={24} height={24} className="" data-name="TJ AI" aria-label="ToolJet AI" />
         <h1 className="tw-font-display-small tw-text-center tw-text-text-default tw-mb-2">
@@ -93,9 +93,7 @@ function DividerWithText() {
   return (
     <div className="tw-flex tw-items-center tw-justify-center tw-w-full">
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-mr-4" />
-      <p className="tw-flex tw-items-center tw-font-body-default tw-text-text-placeholder tw-uppercase tw-m-0">
-        OR START WITH
-      </p>
+      <p className="tw-flex tw-items-center tw-font-body-default tw-text-text-placeholder tw-m-0">Or start with</p>
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-ml-4" />
     </div>
   );
@@ -103,7 +101,7 @@ function DividerWithText() {
 
 function WidgetIcon({ type }) {
   const { icon, iconColor } = WIDGET_TYPES[type];
-  return <SolidIcon name={icon} className="tw-size-6 tw-shrink-0" fill={iconColor} data-name={icon} />;
+  return <SolidIcon name={icon} className="tw-size-5 tw-shrink-0" fill={iconColor} data-name={icon} />;
 }
 
 function ContentBlock({ title, description, descriptionClassName = '', titleClassName = '', ...props }) {
@@ -138,8 +136,8 @@ function GetStartedWidget({ type, to }) {
   );
 }
 
-function GetStartedOptionsRow({ edition }) {
-  if (edition === 'cloud') {
+function GetStartedOptionsRow({ isToolJetCloud }) {
+  if (isToolJetCloud) {
     return (
       <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
         <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
@@ -157,12 +155,12 @@ function GetStartedOptionsRow({ edition }) {
   );
 }
 
-function GetStartedHome({ edition }) {
+function GetStartedHome({ isToolJetCloud }) {
   return (
-    <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
+    <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-4 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
       <Hero />
       <DividerWithText />
-      <GetStartedOptionsRow edition={edition} />
+      <GetStartedOptionsRow isToolJetCloud={isToolJetCloud} />
     </div>
   );
 }
