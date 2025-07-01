@@ -9,6 +9,7 @@ import { FeatureAbilityFactory as DataSourceFeatureAbilityFactory } from './abil
 import { AppsRepository } from '@modules/apps/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
 
 export class DataQueriesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -20,7 +21,11 @@ export class DataQueriesModule extends SubModule {
 
     return {
       module: DataQueriesModule,
-      imports: [await AppEnvironmentsModule.register(configs), await DataSourcesModule.register(configs)],
+      imports: [
+        await AppEnvironmentsModule.register(configs),
+        await DataSourcesModule.register(configs),
+        await AppPermissionsModule.register(configs),
+      ],
       providers: [
         DataQueryRepository,
         VersionRepository,

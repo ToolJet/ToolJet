@@ -7,6 +7,9 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
+import Accordion from '@/_ui/Accordion';
+import sectionConfig from './sectionConfig';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ModuleManager } from '@/modules/Modules/components';
 import { ComponentModuleTab } from '@/modules/Appbuilder/components';
 import { useLicenseStore } from '@/_stores/licenseStore';
@@ -71,11 +74,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     }
   }, [hasModuleAccess, activeTab]);
 
-  const handleSearchQueryChange = useCallback(
-    debounce((e) => {
-      const { value } = e.target;
-      setSearchQuery(value);
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
 
+  const handleSearchQueryChange = useCallback(
+    debounce((value) => {
+      setSearchQuery(value);
       if (activeTab === 1) {
         filterComponents(value);
       }
@@ -120,11 +124,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     );
   }
 
-  function renderList(header, items) {
+  function renderList(items) {
     if (isEmpty(items)) return null;
     return (
       <div className="component-card-group-container">
-        <span className="widget-header">{header}</span>
         <div className="component-card-group-wrapper">
           {items.map((component, i) => renderComponentCard(component, i))}
         </div>
@@ -147,6 +150,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             className=" btn-sm tj-tertiary-btn mt-3"
             onClick={() => {
               setFilteredComponents([]);
+              handleSearchQueryChange('');
             }}
           >
             {t('widgetManager.clearQuery', 'clear query')}
@@ -155,62 +159,31 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       );
     }
 
-    if (filteredComponents.length != componentList.length) {
-      return <>{renderList(undefined, filteredComponents)}</>;
-    } else {
-      const commonSection = { title: t('widgetManager.commonlyUsed', 'commonly used'), items: [] };
-      const layoutsSection = { title: t('widgetManager.layouts', 'layouts'), items: [] };
-      const formSection = { title: t('widgetManager.forms', 'forms'), items: [] };
-      const integrationSection = { title: t('widgetManager.integrations', 'integrations'), items: [] };
-      const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
-      const legacySection = { title: 'Legacy', items: [] };
-
-      const commonItems = ['Table', 'Button', 'Text', 'TextInput', 'DatetimePickerV2', 'Form'];
-      const formItems = [
-        'Form',
-        'TextInput',
-        'NumberInput',
-        'PasswordInput',
-        'TextArea',
-        'EmailInput',
-        'PhoneInput',
-        'CurrencyInput',
-        'ToggleSwitchV2',
-        'DropdownV2',
-        'MultiselectV2',
-        'RichTextEditor',
-        'Checkbox',
-        'RadioButtonV2',
-        'DatetimePickerV2',
-        'DatePickerV2',
-        'TimePicker',
-        'DaterangePicker',
-        'FilePicker',
-        'StarRating',
-      ];
-      const integrationItems = ['Map'];
-      const layoutItems = ['Container', 'Listview', 'Tabs', 'ModalV2'];
-
-      filteredComponents.forEach((f) => {
-        if (commonItems.includes(f)) commonSection.items.push(f);
-        if (formItems.includes(f)) formSection.items.push(f);
-        else if (integrationItems.includes(f)) integrationSection.items.push(f);
-        else if (LEGACY_ITEMS.includes(f)) legacySection.items.push(f);
-        else if (layoutItems.includes(f)) layoutsSection.items.push(f);
-        else otherSection.items.push(f);
-      });
-
-      return (
-        <>
-          {renderList(commonSection.title, commonSection.items)}
-          {renderList(layoutsSection.title, layoutsSection.items)}
-          {renderList(formSection.title, formSection.items)}
-          {renderList(otherSection.title, otherSection.items)}
-          {renderList(integrationSection.title, integrationSection.items)}
-          {renderList(legacySection.title, legacySection.items)}
-        </>
-      );
+    if (filteredComponents.length !== componentList.length) {
+      return <>{renderList(filteredComponents)}</>;
     }
+
+    const sections = Object.entries(sectionConfig).map(([key, config]) => ({
+      title: config.title,
+      items: filteredComponents.filter((component) => config.valueSet.has(component)),
+    }));
+
+    const items = [];
+    sections.forEach((section) => {
+      if (section.items.length > 0) {
+        items.push({
+          title: section.title,
+          isOpen: true,
+          children: renderList(section.items),
+        });
+      }
+    });
+
+    return (
+      <div className="mt-3">
+        <Accordion items={items} isTitleCase={false} />
+      </div>
+    );
   }
 
   const handleChangeTab = (tab) => {
@@ -259,7 +232,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         <SearchBox
           dataCy={`widget-search-box`}
           initialValue={''}
-          callBack={(e) => handleSearchQueryChange(e)}
+          callBack={(e) => handleSearchQueryChange(e.target.value)}
           onClearCallback={() => {
             setSearchQuery('');
             if (activeTab === 1) {

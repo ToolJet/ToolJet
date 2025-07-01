@@ -9,9 +9,12 @@ import { IPageHelperService } from '../interfaces/services/IPageUtilService';
 
 @Injectable()
 export class PageHelperService implements IPageHelperService {
-  constructor(protected eventHandlerService: EventsService, protected licenseTermsService: LicenseTermsService) {}
+  constructor(
+    protected eventHandlerService: EventsService,
+    protected licenseTermsService: LicenseTermsService
+  ) {}
 
-  public async fetchPages(appVersionId: string, organizationId: string): Promise<Page[]> {
+  public async fetchPages(appVersionId: string, organizationId: string, manager?: EntityManager): Promise<Page[]> {
     let allPages = [];
     return await dbTransactionWrap(async (manager: EntityManager) => {
       allPages = await manager.find(Page, {
@@ -25,7 +28,7 @@ export class PageHelperService implements IPageHelperService {
       });
 
       return allPages;
-    });
+    }, manager);
   }
 
   public async reorderPages(udpateObject, appVersionId: string, organizationId: string): Promise<void> {
@@ -40,7 +43,11 @@ export class PageHelperService implements IPageHelperService {
     }, appVersionId);
   }
 
-  public async rearrangePagesOrderPostDeletion(pageDeleted: Page, manager: EntityManager, organizationId: string): Promise<void> {
+  public async rearrangePagesOrderPostDeletion(
+    pageDeleted: Page,
+    manager: EntityManager,
+    organizationId: string
+  ): Promise<void> {
     const appVersionId = pageDeleted.appVersionId;
     // if user is not licensed, then just update the index of the pages
     await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -65,7 +72,12 @@ export class PageHelperService implements IPageHelperService {
     }, appVersionId);
   }
 
-  public async deletePageGroup(page: Page, appVersionId: string, deleteAssociatedPages: boolean, organizationId: string): Promise<void> {
+  public async deletePageGroup(
+    page: Page,
+    appVersionId: string,
+    deleteAssociatedPages: boolean,
+    organizationId: string
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
@@ -77,6 +89,10 @@ export class PageHelperService implements IPageHelperService {
     page.appVersionId = appVersionId;
     page.autoComputeLayout = true;
     page.index = dto.index;
+    page.appId = dto.appId;
+    page.url = dto.url;
+    page.type = dto.type;
+    page.openIn = dto.openIn;
     return page;
   }
 

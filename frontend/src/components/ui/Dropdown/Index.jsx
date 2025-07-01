@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './Select';
 import { DropdownLabel, HelperMessage, ValidationMessage } from './DropdownUtils/DropdownUtils';
@@ -7,6 +7,14 @@ const DropdownComponent = ({ options = {}, ...props }) => {
   const [open, setOpen] = useState(false);
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
+  const triggerRef = useRef(null);
+  const [triggerWidth, setTriggerWidth] = useState(0);
+
+  useEffect(() => {
+    if (triggerRef.current) {
+      setTriggerWidth(triggerRef.current.offsetWidth);
+    }
+  }, []);
 
   const dropdownStyle = `${
     isValid === true ? '!tw-border-border-success-strong' : isValid === false ? '!tw-border-border-danger-strong' : ''
@@ -14,6 +22,8 @@ const DropdownComponent = ({ options = {}, ...props }) => {
 
   const handleOpenChange = () => {
     setOpen(!open);
+    if (!open) props.onOpen?.();
+    else props.onClose?.();
   };
 
   const handleChange = (e) => {
@@ -30,21 +40,22 @@ const DropdownComponent = ({ options = {}, ...props }) => {
     <div>
       {props.label && <DropdownLabel label={props.label} disabled={props.disabled} required={props.required} />}
       <Select {...props} onOpenChange={handleOpenChange} onValueChange={handleChange}>
-        <SelectTrigger open={open} className={dropdownStyle} {...props}>
+        <SelectTrigger ref={triggerRef} open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}>
           <SelectGroup>
             {Object.keys(options).map((key) => (
               <SelectItem
                 {...props}
                 value={options[key].value}
+                leadingIcon={options[key].leadingIcon}
                 avatarSrc={options[key].avatarSrc}
                 avatarAlt={options[key].avatarAlt}
                 avatarFall={options[key].avatarFall}
                 key={key}
               >
-                {key}
+                {options[key].label ?? key}
               </SelectItem>
             ))}
           </SelectGroup>

@@ -97,7 +97,7 @@ export class VersionService implements IVersionService {
     return await this.versionsUtilService.deleteVersion(app, user, manager);
   }
 
-  async getVersion(app: App, user: User): Promise<any> {
+  async getVersion(app: App, user: User, mode?: string): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
         updatedVersionId = versionId;

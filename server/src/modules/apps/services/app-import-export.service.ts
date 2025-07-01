@@ -40,6 +40,10 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { QueryPermission } from '@entities/query_permissions.entity';
+import { QueryUser } from '@entities/query_users.entity';
+import { ComponentPermission } from '@entities/component_permissions.entity';
+import { ComponentUser } from '@entities/component_users.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -67,7 +71,9 @@ type NewRevampedComponent =
   | 'Checkbox'
   | 'Divider'
   | 'VerticalDivider'
-  | 'Link';
+  | 'Link'
+  | 'DaterangePicker'
+  | 'TextArea';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -87,6 +93,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Divider',
   'VerticalDivider',
   'Link',
+  'DaterangePicker',
+  'TextArea',
 ];
 
 @Injectable()
@@ -97,7 +105,7 @@ export class AppImportExportService {
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
-    protected entityManager: EntityManager,
+    protected entityManager: EntityManager
   ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
@@ -163,6 +171,9 @@ export class AppImportExportService {
       if (dataSources?.length) {
         dataQueries = await manager
           .createQueryBuilder(DataQuery, 'data_queries')
+          .leftJoinAndSelect('data_queries.permissions', 'permission')
+          .leftJoinAndSelect('permission.users', 'queryUser')
+          .leftJoinAndSelect('queryUser.permissionGroup', 'permissionGroup')
           .where('data_queries.dataSourceId IN(:...dataSourceId)', {
             dataSourceId: dataSources?.map((v) => v.id),
           })
@@ -215,16 +226,34 @@ export class AppImportExportService {
         };
       });
 
+      const queriesWithPermissionGroups = dataQueries.map((query) => {
+        const groupPermission = query.permissions.find((perm) => perm.type === 'GROUP');
+
+        return {
+          ...query,
+          permissions: groupPermission
+            ? {
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
+            : undefined,
+        };
+      });
+
       const components =
         pages.length > 0
           ? await manager
-                .createQueryBuilder(Component, 'components')
-                .leftJoinAndSelect('components.layouts', 'layouts')
-                .where('components.pageId IN(:...pageId)', {
-                  pageId: pages.map((v) => v.id),
-                })
-                .orderBy('components.created_at', 'ASC')
-                .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .leftJoinAndSelect('components.permissions', 'permission')
+              .leftJoinAndSelect('permission.users', 'componentUser')
+              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -239,6 +268,22 @@ export class AppImportExportService {
           moduleApps.push(await this.export(user, moduleAppId.moduleId, { version_id: moduleAppId.versionId }))
         )
       );
+
+      const componentsWithPermissionGroups = components.map((component) => {
+        const groupPermission = component.permissions.find((perm) => perm.type === 'GROUP');
+
+        return {
+          ...component,
+          permissions: groupPermission
+            ? {
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
+            : undefined,
+        };
+      });
+
       const events = await manager
         .createQueryBuilder(EventHandler, 'event_handlers')
         .where('event_handlers.appVersionId IN(:...versionId)', {
@@ -247,10 +292,10 @@ export class AppImportExportService {
         .orderBy('event_handlers.created_at', 'ASC')
         .getMany();
 
-      appToExport['components'] = components;
+      appToExport['components'] = componentsWithPermissionGroups;
       appToExport['pages'] = pagesWithPermissionGroups;
       appToExport['events'] = events;
-      appToExport['dataQueries'] = dataQueries;
+      appToExport['dataQueries'] = queriesWithPermissionGroups;
       appToExport['dataSources'] = dataSources;
       appToExport['appVersions'] = appVersions;
       appToExport['appEnvironments'] = appEnvironments;
@@ -368,18 +413,18 @@ export class AppImportExportService {
         throw new BadRequestException('Invalid params for app import');
       }
 
-    const moduleResourceMappings = await this.mapModulesForAppImport(
-      appParams,
-      user,
-      externalResourceMappings,
-      isGitApp,
-      tooljetVersion
-    );
+      const moduleResourceMappings = await this.mapModulesForAppImport(
+        appParams,
+        user,
+        externalResourceMappings,
+        isGitApp,
+        tooljetVersion
+      );
 
-    const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
-      ? appParams
-      : convertSinglePageSchemaToMultiPageSchema(appParams);
-    schemaUnifiedAppParams.name = appName;
+      const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
+        ? appParams
+        : convertSinglePageSchemaToMultiPageSchema(appParams);
+      schemaUnifiedAppParams.name = appName;
 
       const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
       const isNormalizedAppDefinitionSchema = cloning
@@ -388,32 +433,30 @@ export class AppImportExportService {
 
       const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    const importedApp = await this.createImportedAppForUser(
-      manager,
-      schemaUnifiedAppParams,
-      user,
-      isGitApp,
-      appParams?.type
-    );
+      const importedApp = await this.createImportedAppForUser(
+        manager,
+        schemaUnifiedAppParams,
+        user,
+        isGitApp,
+        appParams?.type
+      );
 
-    const resourceMapping = await this.setupImportedAppAssociations(
-      manager,
-      importedApp,
-      schemaUnifiedAppParams,
-      user,
-      externalResourceMappings,
-      isNormalizedAppDefinitionSchema,
-      currentTooljetVersion,
-      moduleResourceMappings
-    );
-    await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
+      const resourceMapping = await this.setupImportedAppAssociations(
+        manager,
+        importedApp,
+        schemaUnifiedAppParams,
+        user,
+        externalResourceMappings,
+        isNormalizedAppDefinitionSchema,
+        currentTooljetVersion,
+        moduleResourceMappings
+      );
+      await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
 
       // Update latest version as editing version
-      const {
-        importingAppVersions,
-      } = this.extractImportDataFromAppParams(appParams)
+      const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
 
-      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importingAppVersions)
+      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importingAppVersions);
 
       // NOTE: App slug updation callback doesn't work while wrapped in transaction
       // hence updating slug explicitly
@@ -711,78 +754,86 @@ export class AppImportExportService {
             //Event handlers
 
             if (pageEvents.length > 0) {
-              await Promise.all(pageEvents.map(async (event, index) => {
-                const newEvent = {
-                  name: event.eventId,
-                  sourceId: pageCreated.id,
-                  target: Target.page,
-                  event: event,
-                  index: pageEvents.index || index,
-                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                };
+              await Promise.all(
+                pageEvents.map(async (event, index) => {
+                  const newEvent = {
+                    name: event.eventId,
+                    sourceId: pageCreated.id,
+                    target: Target.page,
+                    event: event,
+                    index: pageEvents.index || index,
+                    appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                  };
 
-                await manager.save(EventHandler, newEvent);
-              }));
+                  await manager.save(EventHandler, newEvent);
+                })
+              );
             }
 
-            await Promise.all(componentEvents.map(async (eventObj) => {
-              if (eventObj.event?.length === 0) return;
+            await Promise.all(
+              componentEvents.map(async (eventObj) => {
+                if (eventObj.event?.length === 0) return;
 
-              await Promise.all(eventObj.event.map(async (event, index) => {
-                const newEvent = manager.create(EventHandler, {
-                  name: event.eventId,
-                  sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
-                  target: Target.component,
-                  event: event,
-                  index: eventObj.index || index,
-                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                });
-
-                await manager.save(EventHandler, newEvent);
-              }));
-            }));
-
-            await Promise.all(savedComponents.map(async (component) => {
-              if (component.type === 'Table') {
-                const tableActions = component.properties?.actions?.value || [];
-                const tableColumns = component.properties?.columns?.value || [];
-
-                const tableActionAndColumnEvents = [];
-
-                tableActions.forEach((action) => {
-                  const actionEvents = action.events || [];
-
-                  actionEvents.forEach((event, index) => {
-                    tableActionAndColumnEvents.push({
+                await Promise.all(
+                  eventObj.event.map(async (event, index) => {
+                    const newEvent = manager.create(EventHandler, {
                       name: event.eventId,
-                      sourceId: component.id,
-                      target: Target.tableAction,
-                      event: { ...event, ref: action.name },
-                      index: event.index ?? index,
+                      sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
+                      target: Target.component,
+                      event: event,
+                      index: eventObj.index || index,
                       appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                     });
-                  });
-                });
 
-                tableColumns.forEach((column) => {
-                  if (column?.columnType !== 'toggle') return;
-                  const columnEvents = column.events || [];
+                    await manager.save(EventHandler, newEvent);
+                  })
+                );
+              })
+            );
 
-                  columnEvents.forEach((event, index) => {
-                    tableActionAndColumnEvents.push({
-                      name: event.eventId,
-                      sourceId: component.id,
-                      target: Target.tableColumn,
-                      event: { ...event, ref: column.name },
-                      index: event.index ?? index,
-                      appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+            await Promise.all(
+              savedComponents.map(async (component) => {
+                if (component.type === 'Table') {
+                  const tableActions = component.properties?.actions?.value || [];
+                  const tableColumns = component.properties?.columns?.value || [];
+
+                  const tableActionAndColumnEvents = [];
+
+                  tableActions.forEach((action) => {
+                    const actionEvents = action.events || [];
+
+                    actionEvents.forEach((event, index) => {
+                      tableActionAndColumnEvents.push({
+                        name: event.eventId,
+                        sourceId: component.id,
+                        target: Target.tableAction,
+                        event: { ...event, ref: action.name },
+                        index: event.index ?? index,
+                        appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                      });
                     });
                   });
-                });
 
-                await manager.save(EventHandler, tableActionAndColumnEvents);
-              }
-            }));
+                  tableColumns.forEach((column) => {
+                    if (column?.columnType !== 'toggle') return;
+                    const columnEvents = column.events || [];
+
+                    columnEvents.forEach((event, index) => {
+                      tableActionAndColumnEvents.push({
+                        name: event.eventId,
+                        sourceId: component.id,
+                        target: Target.tableColumn,
+                        event: { ...event, ref: column.name },
+                        index: event.index ?? index,
+                        appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                      });
+                    });
+                  });
+
+                  await manager.save(EventHandler, tableActionAndColumnEvents);
+                }
+              })
+            );
 
             if (isHompage) {
               updateHomepageId = pageCreated.id;
@@ -1062,37 +1113,48 @@ export class AppImportExportService {
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
-            await Promise.all(componentLayout.map(async (layout) => {
-              const newLayout = new Layout();
-              newLayout.type = layout.type;
-              newLayout.top = layout.top;
-              newLayout.left =
-                layout.dimensionUnit !== LayoutDimensionUnits.COUNT
-                  ? this.componentsService.resolveGridPositionForComponent(layout.left, layout.type)
-                  : layout.left;
-              newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-              newLayout.width = layout.width;
-              newLayout.height = layout.height;
-              newLayout.component = savedComponent;
+            await Promise.all(
+              componentLayout.map(async (layout) => {
+                const newLayout = new Layout();
+                newLayout.type = layout.type;
+                newLayout.top = layout.top;
+                newLayout.left =
+                  layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                    ? this.componentsService.resolveGridPositionForComponent(layout.left, layout.type)
+                    : layout.left;
+                newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+                newLayout.width = layout.width;
+                newLayout.height = layout.height;
+                newLayout.component = savedComponent;
 
-              await manager.save(newLayout);
-            }));
+                await manager.save(newLayout);
+              })
+            );
+
+            if (component.permissions) {
+              savedComponent.permissions = component.permissions;
+            }
+
+            //create component permissions of component if flag enabled in dto
+            await this.createComponentPermissionsForGroups(savedComponent, user.organizationId, manager);
 
             const componentEvents = importingEvents.filter((event) => event.sourceId === component.id);
 
             if (componentEvents.length > 0) {
-              await Promise.all(componentEvents.map(async (componentEvent) => {
-                const newEvent = await manager.create(EventHandler, {
-                  name: componentEvent.name,
-                  sourceId: savedComponent.id,
-                  target: componentEvent.target,
-                  event: componentEvent.event,
-                  index: componentEvent.index,
-                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                });
+              await Promise.all(
+                componentEvents.map(async (componentEvent) => {
+                  const newEvent = await manager.create(EventHandler, {
+                    name: componentEvent.name,
+                    sourceId: savedComponent.id,
+                    target: componentEvent.target,
+                    event: componentEvent.event,
+                    index: componentEvent.index,
+                    appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                  });
 
-                await manager.save(EventHandler, newEvent);
-              }));
+                  await manager.save(EventHandler, newEvent);
+                })
+              );
             }
           }
         }
@@ -1100,18 +1162,20 @@ export class AppImportExportService {
         const pageEvents = importingEvents.filter((event) => event.sourceId === page.id);
 
         if (pageEvents.length > 0) {
-          await Promise.all(pageEvents.map(async (pageEvent) => {
-            const newEvent = await manager.create(EventHandler, {
-              name: pageEvent.name,
-              sourceId: pageCreated.id,
-              target: pageEvent.target,
-              event: pageEvent.event,
-              index: pageEvent.index,
-              appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-            });
+          await Promise.all(
+            pageEvents.map(async (pageEvent) => {
+              const newEvent = await manager.create(EventHandler, {
+                name: pageEvent.name,
+                sourceId: pageCreated.id,
+                target: pageEvent.target,
+                event: pageEvent.event,
+                index: pageEvent.index,
+                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+              });
 
-            await manager.save(EventHandler, newEvent);
-          }));
+              await manager.save(EventHandler, newEvent);
+            })
+          );
         }
       }
 
@@ -1138,18 +1202,20 @@ export class AppImportExportService {
         );
 
         if (importingQueryEvents.length > 0) {
-          await Promise.all(importingQueryEvents.map(async (dataQueryEvent) => {
-            const newEvent = await manager.create(EventHandler, {
-              name: dataQueryEvent.name,
-              sourceId: mappedNewDataQuery.id,
-              target: dataQueryEvent.target,
-              event: dataQueryEvent.event,
-              index: dataQueryEvent.index,
-              appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-            });
+          await Promise.all(
+            importingQueryEvents.map(async (dataQueryEvent) => {
+              const newEvent = await manager.create(EventHandler, {
+                name: dataQueryEvent.name,
+                sourceId: mappedNewDataQuery.id,
+                target: dataQueryEvent.target,
+                event: dataQueryEvent.event,
+                index: dataQueryEvent.index,
+                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+              });
 
-            await manager.save(EventHandler, newEvent);
-          }));
+              await manager.save(EventHandler, newEvent);
+            })
+          );
         } else {
           this.replaceDataQueryOptionsWithNewDataQueryIds(
             mappedNewDataQuery?.options,
@@ -1160,18 +1226,20 @@ export class AppImportExportService {
           delete mappedNewDataQuery?.options?.events;
 
           if (queryEvents.length > 0) {
-            await Promise.all(queryEvents.map(async (event, index) => {
-              const newEvent = await manager.create(EventHandler, {
-                name: event.eventId,
-                sourceId: mappedNewDataQuery.id,
-                target: Target.dataQuery,
-                event: event,
-                index: event.index ?? index,
-                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-              });
+            await Promise.all(
+              queryEvents.map(async (event, index) => {
+                const newEvent = await manager.create(EventHandler, {
+                  name: event.eventId,
+                  sourceId: mappedNewDataQuery.id,
+                  target: Target.dataQuery,
+                  event: event,
+                  index: event.index ?? index,
+                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                });
 
-              await manager.save(EventHandler, newEvent);
-            }));
+                await manager.save(EventHandler, newEvent);
+              })
+            );
           }
         }
 
@@ -1250,10 +1318,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-                importingQuery.options,
-                externalResourceMappings['tooljet_database'],
-                organizationId
-              )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1264,7 +1332,15 @@ export class AppImportExportService {
       });
 
       await manager.save(newQuery);
+
+      if (importingQuery.permissions) {
+        newQuery.permissions = importingQuery.permissions;
+      }
+
       appResourceMappings.dataQueryMapping[importingQuery.id] = newQuery.id;
+
+      //create query permissions of query if flag enabled in dto
+      await this.createQueryPermissionsForGroups(newQuery, organizationId, manager);
     }
 
     return appResourceMappings;
@@ -1306,13 +1382,14 @@ export class AppImportExportService {
             environmentId: otherEnvironmentId,
           },
         });
-        !existingDataSourceOptions &&
-          (await this.createDatasourceOption(
+        if (!existingDataSourceOptions) {
+          await this.createDatasourceOption(
             manager,
             defaultEnvDsOption.options,
             otherEnvironmentId,
             dataSourceForAppVersion.id
-          ));
+          );
+        }
       }
     }
 
@@ -1326,13 +1403,14 @@ export class AppImportExportService {
           },
         });
 
-        !existingDataSourceOptions &&
-          (await this.createDatasourceOption(
+        if (!existingDataSourceOptions) {
+          await this.createDatasourceOption(
             manager,
             importingDataSourceOption.options,
             appResourceMappings.appEnvironmentMapping[importingDataSourceOption.environmentId],
             dataSourceForAppVersion.id
-          ));
+          );
+        }
       }
     }
   }
@@ -1500,13 +1578,31 @@ export class AppImportExportService {
     return pageSettings;
   }
 
-  async checkIfGroupPermissionsExist(pages, organizationId) {
+  async checkIfGroupPermissionsExist(pages, queries, components, organizationId) {
     const allGroupNames = new Set<string>();
 
     for (const page of pages) {
       const groupNames = page.permissions?.permissionGroup || [];
       for (const name of groupNames) {
         allGroupNames.add(name);
+      }
+    }
+
+    for (const query of queries) {
+      const groupNames = query.permissions?.permissionGroup || [];
+      for (const name of groupNames) {
+        if (!allGroupNames.has(name)) {
+          allGroupNames.add(name);
+        }
+      }
+    }
+
+    for (const component of components) {
+      const groupNames = component.permissions?.permissionGroup || [];
+      for (const name of groupNames) {
+        if (!allGroupNames.has(name)) {
+          allGroupNames.add(name);
+        }
       }
     }
 
@@ -1568,6 +1664,76 @@ export class AppImportExportService {
     );
 
     await manager.save(pageUsers);
+  }
+
+  async createQueryPermissionsForGroups(query, organizationId: string, manager: EntityManager) {
+    const groupNames = query.permissions?.permissionGroup || [];
+    if (!groupNames.length) return;
+
+    const existingGroups = await manager
+      .createQueryBuilder(GroupPermissions, 'gp')
+      .where('gp.name IN (:...names)', { names: groupNames })
+      .andWhere('gp.organizationId = :organizationId', { organizationId })
+      .getMany();
+
+    const groupMap = new Map(existingGroups.map((g) => [g.name, g]));
+
+    // Filter to only existing group names
+    const validGroupNames = groupNames.filter((name) => groupMap.has(name));
+
+    // If no valid group names exist, do not create permissions
+    if (!validGroupNames.length) return;
+
+    const permission = manager.create(QueryPermission, {
+      queryId: query.id,
+      type: PAGE_PERMISSION_TYPE.GROUP,
+    });
+
+    const savedPermission = await manager.save(permission);
+
+    const queryUsers = validGroupNames.map((name) =>
+      manager.create(QueryUser, {
+        queryPermissionsId: savedPermission.id,
+        permissionGroupsId: groupMap.get(name).id,
+      })
+    );
+
+    await manager.save(queryUsers);
+  }
+
+  async createComponentPermissionsForGroups(component, organizationId: string, manager: EntityManager) {
+    const groupNames = component.permissions?.permissionGroup || [];
+    if (!groupNames.length) return;
+
+    const existingGroups = await manager
+      .createQueryBuilder(GroupPermissions, 'gp')
+      .where('gp.name IN (:...names)', { names: groupNames })
+      .andWhere('gp.organizationId = :organizationId', { organizationId })
+      .getMany();
+
+    const groupMap = new Map(existingGroups.map((g) => [g.name, g]));
+
+    // Filter to only existing group names
+    const validGroupNames = groupNames.filter((name) => groupMap.has(name));
+
+    // If no valid group names exist, do not create permissions
+    if (!validGroupNames.length) return;
+
+    const permission = manager.create(ComponentPermission, {
+      componentId: component.id,
+      type: PAGE_PERMISSION_TYPE.GROUP,
+    });
+
+    const savedPermission = await manager.save(permission);
+
+    const componentUsers = validGroupNames.map((name) =>
+      manager.create(ComponentUser, {
+        componentPermissionsId: savedPermission.id,
+        permissionGroupsId: groupMap.get(name).id,
+      })
+    );
+
+    await manager.save(componentUsers);
   }
 
   async createAppVersionsForImportedApp(
@@ -1870,10 +2036,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-                  query.options,
-                  externalResourceMappings['tooljet_database'],
-                  user?.organizationId
-                )
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user?.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
@@ -1889,18 +2055,20 @@ export class AppImportExportService {
       newQuery.options = newOptions;
       await manager.save(newQuery);
 
-      await Promise.all(queryEvents.map(async (event, index) => {
-        const newEvent = {
-          name: event.eventId,
-          sourceId: newQuery.id,
-          target: Target.dataQuery,
-          event: event,
-          index: queryEvents.index || index,
-          appVersionId: newQuery.appVersionId,
-        };
+      await Promise.all(
+        queryEvents.map(async (event, index) => {
+          const newEvent = {
+            name: event.eventId,
+            sourceId: newQuery.id,
+            target: Target.dataQuery,
+            event: event,
+            index: queryEvents.index || index,
+            appVersionId: newQuery.appVersionId,
+          };
 
-        await manager.save(EventHandler, newEvent);
-      }));
+          await manager.save(EventHandler, newEvent);
+        })
+      );
     }
 
     await manager.update(
@@ -2135,9 +2303,10 @@ function migrateProperties(
       delete generalStyles?.boxShadow;
     }
 
+    // Set empty label for specific components
     if (
-      shouldHandleBackwardCompatibility &&
-      (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput')
+      (shouldHandleBackwardCompatibility && ['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) ||
+      (['TextArea', 'DaterangePicker'].includes(componentType) && !properties.label)
     ) {
       properties.label = '';
     }

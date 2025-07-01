@@ -14,7 +14,8 @@ export interface IDataQueriesUtilService {
     dataQuery: any,
     queryOptions: object,
     response: Response,
-    environmentId?: string
+    environmentId?: string,
+    mode?: string
   ): Promise<object>;
 
   fetchServiceAndParsedParams(

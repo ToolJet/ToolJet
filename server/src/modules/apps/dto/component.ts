@@ -12,6 +12,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   Validate,
+  ValidateNested,
 } from 'class-validator';
 
 export class ComponentLayoutDto {
@@ -156,4 +157,41 @@ export class DeleteComponentDto {
   @IsBoolean()
   @IsOptional()
   is_component_cut: boolean;
+}
+
+export class BatchDiffDto {
+  @IsObject()
+  @IsOptional()
+  create?: {
+    diff: Record<string, any>;
+    pageId: string;
+  };
+
+  @IsObject()
+  @IsOptional()
+  update?: {
+    diff: Record<string, any>;
+  };
+
+  @IsObject()
+  @IsOptional()
+  delete?: {
+    diff: string[];
+    is_component_cut?: boolean;
+  };
+}
+
+export class BatchComponentsDto {
+  @IsObject()
+  @ValidateNested()
+  @Type(() => BatchDiffDto)
+  diff: BatchDiffDto;
+
+  @IsBoolean()
+  @IsOptional()
+  is_user_switched_version: boolean;
+
+  @IsString()
+  @IsOptional()
+  pageId: string;
 }

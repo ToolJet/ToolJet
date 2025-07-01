@@ -390,7 +390,7 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  importFile = async (importJSON, appName, skipPagePermissionsGroupCheck = false) => {
+  importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = this.state.currentUser?.organization_id;
@@ -406,7 +406,7 @@ class HomePageComponent extends React.Component {
     const requestBody = {
       organization_id,
       ...importJSON,
-      skip_page_permissions_group_check: skipPagePermissionsGroupCheck,
+      skip_permissions_group_check: skipPermissionsGroupCheck,
     };
     let installedPluginsInfo = [];
     try {

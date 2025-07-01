@@ -6,6 +6,7 @@ export default function OverflowTooltip({
   className,
   whiteSpace = 'nowrap',
   placement = 'bottom',
+  boxWidth,
   maxLetters,
   ...rest
 }) {
@@ -17,7 +18,7 @@ export default function OverflowTooltip({
       textElementRef.current.scrollWidth > textElementRef.current.clientWidth ||
         textElementRef.current.clientHeight < textElementRef.current.scrollHeight - 4
     );
-  }, [children]);
+  }, [children, boxWidth]);
 
   const displayText =
     maxLetters && typeof children === 'string' && children.length > maxLetters

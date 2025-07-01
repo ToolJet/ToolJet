@@ -26,6 +26,12 @@ const initialState = {
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
+  showQueryPermissionModal: false,
+  targetBtnForMenu: null,
+  showQueryHandlerMenu: false,
+  showDeleteConfirmation: false,
+  renamingQueryId: null,
+  deletingQueryId: null,
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -223,6 +229,7 @@ export const createQueryPanelSlice = (set, get) => ({
         selectedEnvironment,
         isPublicAccess,
         currentVersionId,
+        currentMode,
       } = get();
       const {
         queryPreviewData,
@@ -352,14 +359,15 @@ export const createQueryPanelSlice = (set, get) => ({
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
-          queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters, moduleId);
+          queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
         } else if (query.kind === 'runpy') {
-          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState, moduleId);
+          queryExecutionPromise = executeRunPycode(query.options?.code, query, false, mode, queryState, moduleId);
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = executeWorkflow(
             moduleId,
-            query.options.workflowId,
-            query.options.blocking,
+            query,
+            query.options?.workflowId,
+            query.options?.blocking,
             query.options?.params,
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
@@ -374,7 +382,8 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             query?.options,
             versionId,
-            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
+            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            currentMode
           );
         }
 
@@ -447,7 +456,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 queryId,
                 {
                   isLoading: false,
-                  ...(query.kind === 'restapi'
+                  ...(query.kind === 'restapi' || data.data.type === 'tj-401'
                     ? {
                         metadata: data.metadata,
                         request: data.data.requestObject,
@@ -725,6 +734,28 @@ export const createQueryPanelSlice = (set, get) => ({
       const {
         queryPanel: { evaluatePythonCode },
       } = get();
+
+      if (query.restricted) {
+        return {
+          status: 'failed',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
+
       return { data: await evaluatePythonCode({ code, query, isPreview, mode, currentState }) };
     },
 
@@ -948,11 +979,32 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
-    executeWorkflow: async (moduleId = 'canvas', workflowId, _blocking = false, params = {}, appEnvId) => {
+    executeWorkflow: async (moduleId = 'canvas', query, workflowId, _blocking = false, params = {}, appEnvId) => {
       const { getAppId, getAllExposedValues } = get();
       const appId = getAppId('canvas');
       const currentState = getAllExposedValues(moduleId);
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      if (query.restricted) {
+        return {
+          status: 'failed',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
 
       try {
         const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
@@ -1003,6 +1055,27 @@ export const createQueryPanelSlice = (set, get) => ({
       const actions = generateAppActions(queryId, mode, isPreview, moduleId);
 
       const queryDetails = dataQuery.queries.modules?.[moduleId].find((q) => q.id === queryId);
+
+      if (queryDetails.restricted) {
+        return {
+          status: 'failed',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
 
       const defaultParams =
         queryDetails?.options?.parameters?.reduce(
@@ -1154,5 +1227,24 @@ export const createQueryPanelSlice = (set, get) => ({
       };
       previewQuery(query, false, undefined, moduleId);
     },
+    toggleQueryPermissionModal: (show) => {
+      set((state) => {
+        state.queryPanel.showQueryPermissionModal = show;
+      });
+    },
+    toggleQueryHandlerMenu: (show, id) => {
+      set((state) => {
+        if (show) state.queryPanel.targetBtnForMenu = id;
+        state.queryPanel.showQueryHandlerMenu = show;
+      });
+    },
+    setRenamingQuery: (queryId) =>
+      set((state) => {
+        state.queryPanel.renamingQueryId = queryId;
+      }),
+    deleteDataQuery: (queryId) =>
+      set((state) => {
+        state.queryPanel.deletingQueryId = queryId;
+      }),
   },
 });
