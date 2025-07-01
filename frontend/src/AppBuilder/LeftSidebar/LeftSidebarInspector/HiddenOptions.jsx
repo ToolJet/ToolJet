@@ -120,17 +120,23 @@ export const HiddenOptions = (props) => {
         }
       >
         <div
-          onClick={(event) => {
-            event.stopPropagation();
-            setShowMenu((prev) => !prev);
-          }}
           className="node-action-icon"
           style={{
             outline: 'none',
             ...(showMenu && { backgroundColor: 'var(--button-outline-pressed, rgba(136, 144, 153, 0.18)' }),
           }}
         >
-          <SolidIcon fill="var(--icon-strong)" width="12" height="12" name="copy" />
+          <ToolTip message="Copy options" trigger={['hover', 'focus']}>
+            <span
+              onClick={(event) => {
+                event.stopPropagation();
+                setShowMenu((prev) => !prev);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <SolidIcon fill="var(--icon-strong)" width="12" height="12" name="copy" />
+            </span>
+          </ToolTip>
         </div>
       </OverlayTrigger>
     </div>
