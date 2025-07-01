@@ -580,10 +580,10 @@ const sidebars = {
               },
               'items': [
                 'user-management/sso/oidc/setup',
-                'user-management/sso/oidc/ssouserinfo',
                 'user-management/sso/oidc/azuread',
                 'user-management/sso/oidc/okta',
-                'user-management/sso/oidc/google'
+                'user-management/sso/oidc/google',
+                'user-management/sso/oidc/ssouserinfo'
               ]
             },
             'user-management/sso/ldap',

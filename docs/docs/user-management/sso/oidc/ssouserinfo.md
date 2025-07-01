@@ -3,7 +3,7 @@ id: ssouserinfo
 title: Access SSO User Info
 ---
 
-In ToolJet, you can now pass user-specific authentication details from the SSO session to connected datasources. This allows each user to access systems like Snowflake, Salesforce, GraphQL, and more using their own credentials, eliminating the need for shared logins. It ensures that enterprise security policies such as role-based access and row-level restrictions are enforced based on the user’s identity.
+In ToolJet, you can now pass user-specific authentication details from the SSO provider to connected datasources. This allows each user to access systems like Snowflake, Salesforce, GraphQL, and more using their own credentials, eliminating the need for shared logins. It ensures that enterprise security policies such as role-based access and row-level restrictions are enforced based on the user’s identity.
 
 ## Accessing SSO User Info in App Builder
 
@@ -17,10 +17,12 @@ Use the following syntax to refer to any exposed variable from `ssoUserInfo`:
 {{globals.ssoUserInfo.<variable-name>}}
 ```
 
-### Exposed SSO Variables
+### Commonly Exposed SSO Variables
+
+The exposed variables may vary depending on the identity provider. You can view all available variables in the Inspector panel under `globals` > `ssoUserInfo`. Below are some commonly exposed variables:
 
 | Variable | Description |
-|----------|-------------|
+|:----------|:-------------|
 | `sub` | Unique identifier for the user assigned by the identity provider. |
 | `name` | Full name of the authenticated user. |
 | `given_name` | User’s first name or given name. |
