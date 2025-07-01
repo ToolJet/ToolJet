@@ -62,3 +62,33 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
     left: 1px !important;
   }
 }
+
+// Ensure form field popovers have proper overflow handling for dropdowns
+.form-field-popover-body {
+  overflow: visible !important; // Allow dropdowns to extend beyond popover bounds
+
+  // Ensure proper stacking context for radix select
+  [data-radix-select-trigger] {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// Fix for bootstrap popovers containing radix select
+.popover {
+  overflow: visible !important;
+
+  .popover-body {
+    overflow: visible !important;
+  }
+
+  // Ensure proper z-index layering
+  z-index: 1050;
+
+  // Firefox specific fixes
+  @-moz-document url-prefix() {
+    [data-radix-select-content] {
+      position: fixed !important;
+    }
+  }
+}
