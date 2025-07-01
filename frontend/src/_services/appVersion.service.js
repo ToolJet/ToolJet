@@ -16,6 +16,7 @@ export const appVersionService = {
   clonePage,
   findAllEventsWithSourceId,
   updateAppMode,
+  cloneGroup,
 };
 
 function getAll(appId) {
@@ -37,9 +38,11 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
 }
-function getAppVersionData(appId, versionId) {
+function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function create(appId, versionName, versionFromId, currentEnvironmentId) {
@@ -148,7 +151,7 @@ function autoSaveApp(
 function updateAppMode(appId, versionId, appMode) {
   const requestOptions = {
     method: 'PUT',
-    headers: authHeader(),    
+    headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify({ appId, versionId, appMode }),
   };
@@ -206,6 +209,18 @@ function clonePage(appId, versionId, pageId) {
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone`, requestOptions).then(
     handleResponse
   );
+}
+
+function cloneGroup(appId, versionId, pageId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone-group`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function findAllEventsWithSourceId(appId, versionId, sourceId = undefined) {

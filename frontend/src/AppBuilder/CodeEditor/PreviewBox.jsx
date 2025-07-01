@@ -489,7 +489,14 @@ const PreviewContainer = ({
 };
 
 const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
-  let preview = code && code.trim ? code?.trim() : `${code}`;
+  let preview;
+  if (typeof code === 'string') {
+    preview = code.trim();
+  } else if (typeof code === 'symbol') {
+    preview = code.toString();
+  } else {
+    preview = String(code);
+  }
 
   const shouldTrim = preview.length > 35;
   let showJSONTree = false;

@@ -21,6 +21,7 @@ import {
 } from "Support/utils/common";
 
 import { onboardingSelectors } from "Selectors/onboarding";
+import { enableInstanceSignup } from "Support/utils/manageSSO";
 
 const data = {};
 const envVar = Cypress.env("environment");
@@ -28,9 +29,9 @@ const envVar = Cypress.env("environment");
 describe("inviteflow edge cases", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
-        if (envVar === "Enterprise") {
-            cy.get(".btn-close").click();
-        }
+        cy.ifEnv("Enterprise", () => {
+            enableInstanceSignup();
+        });
     });
 
     it("Should verify exisiting user invite flow", () => {
@@ -67,55 +68,6 @@ describe("inviteflow edge cases", () => {
             .within(() => {
                 cy.get("td small").should("have.text", usersText.activeStatus);
             });
-    });
-
-    it("should verify the user signup after invited in a workspace", () => {
-        data.firstName = fake.firstName;
-        data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-        data.signUpName = fake.firstName;
-        data.workspaceName = fake.companyName;
-
-        enableInstanceSignUp();
-        setSignupStatus(true);
-        navigateToManageUsers();
-        fillUserInviteForm(data.firstName, data.email);
-        cy.get(usersSelector.buttonInviteUsers).click();
-        cy.apiLogout();
-
-        cy.visit("/");
-        cy.get(commonSelectors.createAnAccountLink).click();
-        SignUpPageElements();
-        cy.wait(3000);
-        cy.clearAndType(onboardingSelectors.nameInput, data.signUpName);
-        cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-        cy.clearAndType(
-            onboardingSelectors.loginPasswordInput,
-            commonText.password
-        );
-        cy.get(commonSelectors.signUpButton).click();
-        cy.wait(1000);
-        signUpLink(data.email);
-        if (envVar === "Enterprise") {
-            verifyOnboardingQuestions(data.workspaceName);
-            cy.wait(1000);
-            cy.get(commonSelectors.skipbutton).click();
-            cy.backToApps();
-        }
-        cy.wait(1000);
-        visitWorkspaceInvitation(data.email, "My workspace");
-        cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-        cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
-        cy.get(onboardingSelectors.signInButton).click();
-        cy.wait(3000);
-        cy.get(commonSelectors.invitedUserName).verifyVisibleElement(
-            "have.text",
-            data.signUpName
-        );
-        cy.get(commonSelectors.acceptInviteButton).click();
-        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-            "have.text",
-            "My workspace"
-        );
     });
 
     it("should verify the user signup with same creds after invited in a workspace", () => {

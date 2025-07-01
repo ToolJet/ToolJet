@@ -406,11 +406,11 @@ export const createEventsSlice = (set, get) => ({
         await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
       }
     },
-    logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error') {
+    logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error', page) {
       const { event = eventObj } = eventObj;
       const pages = get().modules.canvas.pages;
       const currentPageId = get().getCurrentPageId('canvas');
-      const currentPage = pages.find((page) => page.id === currentPageId);
+      const currentPage = page ? page : pages.find((page) => page.id === currentPageId);
       const componentIdMapping = get().modules['canvas'].componentNameIdMapping;
       const componentName = Object.keys(componentIdMapping).find(
         (key) => componentIdMapping[key] === eventObj?.sourceId
@@ -442,7 +442,9 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
+            event.actionId ? `[Action ${event.actionId}]` : ''
+          }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };

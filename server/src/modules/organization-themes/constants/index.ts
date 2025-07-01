@@ -5,7 +5,7 @@ export enum THEME_UPDATE_TYPE {
   DEFAULT = 'default',
 }
 
-export const defaultThemeName = 'TJ default';
+export const defaultThemeName = 'Tooljet';
 
 export const TJDefaultTheme: Definition = {
   brand: {
@@ -35,10 +35,6 @@ export const TJDefaultTheme: Definition = {
         light: '#6A727C',
         dark: '#858C94',
       },
-      disabled: {
-        light: '#ACB2B9',
-        dark: '#545B64',
-      },
     },
   },
   border: {
@@ -56,10 +52,6 @@ export const TJDefaultTheme: Definition = {
         light: '#E4E7EB',
         dark: '#EEF0F1',
       },
-      disabled: {
-        light: '#E4E7EB',
-        dark: '#F6F8FA',
-      },
     },
   },
   systemStatus: {
@@ -69,7 +61,7 @@ export const TJDefaultTheme: Definition = {
         dark: '#318344',
       },
       error: {
-        light: '#D72D39',
+        light: '#D72D39',   
         dark: '#D03F43',
       },
       warning: {

@@ -46,4 +46,24 @@ export interface IAppPermissionsController {
   ): Promise<any>;
 
   deleteQueryPermissions(user: User, appId: string, queryId: string, response: Response): Promise<any>;
+
+  fetchComponentPermissions(user: User, appId: string, componentId: string, response: Response): Promise<any>;
+
+  createComponentPermissions(
+    user: User,
+    appId: string,
+    componentId: string,
+    body: CreatePermissionDto,
+    response: Response
+  ): Promise<any>;
+
+  updateComponentPermissions(
+    user: User,
+    appId: string,
+    componentId: string,
+    body: CreatePermissionDto,
+    response: Response
+  ): Promise<any>;
+
+  deleteComponentPermissions(user: User, appId: string, componentId: string, response: Response): Promise<any>;
 }

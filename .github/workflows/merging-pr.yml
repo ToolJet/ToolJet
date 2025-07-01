@@ -37,6 +37,40 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOKEN_PR }}
 
+
+  update-submodule-sha:
+    needs: merge-submodules
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout base repo
+        uses: actions/checkout@v4
+        with:
+          repository: ToolJet/ToolJet
+          token: ${{ secrets.TOKEN_PR }}
+          ref: main
+          submodules: recursive
+
+      - name: Update submodules to latest main
+        run: |
+          git config user.name "adishM98 Bot"
+          git config user.email "adish.madhu@gmail.com"
+
+          git submodule update --remote frontend/ee
+          git submodule update --remote server/ee
+
+          git add frontend/ee server/ee
+
+          if git diff --cached --quiet; then
+            echo "No submodule updates found."
+          else
+            git commit -m "🔄 chore: update submodules to latest main after auto-merge"
+            git push origin main
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}          
+
   check-submodule-prs:
     if: github.event.action == 'labeled' && github.event.label.name == 'ready-to-merge'
     runs-on: ubuntu-latest

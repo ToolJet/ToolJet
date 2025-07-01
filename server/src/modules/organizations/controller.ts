@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards, Query, Param, NotImplementedException } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards, Query, Param } from '@nestjs/common';
 import { OrganizationsService } from '@modules/organizations/service';
 import { decamelizeKeys } from 'humps';
 import { User } from '@modules/app/decorators/user.decorator';
@@ -38,7 +38,7 @@ export class OrganizationsController implements IOrganizationsController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch()
   async updateOrganizationNameAndSlug(@Body() organizationUpdateDto: OrganizationUpdateDto, @User() user: UserEntity) {
-    await this.organizationsService.updateOrganizationNameAndSlug(user.organizationId, organizationUpdateDto);
+    await this.organizationsService.updateOrganizationNameAndSlug(user, organizationUpdateDto);
     return;
   }
 
@@ -50,12 +50,27 @@ export class OrganizationsController implements IOrganizationsController {
     return;
   }
 
-  // Note : This endpoint is used for archive/unarchive workspaces.
-  @InitFeature(FEATURE_KEY.WORKSPACE_STATUS_UPDATE)
+  @InitFeature(FEATURE_KEY.WORKSPACE_ARCHIVE)
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async updateById(@Body() organizationUpdateDto: OrganizationStatusUpdateDto, @Param('id') organizationId: string) {
-    await this.organizationsService.updateOrganizationStatus(organizationId, organizationUpdateDto);
+  @Patch('/archive/:id')
+  async archiveOrganization(
+    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
+    @Param('id') organizationId: string,
+    @User() user: UserEntity
+  ) {
+    await this.organizationsService.updateOrganizationStatus(organizationId, organizationUpdateDto, user);
+    return;
+  }
+
+  @InitFeature(FEATURE_KEY.WORKSPACE_UNARCHIVE)
+  @UseGuards(JwtAuthGuard)
+  @Patch('/unarchive/:id')
+  async unarchiveOrganization(
+    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
+    @Param('id') organizationId: string,
+    @User() user: UserEntity
+  ) {
+    await this.organizationsService.updateOrganizationStatus(organizationId, organizationUpdateDto, user);
     return;
   }
 
