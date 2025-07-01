@@ -5,7 +5,7 @@ import { MODULE_CONSTANTS } from '../common/constants';
 import { TJLoader } from '@/_ui/TJLoader';
 
 const InstanceSettings = withEditionSpecificModule('InstanceSettings', {
-  moduleRequiredIn: [MODULE_CONSTANTS.MODULE_EDITIONS.EE],
+  moduleRequiredIn: [MODULE_CONSTANTS.MODULE_EDITIONS.EE, MODULE_CONSTANTS.MODULE_EDITIONS.CLOUD],
   LoadingComponent: () => (
     <>
       <TJLoader />

@@ -294,7 +294,7 @@ class AppComponent extends React.Component {
                   element={<WorkspaceSettings {...mergedProps} />}
                 ></Route>
                 <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
-                <Route path="/:workspaceId/settings/*" element={<Settings {...this.props} />}></Route>
+                <Route path="/:workspaceId/settings/*" element={<InstanceSettings {...this.props} />}></Route>
                 <Route
                   exact
                   path="/:workspaceId/modules"
