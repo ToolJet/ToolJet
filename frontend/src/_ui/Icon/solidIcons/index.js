@@ -1,5 +1,6 @@
 import React from 'react';
 import Apps from './Apps.jsx';
+import AddAppIcon from './AddApp.jsx';
 import Archive from './Archive.jsx';
 import ArrowBack from './ArrowBack.jsx';
 import ArrowDown from './ArrowDown.jsx';
@@ -10,8 +11,10 @@ import ArrowSort from './ArrowSort.jsx';
 import ArrowSortRectangle from './ArrowSortRectangle.jsx';
 import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
+import BulbIcon from './Bulb.jsx';
 import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
+import Bug from './Bug.jsx';
 import Debugger from './Debugger.jsx';
 import Calender from './Calender.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
@@ -213,6 +216,7 @@ import SectionExpand from './SectionExpand.jsx';
 import Reset from './Reset.jsx';
 import Outbound from './Outbound.jsx';
 import AddPageGroupIcon from './AddPageGroup.jsx';
+import PageIcon from './PageIcon.jsx';
 import EnterpriseNew from './EnterpriseNew.jsx';
 import ArrowReturn01 from './ArrowReturn01.jsx';
 import ArrowUp01 from './ArrowUp01.jsx';
@@ -268,6 +272,8 @@ const Icon = (props) => {
       return <AlignRight {...props} />;
     case 'apps':
       return <Apps {...props} />;
+    case 'add-app':
+      return <AddAppIcon {...props} />;
     case 'archive':
       return <Archive {...props} />;
     case 'arrowback':
@@ -292,10 +298,14 @@ const Icon = (props) => {
       return <ArrowUp {...props} />;
     case 'auditlogs':
       return <AuditLogs {...props} />;
+    case 'bulb':
+      return <BulbIcon {...props} />;
     case 'booksearch':
       return <BookSearch {...props} />;
     case 'branch':
       return <Branch {...props} />;
+    case 'bug':
+      return <Bug {...props} />;
     case 'debugger':
       return <Debugger {...props} />;
     case 'calender':
@@ -480,6 +490,8 @@ const Icon = (props) => {
       return <Page {...props} />;
     case 'pageAdd':
       return <PageAdd {...props} />;
+    case 'page-icon':
+      return <PageIcon {...props} />;
     case 'pin':
       return <Pin {...props} />;
     case 'unpin01':

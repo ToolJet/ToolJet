@@ -265,7 +265,7 @@ class HomePageComponent extends React.Component {
       });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
-      toast.success(`${this.getAppType()} created successfully!`);
+      this.props.appType !== 'front-end' && toast.success(`${this.getAppType()} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {

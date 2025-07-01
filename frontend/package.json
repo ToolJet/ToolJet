@@ -17,6 +17,7 @@
     "@dnd-kit/utilities": "^3.2.1",
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
+    "@mdxeditor/editor": "^3.38.0",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@radix-ui/colors": "^0.1.8",
     "@radix-ui/react-avatar": "^1.0.4",

@@ -6,7 +6,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 
-var _ = require('lodash');
+import _, { camelCase, isEmpty } from 'lodash';
 
 const resetters = [];
 
@@ -576,6 +576,16 @@ export function convertAllKeysToSnakeCase(o) {
     return newO;
   }
   return o;
+}
+
+export function convertKeysToCamelCase(object) {
+  if (isEmpty(object)) return null;
+
+  return Object.keys(object).reduce((acc, key) => {
+    acc[camelCase(key)] = object[key];
+
+    return acc;
+  }, {});
 }
 
 // export function createReferencesLookup(refState, forQueryParams = false, initalLoad = false) {
