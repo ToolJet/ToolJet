@@ -10,7 +10,6 @@ on:
       dockerfile_path:
         description: 'Path to Dockerfile'
         required: true
-        default: './Dockerfile'
       docker_tag:
         description: 'Docker tag suffix (e.g., pre-release-14)'
         required: true
@@ -35,13 +34,25 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Generate full Docker tag
+        id: taggen
+        run: |
+          input_tag="${{ github.event.inputs.docker_tag }}"
+          if [[ "$input_tag" == *"/"* ]]; then
+            echo "tag=$input_tag" >> $GITHUB_OUTPUT
+          else
+            echo "tag=tooljet/tj-osv:$input_tag" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ${{ github.event.inputs.dockerfile_path }}
           push: true
-          tags: tooljet/tj-osv:${{ github.event.inputs.docker_tag }}
+          tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.inputs.branch_name }}
+
