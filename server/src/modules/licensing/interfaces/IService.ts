@@ -8,12 +8,13 @@ export interface ILicenseWorkflowsService {
 }
 
 export interface ILicenseUserService {
-  getUserLimitsByType(type: LIMIT_TYPE, organizationId:string): Promise<any>;
-  validateUser(manager: EntityManager, organizationId:string): Promise<void>;
+  getUserLimitsByType(type: LIMIT_TYPE, organizationId: string): Promise<any>;
+  validateUser(manager: EntityManager, organizationId: string): Promise<void>;
 }
 
 export abstract class LicenseTermsService {
   constructor(protected readonly licenseInitService: LicenseInitService) {}
+  abstract getLicenseTermsInstance(type: any): Promise<any>;
   abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
   abstract getOrganizationLicense(organizationId: string): Promise<any>;
 }
@@ -26,6 +27,7 @@ export interface ILicenseOrganizationService {
 export abstract class LicenseInitService {
   abstract initForMigration(manager?: EntityManager): Promise<{ isValid: boolean }>;
   abstract init(): Promise<void>;
+  abstract initForCloud(): Promise<void>;
   abstract getLicenseFieldValue(type: any, licenseInstance: LicenseBase): any;
 }
 

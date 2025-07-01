@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException, BadRequestException } from '@nestjs/common';
-import { LICENSE_FIELD, LICENSE_LIMIT, ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
+import { LICENSE_FIELD, LICENSE_LIMIT } from '@modules/licensing/constants';
 import { LicenseTermsService } from '../interfaces/IService';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -23,7 +23,7 @@ export class AppCountGuard implements CanActivate {
     };
     // Fetch apps using organization ID only for cloud
     if (edition === TOOLJET_EDITIONS.Cloud) {
-      if (!organizationId || organizationId === ORGANIZATION_INSTANCE_KEY) {
+      if (!organizationId) {
         throw new BadRequestException('Invalid Organization Id');
       }
       whereCondition.organization.id = organizationId;

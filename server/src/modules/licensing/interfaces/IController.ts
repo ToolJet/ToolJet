@@ -55,7 +55,7 @@ export interface IAuditLogLicenseController {
    * Gets the maximum duration for which audit logs are kept.
    * @returns A promise that resolves to the maximum duration allowed for audit logs.
    */
-  getMaxDuration(): Promise<any>;
+  getMaxDuration(user: User): Promise<any>;
 }
 
 export interface ILicenseOrganizationController {

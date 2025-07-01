@@ -1,27 +1,27 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException } from '@nestjs/common';
-import { LICENSE_FIELD, LICENSE_TYPE, ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
+import { LICENSE_FIELD, LICENSE_TYPE } from '@modules/licensing/constants';
 import { LicenseTermsService } from '../interfaces/IService';
 
 @Injectable()
 export class AuditLogsDurationGuard implements CanActivate {
   constructor(protected licenseTermsService: LicenseTermsService) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
     const {
       status: { licenseType },
       maxDurationForAuditLogs,
       auditLogsEnabled,
-    } = await this.licenseTermsService.getLicenseTerms([
-      LICENSE_FIELD.STATUS,
-      LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS,
-      LICENSE_FIELD.AUDIT_LOGS,
-    ], ORGANIZATION_INSTANCE_KEY);
+    } = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.STATUS, LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS, LICENSE_FIELD.AUDIT_LOGS],
+      request?.user?.organization?.id
+    );
     if (!auditLogsEnabled) {
       throw new HttpException(
         "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.",
         451
       );
     }
-    const request = context.switchToHttp().getRequest();
+
     const { timeFrom, timeTo } = request.query;
     if (!timeFrom || !timeTo) {
       throw new HttpException(
