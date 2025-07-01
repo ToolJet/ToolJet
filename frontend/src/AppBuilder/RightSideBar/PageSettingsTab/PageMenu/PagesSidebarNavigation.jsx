@@ -384,7 +384,7 @@ export const PagesSidebarNavigation = ({
 
                     return <Icon {...props} />;
                   };
-                  return page.hidden || page.disabled || page?.restricted ? null : (
+                  return resolveReferences(page?.hidden?.value) || page.disabled || page?.restricted ? null : (
                     <FolderList
                       key={page.handle}
                       onClick={() => switchPageWrapper(page)}
