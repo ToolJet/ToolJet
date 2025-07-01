@@ -52,6 +52,7 @@ import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-re
 import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.scheduler';
 import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
+import { ModulesModule } from '@modules/modules/module';
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -102,7 +103,7 @@ export class AppModule implements OnModuleInit {
       await TemplatesModule.register(configs),
       await TooljetDbModule.register(configs),
       await WorkflowsModule.register(configs),
-      // await ModulesModule.register(configs),
+      await ModulesModule.register(configs),
       await AiModule.register(configs),
       await CustomStylesModule.register(configs),
       await AppPermissionsModule.register(configs),

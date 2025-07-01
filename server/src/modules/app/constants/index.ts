@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { getTooljetEdition } from '@helpers/utils.helper';
-const fs = require('fs').promises;
-const path = require('path');
+import fs from 'fs/promises';
+import path from 'path';
 
 export const LICENSE_FEATURE_ID_KEY = 'tjLicenseFeatureId';
 export enum TOOLJET_EDITIONS {

@@ -108,8 +108,8 @@ export class EmailService implements IEmailService {
         ? 'default_invite_user.hbs'
         : 'invite_user.hbs'
       : this.defaultWhiteLabelState
-      ? 'default_setup_account.hbs'
-      : 'setup_account.hbs';
+        ? 'default_setup_account.hbs'
+        : 'setup_account.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
 
     return await this.sendEmail(to, subject, {
