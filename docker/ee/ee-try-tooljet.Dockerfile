@@ -6,7 +6,7 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 # Install Postgres
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN echo "deb http://deb.debian.org/debian"
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 USER postgres
