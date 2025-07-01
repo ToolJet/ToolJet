@@ -1,4 +1,6 @@
-ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag-and-drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
+ToolJet is an **open-source low-code** platform for building and deploying internal tools with minimal engineering effort. With its drag-and-drop app-builder, you can create complex, responsive applications in minutes. ToolJet supports integration with a wide range of data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; and object storage services like S3, Google Cloud Storage, and MinIO — enabling you to fetch, transform, and write data with ease.
+
+ToolJet supports **AI integrations** with services like OpenAI, Hugging Face, Mistral, and more — allowing you to build secure AI-powered applications such as chat assistants, document analyzers, or content generators, all within the same low-code environment.
 
 :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
@@ -23,11 +25,12 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 ## All features
 
-- **Visual App Builder:** 45+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
+- **Visual App Builder:** 60+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
 - **ToolJet Database:** Built-in no-code database.
 - **Multi-Page:** Build an application with multiple pages.
 - **Multiplayer editing:** Allows simultaneous app building by multiple developers.
-- **50+ data sources:** Integrate with external databases, cloud storage, and APIs.
+- **65+ data sources:** Integrate with external databases, cloud storage, and APIs.
+- **AI-powered applications:** Connect with OpenAI, Hugging Face, Mistral, and more to build intelligent apps powered by state-of-the-art language models.
 - **Desktop & mobile:** Customize layout widths to fit various screen sizes.
 - **Self-host:** Supports Docker, Kubernetes, AWS AMI, Google Cloud Run, and more.
 - **Collaborate:** Add comments anywhere on the canvas and tag your team members.
@@ -35,10 +38,8 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - **Version control:** Manage multiple application versions with a structured release cycle.
 - **Run JS & Python code:** Execute custom JavaScript and Python snippets.
 - **Granular access control:** Set permissions at both group and app levels.
-- **Low-code:** Use JS code almost anywhere within the builder, such as setting text color based on status with
-  `status === 'success' ? 'green' : 'red'`.
 - **No-code query editors:** Query Editors are available for all supported data sources.
-- **Join and transform data:** Transform query results using JavaScript or Python code.
+- **Transform data:** Process and transform complex data using JavaScript or Python code.
 - **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
 - **Data Privacy:** ToolJet serves solely as a proxy and does not store data.
 - **SSO:** Supports multiple Single Sign-On providers.
@@ -67,9 +68,9 @@ _For users upgrading their ToolJet version, we recommend choosing the LTS versio
 
 ## Tutorials and examples
 
-[Time Tracker Application](https://docs.tooljet.ai/docs/#quickstart-guide)<br>
-[Build your own CMS using low-code](https://blog.tooljet.ai/build-cms-using-lowcode-and-mongodb/)<br>
-[AWS S3 Browser](https://blog.tooljet.ai/build-an-aws-s3-broswer-with-tooljet/)<br>
+[Build an Employee Directory](https://docs.tooljet.ai/docs/#quickstart-guide/)<br>
+[Build your own Ed Tech CRM](https://blog.tooljet.ai/building-an-ed-tech-sales-crm-using-tooljet/)<br>
+[Build an Employee Engagement Survey Dashboard](https://blog.tooljet.ai/build-an-employee-engagement-survey-dashboard-using-tooljet/)<br>
 
 ## Documentation
 
