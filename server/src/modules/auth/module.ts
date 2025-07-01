@@ -13,8 +13,6 @@ import { RolesRepository } from '@modules/roles/repository';
 import { LoginConfigsModule } from '@modules/login-configs/module';
 import { SSOResponseRepository } from '@modules/auth/oauth/repository/sso-response.repository';
 import { FeatureAbilityFactory } from './ability';
-import { AbilityService } from '@modules/ability/service';
-import { AbilityUtilService } from '@modules/ability/util.service';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SetupOrganizationsModule } from '@modules/setup-organization/module';
 import { SSOConfigsRepository } from '@modules/login-configs/repository';
@@ -80,8 +78,6 @@ export class AuthModule extends SubModule {
         LdapService,
         SSOResponseRepository,
         FeatureAbilityFactory,
-        AbilityService,
-        AbilityUtilService,
         GroupPermissionsRepository,
         SSOConfigsRepository,
       ],

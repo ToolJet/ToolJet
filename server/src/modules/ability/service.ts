@@ -84,9 +84,8 @@ export class AbilityService extends IAbilityService {
         }
         if (resources.some((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE)) {
           const dsGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.DATA_SOURCE);
-          userPermissions[MODULES.GLOBAL_DATA_SOURCE] = await this.createUserDataSourcesPermissions(
-            dsGranularPermissions
-          );
+          userPermissions[MODULES.GLOBAL_DATA_SOURCE] =
+            await this.createUserDataSourcesPermissions(dsGranularPermissions);
 
           if (userPermissions.isBuilder) {
             /* in community edition. builder can use the datasources */

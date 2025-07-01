@@ -1,7 +1,6 @@
 import { join } from 'path';
 import { getTooljetEdition } from '@helpers/utils.helper';
-import fs from 'fs/promises';
-import path from 'path';
+import { stat } from 'fs/promises';
 
 export const LICENSE_FEATURE_ID_KEY = 'tjLicenseFeatureId';
 export enum TOOLJET_EDITIONS {
@@ -38,9 +37,9 @@ export const getImportPath = async (isGetContext?: boolean, edition?: TOOLJET_ED
 const checkIfSrcPresent = async () => {
   // This function should not be called on normal server startup, only for migrations
   try {
-    const srcModulesPath = path.join(process.cwd(), 'src', 'modules');
-    const stat = await fs.stat(srcModulesPath);
-    return stat.isDirectory();
+    const srcModulesPath = join(process.cwd(), 'src', 'modules');
+    const statObj = await stat(srcModulesPath);
+    return statObj.isDirectory();
   } catch (err) {
     // If directory doesn't exist, stat will throw
     if (err.code === 'ENOENT') return false;
