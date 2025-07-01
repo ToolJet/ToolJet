@@ -72,7 +72,11 @@ type NewRevampedComponent =
   | 'VerticalDivider'
   | 'Link'
   | 'DaterangePicker'
-  | 'TextArea';
+  | 'TextArea'
+  | 'Container'
+  | 'Tabs'
+  | 'Form'
+
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -94,6 +98,10 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Link',
   'DaterangePicker',
   'TextArea',
+  'Container',
+  'Tabs',
+  'Form'
+
 ];
 
 @Injectable()
@@ -104,7 +112,7 @@ export class AppImportExportService {
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService
-  ) {}
+  ) { }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -216,10 +224,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -231,10 +239,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -242,16 +250,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-              .createQueryBuilder(Component, 'components')
-              .leftJoinAndSelect('components.layouts', 'layouts')
-              .leftJoinAndSelect('components.permissions', 'permission')
-              .leftJoinAndSelect('permission.users', 'componentUser')
-              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-              .where('components.pageId IN(:...pageId)', {
-                pageId: pages.map((v) => v.id),
-              })
-              .orderBy('components.created_at', 'ASC')
-              .getMany()
+            .createQueryBuilder(Component, 'components')
+            .leftJoinAndSelect('components.layouts', 'layouts')
+            .leftJoinAndSelect('components.permissions', 'permission')
+            .leftJoinAndSelect('permission.users', 'componentUser')
+            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+            .where('components.pageId IN(:...pageId)', {
+              pageId: pages.map((v) => v.id),
+            })
+            .orderBy('components.created_at', 'ASC')
+            .getMany()
           : [];
 
       const componentsWithPermissionGroups = components.map((component) => {
@@ -261,10 +269,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -1156,10 +1164,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-              importingQuery.options,
-              externalResourceMappings['tooljet_database'],
-              organizationId
-            )
+            importingQuery.options,
+            externalResourceMappings['tooljet_database'],
+            organizationId
+          )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1872,10 +1880,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-                query.options,
-                externalResourceMappings['tooljet_database'],
-                user?.organizationId
-              )
+              query.options,
+              externalResourceMappings['tooljet_database'],
+              user?.organizationId
+            )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2155,6 +2163,15 @@ function migrateProperties(
         validation.maxValue = properties?.maxValue;
         delete properties.maxValue;
       }
+    }
+
+    if (componentType === 'Container') {
+      properties.showHeader = properties?.showHeader || false;
+    }
+
+    if (componentType === 'Form') {
+      properties.showHeader = properties?.showHeader || false;
+      properties.showFooter = properties?.showFooter || false;
     }
   }
   return { properties, styles, general, generalStyles, validation };
