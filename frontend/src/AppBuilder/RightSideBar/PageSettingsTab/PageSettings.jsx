@@ -19,7 +19,7 @@ import { RIGHT_SIDE_BAR_TAB } from '../rightSidebarConstants';
 import { SortableTree } from './PageMenu/Tree/SortableTree';
 import SortableList from '@/_components/SortableList';
 import { PageMenuItem } from './PageMenu/PageMenuItem';
-import { get } from 'lodash';
+import { camelCase, get, startCase, toLower, upperFirst } from 'lodash';
 import { Button } from '@/components/ui/Button/Button';
 import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
 import { AddNewPagePopup } from './PageMenu/AddNewPagePopup';
@@ -79,7 +79,6 @@ export const PageSettings = () => {
           </div>
           {style.type === 'colorSwatches' && (
             <ColorSwatches
-              onReset={handleReset}
               value={currentStyles[name]?.value}
               onChange={(value) => handleStyleChange(name, value, false)}
             />
@@ -287,7 +286,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
   return Object.keys(groupedStyles).map((style) => {
     const items = [
       {
-        title: `${style}`,
+        title: `${upperFirst(toLower(startCase(style)))}`,
         children: Object.entries(groupedStyles[style]).map(([key, value]) => {
           const defaultValue = pagesMeta.definition.styles[key].value;
           return {
@@ -335,12 +334,16 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseVali
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show logo
+          <LicenseTooltip message={"Logo can't be hidden on free plans"} placement="bottom" show={!licenseValid}>
+            <div className="d-flex align-items-center">{!licenseValid && <SolidIcon name="enterprisecrown" />}</div>
+          </LicenseTooltip>
         </label>
         <label className={`form-switch`}>
           <input
             className="form-check-input"
             type="checkbox"
-            checked={!hideLogo}
+            checked={licenseValid ? !hideLogo : true}
+            disabled={!licenseValid}
             onChange={(e) => {
               pageSettingChanged({ hideLogo: !e.target.checked }, 'properties');
             }}
