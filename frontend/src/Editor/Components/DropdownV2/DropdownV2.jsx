@@ -383,6 +383,10 @@ export const DropdownV2 = ({
     indicatorSeparator: (_state) => ({
       display: 'none',
     }),
+    placeholder: (provided, _state) => ({
+      ...provided,
+      color: 'var(--cc-placeholder-text)',
+    }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
       height: _height,
