@@ -10,7 +10,6 @@ export class EmailModule extends SubModule {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { EmailService } = await import(`${importPath}/email/service`);
     const { EmailUtilService } = await import(`${importPath}/email/util.service`);
-    // const { EmailListener } = await import(`${importPath}/email/listener`);
     return {
       module: EmailModule,
       imports: [
