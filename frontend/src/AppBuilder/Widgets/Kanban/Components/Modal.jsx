@@ -6,6 +6,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import './modal.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanProps, lastSelectedCard }) {
@@ -48,7 +49,7 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
   return (
     <BootstrapModal
       show={showModal}
-      contentClassName="modal-component"
+      contentClassName="modal-component kanban-modal"
       container={document.getElementsByClassName('real-canvas')[0]}
       size={'lg'}
       keyboard={true}

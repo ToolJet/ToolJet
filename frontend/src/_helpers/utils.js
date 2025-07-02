@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
-import _, { isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { executeAction } from '@/_helpers/appUtils';
@@ -16,8 +16,20 @@ import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
+// import * as _ from 'lodash';
+const _ = require('lodash');
 
 export const reservedKeyword = ['app', 'window'];
+
+// Function to format file size
+export function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024; // Use 1024 for binary KB/MB etc
+  const dm = 2;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 export const Constants = {
   Global: 'Global',
@@ -1387,7 +1399,7 @@ export const computeColor = (styleDefinition, value, meta) => {
       return value;
     }
     if (meta?.displayName == 'Text color') {
-      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      value = value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
       return value;
     }
     if (meta?.displayName == 'Icon color') {
@@ -1531,4 +1543,39 @@ export const hasBuilderRole = (roleObj) => {
 export function checkIfToolJetCloud(version) {
   const parsed = version.split('-');
   return parsed[1] === 'cloud';
+}
+
+export const calculateDueDate = (currentPeriodEnd) => {
+  const currentPeriodEndDate = new Date(currentPeriodEnd * 1000);
+  const currentDate = new Date();
+  let dueMessage;
+
+  if (currentPeriodEndDate > currentDate) {
+    const timeDiff = currentPeriodEndDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+
+    if (daysDiff < 7) {
+      dueMessage = `Due in ${daysDiff} days`;
+    } else {
+      const options = { day: 'numeric', month: 'short', year: 'numeric' };
+      dueMessage = currentPeriodEndDate.toLocaleDateString('en-GB', options).replace(',', '');
+      dueMessage = `Next due on ${dueMessage}`;
+    }
+  } else if (currentPeriodEndDate.toDateString() === currentDate.toDateString()) {
+    dueMessage = `Due today`;
+  } else {
+    const timeDiff = currentDate.getTime() - currentPeriodEndDate.getTime();
+    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+    dueMessage = `Due ${daysDiff} days ago`;
+  }
+
+  return dueMessage;
+};
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
+};
+
+export function formatPrice(price) {
+  return price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

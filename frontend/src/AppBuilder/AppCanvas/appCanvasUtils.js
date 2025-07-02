@@ -66,10 +66,10 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
     componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
     componentData.definition.properties.visibility = { value: true };
-    customLayouts = moduleInfo.moduleContainer.layouts;
+    customLayouts = moduleInfo?.moduleContainer?.layouts;
 
     const inputItems = Object.values(
-      moduleInfo.moduleContainer.component.definition.properties?.input_items?.value ?? {}
+      moduleInfo.moduleContainer?.component.definition.properties?.input_items?.value ?? {}
     );
 
     for (const { name, default_value } of inputItems) {
@@ -799,4 +799,10 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
     padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
   }
   return canvasWidth - padding;
+};
+
+export const addDefaultButtonIdToForm = (formComponent, defaultChildComponents) => {
+  const { id } = defaultChildComponents[defaultChildComponents.length - 1]; // Assuming the last child is the button
+  formComponent.component.definition.properties.buttonToSubmit = { value: id };
+  return formComponent;
 };

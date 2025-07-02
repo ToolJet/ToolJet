@@ -34,6 +34,7 @@ export function defineAppAbility(
         FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
         FEATURE_KEY.UPDATE_ICON,
         FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
+        FEATURE_KEY.APP_PUBLIC_UPDATE,
       ],
       App
     );
@@ -43,7 +44,9 @@ export function defineAppAbility(
   if (isAllAppsCreatable) {
     can(FEATURE_KEY.CREATE, App);
   }
-
+  if (userPermission.appRelease) {
+    can([FEATURE_KEY.RELEASE], App);
+  }
   if (
     isAllAppsEditable ||
     (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId))
@@ -54,10 +57,10 @@ export function defineAppAbility(
         FEATURE_KEY.GET_ASSOCIATED_TABLES,
         FEATURE_KEY.GET_ONE,
         FEATURE_KEY.GET_BY_SLUG,
-        FEATURE_KEY.RELEASE,
         FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
         FEATURE_KEY.UPDATE_ICON,
         FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
+        FEATURE_KEY.APP_PUBLIC_UPDATE,
       ],
       App
     );

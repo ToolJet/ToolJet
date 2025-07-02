@@ -16,10 +16,15 @@ export class FeatureGuard implements CanActivate {
     return this;
   }
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const organizationId =
+      typeof request.headers['tj-workspace-id'] === 'object'
+        ? request.headers['tj-workspace-id'][0]
+        : request.headers['tj-workspace-id'];
     const licenseFeatureId = (this.reflector.get<LICENSE_FIELD>(LICENSE_FEATURE_ID_KEY, context.getHandler()) ||
       this.currentFeatureId) as LICENSE_FIELD;
 
-    if (!licenseFeatureId || !(await this.licenseTermsService.getLicenseTerms(licenseFeatureId))) {
+    if (!licenseFeatureId || !(await this.licenseTermsService.getLicenseTerms(licenseFeatureId, organizationId))) {
       throw new HttpException(
         `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
         451

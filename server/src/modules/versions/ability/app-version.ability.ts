@@ -27,7 +27,9 @@ export function defineAppVersionAbility(
         FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
         FEATURE_KEY.DELETE_COMPONENTS,
         FEATURE_KEY.CREATE_PAGES,
+        FEATURE_KEY.CLONE_GROUP,
         FEATURE_KEY.CLONE_PAGES,
+        FEATURE_KEY.CLONE_GROUP,
         FEATURE_KEY.UPDATE_PAGES,
         FEATURE_KEY.DELETE_PAGE,
         FEATURE_KEY.REORDER_PAGES,
@@ -35,6 +37,9 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
+        FEATURE_KEY.APP_VERSION_CREATE,
+        FEATURE_KEY.APP_VERSION_DELETE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );
@@ -43,6 +48,9 @@ export function defineAppVersionAbility(
 
   const isAllEditable = !!userAppPermissions?.isAllEditable;
   const isAllViewable = !!userAppPermissions?.isAllViewable;
+  if (userPermission.appPromote) {
+    can([FEATURE_KEY.PROMOTE], App);
+  }
 
   if (isAllEditable) {
     can(
@@ -53,13 +61,13 @@ export function defineAppVersionAbility(
         FEATURE_KEY.GET_ONE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
-        FEATURE_KEY.PROMOTE,
         FEATURE_KEY.CREATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
         FEATURE_KEY.DELETE_COMPONENTS,
         FEATURE_KEY.CREATE_PAGES,
         FEATURE_KEY.CLONE_PAGES,
+        FEATURE_KEY.CLONE_GROUP,
         FEATURE_KEY.UPDATE_PAGES,
         FEATURE_KEY.DELETE_PAGE,
         FEATURE_KEY.REORDER_PAGES,
@@ -67,6 +75,9 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
+        FEATURE_KEY.APP_VERSION_CREATE,
+        FEATURE_KEY.APP_VERSION_DELETE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );
@@ -83,13 +94,13 @@ export function defineAppVersionAbility(
         FEATURE_KEY.GET_ONE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
-        FEATURE_KEY.PROMOTE,
         FEATURE_KEY.CREATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENTS,
         FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
         FEATURE_KEY.DELETE_COMPONENTS,
         FEATURE_KEY.CREATE_PAGES,
         FEATURE_KEY.CLONE_PAGES,
+         FEATURE_KEY.CLONE_GROUP,
         FEATURE_KEY.UPDATE_PAGES,
         FEATURE_KEY.DELETE_PAGE,
         FEATURE_KEY.REORDER_PAGES,
@@ -97,6 +108,9 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
+        FEATURE_KEY.APP_VERSION_CREATE,
+        FEATURE_KEY.APP_VERSION_DELETE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );

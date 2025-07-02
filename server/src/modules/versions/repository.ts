@@ -147,6 +147,34 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
+  async findVersionWithQueryPermissions(id: string, manager?: EntityManager): Promise<AppVersion> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersion = await manager
+        .createQueryBuilder(AppVersion, 'appVersion')
+        .where('appVersion.id = :id', { id })
+        .leftJoinAndSelect('appVersion.app', 'app')
+        .leftJoinAndSelect('appVersion.dataQueries', 'dataQueries')
+        .leftJoinAndSelect('dataQueries.dataSource', 'dataSource')
+        .leftJoinAndSelect('dataQueries.plugins', 'plugins')
+        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+        .leftJoinAndSelect('dataQueries.permissions', 'permission')
+        .leftJoinAndSelect('permission.users', 'queryUser')
+        .leftJoinAndSelect('queryUser.user', 'user')
+        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+        .getOneOrFail();
+
+      if (appVersion?.dataQueries) {
+        for (const query of appVersion?.dataQueries) {
+          if (query?.plugin) {
+            query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+          }
+        }
+      }
+
+      return appVersion;
+    }, manager || this.manager);
+  }
+
   getVersionsInApp(appId: string, manager?: EntityManager): Promise<AppVersion[]> {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.find(AppVersion, {
@@ -195,7 +223,6 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersions;
     }, manager || this.manager);
   }
-
   async getAppVersionById(versionId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const version = await manager.findOneOrFail(AppVersion, {

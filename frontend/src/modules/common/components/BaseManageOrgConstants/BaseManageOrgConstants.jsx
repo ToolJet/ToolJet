@@ -579,7 +579,7 @@ const BaseManageOrgConstants = ({
                           // Todo: Update link to documentation: workspace constants
                           onClick={() =>
                             window.open(
-                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
+                              'https://docs.tooljet.ai/docs/org-management/workspaces/workspace_constants/',
                               '_blank'
                             )
                           }
