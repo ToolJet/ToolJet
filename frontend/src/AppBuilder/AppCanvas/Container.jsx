@@ -4,32 +4,18 @@ import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useDrop } from 'react-dnd';
-import {
-  addChildrenWidgetsToParent,
-  addNewWidgetToTheEditor,
-  computeViewerBackgroundColor,
-  getSubContainerWidthAfterPadding,
-  addDefaultButtonIdToForm,
-} from './appCanvasUtils';
-import {
-  CANVAS_WIDTHS,
-  NO_OF_GRIDS,
-  WIDGETS_WITH_DEFAULT_CHILDREN,
-  GRID_HEIGHT,
-  CONTAINER_FORM_CANVAS_PADDING,
-  SUBCONTAINER_CANVAS_BORDER_WIDTH,
-  BOX_PADDING,
-} from './appCanvasConstants';
+import { useDrop, useDragLayer } from 'react-dnd';
+import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
+import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
-import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
-import { isPDFSupported } from '@/_helpers/appUtils';
-import toast from 'react-hot-toast';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { noop } from 'lodash';
+import { useGhostMoveable } from '@/AppBuilder/_hooks/useGhostMoveable';
+import { useCanvasDropHandler } from './useCanvasDropHandler';
+import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -74,89 +60,58 @@ export const Container = React.memo(
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
 
+    // Initialize ghost moveable hook
+    const { activateGhost, deactivateGhost } = useGhostMoveable(id);
+
+    // Monitor drag layer to update ghost position continuously
+    const { isDragging } = useDragLayer((monitor) => ({
+      isDragging: monitor.isDragging(),
+    }));
+
+    // // // Cleanup ghost when drag ends
+    useEffect(() => {
+      if (!isDragging) {
+        deactivateGhost();
+      }
+    }, [id, isDragging, deactivateGhost]);
+
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
+    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
+
+    // Get the drop handler from the new hook
+    const handleDrop = useCanvasDropHandler({
+      appType,
+    });
+
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
-      hover: (item) => {
-        item.canvasRef = realCanvasRef?.current;
-        item.canvasId = id;
-        item.canvasWidth = getContainerCanvasWidth();
-      },
-      drop: async ({ componentType, component }, monitor) => {
-        setShowModuleBorder(false);
-        if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
+      hover: (item, monitor) => {
+        const clientOffset = monitor.getClientOffset();
 
-        const didDrop = monitor.didDrop();
-        if (didDrop) return;
+        const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
 
-        const moduleInfo = component?.moduleId
-          ? {
-              moduleId: component.moduleId,
-              versionId: component.versionId,
-              environmentId: component.environmentId,
-              moduleName: component.displayName,
-              moduleContainer: component.moduleContainer,
-            }
-          : undefined;
-
-        let addedComponent;
-
-        if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
-          let parentComponent = addNewWidgetToTheEditor(
-            componentType,
-            monitor,
-            currentLayout,
-            realCanvasRef,
-            id,
-            moduleInfo
-          );
-          const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
-          if (componentType === 'Form') {
-            parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
+        if (clientOffset) {
+          const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
+          if (canvasId === id) {
+            setCurrentDragCanvasId(id);
           }
-          addedComponent = [parentComponent, ...childComponents];
-          await addComponentToCurrentPage(addedComponent);
-        } else {
-          const newComponent = addNewWidgetToTheEditor(
-            componentType,
-            monitor,
-            currentLayout,
-            realCanvasRef,
-            id,
-            moduleInfo
-          );
-          addedComponent = [newComponent];
-          await addComponentToCurrentPage(addedComponent);
         }
-
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-
-        const canvas = document.querySelector('.canvas-container');
-        const sidebar = document.querySelector('.editor-sidebar');
-        const droppedElem = document.getElementById(addedComponent?.[0]?.id);
-
-        if (!canvas || !sidebar || !droppedElem) return;
-
-        const droppedRect = droppedElem.getBoundingClientRect();
-        const sidebarRect = sidebar.getBoundingClientRect();
-
-        const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
-
-        if (isOverlapping) {
-          const overlap = droppedRect.right - sidebarRect.left;
-          canvas.scrollTo({
-            left: canvas.scrollLeft + overlap,
-            behavior: 'smooth',
-          });
+        // Calculate width based on the app canvas's grid
+        let width = (appCanvasWidth * item.component?.defaultSize?.width) / NO_OF_GRIDS;
+        const componentSize = {
+          width,
+          height: item.component?.defaultSize?.height,
+        };
+        if (clientOffset && id === 'canvas') {
+          activateGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
-
-      collect: (monitor) => ({
-        isOverCurrent: monitor.isOver({ shallow: true }),
-      }),
+      drop: (item, monitor) => {
+        handleDrop(item, monitor, id);
+      },
     });
 
     const showEmptyContainer =
@@ -175,6 +130,7 @@ export const Container = React.memo(
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
