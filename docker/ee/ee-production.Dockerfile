@@ -37,6 +37,8 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --omit=dev
 
+ENV TOOLJET_EDITION=ee
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
@@ -44,6 +46,7 @@ COPY ./frontend/ ./frontend/
 RUN npm --prefix frontend run build --production && npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
+ENV TOOLJET_EDITION=ee
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
