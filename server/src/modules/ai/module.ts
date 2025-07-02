@@ -10,6 +10,7 @@ import { DataQueriesModule } from '@modules/data-queries/module';
 import { LicenseModule } from '@modules/licensing/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
+import { ArtifactRepository } from './repositories/artifact.repository';
 
 export class AiModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -47,6 +48,8 @@ export class AiModule {
         AppsRepository,
         AiResponseVoteRepository,
         FeatureAbilityFactory,
+        ArtifactRepository,
+        
         EventsService,
 
       ],

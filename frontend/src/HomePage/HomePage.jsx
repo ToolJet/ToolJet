@@ -12,7 +12,7 @@ import {
 } from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
-import _, { sample, isEmpty } from 'lodash';
+import _, { sample, isEmpty, capitalize } from 'lodash';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -253,19 +253,21 @@ class HomePageComponent extends React.Component {
     return this.props.appType === 'module' ? 'Module' : this.props.appType === 'workflow' ? 'Workflow' : 'App';
   };
 
-  createApp = async (appName) => {
+  createApp = async (appName, type, prompt) => {
     let _self = this;
     _self.setState({ creatingApp: true });
-
     try {
       const data = await appsService.createApp({
         icon: sample(iconList),
         name: appName,
         type: this.props.appType,
+        prompt,
       });
       const workspaceId = getWorkspaceId();
-      _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
-      this.props.appType !== 'front-end' && toast.success(`${this.getAppType()} created successfully!`);
+      _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
+        state: { commitEnabled: this.state.commitEnabled, prompt },
+      });
+      this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
