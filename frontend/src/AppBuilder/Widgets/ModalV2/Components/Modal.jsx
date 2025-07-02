@@ -29,8 +29,9 @@ export const ModalWidget = ({ ...restProps }) => {
     isFullScreen,
   } = restProps['modalProps'];
 
+  const isEditing = useStore((state) => state.currentMode === 'edit');
   const setComponentProperty = useStore((state) => state.setComponentProperty);
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
   const headerMaxHeight = isFullScreen
     ? `calc(${_modalHeight} - ${footerHeight} - 100px - 10px)`
@@ -121,6 +122,7 @@ export const ModalWidget = ({ ...restProps }) => {
           onHideModal={onHideModal}
           headerHeight={headerHeight}
           onClick={handleModalSlotClick}
+          isEditing={isEditing}
           updateHeaderSizeInStore={updateHeaderSizeInStore}
           activeSlot={activeSlot}
           headerMaxHeight={headerMaxHeight}
@@ -166,6 +168,7 @@ export const ModalWidget = ({ ...restProps }) => {
           width={modalWidth}
           footerHeight={footerHeight}
           onClick={handleModalSlotClick}
+          isEditing={isEditing}
           updateFooterSizeInStore={updateFooterSizeInStore}
           activeSlot={activeSlot}
           footerMaxHeight={footerMaxHeight}
