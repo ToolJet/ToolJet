@@ -13,6 +13,7 @@ export const ModalFooter = React.memo(
     width,
     footerHeight,
     onClick,
+    isEditing,
     updateFooterSizeInStore,
     activeSlot,
     footerMaxHeight,
@@ -28,6 +29,7 @@ export const ModalFooter = React.memo(
             padding: `${4.5}px ${MODAL_CANVAS_PADDING}px`,
             margin: '0px',
           }}
+          isEditing={isEditing}
           id={`${id}-footer`}
           height={canvasFooterHeight}
           width={width}
