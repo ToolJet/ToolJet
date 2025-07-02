@@ -35,6 +35,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'VerticalDivider',
   'Link',
   'Form',
+  'FilePicker',
 ];
 
 const RenderWidget = ({
@@ -51,6 +52,8 @@ const RenderWidget = ({
   const { moduleId } = useModuleContext();
   const componentDefinition = useStore((state) => state.getComponentDefinition(id, moduleId), shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
+  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
+  const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
   const component = componentDefinition?.component;
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
@@ -152,6 +155,9 @@ const RenderWidget = ({
   }, []);
   if (!componentDefinition?.component) return null;
 
+  const disabledState = resolvedProperties?.disabledState;
+  const loadingState = resolvedProperties?.loadingState;
+
   return (
     <ErrorBoundary>
       <OverlayTrigger
@@ -185,7 +191,9 @@ const RenderWidget = ({
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
           role={'Box'}
-          className={inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''} //required for custom CSS
+          className={`canvas-component ${
+            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+          } ${disabledState || loadingState ? 'disabled' : ''}`} //required for custom CSS
         >
           <ComponentToRender
             id={id}
@@ -202,6 +210,8 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            adjustComponentPositions={adjustComponentPositions}
+            componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
           />
         </div>

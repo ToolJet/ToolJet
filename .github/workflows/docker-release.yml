@@ -139,9 +139,10 @@ jobs:
           context: .
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=main
           file: docker/ee/ee-production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
+          tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-latest,tooljet/tooljet:ee-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -155,6 +156,7 @@ jobs:
           context: .
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=lts
           file: docker/ee/ee-production.Dockerfile
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}

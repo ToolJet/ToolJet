@@ -134,7 +134,7 @@ export const dropdownConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     disabledState: {
@@ -200,6 +200,7 @@ export const dropdownConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       justifyContent: { value: 'left' },
+      selectedTextColor: { value: 'var(--cc-primary-text)' },
     },
   },
 };

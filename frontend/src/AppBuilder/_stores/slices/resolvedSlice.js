@@ -442,6 +442,9 @@ export const createResolvedSlice = (set, get) => ({
       return {};
     }
   },
+  getExposedValueOfQuery: (queryId, moduleId = 'canvas') => {
+    return get().resolvedStore.modules[moduleId].exposedValues.queries[queryId] || {};
+  },
   getAllExposedValues: (moduleId = 'canvas') => {
     return get().resolvedStore.modules[moduleId].exposedValues;
   },
@@ -471,11 +474,11 @@ export const createResolvedSlice = (set, get) => ({
     const canvasBgColor = get().globalSettings.backgroundFxQuery
       ? get().resolvedStore.modules[moduleId].others.canvasBackgroundColor || globalSettingsBackgroundColor
       : globalSettingsBackgroundColor;
-    const canvasBackgroundColor = canvasBgColor ? canvasBgColor : '#edeff5';
+    const canvasBackgroundColor = canvasBgColor ? canvasBgColor : 'var(--cc-appBackground-surface)';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
       return darkMode ? '#2f3c4c' : '#edeff5';
     }
-    return canvasBgColor;
+    return canvasBackgroundColor;
   },
 
   getSecrets: (moduleId = 'canvas') => {

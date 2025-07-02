@@ -49,5 +49,13 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.GENERATE_PAT]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.VALIDATE_PAT_SESSION]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
   },
 };

@@ -7,7 +7,10 @@ import { EMAIL_EVENTS } from './constants';
 
 @Injectable()
 export class EmailListener {
-  constructor(private readonly emailService: EmailService, private readonly logger: Logger) {}
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly logger: Logger
+  ) {}
 
   @OnEvent('emailEvent')
   async handleEmailEvent(eventData: EmailEventPayload) {
