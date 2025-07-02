@@ -8,7 +8,7 @@ import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCssVarValue } from './utils';
+import { getCssVarValue, getModifiedColor } from './utils';
 
 var tinycolor = require('tinycolor2');
 
@@ -33,11 +33,11 @@ export const Chart = function Chart({
     return '#fff';
   };
 
-  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius } = styles;
+  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
 
-  const modifiedBackgroundColor = getCssVarValue(document.documentElement, backgroundColor);
+  const modifiedBackgroundColor = getModifiedColor(backgroundColor, 0);
   const modifiedMarkerColor = getCssVarValue(document.documentElement, markerColor);
   const modifiedGridLines = getCssVarValue(document.documentElement, 'var(--cc-weak-border)');
   const modifiedTextColor = getCssVarValue(document.documentElement, 'var(--cc-primary-text)');
@@ -55,7 +55,8 @@ export const Chart = function Chart({
     width: width - 4,
     height,
     display: visibility ? '' : 'none',
-    background: darkMode ? '#1f2936' : 'white',
+    // background: darkMode ? '#1f2936' : 'white',
+    border: `1px solid ${borderColor}`,
     boxShadow,
     borderRadius,
   };
@@ -82,6 +83,7 @@ export const Chart = function Chart({
       ? '#1f2936'
       : '#fff'
     : modifiedBackgroundColor;
+
   const fontColor = getColor(updatedBgColor);
 
   const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
@@ -105,8 +107,8 @@ export const Chart = function Chart({
   }, [JSON.stringify(chartLayout, chartTitle)]);
 
   const layout = {
-    width: width - 4,
-    height,
+    width: width - 6,
+    height: height - 4,
     plot_bgcolor: updatedBgColor,
     paper_bgcolor: updatedBgColor,
     title: {
