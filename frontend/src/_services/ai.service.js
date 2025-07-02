@@ -21,6 +21,7 @@ export const aiService = {
   approvePrd,
   getCopilotSuggestion,
   getCreditBalance,
+  fixWithAI,
 };
 
 function enrichPrompt(prompt) {
@@ -231,4 +232,9 @@ async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
 
   return fetch(`${config.apiUrl}/ai/get-credits-balance`, requestOptions).then(handleResponse);
+}
+
+async function fixWithAI(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleResponse);
 }

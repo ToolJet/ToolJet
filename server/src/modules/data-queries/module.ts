@@ -37,7 +37,7 @@ export class DataQueriesModule extends SubModule {
         AppFeatureAbilityFactory,
         DataSourceFeatureAbilityFactory,
       ],
-      exports: [DataQueriesUtilService],
+      exports: [DataQueriesUtilService, DataQueriesService],
       controllers: [DataQueriesController],
     };
   }

@@ -3,6 +3,11 @@ import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum 
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { APP_TYPES } from '../constants';
 
+
+export enum AppBuilderMode {
+  AI = 'ai',
+  VISUAL = 'visual',
+}
 export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
@@ -18,6 +23,10 @@ export class AppCreateDto {
   @IsString()
   @IsEnum(APP_TYPES, { message: 'Invalid app type.' })
   type: string;
+
+  @IsOptional()
+  @IsString()
+  prompt?: string;
 }
 
 export class AppUpdateDto {
@@ -52,6 +61,10 @@ export class AppUpdateDto {
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
   icon: string;
+
+  @IsOptional()
+  @IsEnum(AppBuilderMode, { message: 'app_builder_mode must be either "ai" or "visual"' })
+  app_builder_mode?: AppBuilderMode;
 }
 
 export class ValidateAppAccessDto {

@@ -2,6 +2,7 @@ import { IAiUtilService } from './interfaces/IUtilService';
 
 export class AiUtilService implements IAiUtilService {
   constructor() {}
+  
   public getAgentAssetPath(filename) {
     throw new Error('Method not implemented.');
   }

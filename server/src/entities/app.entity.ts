@@ -69,6 +69,36 @@ export class App extends BaseEntity {
   @Column({ name: 'workflow_enabled', default: false })
   workflowEnabled: boolean;
 
+
+  @Column({ name: 'is_initialised_from_prompt', default: false })
+  isInitialisedFromPrompt: boolean;
+
+  @Column({ name: 'app_generated_from_prompt', default: false })
+  appGeneratedFromPrompt: boolean;
+
+  @Column({
+    type: 'enum',
+    enumName: 'app_builder_mode',
+    name: 'app_builder_mode',
+    enum: ['ai', 'visual'],
+    default: 'visual',
+  })
+  appBuilderMode: string;
+
+  @Column({ name: 'ai_generation_metadata', type: 'jsonb', nullable: true })
+  aiGenerationMetadata: {
+    steps: {
+      name: string;
+      id: string;
+      loadingStates: string[];
+      appInitialisationPrompt?: string;
+    }[];
+    appName?: string;
+    completedSteps: string[];
+    activeStep: string;
+    version: string;
+  };
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -1,7 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
-  content: ['./pages/**/*.{js,jsx}', './components/**/*.{js,jsx}', './app/**/*.{js,jsx}', './src/**/*.{js,jsx}'],
+  content: [
+    './pages/**/*.{js,jsx}',
+    './components/**/*.{js,jsx}',
+    './app/**/*.{js,jsx}',
+    './src/**/*.{js,jsx}',
+    './ee/**/*.{js,jsx}',
+  ],
   prefix: 'tw-',
   corePlugins: {
     preflight: false,
@@ -22,7 +28,7 @@ module.exports = {
         'background-error-weak': 'var(--background-error-weak)',
         'background-warning-stong': 'var(--background-warning-stong)',
         'background-warning-weak': 'var(--background-warning-weak)',
-        'background-inverse': 'var(--background-Inverse)',
+        'background-inverse': 'var(--background-inverse)',
         'text-default': 'var(--text-default)',
         'text-medium': 'var(--text-medium)',
         'text-placeholder': 'var(--text-placeholder)',

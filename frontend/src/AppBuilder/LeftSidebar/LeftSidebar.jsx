@@ -24,6 +24,7 @@ export const BaseLeftSidebar = ({
   switchDarkMode,
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
+  isUserInZeroToOneFlow,
 }) => {
   const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
@@ -72,6 +73,11 @@ export const BaseLeftSidebar = ({
   };
 
   useEffect(() => {
+    if (isUserInZeroToOneFlow) {
+      setPopoverContentHeight(((window.innerHeight - 48) / window.innerHeight) * 100);
+      return;
+    }
+
     if (!isDraggingQueryPane) {
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
@@ -80,7 +86,7 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPanelHeight, isDraggingQueryPane]);
+  }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
@@ -111,7 +117,7 @@ export const BaseLeftSidebar = ({
           />
         );
       case 'tooljetai':
-        return renderAIChat({ darkMode });
+        return renderAIChat({ darkMode, isUserInZeroToOneFlow });
       //   case 'datasource':
       //     return (
       //       <LeftSidebarDataSources
@@ -211,19 +217,24 @@ export const BaseLeftSidebar = ({
           tip: 'Build with AI',
           ref: setSideBarBtnRefs('tooljetai'),
         })}
-        {renderCommonItems()}
-        <SidebarItem
-          icon="settings"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('settings')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          tip="Settings"
-          ref={setSideBarBtnRefs('settings')}
-          isModuleEditor={isModuleEditor}
-        />
+
+        {!isUserInZeroToOneFlow && (
+          <>
+            {renderCommonItems()}
+            <SidebarItem
+              icon="settings"
+              selectedSidebarItem={selectedSidebarItem}
+              darkMode={darkMode}
+              // eslint-disable-next-line no-unused-vars
+              onClick={(e) => handleSelectedSidebarItem('settings')}
+              className={`left-sidebar-item  left-sidebar-layout`}
+              badge={true}
+              tip="Settings"
+              ref={setSideBarBtnRefs('settings')}
+              isModuleEditor={isModuleEditor}
+            />
+          </>
+        )}
       </>
     );
   };

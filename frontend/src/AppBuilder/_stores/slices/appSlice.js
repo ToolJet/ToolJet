@@ -5,8 +5,8 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
-import _ from 'lodash';
+import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import _, { isEmpty } from 'lodash';
 
 const initialState = {
   isSaving: false,
@@ -301,4 +301,36 @@ export const createAppSlice = (set, get) => ({
     set((state) => {
       state.appPermission.selectedUsers = users;
     }),
+
+  updateAppGenerationMetadata: (dataToUpdate, moduleId = 'canvas') => {
+    set((state) => {
+      if (isEmpty(dataToUpdate) || !state.appStore.modules[moduleId].app?.aiGenerationMetadata) return;
+
+      // Any value at the top level of aiGenerationMetadata can be updated using this, for nested keys either send complete data or need to add separate logic to handle it
+      Object.keys(dataToUpdate).forEach((key) => {
+        if (dataToUpdate[key] !== undefined) {
+          state.appStore.modules[moduleId].app.aiGenerationMetadata[key] = dataToUpdate[key];
+        }
+      });
+    });
+  },
+
+  updateAppData: (dataToUpdate, moduleId = 'canvas') => {
+    set((state) => {
+      state.appStore.modules[moduleId].app = { ...state.appStore.modules[moduleId].app, ...dataToUpdate };
+    });
+  },
+
+  updateAppInfoInDB: async (payload, moduleId = 'canvas') => {
+    const { appId } = get().appStore.modules[moduleId].app;
+
+    if (!appId || isEmpty(payload)) return;
+
+    try {
+      await appsService.saveApp(appId, payload);
+      get().updateAppData(convertKeysToCamelCase(payload), moduleId);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 });

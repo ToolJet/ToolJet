@@ -7,9 +7,11 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { AiConversation } from '@entities/ai_conversation.entity';
 import { AiResponseVote } from '@entities/ai_response_vote.entity';
+import { Artifact } from './artifact.entity';
 
 @Entity('ai_conversation_messages')
 export class AiConversationMessage {
@@ -64,4 +66,7 @@ export class AiConversationMessage {
 
   @OneToOne(() => AiResponseVote, (aiResponseVote) => aiResponseVote.aiConversationMessage)
   aiResponseVote: AiResponseVote;
+
+  @OneToMany(() => Artifact, (artifact) => artifact.message)
+  artifacts: Artifact[];
 }
