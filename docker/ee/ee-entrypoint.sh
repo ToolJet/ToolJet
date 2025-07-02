@@ -42,6 +42,20 @@ else
   echo "Using external PostgREST at $PGRST_HOST."
 fi
 
+
+# Check WORKLOW_WORKER and skip SETUP_CMD if true
+if [ "${WORKFLOW_WORKER}" == "true" ]; then
+  echo "WORKFLOW_WORKER is set to true. Running worker process."
+  npm run worker:prod
+else
+  # Determine setup command based on the presence of ./server/dist
+  if [ -d "./server/dist" ]; then
+    SETUP_CMD='npm run db:setup:prod'
+  else
+    SETUP_CMD='npm run db:setup'
+  fi
+fi
+
 # Neo4j configuration
 # ----------------------------------
 # Default Neo4j environment values
@@ -149,19 +163,6 @@ done
 
 if [ "$NEO4J_READY" = false ]; then
   echo "WARNING: Neo4j may not be fully started yet, but continuing..."
-fi
-
-# Check WORKLOW_WORKER and skip SETUP_CMD if true
-if [ "${WORKFLOW_WORKER}" == "true" ]; then
-  echo "WORKFLOW_WORKER is set to true. Running worker process."
-  npm run worker:prod
-else
-  # Determine setup command based on the presence of ./server/dist
-  if [ -d "./server/dist" ]; then
-    SETUP_CMD='npm run db:setup:prod'
-  else
-    SETUP_CMD='npm run db:setup'
-  fi
 fi
 
 # Wait for PostgreSQL connection
