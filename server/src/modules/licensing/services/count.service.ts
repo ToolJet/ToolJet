@@ -274,6 +274,29 @@ export class LicenseCountsService implements ILicenseCountsService {
       manager
     );
   }
+  async getUserIdWithEndUserRole(manager: EntityManager): Promise<string[]> {
+    const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
+
+    const users = await manager.find(User, {
+      select: ['id'],
+      where: {
+        status: Not(USER_STATUS.ARCHIVED),
+        organizationUsers: {
+          status: In(statusList),
+        },
+        userPermissions: {
+          name: USER_ROLE.END_USER,
+          organization: {
+            status: WORKSPACE_STATUS.ACTIVE,
+          },
+        },
+      },
+      relations: ['organizationUsers', 'userPermissions', 'userPermissions.organization'],
+    });
+
+    // Extract unique user IDs
+    return [...new Set(users.map((user) => user.id))];
+  }
 
   async fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number> {
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
