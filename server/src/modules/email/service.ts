@@ -9,7 +9,6 @@ import {
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
-import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 import { WhiteLabellingUtilService } from '@modules/white-labelling/util.service';
 
 handlebars.registerHelper('capitalize', function (value) {
@@ -29,15 +28,6 @@ export class EmailService implements IEmailService {
   protected WHITE_LABEL_TEXT;
   protected WHITE_LABEL_LOGO;
   protected SUB_PATH;
-  protected SMTP: {
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]: boolean;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_PORT]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED]: boolean;
-  };
   protected defaultWhiteLabelState: boolean;
 
   constructor(
@@ -63,7 +53,6 @@ export class EmailService implements IEmailService {
 
   async init(organizationId?: string | null) {
     const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(null);
-    this.SMTP = await this.emailUtilService.retrieveSmtpSettings();
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;
     this.defaultWhiteLabelState = whiteLabelSettings?.default;
@@ -88,6 +77,7 @@ export class EmailService implements IEmailService {
       redirectTo,
     } = payload;
     await this.init(organizationId);
+    await this.emailUtilService.init(organizationId);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
     const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo);
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
