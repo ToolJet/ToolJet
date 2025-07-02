@@ -15,6 +15,7 @@ export const ModalHeader = React.memo(
     onHideModal,
     headerHeight,
     onClick,
+    isEditing,
     updateHeaderSizeInStore,
     activeSlot,
     headerMaxHeight,
@@ -33,6 +34,7 @@ export const ModalHeader = React.memo(
               maxHeight: isFullScreen ? `${headerMaxHeight}` : `${headerMaxHeight}px`,
               minHeight: '10px',
             }}
+            isEditing={isEditing}
             id={`${id}-header`}
             height={canvasHeaderHeight}
             width={width}
