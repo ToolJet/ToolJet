@@ -12,6 +12,8 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { AiModule } from '@modules/ai/module';
 import { AppsRepository } from '@modules/apps/repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { FeatureAbilityFactory } from './ability';
+import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 @Module({})
@@ -37,6 +39,7 @@ export class ModulesModule {
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
+        await ImportExportResourcesModule.register(configs),
       ],
       controllers: [ModulesController],
       providers: [
@@ -50,8 +53,9 @@ export class ModulesModule {
         PageHelperService,
         OrganizationRepository,
         DataSourcesRepository,
+        FeatureAbilityFactory,
         RolesRepository,
-        AppGitRepository
+        AppGitRepository,
       ],
     };
   }

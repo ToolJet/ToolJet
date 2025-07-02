@@ -8,7 +8,6 @@
     }
 
     li.nav-item {
-        flex: 1;
 
         button {
             width: 100%;
@@ -18,6 +17,7 @@
 }
 
 .apps-modules-navigation {
+    margin-top: 15px;
     margin-bottom: 10px;
 
     .tab-content {
@@ -72,4 +72,16 @@
             scrollbar-color: #6a727c4d transparent;
         }
     }
+}
+
+.empty-module-container{
+    display: flex;
+    align-items: center;
+    margin-top: 25vh;
+    flex-direction: column;
+}
+
+.disabled-module{
+    pointer-events: none;
+    opacity: 0.5;
 }

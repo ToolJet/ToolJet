@@ -22,7 +22,7 @@ describe("App Import Functionality", () => {
   let data;
 
   beforeEach(() => {
-    cy.viewport(1200, 1300);
+    cy.viewport(1400, 1400);
     data = {
       workspaceName: fake.firstName,
       workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
