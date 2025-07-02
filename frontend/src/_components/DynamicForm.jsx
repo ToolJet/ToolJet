@@ -435,6 +435,7 @@ const DynamicForm = ({
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
           disabled,
           delayOnChange: false,
+          ...(helpText && { helpText }),
         };
       }
       case 'react-component-openapi-validator':
