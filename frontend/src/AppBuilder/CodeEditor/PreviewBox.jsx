@@ -3,6 +3,7 @@ import { computeCoercion, getCurrentNodeType, hasDeepChildren, resolveReferences
 import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
+import { Button } from '@/components/ui/Button/Button';
 import _, { isEmpty } from 'lodash';
 import { handleCircularStructureToJSON, hasCircularDependency, verifyConstant } from '@/_helpers/utils';
 import Popover from 'react-bootstrap/Popover';
@@ -14,6 +15,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+
+import { findDefault } from '../_utils/component-properties-validation';
+import FixWithAi from './FixWithAi';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -143,7 +147,7 @@ export const PreviewBox = ({
   useEffect(() => {
     if (error) {
       setErrorStateActive(true);
-      setErrorMessage(error.message);
+      setErrorMessage(error);
     } else {
       setErrorStateActive(false);
       setErrorMessage(null);
@@ -158,6 +162,8 @@ export const PreviewBox = ({
       customVariables,
       validationFn
     );
+
+    const completeErrMessage = Array.isArray(_error) ? _error.join('.') : _error;
 
     const resolvedValue = typeof rawResolvedValue === 'function' ? undefined : rawResolvedValue;
 
@@ -185,7 +191,7 @@ export const PreviewBox = ({
       setError(null);
     } else if (!valid && !newValue && !resolvedValue && !isSecretError) {
       const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${_error}`;
-      setError({ message: err, value: resolvedValue, type: 'Invalid' });
+      setError({ message: err, value: resolvedValue, type: 'Invalid', completeErrorMessage: completeErrMessage });
     } else {
       const jsErrorType = isSecretError
         ? 'Error'
@@ -211,6 +217,7 @@ export const PreviewBox = ({
           ? JSON.stringify(errValue, reservedKeywordReplacer)
           : resolvedValue,
         type: isSecretError ? 'Error' : jsErrorType,
+        completeErrorMessage: completeErrMessage,
       });
       setCoersionData(null);
     }
@@ -309,13 +316,122 @@ const PreviewContainer = ({
   isPortalOpen,
   previewRef,
   showPreview,
+  onAiSuggestionAccept,
   ...restProps
 }) => {
-  const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement, validationFn } = restProps;
-  const [errorMessage, setErrorMessage] = useState('');
-  const typeofError = getCurrentNodeType(errorMessage);
-  const errorMsg = typeofError === 'Array' ? errorMessage[0] : errorMessage;
+  const {
+    validationSchema,
+    isWorkspaceVariable,
+    errorStateActive,
+    previewPlacement,
+    validationFn,
+    componentId,
+    paramName,
+    fieldMeta,
+    setIsFocused,
+    currentValue,
+  } = restProps;
+
+  const fetchErrorFixUsingAi = useStore((state) => state.fetchErrorFixUsingAi);
+  const clearChatHistory = useStore((state) => state.clearChatHistory);
+  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow); // TODO: check if moduleId needs to be passed here
+
+  const componentName = componentDefinition?.component?.name;
+  const componentKey = `${componentName} - ${fieldMeta?.displayName}`;
+
+  const chatList = useStore((state) => state.fixWithAiSlice[componentId]?.[componentKey]?.chatHistory ?? []);
+
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  const [popoverToShow, setPopoverToShow] = useState('preview'); // preview | fixWithAI
+
+  const errMsg = errorMessage?.message ?? null;
+
+  const typeofError = getCurrentNodeType(errMsg);
+
+  const errorMsg = typeofError === 'Array' ? errMsg[0] : errMsg;
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  useEffect(() => {
+    !showPreview && setPopoverToShow('preview');
+  }, [showPreview]);
+
+  useEffect(() => {
+    setPopoverToShow('preview');
+
+    if (chatList?.length) {
+      clearChatHistory(componentId, componentKey);
+    }
+  }, [currentValue]);
+
+  const fetchFixUsingAi = () => {
+    const defaultValue = validationSchema?.defaultValue
+      ? validationSchema?.defaultValue
+      : validationSchema
+      ? findDefault(validationSchema?.schema ?? {}, errorMessage?.value)
+      : undefined;
+
+    const errorData = {
+      key: componentKey,
+      componentId: componentId,
+      message: errorMessage?.completeErrorMessage,
+      error: {
+        resolvedProperty: { [paramName]: errorMessage?.value },
+        effectiveProperty: { [paramName]: defaultValue },
+        componentId,
+      },
+    };
+
+    fetchErrorFixUsingAi(errorData, {
+      componentDisplayName:
+        componentDefinition?.component?.displayName ?? componentDefinition?.component?.component ?? componentName,
+      errorPropertyDisplayName: fieldMeta?.displayName,
+      customErrMessage: errorMessage?.message,
+    });
+  };
+
+  const handleFixErrorWithAI = () => {
+    setPopoverToShow('fixWithAI');
+
+    if (!componentId || chatList?.length) {
+      return;
+    }
+
+    fetchFixUsingAi();
+  };
+
+  const fixWithAIPopover = (
+    <Popover
+      bsPrefix="fix-with-ai-popover"
+      id="popover-basic"
+      className={`${darkMode && 'dark-theme'}`}
+      style={{
+        width: '360px',
+        marginRight: 2,
+        zIndex: 1400,
+      }}
+      onMouseEnter={() => setCursorInsidePreview(true)}
+      onMouseLeave={() => setCursorInsidePreview(false)}
+    >
+      <Popover.Body
+        style={{
+          border: '1px solid var(--slate6)',
+          padding: 0,
+          boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
+        }}
+      >
+        <FixWithAi
+          componentId={componentId}
+          componentKey={componentKey}
+          onApplyFix={onAiSuggestionAccept}
+          onRetry={fetchFixUsingAi}
+          onClose={() => setIsFocused(false)}
+        />
+      </Popover.Body>
+    </Popover>
+  );
+
   const popover = (
     <Popover
       bsPrefix="codehinter-preview-popover"
@@ -350,6 +466,16 @@ const PreviewContainer = ({
                 <div className="d-flex align-items-center">
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
+
+                <Button
+                  size="medium"
+                  variant="outline"
+                  leadingIcon="tooljetai"
+                  className="mt-2"
+                  onClick={handleFixErrorWithAI}
+                >
+                  Fix with AI
+                </Button>
               </Alert>
             </div>
           )}
@@ -479,7 +605,7 @@ const PreviewContainer = ({
             },
           }}
         >
-          {(props) => React.cloneElement(popover, props)}
+          {(props) => React.cloneElement(popoverToShow === 'fixWithAI' ? fixWithAIPopover : popover, props)}
         </Overlay>
       )}
 

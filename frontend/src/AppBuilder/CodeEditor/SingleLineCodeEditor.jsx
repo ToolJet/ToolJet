@@ -35,7 +35,7 @@ import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
-  const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
+  const { initialValue, onChange, enablePreview = true, portalProps, paramName } = restProps;
   const { validation = {} } = fieldMeta;
   const [showPreview, setShowPreview] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -145,17 +145,24 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
         enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
+        setIsFocused={setIsFocused}
         setCursorInsidePreview={setCursorInsidePreview}
         componentName={componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
-        componentId={restProps?.componentId ?? null}
+        componentId={componentId ?? null}
+        fieldMeta={fieldMeta}
+        paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
+        onAiSuggestionAccept={(newValue) => {
+          setCurrentValue(newValue);
+          onChange(newValue);
+        }}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
@@ -231,7 +238,7 @@ const EditorInput = ({
     let word = context.matchBefore(/\w*/);
 
     const hints = {
-      ...hintsWithoutParamHints,
+      ...hintsWithoutParamHints, 
       appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
     };
 
@@ -451,11 +458,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                    javascript({ jsx: lang === 'jsx' }),
-                    autoCompleteConfig,
-                    keymap.of([...customKeyMaps]),
-                    customTabKeymap,
-                  ]
+                      javascript({ jsx: lang === 'jsx' }),
+                      autoCompleteConfig,
+                      keymap.of([...customKeyMaps]),
+                      customTabKeymap,
+                    ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -531,7 +538,7 @@ const DynamicEditorBridge = (props) => {
     return (
       <div
         className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
-          }`}
+        }`}
       >
         <FxButton
           active={codeShow}
@@ -560,7 +567,7 @@ const DynamicEditorBridge = (props) => {
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
               labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-                }`}
+              }`}
             />
           </div>
         )}

@@ -207,6 +207,30 @@
   }
 }
 
+@layer utilities {
+  .tw-hide-scrollbar {
+    // scrollbar-color: transparent transparent;
+
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+
+  .tw-show-scrollbar {
+    // scrollbar-color: var(--slate8);
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--slate8);
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+}
+
 // variables
 $border-radius: 4px;
 

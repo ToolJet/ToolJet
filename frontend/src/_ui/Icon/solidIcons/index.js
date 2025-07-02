@@ -102,6 +102,7 @@ import RemoveRectangle from './RemoveRectangle.jsx';
 import RightArrow from './RightArrow.jsx';
 import RightOuterJoin from './RightOuterJoin.jsx';
 import Row from './Row.jsx';
+import Retry from './Retry.jsx';
 import SadRectangle from './SadRectangle.jsx';
 import Search from './Search.jsx';
 import SearchMinus from './SearchMinus.jsx';
@@ -530,6 +531,8 @@ const Icon = (props) => {
       return <Row {...props} />;
     case 'reset':
       return <Reset {...props} />;
+    case 'retry':
+      return <Retry {...props} />;
     case 'sadrectangle':
       return <SadRectangle {...props} />;
     case 'search':

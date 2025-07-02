@@ -869,6 +869,7 @@ export const createComponentsSlice = (set, get) => ({
             },
             name: componentName,
             parent: componentDefinition.component.parent,
+            displayName: componentDefinition.component.displayName,
           },
           layouts: componentDefinition.layouts,
         };
