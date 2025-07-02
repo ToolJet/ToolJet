@@ -10,6 +10,10 @@ export class LicenseTermsService extends ILicenseTermsService {
     super(licenseInitService);
   }
 
+  async getLicenseTermsInstance(type: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
+    throw new Error('Method not implemented. This method is not supported on cloud.');
+  }
+
   // This function should be called to get a specific license term
   async getLicenseTerms(type: LICENSE_FIELD | LICENSE_FIELD[], organizationId: string): Promise<any> {
     await this.licenseInitService.init();
@@ -25,7 +29,7 @@ export class LicenseTermsService extends ILicenseTermsService {
     }
     return this.licenseInitService.getLicenseFieldValue(type, License.Instance());
   }
-   async getOrganizationLicense(organizationId: string): Promise<any> {
-     return null;
+  async getOrganizationLicense(organizationId: string): Promise<any> {
+    return null;
   }
 }

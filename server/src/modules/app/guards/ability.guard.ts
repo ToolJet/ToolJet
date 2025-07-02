@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, Type, HttpException, Forbidd
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { AbilityFactory } from '../ability-factory';
 import { MODULE_INFO } from '../constants/module-info';
-import { LICENSE_FIELD, ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { FeatureConfig, ResourceDetails } from '../types';
 import { App } from '@entities/app.entity';

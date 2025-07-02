@@ -8,16 +8,18 @@ import { Organization } from '@entities/organization.entity';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { ILicenseCountsService } from '../interfaces/IService';
-import { ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
 import { APP_TYPES } from '@modules/apps/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 @Injectable()
 export class LicenseCountsService implements ILicenseCountsService {
   constructor(protected readonly userRepository: UserRepository) {}
+
   async getUserIdWithEditPermission(organizationId: string, manager: EntityManager) {
     const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
-    // Check if the organizationId equals the ORGANIZATION_INSTANCE_KEY for instance-specific logic
-    if (organizationId === ORGANIZATION_INSTANCE_KEY) {
+    // edition != cloud for instance-specific logic
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
       const userIdsWithEditPermissions = new Set(
         (
           await this.userRepository.getUsers(
@@ -43,7 +45,7 @@ export class LicenseCountsService implements ILicenseCountsService {
 
       return userIdsWithEditPermissions?.size ? Array.from(userIdsWithEditPermissions) : [];
     } else {
-      // Logic for cloud-based organization (organizationId != ORGANIZATION_INSTANCE_KEY)
+      // Logic for cloud-based organization
       const userIdsWithEditPermissions = (
         await manager
           .createQueryBuilder(User, 'users')
@@ -101,8 +103,8 @@ export class LicenseCountsService implements ILicenseCountsService {
       return { editor: 0, viewer: 0 };
     }
 
-    // Check if the organizationId is the same as the ORGANIZATION_INSTANCE_KEY
-    const isInstanceSpecific = organizationId === ORGANIZATION_INSTANCE_KEY;
+    //If edition is not cloud - true
+    const isInstanceSpecific = getTooljetEdition() !== TOOLJET_EDITIONS.Cloud;
 
     let viewers;
 
@@ -180,8 +182,8 @@ export class LicenseCountsService implements ILicenseCountsService {
         organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
       }
 
-      // Check if the organizationId equals the instance key (EE-specific logic)
-      const isInstanceSpecific = organizationId === ORGANIZATION_INSTANCE_KEY;
+      // (EE-specific logic)
+      const isInstanceSpecific = getTooljetEdition() !== TOOLJET_EDITIONS.Cloud;
 
       let userCount = 0;
 
@@ -298,7 +300,8 @@ export class LicenseCountsService implements ILicenseCountsService {
   }
 
   async fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number> {
-    if (organizationId === ORGANIZATION_INSTANCE_KEY) {
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
+      // If the edition is cloud, we do not filter by organizationId
       return manager.count(App, {
         where: {
           type: APP_TYPES.FRONT_END,

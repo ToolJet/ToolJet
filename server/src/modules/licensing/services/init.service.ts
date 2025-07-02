@@ -19,6 +19,10 @@ export class LicenseInitService extends ILicenseInitService {
     return;
   }
 
+  async initForCloud(): Promise<void> {
+    throw new Error('License initialization for cloud is not supported');
+  }
+
   getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: LicenseBase): Promise<any> {
     return getLicenseFieldValue(type, licenseInstance);
   }
