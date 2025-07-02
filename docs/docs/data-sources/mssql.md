@@ -3,7 +3,7 @@ id: mssql
 title: MS SQL Server / Azure SQL Databases
 ---
 
-ToolJet can connect to MS SQL Server & Azure SQL databases to read and write data. 
+ToolJet can connect to MS SQL Server & Azure SQL databases to read and write data.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -22,20 +22,21 @@ ToolJet requires the following to connect to your PostgreSQL database.
 - **Username**
 - **Password**
 - **Connection Options**
-- **Azure**  (Select this option if you are using Azure SQL databases)
+- **Azure** (Select this option if you are using Azure SQL databases)
 
-**Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet. 
+**Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="ToolJet - Redis connection"/>
 
 ### Connection Options
 
-You can add optional configurations in **key-value pairs** for the MS SQL data source connection. 
+You can add optional configurations in **key-value pairs** for the MS SQL data source connection.
 
 #### Example:
-| Key                     | Value  |
-|:--------------------------|:--------|
-| trustServerCertificate| true |
+
+| Key                    | Value |
+| :--------------------- | :---- |
+| trustServerCertificate | true  |
 
 These options allow you to fine-tune the connection, such as enabling encryption when using a self-signed certificate.
 
@@ -44,6 +45,7 @@ These options allow you to fine-tune the connection, such as enabling encryption
 To enhance security during data transfer, encryption can be enabled even with a self-signed certificate.
 
 #### Server-Side Configuration
+
 1. **Create and Install a Self-Signed Certificate:**
    - Generate a self-signed certificate and install it on the SQL Server instance.
 2. **Force Encryption:**
@@ -51,6 +53,7 @@ To enhance security during data transfer, encryption can be enabled even with a 
    - For Azure SQL databases, turn on the **Encryption** toggle in the Azure portal.
 
 #### Client-Side Configuration
+
 1. Set the connection option `trustServerCertificate` to `true`.
    - This bypasses certificate chain validation and is necessary when using a self-signed certificate.
 
@@ -67,13 +70,14 @@ Once the SQL data source is added, you can create queries to read and write data
 
 ### SQL Mode
 
-SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries.  
+SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries.
 
 1. Select **SQL mode** from the dropdown.
 2. Enter the SQL query in the editor.
 3. Click on the **Run** button to run the query.
 
 #### Example
+
 ```sql
 SELECT * FROM users
 ```
@@ -94,6 +98,7 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 </div>
 
 ##### Example:
+
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 SQL Parameters:
@@ -111,11 +116,12 @@ GUI mode can be used to query MS SQL Server / Azure SQL Databases without writin
 
 1. Select **GUI mode** from the dropdown.
 2. Choose the operation **Bulk update using the primary key**.
-3. Enter the **Table** name and **Primary key** column name. 
-4. In the editor, enter the records in the form of an array of objects. 
+3. Enter the **Table** name and **Primary key** column name.
+4. In the editor, enter the records in the form of an array of objects.
 5. Click on the **Run** button to run the query.
 
 #### Example
+
 ```json
 {{ [ {id: 1, channel: 33}, {id: 2, channel: 24} ] }}
 ```
@@ -123,7 +129,7 @@ GUI mode can be used to query MS SQL Server / Azure SQL Databases without writin
 <img className="screenshot-full" src="/img/datasource-reference/mssql/gui mode.png" alt="ToolJet mssql gui mode"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
 :::
 
 </div>

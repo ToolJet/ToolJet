@@ -110,8 +110,9 @@ Choose the GUI mode from the dropdown and select the operation **Bulk update usi
 ```
 
 :::tip
-- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/tutorial/transformations)**
+
+- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/beta/app-builder/custom-code/transform-data)**
 - Check out this how-to guide on **[bulk updating multiple rows](/docs/how-to/bulk-update-multiple-rows)** from a table component.
-:::
+  :::
 
 </div>

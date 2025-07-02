@@ -34,7 +34,7 @@ ToolJet requires the following to connect to your DynamoDB:
 <img className="screenshot-full" src="/img/datasource-reference/minio/minio-query.png" alt="miniIo query" />
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
 :::
 
 </div>
@@ -58,6 +58,7 @@ Query results can be transformed using transformations. Read our transformations
 Retrieve an object from a bucket.
 
 #### Required Parameter:
+
 - **Bucket**
 - **Object Name**
 
@@ -68,11 +69,13 @@ Retrieve an object from a bucket.
 Upload or update an object in a bucket.
 
 #### Required Parameter:
+
 - **Bucket**
 - **Object Name**
 - **Upload data**
 
 #### Optional Parameter:
+
 - **Content Type**
 
 <img className="screenshot-full" src="/img/datasource-reference/minio/putObejct.png" alt="minIo put object" style={{marginBottom:'15px'}}/>
@@ -82,6 +85,7 @@ Upload or update an object in a bucket.
 Delete an object from a bucket.
 
 #### Required Parameter:
+
 - **Bucket**
 - **Object Name**
 
@@ -98,9 +102,11 @@ Retrieve a list of all buckets.
 List objects within a specified bucket.
 
 #### Required Parameters
+
 - **Bucket**
 
 #### Optional Parametes
+
 - **Prefix**
 
 <img className="screenshot-full" src="/img/datasource-reference/minio/listObjectBucket.png" alt="minIo list objects in a bucket" style={{marginBottom:'15px'}}/>
@@ -110,10 +116,12 @@ List objects within a specified bucket.
 Generate a presigned URL for downloading an object.
 
 #### Required Parameter:
+
 - **Bucket**
 - **Object Name**
 
 #### Optional Parameter:
+
 - **Expires in**
 
 <img className="screenshot-full" src="/img/datasource-reference/minio/urlDownload.png" alt="minIo presigned url for download" style={{marginBottom:'15px'}}/>
@@ -123,13 +131,14 @@ Generate a presigned URL for downloading an object.
 Generate a presigned URL for uploading an object.
 
 #### Required Parameter:
+
 - **Bucket**
 - **Object Name**
 
 #### Optional Parameter:
+
 - **Expires in**
 
 <img className="screenshot-full" src="/img/datasource-reference/minio/urlDownload.png" alt="minIo presigned url for download" style={{marginBottom:'15px'}}/>
 
 </div>
-

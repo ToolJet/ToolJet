@@ -58,13 +58,13 @@ If you are using **Socket** as the connection type, you will need to provide the
 ## Querying MySQL
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the database added in the previous step as the data source. 
+2. Select the database added in the previous step as the data source.
 
 Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
 
 ### SQL Mode
 
-SQL mode can be used to query MySQL database using SQL queries. 
+SQL mode can be used to query MySQL database using SQL queries.
 
 1. Select **SQL mode** from the dropdown.
 2. Enter the SQL query in the editor.
@@ -96,6 +96,7 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 </div>
 
 ##### Example:
+
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 SQL Parameters:
@@ -109,7 +110,7 @@ You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_S
 
 ### GUI Mode
 
-GUI mode can be used to query MySQL database without writing queries. 
+GUI mode can be used to query MySQL database without writing queries.
 
 1. Select **GUI mode** from the dropdown.
 2. Choose the operation **Bulk update using primary key**.
@@ -130,7 +131,7 @@ GUI mode can be used to query MySQL database without writing queries.
 </div>
 
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Learn more about transformations [here](/docs/beta/app-builder/custom-code/transform-data).
 :::
 
 </div>
