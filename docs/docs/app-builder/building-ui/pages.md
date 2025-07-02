@@ -33,7 +33,7 @@ Page permissions control who can access a particular page. You can choose to:
 
 - Allow access to all users with application access
 - Restrict access to selected users
-- Restrict access to selected [user groups](#)
+- Restrict access to selected [user groups](/docs/user-management/role-based-access/user-roles)
 
 To configure page permissions, click the kebab menu (three dots) next to the page name, select Page permission, and select a permission option from the popup.
 

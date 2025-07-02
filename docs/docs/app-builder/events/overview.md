@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-In ToolJet, you can build dynamic, logic-driven applications using Events, Actions, Variables, and Component-Specific Actions (CSAs). These features let you define how your app responds to user interactions and system events without writing any backend code. Each component has a unique set of available events and CSAs based on its functionality. Refer to the [individual component](#) guides for more details.
+In ToolJet, you can build dynamic, logic-driven applications using Events, Actions, Variables, and Component-Specific Actions (CSAs). These features let you define how your app responds to user interactions and system events without writing any backend code. Each component has a unique set of available events and CSAs based on its functionality. Refer to the [individual component](/docs/beta/app-builder/building-ui/component-library) guides for more details.
 
 ## Events
 
@@ -15,7 +15,7 @@ For example, when a user clicks a **Button**, it can trigger a query to refresh 
 
 ## Actions
 
-Actions specify the outcome when an event is triggered. ToolJet supports a wide range of actions such as running queries, showing alerts, navigating between pages, copying text to the clipboard, and more. You can configure actions directly within event handlers or [dynamically using JavaScript](#) via RunJS queries. For a complete list of available actions, refer to the [Action Reference](#) guide.
+Actions specify the outcome when an event is triggered. ToolJet supports a wide range of actions such as running queries, showing alerts, navigating between pages, copying text to the clipboard, and more. You can configure actions directly within event handlers or [dynamically using JavaScript](/docs/beta/app-builder/custom-code/control-components) via RunJS queries. For a complete list of available actions, refer to the [Action Reference](/docs/category/actions-reference) guide.
 
 <img className="screenshot-full img-l" src="/img/app-builder/events/overview/actions.png" alt="Events Architecture Diagram"/>
 
@@ -37,5 +37,5 @@ ToolJet supports the following types of variables:
 
 <br/><br/>
 
-In addition, ToolJet provides built-in [exposed variables](#) for components and queries, which represent their current runtime state.
+In addition, ToolJet provides built-in [exposed variables](/docs/beta/app-builder/building-ui/component-state) for components and queries, which represent their current runtime state.
 

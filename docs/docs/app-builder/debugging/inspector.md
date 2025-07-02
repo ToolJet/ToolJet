@@ -45,9 +45,9 @@ Each component exposes a different set of states and CSAs based on its functiona
 - A **Text** component exposes a `text` state and a `setText` CSA.
 - A **Checkbox** component exposes a `label` state and a `setValue` CSA.
 
-To learn more about a specific component and its exposed properties, refer to the [individual component](#) guide.
+To learn more about a specific component and its exposed properties, refer to the [individual component](/docs/beta/app-builder/building-ui/component-library) guide.
 
-Refer to the [Accessing Component State](#) guide to learn how to use component state.
+Refer to the [Accessing Component State](/docs/beta/app-builder/building-ui/component-state) guide to learn how to use component state.
 
 ### Globals
 
