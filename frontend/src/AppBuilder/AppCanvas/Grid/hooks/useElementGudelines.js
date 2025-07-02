@@ -1,19 +1,12 @@
 import { useEffect, useState } from 'react';
 import { findHighestLevelofSelection } from '../gridUtils';
 import { useGridStore } from '@/_stores/gridStore';
+import useStore from '@/AppBuilder/_stores/store';
 
-export const useElementGudelines = (
-  boxList,
-  selectedComponents,
-  draggingComponentId,
-  resizingComponentId,
-  dragParentId,
-  getResolvedValue,
-  virtualTarget
-) => {
+export const useElementGudelines = (boxList, selectedComponents, dragParentId, getResolvedValue, virtualTarget) => {
   const [elementGuidelines, setElementGuidelines] = useState([]);
-
-  // Get current drag canvas ID from store instead of drag layer
+  const draggingComponentId = useStore((state) => state.draggingComponentId);
+  const resizingComponentId = useStore((state) => state.resizingComponentId);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId);
 
   useEffect(() => {
@@ -23,6 +16,7 @@ export const useElementGudelines = (
     const firstSelectedParent =
       selectedComponents.length > 0 ? boxList.find((b) => b.id === selectedComponents[0])?.parent : null;
     const selectedParent = dragParentId || firstSelectedParent;
+    const isAnyModalOpen = document.querySelector('#modal-container') ? true : false;
 
     const guidelines = boxList
       .filter((box) => {
@@ -33,9 +27,13 @@ export const useElementGudelines = (
         // Early return for non-visible elements
         if (!isVisible) return false;
 
+        // Don't show guidelines for components which are outside the modal specially on main canvas
+        if (virtualTarget && isAnyModalOpen) {
+          if (box.parent === 'canvas' || !box.parent) return false;
+        }
+
         // This block is for first time drop using react-dnd
         if (virtualTarget && currentDragCanvasId !== null) {
-          // For main canvas (id = 'canvas'), show components with no parent or parent = 'canvas'
           if (currentDragCanvasId === 'canvas') {
             if (box.parent && box.parent !== 'canvas') return false;
           } else {
@@ -58,7 +56,6 @@ export const useElementGudelines = (
         return true;
       })
       .map((box) => `.ele-${box.id}`);
-
     setElementGuidelines(guidelines);
   }, [
     boxList,

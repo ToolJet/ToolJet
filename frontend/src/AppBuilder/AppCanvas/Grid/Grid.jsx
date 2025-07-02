@@ -24,6 +24,7 @@ import {
   computeScrollDeltaOnDrag,
   getDraggingWidgetWidth,
   positionDragGhostWidget,
+  findNewParentIdFromMousePosition,
 } from './gridUtils';
 import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
@@ -73,15 +74,11 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getTemporaryLayouts = useStore((state) => state.getTemporaryLayouts, shallow);
   const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight, shallow);
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
-  const draggingComponentId = useGridStore((state) => state.draggingComponentId, shallow);
-  const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
   const [dragParentId, setDragParentId] = useState(null);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const { elementGuidelines } = useElementGudelines(
     boxList,
     selectedComponents,
-    draggingComponentId,
-    resizingComponentId,
     dragParentId,
     getResolvedValue,
     virtualTarget
@@ -97,6 +94,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
   const toggleRightSidebar = useStore((state) => state.toggleRightSidebar, shallow);
+  const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
+  const resizingComponentId = useStore((state) => state.resizingComponentId, shallow);
 
   const snapContainer = useMemo(() => {
     if (currentDragCanvasId) {
@@ -350,6 +349,7 @@ export default function Grid({ gridWidth, currentLayout }) {
       moveableRef.current.updateTarget();
     }
   }, [temporaryHeight]);
+
   useEffect(() => {
     reloadGrid();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -601,8 +601,8 @@ export default function Grid({ gridWidth, currentLayout }) {
     const components = Array.from(document.querySelectorAll('.active-target')).filter(
       (component) => !selectedComponents.includes(component.getAttribute('widgetid'))
     );
-    const draggingOrResizing = draggingComponentId || resizingComponentId;
-    if (!draggingOrResizing && components.length > 0 && !virtualTarget) {
+    const draggingOrResizingComponentId = draggingComponentId || resizingComponentId;
+    if (!draggingOrResizingComponentId && components.length > 0 && !virtualTarget) {
       for (const component of components) {
         component?.classList?.remove('active-target');
       }
@@ -639,7 +639,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onResize={(e) => {
           const temporaryLayouts = getTemporaryLayouts();
           if (resizingComponentId !== e.target.id) {
-            useGridStore.getState().actions.setResizingComponentId(e.target.id);
+            useStore.getState().setResizingComponentId(e.target.id);
             showGridLines();
           }
 
@@ -715,7 +715,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onResizeEnd={(e) => {
           try {
-            useGridStore.getState().actions.setResizingComponentId(null);
+            useStore.getState().setResizingComponentId(null);
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;
             });
@@ -1018,10 +1018,10 @@ export default function Grid({ gridWidth, currentLayout }) {
           e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
-          // if (_dragParentId !== currentParentId) {
-          //   left = e.translate[0];
-          //   top = e.translate[1];
-          // }
+          if (_dragParentId !== currentParentId) {
+            left = e.translate[0];
+            top = e.translate[1];
+          }
 
           // Special case for Modal
           const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent;
@@ -1066,16 +1066,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
           // This block is to show grid lines on the canvas when the dragged element is over a new canvas
           if (document.elementFromPoint(e.clientX, e.clientY)) {
-            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-            const draggedOverElements = targetElems.filter(
-              (ele) =>
-                (ele.id !== e.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
-            );
-            const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
-            const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
-
-            // Determine potential new parent
-            let newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+            let newParentId = findNewParentIdFromMousePosition(e.clientX, e.clientY, e.target.id);
 
             if (newParentId === e.target.id) {
               newParentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
