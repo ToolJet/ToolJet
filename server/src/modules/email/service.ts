@@ -59,7 +59,7 @@ export class EmailService implements IEmailService {
   }
 
   protected compileTemplate(templatePath: string, templateData: object) {
-    this.emailUtilService.compileTemplate(templatePath, templateData);
+    return this.emailUtilService.compileTemplate(templatePath, templateData);
   }
 
   protected stripTrailingSlash(hostname: string) {
