@@ -9,19 +9,22 @@ const BaseImportAppMenu = ({
   showCloudMenuItems = false,
   CloudMenuComponent = () => null,
   darkMode = false,
+  appType = 'front-end',
   ...props
 }) => {
   const fileInput = React.createRef();
   const { t } = useTranslation();
   return (
     <Dropdown.Menu className="import-lg-position new-app-dropdown">
-      <Dropdown.Item
-        className="homepage-dropdown-style tj-text tj-text-xsm"
-        onClick={showTemplateLibraryModal}
-        data-cy="choose-from-template-button"
-      >
-        {t('homePage.header.chooseFromTemplate', 'Choose from template')}
-      </Dropdown.Item>
+      {appType !== 'workflow' && (
+        <Dropdown.Item
+          className="homepage-dropdown-style tj-text tj-text-xsm"
+          onClick={showTemplateLibraryModal}
+          data-cy="choose-from-template-button"
+        >
+          {t('homePage.header.chooseFromTemplate', 'Choose from template')}
+        </Dropdown.Item>
+      )}
       <label
         className="homepage-dropdown-style tj-text tj-text-xsm"
         data-cy="import-option-label"

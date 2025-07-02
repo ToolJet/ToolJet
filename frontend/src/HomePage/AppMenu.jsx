@@ -82,13 +82,22 @@ export const AppMenu = function AppMenu({
                     )}
                   </>
                 )}
-                {canUpdateApp && canCreateApp && appType !== 'workflow' && !isModuleApp && (
+                {canUpdateApp && canCreateApp && !isModuleApp && (
                   <>
+                    {appType !== 'workflow' && (
+                      <Field
+                        text={t('homePage.appCard.cloneApp', 'Clone app')}
+                        onClick={() => openAppActionModal('clone-app')}
+                      />
+                    )}
                     <Field
-                      text={t('homePage.appCard.cloneApp', 'Clone app')}
-                      onClick={() => openAppActionModal('clone-app')}
+                      text={
+                        appType === 'workflow'
+                          ? t('homePage.appCard.exportWorkflow', 'Export workflow')
+                          : t('homePage.appCard.exportApp', 'Export app')
+                      }
+                      onClick={exportApp}
                     />
-                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
                   </>
                 )}
                 {canDeleteApp && (
