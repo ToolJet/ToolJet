@@ -7,5 +7,6 @@ export interface IVersionControllerV2 {
   getVersion(user: UserEntity, app: AppEntity, mode?: string): Promise<any>;
   updateVersion(user: UserEntity, app: AppEntity, appVersionUpdateDto: AppVersionUpdateDto): Promise<any>;
   updateGlobalSettings(user: UserEntity, app: AppEntity, appVersionUpdateDto: AppVersionUpdateDto): Promise<any>;
+  updateAppMode(appId: string, versionId: string, appMode: 'light' | 'dark' | 'auto'): Promise<any>;
   promoteVersion(user: UserEntity, app: AppEntity, promoteVersionDto: PromoteVersionDto): Promise<any>;
 }
