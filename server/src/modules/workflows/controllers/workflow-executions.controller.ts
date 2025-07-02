@@ -67,7 +67,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
 
   @InitFeature(FEATURE_KEY.WORKFLOW_EXECUTION_STATUS)
   @Sse(':id/stream')
-  streamWorkflowExecution(@Param('id') id: string): Observable<MessageEvent> {
+  async streamWorkflowExecution(@Param('id') id: string): Promise<Observable<MessageEvent>> {
     throw new Error('Method not implemented.');
   }
 }

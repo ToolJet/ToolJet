@@ -30,7 +30,9 @@ export class AppsModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs.IS_GET_CONTEXT);
     const { AppsController } = await import(`${importPath}/apps/controller`);
+    const { WorkflowController } = await import(`${importPath}/apps/controllers/workflow.controller`);
     const { AppsService } = await import(`${importPath}/apps/service`);
+    const { WorkflowService } = await import(`${importPath}/apps/services/workflow.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AppEnvironmentUtilService } = await import(`${importPath}/app-environments/util.service`);
     const { PageService } = await import(`${importPath}/apps/services/page.service`);
@@ -53,9 +55,10 @@ export class AppsModule {
         await AppPermissionsModule.register(configs),
         await UsersModule.register(configs),
       ],
-      controllers: [AppsController],
+      controllers: [AppsController, WorkflowController],
       providers: [
         AppsService,
+        WorkflowService,
         VersionRepository,
         AppsRepository,
         AppGitRepository,

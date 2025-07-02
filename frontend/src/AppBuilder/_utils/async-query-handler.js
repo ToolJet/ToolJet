@@ -41,7 +41,7 @@ export class AsyncQueryHandler {
   /**
    * Processes the initial query response and starts SSE monitoring
    * @param {Object} response - The initial query response
-   * @returns {{ jobId: string, cancel: Function }} Status object with jobId and control methods
+   * @returns {{ __jobId: string, __cancel: Function, __asyncCompletionPromise: Promise<any> }} Status object with jobId, control methods, and completion promise
    */
   processInitialResponse(response) {
     const jobId = this.config.extractJobId(response);
@@ -49,7 +49,14 @@ export class AsyncQueryHandler {
     this.jobId = jobId;
     this.eventSource = this.startSSE(jobId);
 
-    return { jobId, cancel: () => this.cancel() };
+    // Return the reserved async completion promise for consumers
+    this.__asyncCompletionPromise =
+      this.__asyncCompletionPromise ||
+      new Promise((resolve, reject) => {
+        this.resolveCompletion = resolve;
+        this.rejectCompletion = reject;
+      });
+    return { __jobId: jobId, __cancel: () => this.cancel(), __asyncCompletionPromise: this.__asyncCompletionPromise };
   }
 
   /**
@@ -84,10 +91,12 @@ export class AsyncQueryHandler {
         case 'COMPLETE':
           eventSource.close();
           this.config.callbacks.onComplete(result);
+          this.resolveCompletion(result);
           break;
         case 'ERROR':
           eventSource.close();
           this.config.callbacks.onError(data);
+          this.rejectCompletion(data);
           break;
         case 'CLOSE':
           eventSource.close();

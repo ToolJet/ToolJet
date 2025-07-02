@@ -9,6 +9,7 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
 const initialState = {
@@ -27,7 +28,6 @@ const initialState = {
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
-  asyncQueryRuns: [], // Array to track active AsyncQueryHandler instances
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -561,42 +561,27 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows') {
-              try {
-                const asyncHandler = get().queryPanel.createWorkflowAsyncHandler({
-                  executionId: data.data.executionId,
-                  queryId,
-                  processQueryResults,
-                  handleFailure,
-                  shouldSetPreviewData,
-                  setPreviewData,
-                  setResolvedQuery,
-                });
+              const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
+                data,
+                queryId,
+                processQueryResults,
+                handleFailure,
+                shouldSetPreviewData,
+                setPreviewData,
+                setResolvedQuery,
+              });
 
-                // Process initial response and start SSE monitoring
-                asyncHandler.processInitialResponse(data.data);
+              if (error) {
+                resolve({ status: 'failed', message: error });
+                return;
+              }
 
-                // Add the AsyncQueryHandler instance to asyncQueryRuns
-                get().queryPanel.setAsyncQueryRuns((currentRuns) => [...currentRuns, asyncHandler]);
-
-                // Set initial state with jobId
-                setResolvedQuery(
-                  queryId,
-                  {
-                    isLoading: true,
-                    jobId: asyncHandler.jobId,
-                    // data: data.data,
-                  },
-                  moduleId
-                );
-
-                // Resolve with async status
-                resolve({
-                  jobId: asyncHandler.jobId,
-                  // data: data.data,
-                });
-              } catch (error) {
-                toast.error(error.message || 'Failed to start async query');
-                resolve({ status: 'failed', message: error.message });
+              if (!error && completionPromise) {
+                // This early resolution pattern is temporary - once the UI fully supports
+                // tracking individual async queries through their lifecycle, we can refactor
+                // this to rely on the completion promise concurrently
+                const result = await completionPromise;
+                resolve(result);
               }
               return;
             }
@@ -758,44 +743,45 @@ export const createQueryPanelSlice = (set, get) => ({
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
                     if (!calledFromQuery) setPreviewData(finalData);
-                    resolve({ status: 'failed', data: finalData });
-                    return finalData;
+                    return { status: 'failed', data: finalData };
                   }
                 }
                 setPreviewLoading(false);
                 setIsPreviewQueryLoading(false);
                 if (!calledFromQuery) setPreviewData(finalData);
-                resolve({ status: 'ok', data: finalData });
                 return { status: 'ok', data: finalData };
               };
               const handleFailurePreview = (errorData) => {
                 setPreviewLoading(false);
                 setIsPreviewQueryLoading(false);
                 if (!calledFromQuery) setPreviewData(errorData);
-                resolve({ status: 'failed', data: errorData });
-                return errorData;
+                return { status: 'failed', data: errorData };
               };
 
-              try {
-                const asyncHandler = get().queryPanel.createWorkflowAsyncHandler({
-                  executionId: data.data.executionId,
-                  queryId: query.id,
-                  processQueryResults: processQueryResultsPreview,
-                  handleFailure: handleFailurePreview,
-                  shouldSetPreviewData: true,
-                  setPreviewData,
-                  setResolvedQuery: () => {}, // No resolvedQuery for preview
-                });
-                // Process initial response and start SSE monitoring
-                asyncHandler.processInitialResponse(data.data);
-                get().queryPanel.setAsyncQueryRuns((currentRuns) => [...currentRuns, asyncHandler]);
-                // Resolve immediately with jobId for UI tracking
-                resolve({ jobId: asyncHandler.jobId });
-              } catch (error) {
-                toast.error(error.message || 'Failed to start async preview query');
-                setPreviewLoading(false);
-                setIsPreviewQueryLoading(false);
-                resolve({ status: 'failed', message: error.message });
+              const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
+                data,
+                queryId: query.id,
+                processQueryResults: processQueryResultsPreview,
+                handleFailure: handleFailurePreview,
+                shouldSetPreviewData: true,
+                setPreviewData,
+                setResolvedQuery: () => {}, // No resolvedQuery for preview
+                resolve,
+              });
+
+              if (!error && completionPromise) {
+                try {
+                  // This early resolution pattern is temporary - once the UI fully supports
+                  // tracking individual async queries through their lifecycle, we can refactor
+                  // this to rely on the completion promise concurrently
+                  const result = await completionPromise;
+                  resolve(result);
+                } catch (error) {
+                  toast.error('Async operation failed:', error);
+                  setPreviewLoading(false);
+                  setIsPreviewQueryLoading(false);
+                  resolve({ status: 'failed', message: error?.message || 'Unknown error' });
+                }
               }
               return;
             }
@@ -1338,6 +1324,48 @@ export const createQueryPanelSlice = (set, get) => ({
     },
     isQuerySelected: (queryId) => {
       return get().queryPanel.selectedQuery?.id === queryId;
+    },
+
+    setupAsyncWorkflowHandler: ({
+      data,
+      queryId,
+      processQueryResults,
+      handleFailure,
+      shouldSetPreviewData,
+      setPreviewData,
+      setResolvedQuery,
+    }) => {
+      try {
+        const asyncHandler = get().queryPanel.createWorkflowAsyncHandler({
+          executionId: data.data.executionId,
+          queryId,
+          processQueryResults,
+          handleFailure,
+          shouldSetPreviewData,
+          setPreviewData,
+          setResolvedQuery,
+        });
+
+        // Process initial response and start SSE monitoring
+        const { __asyncCompletionPromise } = asyncHandler.processInitialResponse(data.data);
+
+        // Add the AsyncQueryHandler instance to asyncQueryRuns
+        get().queryPanel.setAsyncQueryRuns((currentRuns) => [...currentRuns, asyncHandler]);
+
+        if (setResolvedQuery) {
+          setResolvedQuery(queryId, {
+            isLoading: true,
+            jobId: asyncHandler.jobId,
+          });
+        }
+
+        return {
+          handler: asyncHandler,
+          completionPromise: __asyncCompletionPromise,
+        };
+      } catch (error) {
+        return { error };
+      }
     },
     runQueryOnShortcut: () => {
       const { queryPanel } = get();
