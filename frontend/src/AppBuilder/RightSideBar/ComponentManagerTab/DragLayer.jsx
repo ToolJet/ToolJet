@@ -20,7 +20,7 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
-  const handleDrop = useCanvasDropHandler({ appType: isModuleTab ? 'module' : 'app' }) || noop;
+  const { handleDrop } = useCanvasDropHandler({ appType: isModuleTab ? 'module' : 'app' }) || noop;
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -59,7 +59,6 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
 
   return (
     <>
-      {/* {isDragging && <CustomDragLayer size={size} />} */}
       <div ref={drag} className="draggable-box" style={{ height: '100%', width: isModuleTab && '100%' }}>
         {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
       </div>

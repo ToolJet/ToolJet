@@ -12,7 +12,6 @@ import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { useGhostMoveable } from '../_hooks/useGhostMoveable';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
 export const useCanvasDropHandler = ({ appType }) => {
@@ -24,15 +23,13 @@ export const useCanvasDropHandler = ({ appType }) => {
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
-  const { deactivateGhost } = useGhostMoveable();
+
   const handleDrop = async ({ componentType: draggedComponentType, component }, monitor, canvasId) => {
     const realCanvasRef =
       !canvasId || canvasId === 'canvas'
         ? document.getElementById(`real-canvas`)
         : document.getElementById(`canvas-${canvasId}`);
 
-    // Ensure ghost is deactivated before processing drop
-    deactivateGhost();
     handleDeactivateTargets();
     hideGridLines();
 
@@ -41,11 +38,6 @@ export const useCanvasDropHandler = ({ appType }) => {
     if (currentMode === 'view' || (appType === 'module' && draggedComponentType !== 'ModuleContainer')) {
       return;
     }
-
-    // const didDrop = monitor.didDrop();
-    // if (didDrop) {
-    //   return;
-    // }
 
     if (draggedComponentType === 'PDF' && !isPDFSupported()) {
       toast.error(
@@ -70,7 +62,6 @@ export const useCanvasDropHandler = ({ appType }) => {
     if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(draggedComponentType)) {
       let parentComponent = addNewWidgetToTheEditor(
         draggedComponentType,
-        monitor,
         currentLayout,
         realCanvasRef,
         canvasId,
@@ -85,7 +76,6 @@ export const useCanvasDropHandler = ({ appType }) => {
     } else {
       const newComponent = addNewWidgetToTheEditor(
         draggedComponentType,
-        monitor,
         currentLayout,
         realCanvasRef,
         canvasId,
@@ -119,5 +109,5 @@ export const useCanvasDropHandler = ({ appType }) => {
     setCurrentDragCanvasId(null);
   };
 
-  return handleDrop;
+  return { handleDrop };
 };

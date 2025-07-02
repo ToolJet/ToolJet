@@ -12,8 +12,7 @@ import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
-import { noop } from 'lodash';
-import { useGhostMoveable } from '@/AppBuilder/_hooks/useGhostMoveable';
+import { useDropVirtualMoveableGhost } from '@/AppBuilder/_hooks/useDropVirtualMoveableGhost';
 import { useCanvasDropHandler } from './useCanvasDropHandler';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 
@@ -37,33 +36,25 @@ export const Container = React.memo(
     columns,
     darkMode,
     canvasMaxWidth,
-    isViewerSidebarPinned,
-    pageSidebarStyle,
-    pagePositionType,
     componentType,
     appType,
   }) => {
     const { moduleId } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
-
-    const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
-    const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
     );
-    const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
-    const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
 
     // Initialize ghost moveable hook
-    const { activateGhost, deactivateGhost } = useGhostMoveable(id);
+    const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
 
-    // Monitor drag layer to update ghost position continuously
+    // // Monitor drag layer to update ghost position continuously
     const { isDragging } = useDragLayer((monitor) => ({
       isDragging: monitor.isDragging(),
     }));
@@ -71,9 +62,9 @@ export const Container = React.memo(
     // // // Cleanup ghost when drag ends
     useEffect(() => {
       if (!isDragging) {
-        deactivateGhost();
+        deactivateMoveableGhost();
       }
-    }, [id, isDragging, deactivateGhost]);
+    }, [id, isDragging, deactivateMoveableGhost]);
 
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
@@ -81,8 +72,7 @@ export const Container = React.memo(
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
 
-    // Get the drop handler from the new hook
-    const handleDrop = useCanvasDropHandler({
+    const { handleDrop } = useCanvasDropHandler({
       appType,
     });
 
@@ -106,7 +96,7 @@ export const Container = React.memo(
           height: item.component?.defaultSize?.height,
         };
         if (clientOffset && id === 'canvas') {
-          activateGhost(componentSize, clientOffset, realCanvasRef);
+          activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
       drop: (item, monitor) => {
@@ -135,29 +125,6 @@ export const Container = React.memo(
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
-
-    const getCanvasWidth = useCallback(() => {
-      // if (
-      //   id === 'canvas' &&
-      //   !isPagesSidebarHidden &&
-      //   isViewerSidebarPinned &&
-      //   currentLayout !== 'mobile' &&
-      //   pagePositionType == 'side' &&
-      //   appType !== 'module'
-      // ) {
-      //   return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
-      // }
-      // if (
-      //   id === 'canvas' &&
-      //   !isPagesSidebarHidden &&
-      //   !isViewerSidebarPinned &&
-      //   currentLayout !== 'mobile' &&
-      //   pagePositionType == 'side'
-      // ) {
-      //   return `calc(100% - ${'44px'})`;
-      // }
-      return '100%';
-    }, [id, isPagesSidebarHidden, isViewerSidebarPinned, currentLayout, pagePositionType, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {

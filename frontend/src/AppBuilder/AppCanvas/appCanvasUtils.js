@@ -29,7 +29,6 @@ export function snapToGrid(canvasWidth, x, y) {
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
 export const addNewWidgetToTheEditor = (
   componentType,
-  eventMonitorObject,
   currentLayout,
   realCanvasRef,
   parentId,
@@ -46,13 +45,12 @@ export const addNewWidgetToTheEditor = (
   const { e } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
-  const { left: left3, top: top3 } = getMouseDistanceFromParentDiv(
+  const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
     e,
     parentId === 'canvas' ? 'real-canvas' : parentId,
     parentCanvasType
   );
-  // [left, top] = snapToGrid(subContainerWidth, left, top);
-  let [left, top] = snapToGrid(subContainerWidth, left3, top3);
+  let [left, top] = snapToGrid(subContainerWidth, _left, _top);
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
