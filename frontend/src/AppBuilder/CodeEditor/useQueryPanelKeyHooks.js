@@ -7,7 +7,14 @@ export const useQueryPanelKeyHooks = (onChange, value, type) => {
   const queryPanelHeight = useStore((state) => state.queryPanel.queryPanelHeight);
   const runQueryOnShortcut = useStore((state) => state.queryPanel.runQueryOnShortcut);
   const previewQueryOnShortcut = useStore((state) => state.queryPanel.previewQueryOnShortcut);
-  const moduleId = useModuleId();
+
+  // Handle case where ModuleContext is not available
+  let moduleId;
+  try {
+    moduleId = useModuleId();
+  } catch (error) {
+    moduleId = 'canvas'; // Default fallback
+  }
   const location = useLocation();
   const { pathname } = location;
 
