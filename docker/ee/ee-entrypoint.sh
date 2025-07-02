@@ -77,14 +77,14 @@ if [ -n "$NEO4J_AUTH" ]; then
   export NEO4J_USERNAME
   export NEO4J_PASSWORD
   
-  echo "Neo4j authentication configured with username: $NEO4J_USERNAME"
+  echo "Neo4j authentication configured with username: $NEO4J_USERNAME" >/dev/null 2>&1
 else
-  echo "NEO4J_AUTH not set, using default authentication"
+  echo "NEO4J_AUTH not set, using default authentication" >/dev/null 2>&1
 fi
 
 # Check if Neo4j is already initialized and set password if necessary
 if [ "$NEO4J_AUTH" != "none" ] && [ -n "$NEO4J_PASSWORD" ]; then
-  echo "Setting Neo4j initial password..."
+  echo "Setting Neo4j initial password..." >/dev/null 2>&1
   
   # Ensure Neo4j is not running before setting the initial password
   neo4j stop || true
@@ -92,27 +92,27 @@ if [ "$NEO4J_AUTH" != "none" ] && [ -n "$NEO4J_PASSWORD" ]; then
   # Set the initial password using the correct command format for Neo4j 5.x
   NEO4J_ADMIN_CMD=$(which neo4j-admin)
   NEO4J_VERSION=$(neo4j --version | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+" | head -n 1)
-  echo "Detected Neo4j version: $NEO4J_VERSION"
+  echo "Detected Neo4j version: $NEO4J_VERSION" >/dev/null 2>&1
   
   # Use version-specific command format
   MAJOR_VERSION=$(echo $NEO4J_VERSION | cut -d. -f1)
   if [ "$MAJOR_VERSION" -ge "5" ]; then
     # For Neo4j 5.x and higher
-    echo "Using Neo4j 5.x+ password command format"
+    echo "Using Neo4j 5.x+ password command format" >/dev/null 2>&1
     $NEO4J_ADMIN_CMD dbms set-initial-password "$NEO4J_PASSWORD" --require-password-change=false >/dev/null 2>&1 || {
-      echo "Warning: Could not set Neo4j password, it may already be set"
+      echo "Warning: Could not set Neo4j password, it may already be set" >/dev/null 2>&1
     }
   else
     # For Neo4j 4.x and lower
     echo "Using Neo4j 4.x password command format" >/dev/null 2>&1
     $NEO4J_ADMIN_CMD set-initial-password "$NEO4J_PASSWORD" >/dev/null 2>&1 || {
-      echo "Warning: Could not set Neo4j password, it may already be set"
+      echo "Warning: Could not set Neo4j password, it may already be set" >/dev/null 2>&1
     }
   fi
 fi
 
 # Update Neo4j configuration
-echo "Configuring Neo4j..."
+echo "Configuring Neo4j..." >/dev/null 2>&1
 cat > /etc/neo4j/neo4j.conf << EOF
 # Neo4j configuration
 dbms.security.auth_enabled=true
@@ -138,12 +138,12 @@ echo "Starting Neo4j service..."
 neo4j console >/dev/null 2>&1 &
 
 # Add a wait for Neo4j to be ready with more robust checking
-echo "Waiting for Neo4j to be ready..."
+echo "Waiting for Neo4j to be ready..." >/dev/null 2>&1
 NEO4J_READY=false
 for i in {1..60}; do
   # First try standard status check
   if neo4j status >/dev/null 2>&1; then
-    echo "Neo4j is ready (via status check)"
+    echo "Neo4j is ready 🚀"
     NEO4J_READY=true
     break
   fi
@@ -157,7 +157,7 @@ for i in {1..60}; do
     fi
   fi
   
-  echo "Waiting for Neo4j to start... ($i/60)"
+  echo "Waiting for Neo4j to start... ($i/60)" >/dev/null 2>&1
   sleep 2
 done
 
