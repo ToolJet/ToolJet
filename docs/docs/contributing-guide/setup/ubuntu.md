@@ -75,24 +75,28 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
    `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
 
-   Example:
-   ```bash
-   cat .env
+    ToolJet requires the following environment variables to be set.   
+   
+   ```envs
    TOOLJET_HOST=http://localhost:8082
-   LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
-   SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
+   LOCKBOX_MASTER_KEY= <generate using 'openssl rand -hex 32'>
+   SECRET_KEY_BASE= <generate using 'openssl rand -hex 64'>
    NODE_ENV=development
-   # DATABASE CONFIG
+
    PG_HOST=localhost
    PG_PORT=5432
    PG_USER=postgres
    PG_PASS=postgres
    PG_DB=tooljet_development
+   
    TOOLJET_DB=tooljet_db
    TOOLJET_DB_USER=postgres
    TOOLJET_DB_HOST=localhost
    TOOLJET_DB_PASS=postgres
    ```
+
+   ToolJet requires two separate databases to function correctly `pg_db` and `tooljet_db`,
+   While both databases can reside on the same PostgreSQL host, they must be separate databases to avoid conflicts.
 
 5. Install and build dependencies
     ```bash
@@ -101,11 +105,12 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     npm install --prefix frontend
     npm run build:plugins
     ```
-   > **_NOTE:_**
-   > If the `npm run build:plugins` command fails due to some packages are missing, try running the following command to install the necessary packages:
-   `sudo apt install build-essential`
-   > then proceed to `npm run build:plugins` step again
-    
+   
+    :::note 
+    If the `npm run build:plugins` command fails due to some packages are missing, try running the following command to install the necessary packages:
+    `sudo apt install build-essential`
+    then proceed to `npm run build:plugins` step again.
+    :::
 
 6. Set up database
     ```bash
