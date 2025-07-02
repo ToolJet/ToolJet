@@ -9,6 +9,7 @@ import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import './styles.css';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -287,14 +288,15 @@ class Restapi extends React.Component {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
+    const isWorkflowNode = queryName === 'workflowNode';
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
-      <div className={`${this.props?.queryName !== 'workflowNode' && 'd-flex'} flex-column`}>
+      <div className={`${!isWorkflowNode && 'd-flex'} flex-column`}>
         {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
         <div className="flex-grow-1 overflow-hidden">
-          <div className="rest-api-methods-select-element-container">
-            <div className="d-flex">
+          <div className={`rest-api-methods-select-element-container ${isWorkflowNode ? 'workflow-rest-api' : ''}`}>
+            <div className={`d-flex ${isWorkflowNode ? 'mb-2' : ''}`}>
               <p
                 className="text-placeholder font-weight-medium"
                 style={{ width: '100px', marginRight: '16px', marginBottom: '0px' }}
@@ -304,7 +306,10 @@ class Restapi extends React.Component {
             </div>
             <div className="d-flex flex-column w-100">
               <div className="d-flex flex-row">
-                <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
+                <div
+                  className={`me-2 ${isWorkflowNode ? 'mb-2' : ''}`}
+                  style={{ width: isWorkflowNode ? '150px' : '90px', height: '32px' }}
+                >
                   <label className="font-weight-medium color-slate12">Method</label>
                   <Select
                     options={[
@@ -320,9 +325,9 @@ class Restapi extends React.Component {
                     value={currentValue}
                     defaultValue={{ label: 'GET', value: 'get' }}
                     placeholder="Method"
-                    width={100}
+                    width={isWorkflowNode ? 150 : 100}
                     height={32}
-                    styles={this.customSelectStyles(this.props.darkMode, 91)}
+                    styles={this.customSelectStyles(this.props.darkMode, isWorkflowNode ? 150 : 91)}
                     useCustomStyles={true}
                     customClassPrefix="restapi-method-select"
                     onMenuOpen={() => {
@@ -335,7 +340,7 @@ class Restapi extends React.Component {
                 </div>
                 <div
                   className={`field rest-methods-url ${dataSourceURL && 'data-source-exists'}`}
-                  style={{ width: 'calc(100% - 214px)' }}
+                  style={{ width: isWorkflowNode ? '100%' : 'calc(100% - 214px)' }}
                 >
                   <div className="font-weight-medium color-slate12">URL</div>
                   <div className="d-flex h-100 w-100">
@@ -371,7 +376,7 @@ class Restapi extends React.Component {
                   </div>
                 </div>
               </div>
-              <div className={`query-pane-restapi-tabs`}>
+              <div className={`query-pane-restapi-tabs`} data-workflow={isWorkflowNode ? 'true' : 'false'}>
                 <Tabs
                   theme={this.props.darkMode ? 'monokai' : 'default'}
                   options={this.state.options}
@@ -384,6 +389,7 @@ class Restapi extends React.Component {
                   bodyToggle={this.state.options.body_toggle}
                   setBodyToggle={this.onBodyToggleChanged}
                   onInputChange={this.handleInputChange}
+                  isWorkflow={isWorkflowNode}
                 />
               </div>
             </div>

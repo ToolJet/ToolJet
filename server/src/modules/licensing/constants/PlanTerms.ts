@@ -84,7 +84,7 @@ export const ENTERPRISE_PLAN_TERMS = {
 
 export const WORKFLOW_TEAM_PLAN_TERMS: Partial<Terms> = {
   workflows: {
-    execution_timeout: 1800,
+    execution_timeout: 60,
     instance: {
       total: LICENSE_LIMIT.UNLIMITED,
       daily_executions: LICENSE_LIMIT.UNLIMITED,
