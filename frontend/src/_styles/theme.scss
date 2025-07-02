@@ -6704,7 +6704,7 @@ input.hide-input-arrows {
 
 
 .custom-checkbox-tree {
-  overflow-y: scroll;
+  overflow-y: auto;
   color: #3e525b;
 
   .react-checkbox-tree label:hover {
