@@ -6,6 +6,7 @@ import { SubModule } from '@modules/app/sub-module';
 export class CrmModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { CrmListenerService } = await this.getProviders(configs, 'CRM', ['listener']);
+
     return {
       module: CrmModule,
       imports: [await EmailModule.register(configs)],
