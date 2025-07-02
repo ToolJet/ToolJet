@@ -341,13 +341,8 @@ const FormComponent = (props) => {
     });
     setChildrenData(childDataRef.current);
   };
-
-  const mode = useStore((state) => state.currentMode, shallow);
-  const isEditing = mode === 'edit';
-
-  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-  // const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight);
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
     const _height = parseInt(newHeight, 10);
@@ -388,7 +383,6 @@ const FormComponent = (props) => {
         <HorizontalSlot
           slotName="header"
           slotStyle={formHeader}
-          isEditing={isEditing}
           id={`${id}-header`}
           height={headerHeight}
           width={width}
@@ -469,7 +463,6 @@ const FormComponent = (props) => {
         <HorizontalSlot
           slotName="footer"
           slotStyle={formFooter}
-          isEditing={isEditing}
           id={`${id}-footer`}
           height={footerHeight}
           width={width}
