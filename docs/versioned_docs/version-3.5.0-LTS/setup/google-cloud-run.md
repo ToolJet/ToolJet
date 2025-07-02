@@ -10,7 +10,7 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-
 :::
 
 :::info
-You should manually set up a **PostgreSQL database** to be used by ToolJet. We recommend using **Cloud SQL** for this purpose. 
+You should manually set up a **PostgreSQL database** to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
 
 ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-service setup**, it's recommended to use an **external Redis instance**.
 :::
@@ -21,11 +21,11 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 
 ### Services and Components
 
-| Service         | Component        | Description |
-|----------------|-----------------|-------------|
-| **Cloud Run**  | `tooljet-app`    | Runs the main ToolJet application. |
-| **Cloud SQL**  | `TOOLJET_DB`     | Stores ToolJet-created tables and app data. |
-| **Cloud SQL**  | `PG_DB`          | Database used to store application data |
+| Service       | Component     | Description                                 |
+| ------------- | ------------- | ------------------------------------------- |
+| **Cloud Run** | `tooljet-app` | Runs the main ToolJet application.          |
+| **Cloud SQL** | `TOOLJET_DB`  | Stores ToolJet-created tables and app data. |
+| **Cloud SQL** | `PG_DB`       | Database used to store application data     |
 
 **1. Create a new Google Cloud Run Service:**
 
@@ -45,7 +45,6 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
   </div>
 
-
 - If the above command is not compatible, please use the following command structure instead:
 
  <div style={{textAlign: 'center'}}>
@@ -60,7 +59,8 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 
 **4. Under environmental variables, please add the below ToolJet application variables:**
 
-  You can use these variables for: tooljet-app:
+You can use these variables for: tooljet-app:
+
 ```env
 TOOLJET_HOST=<Endpoint url>
 LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
@@ -93,14 +93,14 @@ TOOLJET_DB_USER=<username>
 TOOLJET_DB_PASS=<password>
 ```
 
-:::note 
+:::note
 Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
 :::
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
 :::tip
-If you have openssl installed, you can run the 
+If you have openssl installed, you can run the
 command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -125,15 +125,11 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 
 **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
 
-
-**Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars). 
-
-
+**Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
 
 :::tip
 If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
 :::
-
 
 5. Please go to the connection tab. Under the Cloud SQL instance please select the PostgreSQL database which you have set-up.
 
@@ -141,13 +137,11 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
   <img className="screenshot-full" src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" />
   </div>
 
-
-  Click on deploy once the above parameters are set. 
+Click on deploy once the above parameters are set.
 
     :::info
     Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
     :::
-
 
 ## Upgrading to the Latest LTS Version
 
@@ -161,5 +155,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._

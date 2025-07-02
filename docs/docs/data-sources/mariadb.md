@@ -189,6 +189,6 @@ If you are having trouble connecting a MariaDB data source to ToolJet, try the f
 - Check the spelling and capitalization of your credentials.
 - Try restarting the ToolJet server.
 
-If you are still having trouble, please contact [ToolJet support](mailto:hello@tooljet.com) or ask on [slack](https://tooljet.com/slack) for assistance.
+If you are still having trouble, please contact [ToolJet support](mailto:hello@tooljet.com) or ask on [slack](/docs/slack) for assistance.
 
 </div>

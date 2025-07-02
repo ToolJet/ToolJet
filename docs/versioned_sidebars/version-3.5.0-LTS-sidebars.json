@@ -111,6 +111,7 @@
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
         "build-with-ai/ai-docs-assistant",
+        "build-with-ai/debug-components",
         "build-with-ai/tooljet-mcp"
       ]
     },
@@ -407,7 +408,9 @@
                 "marketplace/plugins/marketplace-plugin-cohere",
                 "marketplace/plugins/marketplace-plugin-weaviate",
                 "marketplace/plugins/marketplace-plugin-qdrant",
-                "marketplace/plugins/marketplace-plugin-azurerepos"
+                "marketplace/plugins/marketplace-plugin-azurerepos",
+                "marketplace/plugins/marketplace-plugin-clickup",
+                "marketplace/plugins/marketplace-plugin-prometheus"
               ]
             }
           ]
@@ -455,7 +458,8 @@
           "label": "How-to",
           "items": [
             "workflows/how-to/trigger-using-webhook",
-            "workflows/how-to/trigger-workflow-from-app"
+            "workflows/how-to/trigger-workflow-from-app",
+            "workflows/how-to/import-export"
           ]
         }
       ]
@@ -570,7 +574,8 @@
                 "user-management/sso/oidc/setup",
                 "user-management/sso/oidc/azuread",
                 "user-management/sso/oidc/okta",
-                "user-management/sso/oidc/google"
+                "user-management/sso/oidc/google",
+                "user-management/sso/oidc/ssouserinfo"
               ]
             },
             "user-management/sso/ldap",
@@ -592,7 +597,8 @@
           "type": "category",
           "label": "Group Sync",
           "items": [
-            "user-management/group-sync/oidc"
+            "user-management/group-sync/oidc",
+            "user-management/group-sync/saml"
           ]
         },
         {
@@ -641,7 +647,8 @@
                     "development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config"
                   ]
                 },
-                "development-lifecycle/gitsync/connect-to-git-repo/github-config"
+                "development-lifecycle/gitsync/connect-to-git-repo/github-config",
+                "development-lifecycle/gitsync/connect-to-git-repo/gitlab-config"
               ]
             },
             "development-lifecycle/gitsync/delete-gitsync",

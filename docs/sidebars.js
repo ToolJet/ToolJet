@@ -576,7 +576,8 @@ const sidebars = {
                 'user-management/sso/oidc/setup',
                 'user-management/sso/oidc/azuread',
                 'user-management/sso/oidc/okta',
-                'user-management/sso/oidc/google'
+                'user-management/sso/oidc/google',
+                'user-management/sso/oidc/ssouserinfo'
               ]
             },
             'user-management/sso/ldap',
@@ -598,7 +599,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Group Sync',
           'items': [
-            'user-management/group-sync/oidc'
+            'user-management/group-sync/oidc',
           ]
         },
         {

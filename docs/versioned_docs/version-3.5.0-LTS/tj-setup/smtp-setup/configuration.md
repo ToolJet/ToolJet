@@ -70,4 +70,14 @@ ToolJet allows you to configure SMTP settings using environment variables. You c
 - When the toggle is enabled, the SMTP settings fields in the UI will be populated with values from the environment variables and will be read-only.
 - Disabling the toggle allows you to manually enter or edit SMTP settings directly in the UI.
 
+<br/>
+
+### Optional Environment Variable For Unencrypted SMTP
+
+By default, ToolJet attempts to upgrade SMTP connections on port 25 using STARTTLS for enhanced security. To support scenarios where plain, unencrypted SMTP is required (for example, when connecting to certain internal mail servers), you can now use the following environment variable:
+```
+SMTP_SECURE = true/false
+```
+Set `SMTP_SECURE=false` to disable STARTTLS and connect using plain SMTP. The default value is true. 
+
 </div>

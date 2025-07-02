@@ -25,7 +25,7 @@ Let's look into three types of subscriptions:
    - **Existing Users**: If eligible, a start trial banner will be visible on your ToolJet dashboard.
 
 2. **Business Subscription**: This is a paid monthly subscription that you can [upgrade](#a-chosen-plan-business-plan) to from within the ToolJet app.
-3. **Enterprise Subscription**: This is a paid subscription with customizable options. To obtain this subscription, you have to contact our **[sales](https://tooljet.com/slack)** team.
+3. **Enterprise Subscription**: This is a paid subscription with customizable options. To obtain this subscription, you have to contact our **[sales](/docs/slack)** team.
 
 ---
 
@@ -93,7 +93,7 @@ Example: If you add a builder seat halfway through your monthly billing cycle, y
 
 ### B) Enterprise Plan
 
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
+- You can directly reach out to us via **[Slack](/docs/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
 
 ## Invoice History
 
@@ -114,8 +114,7 @@ You can find your past invoices in the subscriptions overview card. Here's how t
 
 ### B) Enterprise Plan
 
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
-
+- You can directly reach out to us via **[Slack](/docs/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
 
 ## Frequently Asked Questions (FAQs)
 

@@ -142,7 +142,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
   </div>
 
 
-2. Create service and make sure the postgrest is within the same cluster as ToolJet app. 
+2. Create service and make sure the postgrest is within the same cluster as ToolJet app.
 
   <div style={{textAlign: 'center'}}>
 
@@ -181,4 +181,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*

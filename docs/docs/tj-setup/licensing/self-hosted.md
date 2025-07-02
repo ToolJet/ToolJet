@@ -17,7 +17,7 @@ This is a free license where a user can access basic offerings such as creating 
 
 ### Trial License
 
-ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
+ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
 
 ### Paid License
 
@@ -83,11 +83,11 @@ Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the 
 | Workflows | 2 | Users can create upto two workflows. |
 | Workspaces | 1 | All the previously created workspaces will be accessible, but the users will not be able to create any new workspace. |
 
-### Retrieving Desired Users Affected Due to New Pricing Plan
+### Unarchiving Desired Users Affected Due to New Pricing Plan
 
-If an user is archived automatically due to the new pricing plan then to retrieve the desired Builder or End User, the Super Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) the current active builder/end-user and [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired users.
+If a user is automatically archived due to the new pricing plan, the Super Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
-If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
+If you have any questions, feel free to join our [Slack Community](/docs/slack) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
 
 ## FAQs
 

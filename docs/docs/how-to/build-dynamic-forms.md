@@ -13,16 +13,14 @@ Let’s get started by setting up your form’s interface.
 Drag and drop a **Form** component on the canvas and place the following input components inside it. 
 
 | Component         | Component Name | Label                                              |
-|:--------------------------------|:---------------|:-----------------------------------------------------------------|
-| Star Rating       | *starrating1*  | How satisfied are you with our service?           |
-| Text Input        | *textinput1*   | What specific issues did you encounter?           |
+|:------------------|:---------------|:---------------------------------------------------|
+| Star Rating       | *starrating1*  | How satisfied are you with our service?            |
+| Text Input        | *textinput1*   | What specific issues did you encounter?            |
 | Text Input        | *textinput2*   | Email                                              |
 | Number Input      | *numberinput1* | Contact                                            |
 | Button            | *button1*      | Submit                                             |
 
-<div >
-    <img src="/img/how-to/build-dynamic-forms/dynamic-form-UI.png" alt="Dynamic Form UI" />
-</div>
+<img src="/img/how-to/build-dynamic-forms/dynamic-form-UI.png" alt="Dynamic Form UI" />
 
 </div>
 
@@ -49,9 +47,7 @@ c. Select the *numberinput1* component and enable the toggle for Make this field
 d. Finally, the *button1* component has to be disabled if the rating, email, and contact fields are not valid. Use the following code in the component's Visibility condition to achieve that:
 
 ```javascript
-{{!components.form1.children.textinput2.isValid || 
-!components.form1.children.starrating1.value || 
-!components.form1.children.numberinput1.value}}
+{{components.form1.isValid}}
 ```
 </div>
 
@@ -61,23 +57,11 @@ d. Finally, the *button1* component has to be disabled if the rating, email, and
 
 It’s time to put your form to the test! Check that everything functions smoothly and as expected.
 
-a. Check whether the *textinput1* is visible and hidden based on the star rating.
-
-<div >
-    <img src="/img/how-to/build-dynamic-forms/start-rating-condition-test.png" style={{paddingBottom:"25px"}} alt="Dynamic Form UI - Test Star Rating" />
-</div>
-
-<div >
-    <img src="/img/how-to/build-dynamic-forms/start-rating-condition-test-2.png" style={{paddingBottom:"25px"}} alt="Dynamic Form UI - Test Star Rating 2" />
-</div>
-
-<br/>
-
-b. Enter incorrect email and contact details to see whether the related components throw an error while disabling the button.
-
-<div>
-    <img src="/img/how-to/build-dynamic-forms/incorrect-email-and-contact-test.png" alt="Dynamic Form UI - Incorrect Email and Contact Test" />
-</div>
+1. Check whether the textinput1 component's visibility is changed based on the rating selected in the Star Rating component.
+        <img src="/img/how-to/build-dynamic-forms/start-rating-condition-test.png" style={{paddingBottom:"25px", marginTop:'15px'}} alt="Dynamic Form UI - Test Star Rating" />
+        <img src="/img/how-to/build-dynamic-forms/start-rating-condition-test-2.png" style={{paddingBottom:"25px"}} alt="Dynamic Form UI - Test Star Rating 2" />
+2. Enter incorrect email and contact details to see whether the related components throw an error while disabling the button.
+        <img src="/img/how-to/build-dynamic-forms/incorrect-email-and-contact-test.png" style={{paddingBottom:"25px", marginTop:'15px'}} alt="Dynamic Form UI - Incorrect Email and Contact Test" />
 
 </div>
 

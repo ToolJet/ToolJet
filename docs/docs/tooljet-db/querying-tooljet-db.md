@@ -8,12 +8,9 @@ Querying the ToolJet database is as easy as querying any other data source on To
 ## GUI Mode
 
 1. Go to the **Query panel**, and click on the **+Add** button to add a new query, and select **ToolJet Database**.
-    <img className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb.png" alt="ToolJet Database editor" />
-
+    <img style={{ marginTop: '15px' }} className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb.png" alt="ToolJet Database editor" />
 2. Select the GUI mode from the toggle.
-
 3. Select the table you want to query and the operation from the dropdown, then enter the required parameters for the selected operation. 
-
 4. Click on the **Run** button to execute the query.
 
 :::info
@@ -21,11 +18,6 @@ The selected operation should adhere to the column constraints of the selected t
 :::
 
 <img className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb2.png" alt="ToolJet Database editor" />
-
-<br/><br/>
-
-**Available Operations**:
-
 
 ### List Rows
 This operation returns all the records from the table.
@@ -39,16 +31,12 @@ This operation returns all the records from the table.
   - Limitations:
     - Sum only for numeric columns.
     - Count only for non-null values.
-    
-<img className="screenshot-full" src="/img/v2-beta/database/newui/aggregate.png" alt="ToolJet Database editor" />
-
-
+  <img style={{ marginTop: '15px' }} className="screenshot-full" src="/img/v2-beta/database/newui/aggregate.png" alt="ToolJet Database editor" />
 - **Group By**: Group rows with the same values in specified columns.
   - Can only be used after adding at least one aggregate condition.
   - Select one or more columns to group by.
   - Results are grouped based on unique combinations of values in selected columns.
-
-<img className="screenshot-full" src="/img/v2-beta/database/newui/group-by.png" alt="ToolJet Database editor" />
+  <img style={{ marginTop: '15px' }} className="screenshot-full" src="/img/v2-beta/database/newui/group-by.png" alt="ToolJet Database editor" />
 
 
 ### Create row
@@ -97,7 +85,7 @@ This operation can be used to upsert multiple rows using the primary key. Primar
 
 ## SQL Editor
 
-The ToolJet **SQL editor** allows you to query the ToolJet Database by writing SQL queries, specifically supporting standard SQL syntax for **Data Manipulation Language (DML)** commands.
+The ToolJet **SQL editor** allows you to query the ToolJet Database by writing SQL queries, specifically supporting standard SQL syntax for **Data Manipulation Language (DML)** commands. This feature is only available on the [Self-Hosted](/docs/tj-setup/tj-deployment#self-hosted-tooljet) version of ToolJet.
 
 ### Supported SQL Commands
 
@@ -282,6 +270,6 @@ A nested JSON object is a JSON structure that contains key-value pairs, where so
 
 
 :::info
-If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com/slack)**
+If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](/docs/slack)**
 :::
 
