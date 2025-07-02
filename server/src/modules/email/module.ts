@@ -19,7 +19,7 @@ export class EmailModule extends SubModule {
         await SMTPModule.register(configs),
       ],
       providers: [EmailService, EmailUtilService],
-      exports: [EmailUtilService],
+      exports: [EmailUtilService, EmailService],
     };
   }
 }

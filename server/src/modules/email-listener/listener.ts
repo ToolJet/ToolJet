@@ -14,8 +14,6 @@ export class EmailListener {
   @OnEvent('emailEvent')
   async handleEmailEvent(eventData: EmailEventPayload) {
     const { type, payload } = eventData;
-    console.log('new email listener ce');
-
     try {
       switch (type) {
         case EMAIL_EVENTS.SEND_WELCOME_EMAIL:
