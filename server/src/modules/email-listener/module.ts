@@ -5,21 +5,20 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { SMTPModule } from '@modules/smtp/module';
 import { SubModule } from '@modules/app/sub-module';
 
-export class EmailModule extends SubModule {
+export class EmailListenerModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { EmailService } = await import(`${importPath}/email/service`);
     const { EmailUtilService } = await import(`${importPath}/email/util.service`);
-    // const { EmailListener } = await import(`${importPath}/email/listener`);
     return {
-      module: EmailModule,
+      module: EmailListenerModule,
       imports: [
         await WhiteLabellingModule.register(configs),
         await DataSourcesModule.register(configs),
         await SMTPModule.register(configs),
       ],
       providers: [EmailService, EmailUtilService],
-      exports: [EmailUtilService],
+      exports: [],
     };
   }
 }

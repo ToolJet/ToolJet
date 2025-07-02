@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Logger } from 'nestjs-pino';
-import { EmailEventPayload } from './constants';
+import { EmailEventPayload, EMAIL_EVENTS } from '@modules/email/constants';
 import { EmailService } from '@modules/email/service';
-import { EMAIL_EVENTS } from './constants';
 
 @Injectable()
 export class EmailListener {
@@ -15,7 +14,7 @@ export class EmailListener {
   @OnEvent('emailEvent')
   async handleEmailEvent(eventData: EmailEventPayload) {
     const { type, payload } = eventData;
-    console.log('older listener email');
+    console.log('new email listener ce');
 
     try {
       switch (type) {
