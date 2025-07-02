@@ -36,7 +36,11 @@ export class EmailUtilService implements IEmailUtilService {
   constructor(
     protected readonly whiteLabellingUtilService: WhiteLabellingUtilService,
     protected readonly smtpUtilService: SMTPUtilService
-  ) {}
+  ) {
+    this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
+    this.SUB_PATH = process.env.SUB_PATH;
+    this.NODE_ENV = process.env.NODE_ENV || 'development';
+  }
 
   async retrieveWhiteLabelSettings(organizationId?: string | null): Promise<any> {
     const whiteLabelSetting = await this.whiteLabellingUtilService.getProcessedSettings(organizationId);
@@ -252,5 +256,15 @@ export class EmailUtilService implements IEmailUtilService {
       whiteLabelText: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_text,
       whiteLabelLogo: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_logo,
     });
+  }
+  protected stripTrailingSlash(hostname: string) {
+    return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
+  }
+  async init(organizationId?: string | null) {
+    const whiteLabelSettings = await this.retrieveWhiteLabelSettings(null);
+    this.SMTP = await this.retrieveSmtpSettings();
+    this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
+    this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;
+    this.defaultWhiteLabelState = whiteLabelSettings?.default;
   }
 }
