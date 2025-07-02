@@ -3,7 +3,7 @@ id: control-components
 title: Controlling Components Using Code
 ---
 
-Apart from [**events**](/docs/docs/app-builder/events/use-case/csa.md), Component-Specific Actions (CSAs) can also be triggered using code to modify component properties and state.
+Apart from [**events**](/docs/docs/app-builder/events/use-case/csa), Component-Specific Actions (CSAs) can also be triggered using code to modify component properties and state.
 
 Let’s say you want to:
 - Reset a **Form** automatically after submission

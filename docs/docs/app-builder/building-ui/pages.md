@@ -77,7 +77,7 @@ Exposed variables are values from a page that can be accessed throughout the app
 
 | Variable  | Description | How To Access |
 | ----------- | ----------- | ------------- |
-| handle | Represents the slug of the page within the app. It is automatically set when a page is created, but can be [renamed](#page-handle) from the page options. | `{{page.handle}}`|
+| handle | Represents the slug of the page within the app. It is automatically set when a page is created, but can be [renamed](#handle) from the page options. | `{{page.handle}}`|
 | name | Indicates the name of the page. | `{{page.name}}` |
 | id | Each page in the ToolJet application receives a unique identifier upon creation. | `{{page.id}}` |
 | variables | Variables object contains all the variables created for a specific page using the [Set Page Variable](/docs/actions/set-page-variable) action.  | `{{page.variables.<pageVariableName>}}`, where `<pageVariableName>` refers to the variable name. |
