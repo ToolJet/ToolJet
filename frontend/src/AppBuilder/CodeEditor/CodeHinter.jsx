@@ -69,6 +69,7 @@ const CodeHinter = ({
   return (
     <>
       <RenderCodeEditor
+        renderCopilot={renderCopilot}
         type={type}
         initialValue={initialValue}
         darkMode={darkMode}
@@ -80,6 +81,7 @@ const CodeHinter = ({
         }}
         componentName={componentName}
         disabled={disabled}
+        setCodeEditorView={setCodeEditorView}
         {...restProps}
       />
       {helpText && <span className="codehinter-helper-text">{helpText}</span>}
