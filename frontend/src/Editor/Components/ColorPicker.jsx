@@ -20,7 +20,6 @@ export const ColorPicker = function ({
   const [color, setColor] = useState(defaultColor);
   const colorPickerRef = useRef(null);
 
-
   useEffect(() => {
     const element = document.querySelector(`.ele-${id}`);
     if (element) {
@@ -133,7 +132,16 @@ export const ColorPicker = function ({
 
   return (
     <div className="h-100">
-      <div style={{ ...baseStyle, boxShadow, height: '100%' }} className="form-control" data-cy={dataCy}>
+      <div
+        style={{
+          ...baseStyle,
+          boxShadow,
+          height: '100%',
+          border: `1px solid ${showColorPicker ? 'var(--cc-primary-brand)' : 'var(--cc-default-border)'}`,
+        }}
+        className="form-control"
+        data-cy={dataCy}
+      >
         <div
           className="d-flex h-100 justify-content-between align-items-center"
           onClick={() => setShowColorPicker(true)}
