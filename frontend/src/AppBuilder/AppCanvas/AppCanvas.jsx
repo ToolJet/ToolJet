@@ -202,7 +202,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
               scrollbarWidth: 'none',
               overflow: 'auto',
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
-              height: 'inherit',
+              ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
             className={`app-${appId} _tooljet-page-${getPageId()}`}
           >
