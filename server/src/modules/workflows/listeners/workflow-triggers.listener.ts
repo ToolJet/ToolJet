@@ -6,6 +6,9 @@ import { Logger } from 'nestjs-pino';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { Response } from 'express';
+import { AppVersion } from '@entities/app_version.entity';
+import { App } from '@entities/app.entity';
+import { EntityManager } from 'typeorm';
 
 export const WORKFLOW_EXECUTION_STATUS = {
   TRIGGERED: 'workflow_execution_triggered',

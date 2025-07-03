@@ -79,7 +79,7 @@ function trigger(workflowAppId, params, environmentId) {
     appId: workflowAppId,
     userId: currentSession.current_user?.id,
     executeUsing: 'app',
-    params: Object.fromEntries(params.map((param) => [param.key, param.value])),
+    params: Object.fromEntries(params.filter((param) => param.key !== '').map((param) => [param.key, param.value])),
     environmentId,
   };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };

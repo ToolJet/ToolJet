@@ -32,7 +32,7 @@ export function resolveCode(codeContext) {
       ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
     };
     const codeToExecute = getFunctionWrappedCode(
-      'const console = { log: __reserved_keyword_log };\n' + code,
+      'const console = { log: (...args) => __reserved_keyword_log(args.join(\', \'), \'normal\') };\n' + code,
       globalState,
       isIfCondition
     );
