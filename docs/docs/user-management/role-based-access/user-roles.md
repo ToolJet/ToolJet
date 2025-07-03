@@ -24,6 +24,7 @@ Admin user has access to all the permission at workspace level, while an end use
 | **Data sources**  | Create/Update/Delete  | ✅ | Configurable | ❌ |
 | **Folder**        | Create/Update/Delete  | ✅ | Configurable | ❌ |
 | **Workspace constants/variables** | Create/Update/Delete | ✅ | Configurable | ❌ |
+| **Workflow** | Create/Update/Delete | ✅ | Configurable | ❌ |
 
 ## Manage User Roles
 
