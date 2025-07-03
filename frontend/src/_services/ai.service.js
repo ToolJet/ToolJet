@@ -22,7 +22,13 @@ export const aiService = {
   getCopilotSuggestion,
   getCreditBalance,
   fixWithAI,
+  fixLayout,
 };
+
+async function fixLayout(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/fixLayout`, requestOptions).then(handleResponse);
+}
 
 function enrichPrompt(prompt) {
   const body = {

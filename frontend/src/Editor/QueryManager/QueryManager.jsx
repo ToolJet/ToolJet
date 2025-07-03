@@ -96,6 +96,7 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
           appDefinition={appDefinition}
           setOptions={setOptions}
           activeTab={activeTab}
+          editorRef={editorRef}
         />
       </CodeHinterContext.Provider>
     </div>
