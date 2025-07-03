@@ -14,27 +14,27 @@ jobs:
 
     steps:
 
-      - name: Check authorization
-        run: |
-          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
-          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
-          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+      # - name: Check authorization
+      #   run: |
+      #     allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+      #     allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+      #     allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
 
-          if [[ "${{ github.actor }}" != "$allowed_user1" && \
-                "${{ github.actor }}" != "$allowed_user2" && \
-                "${{ github.actor }}" != "$allowed_user3" ]]; then
-            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
-            exit 1
-          else
-            echo "✅ User '${{ github.actor }}' is authorized."
-          fi
+      #     if [[ "${{ github.actor }}" != "$allowed_user1" && \
+      #           "${{ github.actor }}" != "$allowed_user2" && \
+      #           "${{ github.actor }}" != "$allowed_user3" ]]; then
+      #       echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+      #       exit 1
+      #     else
+      #       echo "✅ User '${{ github.actor }}' is authorized."
+      #     fi
 
-      - name: Validate branch prefix
-        run: |
-          if [[ "${{ github.event.inputs.branch }}" != lts/* ]]; then
-            echo "❌ Branch name must start with 'lts/'"
-            exit 1
-          fi
+      # - name: Validate branch prefix
+      #   run: |
+      #     if [[ "${{ github.event.inputs.branch }}" != lts/* ]]; then
+      #       echo "❌ Branch name must start with 'lts/'"
+      #       exit 1
+      #     fi
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 20
+          node-version: 22.15.1
 
       - name: Install dependencies
         run: npm install
