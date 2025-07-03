@@ -8,6 +8,7 @@ export type SourceOptions = {
   ca_cert: string;
   client_cert: string;
   client_key: string;
+  database?: string;
 };
 export type QueryOptions = {
   operation: string;

@@ -25,6 +25,9 @@
         "type": "string",
         "encrypted": true
       },
+      "database": {
+        "type": "string"
+      },
       "ca_cert": {
         "encrypted": true
       },
@@ -88,6 +91,12 @@
           "key": "port",
           "type": "text",
           "description": "Enter port"
+        },
+        "database": {
+          "label": "Database",
+          "key": "database",
+          "type": "text",
+          "description": "Enter database name"
         },
         "username": {
           "label": "Username",
