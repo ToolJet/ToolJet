@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SketchPicker } from 'react-color';
+import { hexToRgba, hexToRgb } from '@/_helpers/appUtils';
 
 export const ColorPicker = function ({
   width,
@@ -19,34 +20,6 @@ export const ColorPicker = function ({
   const [color, setColor] = useState(defaultColor);
   const colorPickerRef = useRef(null);
 
-  const getRGBAValueFromHex = (hex) => {
-    let c = hex.substring(1).split('');
-    switch (c.length) {
-      case 3:
-        c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], 'ff'];
-        break;
-      case 4:
-        c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], c[3] + c[3]];
-        break;
-      case 6:
-        c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], 'ff'];
-        break;
-      case 8:
-        c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], c[6] + c[7]];
-        break;
-    }
-    c = c.map((char) => parseInt(char, 16).toString());
-    c[3] = (Math.round((parseInt(c[3], 10) / 255) * 100) / 100).toString();
-    return c;
-  };
-  const hexToRgba = (hex) => {
-    const rgbaArray = getRGBAValueFromHex(hex);
-    return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]}, ${rgbaArray[3]})`;
-  };
-  const hexToRgb = (hex) => {
-    const rgbaArray = getRGBAValueFromHex(hex);
-    return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
-  };
 
   useEffect(() => {
     const element = document.querySelector(`.ele-${id}`);
