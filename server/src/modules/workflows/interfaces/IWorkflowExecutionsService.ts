@@ -6,7 +6,16 @@ export interface IWorkflowExecutionsService {
 
   execute(workflowExecution: WorkflowExecution, params: any, envId: string, response: Response): Promise<any>;
 
-  getStatus(id: string): Promise<{ logs: string[]; status: boolean; nodes: any[] }>;
+  getStatus(id: string): Promise<{
+    logs: unknown;
+    status: boolean;
+    nodes: Array<{
+      id: string;
+      idOnDefinition: string;
+      executed: boolean;
+      result: unknown;
+    }>;
+  }>;
 
   getWorkflowExecution(id: string): Promise<WorkflowExecution>;
 

@@ -18,7 +18,16 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     throw new Error('Method not implemented.');
   }
 
-  async getStatus(workflowExecutionId: string): Promise<{ logs: string[]; status: boolean; nodes: any[] }> {
+  async getStatus(workflowExecutionId: string): Promise<{
+    logs: unknown;
+    status: boolean;
+    nodes: Array<{
+      id: string;
+      idOnDefinition: string;
+      executed: boolean;
+      result: unknown;
+    }>;
+  }> {
     throw new Error('Method not implemented.');
   }
 
