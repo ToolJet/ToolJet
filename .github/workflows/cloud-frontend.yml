@@ -46,6 +46,14 @@ jobs:
         with:
           node-version: 22.15.1
 
+      - name: Checkout code (with submodules)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN_PR }}
+          ref: ${{ github.event.inputs.branch }}
+          submodules: recursive
+
+
       - name: Install dependencies
         run: npm install
 
