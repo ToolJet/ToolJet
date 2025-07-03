@@ -103,7 +103,7 @@ function BaseSettingsMenu({
         {superAdmin && midMenuContent}
 
         {/* Specifically for Cloud Edition */}
-        {edition === 'cloud' && admin && midMenuContent}
+        {edition === 'cloud' && admin && !superAdmin && midMenuContent}
 
         {/* Admin section - Workspace settings */}
         {admin && (

@@ -836,27 +836,27 @@ export class TooljetDbTableOperationsService {
       [LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS],
       organizationId
     );
-    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
-    if (edition === TOOLJET_EDITIONS.Cloud) {
+    if (licenseTerms[LICENSE_FIELD.TABLE_COUNT] === LICENSE_LIMIT.UNLIMITED) {
       return {
         tablesCount: generatePayloadForLimits(
-          licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
-            ? await this.manager
-                .createQueryBuilder(InternalTable, 'internal_table')
-                .where('internal_table.organizationId = :organizationId', { organizationId })
-                .getCount()
-            : 0,
+          0,
           licenseTerms[LICENSE_FIELD.TABLE_COUNT],
           licenseTerms[LICENSE_FIELD.STATUS],
           LICENSE_LIMITS_LABEL.TABLES
         ),
       };
     }
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const tableCount =
+      edition === TOOLJET_EDITIONS.Cloud
+        ? await this.manager
+            .createQueryBuilder(InternalTable, 'internal_table')
+            .where('internal_table.organizationId = :organizationId', { organizationId })
+            .getCount()
+        : await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount();
     return {
       tablesCount: generatePayloadForLimits(
-        licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
-          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
-          : 0,
+        tableCount,
         licenseTerms[LICENSE_FIELD.TABLE_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.TABLES
