@@ -202,6 +202,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
               scrollbarWidth: 'none',
               overflow: 'auto',
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
+              height: 'inherit',
             }}
             className={`app-${appId} _tooljet-page-${getPageId()}`}
           >
@@ -213,7 +214,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
               {environmentLoadingState !== 'loading' && (
                 <div>
                   <Container
-                    id="canvas"
+                    id={moduleId}
                     gridWidth={gridWidth}
                     canvasWidth={canvasWidth}
                     canvasHeight={canvasHeight}
