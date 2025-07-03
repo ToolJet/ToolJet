@@ -553,13 +553,14 @@ const useAppData = (
 
   useEffect(() => {
     const root = document.documentElement;
+    const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
     const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
     Object.keys(themeObj).forEach((category) => {
       const categoryObj = themeObj[category];
       Object.keys(categoryObj).forEach((property) => {
         const propertyObj = categoryObj[property];
         Object.keys(propertyObj).forEach((type) => {
-          const color = propertyObj[type][darkMode ? 'dark' : 'light'];
+          const color = propertyObj[type][mode];
           root.style.setProperty(`--cc-${camelCase(type)}-${camelCase(category)}`, `${color}`);
           if (type === 'placeholder' && category === 'text') {
             root.style.setProperty(`--cc-default-icon`, `${color}`);
@@ -574,7 +575,7 @@ const useAppData = (
       });
     });
     detectThemeChange();
-  }, [darkMode, selectedTheme, !!themeAccess]);
+  }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
     if (moduleMode) return;
