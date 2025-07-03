@@ -8,9 +8,7 @@ export const whiteLabellingService = {
 };
 
 function get(organizationId = null) {
-  console.log('testring organization id', organizationId);
   const headers = authHeader();
-  console.log('auth header', authHeader);
   const requestOptions = {
     method: 'GET',
     headers: headers,
@@ -35,7 +33,6 @@ function update(settings) {
     credentials: 'include',
     body: JSON.stringify(settings),
   };
-  console.log('auth header', authHeader);
   const organizationId = headers['tj-workspace-id'];
   const edition = fetchEdition();
   if (edition === 'cloud') {
