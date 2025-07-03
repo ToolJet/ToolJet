@@ -24,6 +24,7 @@ import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
 import Spinner from '@/_ui/Spinner';
 
 import './form.scss';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const FormComponent = (props) => {
   const {
@@ -77,6 +78,7 @@ const FormComponent = (props) => {
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
 
+  const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
   const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
@@ -90,6 +92,7 @@ const FormComponent = (props) => {
     boxShadow,
     flexDirection: 'column',
     clipPath: `inset(0 round ${computedBorderRadius})`,
+    '--cc-form-scroll-bar-color': activeColor,
   };
 
   const formContent = {
