@@ -229,19 +229,6 @@ export const Viewer = ({
                         }}
                       >
                         <div className={`areas d-flex flex-rows app-${appId}`}>
-                          {/* {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
-                            <PagesSidebarNavigation
-                              showHeader={showHeader}
-                              isMobileDevice={currentLayout === 'mobile'}
-                              pages={pages}
-                              currentPageId={currentPageId ?? homePageId}
-                              darkMode={darkMode}
-                              isSidebarPinned={isSidebarPinned}
-                              toggleSidebarPinned={toggleSidebarPinned}
-                              switchPage={switchPage}
-                            />
-                          )} */}
-
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
                               close: !isSidebarPinned,

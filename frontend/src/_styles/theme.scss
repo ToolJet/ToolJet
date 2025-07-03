@@ -796,7 +796,13 @@ button {
     }
 
     .canvas-container {
-      scrollbar-width: none;
+        scrollbar-width: none;
+    }
+
+    :hover {
+      .canvas-container {
+        scrollbar-width: thin;
+      }
     }
 
     .canvas-container {

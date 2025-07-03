@@ -133,6 +133,7 @@ const RenderPageGroup = ({
             darkMode={darkMode}
             homePageId={homePageId}
             position={position}
+            callback={handleToggle}
           />
         ))}
       </>

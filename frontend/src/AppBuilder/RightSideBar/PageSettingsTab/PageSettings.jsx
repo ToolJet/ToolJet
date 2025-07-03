@@ -318,6 +318,8 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
     return str.toLowerCase() === 'true';
   }
 
+  const [selectedStyle, setSelectedStyle] = useState(style);
+
   return (
     <>
       <div className="section-header pb-2">
@@ -357,6 +359,7 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
                   pageSettingChanged({ position: value }, 'properties');
                 }}
                 defaultValue={position?.toString()}
+                style={{ width: '168px' }}
               >
                 {POSTIONS.map((mode) => (
                   <ToggleGroupItem key={mode.value} value={mode.value}>
@@ -371,14 +374,14 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
               <label className="form-label font-weight-400 mb-0">Style</label>
               <Select
                 options={styleOptions}
-                search={true}
-                value={style}
+                value={selectedStyle}
                 onChange={(value) => {
+                  setSelectedStyle(value);
                   pageSettingChanged({ style: value }, 'properties');
                 }}
                 placeholder={'Select...'}
                 useMenuPortal={false}
-                width={'142px'}
+                width={'168px'}
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
@@ -389,12 +392,10 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {
-                    // if (position === 'side' && value == 'false') {
-                    //   pageSettingChanged({ style: 'texticon' }, 'properties');
-                    // }
                     pageSettingChanged({ collapsable: stringToBoolean(value) }, 'properties');
                   }}
                   defaultValue={collapsable?.toString()}
+                  style={{ width: '168px' }}
                 >
                   {COLLAPSABLE_TOGGLES.map((mode) => (
                     <ToggleGroupItem key={mode.value} value={mode.value}>

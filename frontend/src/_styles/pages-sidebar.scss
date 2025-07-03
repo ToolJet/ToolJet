@@ -142,7 +142,6 @@
 
     .accordion-header {
         height: 32px;
-        background-color: var(--interactive-default);
 
         .accordion-title-text {
             color: var(--text-default);
@@ -217,7 +216,7 @@
             position: relative;
             bottom: 2px;
             justify-content: center;
-            padding-top: 32px;
+            padding-top: 16px;
             margin-top: auto;
 
             .sidebar-svg-icon {
@@ -241,6 +240,7 @@
             align-items: center;
             width: unset !important;
             margin-bottom: 20px;
+            min-height: 28px;
 
             .collapse-icon {
                 margin-left: auto;
@@ -429,6 +429,7 @@
             padding-top: 0px;
             overflow: hidden !important;
             justify-content: space-between;
+            border-right: 0px !important;
 
             .page-handler-wrapper {
                 width: 100%;
@@ -502,7 +503,7 @@
         }
 
         &.right-sidebar-open {
-            width: calc(100% + 299px) !important;
+            width: calc(100% + 300px) !important;
             position: sticky !important;
 
         }
@@ -514,7 +515,7 @@
         }
 
         &.right-sidebar-open.left-sidebar-open {
-            width: calc(100% + 646px) !important;
+            width: calc(100% + 650px) !important;
             position: sticky !important;
         }
     }
