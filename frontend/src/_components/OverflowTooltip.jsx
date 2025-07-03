@@ -16,9 +16,10 @@ export default function OverflowTooltip({
   useEffect(() => {
     setIsOverflow(
       textElementRef.current.scrollWidth > textElementRef.current.clientWidth ||
-        textElementRef.current.clientHeight < textElementRef.current.scrollHeight - 4
+        textElementRef.current.clientHeight < textElementRef.current.scrollHeight - 4 ||
+        (maxLetters && typeof children === 'string' && children.length > maxLetters)
     );
-  }, [children, boxWidth]);
+  }, [children, boxWidth, maxLetters]);
 
   const displayText =
     maxLetters && typeof children === 'string' && children.length > maxLetters
@@ -32,7 +33,7 @@ export default function OverflowTooltip({
       tooltipClassName="overflow-tooltip"
       placement={placement}
       message={children}
-      show={isOverflowed}
+      show={!!isOverflowed}
       width={rest?.width}
     >
       <div

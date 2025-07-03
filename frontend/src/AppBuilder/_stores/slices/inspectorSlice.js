@@ -49,7 +49,10 @@ export const createInspectorSlice = (set, get) => ({
           ...get().getContainerChildrenMapping(`${id}-footer`),
         ];
       case 'Tabs': {
-        const tabs = getResolvedComponent(id)?.properties?.tabs;
+        const jsonTabs = getResolvedComponent(id)?.properties?.tabs;
+        const tabItems = getResolvedComponent(id)?.properties?.tabItems;
+        const useDynamicOptions = getResolvedComponent(id)?.properties?.useDynamicOptions;
+        const tabs = useDynamicOptions ? jsonTabs : tabItems;
         const children = Array.isArray(tabs) ? tabs : [];
         const res = children
           ?.map((tab) => {

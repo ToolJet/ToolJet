@@ -13,6 +13,7 @@ const useCallbackActions = () => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery, shallow);
   const getComponentIdFromName = useStore((state) => state.getComponentIdFromName, shallow);
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
+  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded, shallow);
 
   const handleRemoveComponent = (component) => {
     const { nodeName } = component;
@@ -38,6 +39,9 @@ const useCallbackActions = () => {
     const { nodeName } = data;
     const id = getQueryIdFromName(nodeName);
     setSelectedQuery(id);
+
+    // Expand query pane if it's not already expanded
+    expandQueryPaneIfNeeded();
   };
 
   const handleAutoScrollToComponent = (data) => {

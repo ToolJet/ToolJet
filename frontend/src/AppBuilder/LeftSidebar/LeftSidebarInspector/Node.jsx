@@ -113,7 +113,7 @@ export const Node = (props) => {
           <ButtonComponent
             iconOnly
             leadingIcon={isExpanded ? 'TriangleDownCenter' : 'rightarrrow'}
-            onClick={() => onExpand(props)}
+            {...(level !== 1 && { onClick: () => onExpand(props) })}
             variant="ghost"
             fill="var(--icon-default,#ACB2B9)"
             size="small"
