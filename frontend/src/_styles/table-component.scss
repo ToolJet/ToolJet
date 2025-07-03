@@ -1040,6 +1040,8 @@
   gap: 5px;
   align-self: stretch;
   height: 40px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   justify-content: center;
   display: flex;
   flex-direction: row;
@@ -1159,7 +1161,8 @@
   .react-select__menu-list {
     display: flex;
     flex-direction: column;
-    border-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     box-shadow: var(--elevation-400-box-shadow);
     background-color: var(--cc-surface1-surface) !important;
     
