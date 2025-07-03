@@ -2,12 +2,12 @@ import { Injectable, NotImplementedException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Response } from 'express';
-import { IAiOnboardingService } from '../interfaces/IService';
+import { IWebsiteAuthService } from '../interfaces/IService';
 import { SSOType } from '@entities/sso_config.entity';
 import { CreateAiUserDto } from '../dto';
 
 @Injectable()
-export class AiOnboardingService implements IAiOnboardingService {
+export class WebsiteAuthService implements IWebsiteAuthService {
   async handleOnboarding(
     userParams: CreateAiUserDto,
     existingUser?: User,
@@ -18,15 +18,11 @@ export class AiOnboardingService implements IAiOnboardingService {
     throw new NotImplementedException('Method not implemented');
   }
 
-  async setAiCookies(response: Response, keyValues: Record<string, any>) {
+  setSessionAICookies(response: Response, keyValues: Record<string, any>) {
     return { message: 'AI Cookies set successfully' };
   }
 
-  async setSessionAICookies(response: Response, keyValues: Record<string, any>) {
-    return { message: 'AI Cookies set successfully' };
-  }
-
-  async clearSessionAICookies(response: Response, cookies: Record<string, any>) {
+  clearSessionAICookies(response: Response, cookies: Record<string, any>) {
     return { message: 'AI Cookies cleared successfully' };
   }
 }

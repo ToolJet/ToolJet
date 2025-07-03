@@ -1,30 +1,30 @@
 import { Controller, Post, Body, Res, UseGuards, Param, Get, NotImplementedException } from '@nestjs/common';
 import { Response } from 'express';
 import { SSOType } from '@entities/sso_config.entity';
-import { IAiOnboardingController } from '../interfaces/IController';
-import { AiOnboardingService } from '../services/ai-onboarding.service';
+import { IWebsiteAuthController } from '../interfaces/IController';
 import { CreateAiUserDto } from '../dto';
 import { OrganizationAuthGuard } from '@modules/session/guards/organization-auth.guard';
-import { SignupDisableGuard } from '../guards/signup-disable.guard';
-import { AllowPersonalWorkspaceGuard } from '../guards/personal-workspace.guard';
-import { FirstUserSignupDisableGuard } from '../guards/first-user-signup-disable.guard';
 import { User } from '@modules/app/decorators/user.decorator';
+import { MODULES } from '@modules/app/constants/modules';
+import { InitModule } from '@modules/app/decorators/init-module';
+import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { FEATURE_KEY } from '../constants';
 import { AiCookies } from '../decorators/ai-cookie.decorator';
 
 /* 
   This module is for ai onboarding from the website
   Email and password signup and common ssos - google and git ssos will be supported
 */
+@InitModule(MODULES.ONBOARDING)
 @Controller('ai/onboarding')
-export class AiOnboardingController implements IAiOnboardingController {
-  constructor(private readonly aiOnboardingService: AiOnboardingService) {}
-
-  @UseGuards(SignupDisableGuard, AllowPersonalWorkspaceGuard, FirstUserSignupDisableGuard)
+export class WebsiteAuthController implements IWebsiteAuthController {
+  @InitFeature(FEATURE_KEY.AI_ONBOARDING)
   @Post()
   async onboard(@Body() onboardingData: CreateAiUserDto, @Res({ passthrough: true }) response: Response) {
     throw new NotImplementedException();
   }
 
+  @InitFeature(FEATURE_KEY.AI_ONBOARDING_SSO)
   @UseGuards(OrganizationAuthGuard)
   @Post('sign-in/common/:ssoType')
   async commonSignIn(
@@ -37,13 +37,15 @@ export class AiOnboardingController implements IAiOnboardingController {
   }
 
   /* Incase if we need to support the safari browsers */
+  @InitFeature(FEATURE_KEY.AI_COOKIE_SET)
   @Post('set-ai-cookie')
-  async setAiCookie(@Res({ passthrough: true }) response: Response, @Body() body: Record<string, any>) {
+  setAiCookie(@Res({ passthrough: true }) response: Response, @Body() body: Record<string, any>) {
     throw new NotImplementedException();
   }
 
+  @InitFeature(FEATURE_KEY.AI_COOKIE_DELETE)
   @Get('delete-ai-cookies')
-  async deleteAiCookies(@Res({ passthrough: true }) response: Response, @AiCookies() cookies: Record<string, any>) {
+  deleteAiCookies(@Res({ passthrough: true }) response: Response, @AiCookies() cookies: Record<string, any>) {
     throw new NotImplementedException();
   }
 }

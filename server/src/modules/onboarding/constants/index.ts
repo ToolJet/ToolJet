@@ -22,12 +22,6 @@ export enum FEATURE_KEY {
 
   // Invitee Details
   GET_INVITEE_DETAILS = 'getInviteeDetails', // GET 'invitee-details'
-
-  // AI Onboarding
-  AI_ONBOARDING = 'aiOnboarding', // POST 'ai-onboarding'
-  AI_ONBOARDING_SSO = 'aiOnboardingSSO', // POST 'sign-in/common/:ssoType
-  AI_COOKIE_SET = 'aiCookieSet', // POST 'set-ai-cookie'
-  AI_COOKIE_DELETE = 'aiCookieDelete', // GET 'delete-ai-cookies'
 }
 
 export enum OnboardingStatus {

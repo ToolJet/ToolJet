@@ -43,17 +43,5 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_INVITEE_DETAILS]: {
       isPublic: true,
     }, // Get Invitee Details
-    [FEATURE_KEY.AI_ONBOARDING]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.AI_ONBOARDING_SSO]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.AI_COOKIE_SET]: {
-      isPublic: true,
-    },
-    [FEATURE_KEY.AI_COOKIE_DELETE]: {
-      isPublic: true,
-    },
   },
 };

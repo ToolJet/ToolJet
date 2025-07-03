@@ -19,10 +19,6 @@ interface Features {
   [FEATURE_KEY.FINISH_ONBOARDING]: FeatureConfig;
   [FEATURE_KEY.TRIAL_DECLINED]: FeatureConfig;
   [FEATURE_KEY.GET_INVITEE_DETAILS]: FeatureConfig;
-  [FEATURE_KEY.AI_ONBOARDING]: FeatureConfig;
-  [FEATURE_KEY.AI_ONBOARDING_SSO]: FeatureConfig;
-  [FEATURE_KEY.AI_COOKIE_SET]: FeatureConfig;
-  [FEATURE_KEY.AI_COOKIE_DELETE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
