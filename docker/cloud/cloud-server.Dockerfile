@@ -44,8 +44,10 @@ ENV NODE_ENV=production
 
 # Building ToolJet server
 COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install --only=production
+RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN npm install -g @nestjs/cli
+RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
 FROM debian:12
