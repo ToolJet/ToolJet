@@ -182,6 +182,11 @@ Enable Google or GitHub SSO with these environment variables:
 - `SSO_ACCEPTED_DOMAINS`: Comma-separated list of allowed email domains
 - `SSO_DISABLE_SIGNUPS=true`: Restricts signups to existing users
 
+#### Group Synchronization
+If any of the following environment variables are set to true, group synchronization will be skipped during the login process for the respective SSO provider:
+- `DISABLE_LDAP_GROUP_SYNC=true` – Disables group sync for LDAP during login.
+- `DISABLE_SAML_GROUP_SYNC=true` – Disables group sync for SAML during login.
+
 #### REST API Cookie Forwarding
 By default, ToolJet does not forward cookies with REST API requests. To enable this (self-hosted only), set:
 
