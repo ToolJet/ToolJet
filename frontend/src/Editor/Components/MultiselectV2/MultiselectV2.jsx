@@ -415,6 +415,10 @@ export const MultiselectV2 = ({
         borderRadius: '6px',
       },
     }),
+    placeholder: (provided, _state) => ({
+      ...provided,
+      color: 'var(--cc-placeholder-text)',
+    }),
     dropdownIndicator: (provided, _state) => ({
       ...provided,
       padding: '0px',

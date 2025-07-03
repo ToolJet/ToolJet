@@ -2559,3 +2559,37 @@ export const isMobileDevice = () => {
   const userAgent = window.navigator.userAgent;
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
 };
+
+
+// Color picker utils
+
+export const getRGBAValueFromHex = (hex) => {
+  let c = hex.substring(1).split('');
+  switch (c.length) {
+    case 3:
+      c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], 'ff'];
+      break;
+    case 4:
+      c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], c[3] + c[3]];
+      break;
+    case 6:
+      c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], 'ff'];
+      break;
+    case 8:
+      c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], c[6] + c[7]];
+      break;
+  }
+  c = c.map((char) => parseInt(char, 16).toString());
+  c[3] = (Math.round((parseInt(c[3], 10) / 255) * 100) / 100).toString();
+  return c;
+};
+
+export const hexToRgba = (hex) => {
+  const rgbaArray = getRGBAValueFromHex(hex);
+  return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]}, ${rgbaArray[3]})`;
+};
+
+export const hexToRgb = (hex) => {
+  const rgbaArray = getRGBAValueFromHex(hex);
+  return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
+};

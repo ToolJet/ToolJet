@@ -219,7 +219,7 @@ export const dropdownV2Config = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#6A727C',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'field',
     },
@@ -349,7 +349,7 @@ export const dropdownV2Config = {
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
-      iconColor: { value: '#6A727C' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
     },
   },

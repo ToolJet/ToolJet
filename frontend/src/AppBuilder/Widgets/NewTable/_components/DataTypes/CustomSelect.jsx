@@ -36,7 +36,10 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
     <div
       className="table-select-custom-menu-list"
       onClick={(e) => e.stopPropagation()}
-      style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+      style={{ 
+        backgroundColor: 'var(--cc-surface1-surface)',
+        border: '1px solid var(--cc-default-border)',
+      }}
     >
       <div
         className="table-select-column-type-search-box-wrapper"
@@ -64,17 +67,19 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
           spellCheck="false"
         />
       </div>
-      <MenuList {...props} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
-        {optionsLoadingState ? (
-          <div className="text-center py-4">
-            <div className="spinner-border text-primary" role="status">
-              <span className="sr-only" />
+      <div style={{ borderTop: '1px solid var(--cc-default-border)' }}>
+        <MenuList {...props} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
+          {optionsLoadingState ? (
+            <div className="text-center py-4">
+              <div className="spinner-border text-primary" role="status">
+                <span className="sr-only" />
+              </div>
             </div>
-          </div>
-        ) : (
-          children
-        )}
-      </MenuList>
+          ) : (
+            children
+          )}
+        </MenuList>
+      </div>
     </div>
   );
 };
@@ -264,7 +269,7 @@ export const CustomSelectColumn = ({
         color: 'var(--text-primary)',
         cursor: 'pointer',
         overflow: 'auto',
-        borderRadius: '8px',
+        border: '1px solid var(--cc-default-border)',
         boxShadow: 'var(--elevation-400-box-shadow)',
       }),
       singleValue: (provided, state) => {
@@ -278,6 +283,10 @@ export const CustomSelectColumn = ({
           fontSize: '12px',
         };
       },
+      menu: (base) => ({
+        ...base,
+        borderRadius: '8px',
+      }),
     }),
     [darkMode, isMulti, horizontalAlignment, cellTextColor, autoAssignColors]
   );
