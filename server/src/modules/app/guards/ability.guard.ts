@@ -63,7 +63,7 @@ export abstract class AbilityGuard implements CanActivate {
       const licenseRequired: LICENSE_FIELD = featureInfo?.license;
       if (licenseRequired && !(app?.organizationId || user?.organizationId)) {
         // If no license is required, continue to the next feature
-        continue;
+        return true;
       }
       if (
         licenseRequired &&
@@ -78,7 +78,7 @@ export abstract class AbilityGuard implements CanActivate {
       // If any of the feature is public
       if (featureInfo.isPublic) {
         // No other validations if user is API is public
-        continue;
+        return true;
       }
 
       if (featureInfo.isSuperAdminFeature && !isSuperAdmin(user)) {
@@ -91,7 +91,7 @@ export abstract class AbilityGuard implements CanActivate {
 
       if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp) {
         // No need to do validations if app is public
-        continue;
+        return true;
       }
     }
 
