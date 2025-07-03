@@ -405,12 +405,7 @@ const PreviewContainer = ({
     <Popover
       bsPrefix="fix-with-ai-popover"
       id="popover-basic"
-      className={`${darkMode && 'dark-theme'}`}
-      style={{
-        width: '360px',
-        marginRight: 2,
-        zIndex: 1400,
-      }}
+      className={`${darkMode && 'dark-theme'} tw-z-[9999] tw-w-96`}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
     >

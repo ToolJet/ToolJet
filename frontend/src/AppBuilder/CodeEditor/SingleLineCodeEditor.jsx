@@ -183,6 +183,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               showPreview={showPreview}
               wrapperRef={wrapperRef}
               showSuggestions={showSuggestions}
+              cursorInsidePreview={cursorInsidePreview}
               {...restProps}
             />
           </div>
@@ -218,6 +219,7 @@ const EditorInput = ({
   wrapperRef,
   showSuggestions,
   setCodeEditorView = null, // Function to set the CodeMirror view
+  cursorInsidePreview = false,
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
@@ -340,7 +342,8 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setShowPreview(false);
+    !cursorInsidePreview && setShowPreview(false);
+
     if (!delayOnChange) {
       setFirstTimeFocus(false);
       return onBlurUpdate(currentValue);

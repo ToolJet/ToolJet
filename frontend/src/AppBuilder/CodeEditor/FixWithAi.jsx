@@ -6,4 +6,4 @@ function FixWithAi() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(FixWithAi, 'FixWithAi');
+export default withEditionSpecificComponent(FixWithAi, 'AiBuilder');
