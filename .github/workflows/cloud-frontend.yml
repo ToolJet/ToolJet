@@ -52,16 +52,16 @@ jobs:
       - name: Build the project
         run: npm run build:plugins:prod && npm run build:frontend
         env:
-          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          NODE_OPTIONS: ${{ secrets.NODE_OPTIONS }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SERVE_CLIENT: ${{ secrets.SERVE_CLIENT }}
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          TJDB_SQL_MODE_DISABLE: ${{ secrets.TJDB_SQL_MODE_DISABLE }}
-          TOOLJET_SERVER_URL: ${{ secrets.TOOLJET_SERVER_URL }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
+          NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
+          NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
+          SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
+          SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
+          TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
+          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           TOOLJET_EDITION: cloud
 
       - name: Deploy to Netlify
