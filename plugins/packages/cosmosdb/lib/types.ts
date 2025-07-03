@@ -9,4 +9,5 @@ export type QueryOptions = {
   items?: [];
   itemId?: string;
   query?: string;
+  partitionKey?: string;
 };

@@ -25,7 +25,13 @@ export default class Cosmosdb implements QueryService {
           result = await getItem(client, queryOptions.database, queryOptions.container, queryOptions.itemId);
           break;
         case 'delete_item':
-          result = await deleteItem(client, queryOptions.database, queryOptions.container, queryOptions.itemId);
+          result = await deleteItem(
+            client,
+            queryOptions.database,
+            queryOptions.container,
+            queryOptions.itemId,
+            queryOptions?.partitionKey
+          );
           break;
         case 'query_database':
           result = await queryDatabase(client, queryOptions.database, queryOptions.container, queryOptions.query);
