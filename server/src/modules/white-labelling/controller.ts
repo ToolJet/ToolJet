@@ -24,11 +24,6 @@ export class WhiteLabellingController implements IWhiteLabellingController {
 
   @Put()
   @InitFeature(FEATURE_KEY.UPDATE)
-  async update(@Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto) {
-    throw new NotFoundException();
-  }
-
-  @InitFeature(FEATURE_KEY.UPDATE)
   async updateInstanceWhiteLabelling(
     @Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto,
     @User() user: UserEntity
@@ -37,13 +32,13 @@ export class WhiteLabellingController implements IWhiteLabellingController {
   }
 
   @Get('/:organizationId')
-  @InitFeature(FEATURE_KEY.GET)
+  @InitFeature(FEATURE_KEY.GET_ORGANIZATION_WHITE_LABELS)
   async getWorkspaceWhiteLabelling(req: any) {
     throw new NotFoundException();
   }
 
   @Put('/:organizationId')
-  @InitFeature(FEATURE_KEY.UPDATE)
+  @InitFeature(FEATURE_KEY.UPDATE_ORGANIZATION_WHITE_LABELS)
   async updateWorkspaceWhiteLabelling(
     @Param('organizationId') organizationId: string,
     @Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto,
