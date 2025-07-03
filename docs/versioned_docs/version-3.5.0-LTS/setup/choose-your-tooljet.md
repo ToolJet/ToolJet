@@ -19,6 +19,9 @@ Starting from **`v3.5.0-ee-lts`** all releases are AI releases. Checkout the **[
 | Version | Release Date | Docker Pull Command |
 |---------|--------------|----------------------|
 | Latest EE-LTS | N/A | `docker pull tooljet/tooljet:ee-lts-latest` |
+| [v3.5.65-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.65-ee-lts/images/sha256-9f13ed2e07b7039c5763a0eb5ffe660e6d6ad011f28ebd7d88a875afc71024b5?context=explore) | July  2, 2025 | `docker pull tooljet/tooljet:v3.5.65-ee-lts` |
+| [v3.5.64-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.64-ee-lts/images/sha256-9c119acbd04cfbd9b7a4869a0815364dcc602a53481160855caa0e5011dd0cb5?context=explore) | July  2, 2025 | `docker pull tooljet/tooljet:v3.5.64-ee-lts` |
+| [v3.5.63-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.63-ee-lts/images/sha256-a87737c5df3df9b49d59a6690f7f2e341ff323ee5884f640e5a39479761aa3a7?context=explore) | June 30, 2025 | `docker pull tooljet/tooljet:v3.5.63-ee-lts` |
 | [v3.5.62-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.62-ee-lts/images/sha256-5682ae48e7969d8b72ff233b90f7024d6bab76faaa635f9fae2d2f559702c2a5?context=explore) | June 27, 2025 | `docker pull tooljet/tooljet:v3.5.62-ee-lts` |
 | [v3.5.61-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.61-ee-lts/images/sha256-61082bcd868458b141e6cf7aa4ea03331f96ebfa5ff360e68b8bb0470bc31733?context=explore) | June 26, 2025 | `docker pull tooljet/tooljet:v3.5.61-ee-lts` |
 | [v3.5.60-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.60-ee-lts/images/sha256-ad910869feb8774913092bf9972d5f292b7707a325dc93a4c531563beac33d5a?context=explore) | June 26, 2025 | `docker pull tooljet/tooljet:v3.5.60-ee-lts` |
