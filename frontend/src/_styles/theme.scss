@@ -21,6 +21,7 @@
 @import './pages-sidebar.scss';
 @import './modules.scss';
 @import "./rocket/card.scss";
+@import "../HomePage/styles/homepage.scss";
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -12586,80 +12587,6 @@ tbody {
   }
 }
 
-.home-page-content-container {
-  max-width: 880px;
-
-  @media only screen and (max-width: 768px) {
-    margin-bottom: 0rem !important;
-
-    .liner {
-      width: unset !important;
-    }
-
-    .app-list {
-      overflow-y: auto;
-      height: calc(100vh - 26rem);
-
-      .skeleton-container {
-        display: flex;
-        flex-direction: column;
-
-        .col {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 1rem;
-        }
-
-        .card-skeleton-container {
-          width: 304px;
-        }
-      }
-    }
-
-    .menu-ico {
-      display: none !important;
-    }
-  }
-}
-
-@media only screen and (min-width: 1584px) and (max-width: 1727px) {
-
-  .edit-button,
-  .launch-button {
-    width: 113px !important;
-  }
-}
-
-@media only screen and (max-width: 1583px) and (min-width: 1312px) {
-  .homepage-app-card-list-item {
-    max-width: 264px;
-
-    .edit-button,
-    .launch-button {
-      width: 109px !important;
-    }
-  }
-}
-
-@media only screen and (min-width: 1728px) {
-  .homepage-app-card-list-item {
-    max-width: 304px;
-
-    .edit-button,
-    .launch-button {
-      width: 129px !important;
-    }
-  }
-
-  .home-page-content-container {
-    max-width: 976px;
-  }
-
-  .liner {
-    width: 976px;
-  }
-}
-
 .tj-docs-link {
   color: var(--indigo9) !important;
   text-decoration: none;
@@ -16445,6 +16372,7 @@ fieldset:disabled {
     .right {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
 
       button {
         border: none;

@@ -49,7 +49,6 @@ import {
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-import './styles/homepage.scss';
 
 const { iconList, defaultIcon } = configs;
 

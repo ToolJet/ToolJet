@@ -17,6 +17,8 @@
 }
 .homepage-app-card-list-item-wrap {
   column-gap: 24px;
+  row-gap: 24px;
+  flex-wrap: wrap;
   display: flex;
 }
 
@@ -116,7 +118,6 @@
       // display: none;
     }
 
-
     .appcard-buttons-wrap {
       display: flex;
       visibility: visible;
@@ -134,7 +135,6 @@
           text-decoration: none;
         }
       }
-
     }
 
     .app-icon-main {
@@ -144,21 +144,81 @@
   }
 }
 
-@media only screen and (max-width: 992px) {
-  .homepage-app-card-list-item-wrap {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    gap: 24px;
-  }
+.home-page-content-container {
+  max-width: 880px;
 
+  @media only screen and (max-width: 768px) {
+    margin-bottom: 0rem !important;
+
+    .liner {
+      width: unset !important;
+    }
+
+    .app-list {
+      overflow-y: auto;
+      height: calc(100vh - 26rem);
+
+      .skeleton-container {
+        display: flex;
+        flex-direction: column;
+
+        .col {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 1rem;
+        }
+
+        .card-skeleton-container {
+          width: 304px;
+        }
+      }
+    }
+
+    .menu-ico {
+      display: none !important;
+    }
+  }
+}
+
+@media only screen and (min-width: 1728px) {
   .homepage-app-card-list-item {
-    max-width: 304px !important;
-    flex-basis: 100%;
+    // max-width: 304px;
+    max-width: calc(33.3% - 16px);
 
     .edit-button,
     .launch-button {
       width: 129px !important;
+    }
+  }
+
+  .home-page-content-container {
+    max-width: 976px;
+  }
+
+  .liner {
+    width: 976px;
+  }
+}
+
+@media only screen and (min-width: 1584px) and (max-width: 1727px) {
+  .homepage-app-card-list-item {
+    max-width: calc(33.3% - 16px);
+  }
+
+  .edit-button,
+  .launch-button {
+    width: 113px !important;
+  }
+}
+
+@media only screen and (min-width: 1312px) and (max-width: 1583px) {
+  .homepage-app-card-list-item {
+    // max-width: 264px;
+    max-width: calc(33.3% - 16px);
+
+    .edit-button,
+    .launch-button {
+      width: 109px !important;
     }
   }
 }
@@ -173,8 +233,11 @@
   }
 
   .homepage-app-card-list-item {
-    max-width: 269px;
-    flex-basis: 100%;
+    // max-width: 269px;
+    max-width: calc(50% - 12px);
+    flex-basis: 50%;
+    flex-grow: 1;
+    flex-shrink: 0;
 
     .edit-button,
     .launch-button {
@@ -184,5 +247,25 @@
 
   .liner {
     width: 568px;
+  }
+}
+
+@media only screen and (max-width: 992px) {
+  .homepage-app-card-list-item-wrap {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 24px;
+  }
+
+  .homepage-app-card-list-item {
+    // max-width: 304px !important;
+    max-width: calc(50% - 12px);
+    flex-basis: 100%;
+
+    .edit-button,
+    .launch-button {
+      width: 129px !important;
+    }
   }
 }
