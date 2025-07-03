@@ -19,7 +19,7 @@
 }
 
 .react-select__single-value {
-    color: var(--slate12) ;
+    color: var(--slate12);
 }
 
 .react-select__menu {
@@ -106,8 +106,8 @@
 }
 
 // following is the styles for table select column type menu list and options styles. If its same for all the select elements in the editor, then we can make it common and not specific for table select
-.table-select-custom-menu-list{
-    .react-select__menu-list{
+.table-select-custom-menu-list {
+    .react-select__menu-list {
         padding: 2px;
         // this is needed otherwise :active state doesn't look nice, gap is required
         display: flex;
@@ -116,7 +116,8 @@
         background-color: var(--base) !important;
         overflow-y: auto;
     }
-    .react-select__option{
+
+    .react-select__option {
         display: flex;
         justify-content: space-between;
         padding: 8px 12px;
@@ -129,15 +130,66 @@
         font-size: 12px;
         font-style: normal;
         font-weight: 400;
-        line-height: 20px; /* 166.667% */
-        &.react-select__option--is-selected{
+        line-height: 20px;
+
+        /* 166.667% */
+        &.react-select__option--is-selected {
             color: var(--indigo9) !important;
         }
-        &:active{
+
+        &:active {
             background: var(--base) !important;
             box-shadow: 0px 0px 0px 4px var(--slate6);
-            color : var(--slate12) !important;
+            color: var(--slate12) !important;
         }
     }
 }
 
+// Firefox-specific fixes for Radix UI Select in modals and popovers
+@-moz-document url-prefix() {
+
+    // Fix for dropdowns in modals
+    .modal-dialog [data-radix-select-content] {
+        position: fixed !important;
+        z-index: 99999 !important;
+        max-height: 200px !important;
+        overflow-y: auto !important;
+    }
+
+    // Fix for dropdowns in popovers  
+    .popover [data-radix-select-content] {
+        position: fixed !important;
+        z-index: 99999 !important;
+        max-height: 200px !important;
+        overflow-y: auto !important;
+    }
+
+    // Ensure proper positioning for column mapping modal specifically
+    .column-mapping-modal-body [data-radix-select-content] {
+        max-height: 150px !important;
+        min-width: 140px !important;
+    }
+
+    // Ensure proper viewport constraint for form field popovers
+    .form-field-popover-body [data-radix-select-content] {
+        max-height: 200px !important;
+        min-width: 200px !important;
+    }
+}
+
+// General improvements for all browsers to ensure proper dropdown behavior
+[data-radix-select-content] {
+    // Ensure the dropdown content is always properly positioned
+    transform-origin: var(--radix-select-content-transform-origin);
+    animation: none !important; // Disable animations that might cause positioning issues
+
+    // For modals, ensure the dropdown doesn't exceed modal bounds
+    .modal-dialog & {
+        max-height: 250px;
+    }
+
+    // For popovers, ensure the dropdown doesn't exceed popover bounds  
+    .popover & {
+        max-height: 250px;
+    }
+}
