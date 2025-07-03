@@ -34,8 +34,9 @@ COPY ./package.json ./package.json
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins ci --omit=dev
 COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build
-RUN npm --prefix plugins prune --omit=dev
+RUN NODE_ENV=production npm --prefix plugins run build && npm --prefix plugins prune --omit=dev
+
+ENV TOOLJET_EDITION=ee
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -44,19 +45,18 @@ COPY ./frontend/ ./frontend/
 RUN npm --prefix frontend run build --production && npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
+ENV TOOLJET_EDITION=ee
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server ci --omit=dev
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli 
-RUN npm install -g copyfiles
-RUN npm --prefix server run build
-RUN npm prune --production --prefix server
+RUN npm install -g @nestjs/cli && npm install -g copyfiles
+RUN npm --prefix server run build && npm prune --production --prefix server
 
-# Install dependencies for PostgREST, curl, unzip, etc.
+# Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \
-    curl ca-certificates unzip tar \
+    curl ca-certificates tar \
     && rm -rf /var/lib/apt/lists/*
 
 ENV POSTGREST_VERSION=v12.2.0
@@ -78,7 +78,6 @@ RUN apt-get update && \
         ca-certificates \
         xz-utils \
         tar \
-        zip \
         postgresql-client \
         redis \
         libaio1 \

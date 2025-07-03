@@ -7,6 +7,7 @@ import { App } from '@entities/app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 
 @Injectable()
 export class AppCountGuard implements CanActivate {
@@ -18,7 +19,7 @@ export class AppCountGuard implements CanActivate {
     const whereCondition: any = {
       type: APP_TYPES.FRONT_END,
       organization: {
-        status: 'active',
+        status: WORKSPACE_STATUS.ACTIVE,
       },
     };
     // Fetch apps using organization ID only for cloud
@@ -38,10 +39,7 @@ export class AppCountGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const organizationId =
-      typeof request.headers['tj-workspace-id'] === 'object'
-        ? request.headers['tj-workspace-id'][0]
-        : request.headers['tj-workspace-id'];
+    const organizationId = request?.user?.organizationId;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const appCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.APP_COUNT, organizationId);
 
