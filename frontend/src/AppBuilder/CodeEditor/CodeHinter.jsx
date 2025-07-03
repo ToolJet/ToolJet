@@ -27,6 +27,7 @@ const CodeHinter = ({
   disabled,
   renderCopilot,
   setCodeEditorView,
+  helpText,
   ...restProps
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -66,22 +67,25 @@ const CodeHinter = ({
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 
   return (
-    <RenderCodeEditor
-      renderCopilot={renderCopilot}
-      type={type}
-      initialValue={initialValue}
-      darkMode={darkMode}
-      portalProps={{
-        isOpen,
-        setIsOpen,
-        handleTogglePopupExapand,
-        forceUpdate,
-      }}
-      componentName={componentName}
-      disabled={disabled}
-      setCodeEditorView={setCodeEditorView}
-      {...restProps}
-    />
+    <>
+      <RenderCodeEditor
+        renderCopilot={renderCopilot}
+        type={type}
+        initialValue={initialValue}
+        darkMode={darkMode}
+        portalProps={{
+          isOpen,
+          setIsOpen,
+          handleTogglePopupExapand,
+          forceUpdate,
+        }}
+        componentName={componentName}
+        disabled={disabled}
+        setCodeEditorView={setCodeEditorView}
+        {...restProps}
+      />
+      {helpText && <span className="codehinter-helper-text">{helpText}</span>}
+    </>
   );
 };
 
