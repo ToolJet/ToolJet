@@ -99,7 +99,7 @@ COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
-COPY --from=builder /app/server/keys ./app/server/keys
+COPY --from=builder /app/server/ee/keys ./app/server/ee/keys
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
