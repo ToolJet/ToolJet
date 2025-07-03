@@ -36,23 +36,17 @@ jobs:
       #       exit 1
       #     fi
 
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout code (with submodules)
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
+          token: ${{ secrets.TOKEN_PR }}
+          submodules: recursive
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 22.15.1
-
-      - name: Checkout code (with submodules)
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.TOKEN_PR }}
-          ref: ${{ github.event.inputs.branch }}
-          submodules: recursive
-
 
       - name: Install dependencies
         run: npm install
