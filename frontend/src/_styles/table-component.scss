@@ -34,13 +34,20 @@
   }
 
   .card {
-    border: 1px solid var(--slate3) !important;
+    border: 1px solid var(--cc-default-border) !important;
+  }
+
+  .table-filters {
+    .card-footer {
+      border-top: 1px solid var(--cc-default-border) !important;
+    }
   }
 
   .card-footer {
     padding: 0.75rem;
     // background-color: var(--cc-surface1-surface) !important;
   }
+
 
   .card-header {
     border-bottom: 0 !important;
