@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { formatJoinsJSONBPath, formatJSONB } from 'src/helpers/utils.helper';
+import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -45,6 +45,7 @@ import { ConfigService } from '@nestjs/config';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@modules/licensing/constants';
 import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 enum AggregateFunctions {
   sum = 'SUM',
@@ -831,15 +832,31 @@ export class TooljetDbTableOperationsService {
   }
 
   async getTablesLimit(organizationId: string) {
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
-      LICENSE_FIELD.TABLE_COUNT,
-      LICENSE_FIELD.STATUS,
-    ], organizationId);
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
+    if (licenseTerms[LICENSE_FIELD.TABLE_COUNT] === LICENSE_LIMIT.UNLIMITED) {
+      return {
+        tablesCount: generatePayloadForLimits(
+          0,
+          licenseTerms[LICENSE_FIELD.TABLE_COUNT],
+          licenseTerms[LICENSE_FIELD.STATUS],
+          LICENSE_LIMITS_LABEL.TABLES
+        ),
+      };
+    }
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const tableCount =
+      edition === TOOLJET_EDITIONS.Cloud
+        ? await this.manager
+            .createQueryBuilder(InternalTable, 'internal_table')
+            .where('internal_table.organizationId = :organizationId', { organizationId })
+            .getCount()
+        : await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount();
     return {
       tablesCount: generatePayloadForLimits(
-        licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
-          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
-          : 0,
+        tableCount,
         licenseTerms[LICENSE_FIELD.TABLE_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.TABLES
@@ -931,7 +948,7 @@ export class TooljetDbTableOperationsService {
   protected buildJoinQuery(
     queryJson,
     internalTableIdToNameMap,
-    // eslint-disable-next-line
+
     tooljetDbTenantConnection: Connection
   ): SelectQueryBuilder<any> {
     const queryBuilder: SelectQueryBuilder<any> = tooljetDbTenantConnection.createQueryBuilder();
