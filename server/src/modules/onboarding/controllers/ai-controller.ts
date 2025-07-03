@@ -1,16 +1,15 @@
-import { Controller, Post, Body, Res, UseGuards, Param, Get } from '@nestjs/common';
-import { CreateAiUserDto } from './dto/create-ai-user.dto';
+import { Controller, Post, Body, Res, UseGuards, Param, Get, NotImplementedException } from '@nestjs/common';
 import { Response } from 'express';
-import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { SSOType } from '@entities/sso_config.entity';
-import { User } from 'src/decorators/user.decorator';
-import { SignupDisableGuard } from '@modules/auth/signup-disable.guard';
-import { FirstUserSignupDisableGuard } from '@modules/auth/first-user-signup-disable.guard';
-import { AllowPersonalWorkspaceGuard } from '@ee/instance-settings/guards/personal-workspace.guard';
-import { AiCookies } from 'src/decorators/ai-cookies.decorators';
-import { IAiOnboardingController, IOnboardingController } from '../interfaces/IController';
-import { OnboardingService } from '../service';
+import { IAiOnboardingController } from '../interfaces/IController';
 import { AiOnboardingService } from '../services/ai-onboarding.service';
+import { CreateAiUserDto } from '../dto';
+import { OrganizationAuthGuard } from '@modules/session/guards/organization-auth.guard';
+import { SignupDisableGuard } from '../guards/signup-disable.guard';
+import { AllowPersonalWorkspaceGuard } from '../guards/personal-workspace.guard';
+import { FirstUserSignupDisableGuard } from '../guards/first-user-signup-disable.guard';
+import { User } from '@modules/app/decorators/user.decorator';
+import { AiCookies } from '../decorators/ai-cookie.decorator';
 
 /* 
   This module is for ai onboarding from the website
@@ -23,7 +22,7 @@ export class AiOnboardingController implements IAiOnboardingController {
   @UseGuards(SignupDisableGuard, AllowPersonalWorkspaceGuard, FirstUserSignupDisableGuard)
   @Post()
   async onboard(@Body() onboardingData: CreateAiUserDto, @Res({ passthrough: true }) response: Response) {
-    return this.aiOnboardingService.handleOnboarding(onboardingData, null, response);
+    throw new NotImplementedException();
   }
 
   @UseGuards(OrganizationAuthGuard)
@@ -34,17 +33,17 @@ export class AiOnboardingController implements IAiOnboardingController {
     @User() user,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.aiOnboardingService.handleOnboarding(body, user, response, ssoType);
+    throw new NotImplementedException();
   }
 
   /* Incase if we need to support the safari browsers */
   @Post('set-ai-cookie')
   async setAiCookie(@Res({ passthrough: true }) response: Response, @Body() body: Record<string, any>) {
-    return this.aiOnboardingService.setSessionAICookies(response, body);
+    throw new NotImplementedException();
   }
 
   @Get('delete-ai-cookies')
   async deleteAiCookies(@Res({ passthrough: true }) response: Response, @AiCookies() cookies: Record<string, any>) {
-    return this.aiOnboardingService.clearSessionAICookies(response, cookies);
+    throw new NotImplementedException();
   }
 }
