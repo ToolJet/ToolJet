@@ -72,7 +72,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     const otherData = { companySize, role, phoneNumber };
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const { editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount('INSTANCE',manager);
+      const { editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount('INSTANCE', manager);
 
       const body = {
         hostname,

@@ -80,7 +80,11 @@ export default class LicenseBase {
       this._type = LICENSE_TYPE.BASIC;
       return;
     }
-    this._expiryDate = expiryDate ? new Date(expiryDate) : (licenseData?.expiry ? new Date(`${licenseData?.expiry} 23:59:59`) : null);
+    this._expiryDate = expiryDate
+      ? new Date(expiryDate)
+      : licenseData?.expiry
+        ? new Date(`${licenseData?.expiry} 23:59:59`)
+        : null;
     this._startDate = startDate;
     this._isFlexiblePlan = licenseData?.plan?.isFlexible === true;
     this._appsCount = licenseData?.apps;
@@ -194,6 +198,7 @@ export default class LicenseBase {
   }
 
   public get viewerUsers(): number | string {
+    return '2'; //testing
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.users?.viewer || this._viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
     }
