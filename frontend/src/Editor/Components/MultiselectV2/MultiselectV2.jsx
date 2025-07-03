@@ -12,6 +12,7 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 export const MultiselectV2 = ({
   id,
@@ -377,10 +378,7 @@ export const MultiselectV2 = ({
           isDisabled: isMultiSelectDisabled,
         }),
         '&:hover': {
-          borderColor:
-            state.isFocused || isMultiselectOpen
-              ? getInputFocusedColor({ accentColor })
-              : tinycolor(fieldBorderColor).darken(24).toString(),
+          borderColor: getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
