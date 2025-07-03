@@ -198,7 +198,6 @@ export default class LicenseBase {
   }
 
   public get viewerUsers(): number | string {
-    return '2'; //testing
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.users?.viewer || this._viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
     }
