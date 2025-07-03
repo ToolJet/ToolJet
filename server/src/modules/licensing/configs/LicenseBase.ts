@@ -80,7 +80,11 @@ export default class LicenseBase {
       this._type = LICENSE_TYPE.BASIC;
       return;
     }
-    this._expiryDate = expiryDate ? new Date(expiryDate) : (licenseData?.expiry ? new Date(`${licenseData?.expiry} 23:59:59`) : null);
+    this._expiryDate = expiryDate
+      ? new Date(expiryDate)
+      : licenseData?.expiry
+        ? new Date(`${licenseData?.expiry} 23:59:59`)
+        : null;
     this._startDate = startDate;
     this._isFlexiblePlan = licenseData?.plan?.isFlexible === true;
     this._appsCount = licenseData?.apps;
