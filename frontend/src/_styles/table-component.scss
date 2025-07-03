@@ -89,7 +89,7 @@
 
 
       .table-global-search {
-        border: 1px solid var(--borders-default) !important;
+        border: 1px solid var(--cc-default-border,--borders-default) !important;
 
         input {
           color: var(--text-primary) !important;
@@ -774,7 +774,7 @@
 .jet-table.table-component {
   .pagination-container {
     input {
-      border: 1px solid var(--slate7, #D7DBDF) !important;
+      border: 1px solid var(--cc-default-border, #D7DBDF) !important;
       background-color: var(--cc-surface1-surface)!important;
       color: var(--cc-primary-text) !important;
 
@@ -1569,7 +1569,7 @@
     position: relative;
     appearance: none;
     -webkit-appearance: none;
-    border: 1px solid var(--borders-default);
+    border: 1px solid var(--cc-default-border,--borders-default);
     border-radius: 3px;
     background-color: var(--cc-surface1-surface);
     cursor: pointer;
@@ -1593,7 +1593,7 @@
     
     &:not(:checked) {
       background-color: var(--cc-surface1-surface);
-      border-color: var(--borders-default);
+      border-color: var(--cc-default-border,--borders-default);
     }
   }
 }
