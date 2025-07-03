@@ -4281,7 +4281,7 @@ input[type="text"] {
 
 .code-editor-widget {
   border-radius: 0;
-
+  border: 1px solid var(--cc-default-border);
   .CodeMirror {
     border-radius: 0 !important;
     margin-top: -1px !important;
