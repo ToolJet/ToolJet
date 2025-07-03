@@ -57,6 +57,7 @@ function DataSourcePicker({ darkMode }) {
   const docLink = 'sampledb.com';
 
   const handleChangeDataSource = (source) => {
+    console.log('Selected data source:', source);
     createDataQuery(source);
     setPreviewData(null);
   };

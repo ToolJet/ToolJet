@@ -76,6 +76,7 @@ export const Tabs = function Tabs({
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
   // config for tabs. Includes title
+  console.log(properties, 'propertiespropertiesproperties');
   const tabs = isExpectedDataType(properties.tabs, 'array');
   let parsedTabs = tabs;
   if (!useDynamicOptions) {
@@ -594,4 +595,4 @@ const TabContent = memo(function TabContent({
     </div>
   );
 },
-areEqual);
+  areEqual);
