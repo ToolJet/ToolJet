@@ -9,15 +9,15 @@ import { onboardingSelectors } from "Selectors/onboarding";
 const envVar = Cypress.env("environment");
 
 export const manageUsersElements = () => {
-  // cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-  //   expect($el.contents().first().text().trim()).to.eq(
-  //     commonText.breadcrumbworkspaceSettingTitle
-  //   );
-  // });
-  // cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-  //   "have.text",
-  //   " Users"
-  // );
+  cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.breadcrumbworkspaceSettingTitle
+    );
+  });
+  cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+    "have.text",
+    " Users"
+  );
 
   for (const element in usersSelector.usersElements) {
     cy.get(usersSelector.usersElements[element]).verifyVisibleElement(
