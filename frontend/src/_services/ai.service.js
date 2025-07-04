@@ -232,7 +232,7 @@ async function approvePrd(body, onMessage) {
 
 async function getCopilotSuggestion(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/copilot`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleResponse);
 }
 async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
