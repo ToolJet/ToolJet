@@ -1,0 +1,17 @@
+button.tw-consultation-btn {
+  border-color: var(--border-accent-weak) !important;
+
+  > div > svg,
+  > div > svg > path {
+    fill: var(--icon-accent) !important;
+  }
+}
+
+button.tw-expired-trial-btn {
+  border-color: var(--border-danger-weak) !important;
+
+  > div > svg,
+  > div > svg > path {
+    fill: var(--icon-danger) !important;
+  }
+}
