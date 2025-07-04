@@ -8710,28 +8710,6 @@ tbody {
   bottom: 0px;
 }
 
-.home-page-footer {
-  height: 52px;
-  background-color: var(--page-default) !important;
-  border-top: 1px solid var(--slate5) !important;
-  width: calc(100% - 336px) !important;
-
-  @media only screen and (max-width: 768px) {
-    position: unset;
-    width: 100%;
-
-    .col-4,
-    .col-5 {
-      display: none;
-    }
-
-    .pagination-container {
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-}
 
 .pagination-container {
   display: flex;

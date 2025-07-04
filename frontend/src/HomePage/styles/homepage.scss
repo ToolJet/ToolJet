@@ -180,6 +180,30 @@
   }
 }
 
+
+.home-page-footer {
+  height: 52px;
+  background-color: var(--page-weak) !important;
+  border-top: 1px solid var(--border-weak) !important;
+  width: calc(100% - 336px) !important;
+
+  @media only screen and (max-width: 768px) {
+    position: unset;
+    width: 100%;
+
+    .col-4,
+    .col-5 {
+      display: none;
+    }
+
+    .pagination-container {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
 @media only screen and (min-width: 1728px) {
   .homepage-app-card-list-item {
     // max-width: 304px;
