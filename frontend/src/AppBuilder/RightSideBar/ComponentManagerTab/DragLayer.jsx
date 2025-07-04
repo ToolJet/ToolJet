@@ -71,7 +71,6 @@ const CustomDragLayer = ({ size }) => {
     currentOffset: monitor.getSourceClientOffset(),
     item: monitor.getItem(),
   }));
-  console.log(currentOffset, 'currentOffset');
   if (!currentOffset) return null;
 
   const canvasWidth = item?.canvasWidth;

@@ -396,25 +396,22 @@ export function hasParentWithClass(child, className) {
 }
 
 export function showGridLines() {
-  var canvasElms = document.getElementsByClassName('sub-canvas');
-  var elementsArray = Array.from(canvasElms);
+  var canvasElms = document.getElementsByClassName('real-canvas');
+  // Filter out module canvas
+  var elementsArray = Array.from(canvasElms).filter((element) => !element.classList.contains('module-container'));
   elementsArray.forEach(function (element) {
     element.classList.remove('hide-grid');
     element.classList.add('show-grid');
   });
-  document.getElementById('real-canvas')?.classList.remove('hide-grid');
-  document.getElementById('real-canvas')?.classList.add('show-grid');
 }
 
 export function hideGridLines() {
-  var canvasElms = document.getElementsByClassName('sub-canvas');
+  var canvasElms = document.getElementsByClassName('real-canvas');
   var elementsArray = Array.from(canvasElms);
   elementsArray.forEach(function (element) {
     element.classList.remove('show-grid');
     element.classList.add('hide-grid');
   });
-  document.getElementById('real-canvas')?.classList.remove('show-grid');
-  document.getElementById('real-canvas')?.classList.add('hide-grid');
 }
 
 export function showGridLinesOnSlot(slotId) {
