@@ -67,6 +67,3 @@ jobs:
           TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           TOOLJET_EDITION: cloud
-
-      - name: Deployment complete
-        run: echo "🎉 Deployment to Netlify successful for branch ${{ github.event.inputs.branch }} by ${{ github.actor }}"
