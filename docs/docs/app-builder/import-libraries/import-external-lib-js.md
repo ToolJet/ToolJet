@@ -2,131 +2,124 @@
 id: runjs
 title: Using RunJS
 ---
-<div style={{paddingBottom:'24px'}}>
 
-ToolJet allows you to integrate external JavaScript libraries into your application using RunJS queries. This guide walks you through the process of importing and utilizing these libraries effectively.
 
-</div>
+ToolJet allows you to use external JavaScript libraries such as Compromise for natural language processing or PapaParse for parsing CSV data in your application using RunJS queries. This helps you avoid writing complex logic from scratch.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+This guide walks you through the process of importing and utilizing these libraries effectively.
 
 ## Choosing Libraries
 
 You can import various JavaScript libraries using their Content Delivery Network (CDN) links. Find the CDN links for your desired open-source projects on [jsDelivr](https://www.jsdelivr.com/). 
 
-</div>
+## How to Import Libraries
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+Let’s walk through how to import libraries using RunJS. For example, we’ll use:
 
-## Creating a New App and RunJS Query
+- [Compromise](https://github.com/spencermountain/compromise): for natural language processing
+- [PapaParse](https://www.papaparse.com/): for parsing CSV data
 
-- Create a new app from the ToolJet Dashboard.
-- Once the app is ready, choose ToolJet's deafult **JavaScript** Data Source from the query panel. 
+### Create a RunJS Query
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/create-new-query-v2.png" alt="Create a new RunJS query" />
-</div>
+Open the query panel and create a new **RunJS** query.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Importing Libraries
-
-Once the query is created, add the following code:
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+### Add the Following Code Snippet 
 
 ```js
 // Function to add script dynamically
 function addScript(src) {
-    return new Promise((resolve, reject) => {
-        const scriptTag = document.createElement('script');
-        scriptTag.setAttribute('src', src);
-        scriptTag.addEventListener('load', resolve);
-        scriptTag.addEventListener('error', reject);
-        document.body.appendChild(scriptTag);
-    });
+  return new Promise((resolve, reject) => {
+    const scriptTag = document.createElement('script');
+    scriptTag.setAttribute('src', src);
+    scriptTag.addEventListener('load', resolve);
+    scriptTag.addEventListener('error', reject);
+    document.body.appendChild(scriptTag);
+  });
 }
 
 try {
-    // Importing MathJS
-    await addScript('https://cdn.jsdelivr.net/npm/mathjs@11.7.0');
-
-    // Importing FlattenJS
-    await addScript('https://cdn.jsdelivr.net/npm/flattenjs@2.1.3/lib/flatten.min.js');
-
-    // Showing a success alert
-    await actions.showAlert("success", 'Mathjs and Flatten imported');
+  await addScript('https://cdn.jsdelivr.net/npm/compromise@13.11.3/builds/compromise.min.js');
+  await addScript('https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js');
+  await actions.showAlert("success", "Compromise and PapaParse imported");
 } catch (error) {
-    console.error(error);
+  console.error(error);
 }
 ```
 
-</div>
+After adding the code, click on the **Run** button in the query panel. An alert will appear with the message "Compromise and PapaParse imported".
 
-After adding the code, click on the **Run** button in the query panel, an alert should pop up with the message "Mathjs and Flatten imported."
-
+ <img className="screenshot-full img-full" src="/img/app-builder/custom-code/import_library.png" alt="Use FlattenJS" />
 :::tip
-Enable the **Run this query on application load?** option to make the libraries available throughout the application as soon as the app is loaded.
+Enable the **Run this query on application load** option in the query settings to make the libraries available throughout the application as soon as the app is loaded.
 :::
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/import-successful-v2.png" alt="Import Successful" />
-</div>
+## Use Cases
 
-</div>
+Let’s look at how you can apply these libraries in real-world use cases.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+### Extracting Action Items from Meeting Notes using Compromise (NLP)
 
-## Examples
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### 1. Flattening JSON Objects using FlattenJS
-
-- Create a new *RunJS* query using the Flatten library (imported earlier) to flatten a JSON object.
-- In the code section of the query, add the following code:
+Let's say you are building an internal project management tool where users paste raw meeting notes. You want to auto-extract action items, dates, and team names. You can use the following code to process the notes using NLP:
 
 ```js
-return flatten({
-    key1: {
-        keyA: 'valueI'
-    },
-    key2: {
-        keyB: 'valueII'
-    },
-    key3: { a: { b: { c: 2 } } }
+const notes = nlp("Met with John, Priya, and Marcus from the marketing team on Thursday. Discussed launch strategy for the Q3 campaign. Priya will draft the blog post by next Tuesday. John to prepare budget estimates. Marcus will handle email outreach by Friday. Next sync on July 10th.");
+
+const people = notes.people().out('array');
+const actions = notes.sentences().filter(s => s.has('#Verb')).out('array');
+
+return { people, actions };
+```
+
+Preview the output in the query manager or click **Run** in the query panel to see the output as shown below.
+
+
+ <img className="screenshot-full img-full" src="/img/app-builder/custom-code/extract_tags.png" alt="Use compromise" />
+
+###  Bulk Upload Employee Data into an Employee Directory
+
+Let’s say your HR team maintains employee records in spreadsheets and wants a way to import this data quickly into your internal Employee Directory application. You can use the following code to clean up the data:
+
+```js
+const csvData = components.filepicker1.file[0].content;
+
+const parsedData = Papa.parse(csvData, {
+  header: true,
+  skipEmptyLines: true
 });
+
+return parsedData;
 ```
 
-- Preview the output in the query manager or click **Run** in the query panel to see the flattened JSON.
+ <img className="screenshot-full img-full" src="/img/app-builder/custom-code/csv_parse_js.png" alt="Use Compromise" />
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flatten-js-v2.png" alt="Use FlattenJS" />
-</div>
+## Built-in JavaScript Libraries 
 
-</div>
+ToolJet comes with some essential JavaScript libraries preloaded in the RunJS environment, so you don’t need to import them manually:
+- [Moment.js](https://momentjs.com/docs/) – for date/time formatting and manipulation
+- [Lodash](https://lodash.com/docs/) – for working with arrays, objects, and collections
+- [Axios](https://axios-http.com/docs/intro) – for making HTTP requests
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+You can use these libraries directly in RunJS to simplify your logic, transform data, or integrate with APIs.
 
-### 2. Computation using MathJS
-
-- Create another *RunJS* query utilizing the MathJS library for a calculation.
-- In the code section of the query, add the following code:
+Example:
 
 ```js
-return math.atan2(3, -3) / math.pi;
+// Format Timestamps for UI Display
+const raw = '2025-06-05T15:42:00Z';
+return moment(raw).format('MMM D, YYYY, h:mm A');// "Jun 5, 2025, 9:12 PM"
+
+//  Deep Comparison of Records with Lodash
+const a = { name: 'Alice', dept: { id: 1, name: 'HR' } };
+const b = { name: 'Alice', dept: { id: 1, name: 'HR' } };
+
+return _.isEqual(a, b); // true
+
+// Posting JSON Data with Error Handling
+axios.post('https://api.company.com/inventory', {
+  name: 'Laptop',
+  quantity: 10,
+}).then(res => res.data)
+  .catch(err => console.error(err.response.data));
 ```
 
-- Preview the output in the query manager or click **Run** in the query panel to see the result of the calculation.
-
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/math-js-v2.png" alt="Use MathJs" />
-</div>
-
-</div>
-
-This guide provides a clear and detailed walkthrough for importing external JavaScript libraries into your ToolJet application.
+Use RunJS to easily import and leverage external JavaScript libraries in your ToolJet app for advanced data processing and logic.

@@ -47,7 +47,7 @@ select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our [transformations](/docs/tutorial/transformations) documentation to learn more.
+Query results can be transformed using transformations. Read our [transformations](/docs/beta/app-builder/custom-code/transform-data) documentation to learn more.
 :::
 
 </div>

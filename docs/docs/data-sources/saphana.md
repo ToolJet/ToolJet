@@ -3,7 +3,7 @@ id: saphana
 title: SAP HANA
 ---
 
-ToolJet can connect to SAP HANA databases to read and write data. 
+ToolJet can connect to SAP HANA databases to read and write data.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -42,6 +42,7 @@ select * from PRODUCTS
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/beta/app-builder/custom-code/transform-data)**
 :::
+
 </div>

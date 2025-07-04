@@ -10,6 +10,7 @@ ToolJet offers the capability to establish a connection with Azure Blob storage 
 To establish a connection with the Azure Blob data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Azure Blob as the data source.
 
 ToolJet requires the following to connect to your Azure Blob.
+
 - **Connection String**
 
 <div style={{textAlign: 'center'}}>
@@ -18,7 +19,7 @@ ToolJet requires the following to connect to your Azure Blob.
 
 </div>
 
-<div style={{paddingTop:'24px'}}> 
+<div style={{paddingTop:'24px'}}>
 
 ## Querying Azure Blob
 
@@ -28,7 +29,7 @@ ToolJet requires the following to connect to your Azure Blob.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 :::tip
-Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/tutorial/transformations)**.
+Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/beta/app-builder/custom-code/transform-data)**.
 :::
 
 <div style={{textAlign: 'center'}}>
@@ -39,7 +40,7 @@ Query results can be transformed using Transformation. For more information on t
 
 </div>
 
-<div style={{paddingTop:'24px'}}> 
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -50,13 +51,13 @@ Query results can be transformed using Transformation. For more information on t
 5. **[Read blob](#read-blob)**
 6. **[Delete blob](#delete-blob)**
 
-
 ### Create Container
 
 The create container operation enables the creation of new containers within Azure Blob storage. Containers serve as logical units for organizing and managing blob data. Users can provide a unique name for the container. Once created, the container is available for use in storing and organizing blob data. If the container with the same name already exists, the operation fails.
 
 #### Required Parameters
-- **Container Name** 
+
+- **Container Name**
 
 <div style={{textAlign: 'center'}}>
 
@@ -76,7 +77,7 @@ The list container operation allows you to retrieve a list of containers within 
 
 ### List Blobs
 
-The list blobs operation enables you to retrieve a list of blobs within a specific container in Azure Blob storage. 
+The list blobs operation enables you to retrieve a list of blobs within a specific container in Azure Blob storage.
 
 #### Required Parameter
 

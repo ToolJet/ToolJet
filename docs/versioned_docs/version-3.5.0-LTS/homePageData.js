@@ -104,7 +104,7 @@ export const dataCards = [
         title: "Data Source Library",
         color: "text-blue-500",
         content: "Browse ToolJet's data source library to connect with databases, APIs, and external services seamlessly.",
-        href: "/docs/tooljet-concepts/what-are-datasources/"
+        href: "/docs/data-sources/overview"
     },
     {
         icon: Wand2,
