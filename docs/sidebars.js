@@ -267,6 +267,7 @@ const sidebars = {
                     'widgets/rich-text-editor',
                     'widgets/timeline',
                     'widgets/timer',
+                    'widgets/time-picker',
                     'widgets/toggle-switch-v2',
                     'widgets/tree-select',
                     'widgets/vertical-divider',
