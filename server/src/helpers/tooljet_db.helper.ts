@@ -244,7 +244,7 @@ export function validateTjdbJSONBColumnInputs(jsonbColumnList: Array<string>, in
         } else {
           inValidValueColumnsList.push(key);
         }
-      } catch (error) {
+      } catch {
         inValidValueColumnsList.push(key);
       }
     }
