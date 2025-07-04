@@ -265,10 +265,9 @@ export const createQueryPanelSlice = (set, get) => ({
           onError: (e) => {
             handleFailure({
               status: 'failed',
-              data: {
-                message: e.message || 'Error in async processing',
-                error: e.error,
-              },
+              message: e?.error?.message || 'Error running workflow',
+              description: e?.error?.description || null,
+              data: typeof e?.error === 'object' ? { ...e.error } : e?.error,
             });
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
@@ -635,8 +634,9 @@ export const createQueryPanelSlice = (set, get) => ({
           })
           .catch((e) => {
             const { error } = e;
-            if (mode !== 'view') toast.error(error ?? 'Unknown error');
-            resolve({ status: 'failed', message: error });
+            const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
+            if (mode !== 'view') toast.error(errorMessage);
+            resolve({ status: 'failed', message: errorMessage });
           });
       });
     },

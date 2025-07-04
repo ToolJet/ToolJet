@@ -5,6 +5,7 @@ import { User } from 'src/entities/user.entity';
 import { Response } from 'express';
 import { IWorkflowExecutionsService } from '../interfaces/IWorkflowExecutionsService';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 @Injectable()
 export class WorkflowExecutionsService implements IWorkflowExecutionsService {
@@ -14,11 +15,27 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     throw new Error('Method not implemented.');
   }
 
-  async execute(workflowExecution: WorkflowExecution, params: any, envId: string, response: any): Promise<any> {
+  async execute(
+    workflowExecution: WorkflowExecution,
+    params: Record<string, any>,
+    envId: string,
+    response: Response,
+    throwOnError?: boolean,
+    executionStartTime?: Date
+  ): Promise<QueryResult> {
     throw new Error('Method not implemented.');
   }
 
-  async getStatus(workflowExecutionId: string): Promise<{ logs: string[]; status: boolean; nodes: any[] }> {
+  async getStatus(workflowExecutionId: string): Promise<{
+    logs: unknown;
+    status: boolean;
+    nodes: Array<{
+      id: string;
+      idOnDefinition: string;
+      executed: boolean;
+      result: unknown;
+    }>;
+  }> {
     throw new Error('Method not implemented.');
   }
 
@@ -33,7 +50,7 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
   async previewQueryNode(
     queryId: string,
     nodeId: string,
-    state: object,
+    state: Record<string, any>,
     appVersion: AppVersion,
     user: User,
     response: Response
