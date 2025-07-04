@@ -35,7 +35,7 @@ Under the Queries section, you can inspect the specifics of any query you’ve c
 - **rawData** – The original response fetched from the data source.
 - **id** – A unique identifier automatically assigned to every query in ToolJet.
 
-Refer to the [Binding Data with Component](/docs/app-builder/connecting-with-data-sources/binding-data-to-components) guide to learn how to bind the query data to the component.
+Refer to the [Binding Data with Component](/docs/beta/app-builder/connecting-with-data-sources/binding-data-to-components) guide to learn how to bind the query data to the component.
 
 ### Components
 

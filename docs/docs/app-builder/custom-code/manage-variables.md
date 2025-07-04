@@ -5,7 +5,7 @@ title: Managing Variables
 
 Variables in ToolJet allow you to store and manage temporary data across pages or within a single page. They’re useful for passing values between components, persisting state, and building dynamic applications.
 
-This guide explains how to manage [variables](docs/app-builder/events/variables) using code in your applications.
+This guide explains how to manage [variables](/docs/beta/app-builder/events/use-case/variables) using code in your applications.
 
 ## Set, Get, and Unset Variables
 
