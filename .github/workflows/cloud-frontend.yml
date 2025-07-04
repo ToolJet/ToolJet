@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy (must start with lts/)'
+        description: 'Git branch to deploy (must start with "lts-", e.g., lts-3.6)'
         required: true
-        default: 'lts/latest'
 
 jobs:
   build:
@@ -14,27 +13,20 @@ jobs:
 
     steps:
 
-      # - name: Check authorization
-      #   run: |
-      #     allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
-      #     allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
-      #     allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+      - name: Check user authorization
+        run: |
+          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
 
-      #     if [[ "${{ github.actor }}" != "$allowed_user1" && \
-      #           "${{ github.actor }}" != "$allowed_user2" && \
-      #           "${{ github.actor }}" != "$allowed_user3" ]]; then
-      #       echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
-      #       exit 1
-      #     else
-      #       echo "✅ User '${{ github.actor }}' is authorized."
-      #     fi
-
-      # - name: Validate branch prefix
-      #   run: |
-      #     if [[ "${{ github.event.inputs.branch }}" != lts/* ]]; then
-      #       echo "❌ Branch name must start with 'lts/'"
-      #       exit 1
-      #     fi
+          if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                "${{ github.actor }}" != "$allowed_user2" && \
+                "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '${{ github.actor }}' is authorized."
+          fi
 
       - name: Checkout code (with submodules)
         uses: actions/checkout@v4
@@ -50,21 +42,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Build the project
-        run: npm run build:plugins:prod && npm run build:frontend
-        env:
-          GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
-          NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
-          NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
-          SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
-          SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
-          TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
-          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
-          TOOLJET_EDITION: cloud
 
       - name: Deploy to Netlify
         run: |
@@ -83,6 +60,3 @@ jobs:
           TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           TOOLJET_EDITION: cloud
-
-      - name: ✅ Deployment complete
-        run: echo "🎉 Deployment to Netlify successful for branch ${{ github.event.inputs.branch }} by ${{ github.actor }}"
