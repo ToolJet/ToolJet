@@ -14,6 +14,7 @@ import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/comm
 import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { workflowDefaultSources } from '../constants';
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, staticDataSources }) {
   const dataSources = useDataSources();
@@ -31,6 +32,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     setPreviewData(null);
     closePopup();
   };
+
+  function cleanWord(word) {
+    return word.replace(/default/g, '');
+  }
 
   useEffect(() => {
     const shouldAddSampleDataSource = !!sampleDataSource;
@@ -146,7 +151,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
         label: (
           <div>
             <DataSourceIcon source={source} height={16} />{' '}
-            <span className="ms-1 small">{source?.name ?? source.kind}</span>
+            <span className="ms-1 small"> {workflowDefaultSources[cleanWord(source.name)]?.name}</span>
           </div>
         ),
         value: source.name,

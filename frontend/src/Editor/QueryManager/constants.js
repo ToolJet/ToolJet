@@ -106,3 +106,10 @@ export const defaultSources = {
   runpy: { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
   workflows: { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 };
+
+export const workflowDefaultSources = {
+  ...defaultSources,
+  'If condition': { kind: 'if', id: 'if', name: 'If condition' },
+  Response: { kind: 'response', id: 'response', name: 'Response' },
+  Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
+};
