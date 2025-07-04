@@ -28,13 +28,6 @@ jobs:
             echo "✅ User '${{ github.actor }}' is authorized."
           fi
 
-      # - name: Validate branch prefix
-      #   run: |
-      #     if [[ "${{ github.event.inputs.branch }}" != lts/* ]]; then
-      #       echo "❌ Branch name must start with 'lts/'"
-      #       exit 1
-      #     fi
-
       - name: Checkout code (with submodules)
         uses: actions/checkout@v4
         with:
