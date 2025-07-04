@@ -57,10 +57,13 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
     },
-    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas') => {
+    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas', queryName) => {
+      let name;
       const appVersionId = get().currentVersionId;
       const appId = get().appStore.modules[moduleId].app.appId;
-      const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource);
+      const { options: defaultOptions, name: nameFromDefaultOptions } = getDefaultOptions(selectedDataSource);
+      if (!queryName) name = nameFromDefaultOptions;
+      else name = queryName;
       const options = { ...defaultOptions, ...customOptions };
       const kind = selectedDataSource.kind;
       const tempId = uuidv4();
@@ -77,6 +80,7 @@ export const createDataQuerySlice = (set, get) => ({
       setIsAppSaving(true);
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
+      const runOnCreate = options.runOnCreate;
       set((state) => {
         state.dataQuery.queries.modules[moduleId] = [
           {
@@ -111,7 +115,7 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
-          setSelectedQuery(data.id, moduleId);
+          setSelectedQuery(data.id, data);
           if (shouldRunQuery) setQueryToBeRun(data);
 
           /** Checks if there is an API call cached. If yes execute it */
@@ -131,16 +135,16 @@ export const createDataQuerySlice = (set, get) => ({
 
           get().addNewQueryMapping(data.id, data.name, moduleId);
           //! we need default value in store so that query can be resolved if referenced from other entity
-          get().setResolvedQuery(
-            data.id,
-            {
-              isLoading: false,
-              data: [],
-              rawData: [],
-              id: data.id,
-            },
-            moduleId
-          );
+          get().setResolvedQuery(data.id, {
+            isLoading: false,
+            data: [],
+            rawData: [],
+            id: data.id,
+          });
+
+          if (runOnCreate) {
+            get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);
+          }
         })
         .catch((error) => {
           set((state) => {
