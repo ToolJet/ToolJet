@@ -2230,10 +2230,10 @@ tr:focus {
 #popover-app-menu {
   border-radius: 4px;
   width: 150px;
-  box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
-  background: var(--base);
-  color: var(--slate12);
-  border: 1px solid var(--slate3);
+  box-shadow: var(--elevation-200-box-shadow);
+  background: var(--surfaces-surface-01);
+  color: var(--text-default);
+  border: 1px solid var(--border-default);
 
   .popover-arrow {
     display: none;
@@ -3708,6 +3708,7 @@ input:focus-visible {
 
 .nav-tabs {
   font-weight: 300;
+  border-bottom: 1px solid var(--border-weak);
 }
 
 .nav-tabs .nav-link.active {
@@ -3728,7 +3729,9 @@ input:focus-visible {
 }
 
 input[type="text"] {
-  outline-color: #dadcde !important;
+  outline-color: var(--border-default) !important;
+  border-color: var(--border-default) !important;
+
 }
 
 .widget-header {
@@ -6530,9 +6533,9 @@ a.step-item-disabled {
 
   .card {
     min-width: 400px;
-    background: var(--base);
-    color: var(--slate12);
-    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+    background: var(--surfaces-surface-01);
+    color: var(--text-default);
+    box-shadow: var(--elevation-400-box-shadow);
   }
 
   .card-footer {
@@ -9708,7 +9711,7 @@ tbody {
   border: 1px solid var(--slate5);
   border-radius: 6px;
   margin: 10px auto;
-  background-color: #FFFFFF;
+  background-color: var(--page-weak);
   display: flex;
   flex-direction: column;
 
@@ -9743,7 +9746,7 @@ tbody {
   .worskspace-sub-header-wrap-nav-ws {
     width: 100%;
     height: 64px;
-    border-bottom: 1px solid var(--slate5);
+    border-bottom: 1px solid var(--surfaces-surface-01);
     display: flex;
 
     .nav-link.active {
@@ -9840,30 +9843,29 @@ tbody {
 }
 
 .manage-workspace-table-wrap.dark-mode {
-  border: 1px solid var(--slate7) !important;
+  border: 1px solid var(--border-weak) !important;
   border-radius: 6px !important;
-  ;
 
   .worskspace-sub-header-wrap-nav-ws {
-    background-color: var(--slate3) !important;
-    border-bottom: 1px solid var(--slate7) !important;
+    background-color: var(--surfaces-surface-01) !important;
+    border-bottom: 1px solid var(--border-weak) !important;
 
   }
 
   .tab-content-ws {
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
   }
 
   .pagination-container-box {
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
   }
 
   .workspace-table-row {
-    border-bottom: 1px solid var(--slate7);
+    border-bottom: 1px solid var(--border-weak);
   }
 
   .worspace-list-table-body-header {
-    border-bottom: 1px solid var(--slate7);
+    border-bottom: 1px solid var(--border-weak);
   }
 
 }
@@ -9878,8 +9880,7 @@ tbody {
 
 .workspace-setting-table-wrapper {
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
-  outline: 1px solid var(--slate7);
-  background: var(--base);
+  outline: 1px solid var(--border-weak);
   width: 880px;
   margin: 0 auto;
   border-radius: 6px;
@@ -11763,13 +11764,13 @@ tbody {
   padding: 16px 24px;
   gap: 8px;
   height: 72px;
-  border-top: 1px solid var(--slate5);
-  background: var(--base);
+  border-top: 1px solid var(--border-weak);
+  background: var(--surfaces-surface-01);
 }
 
 .drawer-card-title {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--slate5);
+  border-bottom: 1px solid var(--border-weak);
   height: 64px;
 
   h3 {
