@@ -66,10 +66,15 @@ jobs:
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           TOOLJET_EDITION: cloud
 
-      - name: Deploy to Netlify
+      - name: Deploy to Netlify (clean output)
         run: |
           npm install -g netlify-cli
-          netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }}
+          netlify deploy --prod --dir=frontend/build \
+            --auth=$NETLIFY_AUTH_TOKEN \
+            --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }} 2>&1 | awk '
+              /^🚀 Deploy complete/ { print; exit }
+              { print }
+            '
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
