@@ -269,8 +269,10 @@ export const Container = React.memo(
           ...styles,
         }}
         className={cx('real-canvas', {
-          'sub-canvas': id !== 'canvas',
-          'show-grid': isOverCurrent && (index === 0 || index === null) && currentMode === 'edit',
+          'sub-canvas': id !== 'canvas' && appType !== 'module',
+          'show-grid':
+            isOverCurrent && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          'module-container': appType === 'module',
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"
