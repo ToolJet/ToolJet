@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { ICacheService } from './interfaces/IUtilService';
 
 @Injectable()
-export class InMemoryCacheService {
+export class InMemoryCacheService implements ICacheService {
   private static cacheStore: Map<string, Promise<any>> = new Map();
 
   set(key: string, value: Promise<any>): void {

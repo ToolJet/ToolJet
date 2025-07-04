@@ -11,8 +11,8 @@ import { AppsRepository } from '@modules/apps/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SessionModule } from '@modules/session/module';
-import { InMemoryCacheService } from '@helpers/in_memory_cache.service';
 import { SubModule } from '@modules/app/sub-module';
+import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -41,6 +41,7 @@ export class DataSourcesModule extends SubModule {
         await InstanceSettingsModule.register(configs),
         await TooljetDbModule.register(configs),
         await SessionModule.register(configs),
+        await InMemoryCacheModule.register(configs),
       ],
       providers: [
         DataSourcesService,
@@ -54,7 +55,6 @@ export class DataSourcesModule extends SubModule {
         FeatureAbilityFactory,
         OrganizationsService,
         OrganizationRepository,
-        InMemoryCacheService,
       ],
       controllers: [DataSourcesController],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
