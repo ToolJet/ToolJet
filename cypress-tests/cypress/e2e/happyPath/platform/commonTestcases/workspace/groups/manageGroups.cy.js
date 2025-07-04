@@ -149,10 +149,10 @@ describe("Manage Groups", () => {
     common.navigateToManageGroups();
 
     // Verify page headers
-    // cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-    //   expect($el.contents().first().text().trim()).to.eq("Workspace settings");
-    // });
-    // cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement("have.text", " Groups");
+    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq("Workspace settings");
+    });
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement("have.text", " Groups");
 
     // Verify base group elements
     groups.manageGroupsElements();

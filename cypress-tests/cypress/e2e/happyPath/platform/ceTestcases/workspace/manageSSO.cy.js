@@ -25,11 +25,11 @@ describe("Manage SSO for multi workspace", () => {
     SSO.defaultSSO(true);
 
     common.navigateToManageSSO();
-    // cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-    //   expect($el.contents().first().text().trim()).to.eq(
-    //     commonText.breadcrumbworkspaceSettingTitle
-    //   );
-    // });
+    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq(
+        commonText.breadcrumbworkspaceSettingTitle
+      );
+    });
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
       "Workspace login"

@@ -283,15 +283,15 @@ describe("dashboard", () => {
       commonText.logoutLink
     );
 
-    // cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-    //   expect($el.contents().first().text().trim()).to.eq(
-    //     commonText.breadcrumbApplications
-    //   );
-    // });
-    // cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-    //   "have.text",
-    //   dashboardText.dashboardAppsHeaderLabel
-    // );
+    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq(
+        commonText.breadcrumbApplications
+      );
+    });
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+      "have.text",
+      dashboardText.dashboardAppsHeaderLabel
+    );
 
     cy.get(dashboardSelector.versionLabel).verifyVisibleElement(
       "have.text",

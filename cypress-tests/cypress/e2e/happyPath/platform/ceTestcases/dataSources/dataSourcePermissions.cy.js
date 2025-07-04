@@ -59,9 +59,9 @@ describe("Datasource Manager", () => {
       "have.text",
       allDataSources
     );
-    // cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-    //   expect($el.contents().first().text().trim()).to.eq("Data sources");
-    // });
+    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq("Data sources");
+    });
 
     const categories = [
       {
@@ -91,13 +91,13 @@ describe("Datasource Manager", () => {
       },
     ];
 
-    // categories.forEach(({ selector, text, title }) => {
-    //   cy.get(selector).verifyVisibleElement("have.text", text).click();
-    //   cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-    //     "have.text",
-    //     title
-    //   );
-    // });
+    categories.forEach(({ selector, text, title }) => {
+      cy.get(selector).verifyVisibleElement("have.text", text).click();
+      cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+        "have.text",
+        title
+      );
+    });
 
     cy.get('[data-cy="added-ds-label"]').should(($el) => {
       expect($el.contents().first().text().trim()).to.eq("Data sources added");
@@ -139,10 +139,10 @@ describe("Datasource Manager", () => {
 
     cy.get(dataSourceSelector.databaseLabelAndCount).click();
     cy.get(commonSelectors.yesButton).click();
-    // cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-    //   "have.text",
-    //   " Databases"
-    // );
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+      "have.text",
+      " Databases"
+    );
     cy.get(`[data-cy="cypress-${data.dsName1}-postgresql-button"]`).click();
     cy.clearAndType(
       dataSourceSelector.dsNameInputField,
