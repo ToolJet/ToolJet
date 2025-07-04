@@ -1,4 +1,4 @@
-import { LICENSE_LIMIT, LICENSE_TYPE, PLAN_DETAILS } from '@modules/licensing/constants';
+import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
   BUSINESS_PLAN_TERMS,
