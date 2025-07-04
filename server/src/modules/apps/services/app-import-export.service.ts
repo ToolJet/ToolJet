@@ -1849,6 +1849,7 @@ export class AppImportExportService {
         key: key,
         value: options[key]['value'],
         encrypted: options[key]['encrypted'],
+        workspace_constant: options[key]['workspace_constant'],
       };
     });
   }

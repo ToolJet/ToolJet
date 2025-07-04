@@ -4,7 +4,8 @@ import {
   QueryError,
   QueryResult,
   QueryService,
-  cacheConnection,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
   getCachedConnection,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
@@ -143,13 +144,15 @@ export default class MssqlQueryService implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<Knex> {
     if (checkCache) {
-      let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
+      const optionsHash = generateSourceOptionsHash(sourceOptions);
+      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      let connection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
 
       if (connection) {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-        dataSourceId && cacheConnection(dataSourceId, connection);
+        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
         return connection;
       }
     } else {
