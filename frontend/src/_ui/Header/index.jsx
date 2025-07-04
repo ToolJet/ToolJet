@@ -71,9 +71,9 @@ function Header({
       <div className="row w-100 gx-0">
         {!collapseSidebar && (
           <div className="tj-dashboard-section-header" data-name={pathname}>
-            <div className="row">
+            <div className="row tw-w-full">
               <div className="col-9 d-flex">
-                <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
+                <p className="tj-text-md font-weight-500 text-black-000" data-cy="dashboard-section-header">
                   {pathname}
                 </p>
                 {routesWithTags(pathname) && (
@@ -117,7 +117,7 @@ function Header({
           </div>
         )}
         <div className="col tj-dashboard-header-wrap">
-          <div className="d-flex justify-content-sm-between">
+          <div className="d-flex justify-content-sm-between tw-w-full">
             {enableCollapsibleSidebar && collapseSidebar && (
               <ToolTip message="Open sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
                 <div className="pe-3">

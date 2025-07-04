@@ -44,16 +44,18 @@ const ConstantTable = ({
 
   return (
     <div>
-      <div className="card constant-table-card" style={{ border: 'none' }}>
+      <div className="constant-table-card" style={{ border: 'none' }}>
         <div
-          className="fixedHeader table-responsive px-2"
+          className="fixedHeader table-responsive"
           ref={tableRef}
           style={{ maxHeight: tableRef.current && calculateOffset() }}
         >
           <table className="table table-vcenter mt-2" disabled={true}>
             <thead>
               <tr>
-                <th data-cy="workspace-variable-table-name-header">Name</th>
+                <th className="!tw-pl-4" data-cy="workspace-variable-table-name-header">
+                  Name
+                </th>
                 <th data-cy="workspace-variable-table-value-header">Value</th>
                 {canUpdateDeleteConstant && (
                   <th className="w-1" style={{ paddingRight: '16px' }}>
@@ -99,7 +101,7 @@ const ConstantTable = ({
                 {constants.map((constant) => {
                   return (
                     <tr key={constant.id}>
-                      <td className="p-3-constants">
+                      <td className="p-3-constants !tw-pl-4">
                         <span
                           data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}
                           data-tooltip-id="tooltip-for-org-constant-cell"

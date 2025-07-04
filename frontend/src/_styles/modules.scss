@@ -1,6 +1,7 @@
-.apps-modules-tabs {
-    .nav-link {
-        background-color: var(--page-default);
+.apps-modules-tabs.nav-tabs {
+    .nav-link,
+    ul > li.nav-link.active {
+        background-color: var(--page-weak);
     }
 
     .nav-link.active {

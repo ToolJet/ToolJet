@@ -8,6 +8,7 @@ import { ListItem } from '../TableListItem';
 import { BreadCrumbContext } from '../../App/App';
 import Search from '../Search';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Button } from '@/components/ui/Button/Button';
 
 const List = () => {
   const {
@@ -83,15 +84,23 @@ const List = () => {
           <>
             <span>All tables ({filteredTables.length})</span>
 
-            <div
-              className="folder-create-btn search-icon-wrap"
+            <Button
+              size="medium"
+              variant="ghost"
+              iconOnly
+              ariaLabel="Search for folders"
               onClick={() => {
                 setShowInput(true);
               }}
               data-cy="create-new-folder-button"
             >
-              <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
-            </div>
+              <SolidIcon
+                name="search"
+                width="14"
+                fill={darkMode ? '#CFD3D8E6' : '#6A727C'}
+                className="tw-relative tw-top-[2px]"
+              />
+            </Button>
           </>
         ) : (
           <Search

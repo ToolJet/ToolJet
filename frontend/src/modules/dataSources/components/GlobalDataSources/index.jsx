@@ -249,7 +249,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
           <div className="datasource-search-holder">
             <SearchBox
               dataCy={`home-page`}
-              className="border-0 homepage-search"
+              className="border-0"
               darkMode={darkMode}
               placeholder={`Search data sources`}
               initialValue={queryString}
@@ -260,7 +260,6 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
                 setSuggestingDataSource(false);
               }}
             />
-            <div className="liner mb-4"></div>
           </div>
           {suggestingDataSource ? (
             <center className="empty-ds-container">
@@ -307,7 +306,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       }, 100);
     };
     return (
-      <div>
+      <div className="tw-pt-4">
         <SegregatedList
           handleOnSelect={handleOnSelect}
           activeDatasourceList={activeDatasourceList}
@@ -375,6 +374,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
                 width={'35px'}
                 actionButton={addDataSourceBtn(item)}
                 className="datasource-card"
+                cardClassName="card--clickable"
                 titleClassName={'datasource-card-title'}
                 tags={tags}
               />

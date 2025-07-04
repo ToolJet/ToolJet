@@ -26,8 +26,8 @@ const AppList = (props) => {
         </>
       )}
       {!props.isLoading && props.meta.total_count > 0 && (
-        <div className="container px-0">
-          <div className="row homepage-app-card-list-item-wrap">
+        <div className="">
+          <div className="homepage-app-card-list-item-wrap">
             {props.apps.map((app) => {
               return (
                 <div className="homepage-app-card-list-item" key={app.id}>

@@ -1,0 +1,249 @@
+.layout-header .tj-dashboard-header-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--page-weak);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 40px;
+  height: 48px;
+  border-bottom: 1px solid var(--border-weak);
+
+  @media only screen and (max-width: 768px) {
+    border-bottom: none;
+  }
+}
+
+.tooljet-database {
+  .search-icon-wrap svg {
+    position: relative;
+    top: 1px;
+    left: 1px;
+  }
+  .create-new-table-btn {
+    width: 248px;
+
+    button {
+      height: 40px !important;
+    }
+  }
+
+  .tooljet-database-sidebar {
+    max-width: 288px;
+    background: var(--page-weak);
+    border-right: 1px solid var(--border-weak);
+    height: calc(100vh - 48px) !important;
+
+    .sidebar-container {
+      height: 40px !important;
+      margin: 12px auto 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .sidebar-container-with-banner {
+      height: 40px !important;
+      padding-top: 1px !important;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+  // TABLE
+  .table-left-sidebar {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .toojet-db-table-footer {
+    height: 52px;
+    background: var(--page-weak) !important;
+    width: calc(100vw - 336px);
+  }
+
+  .toojet-db-table-footer-collapse {
+    height: 52px;
+    background: var(--page-weak) !important;
+    width: calc(100vw - 48px);
+  }
+
+  .toojet-db-table-footer-collapse {
+    height: 52px;
+    background: var(--page-weak) !important;
+    width: calc(100vw - 48px);
+  }
+
+  .database-page-content-wrap {
+    background-color: var(--page-weak);
+    height: calc(100vh - 64px) !important;
+  }
+
+  .instance-settings-wrapper {
+  }
+
+  .database-page-content-wrap {
+    height: calc(100vh - 64px) !important;
+  }
+
+  .empty-table-description {
+    font-size: 14px !important;
+    line-height: 20px !important;
+    margin-top: 5px !important;
+  }
+
+  .empty-table-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 95px);
+  }
+
+  .tjdb-create-new-table {
+    width: 180px !important;
+    margin: 0px auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .tj-db-operations-header {
+    height: 56px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    background-color: var(--page-weak);
+
+    .row {
+      margin-left: 0px;
+      width: 98%;
+    }
+
+    .col-8 {
+      padding-left: 0px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+  }
+
+  .add-new-column-btn {
+    margin-left: 16px;
+    height: 28px;
+    border-radius: 6px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--slate12);
+    border: none;
+  }
+
+  .tj-db-filter-btn {
+    width: 100%;
+    height: 28px;
+    display: flex;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--slate12);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tj-db-filter-btn-applied,
+  .tj-db-sort-btn-applied {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 28px !important;
+    background: var(--grass2) !important;
+    border-radius: 6px !important;
+  }
+
+  .tj-db-filter-btn-applied,
+  .tj-db-filter-clear-icon {
+    background-color: var(--indigo4) !important;
+    color: var(--indigo9) !important;
+
+    &:hover {
+      background-color: var(--button-secondary-pressed) !important;
+    }
+  }
+
+  .tj-db-filter-clear-icon {
+    border-radius: 0px 6px 6px 0px;
+  }
+
+  .tj-db-filter-btn-active,
+  .tj-db-sort-btn-active {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    background: var(--indigo4) !important;
+    color: var(--indigo9) !important;
+  }
+
+  .tj-db-filter-btn-active {
+    background: var(--button-outline-pressed) !important;
+    color: var(--text-default) !important;
+  }
+
+  .tj-db-filter-btn-active-filter {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    background: var(--button-secondary-pressed) !important;
+    color: var(--text-brand) !important;
+  }
+
+  .tj-db-header-add-new-row-btn {
+    height: 28px;
+    background: transparent;
+    border-radius: 6px !important;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    border: none;
+
+    padding: span {
+
+    }
+  }
+
+  .tj-db-sort-btn {
+    width: 100%;
+    height: 28px;
+    background: transparent;
+    color: var(--slate12);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .edit-row-btn {
+    background: transparent;
+    color: var(--slate12);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

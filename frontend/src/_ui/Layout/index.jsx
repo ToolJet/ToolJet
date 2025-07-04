@@ -148,7 +148,7 @@ function Layout({
           collapseSidebar={collapseSidebar}
           toggleCollapsibleSidebar={toggleCollapsibleSidebar}
         />
-        <div style={{ paddingTop: 64 }}>{children}</div>
+        <div style={{ paddingTop: 48 }}>{children}</div>
       </div>
       <ConfirmDialog
         title={'Unsaved Changes'}

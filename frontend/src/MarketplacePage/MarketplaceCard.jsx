@@ -52,7 +52,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
 
   return (
     <div className="col-sm-6 col-lg-4">
-      <div className="plugins-card card-borderless">
+      <div className="card plugins-card card-borderless">
         <div className="card-body card-body-alignment">
           <div className="row align-items-center">
             <div className="col-auto">

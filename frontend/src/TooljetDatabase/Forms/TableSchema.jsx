@@ -368,6 +368,12 @@ function TableSchema({
                     isDisabled={
                       isEditMode && columnDetails[index]?.constraints_type?.is_primary_key === true ? true : false
                     }
+                    classNames={{
+                      control: (state) => cx({
+                        '!tw-border-border-default': true,
+                      }),
+                      
+                    }}
                   />
                 </div>
               </ToolTip>
