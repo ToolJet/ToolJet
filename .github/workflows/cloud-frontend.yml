@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy (must start with lts/)'
+        description: 'Branch to deploy (must start with "lts")'
         required: true
-        default: 'lts/latest'
+
 
 jobs:
   build:
@@ -51,30 +51,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # - name: Build the project
-      #   run: npm run build:plugins:prod && npm run build:frontend
-      #   env:
-      #     GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
-      #     NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
-      #     NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
-      #     SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
-      #     SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
-      #     SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
-      #     SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
-      #     SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
-      #     TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
-      #     TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
-      #     TOOLJET_EDITION: cloud
-
-      - name: Deploy to Netlify (clean output)
+      - name: Deploy to Netlify
         run: |
           npm install -g netlify-cli
-          netlify deploy --prod --dir=frontend/build \
-            --auth=$NETLIFY_AUTH_TOKEN \
-            --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }} 2>&1 | awk '
-              /^🚀 Deploy complete/ { print; exit }
-              { print }
-            '
+          netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
