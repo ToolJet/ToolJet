@@ -21,7 +21,7 @@ import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { OrganizationConstantsUtilService } from '@modules/organization-constants/util.service';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
-import { InMemoryCacheService } from '@modules/inMemoryCache/util.service';
+import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
