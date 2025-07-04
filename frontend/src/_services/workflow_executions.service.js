@@ -10,6 +10,8 @@ export const workflowExecutionsService = {
   all,
   enableWebhook,
   previewQueryNode,
+  getPaginatedExecutions,
+  getPaginatedNodes,
   trigger,
   streamSSE,
 };
@@ -90,4 +92,20 @@ function streamSSE(workflowExecutionId) {
   return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
     withCredentials: true,
   });
+}
+
+function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&page=${page}&per_page=${perPage}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function getPaginatedNodes(executionId, page = 1, perPage = 20) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workflow_executions/${executionId}/nodes?page=${page}&per_page=${perPage}`,
+    requestOptions
+  ).then(handleResponse);
 }
