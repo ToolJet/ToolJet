@@ -498,10 +498,7 @@ const useAppData = (
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
-        console.log('App data loaded successfully', {
-          state,
-          moduleMode,
-        });
+
         if (
           !moduleMode &&
           state?.prompt &&

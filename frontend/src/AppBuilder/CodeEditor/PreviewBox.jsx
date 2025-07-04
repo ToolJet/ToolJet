@@ -332,6 +332,7 @@ const PreviewContainer = ({
     currentValue,
   } = restProps;
 
+  const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
   const fetchErrorFixUsingAi = useStore((state) => state.fetchErrorFixUsingAi);
   const clearChatHistory = useStore((state) => state.clearChatHistory);
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow); // TODO: check if moduleId needs to be passed here
@@ -339,7 +340,7 @@ const PreviewContainer = ({
   const componentName = componentDefinition?.component?.name;
   const componentKey = `${componentName} - ${fieldMeta?.displayName}`;
 
-  const chatList = useStore((state) => state.fixWithAiSlice[componentId]?.[componentKey]?.chatHistory ?? []);
+  const chatList = useStore((state) => state.fixWithAiSlice?.[componentId]?.[componentKey]?.chatHistory ?? []);
 
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -462,15 +463,17 @@ const PreviewContainer = ({
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
 
-                <Button
-                  size="medium"
-                  variant="outline"
-                  leadingIcon="tooljetai"
-                  className="mt-2"
-                  onClick={handleFixErrorWithAI}
-                >
-                  Fix with AI
-                </Button>
+                {aiFeaturesEnabled && (
+                  <Button
+                    size="medium"
+                    variant="outline"
+                    leadingIcon="tooljetai"
+                    className="mt-2"
+                    onClick={handleFixErrorWithAI}
+                  >
+                    Fix with AI
+                  </Button>
+                )}
               </Alert>
             </div>
           )}

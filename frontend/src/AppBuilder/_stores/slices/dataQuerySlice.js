@@ -135,12 +135,16 @@ export const createDataQuerySlice = (set, get) => ({
 
           get().addNewQueryMapping(data.id, data.name, moduleId);
           //! we need default value in store so that query can be resolved if referenced from other entity
-          get().setResolvedQuery(data.id, {
-            isLoading: false,
-            data: [],
-            rawData: [],
-            id: data.id,
-          });
+          get().setResolvedQuery(
+            data.id,
+            {
+              isLoading: false,
+              data: [],
+              rawData: [],
+              id: data.id,
+            },
+            moduleId
+          );
 
           if (runOnCreate) {
             get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);

@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
-import { isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { executeAction } from '@/_helpers/appUtils';
@@ -16,8 +16,6 @@ import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
-// import * as _ from 'lodash';
-const _ = require('lodash');
 
 export const reservedKeyword = ['app', 'window'];
 
