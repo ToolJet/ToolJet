@@ -10,7 +10,7 @@ import {
   licenseService,
   pluginsService,
 } from '@/_services';
-import { ConfirmDialog, AppModal } from '@/_components';
+import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
 import _, { sample, isEmpty } from 'lodash';
 import { Folders } from './Folders';
@@ -43,12 +43,12 @@ import {
   ImportAppMenu,
   AppActionModal,
   OrganizationList,
-  UserGroupMigrationBanner,
   ConsultationBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
 
 const { iconList, defaultIcon } = configs;
 
@@ -150,6 +150,10 @@ class HomePageComponent extends React.Component {
     this.fetchWorkflowsWorkspaceLimit();
     this.fetchOrgGit();
     this.setQueryParameter();
+
+    // Check module access permission
+    this.props.checkModuleAccess();
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
@@ -284,7 +288,7 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName });
+      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
@@ -306,11 +310,14 @@ class HomePageComponent extends React.Component {
   cloneApp = async (appName, appId) => {
     this.setState({ isCloningApp: true });
     try {
-      const data = await appsService.cloneResource({
-        app: [{ id: appId, name: appName }],
-        organization_id: this.state.currentUser?.organization_id,
-      });
-      toast.success('App cloned successfully!');
+      const data = await appsService.cloneResource(
+        {
+          app: [{ id: appId, name: appName }],
+          organization_id: this.state.currentUser?.organization_id,
+        },
+        this.props.appType
+      );
+      toast.success(`${this.getAppType()} cloned successfully!`);
       this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -410,8 +417,19 @@ class HomePageComponent extends React.Component {
         ));
       }
 
-      const data = await appsService.importResource(requestBody);
-      toast.success('App imported successfully.');
+      if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
+        toast.error(
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
+          } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
+          { style: { maxWidth: '425px' } }
+        );
+        this.setState({ isImportingApp: false });
+        return;
+      }
+
+      const data = await appsService.importResource(requestBody, this.props.appType);
+      toast.success(`${this.props.appType === 'module' ? 'Module' : 'App'} imported successfully.`);
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -449,7 +467,7 @@ class HomePageComponent extends React.Component {
         this.state.shouldAutoImportPlugin
       );
       this.setState({ deploying: false });
-      toast.success('App created successfully!', { position: 'top-center' });
+      toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -569,8 +587,7 @@ class HomePageComponent extends React.Component {
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
     appsService
-      .deleteApp(this.state.appToBeDeleted.id)
-      // eslint-disable-next-line no-unused-vars
+      .deleteApp(this.state.appToBeDeleted.id, this.props.appType)
       .then((data) => {
         toast.success(`${this.getAppType()} deleted successfully.`);
         this.fetchApps(
@@ -591,7 +608,6 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
-        console.log(error);
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -985,8 +1001,18 @@ class HomePageComponent extends React.Component {
     } = this.state;
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
-    // const invalidLicense = false;
+    const deleteModuleText =
+      'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
+    const getDisabledState = () => {
+      if (this.props.appType === 'module') {
+        return invalidLicense;
+      } else if (this.props.appType === 'front-end') {
+        return appsLimit?.percentage >= 100;
+      } else {
+        return workflowInstanceLevelLimit.percentage >= 100 || workflowWorkspaceLevelLimit.percentage >= 100;
+      }
+    };
     const modalConfigs = {
       create: {
         modalType: 'create',
@@ -1003,11 +1029,12 @@ class HomePageComponent extends React.Component {
         closeModal: () => this.setState({ showCloneAppModal: false }),
         processApp: this.cloneApp,
         show: () => this.setState({ showCloneAppModal: true }),
-        title: 'Clone app',
-        actionButton: 'Clone app',
+        title: `Clone ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `Clone ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Cloning',
         selectedAppId: appOperations?.selectedApp?.id,
         selectedAppName: appOperations?.selectedApp?.name,
+        appType: this.props.appType,
       },
       import: {
         modalType: 'import',
@@ -1159,7 +1186,11 @@ class HomePageComponent extends React.Component {
           <ConfirmDialog
             show={showAppDeletionConfirmation}
             message={this.props.t(
-              this.props.appType === 'workflow' ? 'homePage.deleteWorkflowAndData' : 'homePage.deleteAppAndData',
+              this.props.appType === 'workflow'
+                ? 'homePage.deleteWorkflowAndData'
+                : this.props.appType === 'front-end'
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1397,7 +1428,6 @@ class HomePageComponent extends React.Component {
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
-              <AppTypeTab appType={this.props.appType} navigate={this.props.navigate} darkMode={this.props.darkMode} />
               {this.canCreateApp() && (
                 <div className="create-new-app-license-wrapper">
                   <LicenseTooltip
@@ -1409,13 +1439,7 @@ class HomePageComponent extends React.Component {
                     <div className="create-new-app-wrapper">
                       <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                         <Button
-                          //disabled={appsLimit?.percentage >= 100}
-                          disabled={
-                            this.props.appType === 'front-end' || this.props.appType === 'module'
-                              ? appsLimit?.percentage >= 100 || (this.props.appType === 'module' && invalidLicense)
-                              : workflowInstanceLevelLimit.percentage >= 100 ||
-                                workflowWorkspaceLevelLimit.percentage >= 100
-                          }
+                          disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={() =>
                             this.setState({
@@ -1424,24 +1448,24 @@ class HomePageComponent extends React.Component {
                           }
                           data-cy="create-new-app-button"
                         >
-                          {isImportingApp && (
-                            <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                          )}
-                          {this.props.appType === 'module'
-                            ? 'Create new module'
-                            : this.props.t(
-                                `${
-                                  this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                }.header.createNewApplication`,
-                                'Create new app'
-                              )}
+                          <>
+                            {isImportingApp && (
+                              <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
+                            )}
+                            {this.props.appType === 'module'
+                              ? 'Create new module'
+                              : this.props.t(
+                                  `${
+                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                  }.header.createNewApplication`,
+                                  'Create new app'
+                                )}
+                          </>
                         </Button>
 
-                        {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
+                        {this.props.appType !== 'workflow' && (
                           <Dropdown.Toggle
-                            disabled={
-                              appsLimit?.percentage >= 100 || (this.props.appType === 'module' && invalidLicense)
-                            }
+                            disabled={getDisabledState()}
                             split
                             className="d-inline"
                             data-cy="import-dropdown-menu"
@@ -1449,30 +1473,41 @@ class HomePageComponent extends React.Component {
                         )}
                         <ImportAppMenu
                           darkMode={this.props.darkMode}
-                          showTemplateLibraryModal={this.showTemplateLibraryModal}
+                          showTemplateLibraryModal={
+                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
+                          }
                           featureAccess={featureAccess}
                           orgGit={orgGit}
-                          toggleGitRepositoryImportModal={this.toggleGitRepositoryImportModal}
+                          toggleGitRepositoryImportModal={
+                            this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
+                          }
                           readAndImport={this.readAndImport}
+                          appType={this.props.appType}
                         />
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
                 </div>
               )}
-              <Folders
-                foldersLoading={this.state.foldersLoading}
-                folders={this.state.folders}
-                currentFolder={currentFolder}
-                folderChanged={this.folderChanged}
-                foldersChanged={this.foldersChanged}
-                canCreateFolder={this.canCreateFolder()}
-                canDeleteFolder={this.canDeleteFolder()}
-                canUpdateFolder={this.canUpdateFolder()}
-                darkMode={this.props.darkMode}
-                canCreateApp={this.canCreateApp()}
-                appType={this.props.appType}
-              />
+              {this.props.appType === 'module' ? (
+                <div>
+                  <p></p>
+                </div>
+              ) : (
+                <Folders
+                  foldersLoading={this.state.foldersLoading}
+                  folders={this.state.folders}
+                  currentFolder={currentFolder}
+                  folderChanged={this.folderChanged}
+                  foldersChanged={this.foldersChanged}
+                  canCreateFolder={this.canCreateFolder()}
+                  canDeleteFolder={this.canDeleteFolder()}
+                  canUpdateFolder={this.canUpdateFolder()}
+                  darkMode={this.props.darkMode}
+                  canCreateApp={this.canCreateApp()}
+                  appType={this.props.appType}
+                />
+              )}
               {this.props.appType === 'front-end' && (
                 <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
               )}
@@ -1516,11 +1551,19 @@ class HomePageComponent extends React.Component {
             >
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
-                  <LicenseBanner
-                    classes="mt-3"
-                    limits={featureAccess}
-                    type={featureAccess?.licenseStatus?.licenseType}
-                  />
+                  <>
+                    <LicenseBanner
+                      classes="mt-3"
+                      limits={featureAccess}
+                      type={featureAccess?.licenseStatus?.licenseType}
+                    />
+                    <AppTypeTab
+                      appType={this.props.appType}
+                      navigate={this.props.navigate}
+                      darkMode={this.props.darkMode}
+                      hasModuleAccess={this.props.hasModuleAccess}
+                    />
+                  </>
                 ) : (
                   !appSearchKey && <HeaderSkeleton />
                 )}
@@ -1595,16 +1638,29 @@ class HomePageComponent extends React.Component {
                       }
                     />
                   ) : (
-                    <p className="empty-title mt-3">
-                      You have not created any modules.&nbsp;
-                      <a
+                    <div className="empty-module-container">
+                      <EmptyModuleSvg />
+                      <p className="empty-title mt-3">Create a module to reuse on the applications.</p>
+                      <ButtonSolid
+                        disabled={invalidLicense}
+                        leftIcon="folderdownload"
+                        isLoading={false}
                         onClick={this.openCreateAppModal}
-                        className={`text-bold ${this.props.appType === 'module' && invalidLicense ? 'disabled' : ''}`}
+                        data-cy="button-import-an-app"
+                        className="col"
+                        variant="tertiary"
                       >
-                        Create a module&nbsp;
-                      </a>
-                      to start using it within your apps.
-                    </p>
+                        <ToolTip
+                          show={invalidLicense}
+                          message="Modules are available only on paid plans"
+                          placement="bottom"
+                        >
+                          <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
+                            {'Create new module'}
+                          </label>
+                        </ToolTip>
+                      </ButtonSolid>
+                    </div>
                   ))}
                 {!isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
@@ -1668,15 +1724,25 @@ class HomePageComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { featureAccess, featuresLoaded } = useLicenseStore(
+  const { featureAccess, featuresLoaded, hasModuleAccess } = useLicenseStore(
     (state) => ({
       featureAccess: state.featureAccess,
       featuresLoaded: state.featuresLoaded,
+      hasModuleAccess: state.hasModuleAccess,
     }),
     shallow
   );
+  const { checkModuleAccess } = useLicenseStore((state) => state.actions, shallow);
 
-  return <Component {...props} featureAccess={featureAccess} featuresLoaded={featuresLoaded} />;
+  return (
+    <Component
+      {...props}
+      featureAccess={featureAccess}
+      featuresLoaded={featuresLoaded}
+      checkModuleAccess={checkModuleAccess}
+      hasModuleAccess={hasModuleAccess}
+    />
+  );
 };
 
 export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));

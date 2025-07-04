@@ -143,3 +143,9 @@ export const SAMPLE_DB_KIND = {
   POSTGRESQL: 'postgresql',
   TOOLJET_DB: 'tooljetdb',
 };
+
+export const PLANS = {
+  BUSINESS: 'business',
+  ENTERPRISE: 'enterprise',
+  TRIAL: 'trial',
+};

@@ -1,4 +1,4 @@
-import { DynamicModule, Type } from '@nestjs/common';
+import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -15,7 +15,9 @@ import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { SentryModule } from '@modules/observability/sentry/module';
 
 export class AppModuleLoader {
-  static async loadModules(configs: { IS_GET_CONTEXT: boolean }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
+  static async loadModules(configs: {
+    IS_GET_CONTEXT: boolean;
+  }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
     // Static imports that are always loaded
     const staticModules = [
       EventEmitterModule.forRoot({

@@ -189,9 +189,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     try {
       await dbTransactionWrap(async (manager: EntityManager) => {
-        const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          organizationId
+        );
         const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
-
         // if datasource is restapi then reset the token data
         if (dataSource.kind === 'restapi')
           options.push({
@@ -536,7 +538,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
 
       if (isMultiEnvEnabled) {
         await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
@@ -632,7 +637,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     let errorObj = {};
     try {
       errorObj = JSON.parse(error);
-    } catch (err) {
+    } catch (error) {
       errorObj['error_details'] = error;
     }
 
@@ -742,9 +747,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (existingAccessTokenCredentialId) {
       await this.credentialService.update(existingAccessTokenCredentialId, accessTokenDetails['access_token']);
 
-      existingRefreshTokenCredentialId &&
-        accessTokenDetails['refresh_token'] &&
-        (await this.credentialService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']));
+      if (existingRefreshTokenCredentialId && accessTokenDetails['refresh_token']) {
+        await this.credentialService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']);
+      }
     } else if (dataSourceId) {
       const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
       const updatedTokenData = this.changeCurrentToken(

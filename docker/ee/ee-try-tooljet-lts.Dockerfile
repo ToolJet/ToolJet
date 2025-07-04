@@ -6,14 +6,13 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 # Install Postgres
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN echo "deb http://deb.debian.org/debian"
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
-
 
 RUN apt update && apt -y install redis
 
@@ -23,11 +22,12 @@ RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql /var/li
     chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
 
 # Install Temporal Server Binaries
-RUN curl -OL https://github.com/temporalio/temporal/releases/download/v1.24.2/temporal_1.24.2_linux_amd64.tar.gz && \
-    tar -xzf temporal_1.24.2_linux_amd64.tar.gz && \
-    mv temporal-server /usr/bin/temporal-server && \
-    chmod +x /usr/bin/temporal-server && \
-    rm temporal_1.24.2_linux_amd64.tar.gz
+RUN curl -OL https://github.com/temporalio/temporal/releases/download/v1.28.0/temporal_1.28.0_linux_amd64.tar.gz \
+ && tar -xzf temporal_1.28.0_linux_amd64.tar.gz \
+ && mv temporal-server /usr/bin/temporal-server \
+ && mv temporal-sql-tool /usr/bin/temporal-sql-tool \
+ && chmod +x /usr/bin/temporal-server /usr/bin/temporal-sql-tool \
+ && rm temporal_1.28.0_linux_amd64.tar.gz
 
 # Install Temporal UI Server Binaries
 RUN curl -OL https://github.com/temporalio/ui-server/releases/download/v2.28.0/ui-server_2.28.0_linux_amd64.tar.gz && \
@@ -36,13 +36,21 @@ RUN curl -OL https://github.com/temporalio/ui-server/releases/download/v2.28.0/u
     chmod +x /usr/bin/temporal-ui-server && \
     rm ui-server_2.28.0_linux_amd64.tar.gz
 
-# Copy Temporal configuration files
-COPY ./docker/ee/temporal-server.yaml /etc/temporal/temporal-server.yaml
-COPY ./docker/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
 
-# Install grpcurl
-RUN apt update && apt install -y curl \
+# Install Git for schema extraction
+RUN apt update && apt install -y git && \
+    git clone --depth 1 --branch v1.28.0 https://github.com/temporalio/temporal.git /tmp/temporal && \
+    mkdir -p /etc/temporal/schema/postgresql && \
+    cp -r /tmp/temporal/schema/postgresql/v12 /etc/temporal/schema/postgresql/ && \
+    rm -rf /tmp/temporal
+
+# Install envsubst and grpcurl
+RUN apt update && apt install -y gettext-base curl \
     && curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.8.0/grpcurl_1.8.0_linux_x86_64.tar.gz | tar -xzv -C /usr/local/bin grpcurl
+
+# Copy Temporal configuration files
+COPY ./docker/ee/temporal-server.yaml /etc/temporal/temporal-server.template.yaml
+COPY ./docker/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
 
 # Configure Supervisor to manage PostgREST, ToolJet, and Redis
 RUN echo "[supervisord] \n" \
@@ -74,7 +82,6 @@ RUN echo "[supervisord] \n" \
     "stdout_logfile=/dev/stdout \n" \
     "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
 
-
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     TOOLJET_SERVER_URL=http://localhost \
@@ -86,6 +93,7 @@ ENV TOOLJET_HOST=http://localhost \
     PG_USER=tooljet \
     PG_PASS=postgres \
     PG_HOST=localhost \
+    PG_PORT=5432 \
     ENABLE_TOOLJET_DB=true \
     TOOLJET_DB_HOST=localhost \
     TOOLJET_DB_USER=tooljet \
@@ -109,6 +117,10 @@ ENV TOOLJET_HOST=http://localhost \
     TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS=tooljet-workflows \
     TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default \
     TEMPORAL_ADDRESS=localhost:7233 \
+    TEMPORAL_DB_HOST=localhost \
+    TEMPORAL_DB_PORT=5432 \
+    TEMPORAL_DB_USER=tooljet \
+    TEMPORAL_DB_PASS=postgres \
     TEMPORAL_CORS_ORIGINS=http://localhost:8080
 
 # Set the entrypoint
