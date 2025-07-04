@@ -11,6 +11,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_INVITED_USER_SESSION]: {
       isPublic: true,
     },
-    [FEATURE_KEY.GET_USER_SESSION]: {},
+    [FEATURE_KEY.GET_USER_SESSION]: {
+      isPublic: true,
+    },
   },
 };

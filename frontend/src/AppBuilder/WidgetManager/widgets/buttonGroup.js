@@ -120,7 +120,7 @@ export const buttonGroupConfig = {
       displayName: 'Selected background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     alignment: {
@@ -169,14 +169,14 @@ export const buttonGroupConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '' },
-      textColor: { value: '' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      textColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },
       selectedTextColor: { value: '#FFFFFF' },
       padding: { value: 'default' },
-      selectedBackgroundColor: { value: 'var(--primary-brand)' },
+      selectedBackgroundColor: { value: 'var(--cc-primary-brand)' },
       alignment: { value: 'left' },
     },
   },

@@ -1,30 +1,39 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { Organization } from '@entities/organization.entity';
-import { defaultAppEnvironments } from '@helpers/utils.helper';
+import { defaultAppEnvironments, getTooljetEdition } from '@helpers/utils.helper';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { filterEncryptedFromOptions } from '@helpers/migration.helper';
-import { ConfigService } from '@nestjs/config';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 
 export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    if (edition !== TOOLJET_EDITIONS.EE) {
+      console.log('Skipping migration as it is not EE edition');
+      return;
+    }
+
+    const entityManager = queryRunner.manager;
+    // Fetch all organizations with their app environments
+    const organizations = await entityManager.find(Organization, {
+      relations: ['appEnvironments'],
+    });
+
+    if (organizations?.length === 0) {
+      console.log('No organizations found, skipping migration.');
+      return;
+    }
+
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
-    const configs = nestApp.get(ConfigService);
-    const edition: TOOLJET_EDITIONS = configs.get<string>('TOOLJET_EDITIONS') as TOOLJET_EDITIONS;
     const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
     const { CredentialsService } = await import(
       `${await getImportPath(true, edition)}/encryption/services/credentials.service`
     );
     const encryptionService = nestApp.get(EncryptionService);
     const credentialService = nestApp.get(CredentialsService);
-    const entityManager = queryRunner.manager;
-
-    const organizations = await entityManager.find(Organization, {
-      relations: ['appEnvironments'],
-    });
 
     for (const organization of organizations) {
       const appEnvironments = organization.appEnvironments;

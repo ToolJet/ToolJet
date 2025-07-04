@@ -51,9 +51,7 @@ export const FEATURES_EE: FeaturesConfig = {
       license: LICENSE_FIELD.VALID,
       auditLogsKey: 'GRANULAR_PERMISSION_DATA_SOURCE_CREATE',
     },
-    [FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS]: {
-      license: LICENSE_FIELD.VALID,
-    },
+    [FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS]: {},
     [FEATURE_KEY.GET_ADDABLE_APPS]: {
       license: LICENSE_FIELD.VALID,
     },

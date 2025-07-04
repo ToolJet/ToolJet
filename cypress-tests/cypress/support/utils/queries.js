@@ -11,8 +11,9 @@ export const selectQueryFromLandingPage = (dbName, label) => {
 };
 
 export const deleteQuery = (queryName) => {
-  cy.get(`[data-cy="list-query-${queryName}"]`).realHover();
+  cy.get(`[data-cy="list-query-${queryName}"]`).click();
   cy.get(`[data-cy="delete-query-${queryName}"]`).click();
+  cy.get('[data-cy="component-inspector-delete-button"]').click()
 };
 
 export const query = (action) => {

@@ -136,7 +136,7 @@ export class AppsUtilService implements IAppsUtilService {
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: '#edeff5',
+        canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
         appMode: 'auto',
       };
@@ -169,7 +169,10 @@ export class AppsUtilService implements IAppsUtilService {
     currentEnvIdOfVersion: string,
     organizationId: string
   ): Promise<AppEnvironment> {
-    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
     if (environmentName && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
@@ -205,7 +208,7 @@ export class AppsUtilService implements IAppsUtilService {
     });
   }
 
-  async update(app: App, appUpdateDto: AppUpdateDto, organizationId?: string, manager?: EntityManager) {
+  async update(app: App, appUpdateDto: AppUpdateDto, organizationId: string, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
@@ -229,8 +232,10 @@ export class AppsUtilService implements IAppsUtilService {
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 
         const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
-          LICENSE_FIELD.MULTI_ENVIRONMENT
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          organizationId
         );
+
         /* 
         Allow version release only if the environment is on 
         production with a valid license or 
@@ -312,7 +317,7 @@ export class AppsUtilService implements IAppsUtilService {
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
-      if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+      if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId))) {
         throw new BadRequestException('You do not have permissions to perform this action');
       }
 
@@ -368,6 +373,9 @@ export class AppsUtilService implements IAppsUtilService {
       case APP_TYPES.FRONT_END:
         resourceType = MODULES.APP;
         break;
+      case APP_TYPES.MODULE:
+        resourceType = MODULES.APP;
+        break;
       default:
         resourceType = MODULES.APP;
     }
@@ -384,6 +392,11 @@ export class AppsUtilService implements IAppsUtilService {
         undefined,
         type
       );
+
+      // Eagerly load appVersions for modules
+      if (type === APP_TYPES.MODULE) {
+        viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+      }
 
       if (page) {
         return await viewableAppsQb
@@ -410,7 +423,7 @@ export class AppsUtilService implements IAppsUtilService {
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
     if (type === APP_TYPES.MODULE) {
-      viewableAppsQb.leftJoinAndSelect('viewable_apps.appVersions', 'versions');
+      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
     }
 
     if (type) {
@@ -608,10 +621,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-            .createQueryBuilder(App, 'app')
-            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-            .distinct(true)
-            .getMany()
+              .createQueryBuilder(App, 'app')
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .distinct(true)
+              .getMany()
           : [];
       return modules;
     });

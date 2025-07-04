@@ -61,6 +61,7 @@ const useCEOnboardingStore = create(
     createSuperAdminAccount: async () => {
       if (!get().accountCreated) {
         const data = get().prepareSetupAdminData();
+        console.log('BRUH CE', data);
         await setupFirstUser(data);
         set({ accountCreated: true });
       }

@@ -5,7 +5,7 @@ import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } fr
 import { DataQuery } from '@entities/data_query.entity';
 
 export interface IDataQueriesService {
-  getAll(versionId: string): Promise<{ data_queries: object[] }>;
+  getAll(user: User, versionId: string, mode?: string): Promise<{ data_queries: object[] }>;
 
   create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto): Promise<object>;
 
@@ -22,7 +22,8 @@ export interface IDataQueriesService {
     updateDataQueryDto: UpdateDataQueryDto,
     ability: object,
     dataSource: DataSource,
-    response: Response
+    response: Response,
+    mode?: string
   ): Promise<object>;
 
   runQueryForApp(
