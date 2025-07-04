@@ -14,20 +14,20 @@ jobs:
 
     steps:
 
-      # - name: Check authorization
-      #   run: |
-      #     allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
-      #     allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
-      #     allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+      - name: Check authorization
+        run: |
+          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
 
-      #     if [[ "${{ github.actor }}" != "$allowed_user1" && \
-      #           "${{ github.actor }}" != "$allowed_user2" && \
-      #           "${{ github.actor }}" != "$allowed_user3" ]]; then
-      #       echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
-      #       exit 1
-      #     else
-      #       echo "✅ User '${{ github.actor }}' is authorized."
-      #     fi
+          if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                "${{ github.actor }}" != "$allowed_user2" && \
+                "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '${{ github.actor }}' is authorized."
+          fi
 
       # - name: Validate branch prefix
       #   run: |
