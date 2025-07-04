@@ -24,3 +24,4 @@ export class OrganizationIdSlugValidationGuard implements CanActivate {
     return true;
   }
 }
+// NEEd to confirm with midhun : we should Ideally throw error if organization ID is not present on cloud
