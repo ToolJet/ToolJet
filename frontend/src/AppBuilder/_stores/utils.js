@@ -6,7 +6,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 
-import _ from 'lodash';
+var _ = require('lodash');
 
 const resetters = [];
 
@@ -148,6 +148,7 @@ export const resolveCode = (
           'queries',
           'globals',
           'page',
+          'input',
           'client',
           'server',
           'constants',
@@ -165,6 +166,7 @@ export const resolveCode = (
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
         isJsCode ? state?.page : undefined,
+        isJsCode ? state?.input : undefined,
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
@@ -680,6 +682,15 @@ export function convertAllKeysToSnakeCase(o) {
 //   return { suggestionList, hintsMap, resolvedRefs };
 // }
 
+export const isProperNumber = (str) => {
+  try {
+    const num = Number(str);
+    return !isNaN(num) && isFinite(num);
+  } catch (e) {
+    return false;
+  }
+};
+
 export const hasArrayNotation = (property) => {
   // Regular expression to match array notation pattern
   const arrayPattern = /\[\d+\]/;
@@ -715,9 +726,84 @@ export const baseTheme = {
   definition: {
     brand: {
       colors: {
-        primary: { light: '#4368E3', dark: '#4A6DD9' },
-        secondary: { light: '#6A727C', dark: '#CFD3D8' },
-        tertiary: { light: '#1E823B', dark: '#318344' },
+        primary: {
+          light: '#4368E3',
+          dark: '#4A6DD9',
+        },
+        secondary: {
+          light: '#6A727C',
+          dark: '#CFD3D8',
+        },
+        tertiary: {
+          light: '#1E823B',
+          dark: '#318344',
+        },
+      },
+    },
+    text: {
+      font: 'IBM Plex Sans',
+      colors: {
+        primary: {
+          light: '#1B1F24',
+          dark: '#CFD3D8',
+        },
+        placeholder: {
+          light: '#6A727C',
+          dark: '#858C94',
+        },
+      },
+    },
+    border: {
+      radius: {
+        default: 6,
+        small: 0,
+        large: 0,
+      },
+      colors: {
+        default: {
+          light: '#CCD1D5',
+          dark: '#3C434B',
+        },
+        weak: {
+          light: '#E4E7EB',
+          dark: '#EEF0F1',
+        }
+      },
+    },
+    systemStatus: {
+      colors: {
+        success: {
+          light: '#1E823B',
+          dark: '#318344',
+        },
+        error: {
+          light: '#D72D39',
+          dark: '#D03F43',
+        },
+        warning: {
+          light: '#BF4F03',
+          dark: '#BA5722',
+        },
+      },
+    },
+    surface: {
+      colors: {
+        appBackground: {
+          light: '#F6F6F6',
+          dark: '#121518',
+        },
+        surface1: {
+          light: '#FFFFFF',
+          dark: '#1E2226',
+        },
+        surface2: {
+          light: '#F6F8FA',
+          dark: '#2B3036',
+        },
+        surface3: {
+          light: '#E4E7EB',
+          dark: '#3C434B',
+        },
       },
     },
   },

@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '@entities/user.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { OrganizationUser } from '../../entities/organization_user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TrialUserDto } from '@modules/onboarding/dto/user.dto';
@@ -72,7 +72,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     const otherData = { companySize, role, phoneNumber };
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const { editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(manager);
+      const { editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount('INSTANCE',manager);
 
       const body = {
         hostname,
@@ -207,7 +207,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             Response: Add the user to the workspace and send the organization and account invite again (eg: /invitations/<>/workspaces/<>).
           */
             organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
-            await this.licenseUserService.validateUser(manager);
+            await this.licenseUserService.validateUser(manager, organizationId);
           }
           this.eventEmitter.emit('emailEvent', {
             type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
@@ -238,7 +238,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           } else {
             /* Create new organizations_user entry and send an invite */
             organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
-            await this.licenseUserService.validateUser(manager);
+            await this.licenseUserService.validateUser(manager, organizationId);
           }
           return this.sendOrgInvite(
             { email: existingUser.email, firstName: existingUser.firstName },
@@ -294,7 +294,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
               manager
             );
           }
-          await this.licenseUserService.validateUser(manager);
+          await this.licenseUserService.validateUser(manager, organizationId);
           this.eventEmitter.emit('emailEvent', {
             type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
             payload: {
@@ -459,7 +459,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           );
         }
 
-        await this.licenseUserService.validateUser(manager);
+        await this.licenseUserService.validateUser(manager, organizationId);
         this.eventEmitter.emit('emailEvent', {
           type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
           payload: {
@@ -487,7 +487,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         // );
         return {};
       } else {
-        await this.licenseUserService.validateUser(manager);
+        await this.licenseUserService.validateUser(manager, organizationId);
         this.eventEmitter.emit('emailEvent', {
           type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
           payload: {
@@ -657,7 +657,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       );
 
       // Validate license
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, user?.defaultOrganizationId);
 
       // Send welcome email
       this.eventEmitter.emit('emailEvent', {
@@ -724,7 +724,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         );
 
       // Validate license
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, existingUser?.defaultOrganizationId);
 
       // send welcome email
       this.eventEmitter.emit('emailEvent', {

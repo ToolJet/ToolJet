@@ -827,6 +827,7 @@ class BaseManageGroupPermissions extends React.Component {
                         value: group.name,
                       };
                     })}
+                    workflowEnabled={false}
                     featureAccess={featureAccess}
                   />
                 )}

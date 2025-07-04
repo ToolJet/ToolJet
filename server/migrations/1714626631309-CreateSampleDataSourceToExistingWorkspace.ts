@@ -14,6 +14,14 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const manager = queryRunner.manager;
+    const organizationsCount = await manager.count(Organization);
+
+    if (organizationsCount === 0) {
+      console.log('No organizations found, skipping migration.');
+      return;
+    }
+
     const appCtx = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     let data: any = process.env;
     const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);

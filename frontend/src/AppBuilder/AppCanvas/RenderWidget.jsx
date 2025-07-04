@@ -7,6 +7,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -34,6 +35,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'VerticalDivider',
   'Link',
   'Form',
+  'FilePicker',
 ];
 
 const RenderWidget = ({
@@ -47,23 +49,29 @@ const RenderWidget = ({
   inCanvas = false,
   darkMode,
 }) => {
-  const componentDefinition = useStore((state) => state.getComponentDefinition(id), shallow);
+  const { moduleId } = useModuleContext();
+  const componentDefinition = useStore((state) => state.getComponentDefinition(id, moduleId), shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
+  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
+  const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
   const component = componentDefinition?.component;
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
   const resolvedProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex)?.properties,
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties,
     shallow
   );
-  const resolvedStyles = useStore((state) => state.getResolvedComponent(id, subContainerIndex)?.styles, shallow);
+  const resolvedStyles = useStore(
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.styles,
+    shallow
+  );
   const fireEvent = useStore((state) => state.eventsSlice.fireEvent, shallow);
   const resolvedGeneralProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex)?.general,
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.general,
     shallow
   );
   const resolvedGeneralStyles = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex)?.generalStyles,
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.generalStyles,
     shallow
   );
   const unResolvedValidation = componentDefinition?.component?.definition?.validation || {};
@@ -73,10 +81,13 @@ const RenderWidget = ({
   const setExposedValue = useStore((state) => state.setExposedValue, shallow);
   const setExposedValues = useStore((state) => state.setExposedValues, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
-  const resolvedValidation = useStore((state) => state.getResolvedComponent(id)?.validation, shallow);
+  const resolvedValidation = useStore(
+    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.validation,
+    shallow
+  );
   const parentId = component?.parent;
   const customResolvables = useStore(
-    (state) => state.resolvedStore.modules.canvas?.customResolvables?.[parentId],
+    (state) => state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId],
     shallow
   );
   const { t } = useTranslation();
@@ -110,31 +121,31 @@ const RenderWidget = ({
     (key, value) => {
       // Check if the component is inside the subcontainer and it has its own onOptionChange(setExposedValue) function
       if (onOptionChange === null) {
-        setExposedValue(id, key, value);
+        setExposedValue(id, key, value, moduleId);
         // Trigger an update when the child components is directly linked to any component
-        updateDependencyValues(`components.${id}.${key}`);
+        updateDependencyValues(`components.${id}.${key}`, moduleId);
       } else {
         onOptionChange(key, value, id, subContainerIndex);
       }
     },
-    [id, setExposedValue, updateDependencyValues, subContainerIndex, onOptionChange]
+    [id, setExposedValue, updateDependencyValues, subContainerIndex, onOptionChange, moduleId]
   );
   const setExposedVariables = useCallback(
     (exposedValues) => {
       if (onOptionsChange === null) {
-        setExposedValues(id, 'components', exposedValues);
+        setExposedValues(id, 'components', exposedValues, moduleId);
       } else {
         onOptionsChange(exposedValues, id, subContainerIndex);
       }
     },
-    [id, setExposedValues, onOptionsChange]
+    [id, setExposedValues, onOptionsChange, moduleId]
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(eventName, id, 'canvas', customResolvables?.[subContainerIndex] ?? {}, options);
+      fireEvent(eventName, id, moduleId, customResolvables?.[subContainerIndex] ?? {}, options);
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, subContainerIndex]
+    [fireEvent, id, customResolvables, subContainerIndex, moduleId]
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
@@ -143,6 +154,9 @@ const RenderWidget = ({
     setExposedVariable('id', id);
   }, []);
   if (!componentDefinition?.component) return null;
+
+  const disabledState = resolvedProperties?.disabledState;
+  const loadingState = resolvedProperties?.loadingState;
 
   return (
     <ErrorBoundary>
@@ -155,17 +169,18 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
+            ? null
+            : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                ? resolvedProperties?.tooltip
-                : resolvedGeneralProperties?.tooltip
-              }`
+              ? `${
+                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                    ? resolvedProperties?.tooltip
+                    : resolvedGeneralProperties?.tooltip
+                }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -176,7 +191,9 @@ const RenderWidget = ({
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
           role={'Box'}
-          className={inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''} //required for custom CSS
+          className={`canvas-component ${
+            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+          } ${disabledState || loadingState ? 'disabled' : ''}`} //required for custom CSS
         >
           <ComponentToRender
             id={id}
@@ -193,6 +210,8 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            adjustComponentPositions={adjustComponentPositions}
+            componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
           />
         </div>

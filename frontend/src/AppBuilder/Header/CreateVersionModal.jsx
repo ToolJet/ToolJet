@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -17,6 +18,7 @@ const CreateVersionModal = ({
   fetchingOrgGit,
   handleCommitOnVersionCreation = () => { },
 }) => {
+  const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
 
@@ -27,6 +29,7 @@ const CreateVersionModal = ({
     appId,
     setCurrentVersionId,
     selectedVersion,
+    currentMode,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -35,10 +38,11 @@ const CreateVersionModal = ({
       developmentVersions: state.developmentVersions,
       featureAccess: state.license.featureAccess,
       editingVersion: state.currentVersionId,
-      appId: state.app.appId,
+      appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
       setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
+      currentMode: state.currentMode,
     }),
     shallow
   );
@@ -88,7 +92,7 @@ const CreateVersionModal = ({
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         appVersionService
-          .getAppVersionData(appId, newVersion.id)
+          .getAppVersionData(appId, newVersion.id, currentMode)
           .then((data) => {
             setCurrentVersionId(newVersion.id);
             handleCommitOnVersionCreation(data);

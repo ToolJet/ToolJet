@@ -2,6 +2,7 @@ import React from 'react';
 import '../../../resources/styles/group-permissions.styles.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { RESOURCE_TYPE } from '../../../index';
 
 function AddResourcePermissionsMenu({
   openAddPermissionModal,
@@ -10,6 +11,25 @@ function AddResourcePermissionsMenu({
   darkMode,
   isBasicPlan,
 }) {
+  const selectResourceIcon = (resourceType) => {
+    switch (resourceType) {
+      case RESOURCE_TYPE.APPS:
+        return 'apps';
+      case RESOURCE_TYPE.WORKFLOWS:
+        return 'workflows';
+      case RESOURCE_TYPE.DATA_SOURCES:
+        return 'datasource';
+      default:
+        return '';
+    }
+  };
+
+  const resourceNameMapping = {
+    [RESOURCE_TYPE.APPS]: 'Apps',
+    [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
+    [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
+  };
+
   return resourcesOptions.length > 1 ? (
     <OverlayTrigger
       rootClose={true}
@@ -25,17 +45,17 @@ function AddResourcePermissionsMenu({
                 iconWidth="17"
                 fill="var(--slate9)"
                 className="apps-remove-btn permission-type remove-decoration tj-text-xsm font-weight-600 remove-disabled-bg"
-                leftIcon={resource === 'Apps' ? 'apps' : 'datasource'}
+                leftIcon={selectResourceIcon(resource)}
                 onClick={() => {
                   openAddPermissionModal(resource);
                 }}
-                disabled={currentGroupPermission.name === 'end-user' && resource === 'Data Sources'}
+                disabled={currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES}
               >
                 <OverlayTrigger
                   key={index}
                   placement="right"
                   overlay={
-                    currentGroupPermission.name === 'end-user' && resource === 'Data Sources' ? (
+                    currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES ? (
                       <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
                         End-user cannot access data sources
                       </Tooltip>
@@ -44,7 +64,7 @@ function AddResourcePermissionsMenu({
                     )
                   }
                 >
-                  <span>{resource === 'Data Sources' ? 'Data source' : resource}</span>
+                  <span>{resourceNameMapping[resource]}</span>
                 </OverlayTrigger>
               </ButtonSolid>
             ))}
@@ -75,7 +95,7 @@ function AddResourcePermissionsMenu({
         leftIcon="plus"
         disabled={currentGroupPermission.name === 'admin' || isBasicPlan}
         onClick={() => {
-          openAddPermissionModal('Apps');
+          openAddPermissionModal(RESOURCE_TYPE.APPS);
         }}
         data-cy="add-apps-buton"
       >

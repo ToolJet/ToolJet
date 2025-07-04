@@ -16,6 +16,8 @@ export const APP_HEADER_HEIGHT = 47;
 
 export const LEFT_SIDEBAR_WIDTH = 348; // exclusive of border
 
+export const RIGHT_SIDEBAR_WIDTH = 299;
+
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
@@ -24,6 +26,20 @@ export const SUBCONTAINER_CANVAS_BORDER_WIDTH = 1;
 
 export const BOX_PADDING = 2;
 
+export const DROPPABLE_PARENTS = new Set([
+  'Calendar',
+  'Kanban',
+  'Form',
+  'Tabs',
+  'Modal',
+  'ModalV2',
+  'Listview',
+  'Container',
+  'Table',
+  'ModuleContainer',
+]);
 export const TAB_CANVAS_PADDING = 7.5;
 
 export const MODAL_CANVAS_PADDING = 5;
+
+export const LISTVIEW_CANVAS_PADDING = 7;

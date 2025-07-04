@@ -2,19 +2,25 @@ import { FeatureAbilityFactory } from './ability';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { RolesModule } from '@modules/roles/module';
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { RolesRepository } from '@modules/roles/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { VersionModule } from '@modules/versions/module';
+import { UserPersonalAccessTokenRepository } from '../users/repositories/UserPersonalAccessTokens.repository';
+import { AppsRepository } from '@modules/apps/repository';
+import { SessionModule } from '@modules/session/module';
+import { UserRepository } from '@modules/users/repositories/repository';
+import { OrganizationRepository } from '@modules/organizations/repository';
 import { UsersModule } from '@modules/users/module';
-export class ExternalApiModule {
+import { SubModule } from '@modules/app/sub-module';
+export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { ExternalApisController } = await import(`${importPath}/external-apis/controller`);
-    const { ExternalApisService } = await import(`${importPath}/external-apis/service`);
-    const { ExternalApiUtilService } = await import(`${importPath}/external-apis/util.service`);
+    const { ExternalApisController, ExternalApisService, ExternalApiUtilService } = await this.getProviders(
+      configs,
+      'external-apis',
+      ['controller', 'service', 'util.service']
+    );
 
     return {
       module: ExternalApiModule,
@@ -26,8 +32,18 @@ export class ExternalApiModule {
         await AppsModule.register(configs),
         await OrganizationsModule.register(configs),
         await VersionModule.register(configs),
+        await SessionModule.register(configs),
       ],
-      providers: [ExternalApiUtilService, ExternalApisService, FeatureAbilityFactory, RolesRepository],
+      providers: [
+        ExternalApiUtilService,
+        ExternalApisService,
+        FeatureAbilityFactory,
+        RolesRepository,
+        UserPersonalAccessTokenRepository,
+        AppsRepository,
+        UserRepository,
+        OrganizationRepository,
+      ],
       controllers: [ExternalApisController],
       exports: [ExternalApiUtilService],
     };

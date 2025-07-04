@@ -40,7 +40,7 @@ export const groupsSelector = {
   resourceLabel: '[data-cy="resource-label"]',
   allAppsRadio: '[data-cy="all-apps-radio"]',
   allAppsLabel: '[data-cy="all-apps-label"]',
-  allAppsHelperText: '[data-cy="all-apps-info-text"]',
+  allAppsHelperText: '[data-cy="this-will-select-all-apps-in-the-workspace-including-any-new-apps-created-info-text"]',
   customradio: '[data-cy="custom-radio"]',
   customLabel: '[data-cy="custom-label"]',
   customHelperText: '[data-cy="custom-info-text"]',
@@ -133,7 +133,7 @@ export const groupsSelector = {
   usersCheckInput: '[data-cy="users-check-input"]',
   permissionCheckInput: '[data-cy="permissions-check-input"]',
   appsCheckInput: '[data-cy="apps-check-input"]',
-  confimButton: '[data-cy="confim-button"]',
+  confimButton: '[data-cy="confirm-button"]',
   duplicatedGroupLink: (groupName) => {
     return `[data-cy="${cyParamName(groupName)}_copy-list-item"]`
   },

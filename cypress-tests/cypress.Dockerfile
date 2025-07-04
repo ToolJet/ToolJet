@@ -1,4 +1,4 @@
-FROM node:18.18.2-buster AS builder
+FROM node:22.15.1 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -22,7 +22,7 @@ RUN git checkout ${BRANCH_NAME}
 RUN git submodule update --init --recursive
 
 # Checkout the same branch in submodules if it exists, otherwise stay on default branch
-RUN git submodule foreach 'git checkout ${BRANCH_NAME} || true'
+RUN git submodule foreach 'git checkout main'
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -50,10 +50,11 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli 
+RUN npm install -g @nestjs/cli
+RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:18.18.2-bullseye
+FROM node:22.15.1-bullseye
 
 RUN apt-get update -yq \
     && apt-get install curl wget gnupg zip -yq \

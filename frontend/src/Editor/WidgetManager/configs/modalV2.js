@@ -92,18 +92,6 @@ export const modalV2Config = {
       accordian: 'Data',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 400 },
     },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Header height',
-      accordian: 'Data',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
-    },
-    footerHeight: {
-      type: 'numberInput',
-      displayName: 'Footer height',
-      accordian: 'Data',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
-    },
     hideOnEsc: { type: 'toggle', displayName: 'Close on escape key', section: 'additionalActions' },
     closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
     hideCloseButton: { type: 'toggle', displayName: 'Hide close button', section: 'additionalActions' },
@@ -166,7 +154,7 @@ export const modalV2Config = {
   ],
   styles: {
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
@@ -174,7 +162,7 @@ export const modalV2Config = {
       },
     },
     footerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
@@ -182,7 +170,7 @@ export const modalV2Config = {
       },
     },
     bodyBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Body background color',
       validation: {
         schema: { type: 'string' },
@@ -190,7 +178,7 @@ export const modalV2Config = {
       },
     },
     triggerButtonBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button background color',
       validation: {
         schema: { type: 'string' },
@@ -198,7 +186,7 @@ export const modalV2Config = {
       },
     },
     triggerButtonTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button text color',
       validation: {
         schema: { type: 'string' },
@@ -270,7 +258,7 @@ export const modalV2Config = {
       headerBackgroundColor: { value: '#ffffffff' },
       footerBackgroundColor: { value: '#ffffffff' },
       bodyBackgroundColor: { value: '#ffffffff' },
-      triggerButtonBackgroundColor: { value: '#4D72FA' },
+      triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
   },

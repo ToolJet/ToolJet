@@ -21,15 +21,14 @@ export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> 
     request?: any
   ): void {
     const appId = request?.tj_resource_id;
-    const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
+    const { superAdmin, isAdmin, isBuilder, userPermission } = UserAllPermissions;
 
     const userAppGitPermissions = userPermission?.APP;
     const isAllAppsEditable = !!userAppGitPermissions?.isAllEditable;
     const isAllAppsCreatable = !!userPermission?.appCreate;
     const isAllAppsViewable = !!userAppGitPermissions?.isAllViewable;
-
     // Grant feature-level access based on resource actions
-    if (isAdmin || superAdmin) {
+    if (isAdmin || superAdmin || isBuilder) {
       // Admin or Super Admin gets full access to all features
       can(FEATURE_KEY.GIT_CREATE_APP, App);
       can(FEATURE_KEY.GIT_UPDATE_APP, App);
@@ -37,6 +36,9 @@ export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> 
       can(FEATURE_KEY.GIT_GET_APP, App);
       can(FEATURE_KEY.GIT_GET_APP_CONFIG, App);
       can(FEATURE_KEY.GIT_SYNC_APP, App);
+      can(FEATURE_KEY.GIT_APP_VERSION_RENAME, App);
+      can(FEATURE_KEY.GIT_APP_CONFIGS_UPDATE, App);
+      can(FEATURE_KEY.GIT_FETCH_APP_CONFIGS, App);
       return;
     }
 

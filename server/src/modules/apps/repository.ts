@@ -47,11 +47,18 @@ export class AppsRepository extends Repository<App> {
     });
   }
 
+  findOneById(id: string): Promise<App> {
+    return this.findOne({ where: { id } });
+  }
+
   findById(id: string, organizationId: string, versionId?: string): Promise<App> {
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
+    const baseWhere = { id, ...versionCondition };
+    const where = organizationId ? { ...baseWhere, organizationId } : baseWhere;
+
     return this.findOne({
       ...(versionId ? { relations: ['appVersions'] } : {}),
-      where: { id, organizationId, ...versionCondition },
+      where,
     });
   }
 
@@ -82,5 +89,12 @@ export class AppsRepository extends Repository<App> {
       .orderBy('app.created_At', 'ASC')
       .orderBy('version.created_at', 'ASC')
       .getRawMany();
+  }
+
+  async findByAppId(appId: string): Promise<App> {
+    return this.findOne({
+      where: { id: appId },
+      relations: ['appVersions'],
+    });
   }
 }
