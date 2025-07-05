@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res, Sse } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res, Sse } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowExecutionController } from '../interfaces/IWorkflowExecutionController';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
@@ -41,6 +41,23 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   @InitFeature(FEATURE_KEY.LIST_WORKFLOW_EXECUTIONS)
   @Get('all/:appVersionId')
   async index(@Param('appVersionId') appVersionId: any, @User() user): Promise<WorkflowExecution[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.FETCH_EXECUTION_LOGS)
+  @Get('getAllExecutions/:appVersionId')
+  async getAllExecutions(
+    @Param('appVersionId') appVersionId: any,
+    @Query('page') page = '1',
+    @Query('per_page') perPage = '10',
+    @User() user
+  ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.FETCH_EXECUTION_NODES)
+  @Get('getNodesByExecutionId/:nodeId')
+  async getNodes(@Param('id') id: any, @User() user, @Query('page') page = '1', @Query('per_page') perPage = '10'): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

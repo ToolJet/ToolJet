@@ -16,5 +16,9 @@ export interface IWorkflowExecutionController {
 
   index(appVersionId: any, user: any): Promise<WorkflowExecution[]>;
 
+  getAllExecutions(appVersionId: any, page: any, perPage: any, user: any): Promise<any>;
+
+  getNodes(id: any, user: any, page: any, perPage: any): Promise<any>;
+
   previewQueryNode(user: any, previewNodeDto: PreviewWorkflowNodeDto, response: Response): Promise<{ result: any }>;
 }

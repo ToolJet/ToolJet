@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { IWorkflowExecutionsService } from '../interfaces/IWorkflowExecutionsService';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 
 @Injectable()
 export class WorkflowExecutionsService implements IWorkflowExecutionsService {
@@ -59,6 +60,26 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
   }
 
   async findOne(id: string, relations?: string[]): Promise<WorkflowExecution> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getWorkflowExecutionsLogs(appVersionId: string, page: number = 1, limit: number = 10): Promise<{
+    data: WorkflowExecution[];
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+  }> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getWorkflowExecutionNodes(workflowExecutionId: string, page: number = 1, limit: number = 10): Promise<{
+    data: WorkflowExecutionNode[];
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+  }> {
     throw new Error('Method not implemented.');
   }
 }

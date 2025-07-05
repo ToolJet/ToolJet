@@ -4,6 +4,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { User } from 'src/entities/user.entity';
 import { Response } from 'express';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 
 export interface IWorkflowExecutionsService {
   create(createWorkflowExecutionDto: CreateWorkflowExecutionDto): Promise<WorkflowExecution>;
@@ -42,4 +43,20 @@ export interface IWorkflowExecutionsService {
     user: User,
     response: Response
   ): Promise<any>;
+
+  getWorkflowExecutionsLogs(appVersionId: string, page?: number, limit?: number): Promise<{
+    data: WorkflowExecution[];
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+  }>;
+
+  getWorkflowExecutionNodes(workflowExecutionId: string, page?: number, limit?: number): Promise<{
+    data: WorkflowExecutionNode[];
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+  }>;
 }
