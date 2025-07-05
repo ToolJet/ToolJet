@@ -1141,12 +1141,46 @@ const ResizeGhostWidget = ({ resizingComponentId, widgets, currentLayout, canvas
     return '';
   }
 
+  // Helper to determine if the widget is at the bottom of a scrollable container
+  function needsPortal() {
+    const widget = widgets?.[resizingComponentId];
+    if (!widget) return false;
+    const layout = widget.layouts?.[currentLayout] || widget.layouts?.['desktop'];
+    if (!layout) return false;
+    // Try to find the DOM node for the widget
+    const el = document.getElementById(resizingComponentId);
+    if (!el) return false;
+    const parent = el.closest('.jet-form-body');
+    if (!parent) return false;
+    const parentRect = parent.getBoundingClientRect();
+    const widgetRect = el.getBoundingClientRect();
+    // If the widget's bottom is within 20px of the parent's bottom (visible area), use portal
+    return widgetRect.bottom > parentRect.bottom - 20;
+  }
+
+  let usePortal = false;
+  let absoluteLeft = 0;
+  let absoluteTop = 0;
+  if (typeof window !== 'undefined' && needsPortal()) {
+    // Calculate absolute position for the portal overlay
+    const el = document.getElementById(resizingComponentId);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      absoluteLeft = rect.left + window.scrollX;
+      absoluteTop = rect.bottom + window.scrollY - 8; // 8px offset for handle
+      usePortal = true;
+    }
+  }
+
   return (
     <GhostWidget
       layouts={widgets?.[resizingComponentId]?.layouts}
       currentLayout={currentLayout}
       canvasWidth={canvasWidth}
       gridWidth={gridWidth}
+      usePortal={usePortal}
+      absoluteLeft={absoluteLeft}
+      absoluteTop={absoluteTop}
     />
   );
 };
