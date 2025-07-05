@@ -39,6 +39,8 @@ describe("Workspace constants", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
+    cy.viewport(1800, 1800);
+
   });
 
   it("Verify workspace constants UI and CRUD operations", () => {
@@ -66,12 +68,11 @@ describe("Workspace constants", () => {
     });
   });
 
-  it("Verify global and secret constants in the editor, inspector, data sources, static queries, query preview, and preview", () => {
+  it.only("Verify global and secret constants in the editor, inspector, data sources, static queries, query preview, and preview", () => {
     data.workspaceName = fake.firstName;
     data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.visit(data.workspaceSlug);
-    cy.viewport(1440, 960);
     data.appName = `${fake.companyName}-App`;
 
     // create global constants
@@ -158,7 +159,7 @@ describe("Workspace constants", () => {
     }
 
     //back to dashboard and open app again
-    cy.get(commonSelectors.viewerPageLogo).click();
+    cy.get(commonSelectors.pageLogo).click();
     cy.wait(2000);
     cy.get(commonSelectors.appEditButton).click({ force: true });
 
