@@ -15,7 +15,7 @@ import {
   revokeAccessToPublicSchema,
   grantTenantRoleToTjdbAdminRole,
 } from '@helpers/tooljet_db.helper';
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 export class MoveToolJetDatabaseTablesFromPublicToTenantSchema1721236971725 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

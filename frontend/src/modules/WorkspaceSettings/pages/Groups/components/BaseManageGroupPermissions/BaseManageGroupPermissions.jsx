@@ -394,6 +394,8 @@ class BaseManageGroupPermissions extends React.Component {
     } = this.state;
 
     const { featureAccess, isFeatureEnabled, isTrial } = this.props;
+    const isValidLicense = featureAccess?.licenseStatus.isLicenseValid;
+    const planType = featureAccess?.licenseStatus?.licenseType;
 
     const grounNameErrorStyle =
       this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
@@ -797,7 +799,7 @@ class BaseManageGroupPermissions extends React.Component {
                     )}
                   </div>
                 </div>
-                {!_.isEmpty(featureAccess) && !isFeatureEnabled && (
+                {(!isValidLicense || planType === 'trial') && (
                   <LicenseBanner
                     style={{ alignSelf: 'flex-end', margin: '0px !important' }}
                     limits={featureAccess}
