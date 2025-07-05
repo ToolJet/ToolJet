@@ -9,6 +9,7 @@ const useSidebarMargin = (canvasContainerRef) => {
   const { moduleId } = useModuleContext();
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
 
   useEffect(() => {

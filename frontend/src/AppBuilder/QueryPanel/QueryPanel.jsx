@@ -155,6 +155,7 @@ export const QueryPanel = ({ darkMode }) => {
           justifyContent: 'space-between',
           alignItems: 'center',
           zIndex: 2,
+          width: '100%',
         }}
       >
         <div

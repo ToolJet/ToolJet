@@ -323,7 +323,7 @@ export const PagesSidebarNavigation = ({
           // ...(position === 'side' && isSidebarOpen ? { marginLeft: isSidebarPinned ? '574px' : '392px' } : {}),
         }}
       >
-        <div className="position-relative">
+        <div style={{ overflow: 'hidden' }} className="position-relative">
           <div
             style={{
               marginRight: headerHidden && position == 'top' && '0px',
@@ -414,12 +414,14 @@ const RenderPagesWithoutGroup = ({
   moreBtnRef,
 }) => {
   const [showPopover, setShowPopover] = useState(false);
-  const filteredPagesVisible = visibleLinks.filter(
+  const filteredPagesVisible = (position == 'top' ? visibleLinks : pages).filter(
     (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
   );
   const filteredPagesOverflow = overflowLinks.filter(
     (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
   );
+  console.log({ filteredPagesVisible, filteredPagesOverflow });
+
   return (
     <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
       {filteredPagesVisible.map((page) => {
