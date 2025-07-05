@@ -799,7 +799,7 @@ class BaseManageGroupPermissions extends React.Component {
                     )}
                   </div>
                 </div>
-                {(!isValidLicense || planType === 'trial') && (
+                {(!isValidLicense || planType === 'trial') && featureAccess && (
                   <LicenseBanner
                     style={{ alignSelf: 'flex-end', margin: '0px !important' }}
                     limits={featureAccess}
