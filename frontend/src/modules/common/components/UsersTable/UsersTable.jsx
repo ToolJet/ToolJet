@@ -12,6 +12,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { NoActiveWorkspaceModal } from './components/NoActiveWorkspaceModal';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToolTip } from '@/_components/ToolTip';
+import { fetchEdition } from '../../helpers/utils';
 const UsersTable = ({
   isLoading,
   users,
@@ -56,6 +57,7 @@ const UsersTable = ({
     setSelectedUser(user);
     setIsResetPasswordModalVisible(true);
   };
+  const edition = fetchEdition();
 
   return (
     <div className="workspace-settings-table-wrap mb-4">
@@ -194,7 +196,10 @@ const UsersTable = ({
                           >
                             {user.status}
                           </small>
-                          {user.status === 'invited' && !hideAccountSetupLink && user?.invitation_token ? (
+                          {user.status === 'invited' &&
+                          !hideAccountSetupLink &&
+                          user?.invitation_token &&
+                          edition != 'cloud' ? (
                             <div className="workspace-clipboard-wrap">
                               <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                                 <span>

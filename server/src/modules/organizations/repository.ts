@@ -34,7 +34,7 @@ export class OrganizationRepository extends Repository<Organization> {
         ...conditions,
         where: { ...conditions.where, slug },
       });
-    } catch (error) {
+    } catch {
       organization = await this.manager.findOneOrFail(Organization, {
         ...conditions,
         where: { ...conditions.where, id: slug },
@@ -87,7 +87,7 @@ export class OrganizationRepository extends Repository<Organization> {
           where: { slug },
           select,
         });
-      } catch (error) {
+      } catch {
         organization = await manager.findOneOrFail(Organization, {
           where: { id: slug },
           select,
@@ -211,7 +211,7 @@ export class OrganizationRepository extends Repository<Organization> {
         return await manager.findOneOrFail(Organization, {
           where: { isDefault: true },
         });
-      } catch (error) {
+      } catch {
         console.error('No default workspace in this instance');
         return null;
       }

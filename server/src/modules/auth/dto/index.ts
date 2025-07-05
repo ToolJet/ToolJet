@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
-import { lowercaseString } from 'src/helpers/utils.helper';
+import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
 export class AppAuthenticationDto {
@@ -73,4 +73,21 @@ export class ChangePasswordDto {
   @MinLength(5, { message: 'Password should contain more than 5 characters' })
   @MaxLength(100, { message: 'Password should be Max 100 characters' })
   newPassword: string;
+}
+
+export class CreateAiUserDto {
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  name: string;
+
+  @IsEmail()
+  @Transform(({ value }) => {
+    const newValue = sanitizeInput(value);
+    return lowercaseString(newValue);
+  })
+  email: string;
+
+  @IsString()
+  @MinLength(5, { message: 'Password should contain more than 5 letters' })
+  password: string;
 }

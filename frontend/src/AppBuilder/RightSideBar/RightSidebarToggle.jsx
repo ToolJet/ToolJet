@@ -6,6 +6,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import './rightSidebarToggle.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarItem } from './SidebarItem';
 
 const RightSidebarToggle = ({ darkMode = false }) => {
@@ -13,6 +14,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
     (state) => [state.isRightSidebarOpen, state.setRightSidebarOpen],
     shallow
   );
+  const { appType } = useModuleContext();
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
@@ -50,16 +52,18 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Component properties"
       />
-      <SidebarItem
-        selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES}
-        onClick={() => {
-          handleToggle(RIGHT_SIDE_BAR_TAB.PAGES);
-        }}
-        darkMode={darkMode}
-        icon="file01"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-        tip="Page settings"
-      />
+      {appType !== 'module' && (
+        <SidebarItem
+          selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES}
+          onClick={() => {
+            handleToggle(RIGHT_SIDE_BAR_TAB.PAGES);
+          }}
+          darkMode={darkMode}
+          icon="file01"
+          className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+          tip="Page settings"
+        />
+      )}
     </div>
   );
 };
