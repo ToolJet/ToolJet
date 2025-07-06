@@ -2275,10 +2275,8 @@ export function isPDFSupported() {
 
   const isChrome = browser.name === 'Chrome' && browser.major >= 92;
   const isEdge = browser.name === 'Edge' && browser.major >= 92;
-  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
+  const isSafari = browser.name === 'Safari' && (browser.major > 15 || (browser.major === 15 && browser.minor >= 4));
   const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
-
-  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
 
   return isChrome || isEdge || isSafari || isFirefox;
 }
