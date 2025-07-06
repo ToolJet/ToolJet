@@ -34,6 +34,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 let appContext: INestApplicationContext = undefined;
 
+function rawBodyBuffer(req, res, buf, encoding) {
+  if (buf && buf.length) {
+    req.rawBody = buf.toString(encoding || 'utf8');
+  }
+}
+
 async function handleLicensingInit(app: NestExpressApplication) {
   const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
 
@@ -205,8 +211,15 @@ async function bootstrap() {
 
   app.use(compression());
   app.use(cookieParser());
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
+  app.use(json({ verify: rawBodyBuffer, limit: configService.get<string>('MAX_JSON_SIZE') || '50mb' }));
+  app.use(
+    urlencoded({
+      verify: rawBodyBuffer,
+      extended: true,
+      limit: configService.get<string>('MAX_JSON_SIZE') || '50mb',
+      parameterLimit: 1000000,
+    })
+  );
 
   app.enableVersioning({
     type: VersioningType.URI,
