@@ -372,6 +372,7 @@ export const tabsConfig = {
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
+            fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
           },
           {
             id: 't1',
@@ -381,6 +382,7 @@ export const tabsConfig = {
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
+            fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
           },
           {
             id: 't2',
@@ -390,6 +392,7 @@ export const tabsConfig = {
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
+            fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
           },
         ],
       },

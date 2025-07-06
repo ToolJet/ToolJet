@@ -88,6 +88,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         disable: { value: '{{false}}' },
         iconVisibility: { value: '{{false}}' },
         icon: { value: 'IconHome2' },
+        fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       };
     };
 
@@ -178,7 +179,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const _renderOverlay = (item, index) => {
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
-        <Popover.Body>
+        <Popover.Body onClick={(e) => e.stopPropagation()}>
           <div className="field mb-3" data-cy={`input-and-label-tab-title`}>
             <label data-cy={`label-tab-title`} className="font-weight-500 mb-1 font-size-12">
               {'Tab Title'}
@@ -245,8 +246,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => {
                 handleValueChange(item, { value }, 'fieldBackgroundColor', index);
               }}
-              fieldMeta={{ type: 'color', displayName: 'Background' }}
-              paramType={'color'}
+              fieldMeta={{ type: 'colorSwatches', displayName: 'Background' }}
+              paramType={'colorSwatches'}
             />
           </div>
 

@@ -528,10 +528,6 @@ const areEqual = (prevProps, nextProps) => {
 
   for (let key of allKeys) {
     if (prevProps[key] !== nextProps[key]) {
-      console.log(`[TabContent] Prop changed: ${key}`, {
-        from: prevProps[key],
-        to: nextProps[key],
-      });
       hasChanges = true;
     }
   }
