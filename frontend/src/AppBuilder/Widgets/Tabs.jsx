@@ -340,11 +340,11 @@ export const Tabs = function Tabs({
         <div
           style={{
             borderBottom: someTabsVisible?.length > 0 && `0.5px solid ${divider}`,
-            display: 'flex',
             alignItems: 'center',
             width: '100%',
             backgroundColor: headerBackground,
             height: '50px',
+            display: parsedHideTabs ? 'none' : 'flex',
           }}
         >
           {canScroll && (
