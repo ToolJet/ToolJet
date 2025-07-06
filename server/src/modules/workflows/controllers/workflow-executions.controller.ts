@@ -45,9 +45,9 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   }
 
   @InitFeature(FEATURE_KEY.FETCH_EXECUTION_LOGS)
-  @Get('getAllExecutions/:appVersionId')
-  async getAllExecutions(
-    @Param('appVersionId') appVersionId: any,
+  @Get()
+  async getExecutions(
+    @Query('appVersionId') appVersionId: string,
     @Query('page') page = '1',
     @Query('per_page') perPage = '10',
     @User() user
@@ -56,8 +56,13 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   }
 
   @InitFeature(FEATURE_KEY.FETCH_EXECUTION_NODES)
-  @Get('getNodesByExecutionId/:nodeId')
-  async getNodes(@Param('id') id: any, @User() user, @Query('page') page = '1', @Query('per_page') perPage = '10'): Promise<any> {
+  @Get(':id/nodes')
+  async getExecutionNodes(
+    @Param('id') id: string,
+    @Query('page') page = '1',
+    @Query('per_page') perPage = '10',
+    @User() user
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
