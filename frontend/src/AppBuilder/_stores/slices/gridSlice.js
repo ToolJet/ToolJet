@@ -185,6 +185,7 @@ export const createGridSlice = (set, get) => ({
           if (showFooter && isProperNumber(footerHeight)) {
             extraHeight += footerHeight;
           }
+          extraHeight += 20;
         } else if (componentType === 'Tabs') {
           extraHeight = 20;
         }
