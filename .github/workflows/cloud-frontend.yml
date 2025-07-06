@@ -8,12 +8,11 @@ on:
         required: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Check user authorization
+      - name: ✅ Check user authorization
         run: |
           allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
           allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
@@ -28,22 +27,40 @@ jobs:
             echo "✅ User '${{ github.actor }}' is authorized."
           fi
 
-      - name: Checkout code (with submodules)
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch }}
-          token: ${{ secrets.TOKEN_PR }}
-          submodules: recursive
+      - name: 📥 Manual Git checkout with submodules
+        run: |
+          set -e
 
-      - name: Setup Node.js
+          BRANCH="${{ github.event.inputs.branch }}"
+          REPO="https://x-access-token:${{ secrets.TOKEN_PR }}@github.com/${{ github.repository }}"
+
+          git config --global url."https://x-access-token:${{ secrets.TOKEN_PR }}@github.com/".insteadOf "https://github.com/"
+          git config --global http.version HTTP/1.1
+          git config --global http.postBuffer 524288000
+
+          echo "👉 Cloning $REPO (branch: $BRANCH)"
+          git clone --recurse-submodules --depth=1 --branch "$BRANCH" "$REPO" repo
+          cd repo
+
+          echo "🔁 Updating submodules"
+          git submodule update --init --recursive
+
+          echo "🔀 Attempting to checkout '$BRANCH' in each submodule"
+          git submodule foreach --recursive '
+            echo "↪ $name: trying to checkout $BRANCH"
+            git fetch origin $BRANCH || echo "⚠️ $name: branch $BRANCH not found, staying on default"
+            git checkout $BRANCH || echo "⚠️ $name: checkout failed, staying on default"
+          '
+
+      - name: 🧰 Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 22.15.1
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm install
 
-      - name: Build the project
+      - name: 🛠️ Build the project
         run: npm run build:plugins:prod && npm run build:frontend
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
@@ -58,7 +75,7 @@ jobs:
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           TOOLJET_EDITION: cloud
 
-      - name: Deploy to Netlify
+      - name: 🚀 Deploy to Netlify
         run: |
           npm install -g netlify-cli
           netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }}
