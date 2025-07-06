@@ -224,6 +224,7 @@ export const Tabs = function Tabs({
   const [canScroll, setCanScroll] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hoveredTabId, setHoveredTabId] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const checkScroll = () => {
     if (tabsRef.current) {
@@ -399,6 +400,11 @@ export const Tabs = function Tabs({
                     if (currentTab == tab.id) return;
                     if (tab?.disable) return;
 
+                    if (transition !== 'none') {
+                      setIsTransitioning(true);
+                      setTimeout(() => setIsTransitioning(false), 300); // Match transition duration
+                    }
+
                     !tab?.disabled && setCurrentTab(tab.id);
                     !tab?.disabled && setExposedVariable('currentTab', tab.id);
                     fireEvent('onTabSwitch');
@@ -512,6 +518,7 @@ export const Tabs = function Tabs({
                   darkMode={darkMode}
                   dynamicHeight={dynamicHeight}
                   currentTab={currentTab}
+                  isTransitioning={isTransitioning}
                 />
               </div>
             ))}
@@ -545,6 +552,7 @@ const TabContent = memo(function TabContent({
   darkMode,
   dynamicHeight,
   currentTab,
+  isTransitioning,
 }) {
   const loading = tab?.loading;
   const disable = tab?.disable;
@@ -583,7 +591,10 @@ const TabContent = memo(function TabContent({
           canvasHeight={dynamicHeight ? '100%' : '200'}
           canvasWidth={width}
           allowContainerSelect={true}
-          styles={{ overflow: 'hidden auto', backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor }}
+          styles={{
+            overflow: isTransitioning ? 'hidden' : 'hidden auto',
+            backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor,
+          }}
           darkMode={darkMode}
         />
       )}
