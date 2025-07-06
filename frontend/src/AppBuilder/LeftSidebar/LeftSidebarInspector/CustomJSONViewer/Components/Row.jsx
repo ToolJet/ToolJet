@@ -96,7 +96,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
             <ToolTip message={'Copy path'}>
               <span
                 onClick={() => {
-                  copyToClipboard(`{{${absolutePath}}}`, false);
+                  copyToClipboard(absolutePath, false);
                 }}
                 className="copy-to-clipboard json-viewer-action-icon"
               >

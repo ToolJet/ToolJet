@@ -17,7 +17,7 @@ export const HiddenOptions = (props) => {
   };
 
   const copyPath = () => {
-    generalActionsFiltered[0].dispatchAction(`{{${data?.selectedNodePath}}}`, false);
+    generalActionsFiltered[0].dispatchAction(data?.selectedNodePath, false);
   };
 
   const copyValue = () => {
@@ -99,7 +99,8 @@ export const HiddenOptions = (props) => {
                   className="option"
                   data-cy="inspector-copy-path"
                 >
-                  <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
+                  <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
+
                   <span> Copy path</span>
                 </div>
                 <div
@@ -111,7 +112,7 @@ export const HiddenOptions = (props) => {
                   className="option"
                   data-cy="inspector-copy-value"
                 >
-                  <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
+                  <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
                   <span> Copy value</span>
                 </div>
               </div>
