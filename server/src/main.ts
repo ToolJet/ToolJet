@@ -158,6 +158,7 @@ async function bootstrap() {
     bufferLogs: true,
     abortOnError: false,
   });
+  const configService = app.get<ConfigService>(ConfigService);
 
   // Get DataSource from the app
   await validateEdition(app);
@@ -174,13 +175,8 @@ async function bootstrap() {
   if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
     replaceSubpathPlaceHoldersInStaticAssets();
   }
-  console.log(getTooljetEdition(), 'ToolJet Edition 🚀');
 
-  if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-    await handleLicensingInit(app);
-  }
-
-  const configService = app.get<ConfigService>(ConfigService);
+  await handleLicensingInit(app);
 
   custom.setHttpOptionsDefaults({
     timeout: parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500'), // Default 3.5 seconds
@@ -232,6 +228,9 @@ async function bootstrap() {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     const subPath = configService.get<string>('SUB_PATH');
 
+    console.log('ToolJet Edition 🚀 ', getTooljetEdition());
+    console.log('ToolJet Version 🚀 ', globalThis.TOOLJET_VERSION);
+    console.log(`CORS enabled: ${configService.get('ENABLE_CORS') === 'true'}`);
     console.log(`Ready to use at ${tooljetHost}${subPath || ''} 🚀`);
   });
 }
