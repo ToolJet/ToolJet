@@ -489,7 +489,7 @@ export const Tabs = function Tabs({
               display: 'flex',
               width: `${tabItems.length * 100}%`,
               transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
-              transition: 'transform 0.3s ease-in-out',
+              transition: transition === 'none' ? 'none' : 'transform 0.3s ease-in-out',
               height: '100%',
             }}
           >
