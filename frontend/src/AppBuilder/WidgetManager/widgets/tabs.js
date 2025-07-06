@@ -419,7 +419,7 @@ export const tabsConfig = {
       transition: { value: 'slide' },
       borderRadius: { value: '{{6}}' },
       border: { value: 'var(--cc-default-border)' },
-      boxShadow: { value: '0px 0px 0px 0px #121212' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
     },
   },
