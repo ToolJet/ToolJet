@@ -47,14 +47,15 @@ jobs:
 
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
-          git submodule foreach --recursive "
-            echo \"↪ \$name: trying to checkout $BRANCH\"
-            git fetch origin $BRANCH || echo \"⚠️ \$name: branch $BRANCH not found\"
-            git checkout $BRANCH || echo \"⚠️ \$name: checkout failed, staying on current branch\"
+          git submodule foreach --recursive bash -c "
+            echo '↪ '\$name': trying to checkout $BRANCH'
+            git fetch --all || true
+            git fetch origin $BRANCH:$BRANCH || echo '⚠️ '\$name': could not fetch $BRANCH'
+            git checkout $BRANCH || echo '⚠️ '\$name': checkout failed, staying on current branch'
             CURRENT=\$(git rev-parse --abbrev-ref HEAD)
-            echo \"✅ \$name: now on branch \$CURRENT\"
+            echo '✅ '\$name': now on branch '\$CURRENT
             if [ \"\$CURRENT\" != \"$BRANCH\" ]; then
-              echo \"❌ \$name: expected $BRANCH but got \$CURRENT\"
+              echo '❌ '\$name': expected $BRANCH but got '\$CURRENT
               exit 1
             fi
           "
