@@ -32,9 +32,9 @@ jobs:
           set -e
 
           BRANCH="${{ github.event.inputs.branch }}"
-          REPO="https://x-access-token:${{ secrets.TOKEN_PR }}@github.com/${{ github.repository }}"
+          REPO="https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
 
-          git config --global url."https://x-access-token:${{ secrets.TOKEN_PR }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git config --global http.version HTTP/1.1
           git config --global http.postBuffer 524288000
 
