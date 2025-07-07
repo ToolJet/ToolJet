@@ -94,7 +94,7 @@ export function replaceSubpathPlaceHoldersInStaticAssets() {
 
   for (const fileName of filesToReplaceAssetPath) {
     try {
-      const file = join(__dirname, '../../../', 'frontend/build', fileName);
+      const file = join(__dirname, '../../../../', 'frontend/build', fileName);
       logger.log(`Processing file: ${fileName}`);
 
       let newValue = process.env.SUB_PATH;
