@@ -23,7 +23,14 @@ export const Pagination = function Pagination({
           onClick={() => gotoPage(index)}
           className={`page-item ${currentPage === index ? 'active' : ''}`}
         >
-          <a className="page-link">{index}</a>
+          <a
+            className="page-link"
+            style={{
+              color: '#656D77',
+            }}
+          >
+            {index}
+          </a>
         </li>
       );
     }
