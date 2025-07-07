@@ -58,9 +58,8 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 
 </div>
 
-
 :::tip
-You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
+You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/beta/app-builder/custom-code/transform-data)
 :::
 
 </div>
@@ -71,19 +70,19 @@ You can apply transformations to the query results. Refer to our transformations
 
 Databricks supports standard SQL commands for data manipulation tasks.
 
-### Read Data 
+### Read Data
 
-The following example demonstrates how to read data from a table. The query selects all the columns from the *customers* table.
+The following example demonstrates how to read data from a table. The query selects all the columns from the _customers_ table.
 
 ```sql
-SELECT * FROM customers 
+SELECT * FROM customers
 ```
 
 <img className="screenshot-full" src="/img/datasource-reference/databricks/readData.png" alt="Databricks: Read Data Query" style={{marginBottom:'15px'}}/>
 
-### Write Data 
+### Write Data
 
-The following example demonstrates how to write data to a table. The query inserts a new row into the *customers* table.
+The following example demonstrates how to write data to a table. The query inserts a new row into the _customers_ table.
 
 ```sql
 INSERT INTO customers (
@@ -96,13 +95,13 @@ INSERT INTO customers (
     state,
     zip_code,
     country
-) VALUES ( 
+) VALUES (
     '1001'
-    'Tom', 
-    'Hudson', 
-    'tom.hudson@example.com', 
-    '50493552', 
-    'San Clemente', 
+    'Tom',
+    'Hudson',
+    'tom.hudson@example.com',
+    '50493552',
+    'San Clemente',
     'CA',
     '92673',
     'USA'
@@ -111,9 +110,9 @@ INSERT INTO customers (
 
 <img className="screenshot-full" src="/img/datasource-reference/databricks/writeData.png" alt="Databricks: Write Data Query" style={{marginBottom:'15px'}}/>
 
-### Update Data 
+### Update Data
 
-The following example demonstrates how to update data in a table. The query updates the *first_name* and *email* column of the *customers* table.
+The following example demonstrates how to update data in a table. The query updates the _first_name_ and _email_ column of the _customers_ table.
 
 ```sql
 UPDATE customer
@@ -126,7 +125,7 @@ WHERE customer_id = 1001;
 
 ### Delete Data
 
-The following example demonstrates how to delete data from a table. The query deletes a row from the *customers* table.
+The following example demonstrates how to delete data from a table. The query deletes a row from the _customers_ table.
 
 ```sql
 DELETE FROM customer

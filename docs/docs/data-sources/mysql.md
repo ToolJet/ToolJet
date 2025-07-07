@@ -48,7 +48,7 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 ## Querying in SQL Mode
 
-SQL mode can be used to query MySQL database using SQL queries. 
+SQL mode can be used to query MySQL database using SQL queries.
 
 1. Create a new query and select the MySQL data source.
 2. Select **SQL mode** from the dropdown.
@@ -74,7 +74,8 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/parameterized-query.png" alt="mysql"/>
 
-#### Example:
+##### Example:
+
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
@@ -107,7 +108,7 @@ MySQL offers dynamic functions and system variables that provide real-time infor
 
 ## Querying in GUI Mode
 
-GUI mode can be used to query MySQL database without writing queries. 
+GUI mode can be used to query MySQL database without writing queries.
 
 1. Create a new query and select the MySQL data source.
 2. Select **GUI mode** from the dropdown.
@@ -129,7 +130,7 @@ GUI mode can be used to query MySQL database without writing queries.
 </div>
 
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Learn more about transformations [here](/docs/beta/app-builder/custom-code/transform-data).
 :::
 
 </div>
