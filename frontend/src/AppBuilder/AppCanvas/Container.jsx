@@ -37,7 +37,7 @@ import { noop } from 'lodash';
   index - used to identify the subcontainer index
   onOptionChange - used to pass the onOptionChange function to the child components and pass the exposedValues to the parent component
 */
-export const Container = React.memo(
+const Container = React.memo(
   ({
     id,
     canvasWidth,
@@ -235,7 +235,7 @@ export const Container = React.memo(
         </div>
       );
     };
-    const sortedComponents = useSortedComponents(components, currentLayout, id);
+    const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
 
     return (
       <div
@@ -310,3 +310,7 @@ export const Container = React.memo(
     );
   }
 );
+
+Container.displayName = 'Container';
+
+export { Container };

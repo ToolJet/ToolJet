@@ -217,4 +217,7 @@ const RenderWidget = ({
     </ErrorBoundary>
   );
 };
+
+RenderWidget.displayName = 'RenderWidget';
+
 export default memo(RenderWidget);

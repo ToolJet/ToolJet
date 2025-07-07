@@ -19,6 +19,7 @@ import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { DragGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
+import { debounce } from 'lodash';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -73,13 +74,15 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }, []);
 
   useEffect(() => {
-    function handleResize() {
+    function handleResizeImmediate() {
       const _canvasWidth =
         moduleId === 'canvas'
           ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
           : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
+
+    const handleResize = debounce(handleResizeImmediate, 300);
 
     if (moduleId === 'canvas') {
       window.addEventListener('resize', handleResize);
@@ -91,11 +94,15 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       return () => {
         if (elem) resizeObserver.unobserve(elem);
         resizeObserver.disconnect();
+        handleResize.cancel();
       };
     }
-    handleResize();
+    handleResizeImmediate();
 
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      handleResize.cancel();
+    };
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
 
   const canvasContainerStyles = useMemo(() => {
