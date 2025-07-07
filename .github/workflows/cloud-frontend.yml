@@ -55,7 +55,7 @@ jobs:
             if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
               echo "From origin: branch $BRANCH exists"
               PREVIOUS_HEAD=$(git rev-parse --short HEAD)
-              git checkout -b "$BRANCH" "origin/$BRANCH"
+              git checkout -B "$BRANCH" "origin/$BRANCH"
               echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
               echo "Switched to branch $BRANCH"
             else
