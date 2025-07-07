@@ -73,11 +73,10 @@ export function findTenantSchema(organisationId: string): string {
   return `workspace_${organisationId}`;
 }
 
+// TODO: Cloud TJDB SQL mode is disabled: Use public schema for cloud edition
+// This is because Postgrest doesn't handle loading large amount of schemas in memory
+// We need to migrate to use Table based access control instead of schema based access control
 export function isSQLModeDisabled(): boolean {
-  // Cloud TJDB SQL mode disabled: Use public schema for cloud edition
-  // This is because Postgrest doesn't handle loading large amount of schemas in memory
-  // This is required to expose SQL mode on cloud edition
-  // For CE/EE, we use tenant-specific schema with SQL mode
   return process.env.TJDB_SQL_MODE_DISABLE === 'true' || getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
 }
 
