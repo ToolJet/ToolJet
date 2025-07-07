@@ -280,15 +280,25 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const credentialValue = option['value'];
 
         if (option['encrypted']) {
+          const existingCredentialId =
+            dataSource?.options && dataSource.options[key] && dataSource.options[key]['credential_id'];
+
           if (credentialValue && (credentialValue.includes('{{constants') || credentialValue.includes('{{secrets'))) {
             if (!parsedOptions[key]) {
               parsedOptions[key] = {};
             }
             parsedOptions[key].workspace_constant = credentialValue;
+          } else {
+            if (
+              existingCredentialId &&
+              credentialValue !== undefined &&
+              credentialValue !== (await this.credentialService.getValue(existingCredentialId))
+            ) {
+              if (parsedOptions[key]) {
+                delete parsedOptions[key].workspace_constant;
+              }
+            }
           }
-
-          const existingCredentialId =
-            dataSource?.options && dataSource.options[key] && dataSource.options[key]['credential_id'];
 
           if (existingCredentialId) {
             if (credentialValue !== undefined) {
