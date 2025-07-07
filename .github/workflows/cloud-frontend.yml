@@ -50,10 +50,11 @@ jobs:
           BRANCH="$BRANCH" git submodule foreach --recursive '
             echo "Entering '\''$name'\''"
             echo "↪ $name: trying to checkout '"$BRANCH"'"
-            git fetch origin
 
+            git fetch origin
             if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
               echo "From origin: branch $BRANCH exists"
+              git fetch origin "$BRANCH"  # ✅ explicitly fetch the branch ref
               PREVIOUS_HEAD=$(git rev-parse --short HEAD)
               git checkout -B "$BRANCH" "origin/$BRANCH"
               echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
