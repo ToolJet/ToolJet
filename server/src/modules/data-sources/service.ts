@@ -20,10 +20,9 @@ import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
-// import { FEATURE_KEY } from './constants';
-import { OrganizationsService } from '@modules/organizations/service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import * as fs from 'fs';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -32,8 +31,7 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly abilityService: AbilityService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector,
-    protected readonly organizationsService: OrganizationsService
+    protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
 
   async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
@@ -120,7 +118,6 @@ export class DataSourcesService implements IDataSourcesService {
     if (kind === 'grpc') {
       const rootDir = process.cwd().split('/').slice(0, -1).join('/');
       const protoFilePath = `${rootDir}/protos/service.proto`;
-      const fs = require('fs');
 
       const filecontent = fs.readFileSync(protoFilePath, 'utf8');
       const rcps = await this.dataSourcesUtilService.getServiceAndRpcNames(filecontent);
