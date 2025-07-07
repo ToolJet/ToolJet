@@ -10,12 +10,14 @@ This repository contains Helm charts for deploying [ToolJet](https://github.com/
 ## Installation
 
 ### From Helm repo
+
 ```bash
 helm repo add tooljet https://github.com/ToolJet/helm-charts.git
 helm install tooljet tooljet/tooljet
 ```
 
 ### From the Source
+
 1. Clone the repository and navigate to this directory
 2. Run `helm dependency update`
 3. It is recommended but optional to modify the values in the `values.yaml` file, such as usernames, passwords, persistence settings, etc.
@@ -45,4 +47,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._

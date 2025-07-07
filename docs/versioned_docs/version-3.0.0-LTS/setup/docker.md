@@ -15,9 +15,11 @@ If you rather want to try out ToolJet on your local machine with Docker, you can
 :::
 
 ### Installing Docker and Docker Compose
+
 Install docker and docker-compose on the server.
-  - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
-  - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
+
+- Docs for [Docker Installation](https://docs.docker.com/engine/install/)
+- Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
 ### Deployment options
 
@@ -26,7 +28,7 @@ There are two options to deploy ToolJet using Docker Compose:
 1. **With in-built PostgreSQL database (recommended)**. This setup uses the official Docker image of PostgreSQL.
 2. **With external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 
-Confused about which setup to select? Feel free to ask the community via [Slack](/docs/slack).
+Confused about which setup to select? Feel free to ask the community via [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
 
 <Tabs>
   <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
@@ -163,4 +165,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._
