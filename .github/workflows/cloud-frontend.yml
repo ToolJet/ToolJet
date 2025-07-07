@@ -52,14 +52,14 @@ jobs:
             echo "↪ $name: trying to checkout '"$BRANCH"'"
             git fetch origin
 
-            if git ls-remote --exit-code --heads origin '"$BRANCH"' >/dev/null 2>&1; then
-              echo "From origin: branch '"$BRANCH"' exists"
+            if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+              echo "From origin: branch $BRANCH exists"
               PREVIOUS_HEAD=$(git rev-parse --short HEAD)
-              git checkout '"$BRANCH"' && git pull origin '"$BRANCH"'
+              git checkout -b "$BRANCH" "origin/$BRANCH"
               echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
-              echo "Switched to branch '"$BRANCH"'"
+              echo "Switched to branch $BRANCH"
             else
-              echo "⚠️ $name: branch '"$BRANCH"' not found on origin. Falling back to main."
+              echo "⚠️ $name: branch $BRANCH not found on origin. Falling back to main."
               PREVIOUS_HEAD=$(git rev-parse --short HEAD)
               git checkout main && git pull origin main
               echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
