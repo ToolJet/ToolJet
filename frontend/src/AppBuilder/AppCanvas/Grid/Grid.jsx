@@ -23,7 +23,7 @@ import {
   computeScrollDelta,
   computeScrollDeltaOnDrag,
   getDraggingWidgetWidth,
-  positionDragGhostWidget,
+  positionGhostElement,
   findNewParentIdFromMousePosition,
 } from './gridUtils';
 import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
@@ -536,9 +536,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             const _top = originalBox.top;
 
             // Apply transform to return to original position
-            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${
-              Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
           }
         });
 
@@ -648,12 +647,8 @@ export default function Grid({ gridWidth, currentLayout }) {
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
 
           // Show grid during resize
-          if (currentWidget.component?.parent) {
-            document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.add('show-grid');
-            setDragParentId(currentWidget.component?.parent);
-          } else {
-            document.getElementById('real-canvas').classList.add('show-grid');
-          }
+          showGridLines();
+
 
           handleActivateTargets(currentWidget.component?.parent);
           const currentWidth = currentWidget.width * _gridWidth;
@@ -697,6 +692,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
           if (e.width > 0) e.target.style.width = `${e.width}px`;
           if (e.height > 0) e.target.style.height = `${e.height}px`;
+          positionGhostElement(e.target, 'resize-ghost-widget');
         }}
         onResizeStart={(e) => {
           if (
@@ -752,9 +748,8 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             const roundedTransformY = Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT;
             transformY = transformY % GRID_HEIGHT === 5 ? roundedTransformY - GRID_HEIGHT : roundedTransformY;
-            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
-              Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }
@@ -1094,7 +1089,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
           );
 
-          positionDragGhostWidget(e.target);
+          positionGhostElement(e.target, 'moveable-drag-ghost');
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
@@ -1179,8 +1174,8 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         // snapGridAll={true}
         scrollable={true}
-        // snapContainer={snapContainer}
-        // snapGridWidth={100}
+      // snapContainer={snapContainer}
+      // snapGridWidth={100}
       />
     </>
   );
