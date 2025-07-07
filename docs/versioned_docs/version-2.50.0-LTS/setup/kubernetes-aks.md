@@ -21,7 +21,17 @@ Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
 
 :::info
 For the setup, ToolJet requires:
-<ul> - **TOOLJET_DB** - **TOOLJET_DB_HOST** - **TOOLJET_DB_USER** - **TOOLJET_DB_PASS** - **PG_HOST** - **PG_DB** - **PG_USER** - **PG_PASS** - **SECRET_KEY_BASE** - **LOCKBOX_KEY**
+<ul> 
+- **TOOLJET_DB** 
+- **TOOLJET_DB_HOST** 
+- **TOOLJET_DB_USER** 
+- **TOOLJET_DB_PASS** 
+- **PG_HOST** 
+- **PG_DB** 
+- **PG_USER** 
+- **PG_PASS** 
+- **SECRET_KEY_BASE** 
+- **LOCKBOX_KEY**
 </ul>
 <br/>
 Read **[environment variables reference](/docs/setup/env-vars)**

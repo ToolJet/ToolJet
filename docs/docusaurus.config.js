@@ -137,6 +137,111 @@ module.exports = {
       <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("c4rgfujgx6jef4722rcjfhj7dlmcipih",{host:"https://api.factors.ai"}),this}(),function(){var t=document.createElement("script");t.type="text/javascript",t.src="https://app.factors.ai/assets/factors.js",t.async=!0,(d=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,d)}();</script>
       <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5L8R522S" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+      <script>
+      (function () {
+          const hubspotKeys = ['__hstc', '__hssc', '__hsfp'];
+          const marketingKeys = ['utm_', '_hs', '_gl', 'li'];
+          const exactKeys = ['gclid', '_ga', '_gid', 'msclkid', 'fbclid', 'li_fat_id', 'gbraid'];
+          function getStoredParams() {
+              const keys = JSON.parse(localStorage.getItem("storedQueryParamsKeys") || "[]");
+              const params = {};
+              keys.forEach(key => {
+                  const val = localStorage.getItem(key);
+                  if (val) params[key] = val;
+              });
+              return params;
+          }
+          function storeUTMParams() {
+              try {
+                  const url = new URL(window.location.href);
+                  const params = new URLSearchParams(url.search);
+                  const storedParams = {};
+                  const keysToStore = [];
+                  for (const [key, value] of params.entries()) {
+                      const isMatch = exactKeys.includes(key) || marketingKeys.some(prefix => key.startsWith(prefix)) || hubspotKeys.includes(key);
+                      if (isMatch && value && value !== '[object Object]') {
+                        localStorage.setItem(key, value);
+                          storedParams[key] = value;
+                          keysToStore.push(key);
+                      }
+                  }
+                  if (keysToStore.length > 0) {
+                      localStorage.setItem("storedQueryParamsKeys", JSON.stringify(keysToStore));
+                  }
+              } catch (e) {
+                  console.warn('UTM store error:', e);
+              }
+          }
+          function appendTrackingToLinks() {
+              const utmParams = getStoredParams();
+              const links = document.querySelectorAll('a[href]');
+              const allowedDomains = ['tooljet.ai', 'tooljet.com', 'tooljet.webflow.io', 'docs.tooljet.ai'];
+              links.forEach(link => {
+                  const href = link.getAttribute('href');
+                  if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+                  const tempA = document.createElement('a');
+                  tempA.href = href;
+                  const isInternal = allowedDomains.some(domain => tempA.hostname.includes(domain));
+                  if (!isInternal) return;
+                  const linkParams = new URLSearchParams(tempA.search);
+                  Object.entries(utmParams).forEach(([key, value]) => {
+                      if (!linkParams.has(key)) linkParams.set(key, value);
+                  });
+                  const newHref = tempA.origin + tempA.pathname + (linkParams.toString() ? '?' + linkParams.toString() : '') + tempA.hash;
+                  link.setAttribute('href', newHref);
+              });
+          }
+          // NEW: Function to build URL with stored UTM parameters
+          function buildUrlWithStoredParams(baseUrl) {
+              try {
+                  const storedParams = getStoredParams();
+                  if (Object.keys(storedParams).length === 0) {
+                      return baseUrl;
+                  }
+                  const url = new URL(baseUrl, window.location.origin);
+                  const urlParams = new URLSearchParams(url.search);
+                  // Add stored parameters that don't already exist in the URL
+                  Object.entries(storedParams).forEach(([key, value]) => {
+                      if (!urlParams.has(key)) {
+                          urlParams.set(key, value);
+                      }
+                  });
+                  const finalUrl = url.origin + url.pathname +
+                      (urlParams.toString() ? '?' + urlParams.toString() : '') +
+                      url.hash;
+                  return finalUrl;
+              } catch (e) {
+                  console.warn('Error building URL with params:', e);
+                  return baseUrl;
+              }
+          }
+          function clearStoredUTMParams() {
+              try {
+                  const storedKeys = JSON.parse(localStorage.getItem("storedQueryParamsKeys") || "[]");
+                  storedKeys.forEach(key => {
+                      localStorage.removeItem(key);
+                  });
+                  localStorage.removeItem("storedQueryParamsKeys");
+              } catch (e) {
+                  console.warn('Error clearing UTM params:', e);
+              }
+          }
+          // Run when the page loads
+          window.addEventListener('load', () => {
+              clearStoredUTMParams();
+              storeUTMParams();
+              appendTrackingToLinks();
+          });
+          // Run before the user leaves the page
+          window.addEventListener('beforeunload', () => {
+              clearStoredUTMParams();
+          });
+          // Expose functions for manual use
+          window.clearStoredUTMParams = clearStoredUTMParams;
+          window.getStoredUTMParams = getStoredParams; // NEW: Access stored params
+          window.buildUrlWithStoredParams = buildUrlWithStoredParams; // NEW: Build URLs with UTM params
+      })();
+      </script>
       `,
     },    
     algolia: {

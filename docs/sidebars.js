@@ -317,7 +317,7 @@ const sidebars = {
         'data-sources/overview',
         {
           'type': 'category',
-          'label': 'Data Sources library',
+          'label': 'Data Sources Library',
           'items': [
             'data-sources/airtable',
             'data-sources/s3',
