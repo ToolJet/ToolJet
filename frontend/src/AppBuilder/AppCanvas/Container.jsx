@@ -301,6 +301,7 @@ export const Container = React.memo(
               mode={currentMode}
               currentLayout={currentLayout}
               darkMode={darkMode}
+              moduleId={moduleId}
             />
           ))}
         </div>

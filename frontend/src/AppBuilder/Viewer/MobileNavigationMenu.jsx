@@ -14,11 +14,12 @@ import AppLogo from '@/_components/AppLogo';
 import { Link } from 'react-router-dom';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
+const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
   const { moduleId } = useModuleContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const groupActive = currentPage.pageGroupId === pageGroup?.id;
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const pages = useStore((state) => state.modules[moduleId].pages);
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };

@@ -5,21 +5,17 @@ import {
   appsService,
   appVersionService,
   dataqueryService,
-  datasourceService,
   orgEnvironmentConstantService,
   authenticationService,
-  orgEnvironmentVariableService,
   customStylesService,
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
-import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
-import { camelCase, cloneDeep, isEmpty, kebabCase, mapKeys, noop, rest } from 'lodash';
+import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import useRouter from '@/_hooks/use-router';
-import { extractEnvironmentConstantsFromConstantsList, navigate } from '../_utils/misc';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
@@ -30,7 +26,6 @@ import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
-import { handleError } from '@/_helpers/handleAppAccess';
 import toast from 'react-hot-toast';
 
 /**
@@ -67,13 +62,13 @@ const useAppData = (
   moduleMode = false
 ) => {
   const mounted = useMounted();
-  const initModules = useStore((state) => state.initModules, shallow);
+  const initModules = useStore((state) => state.initModules);
   moduleMode && !mounted && initModules(moduleId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
+
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
-  const app = useStore((state) => state.appStore.modules[moduleId].app);
   const user = useStore((state) => state.user);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
@@ -90,10 +85,6 @@ const useAppData = (
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
-  const previousVersion = usePrevious(currentVersionId);
-  const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
-  const pages = useStore((state) => state.modules[moduleId]?.pages || []);
-  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -115,23 +106,17 @@ const useAppData = (
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const appMode = useStore((state) => state.globalSettings.appMode);
-  const selectedTheme = useStore((state) => state.globalSettings.theme);
-  const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
-  const isComponentLayoutReady = useStore((state) => state.appStore.modules[moduleId].isComponentLayoutReady, shallow);
-  const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
 
-  const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop, shallow);
-  const setModulesList = useStore((state) => state?.setModulesList ?? noop, shallow);
+  const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
+  const setModulesList = useStore((state) => state?.setModulesList ?? noop);
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
 
   const themeAccess = useThemeAccess();
-  const themeChanged = useStore((state) => state.themeChanged);
   const detectThemeChange = useStore((state) => state.detectThemeChange);
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
@@ -142,10 +127,18 @@ const useAppData = (
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
   const slug = moduleMode ? '' : pathParams?.slug;
+
+  const previousVersion = usePrevious(currentVersionId);
+  const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
+  const appMode = useStore((state) => state.globalSettings.appMode);
+  const selectedTheme = useStore((state) => state.globalSettings.theme);
+  const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
+  const isComponentLayoutReady = useStore((state) => state.appStore.modules[moduleId].isComponentLayoutReady);
+  const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const licenseStatus = useStore((state) => state.isLicenseValid());
-
-
-  const match = useMatch('/applications/:slug/:pageHandle');
+  const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
+  const appName = useStore((state) => state.appStore.modules[moduleId].app.name);
 
   const location = useRouter().location;
 
@@ -543,10 +536,7 @@ const useAppData = (
   useEffect(() => {
     if (isComponentLayoutReady) {
       runOnLoadQueries(moduleId).then(() => {
-        let startingPage = pages.find((page) => page.id === currentPageId);
-        const currentPageEvents = events.filter(
-          (event) => event.target === 'page' && event.sourceId === startingPage.id
-        );
+        const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
@@ -556,12 +546,12 @@ const useAppData = (
     if (moduleId) return;
     fetchAndSetWindowTitle({
       page: pageTitles.EDITOR,
-      appName: app.appName,
+      appName: appName,
       mode: mode,
       isReleased: isReleasedVersionId,
       licenseStatus: licenseStatus,
     });
-  }, [app.appName, isReleasedVersionId, licenseStatus, mode, moduleId]);
+  }, [appName, isReleasedVersionId, licenseStatus, mode, moduleId]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -656,7 +646,7 @@ const useAppData = (
             }
           });
           // fetchDataSources(currentVersionId, selectedEnvironment.id);
-          fetchGlobalDataSources(app.organizationId, currentVersionId, selectedEnvironment.id);
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
           setResolvedConstants(orgConstants);
           setSecrets(orgSecrets);
         }

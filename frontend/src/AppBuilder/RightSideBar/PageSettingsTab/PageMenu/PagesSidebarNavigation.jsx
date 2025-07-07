@@ -21,7 +21,6 @@ import { Overlay, Popover } from 'react-bootstrap';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
-  pages,
   currentPageId,
   switchPage,
   darkMode,
@@ -42,6 +41,7 @@ export const PagesSidebarNavigation = ({
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const pages = useStore((state) => state.modules.canvas.pages, shallow);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);

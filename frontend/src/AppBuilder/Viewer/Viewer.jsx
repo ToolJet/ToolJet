@@ -16,7 +16,6 @@ import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
-import toast from 'react-hot-toast';
 
 export const Viewer = ({
   id: appId,
@@ -41,7 +40,6 @@ export const Viewer = ({
     currentCanvasWidth,
     currentPageId,
     globalSettings,
-    pages,
     pageSettings,
     updateCanvasHeight,
     appName,
@@ -62,9 +60,6 @@ export const Viewer = ({
       homePageId: state.appStore.modules[moduleId].app.homepageId,
       currentPageId: state.modules[moduleId].currentPageId,
       globalSettings: state.globalSettings,
-      pages: state.modules[moduleId].pages,
-      modules: state.modules,
-      globalSettingsChanged: state.globalSettingsChanged,
       pageSettings: state.pageSettings,
       updateCanvasHeight: state.updateCanvasBottomHeight,
       isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
@@ -77,7 +72,6 @@ export const Viewer = ({
 
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
-  const changeDarkMode = useStore((state) => state.changeDarkMode);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
@@ -104,18 +98,14 @@ export const Viewer = ({
   }, [isSidebarPinned]);
 
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { position, hideHeader } = properties ?? {};
+  const { position } = properties ?? {};
 
   const canvasRef = useRef(null);
-  const isLoading = false;
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
-  const isMobileDevice = deviceWindowWidth < 600;
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
-  const isLicenseValid = useStore((state) => state.isLicenseValid);
-  const licenseValid = isLicenseValid();
   // ---remove
   const handleAppEnvironmentChanged = useCallback((environment) => {
     console.log('setAppVersionCurrentEnvironment', environment);
@@ -160,7 +150,6 @@ export const Viewer = ({
           isAppLoaded={isAppLoaded}
           appName={appName}
           darkMode={darkMode}
-          pages={pages}
           currentPageId={currentPageId ?? homePageId}
           showViewerNavigation={!hideSidebar}
           handleAppEnvironmentChanged={handleAppEnvironmentChanged}
@@ -176,7 +165,6 @@ export const Viewer = ({
             showHeader={showHeader}
             appName={appName}
             darkMode={darkMode}
-            pages={pages}
             currentPageId={currentPageId ?? homePageId}
             showViewerNavigation={!hideSidebar}
             handleAppEnvironmentChanged={handleAppEnvironmentChanged}
@@ -273,7 +261,6 @@ export const Viewer = ({
                                   showHeader={showHeader && isAppLoaded}
                                   appName={appName}
                                   darkMode={darkMode}
-                                  pages={pages}
                                   currentPageId={currentPageId ?? homePageId}
                                   showViewerNavigation={!hideSidebar}
                                   handleAppEnvironmentChanged={handleAppEnvironmentChanged}
