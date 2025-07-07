@@ -13,7 +13,7 @@ export class AuditLogsDurationGuard implements CanActivate {
       auditLogsEnabled,
     } = await this.licenseTermsService.getLicenseTerms(
       [LICENSE_FIELD.STATUS, LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS, LICENSE_FIELD.AUDIT_LOGS],
-      request?.user?.organization?.id
+      request?.user?.organizationId
     );
     if (!auditLogsEnabled) {
       throw new HttpException(

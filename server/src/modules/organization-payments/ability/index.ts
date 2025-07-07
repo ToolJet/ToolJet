@@ -18,22 +18,23 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     can: AbilityBuilder<OrganizationConstantAbility>['can'],
     userPermissions: UserAllPermissions
   ): void {
-    const { superAdmin, isAdmin } = userPermissions;
+    const { isAdmin } = userPermissions;
 
-    if (superAdmin || isAdmin) {
+    if (isAdmin) {
       can(
         [
           FEATURE_KEY.CREATE_PORTAL_LINK,
-          FEATURE_KEY.GENERATE_PAYMENT_LINK,
+          FEATURE_KEY.GET_CURRENT_PLAN_DETAILS,
           FEATURE_KEY.GET_PRORATION,
           FEATURE_KEY.GET_REDIRECT_URL,
           FEATURE_KEY.GET_UPCOMING_INVOICE,
-          FEATURE_KEY.STRIPE_WEBHOOK,
           FEATURE_KEY.UPDATE_INVOICE,
           FEATURE_KEY.UPDATE_SUBSCRIPTION,
         ],
         OrganizationSubscription
       );
     }
+
+    can([FEATURE_KEY.STRIPE_WEBHOOK], OrganizationSubscription);
   }
 }
