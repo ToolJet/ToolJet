@@ -47,19 +47,44 @@ jobs:
 
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
-          git submodule foreach --recursive bash -c "
-            echo '↪ '\$name': trying to checkout $BRANCH'
-            git fetch --all || true
-            git fetch origin $BRANCH:$BRANCH || echo '⚠️ '\$name': could not fetch $BRANCH'
-            git checkout $BRANCH || echo '⚠️ '\$name': checkout failed, staying on current branch'
-            CURRENT=\$(git rev-parse --abbrev-ref HEAD)
-            echo '✅ '\$name': now on branch '\$CURRENT
-            if [ \"\$CURRENT\" != \"$BRANCH\" ]; then
-              echo '❌ '\$name': expected $BRANCH but got '\$CURRENT
+          BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
+            name="$sm_path"
+            echo ""
+            echo "Entering '\''$name'\''"
+            echo "↪ $name: trying to checkout branch '\''$BRANCH'\''"
+
+            if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+              git fetch origin "$BRANCH:$BRANCH" || {
+                echo "❌ $name: fetch failed for $BRANCH"
+                exit 1
+              }
+
+              PREV=$(git rev-parse --short HEAD || echo "unknown")
+              git checkout "$BRANCH" || {
+                echo "❌ $name: checkout failed for $BRANCH"
+                exit 1
+              }
+
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
+              echo "✅ $name: checked out branch $BRANCH"
+            else
+              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'main'"
+              PREV=$(git rev-parse --short HEAD || echo "unknown")
+              git checkout main && git pull origin main || {
+                echo "❌ $name: fallback to main failed"
+                exit 1
+              }
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
+              echo "✅ $name: now on branch main"
+            fi
+
+            CURRENT=$(git rev-parse --abbrev-ref HEAD)
+            echo "🔎 $name: current branch = $CURRENT"
+            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "main" ]; then
+              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'main', got '$CURRENT'"
               exit 1
             fi
-          "
-
+          '
 
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v2
