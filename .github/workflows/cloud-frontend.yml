@@ -47,71 +47,73 @@ jobs:
 
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
-          BRANCH="$BRANCH" git submodule foreach --recursive '
+          BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
+            name="$sm_path"
+            echo ""
             echo "Entering '\''$name'\''"
-            echo "↪ $name: trying to checkout '"$BRANCH"'"
+            echo "↪ $name: trying to checkout branch '\''$BRANCH'\''"
+            git fetch origin "$BRANCH" || echo "⚠️ $name: failed to fetch branch $BRANCH"
 
-            git fetch origin
-            if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-              echo "From origin: branch $BRANCH exists"
-              git fetch origin "$BRANCH"  # ✅ explicitly fetch the branch ref
-              PREVIOUS_HEAD=$(git rev-parse --short HEAD)
-              git checkout -B "$BRANCH" "origin/$BRANCH"
-              echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
-              echo "Switched to branch $BRANCH"
+            if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+              PREV=$(git rev-parse --short HEAD)
+              git checkout -B "$BRANCH" "origin/$BRANCH" && echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s)"
+              echo "✅ $name: checked out branch $BRANCH"
             else
-              echo "⚠️ $name: branch $BRANCH not found on origin. Falling back to main."
-              PREVIOUS_HEAD=$(git rev-parse --short HEAD)
+              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'main'"
+              PREV=$(git rev-parse --short HEAD)
               git checkout main && git pull origin main
-              echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
-              echo "Switched to branch main"
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s)"
+              echo "✅ $name: now on branch main"
             fi
 
             CURRENT=$(git rev-parse --abbrev-ref HEAD)
-            echo "✅ $name: now on branch $CURRENT"
+            echo "🔎 $name: current branch = $CURRENT"
+            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "main" ]; then
+              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'main', got '$CURRENT'"
+              exit 1
+            fi
           '
 
+      # - name: 🧰 Setup Node.js
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: 22.15.1
 
-      - name: 🧰 Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 22.15.1
+      # - name: 📦 Install dependencies
+      #   run: npm install
+      #   working-directory: repo
 
-      - name: 📦 Install dependencies
-        run: npm install
-        working-directory: repo
+      # - name: 🛠️ Build the project
+      #   run: npm run build:plugins:prod && npm run build:frontend
+      #   working-directory: repo
+      #   env:
+      #     GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
+      #     NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
+      #     NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
+      #     SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
+      #     SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
+      #     SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
+      #     SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
+      #     SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
+      #     TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
+      #     TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
+      #     TOOLJET_EDITION: cloud
 
-      - name: 🛠️ Build the project
-        run: npm run build:plugins:prod && npm run build:frontend
-        working-directory: repo
-        env:
-          GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
-          NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
-          NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
-          SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
-          SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
-          TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
-          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
-          TOOLJET_EDITION: cloud
-
-      - name: 🚀 Deploy to Netlify
-        run: |
-          npm install -g netlify-cli
-          netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }}
-        working-directory: repo
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
-          NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
-          NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
-          SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
-          SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
-          TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
-          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
-          TOOLJET_EDITION: cloud
+      # - name: 🚀 Deploy to Netlify
+      #   run: |
+      #     npm install -g netlify-cli
+      #     netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }}
+      #   working-directory: repo
+      #   env:
+      #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      #     GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
+      #     NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
+      #     NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
+      #     SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
+      #     SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
+      #     SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
+      #     SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
+      #     SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
+      #     TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
+      #     TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
+      #     TOOLJET_EDITION: cloud
