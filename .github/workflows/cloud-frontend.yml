@@ -47,8 +47,8 @@ jobs:
 
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
-          # 👇 Pass BRANCH explicitly into the sub-shell via env
           BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
+            name=$(basename "$PWD")
             echo "Entering '\''$name'\''"
             echo "↪ $name: trying to checkout $BRANCH"
             git fetch origin
