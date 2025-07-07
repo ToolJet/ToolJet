@@ -271,15 +271,6 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'Actions Reference',
-              'link': {
-                'type': 'generated-index',
-                'title': 'Actions Reference',
-                'description': 'All the actions that can be performed through event handlers',
-                'keywords': [
-                  'actions',
-                  'events',
-                ],
-              },
               'items': [
                 'actions/run-query',
                 'actions/show-alert',
