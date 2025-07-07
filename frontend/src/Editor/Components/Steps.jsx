@@ -143,8 +143,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
     setExposedVariable('setStep', (stepId) => {
       if (!disabledState) setActiveStepId(stepId);
     });
-    setExposedVariable('setVisibility', (visibility) => setIsVisible(visibility));
-    setExposedVariable('setDisable', (disabled) => setIsDisabled(disabled));
+    setExposedVariable('setVisibility', (visibility) => setIsVisible(!!visibility));
+    setExposedVariable('setDisable', (disabled) => setIsDisabled(!!disabled));
   }, [isVisible, isDisabled, activeStepId, stepsArr, disabledState]);
 
   // Update state from props

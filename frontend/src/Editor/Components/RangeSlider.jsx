@@ -68,16 +68,16 @@ export const RangeSlider = ({
         fireEvent('onChange');
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setDisable: async function (value) {
-        setDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       setLoading: async function (value) {
-        setLoading(value);
-        setExposedVariable('isLoading', value);
+        setLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
     };
     setExposedVariables(exposedVariables);

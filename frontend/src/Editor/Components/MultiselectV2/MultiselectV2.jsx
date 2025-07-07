@@ -237,13 +237,16 @@ export const MultiselectV2 = ({
         setInputValue([]);
       },
       setVisibility: async function (value) {
-        setVisibility(value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsMultiSelectLoading(value);
+        setIsMultiSelectLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsMultiSelectDisabled(value);
+        setIsMultiSelectDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       label: label,
       isVisible: properties.visibility,

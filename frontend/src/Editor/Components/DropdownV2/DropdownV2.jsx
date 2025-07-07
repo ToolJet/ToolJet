@@ -287,16 +287,16 @@ export const DropdownV2 = ({
         setInputValue(null);
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsDropdownLoading(value);
-        setExposedVariable('isLoading', value);
+        setIsDropdownLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsDropdownDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setIsDropdownDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       selectOption: async function (value) {
         let _value = value;
