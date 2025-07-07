@@ -44,7 +44,7 @@ function createWorkflowQuery(app_id, app_version_id, name, kind, options, data_s
     name,
     kind,
     options,
-    data_source_id: data_source_id,
+    data_source_id,
     plugin_id,
   };
 
