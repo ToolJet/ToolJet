@@ -52,17 +52,29 @@ jobs:
             echo ""
             echo "Entering '\''$name'\''"
             echo "↪ $name: trying to checkout branch '\''$BRANCH'\''"
-            git fetch origin
 
             if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
-              PREV=$(git rev-parse --short HEAD)
-              git checkout -B "$BRANCH" "origin/$BRANCH" && echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s)"
+              git fetch origin "$BRANCH:$BRANCH" || {
+                echo "❌ $name: fetch failed for $BRANCH"
+                exit 1
+              }
+
+              PREV=$(git rev-parse --short HEAD || echo "unknown")
+              git checkout "$BRANCH" || {
+                echo "❌ $name: checkout failed for $BRANCH"
+                exit 1
+              }
+
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
               echo "✅ $name: checked out branch $BRANCH"
             else
               echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'main'"
-              PREV=$(git rev-parse --short HEAD)
-              git checkout main && git pull origin main
-              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s)"
+              PREV=$(git rev-parse --short HEAD || echo "unknown")
+              git checkout main && git pull origin main || {
+                echo "❌ $name: fallback to main failed"
+                exit 1
+              }
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
               echo "✅ $name: now on branch main"
             fi
 
@@ -73,6 +85,7 @@ jobs:
               exit 1
             fi
           '
+
 
       # - name: 🧰 Setup Node.js
       #   uses: actions/setup-node@v2
