@@ -55,7 +55,10 @@ export default class Openapi implements QueryService {
     const { request, query, header, path: pathParams } = params;
     const url = new URL(host + this.resolvePathParams(pathParams, path));
     const parsedRequest = request ? this.parseRequest(request) : undefined;
-    const json = operation !== 'get' ? this.sanitizeObject(parsedRequest) : undefined;
+    const json =
+      operation !== 'get' && parsedRequest && Object.keys(parsedRequest).length > 0
+        ? this.sanitizeObject(parsedRequest)
+        : undefined;
 
     const _requestOptions: OptionsOfTextResponseBody = {
       method: operation,
@@ -63,8 +66,11 @@ export default class Openapi implements QueryService {
       searchParams: {
         ...query,
       },
-      json,
     };
+
+    if (json && Object.keys(json).length > 0) {
+      _requestOptions.json = json;
+    }
 
     const authValidatedRequestOptions: QueryResult = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
