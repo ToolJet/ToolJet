@@ -48,6 +48,7 @@ import {
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
 
 const { iconList, defaultIcon } = configs;
@@ -483,7 +484,7 @@ class HomePageComponent extends React.Component {
   };
 
   canViewWorkflow = () => {
-    return this.canUserPerform(this.state.currentUser, 'view');
+    return this.canUserPerform(this.state.currentUser, 'view') && isWorkflowsFeatureEnabled();
   };
 
   canUserPerform(user, action, app) {

@@ -14,6 +14,7 @@ import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { Tooltip } from 'react-tooltip';
 import { canCreateDataSource } from '@/_helpers';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import '../queryManager.theme.scss';
 
 function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, darkMode, globalDataSources }) {
@@ -50,7 +51,7 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
     navigate(`/${workspaceId}/data-sources`);
   };
 
-  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
+  const workflowsEnabled = isWorkflowsFeatureEnabled();
 
   return (
     <>
