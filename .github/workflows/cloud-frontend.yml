@@ -48,7 +48,7 @@ jobs:
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
           BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
-            name=$(basename "$PWD")
+            name=$(git rev-parse --show-prefix | sed "s:/$::")
             echo "Entering '\''$name'\''"
             echo "↪ $name: trying to checkout $BRANCH"
             git fetch origin
