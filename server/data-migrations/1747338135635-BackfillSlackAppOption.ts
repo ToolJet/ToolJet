@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class BackfillSlackOptions1751480059780 implements MigrationInterface {
+export class BackfillSlackAppOption1747338135635 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
         UPDATE data_source_options
