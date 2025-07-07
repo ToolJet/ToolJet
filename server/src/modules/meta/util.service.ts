@@ -125,7 +125,7 @@ export class MetadataUtilService implements IMetaUtilService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const totalUserCount = await manager.count(User);
       const { editor: totalEditorCount, viewer: totalViewerCount } =
-        await this.licenseCountsService.fetchTotalViewerEditorCount(manager);
+        await this.licenseCountsService.fetchTotalViewerEditorCount('INSTANCE', manager);
       const totalAppCount = await manager.count(App);
       const totalInternalTableCount = await manager.count(InternalTable);
       const totalDatasourcesByKindCount = await this.fetchDatasourcesByKindCount(manager);

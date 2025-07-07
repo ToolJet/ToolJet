@@ -22,7 +22,7 @@ describe("App Import Functionality", () => {
   let data;
 
   beforeEach(() => {
-    cy.viewport(1200, 1300);
+    cy.viewport(1400, 1400);
     data = {
       workspaceName: fake.firstName,
       workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
@@ -34,7 +34,7 @@ describe("App Import Functionality", () => {
     cy.apiLogin();
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.apiLogout();
-    cy.skipWalkthrough()
+    cy.skipWalkthrough();
   });
 
   it("should verify app import functionality", () => {
@@ -151,23 +151,49 @@ describe("App Import Functionality", () => {
 
     cy.visit(`${data.workspaceSlug}/data-sources`);
     cy.get('[data-cy="postgresql-button"]').should("be.visible");
-    cy.apiUpdateDataSource("postgresql", "production", {
-      options: [
-        {
-          key: "password",
-          value: `${Cypress.env("pg_password")}`,
-          encrypted: true,
-        },
-      ],
+
+    cy.ifEnv("Community", () => {
+      cy.apiUpdateDataSource("postgresql", "production", {
+        options: [
+          {
+            key: "password",
+            value: `${Cypress.env("pg_password")}`,
+            encrypted: true,
+          },
+        ],
+      });
+    });
+    cy.ifEnv("Enterprise", () => {
+      cy.apiUpdateDataSource("postgresql", "development", {
+        options: [
+          {
+            key: "password",
+            value: `${Cypress.env("pg_password")}`,
+            encrypted: true,
+          },
+        ],
+      });
     });
 
-    cy.apiCreateWsConstant(
-      "pageHeader",
-      "Import and Export",
-      ["Global"],
-      ["production"]
-    );
-    cy.apiCreateWsConstant("db_name", "persons", ["Secret"], ["production"]);
+    cy.ifEnv("Community", () => {
+      cy.apiCreateWsConstant(
+        "pageHeader",
+        "Import and Export",
+        ["Global"],
+        ["production"]
+      );
+      cy.apiCreateWsConstant("db_name", "persons", ["Secret"], ["production"]);
+    });
+
+    cy.ifEnv("Enterprise", () => {
+      cy.apiCreateWsConstant(
+        "pageHeader",
+        "Import and Export",
+        ["Global"],
+        ["development"]
+      );
+      cy.apiCreateWsConstant("db_name", "persons", ["Secret"], ["development"]);
+    });
 
     // Verify app after setup
     cy.wait("@importApp").then((interception) => {

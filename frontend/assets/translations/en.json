@@ -43,7 +43,9 @@
         "page": "Page",
         "searchItem": "Search apps in this workspace",
         "workflowsSearchItem": "Search workflows in this workspace",
-        "searchComponents": "Search components"
+        "searchComponents": "Search components",
+        "promote": "Promote",
+        "release": "Release"
     },
     "errorBoundary": "Something went wrong.",
     "viewer": "Sorry!. This app is under maintenance",
@@ -572,6 +574,7 @@
             "styles": "Styles",
             "general": "General",
             "validation": "Validation",
+            "structure": "Structure",
             "documentation": "Read documentation for {{componentMeta}}",
             "widgetNameEmptyError": "Widget name cannot be empty",
             "componentNameExistsError": "Component name already exists",

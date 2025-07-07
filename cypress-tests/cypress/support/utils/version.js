@@ -9,6 +9,7 @@ import {
 } from "Selectors/version";
 import { deleteVersionText, releasedVersionText } from "Texts/version";
 import { verifyComponent } from "Support/utils/basicComponents";
+import { appPromote } from "./platform/multiEnv";
 
 export const navigateToCreateNewVersionModal = (value) => {
   cy.get(appVersionSelectors.appVersionLabel).click();
@@ -121,6 +122,9 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
 };
 
 export const releasedVersionAndVerify = (currentVersion) => {
+  cy.ifEnv("Enterprise", () => {
+    appPromote("development", "production");
+  });
   cy.contains("Release").click();
 
   cy.get(confirmVersionModalSelectors.yesButton).click();

@@ -830,11 +830,11 @@ export class TooljetDbTableOperationsService {
     }
   }
 
-  async getTablesLimit() {
+  async getTablesLimit(organizationId: string) {
     const licenseTerms = await this.licenseTermsService.getLicenseTerms([
       LICENSE_FIELD.TABLE_COUNT,
       LICENSE_FIELD.STATUS,
-    ]);
+    ], organizationId);
     return {
       tablesCount: generatePayloadForLimits(
         licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
