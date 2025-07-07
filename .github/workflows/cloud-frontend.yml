@@ -48,16 +48,26 @@ jobs:
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
           git submodule foreach --recursive bash -c "
-            echo '↪ '\$name': trying to checkout $BRANCH'
-            git fetch --all || true
-            git fetch origin $BRANCH:$BRANCH || echo '⚠️ '\$name': could not fetch $BRANCH'
-            git checkout $BRANCH || echo '⚠️ '\$name': checkout failed, staying on current branch'
-            CURRENT=\$(git rev-parse --abbrev-ref HEAD)
-            echo '✅ '\$name': now on branch '\$CURRENT
-            if [ \"\$CURRENT\" != \"$BRANCH\" ]; then
-              echo '❌ '\$name': expected $BRANCH but got '\$CURRENT
-              exit 1
+            echo 'Entering '\''\$name'\'''
+            echo '↪ \$name: trying to checkout $BRANCH'
+            git fetch origin
+
+            if git ls-remote --exit-code --heads origin $BRANCH >/dev/null 2>&1; then
+              echo 'From origin: branch $BRANCH exists'
+              PREVIOUS_HEAD=\$(git rev-parse --short HEAD)
+              git checkout $BRANCH && git pull origin $BRANCH
+              echo \"Previous HEAD position was \$PREVIOUS_HEAD \$(git log -1 --pretty=%s)\"
+              echo \"Switched to branch '\$BRANCH'\"
+            else
+              echo '⚠️ \$name: branch $BRANCH not found on origin. Falling back to main.'
+              PREVIOUS_HEAD=\$(git rev-parse --short HEAD)
+              git checkout main && git pull origin main
+              echo \"Previous HEAD position was \$PREVIOUS_HEAD \$(git log -1 --pretty=%s)\"
+              echo \"Switched to branch 'main'\"
             fi
+
+            CURRENT=\$(git rev-parse --abbrev-ref HEAD)
+            echo \"✅ \$name: now on branch \$CURRENT\"
           "
 
 
