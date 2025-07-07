@@ -73,7 +73,7 @@ Following exposed variables can be dynamically accessed using the given JS query
 |  storeTimezone | Returns the time zone in which value will be stored. | `{{components.datetimepicker1.storeTimezone}}` |
 |  displayTimezone | Returns the time zone in which value will be displayed.  | `{{components.datetimepicker1.displayTimezone}}` |
 |  isValid  | Indicates if the input meets validation criteria. |  `{{components.datetimepicker1.isValid}})` |
-|  isMandatory  | Indicates if the feild is Mandatory. |  `{{components.datetimepicker1.isMandatory}}` |
+|  isMandatory  | Indicates if the field is Mandatory. |  `{{components.datetimepicker1.isMandatory}}` |
 |  isLoading  | Indicates if the component is loading. | `{{components.datetimepicker1.isLoading}}` |
 |  isVisible  | Indicates if the component is visible. | `{{components.datetimepicker1.isVisible}}` |
 |  isDisabled  | Indicates if the component is disabled. | `{{components.datetimepicker1.isDisabled}}` |
