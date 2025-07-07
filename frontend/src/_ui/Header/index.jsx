@@ -2,9 +2,9 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
-import LicenseBanner, { LicenseNavBarActions } from '@/modules/common/components/LicenseBanner';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
+import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 function Header({
   featureAccess,
@@ -154,13 +154,7 @@ function Header({
               })}
               data-cy="version-label"
             >
-              <LicenseNavBarActions
-                licenseStatus="unlicensed"
-                trialDaysRemaining={10}
-                onStartTrial={() => {}}
-                onGetConsultation={() => {}}
-                onTrialAction={() => {}}
-              />
+              <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               Version {currentVersion}
             </div>
           </div>
