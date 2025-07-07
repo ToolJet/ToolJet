@@ -190,6 +190,21 @@ describe("Data sources SQL server connection and query", () => {
   });
 
   it("Should verify the functionality of SQL Server connection form.", () => {
+  cy.get(commonSelectors.globalDataSourceIcon).click();
+     cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-sql-server`,
+      "mssql",
+      [
+        { key: "host", value: "localhost" },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: "" },
+        { key: "username", value: "" },
+        { key: "password", value: "", encrypted: true },
+        { key: "azure", value: false, encrypted: false },
+      ]
+    );
     selectAndAddDataSource("databases", "SQL Server", data.dataSourceName);
 
     fillDataSourceTextField(

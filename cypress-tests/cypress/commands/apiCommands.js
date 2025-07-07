@@ -297,8 +297,7 @@ Cypress.Commands.add(
         "tj-workspace-id": workspaceId,
         Cookie: `tj_auth_token=${authToken}; app_id=${appId}`,
       };
-      const dataSourceID = Cypress.env(`${dsName}`);
-      cy.log(dataSourceID);
+
       cy.request({
         method: "GET",
         url: `${Cypress.env("server_host")}/api/apps/${appId}`,
@@ -310,29 +309,41 @@ Cypress.Commands.add(
         Cypress.env("environmentVersion-id", currentEnvironmentId);
 
         cy.request({
-          method: "POST",
-          url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${dataSourceID}/versions/${editingVersionId}`,
-          headers: {
-            "Content-Type": "application/json",
-            "tj-workspace-id": workspaceId,
-            Cookie: `tj_auth_token=${authToken}; app_id=${appId}`,
-          },
-          body: {
-            app_id: appId,
-            app_version_id: editingVersionId,
-            name: queryName,
-            kind: dsKind,
-            options: options,
-            data_source_id: dataSourceID,
-            plugin_id: null,
-          },
-        }).then((queryResponse) => {
-          expect(queryResponse.status).to.eq(201);
-          Cypress.env("query-id", queryResponse.body.id);
-          Cypress.log({
-            name: "apiAddQueryToApp",
-            displayName: "QUERY CREATED",
-            message: `${queryName} (${dsKind})`,
+          method: "GET",
+          url: `${Cypress.env("server_host")}/api/data-sources/${workspaceId}/environments/${currentEnvironmentId}/versions/${editingVersionId}`,
+          headers: commonHeaders,
+        }).then((dsResponse) => {
+          const dataSource = dsResponse.body.data_sources.find(
+            (ds) => ds.name === dsName
+          );
+          const dataSourceID = dataSource.id;
+          Cypress.env(`${dsName}`, dataSourceID);
+
+          cy.request({
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${dataSourceID}/versions/${editingVersionId}`,
+            headers: {
+              "Content-Type": "application/json",
+              "tj-workspace-id": workspaceId,
+              Cookie: `tj_auth_token=${authToken}; app_id=${appId}`,
+            },
+            body: {
+              app_id: appId,
+              app_version_id: editingVersionId,
+              name: queryName,
+              kind: dsKind,
+              options: options,
+              data_source_id: dataSourceID,
+              plugin_id: null,
+            },
+          }).then((queryResponse) => {
+            expect(queryResponse.status).to.eq(201);
+            Cypress.env("query-id", queryResponse.body.id);
+            Cypress.log({
+              name: "apiAddQueryToApp",
+              displayName: "QUERY CREATED",
+              message: `${queryName} (${dsKind})`,
+            });
           });
         });
       });
