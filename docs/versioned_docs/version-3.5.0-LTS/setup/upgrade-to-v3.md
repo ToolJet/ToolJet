@@ -280,5 +280,5 @@ Please check the environment variables that you need to configure to set up:
 
 ## Help and Support
 
-- Feel free to join our [Slack Community](/docs/slack) or you can also e-mail us at hello@tooljet.com.
+- Feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or you can also e-mail us at hello@tooljet.com.
 - If you have found a bug, please create a [GitHub issue](https://github.com/ToolJet/ToolJet/issues) for the same.

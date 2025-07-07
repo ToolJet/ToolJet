@@ -2,6 +2,7 @@
 id: run-js
 title: Run JavaScript Code
 ---
+
 The **Run JavaScript Code** feature in ToolJet allows custom JavaScript code to be executed to enhance application interactivity. This feature is useful for performing calculations, generating values, or interacting with queries and components.
 
 <div style={{paddingTop:'24px'}}>
@@ -24,6 +25,7 @@ The **Run JavaScript Code** feature in ToolJet allows custom JavaScript code to 
 Parameters allow for dynamic control over the JavaScript code execution without altering the core script. This provides flexibility by allowing the same code to execute with different inputs.
 
 Each parameter requires:
+
 - **Name**: Name for the parameter
 - **Default value**: The value can be constant strings, numbers and object.
 
@@ -43,9 +45,10 @@ Once added, the **parameter can be referenced in the code using the syntax**: `p
 
 ### Displaying a Parameter Value in an Alert Box
 
-Let's create a new parameter named *newAlert* and set the value as object `Displaying the Parameter Value in an Alert Box` and use the alert js method to show the value on the pop-up.
+Let's create a new parameter named _newAlert_ and set the value as object `Displaying the Parameter Value in an Alert Box` and use the alert js method to show the value on the pop-up.
 
 Syntax:
+
 ```
 alert(parameters.newAlert)
 ```
@@ -58,31 +61,34 @@ When the query is triggered the alert will show the parameters value.
 
 Parameters can also be used to trigger other queries and pass custom values. Below is an example of how to call one query from another by providing custom parameters.
 
-1. Begin by creating a new RunJS query named *multiply*. 
-    - In this query, add the following parameters: 
+1. Begin by creating a new RunJS query named _multiply_.
 
-        - *num1* with a default value of **10**
-        - *num2* with a default value of **2**.
-    - Add the following JavaScript Code:
+   - In this query, add the following parameters:
 
-    ```javascript
-    return parameters.num1 * parameters.num2;
-    ```
-    - To display the result, place a text component on the canvas and set its text to `{{queries.multiply.data}}`.
-    <br/>
-    <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/multiply-v2.png" alt="Run JavaScript code" />
+     - _num1_ with a default value of **10**
+     - _num2_ with a default value of **2**.
 
-2. Now, let's create another RunJS query called *callMultiply*, where we will invoke the *multiply* query created earlier using custom parameter values. Here's the code snippet for *callMultiply*:
- 
-    ```js
-    queries.multiply.run({num1: 20, num2: 7})
-    ```
- 
-    By executing this code within *callMultiply*, we trigger the *multiply* query with specific values for its parameters.
- 
-    <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/call-multiply-v2.png" alt="Run JavaScript code" />
+   - Add the following JavaScript Code:
 
-With this setup, the *multiply* query can be called from other queries, such as *callMultiply*, by providing custom parameter values. This allows you to reuse the *multiply* query with different inputs and display the results accordingly.
+   ```javascript
+   return parameters.num1 * parameters.num2;
+   ```
+
+   - To display the result, place a text component on the canvas and set its text to `{{queries.multiply.data}}`.
+     <br/>
+     <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/multiply-v2.png" alt="Run JavaScript code" />
+
+2. Now, let's create another RunJS query called _callMultiply_, where we will invoke the _multiply_ query created earlier using custom parameter values. Here's the code snippet for _callMultiply_:
+
+   ```js
+   queries.multiply.run({ num1: 20, num2: 7 });
+   ```
+
+   By executing this code within _callMultiply_, we trigger the _multiply_ query with specific values for its parameters.
+
+   <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/call-multiply-v2.png" alt="Run JavaScript code" />
+
+With this setup, the _multiply_ query can be called from other queries, such as _callMultiply_, by providing custom parameter values. This allows you to reuse the _multiply_ query with different inputs and display the results accordingly.
 
 </div>
 
@@ -104,12 +110,12 @@ return a;
 ```
 
 4. Edit the properties of widgets:
-    1. Add an event handler to the button:
-        1. Select event as **On Click** 
-        2. Action as **Run Query**
-        3. Select the *runjs1* query that we created. This will run the JavaScript code every time the button is clicked.
-    2. Edit the property of text widget:
-        1. In the text field enter **Random number:** `{{queries.runjs1.data}}`. It will display the output as Random number: *result from JS code*
+   1. Add an event handler to the button:
+      1. Select event as **On Click**
+      2. Action as **Run Query**
+      3. Select the _runjs1_ query that we created. This will run the JavaScript code every time the button is clicked.
+   2. Edit the property of text widget:
+      1. In the text field enter **Random number:** `{{queries.runjs1.data}}`. It will display the output as Random number: _result from JS code_
 
 <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/random-num.png" alt="Run JavaScript code" />
 
@@ -121,6 +127,7 @@ The following code generates a unique ID in the format "id" followed by a sequen
 var id = "id" + Math.random().toString(16).slice(2);
 return id;
 ```
+
 For example, it could be something like "id2f4a1b".
 
 <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/unique-id-1.png" alt="Run JavaScript code" />
@@ -130,7 +137,10 @@ For example, it could be something like "id2f4a1b".
 In this code, the resulting ID will have the format "timestamp + randomHex", where "timestamp" is the current time in base-32 and "randomHex" is a random hexadecimal value.
 
 ```js
-return String(Date.now().toString(32) + Math.random().toString(16)).replace(/\./g, '');
+return String(Date.now().toString(32) + Math.random().toString(16)).replace(
+  /\./g,
+  ""
+);
 ```
 
 This ID will be longer than the one generated earlier, and it could look like "2g3h1d6a4h3".
@@ -138,11 +148,12 @@ This ID will be longer than the one generated earlier, and it could look like "2
 <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/unique-id-2.png" alt="Run JavaScript code" />
 
 :::tip Resources
+
 - You can also write custom JavaScript code to get the data from **External APIs** and manipulate the response for graphical representation. Here's the [tutorial](https://blog.tooljet.ai/build-github-stars-history-app-in-5-minutes-using-low-code/) on how we used custom JavaScript code to build an app using GitHub API.
 - [Import external libraries](/docs/how-to/import-external-libraries-using-runjs) using RunJS.
 - [Intentionally Fail](/docs/how-to/intentionally-fail-js-query) a RunJS query.
 - [Trigger query at specified intervals](/docs/how-to/run-query-at-specified-intervals) using RunJS.
-:::
+  :::
 
 </div>
 
@@ -152,14 +163,14 @@ This ID will be longer than the one generated earlier, and it could look like "2
 
 ToolJet allows you to internally utilize these libraries:
 
-| Name        | Documentation |
-| ----------- | ----------- |
-| Moment      | [https://momentjs.com/docs/](https://momentjs.com/docs/) |
-| Lodash      | [https://lodash.com/docs/](https://lodash.com/docs/) |
-| Axios       | [https://axios-http.com/docs/intro](https://axios-http.com/docs/intro) |
+| Name   | Documentation                                                          |
+| ------ | ---------------------------------------------------------------------- |
+| Moment | [https://momentjs.com/docs/](https://momentjs.com/docs/)               |
+| Lodash | [https://lodash.com/docs/](https://lodash.com/docs/)                   |
+| Axios  | [https://axios-http.com/docs/intro](https://axios-http.com/docs/intro) |
 
 :::info
-Issues with writing custom JavaScript code? Ask in our [Slack Community](/docs/slack).
+Issues with writing custom JavaScript code? Ask in our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
 :::
 
 </div>

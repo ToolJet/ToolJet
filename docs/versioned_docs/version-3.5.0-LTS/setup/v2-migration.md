@@ -33,5 +33,5 @@ Server may take some time to be ready to handle the HTTP request as v2 changes r
 
 ## Help and Support
 
-- Feel free to join our highly active **[Slack Community](/docs/slack)** or you can also e-mail us at **hello@tooljet.com**.
+- Feel free to join our highly active **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)** or you can also e-mail us at **hello@tooljet.com**.
 - If you have found a bug, please create a **[GitHub issue](https://github.com/ToolJet/ToolJet/issues)** for the same.

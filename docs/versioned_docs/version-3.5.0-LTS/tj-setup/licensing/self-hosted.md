@@ -86,7 +86,7 @@ Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the 
 
 If a user is automatically archived due to the new pricing plan, the Super Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
-If you have any questions, feel free to join our [Slack Community](/docs/slack) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
+If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
 
 ## FAQs
 

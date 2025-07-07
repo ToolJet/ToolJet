@@ -27,16 +27,16 @@ Once you have received the license key from the ToolJet Team, you can update the
 
 Role Required: **Super Admin**
 
-1. Go to the Settings page. <br/> 
-    (Example URL - `https://app.corp.com/instance-settings/license`)
+1. Go to the Settings page. <br/>
+   (Example URL - `https://app.corp.com/instance-settings/license`)
 
 2. In the license key tab, update the provided license key.
-    <img className="screenshot-full" src="/img/licensing/self-hosted-license.png" alt="Licensing" />
+   <img className="screenshot-full" src="/img/licensing/self-hosted-license.png" alt="Licensing" />
 
 3. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.
-    <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
+   <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
 
-If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.
+If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com.
 
 ## FAQs
 

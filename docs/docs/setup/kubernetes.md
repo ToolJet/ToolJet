@@ -15,8 +15,8 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not have plans to support other databases such as MySQL.
 2. **Create a Kubernetes secret with name `server`.** <br/>
    For the setup, ToolJet requires:
-  
-   - **TOOLJET_DB** 
+
+   - **TOOLJET_DB**
    - **TOOLJET_DB_HOST**
    - **TOOLJET_DB_USER**
    - **TOOLJET_DB_PASS**
@@ -24,10 +24,11 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    - **PG_DB**
    - **PG_USER**
    - **PG_PASS**
-   - **SECRET_KEY_BASE** 
+   - **SECRET_KEY_BASE**
    - **LOCKBOX_KEY**
 
    Read **[environment variables reference](/docs/setup/env-vars)**
+
 3. Create a Kubernetes deployment
 
    ```bash
@@ -61,19 +62,19 @@ If you want to serve ToolJet client from services such as Firebase or Netlify, p
 
 ## Workflows
 
-ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
-Create workflow deployment: 
+Create workflow deployment:
 
 ```bash
 kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/workflow-deployment.yaml
 ```
+
 **Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment.
 
 `ENABLE_WORKFLOW_SCHEDULING=true`
 `TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default`
 `TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>`
-
 
 ## Upgrading to the Latest LTS Version
 
@@ -87,4 +88,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._

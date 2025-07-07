@@ -5,12 +5,11 @@ title: Connecting via HTTP proxy
 
 The server will connect to the internet via the configured HTTP proxy when the below environment variable is set.
 
-| Variable               | Description                           |
-| :--------------------- | :------------------------------------ |
-| TOOLJET_HTTP_PROXY     | Used for both HTTP and HTTPS requests |
+| Variable           | Description                           |
+| :----------------- | :------------------------------------ |
+| TOOLJET_HTTP_PROXY | Used for both HTTP and HTTPS requests |
 
-*If you have any questions, feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
-
+_If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -27,6 +26,7 @@ This package allows you to configure global HTTP/HTTPS proxies for your Node.js 
 ## URL Format
 
 The environment variable format follows the standard host and port notation:
+
 ```
 http://127.0.0.1:8080
 ```

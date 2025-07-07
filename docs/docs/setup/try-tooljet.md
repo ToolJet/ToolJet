@@ -28,6 +28,7 @@ docker run \
 - Use `docker stop tooljet` to stop the container and `docker start tooljet` to start the container thereafter.
 
 #### Dynamic Port Setup
+
 To run the ToolJet server on a different port, such as 8080 or any other port of your choice, use the following command:
 
 ```sh
@@ -47,4 +48,4 @@ docker run \
 
 By following these instructions, you can easily run the ToolJet server on the port of your choice, ensuring flexibility in your setup.
 
-*If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._

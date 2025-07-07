@@ -134,4 +134,4 @@ Since ToolJet is deployed using an AMI (Amazon Machine Image), upgrading to a ne
 
 - After verifying that ToolJet is running correctly on the new instance, terminate the old EC2 instance to avoid unnecessary costs.
 
-_If you have any questions feel free to join our [Slack Community](/docs/slack) or send us an email at hello@tooljet.com._
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._
