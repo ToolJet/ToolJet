@@ -1,4 +1,4 @@
-import { LICENSE_LIMIT, LICENSE_TYPE, PLAN_DETAILS } from '@modules/licensing/constants';
+import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
   BUSINESS_PLAN_TERMS,
@@ -80,7 +80,11 @@ export default class LicenseBase {
       this._type = LICENSE_TYPE.BASIC;
       return;
     }
-    this._expiryDate = expiryDate ? new Date(expiryDate) : (licenseData?.expiry ? new Date(`${licenseData?.expiry} 23:59:59`) : null);
+    this._expiryDate = expiryDate
+      ? new Date(expiryDate)
+      : licenseData?.expiry
+        ? new Date(`${licenseData?.expiry} 23:59:59`)
+        : null;
     this._startDate = startDate;
     this._isFlexiblePlan = licenseData?.plan?.isFlexible === true;
     this._appsCount = licenseData?.apps;
