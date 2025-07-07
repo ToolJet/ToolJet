@@ -49,9 +49,7 @@ function createWorkflowQuery(app_id, app_version_id, name, kind, options, data_s
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data-queries/workflow-node/versions/${app_version_id}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/data-queries/workflow-node`, requestOptions).then(handleResponse);
 }
 
 function update(id, versionId, name, options, dataSourceId) {
