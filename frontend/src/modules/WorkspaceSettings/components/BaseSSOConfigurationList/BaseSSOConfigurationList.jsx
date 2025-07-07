@@ -389,7 +389,7 @@ class BaseSSOConfigurationList extends React.Component {
                 style={{
                   paddingLeft: '12px',
                   width: '270px',
-                  paddingRight: '220px',
+                  paddingRight: '160px',
                   paddingTop: '6px',
                   paddingBottom: '6px',
                   height: '34px',

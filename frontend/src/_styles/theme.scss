@@ -1164,7 +1164,7 @@ button {
   font-weight: 500;
 
   .modal-header {
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
     border-bottom: 1px solid var(--slate5);
 
   }
@@ -1181,7 +1181,7 @@ button {
       .modal-body {
         height: 80%;
         padding: 0 10px;
-        background-color: var(--base) !important;
+        background-color: var(--surfaces-surface-01) !important;
 
 
         .container-fluid {
@@ -1315,7 +1315,7 @@ button {
   .modal-body {
     height: 80%;
     padding: 0 10px;
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
 
     .container-fluid {
       height: 100%;
@@ -1331,7 +1331,7 @@ button {
   .modal-header,
   .modal-content {
     color: white;
-    background-color: #2b394a;
+    background-color: var(--surfaces-surface-01);
   }
 
   .template-categories {
@@ -3336,7 +3336,7 @@ input:focus-visible {
 
   .modal-content,
   .modal-header {
-    background-color: #1f2936;
+    background-color: var(--surfaces-surface-01);
 
     .text-muted {
       color: var(--slate9) !important;
@@ -4781,7 +4781,7 @@ input[type="text"] {
 .modal-content.home-modal-component {
   border-radius: 8px;
   overflow: hidden;
-  background-color: var(--base);
+  background-color: var(--surfaces-surface-01);
   color: var(--slate12);
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
 
@@ -4792,7 +4792,7 @@ input[type="text"] {
   .modal-header,
   .modal-body {
     padding: 16px 28px;
-    background: var(--base);
+    background: var(--surfaces-surface-01);
   }
 
   .modal-title {
@@ -4802,7 +4802,7 @@ input[type="text"] {
 
   input:not([type=checkbox]) {
     border-radius: 5px !important;
-    background: var(--base);
+    background: var(--surfaces-surface-01);
     color: var(--slate12);
   }
 
@@ -4822,13 +4822,13 @@ input[type="text"] {
 
   .modal-header,
   .modal-body {
-    background-color: #232e3c;
+    background-color: var(--surfaces-surface-01);
     color: #fff;
   }
 
   .form-control {
     color: #fff;
-    background-color: #232e3c !important;
+    background-color: var(--surfaces-surface-01) !important;
   }
 
   .btn-close {
@@ -4873,7 +4873,7 @@ input[type="text"] {
   }
 
   .modal-header {
-    background-color: $bg-dark-light !important;
+    background-color: var(--surfaces-surface-01) !important;
     color: $white !important;
     border-bottom: 2px solid #3A3F42 !important;
   }
@@ -4888,7 +4888,7 @@ input[type="text"] {
   }
 
   input {
-    background-color: $bg-dark-light !important;
+    background-color: var(--surfaces-surface-01) !important;
   }
 
   .form-select {
@@ -5581,7 +5581,10 @@ div#driver-page-overlay {
     background: var(--base);
     margin-top: 0px !important;
   }
+}
 
+.form-footer.sso-card-footer {
+  border-top: 0 !important;
 }
 
 .workspace-settings-page {
@@ -6539,7 +6542,7 @@ a.step-item-disabled {
   }
 
   .card-footer {
-    background: var(--base);
+    background: var(--surfaces-surface-01);
     color: var(--slate12);
   }
 
@@ -9926,11 +9929,11 @@ tbody {
     column-gap: 8px;
 
     .limit {
-      width: 100px !important;
+      width: 140px !important;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 5px !important;
+      padding: 5px 10px 10px !important;
       background-color: var(--base);
       border-radius: 5px;
       border: 1px solid var(--slate5);
@@ -9945,6 +9948,7 @@ tbody {
       div {
         width: unset !important;
         font-size: 11px;
+        margin-bottom: 2px !important;
       }
     }
   }
@@ -11475,7 +11479,7 @@ tbody {
 }
 
 .new-app-dropdown {
-  background: var(--base) !important;
+  background: var(--surfaces-surface-01) !important;
   color: var(--slate12);
 }
 
@@ -11517,8 +11521,8 @@ tbody {
     align-items: center;
     padding: 7px 8px;
     gap: 10px;
-    width: 34px;
-    height: 34px;
+    width: 24px;
+    height: 24px;
     background: var(--slate4) !important;
     color: var(--slate9);
     border-radius: 6px;
@@ -11532,8 +11536,8 @@ tbody {
     align-items: center;
     padding: 7px 8px;
     gap: 10px;
-    width: 34px;
-    height: 34px;
+    width: 24px;
+    height: 24px;
     border-radius: 6px;
   }
 
@@ -14178,7 +14182,7 @@ tbody {
 }
 
 .modal-content {
-  background: var(--base);
+  background: var(--surfaces-surface-01);
   color: var(--slate12);
 }
 
@@ -14538,7 +14542,7 @@ tbody {
 }
 
 .modal-content {
-  background: var(--base);
+  background: var(--surfaces-surface-01);
   color: var(--slate12);
 }
 
