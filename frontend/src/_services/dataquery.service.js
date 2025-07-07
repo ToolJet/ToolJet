@@ -11,6 +11,7 @@ export const dataqueryService = {
   changeQueryDataSource,
   updateStatus,
   bulkUpdateQueryOptions,
+  createWorkflowQuery,
 };
 
 function getAll(appVersionId) {
@@ -34,6 +35,21 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     `${config.apiUrl}/data-queries/data-sources/${data_source_id}/versions/${app_version_id}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function createWorkflowQuery(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
+  const body = {
+    app_id,
+    app_version_id,
+    name,
+    kind,
+    options,
+    data_source_id: data_source_id,
+    plugin_id,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data-queries/versions/${app_version_id}`, requestOptions).then(handleResponse);
 }
 
 function update(id, versionId, name, options, dataSourceId) {
