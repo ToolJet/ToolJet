@@ -31,7 +31,7 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
         const clientOffset = monitor.getClientOffset();
         const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
         if (clientOffset) {
-          handleDrop(item, monitor, currentDragCanvasId);
+          handleDrop(item, currentDragCanvasId);
         }
       },
     }),

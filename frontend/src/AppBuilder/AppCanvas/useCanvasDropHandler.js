@@ -24,7 +24,7 @@ export const useCanvasDropHandler = ({ appType }) => {
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
 
-  const handleDrop = async ({ componentType: draggedComponentType, component }, monitor, canvasId) => {
+  const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
     const realCanvasRef =
       !canvasId || canvasId === 'canvas'
         ? document.getElementById(`real-canvas`)
