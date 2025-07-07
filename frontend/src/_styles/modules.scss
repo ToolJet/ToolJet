@@ -8,7 +8,6 @@
     }
 
     li.nav-item {
-        flex: 1;
 
         button {
             width: 100%;
@@ -18,6 +17,7 @@
 }
 
 .apps-modules-navigation {
+    margin-top: 15px;
     margin-bottom: 10px;
 
     .tab-content {
@@ -26,11 +26,11 @@
 }
 
 .apps-modules-tabs.dark-mode {
+    border-bottom-color: #2B394A;
+    
     .nav-link {
         background-color: inherit;
     }
-
-    border-bottom-color: #2B394A;
 }
 
 #homePage-tab-front-end,
@@ -44,6 +44,9 @@
 
 .module-container-canvas {
     >div:first-child {
+        /* Firefox scrollbar support */
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
         height: 100%;
         overflow: hidden auto;
 
@@ -65,12 +68,24 @@
             }
         }
 
-        /* Firefox scrollbar support */
-        scrollbar-width: thin;
-        scrollbar-color: transparent transparent;
-
         &:hover {
             scrollbar-color: #6a727c4d transparent;
         }
     }
+    &.disabled{
+        pointer-events: none;
+        opacity: 0.5;
+    }
+}
+
+.empty-module-container{
+    display: flex;
+    align-items: center;
+    margin-top: 25vh;
+    flex-direction: column;
+}
+
+.disabled-module{
+    pointer-events: none;
+    opacity: 0.5;
 }

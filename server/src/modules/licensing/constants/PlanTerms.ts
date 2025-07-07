@@ -25,7 +25,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     gitSync: false,
     comments: false,
     customThemes: false,
-    serverSideGlobal: false,
+    serverSideGlobalResolve: false,
   },
   domains: [],
   workflows: {
@@ -67,6 +67,24 @@ export const BASIC_PLAN_SETTINGS = {
   },
   ENABLE_COMMENTS: {
     value: 'false',
+  },
+};
+
+export const CLOUD_EDITION_SETTINGS = {
+  ALLOW_PERSONAL_WORKSPACE: {
+    value: 'true',
+  },
+  ENABLE_MULTIPLAYER_EDITING: {
+    value: 'true',
+  },
+  ENABLE_COMMENTS: {
+    value: 'true',
+  },
+  ENABLE_WORKSPACE_LOGIN_CONFIGURATION: {
+    value: 'true',
+  },
+  SMTP_ENV_CONFIGURED: {
+    value: 'true',
   },
 };
 

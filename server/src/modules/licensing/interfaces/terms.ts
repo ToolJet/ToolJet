@@ -27,13 +27,14 @@ export interface Terms {
     gitSync?: boolean;
     comments?: boolean;
     customThemes?: boolean;
-    serverSideGlobal?: boolean;
+    serverSideGlobalResolve?: boolean;
     ai?: boolean;
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
+    name?: string;
     isFlexible: boolean;
   };
   auditLogs?: {

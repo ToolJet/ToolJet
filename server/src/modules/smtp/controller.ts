@@ -7,6 +7,8 @@ import { FeatureAbilityGuard } from './ability/guard';
 import { SmtpControllerInterface } from './interfaces/IController';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
+import { User as UserEntity } from '@entities/user.entity';
+import { User } from '@modules/app/decorators/user.decorator';
 
 @InitModule(MODULES.SMTP)
 @Controller('smtp')
@@ -20,17 +22,20 @@ export class SmtpController implements SmtpControllerInterface {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)
-  updateSmtpSettings(updateSmtpSettingsDto: UpdateSMTPSettingsDto): Promise<void> {
+  updateSmtpSettings(updateSmtpSettingsDto: UpdateSMTPSettingsDto, @User() user: UserEntity): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_ENV)
-  updateSmtpEnvSetting(updateSmtpEnvSettingChangedDto: UpdateSmtpEnvSettingChangedDto): Promise<void> {
+  updateSmtpEnvSetting(
+    updateSmtpEnvSettingChangedDto: UpdateSmtpEnvSettingChangedDto,
+    @User() user: UserEntity
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_STATUS)
-  updateSmtpEnvStatus(updateSmtpStatusChangedDto: UpdateSmtpStatusChangedDto): Promise<void> {
+  updateSmtpEnvStatus(updateSmtpStatusChangedDto: UpdateSmtpStatusChangedDto, @User() user: UserEntity): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

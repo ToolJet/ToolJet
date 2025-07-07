@@ -4,7 +4,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
@@ -107,6 +107,21 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
+  async findDataQueriesForVersionWithPermissions(appVersionId: string, manager?: EntityManager): Promise<DataQuery[]> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(DataQuery, 'query')
+        .where('query.appVersionId = :appVersionId', { appVersionId })
+        .leftJoinAndSelect('query.dataSource', 'dataSource')
+        .leftJoinAndSelect('query.permissions', 'permission')
+        .leftJoinAndSelect('permission.users', 'queryUser')
+        .leftJoinAndSelect('queryUser.user', 'user')
+        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+        .select(['query', 'dataSource.kind', 'permission', 'queryUser', 'user', 'group'])
+        .getMany();
+    }, manager || this.manager);
+  }
+
   async findVersion(id: string, manager?: EntityManager): Promise<AppVersion> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await manager.findOneOrFail(AppVersion, {
@@ -119,6 +134,34 @@ export class VersionRepository extends Repository<AppVersion> {
           'dataQueries.plugins.manifestFile',
         ],
       });
+
+      if (appVersion?.dataQueries) {
+        for (const query of appVersion?.dataQueries) {
+          if (query?.plugin) {
+            query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+          }
+        }
+      }
+
+      return appVersion;
+    }, manager || this.manager);
+  }
+
+  async findVersionWithQueryPermissions(id: string, manager?: EntityManager): Promise<AppVersion> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersion = await manager
+        .createQueryBuilder(AppVersion, 'appVersion')
+        .where('appVersion.id = :id', { id })
+        .leftJoinAndSelect('appVersion.app', 'app')
+        .leftJoinAndSelect('appVersion.dataQueries', 'dataQueries')
+        .leftJoinAndSelect('dataQueries.dataSource', 'dataSource')
+        .leftJoinAndSelect('dataQueries.plugins', 'plugins')
+        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+        .leftJoinAndSelect('dataQueries.permissions', 'permission')
+        .leftJoinAndSelect('permission.users', 'queryUser')
+        .leftJoinAndSelect('queryUser.user', 'user')
+        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+        .getOneOrFail();
 
       if (appVersion?.dataQueries) {
         for (const query of appVersion?.dataQueries) {
@@ -179,5 +222,15 @@ export class VersionRepository extends Repository<AppVersion> {
       });
       return appVersions;
     }, manager || this.manager);
+  }
+  async getAppVersionById(versionId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const version = await manager.findOneOrFail(AppVersion, {
+        where: { id: versionId },
+        relations: ['app'],
+      });
+      if (!version) throw new BadRequestException('Wrong version Id');
+      return version;
+    });
   }
 }

@@ -3,29 +3,24 @@ log:
   level: info
 
 persistence:
-  defaultStore: sqlite-default
-  visibilityStore: sqlite-visibility
+  defaultStore: postgres-default
+  visibilityStore: postgres-visibility
   numHistoryShards: 4
-  datastores:
-    sqlite-default:
+  dataStores:
+    postgres-default:
       sql:
-        pluginName: "sqlite"
-        databaseName: "/etc/temporal/default.db"
-        connectAddr: "localhost"
-        connectProtocol: "tcp"
-        connectAttributes:
-          cache: "private"
-          setup: true
-
-    sqlite-visibility:
+        pluginName: "postgres12"
+        databaseName: "temporal"
+        connectAddr: "localhost:5432"
+        user: "tooljet"
+        password: "postgres"
+    postgres-visibility:
       sql:
-        pluginName: "sqlite"
-        databaseName: "/etc/temporal/visibility.db"
-        connectAddr: "localhost"
-        connectProtocol: "tcp"
-        connectAttributes:
-          cache: "private"
-          setup: true
+        pluginName: "postgres12"
+        databaseName: "temporal_visibility"
+        connectAddr: "localhost:5432"
+        user: "tooljet"
+        password: "postgres"
 
 global:
   membership:
@@ -41,7 +36,7 @@ services:
       membershipPort: 6933
       bindOnLocalHost: true
       httpPort: 7243
-      
+
   matching:
     rpc:
       grpcPort: 7235
@@ -68,7 +63,7 @@ clusterMetadata:
       enabled: true
       initialFailoverVersion: 1
       rpcName: "frontend"
-      rpcAddress: "localhost:7236"
+      rpcAddress: "localhost:7233"
       httpAddress: "localhost:7243"
 
 dcRedirectionPolicy:

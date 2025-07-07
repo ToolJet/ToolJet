@@ -24,6 +24,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         FEATURE_KEY.UPDATE_USER,
         FEATURE_KEY.UPDATE_USER_ROLE,
         FEATURE_KEY.UPDATE_USER_WORKSPACE,
+        FEATURE_KEY.GENERATE_PAT,
+        FEATURE_KEY.VALIDATE_PAT_SESSION,
       ],
       User
     );

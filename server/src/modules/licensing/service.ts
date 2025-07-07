@@ -1,22 +1,23 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { PLAN_DETAILS } from './constants';
 import { ILicenseService } from './interfaces/IService';
+import { User } from '@entities/user.entity';
 
 @Injectable()
 export class LicenseService implements ILicenseService {
   getLicense(): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  getFeatureAccess(): Promise<any> {
+  getFeatureAccess(organizationId?: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  getDomains(): Promise<{ domains: any; licenseStatus: any }> {
+  getDomains(organizationId?: string): Promise<{ domains: any; licenseStatus: any }> {
     throw new Error('Method not implemented.');
   }
-  getLicenseTerms(): Promise<{ terms: any }> {
+  getLicenseTerms(organizationId?: string): Promise<{ terms: any }> {
     throw new Error('Method not implemented.');
   }
-  updateLicense(dto: any): Promise<void> {
+  updateLicense(dto: any, user: User): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

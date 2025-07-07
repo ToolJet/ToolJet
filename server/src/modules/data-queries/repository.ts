@@ -50,6 +50,25 @@ export class DataQueryRepository extends Repository<DataQuery> {
     });
   }
 
+  getAllWithPermissions(appVersionId: string): Promise<DataQuery[]> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .innerJoinAndSelect('data_query.dataSource', 'data_source')
+        .leftJoinAndSelect('data_query.plugins', 'plugins')
+        .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+        .leftJoinAndSelect('data_query.permissions', 'permission')
+        .leftJoinAndSelect('permission.users', 'queryUser')
+        .leftJoinAndSelect('queryUser.user', 'user')
+        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+        .where('data_source.appVersionId = :appVersionId', { appVersionId })
+        .where('data_query.app_version_id = :appVersionId', { appVersionId })
+        .orderBy('data_query.updatedAt', 'DESC')
+        .getMany();
+    });
+  }
+
   async createOne(data: Partial<DataQuery>, manager?: EntityManager): Promise<DataQuery> {
     return dbTransactionWrap((manager: EntityManager) => {
       const newDataQuery = manager.create(DataQuery, {

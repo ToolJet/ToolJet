@@ -23,12 +23,17 @@ export class PageService implements IPageService {
     protected eventHandlerService: EventsService
   ) {}
 
-  async findPagesForVersion(appVersionId: string): Promise<Page[]> {
+  async findPagesForVersion(
+    appVersionId: string,
+    organizationId: string,
+    mode?: string,
+    manager?: EntityManager
+  ): Promise<Page[]> {
     // const allPages = await this.pageRepository.find({ where: { appVersionId }, order: { index: 'ASC' } });
-    const allPages = await this.pageHelperService.fetchPages(appVersionId);
+    const allPages = await this.pageHelperService.fetchPages(appVersionId, organizationId, manager);
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id);
+        const components = await this.componentsService.getAllComponents(page.id, manager);
         delete page.appVersionId;
         return { ...page, components };
       })
@@ -42,19 +47,19 @@ export class PageService implements IPageService {
     });
   }
 
-  async createPage(page: CreatePageDto, appVersionId: string): Promise<Page> {
+  async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
-      const newPage = await this.pageHelperService.preparePageObject(page, appVersionId);
+      const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
 
       return await manager.save(Page, newPage);
     }, appVersionId);
   }
 
-  async clonePage(pageId: string, appVersionId: string) {
+  async clonePage(pageId: string, appVersionId: string, organizationId: string) {
     // TODO - Should use manager here - multiple db operations found
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
-        where: { id: pageId, versionId: appVersionId },
+        where: { id: pageId, appVersionId },
       });
 
       if (!pageToClone) {
@@ -81,19 +86,113 @@ export class PageService implements IPageService {
       newPage.index = pageToClone.index + 1;
       newPage.appVersionId = appVersionId;
       newPage.autoComputeLayout = true;
+      newPage.type = pageToClone.type;
 
       const clonedpage = await manager.save(newPage);
 
-      await this.clonePageEventsAndComponents(pageId, clonedpage.id);
+      await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
 
-      const pages = await this.findPagesForVersion(appVersionId);
-      const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
+      const pages = await this.findPagesForVersion(appVersionId, organizationId, manager);
+      const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
     }, appVersionId);
   }
 
-  async clonePageEventsAndComponents(pageId: string, clonePageId: string) {
+  async cloneGroup(groupPageId: string, appVersionId: string) {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+      const groupToClone = await manager.findOne(Page, {
+        where: { id: groupPageId, appVersionId, isPageGroup: true },
+      });
+
+      if (!groupToClone) {
+        throw new Error('Group page not found');
+      }
+
+      let groupName = `${groupToClone.name} (copy)`;
+      let groupHandle = `${groupToClone.handle}-copy`;
+
+      const allPages = await manager.find(Page, { where: { appVersionId } });
+
+      const similarGroupPages = allPages.filter((page) => {
+        return page.name.includes(groupName) || page.handle.includes(groupHandle);
+      });
+
+      if (similarGroupPages.length > 0) {
+        groupName = `${groupToClone.name} (copy ${similarGroupPages.length})`;
+        groupHandle = `${groupToClone.handle}-copy-${similarGroupPages.length}`;
+      }
+
+      const newGroupPage = new Page();
+      newGroupPage.name = groupName;
+      newGroupPage.handle = groupHandle;
+      newGroupPage.index = 999;
+      newGroupPage.pageGroupIndex = groupToClone.pageGroupIndex;
+      newGroupPage.isPageGroup = true;
+      newGroupPage.icon = groupToClone.icon || 'IconFolder';
+      newGroupPage.appVersionId = appVersionId;
+      newGroupPage.autoComputeLayout = groupToClone.autoComputeLayout;
+      newGroupPage.type = groupToClone.type;
+      newGroupPage.openIn = groupToClone.openIn;
+      newGroupPage.appId = groupToClone.appId;
+      newGroupPage.url = groupToClone.url;
+      newGroupPage.disabled = groupToClone.disabled;
+      newGroupPage.hidden = groupToClone.hidden;
+
+      const clonedGroup = await manager.save(newGroupPage);
+
+      // Find child pages in this group
+      const childPages = await manager.find(Page, {
+        where: {
+          appVersionId,
+          pageGroupId: groupToClone.id,
+        },
+      });
+
+      for (const child of childPages) {
+        let childName = `${child.name} (copy)`;
+        let childHandle = `${child.handle}-copy`;
+
+        const existingSimilar = allPages.filter(
+          (page) => page.name.includes(childName) || page.handle.includes(childHandle)
+        );
+
+        if (existingSimilar.length > 0) {
+          childName = `${child.name} (copy ${existingSimilar.length})`;
+          childHandle = `${child.handle}-copy-${existingSimilar.length}`;
+        }
+
+        const clonedChild = new Page();
+        clonedChild.name = childName;
+        clonedChild.handle = childHandle;
+        clonedChild.index = child.index + 1;
+        clonedChild.pageGroupIndex = child.pageGroupIndex;
+        clonedChild.pageGroupId = clonedGroup.id;
+        clonedChild.isPageGroup = false;
+        clonedChild.icon = child.icon || 'IconFile';
+        clonedChild.appVersionId = appVersionId;
+        clonedChild.autoComputeLayout = true;
+        clonedChild.type = child.type;
+        clonedChild.openIn = child.openIn;
+        clonedChild.appId = child.appId;
+        clonedChild.url = child.url;
+        clonedChild.disabled = child.disabled;
+        clonedChild.hidden = child.hidden;
+
+        const newChildPage = await manager.save(clonedChild);
+
+        // Clone events and components for each child page
+        await this.clonePageEventsAndComponents(child.id, newChildPage.id, manager);
+      }
+
+      const pages = await this.findPagesForVersion(appVersionId, '', manager);
+      const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
+
+      return { pages, events };
+    }, appVersionId);
+  }
+
+  async clonePageEventsAndComponents(pageId: string, clonePageId: string, manager?: EntityManager) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const pageComponents = await manager.find(Component, { where: { pageId } });
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
@@ -247,15 +346,14 @@ export class PageService implements IPageService {
       if (!isEmpty(toUpdateComponents)) {
         await manager.save(toUpdateComponents);
       }
-    });
+    }, manager);
   }
 
-  async reorderPages(diff, appVersionId: string) {
-    return this.pageHelperService.reorderPages(diff, appVersionId);
+  async reorderPages(diff, appVersionId: string, organizationId: string) {
+    return this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
   }
 
   async updatePage(pageUpdates: UpdatePageDto, appVersionId: string) {
-    console.log({ pageUpdates });
     if (Object.keys(pageUpdates.diff).length > 1) {
       throw new Error('Can not update multiple pages');
     }
@@ -264,7 +362,6 @@ export class PageService implements IPageService {
       const currentPage = await manager.findOne(Page, {
         where: { id: pageUpdates.pageId },
       });
-      console.log({ currentPage });
 
       if (!currentPage) {
         throw new Error('Page not found');
@@ -277,7 +374,8 @@ export class PageService implements IPageService {
     pageId: string,
     appVersionId: string,
     editingVersion: AppVersion,
-    deleteAssociatedPages: boolean = false
+    deleteAssociatedPages: boolean = false,
+    organizationId: string
   ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
@@ -292,7 +390,12 @@ export class PageService implements IPageService {
         throw new Error('Cannot delete home page');
       }
       if (pageExists.isPageGroup) {
-        return await this.pageHelperService.deletePageGroup(pageExists, appVersionId, deleteAssociatedPages);
+        return await this.pageHelperService.deletePageGroup(
+          pageExists,
+          appVersionId,
+          deleteAssociatedPages,
+          organizationId
+        );
       }
       this.eventHandlerService.cascadeDeleteEvents(pageExists.id);
       const pageDeleted = await manager.delete(Page, pageId);
@@ -301,11 +404,11 @@ export class PageService implements IPageService {
         throw new Error('Page not deleted');
       }
 
-      return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager);
+      return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
     }, appVersionId);
   }
 
-  async findModuleContainer(appVersionId: string): Promise<any> {
-    return this.pageHelperService.findModuleContainer(appVersionId);
+  async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {
+    return this.pageHelperService.findModuleContainer(appVersionId, organizationId);
   }
 }

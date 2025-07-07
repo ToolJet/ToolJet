@@ -29,7 +29,7 @@ function EnableAutomaticSSOLoginModal({ show, enableAutomaticSSOLogin, setShowMo
         <br />
         <br />
         <a
-          href="https://docs.tooljet.com/docs/user-authentication/sso/auto-sso-login/"
+          href="https://docs.tooljet.ai/docs/user-authentication/sso/auto-sso-login/"
           target="_blank"
           rel="noopener noreferrer"
           style={{
