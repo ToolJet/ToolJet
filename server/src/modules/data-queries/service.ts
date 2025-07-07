@@ -24,6 +24,13 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataSourceRepository: DataSourcesRepository
   ) { }
 
+  async findOne(dataQueryId: string): Promise<DataQuery> {
+    return await this.dataQueryRepository.findOne({
+      where: { id: dataQueryId },
+      relations: ['dataSource', 'apps', 'dataSource.apps', 'plugins'],
+    });
+  }
+
   async getAll(user: User, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
     const serializedQueries = [];

@@ -13,7 +13,7 @@ export const ModuleProvider = ({ moduleId, isModuleMode, appType, isModuleEditor
 export const useModuleContext = () => {
   const context = useContext(ModuleContext);
   if (!context) {
-    throw new Error('useModuleContext must be used within a ModuleProvider');
+    return { moduleId: 'canvas', isModuleMode: false, isModuleEditor: false };
   }
   return context;
 };
@@ -21,7 +21,7 @@ export const useModuleContext = () => {
 export const useModuleId = () => {
   const context = useContext(ModuleContext);
   if (!context) {
-    throw new Error('useModuleId must be used within a ModuleProvider');
+    return 'canvas';
   }
 
   return context.moduleId;
