@@ -47,20 +47,19 @@ jobs:
 
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
-          BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
-            name="$sm_path"
+          BRANCH="$BRANCH" git submodule foreach --recursive '
             echo "Entering '\''$name'\''"
-            echo "↪ $name: trying to checkout $BRANCH"
+            echo "↪ $name: trying to checkout '"$BRANCH"'"
             git fetch origin
 
-            if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-              echo "From origin: branch $BRANCH exists"
+            if git ls-remote --exit-code --heads origin '"$BRANCH"' >/dev/null 2>&1; then
+              echo "From origin: branch '"$BRANCH"' exists"
               PREVIOUS_HEAD=$(git rev-parse --short HEAD)
-              git checkout "$BRANCH" && git pull origin "$BRANCH"
+              git checkout '"$BRANCH"' && git pull origin '"$BRANCH"'
               echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
-              echo "Switched to branch $BRANCH"
+              echo "Switched to branch '"$BRANCH"'"
             else
-              echo "⚠️ $name: branch $BRANCH not found on origin. Falling back to main."
+              echo "⚠️ $name: branch '"$BRANCH"' not found on origin. Falling back to main."
               PREVIOUS_HEAD=$(git rev-parse --short HEAD)
               git checkout main && git pull origin main
               echo "Previous HEAD position was $PREVIOUS_HEAD $(git log -1 --pretty=%s)"
@@ -70,6 +69,7 @@ jobs:
             CURRENT=$(git rev-parse --abbrev-ref HEAD)
             echo "✅ $name: now on branch $CURRENT"
           '
+
 
       # - name: 🧰 Setup Node.js
       #   uses: actions/setup-node@v2
