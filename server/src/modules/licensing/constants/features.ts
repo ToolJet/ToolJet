@@ -25,6 +25,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_WORKFLOW_LIMITS]: {},
     [FEATURE_KEY.GET_USER_LIMITS]: {},
     [FEATURE_KEY.GENERATE_CLOUD_TRIAL_LICENSE]: {},
-    [FEATURE_KEY.GENERATE_EE_TRIAL_LICENSE]: {},
+    [FEATURE_KEY.GENERATE_EE_TRIAL_LICENSE]: {
+      isPublic: true,
+    },
   },
 };
