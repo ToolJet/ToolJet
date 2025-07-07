@@ -8,6 +8,9 @@ import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { shallow } from 'zustand/shallow';
 
 const Slack = ({
   optionchanged,
@@ -26,6 +29,22 @@ const Slack = ({
   const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
   const redirectUri = fullUrl;
   const { t } = useTranslation();
+  const { tooljetVersion } = useAppDataStore(
+    (state) => ({
+      tooljetVersion: state?.metadata?.installed_version,
+    }),
+    shallow
+  );
+
+  const optionsForCredentialSource = checkIfToolJetCloud(tooljetVersion)
+    ? [
+        { value: 'from_env', name: 'ToolJet slack app' },
+        { value: 'from_datasource_configuration', name: 'Custom slack app' },
+      ]
+    : [
+        { value: 'from_env', name: 'Use environment variables' },
+        { value: 'from_datasource_configuration', name: 'Custom slack app' },
+      ];
 
   const defaultScopes = [
     'users:read',
@@ -149,10 +168,7 @@ const Slack = ({
           <div>
             <label className="form-label mt-3">Slack app</label>
             <Select
-              options={[
-                { value: 'from_env', name: 'Use environment variables' },
-                { value: 'from_datasource_configuration', name: 'Custom slack app' },
-              ]}
+              options={optionsForCredentialSource}
               value={options?.credential_source?.value}
               onChange={(value) => {
                 optionchanged('credential_source', value);
