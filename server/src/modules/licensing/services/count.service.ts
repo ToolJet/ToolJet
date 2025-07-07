@@ -274,7 +274,6 @@ export class LicenseCountsService implements ILicenseCountsService {
       manager
     );
   }
-
   async getUserIdWithEndUserRole(manager: EntityManager): Promise<string[]> {
     const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
 

@@ -53,6 +53,7 @@ import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.sc
 import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
 import { ModulesModule } from '@modules/modules/module';
+import { EmailListenerModule } from '@modules/email-listener/module';
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -113,6 +114,7 @@ export class AppModule implements OnModuleInit {
       await AppGitModule.register(configs),
       await CrmModule.register(configs),
       await OrganizationPaymentModule.register(configs),
+      await EmailListenerModule.register(configs),
     ];
 
     return {

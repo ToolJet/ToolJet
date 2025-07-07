@@ -15,7 +15,6 @@ import { CreateAdminDto, OnboardUserDto } from '@modules/onboarding/dto/user.dto
 import { AcceptInviteDto } from './dto/accept-organization-invite.dto';
 import { AppSignupDto } from '@modules/auth/dto';
 import { SignupDisableGuard } from './guards/signup-disable.guard';
-import { AllowPersonalWorkspaceGuard } from './guards/personal-workspace.guard';
 import { FirstUserSignupGuard } from './guards/first-user-signup.guard';
 import { UserCountGuard } from '@modules/licensing/guards/user.guard';
 import { EditorUserCountGuard } from '@modules/licensing/guards/editorUser.guard';
@@ -47,13 +46,7 @@ export class OnboardingController implements IOnboardingController {
   }
 
   @InitFeature(FEATURE_KEY.SIGNUP)
-  @UseGuards(
-    SignupDisableGuard,
-    UserCountGuard,
-    EditorUserCountGuard,
-    FirstUserSignupDisableGuard,
-    FeatureAbilityGuard
-  )
+  @UseGuards(SignupDisableGuard, UserCountGuard, EditorUserCountGuard, FirstUserSignupDisableGuard, FeatureAbilityGuard)
   @Post('signup')
   async signup(@Body() appSignupDto: AppSignupDto) {
     return this.onboardingService.signup(appSignupDto);
