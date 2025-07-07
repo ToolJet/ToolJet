@@ -52,9 +52,9 @@ jobs:
             echo ""
             echo "Entering '\''$name'\''"
             echo "↪ $name: trying to checkout branch '\''$BRANCH'\''"
-            git fetch origin "$BRANCH" || echo "⚠️ $name: failed to fetch branch $BRANCH"
+            git fetch origin
 
-            if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+            if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
               PREV=$(git rev-parse --short HEAD)
               git checkout -B "$BRANCH" "origin/$BRANCH" && echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s)"
               echo "✅ $name: checked out branch $BRANCH"
