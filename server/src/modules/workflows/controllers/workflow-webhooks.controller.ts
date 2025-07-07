@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, Patch, Query, Res, Get, Sse } from '@nestjs/common';
+import { Controller, Post, Param, Body, Patch, Query, Res, Get, Sse, Req } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowWebhooksController } from '../interfaces/IWorkflowWebhooksController';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -20,7 +20,8 @@ export class WorkflowWebhooksController implements IWorkflowWebhooksController {
     @Param('id') id: any,
     @Body() workflowParams,
     @Query('environment') environment: string,
-    @Res({ passthrough: true }) response: Response
+    @Res({ passthrough: true }) response: Response,
+    @Req() req: Request
   ): Promise<any> {
     throw new Error('Method not implemented.');
   }
@@ -31,7 +32,8 @@ export class WorkflowWebhooksController implements IWorkflowWebhooksController {
     @Param('app') app: any,
     @Param('idOrName') idOrName: string,
     @Body() workflowParams: Record<string, unknown>,
-    @Query('environment') environment: string
+    @Query('environment') environment: string,
+    @Req() req: Request
   ): Promise<any> {
     throw new Error('Method not implemented.');
   }
