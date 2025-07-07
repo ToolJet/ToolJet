@@ -174,7 +174,11 @@ export const addEventHandlerToRunQuery = (query) => {
 
 export const addWidgetsToAddUser = () => {
   cy.dragAndDropWidget("Text Input", 200, 160);
+  cy.get(commonWidgetSelector.draggableWidget("textinput1")).type("Jack");
   cy.dragAndDropWidget("Text Input", 200, 300);
+  cy.get(commonWidgetSelector.draggableWidget("textinput2")).type(
+    "jack@example.com"
+  );
   cy.dragAndDropWidget("Button", 600, 160);
   openEditorSidebar("button1");
   openAccordion(commonWidgetText.accordionEvents);
