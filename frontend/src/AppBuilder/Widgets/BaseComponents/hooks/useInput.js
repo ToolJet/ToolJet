@@ -132,6 +132,16 @@ export const useInput = ({
           fireEvent('onChange');
         },
       }),
+      ...(inputType === 'TextInput' && {
+        disable: async function (value) {
+          setDisable(!!value);
+          setExposedVariable('isDisabled', !!value);
+        },
+        visibility: async function (value) {
+          setVisibility(!!value);
+          setExposedVariable('isVisible', !!value);
+        },
+      }),
       clear: async function () {
         setInputValue('');
         fireEvent('onChange');
@@ -162,7 +172,6 @@ export const useInput = ({
       isVisible: visibility,
       isDisabled: disable,
     };
-
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
   }, []);
