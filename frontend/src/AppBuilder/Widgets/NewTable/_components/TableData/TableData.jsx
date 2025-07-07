@@ -29,6 +29,10 @@ export const TableData = ({
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const contentWrap = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
+  const containerBackgroundColor = useTableStore(
+    (state) => state.getTableStyles(id)?.containerBackgroundColor,
+    shallow
+  );
 
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
   const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
@@ -62,7 +66,7 @@ export const TableData = ({
       styles.height = `${calculatedCellHeight}px`;
     }
     return styles;
-  }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue]);
+  }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue, containerBackgroundColor]);
 
   // Setup virtualizer
   const rowVirtualizer = useVirtualizer({
@@ -111,9 +115,11 @@ export const TableData = ({
   }
 
   return (
-    <div className={`table-responsive jet-data-table`} style={{ maxHeight: '100%' }} ref={tableBodyRef}>
+    <div className={`table-responsive jet-data-table`} style={{ maxHeight: '100%', position: 'relative' }} ref={tableBodyRef}>
       <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        {renderTableHeader()}
+        <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: containerBackgroundColor }}>
+          {renderTableHeader()}
+        </thead>
         <tbody
           style={{
             position: 'relative',

@@ -9,13 +9,16 @@ import { isEmpty } from 'lodash';
 import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { AppsRepository } from '@modules/apps/repository';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 @Injectable()
 export class ImportExportResourcesService {
   constructor(
     protected readonly appImportExportService: AppImportExportService,
     protected readonly tooljetDbImportExportService: TooljetDbImportExportService,
-    protected readonly internalTableRepository: InternalTableRepository
+    protected readonly internalTableRepository: InternalTableRepository,
+    protected readonly appsRepository: AppsRepository
   ) {}
 
   async export(
@@ -56,6 +59,15 @@ export class ImportExportResourcesService {
       if (exportedApps.length > 0) resourcesExport.app = exportedApps;
     }
 
+    const appData = await this.appsRepository.findOne({ where: { id: exportResourcesDto.app[0].id } });
+    //APP_EXPORT audit
+    const auditLogsData = {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: appData.id,
+      resourceName: appData.name,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     return resourcesExport;
   }
 
@@ -69,41 +81,64 @@ export class ImportExportResourcesService {
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
     const importingVersion = importResourcesDto.tooljet_version;
+    const skipPermissionsGroupCheck = importResourcesDto.skip_permissions_group_check;
 
-    if (!isEmpty(importResourcesDto.tooljet_database)) {
-      const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
-      tableNameMapping = res.tableNameMapping;
-      imports.tooljet_database = res.tooljet_database;
-      imports.tableNameMapping = tableNameMapping;
-    }
-
-    if (!isEmpty(importResourcesDto.app)) {
+    if (!isEmpty(importResourcesDto.app) && !skipPermissionsGroupCheck) {
       for (const appImportDto of importResourcesDto.app) {
-        user.organizationId = importResourcesDto.organization_id;
-        const createdApp = await this.appImportExportService.import(
-          user,
-          appImportDto.definition,
-          appImportDto.appName,
-          {
-            tooljet_database: tableNameMapping,
-          },
-          isGitApp,
-          importResourcesDto.tooljet_version,
-          cloning
-        );
-
-        imports.app.push({ id: createdApp.id, name: createdApp.name });
-
-        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-          userId: user.id,
-          organizationId: user.organizationId,
-          resourceId: createdApp.id,
-          resourceName: createdApp.name,
-        });
+        let appParams = appImportDto.definition;
+        if (appParams?.appV2) {
+          appParams = { ...appParams.appV2 };
+          const pages = appParams?.pages;
+          const queries = appParams?.dataQueries;
+          const components = appParams?.components;
+          (pages?.length || queries?.length || components?.length) &&
+            (await this.appImportExportService.checkIfGroupPermissionsExist(
+              pages,
+              queries,
+              components,
+              user.organizationId
+            ));
+        }
       }
     }
 
-    return imports;
+    return await dbTransactionWrap(async (manager) => {
+      if (!isEmpty(importResourcesDto.tooljet_database)) {
+        const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
+        tableNameMapping = res.tableNameMapping;
+        imports.tooljet_database = res.tooljet_database;
+        imports.tableNameMapping = tableNameMapping;
+      }
+
+      if (!isEmpty(importResourcesDto.app)) {
+        for (const appImportDto of importResourcesDto.app) {
+          user.organizationId = importResourcesDto.organization_id;
+          const createdApp = await this.appImportExportService.import(
+            user,
+            appImportDto.definition,
+            appImportDto.appName,
+            {
+              tooljet_database: tableNameMapping,
+            },
+            isGitApp,
+            importResourcesDto.tooljet_version,
+            cloning,
+            manager
+          );
+
+          imports.app.push({ id: createdApp.id, name: createdApp.name });
+
+          RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+            userId: user.id,
+            organizationId: user.organizationId,
+            resourceId: createdApp.id,
+            resourceName: createdApp.name,
+          });
+        }
+      }
+
+      return imports;
+    });
   }
 
   async legacyImport(user: User, templateDefinition: any, appName: string) {
@@ -139,6 +174,14 @@ export class ImportExportResourcesService {
       tooljet_database: resourceExport.tooljet_database,
     };
 
-    return this.import(user, importResourcesDto, true);
+    const createdApp = await this.import(user, importResourcesDto, true);
+    //APP_CLONE audit
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: createdApp.app[0]?.id,
+      resourceName: createdApp.app[0]?.name,
+    });
+    return createdApp;
   }
 }

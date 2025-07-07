@@ -9,8 +9,10 @@ import HeaderActions from '@/AppBuilder/Header/HeaderActions';
 import { AppEnvironments } from '@/modules/Appbuilder/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
+  const appType = useAppType();
   const { setShowUndoRedoBtn, editingVersion } = useStore(
     (state) => ({
       setShowUndoRedoBtn: state?.setShowUndoRedoBtn,
@@ -32,14 +34,14 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
         <span className="preview-settings-text" data-cy="preview-settings-text">
           Preview settings
         </span>
-        {editingVersion && (
+        {editingVersion && appType !== 'module' && (
           <>
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
             <AppEnvironments darkMode={darkMode} />
           </>
         )}
-        <span>
+        <span style={{ marginLeft: appType === 'module' && '10px' }}>
           <HeaderActions showToggleLayoutBtn darkMode={darkMode} />
         </span>
       </div>
@@ -69,7 +71,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                 onClick={props.onClick}
                 data-cy="preview-settings"
               >
-                <Icon name="settings" height={12} width={12} fill="#889099" />
+                <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
               </span>
             </div>
           )}
@@ -85,13 +87,17 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
-              <span style={{ marginTop: '4px' }}>
-                <AppEnvironments darkMode={darkMode} />
-              </span>
-              <hr className="m-0" />
-              <span>
-                <AppVersionsManager darkMode={darkMode} />
-              </span>
+              {appType !== 'module' && (
+                <>
+                  <span style={{ marginTop: '4px' }}>
+                    <AppEnvironments darkMode={darkMode} />
+                  </span>
+                  <hr className="m-0" />
+                  <span>
+                    <AppVersionsManager darkMode={darkMode} />
+                  </span>
+                </>
+              )}
 
               <div
                 className={classNames('d-flex px-2 pb-2 align-items-center width-100', {
@@ -119,7 +125,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       </span>
       <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
         <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
-          <Icon name="settings" height={12} width={12} fill="#889099" />
+          <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
         </span>
       </OverlayTrigger>
     </div>

@@ -10,7 +10,7 @@ import {
   licenseService,
   pluginsService,
 } from '@/_services';
-import { ConfirmDialog, AppModal } from '@/_components';
+import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
 import _, { sample, isEmpty } from 'lodash';
 import { Folders } from './Folders';
@@ -43,10 +43,12 @@ import {
   ImportAppMenu,
   AppActionModal,
   OrganizationList,
-  UserGroupMigrationBanner,
   ConsultationBanner,
+  AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
 
 const { iconList, defaultIcon } = configs;
 
@@ -62,6 +64,7 @@ class HomePageComponent extends React.Component {
         id: currentSession?.current_user.id,
         organization_id: currentSession?.current_organization_id,
       },
+      shouldRedirect: false,
       users: null,
       isLoading: true,
       creatingApp: false,
@@ -100,7 +103,6 @@ class HomePageComponent extends React.Component {
       importingGitAppOperations: {},
       featuresLoaded: false,
       showCreateAppModal: false,
-      showCreateModuleModal: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -116,6 +118,11 @@ class HomePageComponent extends React.Component {
       shouldAutoImportPlugin: false,
       dependentPlugins: [],
       dependentPluginsDetail: {},
+      importedAppName: {},
+      isAppImportEditable: false,
+      showMissingGroupsModal: false,
+      missingGroups: [],
+      missingGroupsExpanded: false,
     };
   }
 
@@ -127,6 +134,13 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
+    if (this.props.appType === 'workflow') {
+      if (!this.canViewWorkflow()) {
+        toast.error('You do not have permission to view workflows');
+        this.setState({ shouldRedirect: true });
+        return;
+      }
+    }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
@@ -136,6 +150,10 @@ class HomePageComponent extends React.Component {
     this.fetchWorkflowsWorkspaceLimit();
     this.fetchOrgGit();
     this.setQueryParameter();
+
+    // Check module access permission
+    this.props.checkModuleAccess();
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
@@ -144,13 +162,17 @@ class HomePageComponent extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (prevProps.appType != this.props.appType) {
       this.fetchFolders();
       this.fetchApps(1);
     }
     if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
       this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
+    }
+    if (this.state.shouldRedirect && !prevState.shouldRedirect) {
+      const workspaceId = getWorkspaceId();
+      this.props.navigate(`/${workspaceId}`);
     }
   }
 
@@ -233,14 +255,23 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = async (appName, type) => {
+  getAppType = () => {
+    return this.props.appType === 'module' ? 'Module' : this.props.appType === 'workflow' ? 'Workflow' : 'App';
+  };
+
+  createApp = async (appName) => {
     let _self = this;
     _self.setState({ creatingApp: true });
+
     try {
-      const data = await appsService.createApp({ icon: sample(iconList), name: appName, type: this.props.appType });
+      const data = await appsService.createApp({
+        icon: sample(iconList),
+        name: appName,
+        type: this.props.appType,
+      });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
-      toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} created successfully!`);
+      toast.success(`${this.getAppType()} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
@@ -257,9 +288,9 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName });
+      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
-      toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} name has been updated!`);
+      toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
       return true;
     } catch (errorResponse) {
@@ -279,11 +310,14 @@ class HomePageComponent extends React.Component {
   cloneApp = async (appName, appId) => {
     this.setState({ isCloningApp: true });
     try {
-      const data = await appsService.cloneResource({
-        app: [{ id: appId, name: appName }],
-        organization_id: this.state.currentUser?.organization_id,
-      });
-      toast.success('App cloned successfully!');
+      const data = await appsService.cloneResource(
+        {
+          app: [{ id: appId, name: appName }],
+          organization_id: this.state.currentUser?.organization_id,
+        },
+        this.props.appType
+      );
+      toast.success(`${this.getAppType()} cloned successfully!`);
       this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -356,17 +390,24 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  importFile = async (importJSON, appName) => {
+  importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = this.state.currentUser?.organization_id;
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
-      importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
+      importJSON = {
+        app: [{ definition: importJSON, appName: appName }],
+        tooljet_version: importJSON.tooljetVersion,
+      };
     } else {
       importJSON.app[0].appName = appName;
     }
-    const requestBody = { organization_id, ...importJSON };
+    const requestBody = {
+      organization_id,
+      ...importJSON,
+      skip_permissions_group_check: skipPermissionsGroupCheck,
+    };
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
@@ -376,8 +417,19 @@ class HomePageComponent extends React.Component {
         ));
       }
 
-      const data = await appsService.importResource(requestBody);
-      toast.success('App imported successfully.');
+      if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
+        toast.error(
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
+          } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
+          { style: { maxWidth: '425px' } }
+        );
+        this.setState({ isImportingApp: false });
+        return;
+      }
+
+      const data = await appsService.importResource(requestBody, this.props.appType);
+      toast.success(`${this.props.appType === 'module' ? 'Module' : 'App'} imported successfully.`);
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -388,6 +440,10 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${getWorkspaceId()}/database`);
       }
     } catch (error) {
+      if (error?.error?.type === 'permission-check') {
+        this.setState({ showMissingGroupsModal: true, missingGroups: error?.error?.data });
+        return;
+      }
       if (installedPluginsInfo.length) {
         const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
         await pluginsService.uninstallPlugins(pluginsId);
@@ -411,7 +467,7 @@ class HomePageComponent extends React.Component {
         this.state.shouldAutoImportPlugin
       );
       this.setState({ deploying: false });
-      toast.success('App created successfully!', { position: 'top-center' });
+      toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -426,37 +482,70 @@ class HomePageComponent extends React.Component {
     }
   };
 
+  canViewWorkflow = () => {
+    return this.canUserPerform(this.state.currentUser, 'view');
+  };
+
   canUserPerform(user, action, app) {
-    if (authenticationService.currentSessionValue?.super_admin) return true;
     const currentSession = authenticationService.currentSessionValue;
-    const appPermission = currentSession.app_group_permissions;
-    const canUpdateApp =
-      appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.includes(app?.id));
-    const canReadApp =
-      (appPermission && canUpdateApp) ||
-      appPermission.is_all_viewable ||
-      appPermission.viewable_apps_id.includes(app?.id);
-    let permissionGrant;
+    const { user_permissions, app_group_permissions, workflow_group_permissions, super_admin, admin } = currentSession;
 
-    switch (action) {
-      case 'create':
-        permissionGrant = currentSession.user_permissions.app_create;
-        break;
-      case 'read':
-        permissionGrant = this.isUserOwnerOfApp(user, app) || canReadApp;
-        break;
-      case 'update':
-        permissionGrant = canUpdateApp || this.isUserOwnerOfApp(user, app);
-        break;
-      case 'delete':
-        permissionGrant = currentSession.user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
-        break;
-      default:
-        permissionGrant = false;
-        break;
+    if (super_admin) return true;
+
+    if (this.props.appType === 'workflow') {
+      const canCreateWorkflow = admin || user_permissions?.workflow_create;
+      const canUpdateWorkflow =
+        workflow_group_permissions?.is_all_editable ||
+        workflow_group_permissions?.editable_workflows_id?.includes(app?.id);
+      const canExecuteWorkflow =
+        canUpdateWorkflow ||
+        workflow_group_permissions?.is_all_executable ||
+        workflow_group_permissions?.executable_workflows_id?.includes(app?.id);
+      const canDeleteWorkflow = user_permissions?.workflow_delete || admin;
+
+      switch (action) {
+        case 'create':
+          return canCreateWorkflow;
+        case 'read':
+          return canCreateWorkflow || canUpdateWorkflow || canDeleteWorkflow || canExecuteWorkflow;
+        case 'update':
+          return canUpdateWorkflow;
+        case 'delete':
+          return canDeleteWorkflow;
+        case 'view':
+          return (
+            canCreateWorkflow ||
+            canUpdateWorkflow ||
+            canDeleteWorkflow ||
+            canExecuteWorkflow ||
+            workflow_group_permissions?.editable_workflows_id?.length > 0 ||
+            workflow_group_permissions?.executable_workflows_id?.length > 0
+          );
+        default:
+          return false;
+      }
+    } else {
+      const canUpdateApp =
+        app_group_permissions &&
+        (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
+      const canReadApp =
+        (app_group_permissions && canUpdateApp) ||
+        app_group_permissions.is_all_viewable ||
+        app_group_permissions.viewable_apps_id.includes(app?.id);
+
+      switch (action) {
+        case 'create':
+          return user_permissions.app_create;
+        case 'read':
+          return this.isUserOwnerOfApp(user, app) || canReadApp;
+        case 'update':
+          return canUpdateApp || this.isUserOwnerOfApp(user, app);
+        case 'delete':
+          return user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
+        default:
+          return false;
+      }
     }
-
-    return permissionGrant;
   }
 
   isUserOwnerOfApp(user, app) {
@@ -498,10 +587,9 @@ class HomePageComponent extends React.Component {
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
     appsService
-      .deleteApp(this.state.appToBeDeleted.id)
-      // eslint-disable-next-line no-unused-vars
+      .deleteApp(this.state.appToBeDeleted.id, this.props.appType)
       .then((data) => {
-        toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} deleted successfully.`);
+        toast.success(`${this.getAppType()} deleted successfully.`);
         this.fetchApps(
           this.state.currentPage
             ? this.state.apps?.length === 1
@@ -520,7 +608,6 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
-        console.log(error);
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -586,6 +673,8 @@ class HomePageComponent extends React.Component {
       lastCommitUser: last_commit_user,
       lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
+      appName: this.state.importedAppName,
+      allowEditing: this.state.isAppImportEditable,
     };
     gitSyncService
       .importGitApp(body)
@@ -793,11 +882,11 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppModal = () => {
-    this.setState({ showCreateAppModal: true, showCreateModuleModal: true });
+    this.setState({ showCreateAppModal: true });
   };
 
   closeCreateAppModal = () => {
-    this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
+    this.setState({ showCreateAppModal: false });
   };
 
   openImportAppModal = async () => {
@@ -843,6 +932,25 @@ class HomePageComponent extends React.Component {
       appType !== 'workflow'
     );
   };
+  handleAppNameChange = (e) => {
+    const newAppName = e.target.value;
+    const { appsFromRepos } = this.state;
+    let validationMessage = {};
+    if (!newAppName.trim()) {
+      validationMessage = { message: 'App name cannot be empty' };
+    } else if (newAppName.length > 50) {
+      validationMessage = { message: 'App name cannot exceed 50 characters' };
+    } else {
+      const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
+      if (matchingApp?.app_name_exist === 'EXIST') {
+        validationMessage = { message: 'App name already exists' };
+      }
+    }
+    this.setState({
+      importedAppName: newAppName,
+      importingGitAppOperations: validationMessage,
+    });
+  };
   render() {
     const {
       apps,
@@ -876,7 +984,6 @@ class HomePageComponent extends React.Component {
       importingGitAppOperations,
       featuresLoaded,
       showCreateAppModal,
-      showCreateModuleModal,
       showImportAppModal,
       fileContent,
       fileName,
@@ -888,15 +995,32 @@ class HomePageComponent extends React.Component {
       showGroupMigrationBanner,
       dependentPlugins,
       dependentPluginsDetail,
+      showMissingGroupsModal,
+      missingGroups,
+      missingGroupsExpanded,
     } = this.state;
+
+    const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    const deleteModuleText =
+      'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
+
+    const getDisabledState = () => {
+      if (this.props.appType === 'module') {
+        return invalidLicense;
+      } else if (this.props.appType === 'front-end') {
+        return appsLimit?.percentage >= 100;
+      } else {
+        return workflowInstanceLevelLimit.percentage >= 100 || workflowWorkspaceLevelLimit.percentage >= 100;
+      }
+    };
     const modalConfigs = {
       create: {
         modalType: 'create',
         closeModal: this.closeCreateAppModal,
-        processApp: (name) => this.createApp(name, showCreateAppModal ? 'front-end' : 'module'),
+        processApp: (name) => this.createApp(name),
         show: this.openCreateAppModal,
-        title: this.props.appType === 'workflow' ? 'Create workflow' : 'Create app',
-        actionButton: this.props.appType === 'workflow' ? '+ Create workflow' : '+ Create app',
+        title: `Create ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Creating',
         appType: this.props.appType,
       },
@@ -905,11 +1029,12 @@ class HomePageComponent extends React.Component {
         closeModal: () => this.setState({ showCloneAppModal: false }),
         processApp: this.cloneApp,
         show: () => this.setState({ showCloneAppModal: true }),
-        title: 'Clone app',
-        actionButton: 'Clone app',
+        title: `Clone ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `Clone ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Cloning',
         selectedAppId: appOperations?.selectedApp?.id,
         selectedAppName: appOperations?.selectedApp?.name,
+        appType: this.props.appType,
       },
       import: {
         modalType: 'import',
@@ -939,13 +1064,18 @@ class HomePageComponent extends React.Component {
     };
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+
+    //import app missing groups modal config
+    const threshold = 3;
+    const isLong = missingGroups.length > threshold;
+    const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
+
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
           <AppActionModal
             modalStates={{
               showCreateAppModal,
-              showCreateModuleModal,
               showCloneAppModal,
               showImportAppModal,
               showCreateAppFromTemplateModal,
@@ -953,6 +1083,93 @@ class HomePageComponent extends React.Component {
             configs={modalConfigs}
             onCommitChange={this.handleCommitChange}
           />
+          <ModalBase
+            showHeader={false}
+            showFooter={false}
+            handleConfirm={() => this.importFile(fileContent, fileName, true)}
+            show={showMissingGroupsModal}
+            isLoading={importingApp}
+            handleClose={() => this.setState({ showMissingGroupsModal: false })}
+            confirmBtnProps={{
+              title: 'Import',
+              tooltipMessage: '',
+            }}
+            className="missing-groups-modal"
+            darkMode={this.props.darkMode}
+          >
+            <div className="missing-groups-modal-body">
+              <div className="flex items-start">
+                <SolidIcon name="warning" width="40px" fill="var(--icon-warning)" />
+                <div>
+                  <div className="header">Warning: Missing user groups for permissions</div>
+                  <p className="sub-header">
+                    Permissions for the following user group(s) won’t be applied since they do not exist in this
+                    workspace.
+                  </p>
+                </div>
+              </div>
+
+              <div className="groups-list">
+                <div
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
+                >
+                  <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
+                    User groups
+                  </div>
+                  <div className="mt-1">
+                    {displayedGroups.map((group, idx) => (
+                      <span className="tj-text-xsm font-weight-500" key={idx}>
+                        {group}
+                        {idx < displayedGroups.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                    {!missingGroupsExpanded && isLong && '...'}
+                  </div>
+                </div>
+
+                {isLong && (
+                  <button
+                    class="toggle-button"
+                    onClick={() => this.setState({ missingGroupsExpanded: !missingGroupsExpanded })}
+                  >
+                    <span className="chevron">
+                      <SolidIcon
+                        fill="var(--icon-brand)"
+                        name={missingGroupsExpanded ? 'cheveronup' : 'cheverondown'}
+                      />
+                    </span>
+                    <span class="label">{missingGroupsExpanded ? 'See less' : 'See more'}</span>
+                  </button>
+                )}
+              </div>
+
+              <p className="info">
+                Restricted pages, queries, or components will become accessible to all users or to existing groups with
+                permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after
+                import.
+              </p>
+
+              <div className="mt-6 d-flex justify-between action-btns">
+                <ButtonSolid
+                  className="secondary-action"
+                  variant={'tertiary'}
+                  onClick={() => this.setState({ showMissingGroupsModal: false, isImportingApp: false })}
+                >
+                  Cancel import
+                </ButtonSolid>
+                <ButtonSolid
+                  isLoading={importingApp}
+                  variant={'primary'}
+                  onClick={() => this.importFile(fileContent, fileName, true)}
+                  className="primary-action"
+                >
+                  Import with limited permissions
+                </ButtonSolid>
+              </div>
+            </div>
+          </ModalBase>
           {showRenameAppModal && (
             <AppModal
               show={() => this.setState({ showRenameAppModal: true })}
@@ -960,8 +1177,8 @@ class HomePageComponent extends React.Component {
               processApp={this.renameApp}
               selectedAppId={appOperations.selectedApp.id}
               selectedAppName={appOperations.selectedApp.name}
-              title={`Rename ${this.props.appType === 'workflow' ? 'workflow' : 'app'}`}
-              actionButton={`Rename ${this.props.appType === 'workflow' ? 'workflow' : 'app'}`}
+              title={`Rename ${this.getAppType().toLocaleLowerCase()}`}
+              actionButton={`Rename ${this.getAppType().toLocaleLowerCase()}`}
               actionLoadingButton={'Renaming'}
               appType={this.props.appType}
             />
@@ -969,7 +1186,11 @@ class HomePageComponent extends React.Component {
           <ConfirmDialog
             show={showAppDeletionConfirmation}
             message={this.props.t(
-              this.props.appType === 'workflow' ? 'homePage.deleteWorkflowAndData' : 'homePage.deleteAppAndData',
+              this.props.appType === 'workflow'
+                ? 'homePage.deleteWorkflowAndData'
+                : this.props.appType === 'front-end'
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1025,13 +1246,16 @@ class HomePageComponent extends React.Component {
                       options={this.generateOptionsForRepository()}
                       disabled={importingApp}
                       onChange={(newVal) => {
-                        this.setState({ selectedAppRepo: newVal }, () => {
-                          if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                            this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
-                          } else {
-                            this.setState({ importingGitAppOperations: {} });
+                        this.setState(
+                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
+                          () => {
+                            if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
+                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
+                            } else {
+                              this.setState({ importingGitAppOperations: {} });
+                            }
                           }
-                        });
+                        );
                       }}
                       width={'100%'}
                       value={selectedAppRepo}
@@ -1050,12 +1274,11 @@ class HomePageComponent extends React.Component {
                       <div className="tj-app-input">
                         <input
                           type="text"
-                          disabled={true}
-                          value={appsFromRepos[selectedAppRepo].git_app_name}
-                          className={cx('form-control font-weight-400 disabled', {
+                          value={this.state.importedAppName}
+                          className={cx('form-control font-weight-400', {
                             'tj-input-error-state': importingGitAppOperations?.message,
                           })}
-                          data-cy="app-name-field"
+                          onChange={this.handleAppNameChange}
                         />
                       </div>
                       <div>
@@ -1066,9 +1289,24 @@ class HomePageComponent extends React.Component {
                           )}
                           data-cy="app-name-helper-text"
                         >
-                          {importingGitAppOperations?.message
-                            ? importingGitAppOperations?.message
-                            : 'App name is inherited from git repository and cannot be edited'}
+                          {importingGitAppOperations?.message}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="application-editable-checkbox-container">
+                      <input
+                        className="form-check-input"
+                        checked={this.state.isAppImportEditable}
+                        type="checkbox"
+                        onChange={() =>
+                          this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                        }
+                      />
+                      Make application editable
+                      <div className="helper-text">
+                        <div className="tj-text tj-text-xsm"></div>
+                        <div className="tj-text-xxsm">
+                          Enabling this allows editing and git sync push/pull access in development.
                         </div>
                       </div>
                     </div>
@@ -1201,31 +1439,33 @@ class HomePageComponent extends React.Component {
                     <div className="create-new-app-wrapper">
                       <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                         <Button
-                          //disabled={appsLimit?.percentage >= 100}
-                          disabled={
-                            this.props.appType === 'front-end'
-                              ? appsLimit?.percentage >= 100
-                              : workflowInstanceLevelLimit.percentage >= 100 ||
-                                workflowWorkspaceLevelLimit.percentage >= 100
-                          }
+                          disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={() => this.setState({ showCreateAppModal: true })}
+                          onClick={() =>
+                            this.setState({
+                              showCreateAppModal: true,
+                            })
+                          }
                           data-cy="create-new-app-button"
                         >
-                          {isImportingApp && (
-                            <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                          )}
-                          {this.props.t(
-                            `${
-                              this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                            }.header.createNewApplication`,
-                            'Create new app'
-                          )}
+                          <>
+                            {isImportingApp && (
+                              <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
+                            )}
+                            {this.props.appType === 'module'
+                              ? 'Create new module'
+                              : this.props.t(
+                                  `${
+                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                  }.header.createNewApplication`,
+                                  'Create new app'
+                                )}
+                          </>
                         </Button>
 
                         {this.props.appType !== 'workflow' && (
                           <Dropdown.Toggle
-                            disabled={appsLimit?.percentage >= 100}
+                            disabled={getDisabledState()}
                             split
                             className="d-inline"
                             data-cy="import-dropdown-menu"
@@ -1233,30 +1473,41 @@ class HomePageComponent extends React.Component {
                         )}
                         <ImportAppMenu
                           darkMode={this.props.darkMode}
-                          showTemplateLibraryModal={this.showTemplateLibraryModal}
+                          showTemplateLibraryModal={
+                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
+                          }
                           featureAccess={featureAccess}
                           orgGit={orgGit}
-                          toggleGitRepositoryImportModal={this.toggleGitRepositoryImportModal}
+                          toggleGitRepositoryImportModal={
+                            this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
+                          }
                           readAndImport={this.readAndImport}
+                          appType={this.props.appType}
                         />
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
                 </div>
               )}
-              <Folders
-                foldersLoading={this.state.foldersLoading}
-                folders={this.state.folders}
-                currentFolder={currentFolder}
-                folderChanged={this.folderChanged}
-                foldersChanged={this.foldersChanged}
-                canCreateFolder={this.canCreateFolder()}
-                canDeleteFolder={this.canDeleteFolder()}
-                canUpdateFolder={this.canUpdateFolder()}
-                darkMode={this.props.darkMode}
-                canCreateApp={this.canCreateApp()}
-                appType={this.props.appType}
-              />
+              {this.props.appType === 'module' ? (
+                <div>
+                  <p></p>
+                </div>
+              ) : (
+                <Folders
+                  foldersLoading={this.state.foldersLoading}
+                  folders={this.state.folders}
+                  currentFolder={currentFolder}
+                  folderChanged={this.folderChanged}
+                  foldersChanged={this.foldersChanged}
+                  canCreateFolder={this.canCreateFolder()}
+                  canDeleteFolder={this.canDeleteFolder()}
+                  canUpdateFolder={this.canUpdateFolder()}
+                  darkMode={this.props.darkMode}
+                  canCreateApp={this.canCreateApp()}
+                  appType={this.props.appType}
+                />
+              )}
               {this.props.appType === 'front-end' && (
                 <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
               )}
@@ -1288,12 +1539,6 @@ class HomePageComponent extends React.Component {
                     classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
                   />
                 )}
-              {this.shouldShowMigrationBanner() && (
-                <UserGroupMigrationBanner
-                  classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
-                  closeBanner={this.setShowGroupMigrationBanner}
-                />
-              )}
 
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>
@@ -1306,16 +1551,24 @@ class HomePageComponent extends React.Component {
             >
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
-                  <LicenseBanner
-                    classes="mt-3"
-                    limits={featureAccess}
-                    type={featureAccess?.licenseStatus?.licenseType}
-                  />
+                  <>
+                    <LicenseBanner
+                      classes="mt-3"
+                      limits={featureAccess}
+                      type={featureAccess?.licenseStatus?.licenseType}
+                    />
+                    <AppTypeTab
+                      appType={this.props.appType}
+                      navigate={this.props.navigate}
+                      darkMode={this.props.darkMode}
+                      hasModuleAccess={this.props.hasModuleAccess}
+                    />
+                  </>
                 ) : (
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {this.props.appType !== 'workflow' && this.canCreateApp() && (
+                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
 
@@ -1327,6 +1580,7 @@ class HomePageComponent extends React.Component {
                           onSearchSubmit={this.onSearchSubmit}
                           darkMode={this.props.darkMode}
                           appType={this.props.appType}
+                          disabled={this.props.appType === 'module' && invalidLicense}
                         />
                         <div className="liner"></div>
                       </>
@@ -1354,31 +1608,60 @@ class HomePageComponent extends React.Component {
                     </div>
                   </>
                 )}
-                {!isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
-                  <BlankPage
-                    canCreateApp={this.canCreateApp}
-                    isLoading={true}
-                    createApp={this.createApp}
-                    readAndImport={this.readAndImport}
-                    isImportingApp={isImportingApp}
-                    fileInput={this.fileInput}
-                    openCreateAppModal={this.openCreateAppModal}
-                    openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-                    creatingApp={creatingApp}
-                    darkMode={this.props.darkMode}
-                    showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-                    viewTemplateLibraryModal={this.showTemplateLibraryModal}
-                    hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-                    appType={this.props.appType}
-                    workflowsLimit={
-                      workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                      100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                      workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                        ? workflowInstanceLevelLimit
-                        : workflowWorkspaceLevelLimit
-                    }
-                  />
-                )}
+                {!isLoading &&
+                  featuresLoaded &&
+                  meta?.total_count === 0 &&
+                  !currentFolder.id &&
+                  !appSearchKey &&
+                  (['front-end', 'workflow'].includes(this.props.appType) ? (
+                    <BlankPage
+                      canCreateApp={this.canCreateApp}
+                      isLoading={true}
+                      createApp={this.createApp}
+                      readAndImport={this.readAndImport}
+                      isImportingApp={isImportingApp}
+                      fileInput={this.fileInput}
+                      openCreateAppModal={this.openCreateAppModal}
+                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+                      creatingApp={creatingApp}
+                      darkMode={this.props.darkMode}
+                      showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+                      viewTemplateLibraryModal={this.showTemplateLibraryModal}
+                      hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+                      appType={this.props.appType}
+                      workflowsLimit={
+                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                          ? workflowInstanceLevelLimit
+                          : workflowWorkspaceLevelLimit
+                      }
+                    />
+                  ) : (
+                    <div className="empty-module-container">
+                      <EmptyModuleSvg />
+                      <p className="empty-title mt-3">Create a module to reuse on the applications.</p>
+                      <ButtonSolid
+                        disabled={invalidLicense}
+                        leftIcon="folderdownload"
+                        isLoading={false}
+                        onClick={this.openCreateAppModal}
+                        data-cy="button-import-an-app"
+                        className="col"
+                        variant="tertiary"
+                      >
+                        <ToolTip
+                          show={invalidLicense}
+                          message="Modules are available only on paid plans"
+                          placement="bottom"
+                        >
+                          <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
+                            {'Create new module'}
+                          </label>
+                        </ToolTip>
+                      </ButtonSolid>
+                    </div>
+                  ))}
                 {!isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
@@ -1402,7 +1685,7 @@ class HomePageComponent extends React.Component {
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
                     appType={this.props.appType}
-                    basicPlan={featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid}
+                    basicPlan={invalidLicense}
                     appSearchKey={this.state.appSearchKey}
                   />
                 )}
@@ -1416,6 +1699,7 @@ class HomePageComponent extends React.Component {
                     pageChanged={this.pageChanged}
                     darkMode={this.props.darkMode}
                     dataLoading={isLoading}
+                    appType={this.props.appType}
                   />
                 )}
                 {/* need to review the mobile view */}
@@ -1440,15 +1724,25 @@ class HomePageComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { featureAccess, featuresLoaded } = useLicenseStore(
+  const { featureAccess, featuresLoaded, hasModuleAccess } = useLicenseStore(
     (state) => ({
       featureAccess: state.featureAccess,
       featuresLoaded: state.featuresLoaded,
+      hasModuleAccess: state.hasModuleAccess,
     }),
     shallow
   );
+  const { checkModuleAccess } = useLicenseStore((state) => state.actions, shallow);
 
-  return <Component {...props} featureAccess={featureAccess} featuresLoaded={featuresLoaded} />;
+  return (
+    <Component
+      {...props}
+      featureAccess={featureAccess}
+      featuresLoaded={featuresLoaded}
+      checkModuleAccess={checkModuleAccess}
+      hasModuleAccess={hasModuleAccess}
+    />
+  );
 };
 
 export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));

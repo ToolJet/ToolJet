@@ -1,5 +1,4 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { DataSourcesRepository } from './repository';
@@ -12,17 +11,25 @@ import { AppsRepository } from '@modules/apps/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SessionModule } from '@modules/session/module';
-import { SampleDBScheduler } from './schedulers/sample-db.scheduler';
+import { SubModule } from '@modules/app/sub-module';
 
-export class DataSourcesModule {
+export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { DataSourcesService } = await import(`${importPath}/data-sources/service`);
-    const { DataSourcesController } = await import(`${importPath}/data-sources/controller`);
-    const { DataSourcesUtilService } = await import(`${importPath}/data-sources/util.service`);
-    const { PluginsServiceSelector } = await import(`${importPath}/data-sources/services/plugin-selector.service`);
-    const { SampleDataSourceService } = await import(`${importPath}/data-sources/services/sample-ds.service`);
-    const { OrganizationsService } = await import(`${importPath}/organizations/service`);
+    const {
+      DataSourcesService,
+      DataSourcesController,
+      DataSourcesUtilService,
+      PluginsServiceSelector,
+      SampleDataSourceService,
+    } = await this.getProviders(configs, 'data-sources', [
+      'service',
+      'controller',
+      'util.service',
+      'services/plugin-selector.service',
+      'services/sample-ds.service',
+    ]);
+
+    const { OrganizationsService } = await this.getProviders(configs, 'organizations', ['service']);
 
     return {
       module: DataSourcesModule,
@@ -46,7 +53,6 @@ export class DataSourcesModule {
         FeatureAbilityFactory,
         OrganizationsService,
         OrganizationRepository,
-        SampleDBScheduler,
       ],
       controllers: [DataSourcesController],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],

@@ -11,7 +11,7 @@ import { selectAppCardOption } from "Support/utils/common";
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
     ? "/api/library_apps"
-    : "/api/library_apps/";
+    : "/api/library_apps";
 
 Cypress.Commands.add(
   "appUILogin",
@@ -84,7 +84,20 @@ Cypress.Commands.add(
     const dataTransfer = new DataTransfer();
     cy.forceClickOnCanvas();
 
-    cy.clearAndType(commonSelectors.searchField, widgetName);
+    cy.get("body")
+      .then(($body) => {
+        const isSearchVisible = $body
+          .find(commonSelectors.searchField)
+          .is(":visible");
+
+        if (!isSearchVisible) {
+          cy.get('[data-cy="right-sidebar-plus-button"]').click();
+        }
+      })
+      .then(() => {
+        cy.clearAndType(commonSelectors.searchField, widgetName);
+      });
+
     cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
       "dragstart",
       { dataTransfer },
@@ -226,9 +239,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -548,7 +561,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -621,3 +634,12 @@ Cypress.Commands.add(
       .and("have.text", `${fieldName} is required`);
   }
 );
+
+Cypress.Commands.add("ifEnv", (expectedEnvs, callback) => {
+  const actualEnv = Cypress.env("environment");
+  const envArray = Array.isArray(expectedEnvs) ? expectedEnvs : [expectedEnvs];
+
+  if (envArray.includes(actualEnv)) {
+    callback();
+  }
+});

@@ -16,9 +16,9 @@ export const AppMenu = function AppMenu({
   popoverVisible,
   setMenuOpen,
   appType,
-  appCreationMode,
 }) {
   const { t } = useTranslation();
+  const isModuleApp = appType === 'module';
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
       document.body.click();
@@ -55,9 +55,11 @@ export const AppMenu = function AppMenu({
               <div data-cy="card-options">
                 {canUpdateApp && (
                   <Field
-                    customClass={appCreationMode === 'GIT' && 'disabled-action-tooltip'}
-                    text={t('homePage.appCard.renameApp', appType === 'workflow' ? 'Rename workflow' : 'Rename app')}
-                    onClick={() => appCreationMode !== 'GIT' && openAppActionModal('rename-app')}
+                    text={t(
+                      'homePage.appCard.renameApp',
+                      appType === 'workflow' ? 'Rename workflow' : appType === 'module' ? 'Rename module' : 'Rename app'
+                    )}
+                    onClick={() => openAppActionModal('rename-app')}
                   />
                 )}
                 {canUpdateApp && (
@@ -66,7 +68,7 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('change-icon')}
                   />
                 )}
-                {canCreateApp && (
+                {canCreateApp && appType !== 'module' && (
                   <>
                     <Field
                       text={t('homePage.appCard.addToFolder', 'Add to folder')}
@@ -84,10 +86,12 @@ export const AppMenu = function AppMenu({
                 {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>
                     <Field
-                      text={t('homePage.appCard.cloneApp', 'Clone app')}
+                      text={
+                        appType === 'workflow' ? 'Clone workflow' : appType === 'module' ? 'Clone module' : 'Clone app'
+                      }
                       onClick={() => openAppActionModal('clone-app')}
                     />
-                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                    <Field text={appType === 'module' ? 'Export module' : 'Export app'} onClick={exportApp} />
                   </>
                 )}
                 {canDeleteApp && (
@@ -95,7 +99,9 @@ export const AppMenu = function AppMenu({
                     text={
                       appType === 'workflow'
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
-                        : t('homePage.appCard.deleteApp', 'Delete app')
+                        : appType === 'front-end'
+                        ? t('homePage.appCard.deleteApp', 'Delete app')
+                        : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}

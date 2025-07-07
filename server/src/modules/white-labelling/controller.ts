@@ -1,4 +1,4 @@
-import { Controller, Body, Put, Get, Param } from '@nestjs/common';
+import { Controller, Body, Put, Get, Param, Query } from '@nestjs/common';
 import { UpdateWhiteLabellingDto } from './dto';
 import { IWhiteLabellingController } from './Interfaces/IController';
 import { NotFoundException } from '@nestjs/common';
@@ -15,7 +15,7 @@ export class WhiteLabellingController implements IWhiteLabellingController {
 
   @Get()
   @InitFeature(FEATURE_KEY.GET)
-  async get() {
+  async get(@Query('organizationId') organizationId: string) {
     return this.whiteLabellingService.getProcessedSettings(null);
   }
 
@@ -27,7 +27,7 @@ export class WhiteLabellingController implements IWhiteLabellingController {
 
   @Get('/:workspaceId')
   @InitFeature(FEATURE_KEY.GET_WORKSPACE_SETTINGS)
-  async getWorkspaceSettings(@Param('workspaceId') workspaceId: string) {
+  async getWorkspaceSettings(req: any) {
     throw new NotFoundException();
   }
 
@@ -35,7 +35,8 @@ export class WhiteLabellingController implements IWhiteLabellingController {
   @InitFeature(FEATURE_KEY.UPDATE_WORKSPACE_SETTINGS)
   async updateWorkspaceSettings(
     @Param('organizationId') organizationId: string,
-    @Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto
+    @Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto,
+    user: any
   ) {
     throw new NotFoundException();
   }

@@ -65,11 +65,11 @@ export const dividerConfig = {
   events: {},
   styles: {
     dividerColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Divider color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-default-border)',
       },
       accordian: 'Divider',
     },
@@ -100,7 +100,7 @@ export const dividerConfig = {
       isFxNotRequired: true,
     },
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Label Color',
       validation: {
         schema: { type: 'string' },
@@ -146,10 +146,10 @@ export const dividerConfig = {
     },
     events: [],
     styles: {
-      dividerColor: { value: '#CCD1D5' },
+      dividerColor: { value: 'var(--cc-default-border)' },
       labelAlignment: { value: 'center' },
       dividerStyle: { value: 'solid' },
-      labelColor: { value: '#6A727C' },
+      labelColor: { value: 'var(--cc-placeholder-text)' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

@@ -31,8 +31,11 @@ export const verifyAndModifyParameter = (paramName, value) => {
 export const openEditorSidebar = (widgetName = "") => {
   cy.hideTooltip();
 
-  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).realHover()
-  cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
+
+  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).realHover().then(() => {
+    cy.wait(1000);
+    cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
+  })
 };
 
 export const verifyAndModifyToggleFx = (
