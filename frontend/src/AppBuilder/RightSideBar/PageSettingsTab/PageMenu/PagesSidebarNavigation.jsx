@@ -266,6 +266,10 @@ export const PagesSidebarNavigation = ({
   const headerHidden = isLicensed ? hideHeader : false;
   const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
+  if (hideHeader && hideLogo && isPagesSidebarHidden) {
+    return null;
+  }
+
   return (
     <div>
       <button
@@ -317,35 +321,38 @@ export const PagesSidebarNavigation = ({
             !styles?.borderColor?.isDefault && position === 'top' ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
           boxShadow: 'var(--elevation-100-box-shadow)',
-          scrollbarWidth: 'none',
         }}
       >
         <div style={{ overflow: 'hidden' }} className="position-relative">
           {(collapsable || !headerHidden || !hideLogo) && (
             <div
               style={{
-                marginRight: headerHidden && position == 'top' && '0px',
+                marginRight: hideHeader && hideLogo && position == 'top' && '0px',
               }}
               className="app-name"
             >
               {!hideLogo && (
-                <div onClick={switchToHomePage} className="cursor-pointer">
+                <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
               )}
               {!headerHidden && ((isPinnedWithLabel && !labelHidden) || position === 'top') && (
-                <span>{name?.trim() ? name : appName}</span>
+                <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
               )}
-              {collapsable && !isTopPositioned && style == 'texticon' && position === 'side' && (
-                <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
-                  <SolidIcon
-                    className="cursor-pointer"
-                    fill="var(--icon-strong)"
-                    width="14px"
-                    name={isSidebarPinned ? 'remove03' : 'menu'}
-                  />
-                </div>
-              )}
+              {collapsable &&
+                !isTopPositioned &&
+                style == 'texticon' &&
+                position === 'side' &&
+                !isPagesSidebarHidden && (
+                  <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
+                    <SolidIcon
+                      className="cursor-pointer"
+                      fill="var(--icon-strong)"
+                      width="14px"
+                      name={isSidebarPinned ? 'remove03' : 'menu'}
+                    />
+                  </div>
+                )}
             </div>
           )}
           {isLicensed && !isPagesSidebarHidden ? (

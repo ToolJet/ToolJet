@@ -140,7 +140,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
       width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
-      borderRight: currentMode === 'edit' && isRightSidebarOpen && '300' + 'px solid',
+      borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
       paddingBottom: currentMode === 'edit' && '2px',
     };
@@ -156,44 +156,32 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     if (isModuleMode) return '100%';
 
     const shouldAdjust = isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit');
-    console.log({ shouldAdjust });
 
     if (!shouldAdjust) return '';
     let offset;
     if (isViewerSidebarPinned && !isPagesSidebarHidden) {
       if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-        console.log('here1');
       } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-        console.log('here2');
       } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-        console.log('here3');
       }
     } else {
       if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-        console.log('here4');
       } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-        console.log('here5');
       } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-        console.log('here6');
       }
     }
 
-    console.log({ isPagesSidebarHidden, isSidebarOpen, isRightSidebarOpen, offset });
-
     if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
       offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
-      console.log('here7');
     } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
       offset = `${LEFT_SIDEBAR_WIDTH}px`;
-      console.log('here8');
     } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
-      console.log('here');
       offset = `${RIGHT_SIDEBAR_WIDTH}px`;
     }
 

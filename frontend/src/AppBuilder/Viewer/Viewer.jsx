@@ -16,7 +16,9 @@ import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
+import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
+import TooljetBanner from '../../Editor/Viewer/TooljetBanner';
 
 export const Viewer = ({
   id: appId,
@@ -107,15 +109,13 @@ export const Viewer = ({
   const { position, hideHeader } = properties ?? {};
 
   const canvasRef = useRef(null);
-  const isLoading = false;
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
-  const isMobileDevice = deviceWindowWidth < 600;
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
-  const isLicenseValid = useStore((state) => state.isLicenseValid);
-  const licenseValid = isLicenseValid();
+  const isLicenseNotValid = checkIfLicenseNotValid();
+
   // ---remove
   const handleAppEnvironmentChanged = useCallback((environment) => {
     console.log('setAppVersionCurrentEnvironment', environment);
@@ -279,6 +279,7 @@ export const Viewer = ({
                                 darkMode={darkMode}
                               />
                             </div>
+                            {isLicenseNotValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

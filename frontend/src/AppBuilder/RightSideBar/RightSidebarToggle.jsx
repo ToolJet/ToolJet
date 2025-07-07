@@ -46,7 +46,8 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           handleToggle(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
         }}
         darkMode={darkMode}
-        icon="inspect"
+        icon="propertiesstyles"
+        iconWidth="14"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Component properties"
       />
