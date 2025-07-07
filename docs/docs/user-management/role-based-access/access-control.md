@@ -3,7 +3,7 @@ id: access-control
 title: Access Control
 ---
 
-ToolJet enables you to manage access control by configuring permissions like create and delete. Access control can be applied to all of your resources such as apps and data sources. Additionally, ToolJet supports granular access control, allowing you to configure permissions for individual resources to ensure precise and secure management.
+ToolJet enables you to manage access control by configuring permissions like create and delete. Access control can be applied to all of your resources such as apps, data sources and workflows. Additionally, ToolJet supports granular access control, allowing you to configure permissions for individual resources to ensure precise and secure management.
 
 ## Permissions
 
