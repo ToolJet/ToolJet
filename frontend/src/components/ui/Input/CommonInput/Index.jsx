@@ -15,6 +15,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
     isDisabled,
     isEditing,
     handleEncryptedFieldsToggle,
+    labelDisabled,
   } = restProps;
 
   const InputComponentType = type === 'number' ? NumberInput : TextInput;
@@ -55,7 +56,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
       <div className="d-flex">
         {label && (
           <div className="tw-flex-shrink-0">
-            <InputLabel disabled={disabled} label={label} required={required} />
+            <InputLabel disabled={labelDisabled ?? disabled} label={label} required={required} />
           </div>
         )}
         {type === 'password' && (

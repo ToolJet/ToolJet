@@ -387,6 +387,7 @@ const DynamicFormV2 = ({
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
           isEditing: isEditing,
+          labelDisabled: false,
         };
       }
       case 'react-component-headers': {
