@@ -46,11 +46,11 @@ Following actions of component can be controlled using the Component Specific Ac
 | setMaxTime( )   | Sets the maximum time that can be selected.	 | `components.datetimepicker1.setMaxTime(value)` |
 | setDisplayTimezone( )   | Sets the timezone in which the selected time will be displayed.	 | `components.datetimepicker1.setDisplayTimezone(value)` |
 | setStoreTimezone( )   | Specifies the timezone in which the selected time will be stored.	 | `components.datetimepicker1.setStoreTimezone(value)` |
-| setVisibility( )   | Sets the visibility state of the time picker.	 | `components.datetimepicker1.setVisibility()` |
-| setLoading( )   | Sets the loading state of the time picker.	 | `components.datetimepicker1.setLoading()` |
-| setDisable( )   | Disables the time picker.	 | `components.datetimepicker1.setDisable()` |
-| setFocus( )   | Sets the focus of the cursor on the time picker. | `components.datetimepicker1.setLoading()` |
-| setBlur( )   | Removes the focus of the cursor from the time picker. | `components.datetimepicker1.setBlur()` |
+| setVisibility( )   | Sets the visibility state of the date time picker.	 | `components.datetimepicker1.setVisibility()` |
+| setLoading( )   | Sets the loading state of the date time picker.	 | `components.datetimepicker1.setLoading()` |
+| setDisable( )   | Disables the date time picker.	 | `components.datetimepicker1.setDisable()` |
+| setFocus( )   | Sets the focus of the cursor on the date time picker. | `components.datetimepicker1.setLoading()` |
+| setBlur( )   | Removes the focus of the cursor from the date time picker. | `components.datetimepicker1.setBlur()` |
 
 ## Exposed Variables
 
