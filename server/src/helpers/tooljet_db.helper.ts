@@ -3,6 +3,8 @@ import { tooljetDbOrmconfig } from 'ormconfig';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 import { EntityManager, DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 /**
  * Creates a custom tooljet database connection using a tenant user, for the respective workspace.
@@ -40,6 +42,10 @@ export async function createTooljetDatabaseConnection(
 }
 
 export async function decryptTooljetDatabasePassword(password: string) {
+  if (isSQLModeDisabled()) {
+    return process.env.TOOLJET_DB_PASS;
+  }
+
   const encryptionService = new EncryptionService();
   const decryptedvalue = await encryptionService.decryptColumnValue(
     'organization_tjdb_configurations',
@@ -60,7 +66,19 @@ export async function encryptTooljetDatabasePassword(password: string) {
 }
 
 export function findTenantSchema(organisationId: string): string {
+  if (isSQLModeDisabled()) {
+    return 'public';
+  }
+
   return `workspace_${organisationId}`;
+}
+
+export function isSQLModeDisabled(): boolean {
+  // Cloud TJDB SQL mode disabled: Use public schema for cloud edition
+  // This is because Postgrest doesn't handle loading large amount of schemas in memory
+  // This is required to expose SQL mode on cloud edition
+  // For CE/EE, we use tenant-specific schema with SQL mode
+  return process.env.TJDB_SQL_MODE_DISABLE === 'true' || getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
 }
 
 export function concatSchemaAndTableName(schema: string, tableName: string) {
@@ -244,7 +262,7 @@ export function validateTjdbJSONBColumnInputs(jsonbColumnList: Array<string>, in
         } else {
           inValidValueColumnsList.push(key);
         }
-      } catch (error) {
+      } catch {
         inValidValueColumnsList.push(key);
       }
     }
