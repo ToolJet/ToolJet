@@ -147,34 +147,38 @@ export const BlankPage = function BlankPage({
                           Create new {appType !== 'workflow' ? 'application' : 'workflow'}
                         </ButtonSolid>
                       </div>
-                      {appType !== 'workflow' && (
-                        <div className="col-6">
-                          <ButtonSolid
-                            disabled={appCreationDisabled}
-                            leftIcon="folderdownload"
-                            onChange={readAndImport}
-                            isLoading={isImportingApp}
-                            data-cy="button-import-an-app"
-                            className="col"
-                            variant="tertiary"
+                      <div className="col-6">
+                        <ButtonSolid
+                          disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
+                          leftIcon="folderdownload"
+                          onChange={readAndImport}
+                          isLoading={isImportingApp}
+                          data-cy={appType !== 'workflow' ? 'button-import-an-app' : 'button-import-a-workflow'}
+                          className="col"
+                          variant="tertiary"
+                        >
+                          <label
+                            className={cx('', {
+                              'cursor-pointer':
+                                appType !== 'workflow' ? !appCreationDisabled : !workflowsCreationDisabled,
+                            })}
+                            style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
+                            data-cy={appType !== 'workflow' ? 'import-an-application' : 'import-a-workflow'}
                           >
-                            <label
-                              className={cx('', { 'cursor-pointer': !appCreationDisabled })}
-                              style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
-                              data-cy="import-an-application"
-                            >
-                              &nbsp;{t('blankPage.importApplication', 'Import an app')}
-                              <input
-                                disabled={appCreationDisabled}
-                                type="file"
-                                ref={fileInput}
-                                style={{ display: 'none' }}
-                                data-cy="import-option-input"
-                              />
-                            </label>
-                          </ButtonSolid>
-                        </div>
-                      )}
+                            &nbsp;
+                            {appType !== 'workflow'
+                              ? t('blankPage.importApplication', 'Import an app')
+                              : t('blankPage.importWorkflow', 'Import a workflow')}
+                            <input
+                              disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
+                              type="file"
+                              ref={fileInput}
+                              style={{ display: 'none' }}
+                              data-cy="import-option-input"
+                            />
+                          </label>
+                        </ButtonSolid>
+                      </div>
                     </div>
                   </div>
                   <div className="col-5 empty-home-page-image" data-cy="empty-home-page-image">

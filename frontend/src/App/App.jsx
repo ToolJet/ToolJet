@@ -38,6 +38,7 @@ import {
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
@@ -293,7 +294,7 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
-                {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                {isWorkflowsFeatureEnabled() && (
                   <Route
                     exact
                     path="/:workspaceId/workflows/*"
