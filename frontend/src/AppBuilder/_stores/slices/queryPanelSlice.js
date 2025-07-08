@@ -1015,8 +1015,6 @@ export const createQueryPanelSlice = (set, get) => ({
     },
 
     createProxy: (obj, path = '') => {
-      const { queryPanel } = get();
-      const { createProxy } = queryPanel;
 
       return new Proxy(obj, {
         get(target, prop) {
@@ -1027,7 +1025,7 @@ export const createQueryPanelSlice = (set, get) => ({
           }
 
           const value = target[prop];
-          return typeof value === 'object' && value !== null ? createProxy(value, fullPath) : value;
+          return value;
         },
       });
     },
