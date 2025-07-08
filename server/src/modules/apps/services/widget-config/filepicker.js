@@ -5,7 +5,7 @@ export const filepickerConfig = {
   component: 'FilePicker',
   defaultSize: {
     width: 15,
-    height: 100,
+    height: 140,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
