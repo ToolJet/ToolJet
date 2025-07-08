@@ -127,7 +127,7 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         const componentType = getComponentTypeFromId(componentId);
-
+        if (componentType === 'Listview') return ;
         const element = document.querySelector(`.dynamic-${componentId}`);
         if (!element) {
           deleteContainerTemporaryLayouts(componentId);
