@@ -33,7 +33,6 @@ export class ConfigService implements IConfigService {
       'SENTRY_DNS',
       'SENTRY_DEBUG',
       'TOOLJET_HOST',
-      'WEBSITE_SIGNUP_URL',
       'SUB_PATH',
       'LANGUAGE',
       'ENABLE_PRIVATE_APP_EMBED',
