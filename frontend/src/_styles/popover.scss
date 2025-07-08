@@ -77,13 +77,13 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
 // Fix for bootstrap popovers containing radix select
 .popover {
   overflow: visible !important;
+  z-index: 1050;
 
   .popover-body {
     overflow: visible !important;
   }
 
   // Ensure proper z-index layering
-  z-index: 1050;
 
   // Firefox specific fixes
   @-moz-document url-prefix() {
