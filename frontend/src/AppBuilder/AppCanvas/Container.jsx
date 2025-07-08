@@ -4,17 +4,32 @@ import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useDrop, useDragLayer } from 'react-dnd';
-import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
+import { useDrop } from 'react-dnd';
+import {
+  addChildrenWidgetsToParent,
+  addNewWidgetToTheEditor,
+  computeViewerBackgroundColor,
+  getSubContainerWidthAfterPadding,
+  addDefaultButtonIdToForm,
+} from './appCanvasUtils';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  GRID_HEIGHT,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
+import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
+import { isPDFSupported } from '@/_helpers/appUtils';
+import toast from 'react-hot-toast';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
-import { useDropVirtualMoveableGhost } from '@/AppBuilder/_hooks/useDropVirtualMoveableGhost';
-import { useCanvasDropHandler } from './useCanvasDropHandler';
-import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
+import { noop } from 'lodash';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -36,72 +51,112 @@ export const Container = React.memo(
     columns,
     darkMode,
     canvasMaxWidth,
+    isViewerSidebarPinned,
+    pageSidebarStyle,
+    pagePositionType,
     componentType,
     appType,
   }) => {
     const { moduleId } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
+
+    const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
+    const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
     );
+    const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
-
-    // Initialize ghost moveable hook
-    const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
-
-    // // Monitor drag layer to update ghost position continuously
-    const { isDragging } = useDragLayer((monitor) => ({
-      isDragging: monitor.isDragging(),
-    }));
-
-    // // // Cleanup ghost when drag ends
-    useEffect(() => {
-      if (!isDragging) {
-        deactivateMoveableGhost();
-      }
-    }, [id, isDragging, deactivateMoveableGhost]);
+    const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
 
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
-    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
-
-    const { handleDrop } = useCanvasDropHandler({
-      appType,
-    });
-
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
-      hover: (item, monitor) => {
-        const clientOffset = monitor.getClientOffset();
+      hover: (item) => {
+        item.canvasRef = realCanvasRef?.current;
+        item.canvasId = id;
+        item.canvasWidth = getContainerCanvasWidth();
+      },
+      drop: async ({ componentType, component }, monitor) => {
+        setShowModuleBorder(false);
+        if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
 
-        const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
+        const didDrop = monitor.didDrop();
+        if (didDrop) return;
 
-        if (clientOffset) {
-          const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
-          if (canvasId === id) {
-            setCurrentDragCanvasId(id);
+        const moduleInfo = component?.moduleId
+          ? {
+              moduleId: component.moduleId,
+              versionId: component.versionId,
+              environmentId: component.environmentId,
+              moduleName: component.displayName,
+              moduleContainer: component.moduleContainer,
+            }
+          : undefined;
+
+        let addedComponent;
+
+        if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
+          let parentComponent = addNewWidgetToTheEditor(
+            componentType,
+            monitor,
+            currentLayout,
+            realCanvasRef,
+            id,
+            moduleInfo
+          );
+          const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
+          if (componentType === 'Form') {
+            parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
           }
+          addedComponent = [parentComponent, ...childComponents];
+          await addComponentToCurrentPage(addedComponent);
+        } else {
+          const newComponent = addNewWidgetToTheEditor(
+            componentType,
+            monitor,
+            currentLayout,
+            realCanvasRef,
+            id,
+            moduleInfo
+          );
+          addedComponent = [newComponent];
+          await addComponentToCurrentPage(addedComponent);
         }
-        // Calculate width based on the app canvas's grid
-        let width = (appCanvasWidth * item.component?.defaultSize?.width) / NO_OF_GRIDS;
-        const componentSize = {
-          width,
-          height: item.component?.defaultSize?.height,
-        };
-        if (clientOffset && id === 'canvas') {
-          activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
+
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+
+        const canvas = document.querySelector('.canvas-container');
+        const sidebar = document.querySelector('.editor-sidebar');
+        const droppedElem = document.getElementById(addedComponent?.[0]?.id);
+
+        if (!canvas || !sidebar || !droppedElem) return;
+
+        const droppedRect = droppedElem.getBoundingClientRect();
+        const sidebarRect = sidebar.getBoundingClientRect();
+
+        const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
+
+        if (isOverlapping) {
+          const overlap = droppedRect.right - sidebarRect.left;
+          canvas.scrollTo({
+            left: canvas.scrollLeft + overlap,
+            behavior: 'smooth',
+          });
         }
       },
-      drop: (item, monitor) => {
-        handleDrop(item, id);
-      },
+
+      collect: (monitor) => ({
+        isOverCurrent: monitor.isOver({ shallow: true }),
+      }),
     });
 
     const showEmptyContainer =
@@ -120,11 +175,33 @@ export const Container = React.memo(
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
+
+    const getCanvasWidth = useCallback(() => {
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side' &&
+      //   appType !== 'module'
+      // ) {
+      //   return `calc(100% - ${pageSidebarStyle === 'icon' ? '85px' : '226px'})`;
+      // }
+      // if (
+      //   id === 'canvas' &&
+      //   !isPagesSidebarHidden &&
+      //   !isViewerSidebarPinned &&
+      //   currentLayout !== 'mobile' &&
+      //   pagePositionType == 'side'
+      // ) {
+      //   return `calc(100% - ${'44px'})`;
+      // }
+      return '100%';
+    }, [id, isPagesSidebarHidden, isViewerSidebarPinned, currentLayout, pagePositionType, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {
@@ -174,8 +251,8 @@ export const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas

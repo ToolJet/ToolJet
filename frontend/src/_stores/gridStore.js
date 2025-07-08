@@ -12,15 +12,11 @@ const initialState = {
   idGroupDragged: false,
   openModalWidgetId: null,
   subContainerWidths: {},
-  moveableRef: null,
-  virtualTarget: null,
-  currentDragCanvasId: null,
-  ghostDragPosition: null,
 };
 
 export const useGridStore = create(
   zustandDevTools(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
       actions: {
         setResizingComponentId: (id) => set({ resizingComponentId: id }),
@@ -30,22 +26,7 @@ export const useGridStore = create(
         setOpenModalWidgetId: (openModalWidgetId) => set({ openModalWidgetId }),
         setSubContainerWidths: (id, width) =>
           set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
-        setVirtualTarget: (target) => set({ virtualTarget: target }),
-        setCurrentDragCanvasId: (canvasId) => set({ currentDragCanvasId: canvasId }),
-        setGhostDragPosition: (position) => set({ ghostDragPosition: position }),
       },
-      addToElementGuidelines: (selector) =>
-        set((state) => ({
-          dynamicElementGuidelines: [...state.dynamicElementGuidelines, selector],
-        })),
-      removeFromElementGuidelines: (selector) =>
-        set((state) => ({
-          dynamicElementGuidelines: state.dynamicElementGuidelines.filter((item) => item !== selector),
-        })),
-      clearDynamicElementGuidelines: () => set({ dynamicElementGuidelines: [] }),
-      setMoveableRef: (ref) => set({ moveableRef: ref }),
-
-      getGhostDragPosition: () => get().ghostDragPosition,
     }),
     { name: 'Grid Store' }
   )

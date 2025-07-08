@@ -116,6 +116,7 @@ const BaseColorSwatches = ({
     );
   };
   const ColorPickerInputBox = () => {
+    console.log('onReset', onReset);
     return (
       <div
         className="row mx-0 color-picker-input d-flex"
