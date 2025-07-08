@@ -100,7 +100,7 @@ describe(
       );
 
       // Test public access
-      cy.get(commonSelectors.viewerPageLogo).click();
+      // cy.get(commonSelectors.viewerPageLogo).click();
       cy.openApp(
         "appSlug",
         Cypress.env("workspaceId"),
@@ -152,7 +152,7 @@ describe(
         "be.visible"
       );
 
-      cy.get(commonSelectors.viewerPageLogo).click();
+      // cy.get(commonSelectors.viewerPageLogo).click();
 
       // Test public access
       cy.defaultWorkspaceLogin();
@@ -258,7 +258,8 @@ describe(
         "be.visible"
       );
 
-      cy.get('[data-cy="viewer-page-logo"]').click();
+      // cy.get('[data-cy="viewer-page-logo"]').click();
+      cy.go("back");
       logout();
       cy.wait(1000);
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
