@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../entities/user.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
@@ -358,7 +358,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       if (ssoGroups?.length) {
         await this.organizationUsersUtilService.attachUserGroup(groupsIds, organizationId, userId, true, manager);
-        await this.licenseUserService.validateUser(manager);
+        await this.licenseUserService.validateUser(manager, organizationId);
       }
 
       /* Create avatar if profilePhoto available */

@@ -17,7 +17,7 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { FEATURE_KEY } from './constants';
+import { APP_TYPES, FEATURE_KEY } from './constants';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -41,6 +41,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AppGitRepository } from '@modules/app-git/repository';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -57,20 +58,21 @@ export class AppsService implements IAppsService {
     protected readonly organizationThemeUtilService: OrganizationThemesUtilService,
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
-    protected readonly eventEmitter: EventEmitter2
-  ) { }
+    protected readonly eventEmitter: EventEmitter2,
+    protected readonly appGitRepository: AppGitRepository
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type, manager);
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
-      await this.appsUtilService.update(app, appUpdateDto, null, manager);
+      await this.appsUtilService.update(app, appUpdateDto, user.organizationId, manager);
 
-      // Setting data for audit logs
+      //APP_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -103,14 +105,14 @@ export class AppsService implements IAppsService {
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
-        ? await this.versionRepository.findByName(versionName, app.id)
-        : // Handle version retrieval based on env
-          await this.versionRepository.findLatestVersionForEnvironment(
-            app.id,
-            envId,
-            environmentName,
-            app.organizationId
-          );
+          ? await this.versionRepository.findByName(versionName, app.id)
+          : // Handle version retrieval based on env
+            await this.versionRepository.findLatestVersionForEnvironment(
+              app.id,
+              envId,
+              environmentName,
+              app.organizationId
+            );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -161,6 +163,8 @@ export class AppsService implements IAppsService {
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
+
+    //APP_UPDATE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
@@ -179,8 +183,9 @@ export class AppsService implements IAppsService {
 
     await this.appRepository.delete({ id, organizationId });
 
+    //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-      userId: id,
+      userId: user.id,
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
@@ -200,7 +205,8 @@ export class AppsService implements IAppsService {
           user,
           folder,
           parseInt(page || '1'),
-          searchKey
+          searchKey,
+          type as APP_TYPES
         );
         apps = viewableApps;
         totalFolderCount = totalCount;
@@ -210,12 +216,12 @@ export class AppsService implements IAppsService {
 
       if (type === 'module') {
         for (const app of apps) {
-          const appVersionId = app?.appVersions[0]?.id;
-          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId);
+          const appVersionId = app?.appVersions?.[0]?.id;
+          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
         }
       }
 
-      const totalCount = await this.appsUtilService.count(user, searchKey, type);
+      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 
@@ -247,7 +253,9 @@ export class AppsService implements IAppsService {
       ? await this.versionRepository.findDataQueriesForVersion(app.editingVersion.id)
       : [];
 
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
+    const pagesForVersion = app.editingVersion
+      ? await this.pageService.findPagesForVersion(app.editingVersion.id, user.organizationId)
+      : [];
     const eventsForVersion = app.editingVersion
       ? await this.eventService.findEventsForVersion(app.editingVersion.id)
       : [];
@@ -281,7 +289,10 @@ export class AppsService implements IAppsService {
     }
 
     if (response['editing_version']) {
-      const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        app.organizationId
+      );
       let shouldFreezeEditor = false;
       let appVersionEnvironment: AppEnvironment;
       if (hasMultiEnvLicense) {
@@ -294,7 +305,11 @@ export class AppsService implements IAppsService {
         appVersionEnvironment = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
-      response['should_freeze_editor'] = app.creationMode === 'GIT' || shouldFreezeEditor;
+      response['should_freeze_editor'] = shouldFreezeEditor;
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
+      }
       response['editorEnvironment'] = {
         id: appVersionEnvironment.id,
         name: appVersionEnvironment.name,
@@ -316,7 +331,9 @@ export class AppsService implements IAppsService {
         ? await this.versionRepository.findVersion(app.currentVersionId)
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+      const pagesForVersion = app.editingVersion
+        ? await this.pageService.findPagesForVersion(versionToLoad.id, user.organizationId)
+        : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
         app.organizationId,
@@ -374,7 +391,10 @@ export class AppsService implements IAppsService {
         })
         .getOne();
 
-      const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        user.organizationId
+      );
       /* 
           Allow version release only if the environment is on 
           production with a valid license or 
@@ -387,6 +407,7 @@ export class AppsService implements IAppsService {
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 
+      //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,

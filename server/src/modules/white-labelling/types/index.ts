@@ -5,8 +5,8 @@ import { FEATURE_KEY } from '../constant';
 interface Features {
   [FEATURE_KEY.GET]: FeatureConfig;
   [FEATURE_KEY.UPDATE]: FeatureConfig;
-  [FEATURE_KEY.GET_WORKSPACE_SETTINGS]: FeatureConfig;
-  [FEATURE_KEY.UPDATE_WORKSPACE_SETTINGS]: FeatureConfig;
+  [FEATURE_KEY.GET_ORGANIZATION_WHITE_LABELS]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_ORGANIZATION_WHITE_LABELS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

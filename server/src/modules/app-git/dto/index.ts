@@ -16,6 +16,10 @@ export class AppGitCreateDto {
   @IsString()
   @IsNotEmpty()
   gitAppName: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowEditing: boolean;
 }
 
 export class AppGitPushDto {
@@ -56,6 +60,13 @@ export class AppGitPullDto {
 
   @IsString()
   gitVersionName: string;
+
+  @IsString()
+  appName: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowEditing: boolean;
 }
 export class AppGitPullUpdateDto {
   @IsString()

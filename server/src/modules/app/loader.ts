@@ -1,4 +1,4 @@
-import { DynamicModule, Type } from '@nestjs/common';
+import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -15,7 +15,9 @@ import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { SentryModule } from '@modules/observability/sentry/module';
 
 export class AppModuleLoader {
-  static async loadModules(configs: { IS_GET_CONTEXT: boolean }): Promise<(DynamicModule | Type<any>)[]> {
+  static async loadModules(configs: {
+    IS_GET_CONTEXT: boolean;
+  }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
     // Static imports that are always loaded
     const staticModules = [
       EventEmitterModule.forRoot({
@@ -33,7 +35,7 @@ export class AppModuleLoader {
           port: parseInt(process.env.REDIS_PORT) || 6379,
         },
       }),
-      ConfigModule.forRoot({
+      await ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
         load: [() => getEnvVars()],
@@ -122,6 +124,6 @@ export class AppModuleLoader {
       console.error('Error loading dynamic modules:', error);
     }
 
-    return [...staticModules, ...dynamicModules] as (Type<any> | DynamicModule)[];
+    return [...staticModules, ...dynamicModules];
   }
 }

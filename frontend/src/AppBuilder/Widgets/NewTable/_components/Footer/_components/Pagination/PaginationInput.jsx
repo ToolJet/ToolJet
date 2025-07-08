@@ -37,7 +37,10 @@ export const PaginationInput = memo(({ pageIndex, serverSidePagination, pageCoun
               }
             }}
           />
-          <span className="font-weight-500 total-page-number" style={{ width: 'max-content' }}>
+          <span
+            className="font-weight-500 total-page-number"
+            style={{ width: 'max-content', color: 'var(--cc-primary-text)' }}
+          >
             of {pageCount || 1}
           </span>
         </>

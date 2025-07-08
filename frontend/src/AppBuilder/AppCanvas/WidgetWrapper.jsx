@@ -32,6 +32,7 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout],
       shallow
     );
+    const temporaryLayouts = useStore((state) => state.temporaryLayouts?.[id], shallow);
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
@@ -106,8 +107,8 @@ const WidgetWrapper = memo(
           {mode == 'edit' && (
             <ConfigHandle
               id={id}
-              widgetTop={newLayoutData.top}
-              widgetHeight={newLayoutData.height}
+              widgetTop={temporaryLayouts?.top ?? layoutData.top}
+              widgetHeight={temporaryLayouts?.height ?? layoutData.height}
               showHandle={isWidgetActive}
               componentType={componentType}
               visibility={visibility}
@@ -128,7 +129,6 @@ const WidgetWrapper = memo(
             onOptionsChange={onOptionsChange}
           />
         </div>
-        <DragGhostWidget isDragging={isDragging} />
         <ResizeGhostWidget isResizing={isResizing} />
       </>
     );

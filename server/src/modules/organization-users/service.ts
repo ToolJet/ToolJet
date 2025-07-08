@@ -17,7 +17,7 @@ import { EMAIL_EVENTS } from '@modules/email/constants';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { OrganizationUsersUtilService } from './util.service';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { MAX_ROW_COUNT } from './constants';
 import { isPlural } from '@helpers/utils.helper';
 import { Response } from 'express';
@@ -77,7 +77,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       );
 
       // Step 4 - validate license
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
       return;
     });
   }
@@ -166,8 +166,8 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       const updatedStatus =
         !!invitationToken && status === USER_STATUS.ARCHIVED ? USER_STATUS.INVITED : USER_STATUS.ACTIVE;
       await this.organizationUsersUtilService.updateUserStatus(userId, updatedStatus, manager);
-      await this.licenseUserService.validateUser(manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseUserService.validateUser(manager, unarchivedUserWorkspaces[0].organizationId);
+      await this.licenseOrganizationService.validateOrganization(manager, user?.organizationId);
       const organizationIds = unarchivedUserWorkspaces.map((user) => user.organizationId);
       const auditLogEntry = {
         userId: user.id,
@@ -209,8 +209,8 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         invitationToken,
       });
 
-      await this.licenseUserService.validateUser(manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
+      await this.licenseOrganizationService.validateOrganization(manager, organizationUser.organizationId);
       const organization = await manager.findOne(Organization, {
         where: { id: organizationUser.organizationId },
       });

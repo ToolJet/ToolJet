@@ -2,12 +2,16 @@ import { FeatureAbilityFactory } from './ability';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { RolesModule } from '@modules/roles/module';
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { RolesRepository } from '@modules/roles/repository';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { VersionModule } from '@modules/versions/module';
+import { UserPersonalAccessTokenRepository } from '../users/repositories/UserPersonalAccessTokens.repository';
+import { AppsRepository } from '@modules/apps/repository';
+import { SessionModule } from '@modules/session/module';
+import { UserRepository } from '@modules/users/repositories/repository';
+import { OrganizationRepository } from '@modules/organizations/repository';
 import { UsersModule } from '@modules/users/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { GitSyncModule } from '@modules/git-sync/module';
@@ -16,6 +20,8 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { SubModule } from '@modules/app/sub-module';
+import { getImportPath } from '@modules/app/constants';
 export class ExternalApiModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -37,6 +43,7 @@ export class ExternalApiModule {
         await AppGitModule.register(configs),
         await GitSyncModule.register(configs),
         await AppEnvironmentsModule.register(configs),
+        await SessionModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -47,6 +54,7 @@ export class ExternalApiModule {
         VersionRepository,
         AppGitRepository,
         OrganizationRepository,
+        UserPersonalAccessTokenRepository,
       ],
       controllers: [ExternalApisController, ExternalApisAppsController],
       exports: [ExternalApiUtilService],
