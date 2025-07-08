@@ -6,7 +6,7 @@ import { AppsModule } from '@modules/apps/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { VersionModule } from '@modules/versions/module';
-import { FeatureAbilityFactory } from '@modules/app-git/ability/index';
+import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppGitRepository } from './repository';
 import { SubModule } from '@modules/app/sub-module';
@@ -58,7 +58,7 @@ export class AppGitModule extends SubModule {
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
         VersionRepository,
-        FeatureAbilityFactory,
+        AppGitAbilityFactory,
         AppVersionRenameListener,
       ],
       exports: [SSHAppGitUtilityService, HTTPSAppGitUtilityService, GitLabAppGitUtilityService],

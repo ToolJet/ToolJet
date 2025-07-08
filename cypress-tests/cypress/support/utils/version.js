@@ -150,8 +150,7 @@ export const verifyVersionAfterPreview = (currentVersion) => {
   cy.wait(2000);
   cy.get('[data-cy^="draggable-widget-table"]').should("be.visible");
   cy.url().should("include", `version=${currentVersion}`);
-  // cy.get('[data-cy="viewer-page-logo"]').click();
-  cy.go("back");
+  cy.get('[data-cy="viewer-page-logo"]').click();
   cy.wait(8000);
 };
 

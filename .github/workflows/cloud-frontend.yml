@@ -129,5 +129,4 @@ jobs:
           SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
           TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
-          WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/ai-create-account
           TOOLJET_EDITION: cloud
