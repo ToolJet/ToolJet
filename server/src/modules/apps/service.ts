@@ -332,7 +332,7 @@ export class AppsService implements IAppsService {
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
       const pagesForVersion = app.editingVersion
-        ? await this.pageService.findPagesForVersion(versionToLoad.id, user.organizationId)
+        ? await this.pageService.findPagesForVersion(versionToLoad.id, app.organizationId)
         : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
