@@ -12,6 +12,7 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { ArtifactRepository } from './repositories/artifact.repository';
 import { SubModule } from '@modules/app/sub-module';
+import { DataQueryRepository } from '@modules/data-queries/repository';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -47,6 +48,7 @@ export class AiModule extends SubModule {
         AiResponseVoteRepository,
         FeatureAbilityFactory,
         ArtifactRepository,
+        DataQueryRepository,
 
         EventsService,
       ],
