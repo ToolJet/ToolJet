@@ -126,22 +126,6 @@ export const useInput = ({
 
   useEffect(() => {
     const exposedVariables = {
-      ...(inputType !== 'phone' && {
-        setText: async function (text) {
-          setInputValue(text);
-          fireEvent('onChange');
-        },
-      }),
-      ...(inputType === 'TextInput' && {
-        disable: async function (value) {
-          setDisable(!!value);
-          setExposedVariable('isDisabled', !!value);
-        },
-        visibility: async function (value) {
-          setVisibility(!!value);
-          setExposedVariable('isVisible', !!value);
-        },
-      }),
       clear: async function () {
         setInputValue('');
         fireEvent('onChange');
@@ -172,6 +156,25 @@ export const useInput = ({
       isVisible: visibility,
       isDisabled: disable,
     };
+
+    if (inputType === 'TextInput') {
+      exposedVariables.disable = async function (value) {
+        setDisable(!!value);
+        setExposedVariable('isDisabled', !!value);
+      };
+      exposedVariables.visibility = async function (value) {
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
+      };
+    }
+
+    if (inputType !== 'phone') {
+      exposedVariables.setText = async function (text) {
+        setInputValue(text);
+        fireEvent('onChange');
+      };
+    }
+    
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
   }, []);
