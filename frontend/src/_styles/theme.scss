@@ -7525,11 +7525,11 @@ tbody {
     height: 36px;
 
     &:not(.table-row-selected):hover {
-      background: var(--Slate-02, #F8F9FA);
+      background: var(--slate2);
 
       td:nth-child(1),
       td:nth-child(2) {
-        background: var(--Slate-02, #F8F9FA);
+        background: var(--slate2);
       }
 
       .tjdb-checkbox-cell {
