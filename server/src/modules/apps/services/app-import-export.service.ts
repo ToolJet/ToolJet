@@ -317,7 +317,6 @@ export class AppImportExportService {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
       }
-
       let appParams = appParamsObj;
 
       if (appParams?.appV2) {
@@ -908,9 +907,9 @@ export class AppImportExportService {
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
         const newComponentIdsMap = {};
-
         for (const component of pageComponents) {
           newComponentIdsMap[component.id] = uuid();
+
         }
 
         for (const component of pageComponents) {
@@ -924,6 +923,7 @@ export class AppImportExportService {
           }
 
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+          const isParentHeaderOrFooter = component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
           if (isParentTabOrCalendar) {
             const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
@@ -937,6 +937,11 @@ export class AppImportExportService {
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-modal`;
+          } else if (isParentHeaderOrFooter) {
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+            const mappedParentId = newComponentIdsMap[_parentId];
+            const headerOrFooter = component.parent?.includes('header') ? 'header' : 'footer';
+            parentId = `${mappedParentId}-${headerOrFooter}`;
           } else {
             if (component.parent && !newComponentIdsMap[parentId]) {
               skipComponent = true;
@@ -2116,7 +2121,6 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
-
   if (!tooljetVersion) {
     return { properties, styles, general, generalStyles, validation };
   }
@@ -2164,7 +2168,6 @@ function migrateProperties(
         delete properties.maxValue;
       }
     }
-
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
     }
