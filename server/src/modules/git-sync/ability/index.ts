@@ -20,15 +20,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): void {
-    // const appId = request?.tj_resource_id;
-    // const { superAdmin, isAdmin, isBuilder, userPermission } = UserAllPermissions;
-
-    // const userAppGitPermissions = userPermission?.APP;
-    // const isAllAppsEditable = !!userAppGitPermissions?.isAllEditable;
-    // const isAllAppsCreatable = !!userPermission?.appCreate;
-    // const isAllAppsViewable = !!userAppGitPermissions?.isAllViewable;
-    // Grant feature-level access based on resource actions
-
     const { superAdmin, isAdmin } = UserAllPermissions;
     if (isAdmin || superAdmin) {
       // Admin or Super Admin gets full access to all features

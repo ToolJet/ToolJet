@@ -13,6 +13,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GIT_UPDATE_APP]: { license: LICENSE_FIELD.GIT_SYNC }, // Update the application with latest git commit
     [FEATURE_KEY.GIT_APP_VERSION_RENAME]: { license: LICENSE_FIELD.GIT_SYNC }, // Rename app/version name
     [FEATURE_KEY.GIT_APP_CONFIGS_UPDATE]: { license: LICENSE_FIELD.GIT_SYNC }, // Used to update the permission to allow app edit for imported applications
-    [FEATURE_KEY.GIT_FETCH_APP_CONFIGS]: { isPublic: true }, // Used for fetching app configs
+    [FEATURE_KEY.GIT_FETCH_APP_CONFIGS]: {}, // Used for fetching app configs
   },
 };
