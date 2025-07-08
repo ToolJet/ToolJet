@@ -177,6 +177,10 @@ class OpenapiComponent extends React.Component {
   };
 
   resolveHosts() {
+    const { selectedDataSource } = this.props;
+    if (selectedDataSource.options?.host?.value) {
+      return [selectedDataSource.options.host.value];
+    }
     const path = this.state.options.path;
     const operation = this.state.selectedOperation;
     if (operation?.servers && operation?.servers.length > 0) {
@@ -275,13 +279,14 @@ class OpenapiComponent extends React.Component {
                 <div className="col openapi-operation-options">
                   <Select
                     options={this.computeHostOptions(baseUrls)}
-                    value={this.state.options.host}
+                    value={this.props.selectedDataSource.options?.host?.value || this.state.options.host}
                     onChange={this.changeHost}
                     width="100%"
                     customOption={this.renderHostOptions}
                     placeholder={this.props.t('openApi.selectHost', 'Select a host')}
                     styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
                     useCustomStyles={true}
+                    isDisabled={!!this.props.selectedDataSource.options?.host?.value}
                   />
                 </div>
               </div>
