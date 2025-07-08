@@ -1,30 +1,31 @@
 import { Injectable, CanActivate, ExecutionContext, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppsRepository } from '@modules/apps/repository';
 import { User } from '@entities/user.entity';
-
-// Use this Guard IF
-// - param id is passed as app id
-// - param slug is passed as app slug
-// IF slug is passed as id/slug -> USE validSlugGuard
+import { VersionRepository } from '@modules/versions/repository';
+import { App } from '@entities/app.entity';
 // This Guard should be used after jwt auth guard
 @Injectable()
 export class AppResourceGuard implements CanActivate {
-  constructor(protected readonly appRepository: AppsRepository) {}
+  constructor(
+    protected readonly appRepository: AppsRepository,
+    protected readonly versionRepository: VersionRepository
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { appId } = request.params;
+    const { appId, versionId } = request.params;
     const user: User = request.user;
-
-    // Check if either id or slug or user is provided, otherwise throw BadRequestException
-    if (!appId) {
-      throw new BadRequestException('App id must be provided');
+    if (!appId && !versionId) {
+      throw new BadRequestException('App ID or version ID must be provided');
     }
 
-    // Fetch the app based on the id or slug
-    const app = request.tj_app || (appId && (await this.appRepository.findById(appId, user.organizationId)));
-
-    // If app is not found, throw NotFoundException
+    let app: App;
+    if (appId) {
+      app = request.tj_app || (appId && (await this.appRepository.findById(appId, user.organizationId)));
+    } else if (versionId) {
+      const version = await this.versionRepository.getAppVersionById(versionId);
+      app = version?.app;
+    }
     if (!app) {
       throw new NotFoundException('App not found. Invalid App id');
     }

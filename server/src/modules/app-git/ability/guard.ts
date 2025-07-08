@@ -7,10 +7,8 @@ import { AppGitSync } from '@entities/app_git_sync.entity';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
-  protected getResource(): ResourceDetails {
-    return {
-      resourceType: MODULES.APP_GIT,
-    };
+  protected getResource(): ResourceDetails | ResourceDetails[] {
+    return [{ resourceType: MODULES.APP_GIT }, { resourceType: MODULES.APP }];
   }
 
   protected getAbilityFactory() {
