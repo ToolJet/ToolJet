@@ -1,4 +1,4 @@
-FROM tooljet/tooljet:v3.14.0
+FROM tooljet/tooljet:ee-latest
 
 # Copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
