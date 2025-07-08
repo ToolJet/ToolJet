@@ -7,6 +7,7 @@ import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { FeatureAbilityFactory } from './ability';
 
 export class GitSyncModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -59,8 +60,15 @@ export class GitSyncModule extends SubModule {
         SSHGitSyncUtilityService,
         GitLabGitSyncUtilityService,
         SourceControlProviderService,
+        FeatureAbilityFactory,
       ],
-      exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService, BaseGitSyncService, BaseGitUtilService],
+      exports: [
+        HTTPSGitSyncUtilityService,
+        SSHGitSyncUtilityService,
+        GitLabGitSyncUtilityService,
+        BaseGitSyncService,
+        BaseGitUtilService,
+      ],
     };
   }
 }
