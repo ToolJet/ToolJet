@@ -11,6 +11,8 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   appDelete: false,
   workflowCreate: false,
   workflowDelete: false,
+  appPromote: false,
+  appRelease: false,
   dataSourceCreate: false,
   dataSourceDelete: false,
   folderCRUD: false,

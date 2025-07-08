@@ -12,7 +12,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
 import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 export const Folders = function Folders({
   folders,
@@ -42,6 +42,7 @@ export const Folders = function Folders({
   const [filteredData, setFilteredData] = useState(folders);
   const [errorText, setErrorText] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -56,15 +57,14 @@ export const Folders = function Folders({
   }, [folders]);
 
   useEffect(() => {
-    if (_.isEmpty(currentFolder)) {
-      updateSidebarNAV(`All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`);
-      setActiveFolder({});
-    } else {
-      updateSidebarNAV(currentFolder.name);
-      setActiveFolder(currentFolder);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentFolder]);
+    const noFolder = !currentFolder || _.isEmpty(currentFolder);
+    const label = noFolder
+      ? `All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`
+      : currentFolder.name;
+
+    updateSidebarNAV(label);
+    setActiveFolder(currentFolder || {});
+  }, [appType, currentFolder, location.pathname]);
 
   const handleSearch = (e) => {
     const value = e?.target?.value;
@@ -97,6 +97,10 @@ export const Folders = function Folders({
     }
   }
 
+  const getDefaultLabel = () => {
+    return `All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`;
+  };
+
   function handleFolderChange(folder) {
     if (_.isEmpty(folder)) {
       setActiveFolder({});
@@ -104,9 +108,7 @@ export const Folders = function Folders({
       setActiveFolder(folder);
     }
     folderChanged(folder);
-    updateSidebarNAV(
-      folder?.name ?? `All ${appType === 'front-end' ? 'apps' : appType === 'module' ? 'modules' : 'workflows'}`
-    );
+    updateSidebarNAV(updateSidebarNAV(folder?.name ?? getDefaultLabel()));
     //update the url query parameter with folder name
     updateFolderQuery(folder?.name);
   }

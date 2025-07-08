@@ -12,6 +12,7 @@ const helperModules = {
   whiteLabelling: {
     ce: commonWhiteLabelling,
     ee: eeWhiteLabelling,
+    cloud: eeWhiteLabelling, // Treat cloud as enterprise edition for now
     /* Can uncomment this once the cloud sub-module is ready */
     // cloud: cloudWhiteLabelling,
   },

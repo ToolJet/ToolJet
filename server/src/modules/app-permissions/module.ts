@@ -1,4 +1,3 @@
-import { getImportPath } from '@modules/app/constants';
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,32 +12,22 @@ import { ComponentUsersRepository } from './repositories/component-users.reposit
 import { ComponentPermissionsRepository } from './repositories/component-permissions.repository';
 import { PageUser } from '@entities/page_users.entity';
 import { PagePermission } from '@entities/page_permissions.entity';
+import { SubModule } from '@modules/app/sub-module';
 import { QueryUser } from '@entities/query_users.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 
-export class AppPermissionsModule {
+export class AppPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs.IS_GET_CONTEXT);
-    const { AppPermissionsController } = await import(`${importPath}/app-permissions/controller`);
-    const { AppPermissionsService } = await import(`${importPath}/app-permissions/service`);
-    const { AppPermissionsUtilService } = await import(`${importPath}/app-permissions/util.service`);
+    const { AppPermissionsController, AppPermissionsService, AppPermissionsUtilService } = await this.getProviders(
+      configs,
+      'app-permissions',
+      ['controller', 'service', 'util.service']
+    );
 
     return {
       module: AppPermissionsModule,
-      imports: [
-        TypeOrmModule.forFeature([
-          GroupPermissions,
-          User,
-          PageUser,
-          PagePermission,
-          QueryUser,
-          QueryPermission,
-          ComponentUser,
-          ComponentPermission,
-        ]),
-      ],
       controllers: [AppPermissionsController],
       providers: [
         AppPermissionsService,

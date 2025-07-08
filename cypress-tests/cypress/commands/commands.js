@@ -84,7 +84,20 @@ Cypress.Commands.add(
     const dataTransfer = new DataTransfer();
     cy.forceClickOnCanvas();
 
-    cy.clearAndType(commonSelectors.searchField, widgetName);
+    cy.get("body")
+      .then(($body) => {
+        const isSearchVisible = $body
+          .find(commonSelectors.searchField)
+          .is(":visible");
+
+        if (!isSearchVisible) {
+          cy.get('[data-cy="right-sidebar-plus-button"]').click();
+        }
+      })
+      .then(() => {
+        cy.clearAndType(commonSelectors.searchField, widgetName);
+      });
+
     cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
       "dragstart",
       { dataTransfer },
@@ -622,7 +635,7 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add('ifEnv', (expectedEnvs, callback) => {
+Cypress.Commands.add("ifEnv", (expectedEnvs, callback) => {
   const actualEnv = Cypress.env("environment");
   const envArray = Array.isArray(expectedEnvs) ? expectedEnvs : [expectedEnvs];
 
