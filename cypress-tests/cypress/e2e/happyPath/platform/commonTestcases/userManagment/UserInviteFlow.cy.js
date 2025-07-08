@@ -369,7 +369,7 @@ describe("user invite flow cases", () => {
       "have.text",
       "Cancel"
     );
-    cy.get('[data-cy="confim-button"]').verifyVisibleElement(
+    cy.get('[data-cy="confirm-button"]').verifyVisibleElement(
       "have.text",
       "Continue"
     );
@@ -407,7 +407,7 @@ describe("user invite flow cases", () => {
     cy.get('[data-cy="group-check-input"]').eq(0).check();
 
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get('[data-cy="confim-button"]').click();
+    cy.get('[data-cy="confirm-button"]').click();
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -426,7 +426,7 @@ describe("user invite flow cases", () => {
     cy.get('[data-cy="group-check-input"]').eq(0).check();
 
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get('[data-cy="confim-button"]').click();
+    cy.get('[data-cy="confirm-button"]').click();
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

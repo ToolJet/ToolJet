@@ -357,7 +357,6 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.appStore.modules[moduleId].app.homePageId = pageId;
         state.showEditingPopover = false;
-        state.editingPage = null;
       });
       await savePageChanges(appId, currentVersionId, editingPage.id, diff, 'update', null);
     },

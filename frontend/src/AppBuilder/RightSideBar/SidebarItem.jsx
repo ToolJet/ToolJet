@@ -12,7 +12,10 @@ export const SidebarItem = forwardRef(
     return (
       <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
         {icon && (
-          <div className={`sidebar-svg-icon  position-relative ${selectedSidebarItem && 'sidebar-item'}`}>
+          <div
+            className={`sidebar-svg-icon  position-relative ${selectedSidebarItem && 'sidebar-item'}`}
+            data-cy={`right-sidebar-${icon.toLowerCase()}-button`}
+          >
             <SolidIcon name={displayIcon} width={20} fill={selectedSidebarItem ? '#3E63DD' : iconFill} />
           </div>
         )}

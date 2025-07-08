@@ -29,6 +29,7 @@ export const createParamUpdatedInterceptor = ({
         const { generateFormFrom, JSONData } = getFormDataSectionData(component?.id);
 
         if (value === generateFormFrom?.value) {
+          setSource((prev) => ({ ...prev, value }));
           return setJSONData({ value: JSONData.value });
         }
 

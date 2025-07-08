@@ -12,7 +12,7 @@ import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/useCanvasDropHandler';
 
-export const DragLayer = ({ index, component, isModuleTab = false }) => {
+export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(
     (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
     shallow
@@ -59,7 +59,10 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
 
   return (
     <>
-      <div ref={drag} className="draggable-box" style={{ height: '100%', width: isModuleTab && '100%' }}>
+      <div
+        ref={disabled ? undefined : drag}
+        className={`draggable-box${disabled ? ' disabled' : ''}`}
+        style={{ height: '100%', width: isModuleTab && '100%' }}>
         {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
       </div>
     </>

@@ -48,8 +48,8 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
         await this.rolesUtilService.addUserRole(organization.id, { role: USER_ROLE.ADMIN, userId: user.id }, manager);
       }
       await this.sampleDBService.createSampleDB(organization.id, manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseOrganizationService.validateOrganization(manager, organization.id);
+      await this.licenseUserService.validateUser(manager, organization.id);
       //create default theme for this organization
       await this.organizationThemesUtilService.createDefaultTheme(manager, organization.id);
       await this.tooljetDbTableOperationsService.createTooljetDbTenantSchemaAndRole(organization.id, manager);

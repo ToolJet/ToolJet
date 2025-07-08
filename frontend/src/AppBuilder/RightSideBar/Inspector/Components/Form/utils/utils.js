@@ -256,18 +256,18 @@ export const mergeFormFieldsWithNewData = (existingFields, newFields) => {
 
   const existingFieldsMap = {};
   existingFields.forEach((field) => {
-    if (field.name) {
-      existingFieldsMap[field.name] = field;
+    if (field.key) {
+      existingFieldsMap[field.key] = field;
     }
   });
 
   return newFields.map((newField) => {
-    if (newField.isNew || !existingFieldsMap[newField.name]) {
+    if (newField.isNew || !existingFieldsMap[newField.key]) {
       return newField;
     }
     return {
       ...newField,
-      ...omit(existingFieldsMap[newField.name], ['isNew']),
+      ...omit(existingFieldsMap[newField.key], ['isNew']),
     };
   });
 };

@@ -1,13 +1,14 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { FeatureAbilityFactory } from './ability';
+import { SubModule } from '@modules/app/sub-module';
 
-export class MetaModule {
+export class MetaModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { MetadataService } = await import(`${importPath}/meta/service`);
-    const { MetadataController } = await import(`${importPath}/meta/controller`);
-    const { MetadataUtilService } = await import(`${importPath}/meta/util.service`);
+    const { MetadataService, MetadataController, MetadataUtilService } = await this.getProviders(configs, 'meta', [
+      'service',
+      'controller',
+      'util.service',
+    ]);
 
     return {
       module: MetaModule,
