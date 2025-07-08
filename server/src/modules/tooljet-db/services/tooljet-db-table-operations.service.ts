@@ -27,9 +27,10 @@ import {
   createTooljetDatabaseConnection,
   decryptTooljetDatabasePassword,
   grantTenantRoleToTjdbAdminRole,
+  isSQLModeDisabled,
 } from 'src/helpers/tooljet_db.helper';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 import {
   PostgrestError,
   TooljetDatabaseColumn,
@@ -868,9 +869,15 @@ export class TooljetDbTableOperationsService {
     const { joinQueryJson, dataQuery, user } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
 
-    const tjdbTenantConfigs = await this.manager.findOne(OrganizationTjdbConfigurations, {
-      where: { organizationId },
-    });
+    const tjdbTenantConfigs = isSQLModeDisabled()
+      ? {
+          pgUser: this.configService.get<string>('TOOLJET_DB_USER'),
+          pgPassword: this.configService.get<string>('TOOLJET_DB_PASS'),
+        }
+      : await this.manager.findOne(OrganizationTjdbConfigurations, {
+          where: { organizationId },
+        });
+
     if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exists`);
 
     // Gathering tables used, from Join coditions
@@ -1541,6 +1548,8 @@ export class TooljetDbTableOperationsService {
   }
 
   async createTooljetDbTenantSchemaAndRole(organizationId: string, entityManager: EntityManager) {
+    if (isSQLModeDisabled()) return;
+
     const dbUser = `user_${organizationId}`;
     const dbSchema = `workspace_${organizationId}`;
     const dbPassword = crypto.randomBytes(8).toString('hex');
