@@ -26,7 +26,7 @@ import { Constants } from '@/_helpers/utils';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
-import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
+import OAuthWrapper from './OAuthWrapper';
 
 const DynamicForm = ({
   schema,
@@ -82,6 +82,20 @@ const DynamicForm = ({
         });
 
         setCurrentOrgEnvironmentConstants(constants);
+      });
+
+      orgEnvironmentVariableService.getVariables().then((data) => {
+        const client_variables = {};
+        const server_variables = {};
+        data.variables.map((variable) => {
+          if (variable.variable_type === 'server') {
+            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
+          } else {
+            client_variables[variable.variable_name] = variable.value;
+          }
+        });
+
+        setWorkspaceVariables({ client: client_variables, server: server_variables });
       });
     }
 
@@ -213,6 +227,8 @@ const DynamicForm = ({
         return Salesforce;
       case 'react-component-sharepoint':
         return Sharepoint;
+      case 'react-component-oauth':
+        return OAuthWrapper;
       default:
         return <div>Type is invalid</div>;
     }
@@ -245,11 +261,12 @@ const DynamicForm = ({
     encrypted,
     placeholders = {},
     editorType = 'basic',
-    spec_url = '',
+    specUrl = '',
     disabled = false,
     buttonText,
     text,
     subtext,
+    oauth_configs,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -281,7 +298,7 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options?.[key],
-          checked: options?.[key]?.value,
+          checked: options?.[key]?.value ?? options?.[key] ?? schema?.defaults?.[key] ?? false,
           onChange: (e) => optionchanged(key, e.target.checked),
           text,
           subtext,
@@ -386,6 +403,7 @@ const DynamicForm = ({
       case 'react-component-zendesk':
       case 'react-component-salesforce':
       case 'react-component-sharepoint':
+      case 'react-component-oauth':
         return {
           optionchanged,
           createDataSource,
@@ -396,6 +414,9 @@ const DynamicForm = ({
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           optionsChanged,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          scopes: options?.scopes?.value,
+          oauth_configs,
         };
       case 'tooljetdb-operations':
         return {
@@ -435,6 +456,7 @@ const DynamicForm = ({
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
           disabled,
           delayOnChange: false,
+          ...(helpText && { helpText }),
         };
       }
       case 'react-component-openapi-validator':
@@ -486,7 +508,7 @@ const DynamicForm = ({
         };
       case 'react-component-api-endpoint':
         return {
-          specUrl: spec_url,
+          specUrl: specUrl,
           optionsChanged,
           options,
           darkMode,
@@ -535,7 +557,7 @@ const DynamicForm = ({
       const labelElement = (
         <label
           className="form-label"
-          data-cy={`label-${generateCypressDataCy(label)}`}
+          data-cy={`label-${String(label).toLowerCase().replace(/\s+/g, '-')}`}
           style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >
           {label}
@@ -561,81 +583,86 @@ const DynamicForm = ({
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
-          const { label, type, encrypted, className, key: propertyKey } = obj[key];
+          const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = obj[key];
           const Element = getElement(type);
           const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
+          // shouldRenderTheProperty - key is used for Dynamic connection parameters
+          const enabled = shouldRenderTheProperty
+            ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
+            : true;
 
           return (
-            <div
-              className={cx('my-2', {
-                'col-md-12': !className && !isHorizontalLayout,
-                [className]: !!className,
-                'd-flex': isHorizontalLayout,
-                'dynamic-form-row': isHorizontalLayout,
-              })}
-              data-cy={`${generateCypressDataCy(key)}-section`}
-              key={key}
-            >
-              {!isSpecificComponent && (
-                <div
-                  className={cx('d-flex', {
-                    'form-label': isHorizontalLayout,
-                    'align-items-center': !isHorizontalLayout,
-                  })}
-                  style={{ minWidth: '100px' }}
-                >
-                  {label && renderLabel(label, obj[key].tooltip)}
-
-                  {(type === 'password' || encrypted) && selectedDataSource?.id && (
-                    <div className="mx-1 col">
-                      <ButtonSolid
-                        className="datasource-edit-btn mb-2"
-                        type="a"
-                        variant="tertiary"
-                        target="_blank"
-                        rel="noreferrer"
-                        disabled={!canUpdateDataSource() && !canDeleteDataSource()}
-                        onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                      >
-                        {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
-                      </ButtonSolid>
-                    </div>
-                  )}
-                  {(type === 'password' || encrypted) && (
-                    <div className="col-auto mb-2">
-                      <small className="text-green">
-                        <img
-                          className="mx-2 encrypted-icon"
-                          src="assets/images/icons/padlock.svg"
-                          width="12"
-                          height="12"
-                        />
-                        Encrypted
-                      </small>
-                    </div>
-                  )}
-                </div>
-              )}
+            enabled && (
               <div
-                className={cx(
-                  {
-                    'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
-                    'w-100': isHorizontalLayout && type !== 'codehinter',
-                  },
-                  'dynamic-form-element'
-                )}
-                style={{ width: '100%' }}
+                className={cx('my-2', {
+                  'col-md-12': !className && !isHorizontalLayout,
+                  [className]: !!className,
+                  'd-flex': isHorizontalLayout,
+                  'dynamic-form-row': isHorizontalLayout,
+                })}
+                key={key}
               >
-                <Element
-                  {...getElementProps(obj[key])}
-                  {...computedProps[propertyKey]}
-                  data-cy={`${generateCypressDataCy(label)}-text-field`}
-                  dataCy={obj[key].key.replace(/_/g, '-')}
-                  //to be removed after whole ui is same
-                  isHorizontalLayout={isHorizontalLayout}
-                />
+                {!isSpecificComponent && (
+                  <div
+                    className={cx('d-flex', {
+                      'form-label': isHorizontalLayout,
+                      'align-items-center': !isHorizontalLayout,
+                    })}
+                    style={{ minWidth: '100px' }}
+                  >
+                    {label && renderLabel(label, obj[key].tooltip)}
+
+                    {(type === 'password' || encrypted) && selectedDataSource?.id && (
+                      <div className="mx-1 col">
+                        <ButtonSolid
+                          className="datasource-edit-btn mb-2"
+                          type="a"
+                          variant="tertiary"
+                          target="_blank"
+                          rel="noreferrer"
+                          disabled={!canUpdateDataSource() && !canDeleteDataSource()}
+                          onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
+                        >
+                          {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
+                        </ButtonSolid>
+                      </div>
+                    )}
+                    {(type === 'password' || encrypted) && (
+                      <div className="col-auto mb-2">
+                        <small className="text-green">
+                          <img
+                            className="mx-2 encrypted-icon"
+                            src="assets/images/icons/padlock.svg"
+                            width="12"
+                            height="12"
+                          />
+                          Encrypted
+                        </small>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div
+                  className={cx(
+                    {
+                      'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                      'w-100': isHorizontalLayout && type !== 'codehinter',
+                    },
+                    'dynamic-form-element'
+                  )}
+                  style={{ width: '100%' }}
+                >
+                  <Element
+                    key={`${selectedDataSource?.id}-${propertyKey}`}
+                    {...getElementProps(obj[key])}
+                    {...computedProps[propertyKey]}
+                    data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                    //to be removed after whole ui is same
+                    isHorizontalLayout={isHorizontalLayout}
+                  />
+                </div>
               </div>
-            </div>
+            )
           );
         })}
       </div>
@@ -664,16 +691,15 @@ const DynamicForm = ({
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
                   className={cx('form-label')}
-                  data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                  data-cy={`${String(flipComponentDropdown.label)
+                    .toLocaleLowerCase()
+                    .replace(/\s+/g, '-')}-dropdown-label`}
                 >
                   {flipComponentDropdown.label}
                 </label>
               )}
 
-              <div
-                data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
-                className={cx({ 'flex-grow-1': isHorizontalLayout })}
-              >
+              <div data-cy={'query-select-dropdown'} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}

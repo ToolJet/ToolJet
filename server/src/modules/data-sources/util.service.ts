@@ -166,7 +166,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
 
       // if datasource is restapi then reset the token data
@@ -448,9 +451,40 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId?: string
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
-    let tokenOptions: any;
+    let tokenOptions;
+    const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     if (['googlesheets', 'slack', 'zendesk', 'salesforce'].includes(dataSource.kind)) {
-      tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
+      const newTokenData = await this.fetchAPITokenFromPlugins(
+        dataSource,
+        code,
+        sourceOptions,
+        isMultiAuthEnabled,
+        userId
+      );
+
+      if (isMultiAuthEnabled) {
+        const updatedTokenData = this.getCurrentToken(
+          isMultiAuthEnabled,
+          dataSource.options['tokenData']?.value,
+          newTokenData,
+          userId
+        );
+        tokenOptions = [
+          {
+            key: 'tokenData',
+            value: updatedTokenData,
+            encrypted: false,
+          },
+        ];
+      } else {
+        tokenOptions = [
+          {
+            key: 'tokenData',
+            value: newTokenData,
+            encrypted: false,
+          },
+        ];
+      }
     } else {
       const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
       const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
@@ -485,7 +519,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT,organizationId);
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
 
       if (isMultiEnvEnabled) {
         await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
@@ -590,19 +627,34 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   /* this function only for getting auth token for googlesheets and related plugins*/
-  async fetchAPITokenFromPlugins(dataSource: DataSource, code: string, sourceOptions: any) {
+  async fetchAPITokenFromPlugins(
+    dataSource: DataSource,
+    code: string,
+    sourceOptions: any,
+    isMultiAuthEnabled: boolean,
+    userId: string
+  ) {
     const queryService = new allPlugins[dataSource.kind]();
     const accessDetails = await queryService.accessDetailsFrom(code, sourceOptions);
     const options = [];
-    for (const row of accessDetails) {
-      const option = {};
-      option['key'] = row[0];
-      option['value'] = row[1];
-      option['encrypted'] = true;
 
-      options.push(option);
+    if (isMultiAuthEnabled) {
+      const tokenObject: any = { user_id: userId };
+      for (const [key, value] of accessDetails) {
+        tokenObject[key] = value;
+      }
+      return tokenObject;
+    } else {
+      for (const row of accessDetails) {
+        const option = {};
+        option['key'] = row[0];
+        option['value'] = row[1];
+        option['encrypted'] = true;
+
+        options.push(option);
+      }
+      return options;
     }
-    return options;
   }
 
   async parseSourceOptions(options: any, organizationId: string, environmentId: string, user?: User): Promise<object> {
@@ -714,7 +766,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
     const { provider, source_options = {}, plugin_id = null } = getDataSourceOauthUrlDto;
-    const service = await this.pluginsServiceSelector.getService(plugin_id, provider);
+    const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
     return { url: service.authUrl(source_options) };
   }
 

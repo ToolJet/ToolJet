@@ -17,7 +17,9 @@ export interface IDataSourcesUtilService {
   fetchAPITokenFromPlugins(
     dataSource: DataSource,
     code: string,
-    sourceOptions: any
+    sourceOptions: any,
+    isMultiAuthEnabled: boolean,
+    userId: string
   ): Promise<
     Array<{
       key: string;
