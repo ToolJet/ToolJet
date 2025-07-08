@@ -1,4 +1,5 @@
 export interface IAiUtilService {
+  getColorScheme(prd: any): any;
   getAgentAssetPath(filename: string): any;
 
   mergeSteps(componentsJson: any, newStepsJson: any): any;
