@@ -557,7 +557,6 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = triggerWorkflow(
             moduleId,
-            query,
             query.options?.workflowId,
             query.options?.blocking,
             query.options?.params,
