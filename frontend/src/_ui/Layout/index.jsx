@@ -26,6 +26,7 @@ function Layout({
   const [licenseValid, setLicenseValid] = useState(false);
   const logo = retrieveWhiteLabelLogo();
   const router = useRouter();
+  const [licenseStatus, setLicenseStatus] = useState(null);
   const { featureAccess } = useLicenseStore(
     (state) => ({
       featureAccess: state.featureAccess,
@@ -84,6 +85,7 @@ function Layout({
   useEffect(() => {
     let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
     setLicenseValid(licenseValid);
+    setLicenseStatus(featureAccess?.licenseStatus);
   }, [featureAccess]);
 
   const currentUserValue = authenticationService.currentSessionValue;
@@ -147,6 +149,7 @@ function Layout({
           enableCollapsibleSidebar={enableCollapsibleSidebar}
           collapseSidebar={collapseSidebar}
           toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+          licenseStatus={licenseStatus}
         />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>

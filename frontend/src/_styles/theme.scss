@@ -9691,10 +9691,9 @@ tbody {
 }
 
 .tj-version {
-  margin-right: 44px;
   display: flex;
   align-items: center;
-  color: var(--slate9);
+  color: var(--text-disabled);
 
 }
 
@@ -9767,10 +9766,11 @@ tbody {
 
 .tj-dashboard-header-wrap {
   background-color: var(--page-default);
-  padding-top: 22px;
-  padding-bottom: 22px;
-  padding-left: 40px;
-  height: 64px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 32px;
+  padding-right: 32px;
+  height: 48px;
   border-bottom: 1px solid var(--slate5);
 
   @media only screen and (max-width: 768px) {
