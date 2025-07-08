@@ -2,7 +2,7 @@
 const initialState = {
   activeOrganizationId: null,
   whiteLabelText: 'ToolJet',
-  whiteLabelLogo: 'assets/images/tj-logo.svg', //Default whitelbeling logo
+  whiteLabelLogo: null,
   whiteLabelFavicon: null,
   loadingWhiteLabelDetails: true,
   isWhiteLabelDetailsFetched: false,
