@@ -305,7 +305,7 @@ class Restapi extends React.Component {
               </p>
             </div>
             <div className="d-flex flex-column w-100">
-              <div className="d-flex flex-row">
+              <div className={`${isWorkflowNode ? '' : 'd-flex'} flex-row`}>
                 <div
                   className={`me-2 ${isWorkflowNode ? 'mb-2' : ''}`}
                   style={{ width: isWorkflowNode ? '150px' : '90px', height: '32px' }}

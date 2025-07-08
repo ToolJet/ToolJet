@@ -5,8 +5,7 @@
 }
 
 /* Ensure method and URL fields have full width in workflow node */
-.workflow-rest-api .me-2,
-.workflow-rest-api .field {
+.workflow-rest-api .me-2 {
   width: 100% !important;
   margin-bottom: 16px; /* Increased spacing to avoid label overlap */
 }
