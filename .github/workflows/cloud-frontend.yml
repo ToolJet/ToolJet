@@ -110,6 +110,7 @@ jobs:
           TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           TOOLJET_EDITION: cloud
+          WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/ai-create-account
 
       - name: 🚀 Deploy to Netlify
         run: |
