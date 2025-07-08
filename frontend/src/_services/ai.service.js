@@ -4,7 +4,6 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
   generateApp,
-  createComponent,
   createQuery,
   updateComponent,
   createEvent,
@@ -58,14 +57,6 @@ function generateApp(prompt) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
 
   return fetch(`${config.apiUrl}/ai/generateApp`, requestOptions).then(handleResponse);
-}
-
-function createComponent(prompt) {
-  const body = {
-    prompt,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/create-components`, requestOptions).then(handleResponse);
 }
 
 function createQuery(prompt) {
