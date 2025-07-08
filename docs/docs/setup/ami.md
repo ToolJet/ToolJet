@@ -86,7 +86,7 @@ You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
-### Enabling Scheduling
+### Enabling Workflow Scheduling
 
 To activate workflows scheduling, set the following environment variables:
 
@@ -104,7 +104,7 @@ TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
 Below is a `docker-compose` template to set up Temporal.
 
 ```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/ec2-temporal/docker-compose.yml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/ec2-temporal/docker-compose.yml
 ```
 
 This setup can be deployed on a different EC2 instance. To enable seamless communication, ensure that both the application server and the Temporal server are in the same VPC.

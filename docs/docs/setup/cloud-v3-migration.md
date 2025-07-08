@@ -31,52 +31,28 @@ The following patterns are no longer supported:
 
    ```javascript
    // This will no longer work
-   {
-     {
-       components[variables.componentNameVariable].value;
-     }
-   }
+   {{ components[variables.componentNameVariable].value; }}
    ```
 
 2. Dynamically referencing components:
 
    ```javascript
    // This is not supported
-   {
-     {
-       components["textinput" + components.tabs1.currentTab].value;
-     }
-   }
+   {{ components["textinput" + components.tabs1.currentTab].value; }}
    ```
 
 3. Dynamically accessing nested properties:
    ```javascript
    // This dynamic property access is not allowed
-   {
-     {
-       components.table1[components.textinput1.value];
-     }
-   }
+   {{ components.table1[components.textinput1.value]; }}
    ```
 
 Instead, use static references to components:
 
 ```javascript
-{
-  {
-    components.textinput1.value;
-  }
-}
-{
-  {
-    components.table1.selectedRow;
-  }
-}
-{
-  {
-    queries.query1.data;
-  }
-}
+{{ components.textinput1.value; }}
+{{ components.table1.selectedRow; }}
+{{ queries.query1.data; }}
 ```
 
 ## Component and Query Naming
@@ -125,28 +101,12 @@ variables["name"];
 variables.name;
 
 // No longer supported
-{
-  {
-    "name" in variables;
-  }
-}
-{
-  {
-    Object.keys(variables).includes("name");
-  }
-}
-{
-  {
-    variables.hasOwnProperty("name");
-  }
-}
+{{ "name" in variables; }}
+{{ Object.keys(variables).includes("name"); }}
+{{ variables.hasOwnProperty("name"); }}
 
 // Recommended approach for checking existence
-{
-  {
-    variables["name"] ?? false;
-  }
-}
+{{ variables["name"] ?? false; }}
 ```
 
 :::caution
