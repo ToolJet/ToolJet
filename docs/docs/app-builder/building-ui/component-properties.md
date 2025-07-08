@@ -40,4 +40,4 @@ Follow these steps to configure component level permission:
     - **User groups**: Restricts access to members of selected user groups. Note: The selected user groups must have access to the application.
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/components/permission-type.png" alt="App Builder: Component library"/>
 
-
+**Note**: If a component's permissions have been configured by an admin and the builder is not included in the allowed users or groups, the builder will not be able to modify the component’s permissions.
