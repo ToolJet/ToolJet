@@ -45,7 +45,7 @@ export const chartConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     showAxes: {
@@ -136,7 +136,16 @@ export const chartConfig = {
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background color',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'container',
     },
     padding: {
       type: 'code',
@@ -192,7 +201,7 @@ export const chartConfig = {
     },
     properties: {
       title: { value: 'This title can be changed' },
-      markerColor: { value: 'var(--primary-brand)' },
+      markerColor: { value: 'var(--cc-primary-brand)' },
       showAxes: { value: '{{true}}' },
       showGridLines: { value: '{{true}}' },
       plotFromJson: { value: '{{false}}' },
@@ -228,11 +237,12 @@ export const chartConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
       borderRadius: { value: '{{4}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

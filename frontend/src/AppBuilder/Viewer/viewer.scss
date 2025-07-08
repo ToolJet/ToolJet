@@ -52,9 +52,17 @@
 .released-version-no-header-mbl-preview {
   position: absolute;
   left: 50%;
-  border-radius: 100px;
   padding : 2px 8px;
+  background-color: unset !important;
   z-index: 1000;
+
+  .preview-chip {
+    color: var(--text-on-solid) !important;
+  }
+  .preview-settings {
+    margin-left: 6px;
+    padding: 4px;
+  }
 }
 
 .preview-settings-overlay {
@@ -121,11 +129,6 @@
   z-index: 1201;
 }
 
-.bm-menu-wrap,
-.bm-overlay {
-  right: calc(50vw - 225px) !important;
-  width: calc(450px - 68px) !important;
-}
 
 .powered-with-tj {
   cursor: pointer;
@@ -160,6 +163,39 @@
       width: 100%;
     }
 
+    &.mobile-view {
+      .navbar, .header {
+        height: 60px !important;
+        max-height: 60px !important;
+      }
+      .header {
+        box-shadow: var(--elevation-100-box-shadow);
+      }
+      .preview-settings-mobile {
+        height: 44px !important;
+        header {
+          height: 44px !important;
+
+          .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: unset !important;
+            padding: 0px !important;
+            
+            .released-version-no-header-mbl-preview {
+              position: unset !important;
+            }
+          }
+        }
+      }
+
+      .mobile-nav-container {
+        .header-container {
+          background-color: unset !important;
+        }
+      }
+    }
 
     .canvas-container::-webkit-scrollbar {
       // width: 0;
@@ -178,8 +214,6 @@
 
 #page-settings-tabpane-styles {
   .accordion-item {
-    margin-bottom: 10px;
-    border-radius: 5px;
     overflow: hidden;
   }
 
@@ -187,7 +221,6 @@
     width: 100%;
     text-align: left;
     border: none;
-    padding: 10px 15px;
     font-size: 16px;
     cursor: pointer;
     display: flex;
@@ -197,11 +230,10 @@
 }
 
 .page-group-collapse{
-  bottom: 7px;
-  right: 12px;
-  position: absolute;
+  // right: 12px;
+  // position: absolute;
   display: block !important;
   &.expanded{
-    transform: rotate(60deg);
+    transform: rotate(0deg) !important;
   }
 }

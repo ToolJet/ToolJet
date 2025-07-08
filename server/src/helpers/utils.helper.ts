@@ -451,6 +451,9 @@ export const getSubpath = () => {
 };
 
 export function getTooljetEdition(): string {
+  if (process.env.TOOLJET_EDITION) {
+    return process.env.TOOLJET_EDITION.toLowerCase();
+  }
   const envVars = getEnvVars();
   return envVars['TOOLJET_EDITION']?.toLowerCase() || 'ce';
 }
@@ -459,6 +462,10 @@ export function getCustomEnvVars(name: string) {
   const envVars = getEnvVars();
   return envVars[name] || '';
 }
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
+};
 
 export function decamelizeKeysExcept(obj: any, ignoreKeys: string[]): any {
   if (Array.isArray(obj)) {

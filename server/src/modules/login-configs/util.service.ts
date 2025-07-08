@@ -17,7 +17,7 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
     protected ssoConfigsRepository: SSOConfigsRepository
   ) {}
 
-  async constructSSOConfigs() {
+  async constructSSOConfigs(organizationId?: string) {
     return {
       google: {
         enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),

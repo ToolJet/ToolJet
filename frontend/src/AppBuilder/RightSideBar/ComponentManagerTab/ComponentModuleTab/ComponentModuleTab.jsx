@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './styles.scss';
 
-export const ComponentModuleTab = ({ onChangeTab }) => {
+export const ComponentModuleTab = ({ onChangeTab, hasModuleAccess }) => {
   const [activeTab, setActiveTab] = useState(1);
 
   const handleChangeTab = (tab) => {
@@ -18,13 +18,15 @@ export const ComponentModuleTab = ({ onChangeTab }) => {
         >
           <span>Components</span>
         </button>
-        <button
-          className={`tj-drawer-tabs-btn  tj-text-xsm ${activeTab == 2 && 'tj-drawer-tabs-btn-active'}`}
-          onClick={() => handleChangeTab(2)}
-          data-cy="button-upload-csv-file"
-        >
-          <span>Modules</span>
-        </button>
+        {hasModuleAccess && (
+          <button
+            className={`tj-drawer-tabs-btn  tj-text-xsm ${activeTab == 2 && 'tj-drawer-tabs-btn-active'}`}
+            onClick={() => handleChangeTab(2)}
+            data-cy="button-upload-csv-file"
+          >
+            <span>Modules</span>
+          </button>
+        )}
       </div>
     </div>
   );

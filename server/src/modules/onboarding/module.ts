@@ -1,5 +1,4 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { MetaModule } from '@modules/meta/module';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { SessionModule } from '@modules/session/module';
@@ -10,13 +9,15 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { RolesModule } from '@modules/roles/module';
 import { FeatureAbilityFactory } from './ability';
 import { SetupOrganizationsModule } from '@modules/setup-organization/module';
+import { SubModule } from '@modules/app/sub-module';
 
-export class OnboardingModule {
+export class OnboardingModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { OnboardingService } = await import(`${importPath}/onboarding/service`);
-    const { OnboardingUtilService } = await import(`${importPath}/onboarding/util.service`);
-    const { OnboardingController } = await import(`${importPath}/onboarding/controller`);
+    const { OnboardingService, OnboardingUtilService, OnboardingController } = await this.getProviders(
+      configs,
+      'onboarding',
+      ['service', 'util.service', 'controller']
+    );
 
     return {
       module: OnboardingModule,

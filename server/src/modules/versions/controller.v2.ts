@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, Query, UseGuards } from '@nestjs/common';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -26,8 +26,8 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions/:versionId')
-  getVersion(@User() user: UserEntity, @App() app: AppEntity) {
-    return this.versionService.getVersion(app, user);
+  getVersion(@User() user: UserEntity, @App() app: AppEntity, @Query('mode') mode?: string) {
+    return this.versionService.getVersion(app, user, mode);
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_UPDATE)
