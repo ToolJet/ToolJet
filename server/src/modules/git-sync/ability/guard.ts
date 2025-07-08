@@ -3,13 +3,13 @@ import { FeatureAbilityFactory } from '.';
 import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { ResourceDetails } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
-import { AppGitSync } from '@entities/app_git_sync.entity';
+import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
   protected getResource(): ResourceDetails {
     return {
-      resourceType: MODULES.APP_GIT,
+      resourceType: MODULES.GIT_SYNC,
     };
   }
 
@@ -18,6 +18,6 @@ export class FeatureAbilityGuard extends AbilityGuard {
   }
 
   protected getSubjectType() {
-    return AppGitSync;
+    return OrganizationGitSync;
   }
 }

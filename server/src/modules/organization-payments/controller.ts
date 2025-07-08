@@ -1,11 +1,14 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { IOrganizationPaymentController } from './interfaces/IController';
 import { ProrationDto, PortalDto, PaymentRedirectDto } from './dto';
+import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { FeatureAbilityGuard } from './ability/guard';
 
 @Controller('organization/payment')
 @InitModule(MODULES.ORGANIZATION_PAYMENTS)
+@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class OrganizationPaymentController implements IOrganizationPaymentController {
   constructor() {}
   getUpcomingInvoice(organizationId: string): Promise<any> {

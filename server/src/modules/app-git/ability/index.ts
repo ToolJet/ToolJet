@@ -9,7 +9,7 @@ type Subjects = InferSubjects<typeof App> | 'all';
 export type AppGitAbility = Ability<[FEATURE_KEY, Subjects]>;
 
 @Injectable()
-export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
+export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
   protected getSubjectType() {
     return App;
   }
