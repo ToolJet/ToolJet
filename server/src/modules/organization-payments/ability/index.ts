@@ -6,7 +6,7 @@ import { FEATURE_KEY } from '@modules/organization-payments/constants';
 import { OrganizationSubscription } from '@entities/organization_subscription.entity';
 
 type Subjects = InferSubjects<typeof OrganizationSubscription> | 'all';
-export type OrganizationConstantAbility = Ability<[FEATURE_KEY, Subjects]>;
+export type OrganizationPaymentsAbility = Ability<[FEATURE_KEY, Subjects]>;
 
 @Injectable()
 export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
@@ -15,7 +15,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(
-    can: AbilityBuilder<OrganizationConstantAbility>['can'],
+    can: AbilityBuilder<OrganizationPaymentsAbility>['can'],
     userPermissions: UserAllPermissions
   ): void {
     const { isAdmin } = userPermissions;
