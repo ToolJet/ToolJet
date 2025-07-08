@@ -103,7 +103,9 @@ export const Node = (props) => {
         marginTop: level === 1 ? 4 : 0,
         marginBottom: level === 1 ? 4 : 0,
         // borderLeft: level > 1 ? '1px solid var(--slate6, #D7DBDF)' : 'none',
+        cursor: level === 1 ? 'pointer' : 'default',
       }}
+      {...(level === 1 && { onClick: () => onExpand(props) })}
     >
       {/* {!['queries', 'globals', 'variables'].includes(type) && ( */}
       <div className="node-expansion-icon">

@@ -1,4 +1,27 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
+
+// 1. Define your enums here in the same file
+export enum PageOpenIn {
+  NEW_TAB = 'new_tab',
+  SAME_TAB = 'same_tab',
+}
+
+export enum PageType {
+  DEFAULT = 'default',
+  GROUP = 'group',
+  URL = 'url',
+  APP = 'app',
+}
 
 export class CreatePageDto {
   @IsUUID()
@@ -32,6 +55,24 @@ export class CreatePageDto {
 
   @IsOptional()
   icon: string;
+
+  @IsOptional()
+  @IsString()
+  @ValidateIf((o) => o.url !== '')
+  @IsUrl()
+  url?: string;
+
+  @IsEnum(PageOpenIn)
+  @IsOptional()
+  openIn?: PageOpenIn;
+
+  @IsEnum(PageType)
+  @IsOptional()
+  type?: PageType;
+
+  @IsUUID()
+  @IsOptional()
+  appId?: string;
 }
 
 export class DeletePageDto {

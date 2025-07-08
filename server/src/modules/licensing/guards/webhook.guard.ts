@@ -17,8 +17,12 @@ export class WebhookGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
- const request = context.switchToHttp().getRequest();
-    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS);
+    const request = context.switchToHttp().getRequest();
+    const organizationId =
+      typeof request.headers['tj-workspace-id'] === 'object'
+        ? request.headers['tj-workspace-id'][0]
+        : request.headers['tj-workspace-id'];
+    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS, organizationId);
 
     const isUuid = isUUID(request?.params?.idOrName);
     const workflowApp = await this.appsRepository.findOne({

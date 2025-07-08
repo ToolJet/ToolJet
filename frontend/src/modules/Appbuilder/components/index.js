@@ -4,6 +4,7 @@ import LogoNavDropdown from './LogoNavDropdown';
 import AppEnvironments from './AppEnvironments';
 import ThemeSelect from './ThemeSelect';
 import ColorSwatches from './ColorSwatches';
+import AppPermissionsModal from './AppPermissionsModal';
 import ComponentModuleTab from './ComponentModuleTab';
 
 export {
@@ -13,5 +14,6 @@ export {
   AppEnvironments,
   ThemeSelect,
   ColorSwatches,
+  AppPermissionsModal,
   ComponentModuleTab,
 };

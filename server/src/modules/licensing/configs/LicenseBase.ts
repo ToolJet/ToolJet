@@ -1,11 +1,10 @@
-import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
+import { LICENSE_LIMIT, LICENSE_TYPE, PLAN_DETAILS } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
   BUSINESS_PLAN_TERMS,
   ENTERPRISE_PLAN_TERMS,
   WORKFLOW_TEAM_PLAN_TERMS,
 } from '@modules/licensing/constants/PlanTerms';
-
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
@@ -19,7 +18,7 @@ export default class LicenseBase {
   private _isCustomStyling: boolean;
   private _isWhiteLabelling: boolean;
   private _isCustomThemes: boolean;
-  private _isServerSideGlobal: boolean;
+  private _isServerSideGlobalResolve: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
   private _isComments: boolean;
@@ -42,6 +41,7 @@ export default class LicenseBase {
   private _ai: object;
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
+  private _plan: string;
   private BASIC_PLAN_TERMS: Partial<Terms>;
 
   constructor(
@@ -49,7 +49,8 @@ export default class LicenseBase {
     licenseData?: Partial<Terms>,
     updatedDate?: Date,
     startDate?: Date,
-    expiryDate?: Date
+    expiryDate?: Date,
+    plan?: string
   ) {
     this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
 
@@ -65,12 +66,13 @@ export default class LicenseBase {
       this._isCustomStyling = true;
       this._isWhiteLabelling = true;
       this._isCustomThemes = true;
-      this._isServerSideGlobal = true;
+      this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
+      this._plan = plan;
       return;
     }
     if (!licenseData) {
@@ -78,7 +80,7 @@ export default class LicenseBase {
       this._type = LICENSE_TYPE.BASIC;
       return;
     }
-    this._expiryDate = expiryDate || new Date(`${licenseData.expiry} 23:59:59`);
+    this._expiryDate = expiryDate ? new Date(expiryDate) : (licenseData?.expiry ? new Date(`${licenseData?.expiry} 23:59:59`) : null);
     this._startDate = startDate;
     this._isFlexiblePlan = licenseData?.plan?.isFlexible === true;
     this._appsCount = licenseData?.apps;
@@ -90,7 +92,8 @@ export default class LicenseBase {
     this._updatedDate = updatedDate;
     this._isLicenseValid = true;
     this._workspacesCount = licenseData?.workspaces;
-    this._type = licenseData?.type;
+    this._type = licenseData?.type || LICENSE_TYPE.BASIC;
+    this._plan = plan || licenseData?.plan?.name;
     this._domainsList = licenseData?.domains;
     this._metaData = licenseData?.meta;
     this._workflows = licenseData?.workflows;
@@ -108,7 +111,7 @@ export default class LicenseBase {
     this._isWhiteLabelling = this.getFeatureValue('whiteLabelling');
     this._isAppWhiteLabelling = this.getFeatureValue('appWhiteLabelling');
     this._isCustomThemes = this.getFeatureValue('customThemes');
-    this._isServerSideGlobal = this.getFeatureValue('serverSideGlobal');
+    this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
@@ -125,6 +128,13 @@ export default class LicenseBase {
       return false;
     }
     return true;
+  }
+
+  public get plan(): string {
+    if (this.IsBasicPlan) {
+      return;
+    }
+    return this._plan;
   }
 
   public get isExpired(): boolean {
@@ -285,11 +295,11 @@ export default class LicenseBase {
     return this._isCustomThemes;
   }
 
-  public get serverSideGlobal(): boolean {
+  public get serverSideGlobalResolve(): boolean {
     if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobal;
+      return !!this.BASIC_PLAN_TERMS.features?.serverSideGlobalResolve;
     }
-    return this._isServerSideGlobal;
+    return this._isServerSideGlobalResolve;
   }
   public get externalApis(): boolean {
     if (this.IsBasicPlan) {
@@ -340,7 +350,7 @@ export default class LicenseBase {
       customStyling: this.customStyling,
       whiteLabelling: this.whiteLabelling,
       customThemes: this.customThemes,
-      serverSideGlobal: this.serverSideGlobal,
+      serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       gitSync: this.gitSync,
@@ -370,7 +380,7 @@ export default class LicenseBase {
       samlEnabled: this.saml,
       customStylingEnabled: this.customStyling,
       customThemesEnabled: this.customThemes,
-      serverSideGlobalEnabled: this.serverSideGlobal,
+      serverSideGlobalResolveEnabled: this.serverSideGlobalResolve,
       multiEnvironmentEnabled: this.multiEnvironment,
       multiPlayerEditEnabled: this.multiPlayerEdit,
       commentsEnabled: this.comments,

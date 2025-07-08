@@ -479,24 +479,22 @@ Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   });
 });
 
-Cypress.Commands.add("apiDeleteGranularPermission", (groupName) => {
+Cypress.Commands.add("apiDeleteGranularPermission", (groupName, typesToDelete = []) => {
   cy.getAuthHeaders().then((headers) => {
-    // Fetch group permissions
+    // Step 1: Get the group by name
     cy.request({
       method: "GET",
       url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-      headers: headers,
+      headers,
       log: false,
     }).then((response) => {
       expect(response.status).to.equal(200);
-      const group = response.body.groupPermissions.find(
-        (g) => g.name === groupName
-      );
+      const group = response.body.groupPermissions.find((g) => g.name === groupName);
       if (!group) throw new Error(`Group with name ${groupName} not found`);
 
       const groupId = group.id;
 
-      // Fetch granular permissions for the specific group
+      // Step 2: Get all granular permissions for the group
       cy.request({
         method: "GET",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
@@ -504,21 +502,30 @@ Cypress.Commands.add("apiDeleteGranularPermission", (groupName) => {
         log: false,
       }).then((granularResponse) => {
         expect(granularResponse.status).to.equal(200);
-        const granularPermissionId = granularResponse.body[0].id;
+        const granularPermissions = granularResponse.body;
 
-        // Delete the granular permission
-        cy.request({
-          method: "DELETE",
-          url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${granularPermissionId}`,
-          headers,
-          log: false,
-        }).then((deleteResponse) => {
-          expect(deleteResponse.status).to.equal(200);
+        // Step 3: Filter if typesToDelete is specified
+        const permissionsToDelete = typesToDelete.length
+          ? granularPermissions.filter((perm) => typesToDelete.includes(perm.type))
+          : granularPermissions;
+
+        // Step 4: Delete each granular permission
+        permissionsToDelete.forEach((permission) => {
+          cy.request({
+            method: "DELETE",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${permission.id}`,
+            headers,
+            log: false,
+          }).then((deleteResponse) => {
+            expect(deleteResponse.status).to.equal(200);
+            cy.log(`Deleted granular permission: ${permission.name}`);
+          });
         });
       });
     });
   });
 });
+
 
 Cypress.Commands.add(
   "apiCreateGranularPermission",

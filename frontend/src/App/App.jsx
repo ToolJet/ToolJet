@@ -38,6 +38,7 @@ import {
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
@@ -278,13 +279,13 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
-                {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                {isWorkflowsFeatureEnabled() && (
                   <Route
                     exact
                     path="/:workspaceId/workflows/*"
                     element={
                       <PrivateRoute>
-                        <Workflows switchDarkMode={this.switchDarkMode} darkMode={this.darkMode} />
+                        <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
                     }
                   />
@@ -293,8 +294,18 @@ class AppComponent extends React.Component {
                   path="/:workspaceId/workspace-settings/*"
                   element={<WorkspaceSettings {...mergedProps} />}
                 ></Route>
-                <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
-                <Route path="/:workspaceId/settings/*" element={<Settings {...this.props} />}></Route>
+                <Route
+                  path="settings/*"
+                  element={
+                    <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
+                  }
+                ></Route>
+                <Route
+                  path="/:workspaceId/settings/*"
+                  element={
+                    <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
+                  }
+                ></Route>
                 <Route
                   exact
                   path="/:workspaceId/modules"

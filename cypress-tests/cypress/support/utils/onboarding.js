@@ -92,7 +92,7 @@ export const userSignUp = (fullName, email, workspaceName = "test") => {
     cy.visit(invitationLink);
     cy.wait(2500);
   });
-  if (Cypress.env("environment") !== "Community") {
+  if (Cypress.env("environment") == "Cloud") {
     cy.clearAndType(
       '[data-cy="onboarding-workspace-name-input"]',
       workspaceName

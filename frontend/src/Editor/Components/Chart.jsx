@@ -6,6 +6,9 @@ import { isStringValidJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { getCssVarValue, getModifiedColor } from './utils';
 
 var tinycolor = require('tinycolor2');
 
@@ -22,15 +25,24 @@ export const Chart = function Chart({
 }) {
   const isInitialRender = useRef(true);
   const [loadingState, setLoadingState] = useState(false);
+  const themeChanged = useStore((state) => state.themeChanged);
+
 
   const getColor = (color) => {
     if (tinycolor(color).getBrightness() > 128) return '#000';
     return '#fff';
   };
 
-  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius } = styles;
+  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
+
+  const modifiedBackgroundColor = getModifiedColor(backgroundColor, 0);
+  const modifiedMarkerColor = getCssVarValue(document.documentElement, markerColor);
+  const modifiedGridLines = getCssVarValue(document.documentElement, 'var(--cc-weak-border)');
+  const modifiedTextColor = getCssVarValue(document.documentElement, 'var(--cc-primary-text)');
+  const modifiedAxisColor = getCssVarValue(document.documentElement, 'var(--cc-default-border)');
+  console.log('modifiedAxisColor', modifiedAxisColor);
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -43,7 +55,8 @@ export const Chart = function Chart({
     width: width - 4,
     height,
     display: visibility ? '' : 'none',
-    background: darkMode ? '#1f2936' : 'white',
+    // background: darkMode ? '#1f2936' : 'white',
+    border: `1px solid ${borderColor}`,
     boxShadow,
     borderRadius,
   };
@@ -65,11 +78,12 @@ export const Chart = function Chart({
 
   const chartLayout = isDescriptionJson ? JSON.parse(jsonData).layout ?? {} : {};
 
-  const updatedBgColor = ['#fff', '#ffffff'].includes(backgroundColor)
+  const updatedBgColor = ['#fff', '#ffffff'].includes(modifiedBackgroundColor)
     ? darkMode
       ? '#1f2936'
       : '#fff'
-    : backgroundColor;
+    : modifiedBackgroundColor;
+
   const fontColor = getColor(updatedBgColor);
 
   const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
@@ -93,14 +107,14 @@ export const Chart = function Chart({
   }, [JSON.stringify(chartLayout, chartTitle)]);
 
   const layout = {
-    width: width - 4,
-    height,
+    width: width - 6,
+    height: height - 4,
     plot_bgcolor: updatedBgColor,
     paper_bgcolor: updatedBgColor,
     title: {
       text: chartTitle,
       font: {
-        color: fontColor,
+        color: modifiedTextColor,
       },
     },
     showlegend: chartLayout.showlegend ?? false,
@@ -117,6 +131,16 @@ export const Chart = function Chart({
       color: fontColor,
       automargin: true,
       visible: showAxes,
+      gridcolor: modifiedGridLines,
+      linecolor: modifiedAxisColor,
+      title: {
+        font: {
+          color: modifiedTextColor,
+        },
+      },
+      tickfont: {
+        color: modifiedTextColor,
+      },
       ...chartLayout.xaxis,
     },
     yaxis: {
@@ -125,6 +149,16 @@ export const Chart = function Chart({
       color: fontColor,
       automargin: true,
       visible: showAxes,
+      gridcolor: modifiedGridLines,
+      linecolor: modifiedAxisColor,
+      title: {
+        font: {
+          color: modifiedTextColor,
+        },
+      },
+      tickfont: {
+        color: modifiedTextColor,
+      },
       ...chartLayout.yaxis,
     },
     margin: {
@@ -168,7 +202,7 @@ export const Chart = function Chart({
           type: chartType || 'line',
           x: rawData.map((item) => item['x']),
           y: rawData.map((item) => item['y']),
-          marker: { color: markerColor },
+          marker: { color: modifiedMarkerColor },
         },
       ];
     }
@@ -179,7 +213,7 @@ export const Chart = function Chart({
   const memoizedChartData = useMemo(
     () => computeChartData(data, dataString),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, dataString, chartType, markerColor]
+    [data, dataString, chartType, modifiedMarkerColor]
   );
 
   const handleClick = useCallback((data) => {
