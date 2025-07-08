@@ -3,6 +3,8 @@ import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
 import { AppModuleLoader } from './loader';
 import * as Sentry from '@sentry/node';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { AbilityModule } from '@modules/ability/module';
 import { LicenseModule } from '@modules/licensing/module';
@@ -68,7 +70,7 @@ export class AppModule implements OnModuleInit {
      * █                                                                  █
      * ████████████████████████████████████████████████████████████████████
      */
-    const imports = [
+    const baseImports = [
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs),
@@ -103,7 +105,6 @@ export class AppModule implements OnModuleInit {
       await ImportExportResourcesModule.register(configs),
       await TemplatesModule.register(configs),
       await TooljetDbModule.register(configs),
-      await WorkflowsModule.register(configs),
       await ModulesModule.register(configs),
       await AiModule.register(configs),
       await CustomStylesModule.register(configs),
@@ -116,6 +117,13 @@ export class AppModule implements OnModuleInit {
       await OrganizationPaymentModule.register(configs),
       await EmailListenerModule.register(configs),
     ];
+
+    const conditionalImports = [];
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
+      conditionalImports.push(await WorkflowsModule.register(configs));
+    }
+
+    const imports = [...baseImports, ...conditionalImports];
 
     return {
       module: AppModule,

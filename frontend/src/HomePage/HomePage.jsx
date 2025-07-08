@@ -12,7 +12,7 @@ import {
 } from '@/_services';
 import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
-import _, { sample, isEmpty } from 'lodash';
+import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -48,6 +48,7 @@ import {
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
 
 const { iconList, defaultIcon } = configs;
@@ -256,7 +257,11 @@ class HomePageComponent extends React.Component {
   };
 
   getAppType = () => {
-    return this.props.appType === 'module' ? 'Module' : this.props.appType === 'workflow' ? 'Workflow' : 'App';
+    const { appType } = this.props;
+    if (appType === 'front-end') return 'App';
+    if (appType === 'workflow') return 'Workflow';
+    if (appType === 'module') return 'Module';
+    return 'app';
   };
 
   createApp = async (appName) => {
@@ -335,6 +340,66 @@ class HomePageComponent extends React.Component {
 
   exportApp = async (app) => {
     this.setState({ isExportingApp: true, app: app });
+  };
+
+  exportAppDirectly = async (app) => {
+    try {
+      const fetchVersions = await appsService.getVersions(app.id);
+      const { versions } = fetchVersions;
+
+      const currentEditingVersion = versions?.filter((version) => version?.isCurrentEditingVersion)[0];
+      if (!currentEditingVersion) {
+        toast.error('Could not find current editing version.', {
+          position: 'top-center',
+        });
+        return;
+      }
+
+      // Export all TJDB tables used by default
+      const fetchTables = await appsService.getTables(app.id);
+      const { tables: allTables } = fetchTables;
+
+      const versionId = currentEditingVersion.id;
+      const exportTjDb = true;
+      const exportTables = allTables;
+
+      const appOpts = {
+        app: [
+          {
+            id: app.id,
+            search_params: { version_id: versionId },
+          },
+        ],
+      };
+
+      const requestBody = {
+        ...appOpts,
+        ...(exportTjDb && { tooljet_database: exportTables }),
+        organization_id: app.organization_id,
+      };
+
+      const data = await appsService.exportResource(requestBody);
+
+      const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+      const fileName = `${appName}-export-${new Date().getTime()}`;
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = fileName + '.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Workflow exported successfully!', {
+        position: 'top-center',
+      });
+    } catch (error) {
+      toast.error(`Could not export workflow: ${error?.data?.message || error.message}`, {
+        position: 'top-center',
+      });
+    }
   };
 
   readAndImport = (event) => {
@@ -451,7 +516,7 @@ class HomePageComponent extends React.Component {
 
       this.setState({ isImportingApp: false });
       if (error.statusCode === 409) return false;
-      toast.error(error?.error || error?.message || 'App import failed');
+      toast.error(error?.error || error?.message || `${capitalize(this.getAppType())} import failed`);
     }
   };
 
@@ -483,7 +548,7 @@ class HomePageComponent extends React.Component {
   };
 
   canViewWorkflow = () => {
-    return this.canUserPerform(this.state.currentUser, 'view');
+    return this.canUserPerform(this.state.currentUser, 'view') && isWorkflowsFeatureEnabled();
   };
 
   canUserPerform(user, action, app) {
@@ -951,6 +1016,53 @@ class HomePageComponent extends React.Component {
       importingGitAppOperations: validationMessage,
     });
   };
+
+  // Helper functions for workflow limit checks
+  hasWorkflowLimitReached = () => {
+    const { workflowInstanceLevelLimit, workflowWorkspaceLevelLimit } = this.state;
+
+    const instanceLimitReached =
+      workflowInstanceLevelLimit.total === 0 || workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total;
+    const workspaceLimitReached =
+      workflowWorkspaceLevelLimit.total === 0 ||
+      workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total;
+
+    return instanceLimitReached || workspaceLimitReached;
+  };
+
+  hasWorkflowLimitWarning = () => {
+    const { workflowInstanceLevelLimit, workflowWorkspaceLevelLimit } = this.state;
+    return this.hasInstanceLimitWarning() || this.hasWorkspaceLimitWarning();
+  };
+
+  hasInstanceLimitWarning = () => {
+    const { workflowInstanceLevelLimit } = this.state;
+    const percentage = workflowInstanceLevelLimit.percentage;
+
+    return (
+      workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+      (percentage >= 90 && percentage < 100) ||
+      workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+    );
+  };
+
+  hasWorkspaceLimitWarning = () => {
+    const { workflowWorkspaceLevelLimit } = this.state;
+    const percentage = workflowWorkspaceLevelLimit.percentage;
+
+    return (
+      workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total ||
+      (percentage >= 90 && percentage < 100) ||
+      workflowWorkspaceLevelLimit.current === workflowWorkspaceLevelLimit.total - 1
+    );
+  };
+
+  getWorkflowLimit = () => {
+    return this.hasInstanceLimitWarning()
+      ? this.state.workflowInstanceLevelLimit
+      : this.state.workflowWorkspaceLevelLimit;
+  };
+
   render() {
     const {
       apps,
@@ -1010,7 +1122,7 @@ class HomePageComponent extends React.Component {
       } else if (this.props.appType === 'front-end') {
         return appsLimit?.percentage >= 100;
       } else {
-        return workflowInstanceLevelLimit.percentage >= 100 || workflowWorkspaceLevelLimit.percentage >= 100;
+        return this.hasWorkflowLimitReached();
       }
     };
     const modalConfigs = {
@@ -1462,15 +1574,12 @@ class HomePageComponent extends React.Component {
                                 )}
                           </>
                         </Button>
-
-                        {this.props.appType !== 'workflow' && (
-                          <Dropdown.Toggle
-                            disabled={getDisabledState()}
-                            split
-                            className="d-inline"
-                            data-cy="import-dropdown-menu"
-                          />
-                        )}
+                        <Dropdown.Toggle
+                          disabled={getDisabledState()}
+                          split
+                          className="d-inline"
+                          data-cy="import-dropdown-menu"
+                        />
                         <ImportAppMenu
                           darkMode={this.props.darkMode}
                           showTemplateLibraryModal={
@@ -1677,7 +1786,7 @@ class HomePageComponent extends React.Component {
                     canUpdateApp={this.canUpdateApp}
                     deleteApp={this.deleteApp}
                     cloneApp={this.cloneApp}
-                    exportApp={this.exportApp}
+                    exportApp={this.props.appType === 'workflow' ? this.exportAppDirectly : this.exportApp}
                     meta={meta}
                     currentFolder={currentFolder}
                     isLoading={isLoading || !featuresLoaded}
