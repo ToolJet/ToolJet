@@ -410,8 +410,6 @@ const ColumnMappingComponent = ({
 
   const currentStatus = currentStatusRef.current;
 
-  console.log('here--- existingResolvedJsonData--- ', existingResolvedJsonData);
-
   const columnsToUse = useColumnBuilder(
     component,
     currentStatus,
