@@ -148,8 +148,8 @@ const Header = ({
   return (
     <>
       <div className="database-table-header-wrapper">
-        <div className="card border-0">
-          <div className="card-body  tj-db-operations-header">
+        <div className="border-0">
+          <div className="tj-db-operations-header">
             <div className="row align-items-center">
               <div className="col-8 align-items-center  gap-1" style={{ padding: '0 16px' }}>
                 <>
