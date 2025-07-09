@@ -574,6 +574,10 @@ module.exports = {
           {
             to: '/docs/workflows/how-to/trigger-workflow-from-app',
             from: '/docs/workflows/trigger-workflow-from-app',
+          },
+          {
+            to: '/docs/form',
+            from: '/docs/form/form',
           }
         ],
       },
