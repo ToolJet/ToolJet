@@ -109,6 +109,17 @@
     //upgrade
     --upgrade-default: #FFAF41;
     --upgrade-weak: #FFAF4140;
+
+    // Shadows
+    --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
+    --elevation-200-box-shadow: 0px 2px 4px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-300-box-shadow: 0px 4px 8px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-400-box-shadow: 0px 8px 16px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-500-box-shadow: 0px 16px 24px 0px rgba(48, 50, 51, 0.09), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-600-box-shadow: 0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-700-box-shadow: 0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-100-box-shadow: 0px 1px 1px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    
 }
 
 .dark-theme {
@@ -222,4 +233,15 @@
     //upgrade
     --upgrade-default: #FFAF41;
     --upgrade-weak: #FFAF4140;
+
+    //box-shadow
+    --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.40);
+    --elevation-100-box-shadow: 0px 1px 1px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-200-box-shadow: 0px 2px 4px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-300-box-shadow: 0px 4px 8px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-400-box-shadow: 0px 8px 16px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-500-box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.99), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-600-box-shadow: 0px 24px 40px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-700-box-shadow: 0px 32px 50px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    
 }
