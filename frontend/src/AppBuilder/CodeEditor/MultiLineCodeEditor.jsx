@@ -7,7 +7,7 @@ import { keymap } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
-import _ from 'lodash';
+import _, { noop } from 'lodash';
 import { sass, sassCompletionSource } from '@codemirror/lang-sass';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -53,7 +53,7 @@ const MultiLineCodeEditor = (props) => {
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
     readOnly = false,
     editable = true,
-    renderCopilot,
+    renderCopilot = noop,
     setCodeEditorView,
   } = props;
   const editorRef = useRef(null);
@@ -348,7 +348,7 @@ const MultiLineCodeEditor = (props) => {
           view={editorView}
           isPanelOpen={isSearchPanelOpen}
           renderCopilot={() =>
-            renderCopilot({
+            renderCopilot?.({
               darkMode,
               language: lang,
               editorRef,

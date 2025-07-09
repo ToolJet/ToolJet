@@ -79,7 +79,7 @@ if (process.env.APM_VENDOR === 'sentry') {
 }
 
 if (isDevEnv) {
-  plugins.push(new ReactRefreshWebpackPlugin());
+  plugins.push(new ReactRefreshWebpackPlugin({overlay: false}));
 }
 
 module.exports = {
