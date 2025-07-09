@@ -1,6 +1,7 @@
 import knex, { Knex } from 'knex';
 import {
-  cacheConnection,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
   getCachedConnection,
   ConnectionTestResult,
   QueryService,
@@ -145,13 +146,17 @@ export default class MysqlQueryService implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<Knex> {
     if (checkCache) {
-      const cachedConnection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
+      const optionsHash = generateSourceOptionsHash(sourceOptions);
+      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      const cachedConnection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
       if (cachedConnection) return cachedConnection;
+
+      const connection = await this.buildConnection(sourceOptions);
+      cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
+      return connection;
     }
 
-    const connection = await this.buildConnection(sourceOptions);
-    if (checkCache && dataSourceId) cacheConnection(dataSourceId, connection);
-    return connection;
+    return await this.buildConnection(sourceOptions);
   }
 
   buildBulkUpdateQuery(queryOptions: QueryOptions): string {

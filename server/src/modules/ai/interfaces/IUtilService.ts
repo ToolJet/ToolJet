@@ -34,10 +34,6 @@ export interface IAiUtilService {
 
   getQueriesfromsteps(steps: any): Promise<any>;
 
-  createQuerySteps(prd: string, lld: string, tableName: any, components: any, organizationId: any): Promise<any>;
-
-  createEventSteps(prd: string, Query: any, components: any, organizationId: any): Promise<any>;
-
   convertToSteps(jsonData: any): Promise<any>;
 
   getColorScheme(prd: any): any;
