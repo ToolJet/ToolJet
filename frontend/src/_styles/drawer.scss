@@ -3,15 +3,14 @@
 }
 
 .drawer {
-  background: var(--base);
+  background: var(--surfaces-surface-01);
   width: 540px;
   height: 100%;
   position: fixed;
-  border: 1px solid var(--slate5);
-  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  border: 1px solid var(--border-weak);
+  box-shadow: var(--elevation-400-box-shadow);
   transition: transform var(--transition-speed) ease;
   z-index: 1000;
-  background: var(--base);
   overflow-y: auto;
 
   &.left {
