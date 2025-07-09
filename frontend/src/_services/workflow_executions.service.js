@@ -10,11 +10,15 @@ export const workflowExecutionsService = {
   all,
   enableWebhook,
   previewQueryNode,
+  getPaginatedExecutions,
+  getPaginatedNodes,
+  trigger,
+  streamSSE,
 };
 
-function previewQueryNode(queryId, appVersionId, nodeId) {
+function previewQueryNode(queryId, appVersionId, nodeId, state = {}) {
   const currentSession = authenticationService.currentSessionValue;
-  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId };
+  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId, state };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/previewQueryNode`, requestOptions).then(handleResponse);
 }
@@ -69,4 +73,41 @@ function enableWebhook(appId, value) {
   };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/webhooks/workflows/${appId}`, requestOptions).then(handleResponse);
+}
+
+function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&page=${page}&per_page=${perPage}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function getPaginatedNodes(executionId, page = 1, perPage = 20) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workflow_executions/${executionId}/nodes?page=${page}&per_page=${perPage}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function trigger(workflowAppId, params, environmentId) {
+  const currentSession = authenticationService.currentSessionValue;
+  const body = {
+    appId: workflowAppId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'app',
+    params: Array.isArray(params)
+      ? Object.fromEntries(params.filter((param) => param.key !== '').map((param) => [param.key, param.value]))
+      : params || {},
+    environmentId,
+  };
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${workflowAppId}/trigger`, requestOptions).then(handleResponse);
+}
+
+function streamSSE(workflowExecutionId) {
+  return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
+    withCredentials: true,
+  });
 }

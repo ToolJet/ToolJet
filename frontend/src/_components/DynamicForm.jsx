@@ -253,6 +253,8 @@ const DynamicForm = ({
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
+    const workspaceConstant = options?.[key]?.workspace_constant;
+    const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
 
@@ -264,7 +266,7 @@ const DynamicForm = ({
           (options?.[key]?.encrypted !== undefined ? options?.[key].encrypted : encrypted) || type === 'password';
         return {
           type,
-          placeholder: useEncrypted ? '**************' : description,
+          placeholder: workspaceConstant ? workspaceConstant : useEncrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)} ${useEncrypted && 'dynamic-form-encrypted-field'}`,
           style: { marginBottom: '0px !important' },
           value: options?.[key]?.value || '',
@@ -276,6 +278,7 @@ const DynamicForm = ({
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
           encrypted: useEncrypted,
+          isWorkspaceConstant: isWorkspaceConstant,
         };
       }
       case 'toggle':
@@ -510,10 +513,16 @@ const DynamicForm = ({
         return;
       }
       const isEditing = computedProps[field]['disabled'];
+      const workspaceConstant = options?.[field]?.workspace_constant;
+      const isWorkspaceConstant = !!workspaceConstant;
+
       if (isEditing) {
-        optionchanged(field, '');
+        if (isWorkspaceConstant) {
+          optionchanged(field, workspaceConstant);
+        } else {
+          optionchanged(field, '');
+        }
       } else {
-        //Send old field value if editing mode disabled for encrypted fields
         const newOptions = { ...options };
         const oldFieldValue = selectedDataSource?.['options']?.[field];
         if (oldFieldValue) {

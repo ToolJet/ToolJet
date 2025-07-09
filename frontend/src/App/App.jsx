@@ -38,6 +38,7 @@ import {
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
@@ -278,7 +279,7 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
-                {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                {isWorkflowsFeatureEnabled() && (
                   <Route
                     exact
                     path="/:workspaceId/workflows/*"
@@ -299,7 +300,12 @@ class AppComponent extends React.Component {
                     <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
                   }
                 ></Route>
-                <Route path="/:workspaceId/settings/*" element={<InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />}></Route>
+                <Route
+                  path="/:workspaceId/settings/*"
+                  element={
+                    <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
+                  }
+                ></Route>
                 <Route
                   exact
                   path="/:workspaceId/modules"
