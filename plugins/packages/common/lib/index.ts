@@ -6,8 +6,6 @@ import { QueryService } from './query_service.interface';
 import {
   isEmpty,
   cacheConnection,
-  cacheConnectionWithConfiguration,
-  generateSourceOptionsHash,
   getCachedConnection,
   parseJson,
   cleanSensitiveData,
@@ -39,8 +37,6 @@ export {
   User,
   App,
   cacheConnection,
-  generateSourceOptionsHash,
-  cacheConnectionWithConfiguration,
   getCachedConnection,
   parseJson,
   isEmpty,

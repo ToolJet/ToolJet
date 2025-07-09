@@ -114,7 +114,7 @@ export class DataQueryRepository extends Repository<DataQuery> {
     findOptions: FindOptionsWhere<DataQuery>,
     relations?: string[],
     manager?: EntityManager
-  ): Promise<DataQuery[]> {
+  ): Promise<DataQuery> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       return manager.find(DataQuery, {
         where: { ...(findOptions ? findOptions : {}) },

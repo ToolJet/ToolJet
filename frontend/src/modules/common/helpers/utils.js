@@ -18,9 +18,4 @@ const fetchEdition = () => {
   return config.TOOLJET_EDITION?.toLowerCase() || 'ce';
 };
 
-const isWorkflowsFeatureEnabled = () => {
-  if (fetchEdition() === 'ee') return true;
-  return false;
-};
-
-export { processErrorMessage, clearPageHistory, fetchEdition, isWorkflowsFeatureEnabled };
+export { processErrorMessage, clearPageHistory, fetchEdition };

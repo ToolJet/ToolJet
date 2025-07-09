@@ -254,7 +254,7 @@ describe("Data sources", () => {
       .and("be.disabled");
     cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
-      postgreSqlText.serverNotSuppotSsl
+      "connect ECONNREFUSED 127.0.0.1:5432"
     );
 
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-postgresql`);

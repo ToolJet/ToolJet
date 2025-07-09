@@ -1,7 +1,6 @@
 import {
   ConnectionTestResult,
-  cacheConnectionWithConfiguration,
-  generateSourceOptionsHash,
+  cacheConnection,
   getCachedConnection,
   QueryService,
   QueryResult,
@@ -146,17 +145,13 @@ export default class PostgresqlQueryService implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<Knex> {
     if (checkCache) {
-      const optionsHash = generateSourceOptionsHash(sourceOptions);
-      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
-      const cachedConnection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
+      const cachedConnection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
       if (cachedConnection) return cachedConnection;
-
-      const connection = await this.buildConnection(sourceOptions);
-      cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
-      return connection;
     }
 
-    return await this.buildConnection(sourceOptions);
+    const connection = await this.buildConnection(sourceOptions);
+    if (checkCache && dataSourceId) cacheConnection(dataSourceId, connection);
+    return connection;
   }
 
   buildBulkUpdateQuery(queryOptions: QueryOptions): string {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Res, Sse } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowExecutionController } from '../interfaces/IWorkflowExecutionController';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
@@ -9,7 +9,6 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/workflows/constants';
-import { Observable } from 'rxjs';
 
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow_executions')
@@ -44,28 +43,6 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     throw new Error('Method not implemented.');
   }
 
-  @InitFeature(FEATURE_KEY.FETCH_EXECUTION_LOGS)
-  @Get()
-  async getExecutions(
-    @Query('appVersionId') appVersionId: string,
-    @Query('page') page = '1',
-    @Query('per_page') perPage = '10',
-    @User() user
-  ): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
-  @InitFeature(FEATURE_KEY.FETCH_EXECUTION_NODES)
-  @Get(':id/nodes')
-  async getExecutionNodes(
-    @Param('id') id: string,
-    @Query('page') page = '1',
-    @Query('per_page') perPage = '10',
-    @User() user
-  ): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
   @InitFeature(FEATURE_KEY.PREVIEW_QUERY_NODE)
   @Post('previewQueryNode')
   async previewQueryNode(
@@ -73,23 +50,6 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     @Body() previewNodeDto: PreviewWorkflowNodeDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<{ result: any }> {
-    throw new Error('Method not implemented.');
-  }
-
-  @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW)
-  @Post(':id/trigger')
-  async trigger(
-    @Param('id') id: string,
-    @Body() createWorkflowExecutionDto: CreateWorkflowExecutionDto,
-    @User() user,
-    @Res({ passthrough: true }) response: Response
-  ): Promise<{ result: any }> {
-    throw new Error('Method not implemented.');
-  }
-
-  @InitFeature(FEATURE_KEY.WORKFLOW_EXECUTION_STATUS)
-  @Sse(':id/stream')
-  async streamWorkflowExecution(@Param('id') id: string): Promise<Observable<MessageEvent>> {
     throw new Error('Method not implemented.');
   }
 }

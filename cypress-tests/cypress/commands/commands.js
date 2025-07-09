@@ -239,9 +239,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -561,7 +561,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -621,7 +621,6 @@ Cypress.Commands.add("uninstallMarketplacePlugin", (pluginName) => {
 Cypress.Commands.add(
   "verifyRequiredFieldValidation",
   (fieldName, expectedColor) => {
-    cy.get(commonSelectors.textField(fieldName)).type("some text").clear();
     cy.get(commonSelectors.textField(fieldName)).should(
       "have.css",
       "border-color",

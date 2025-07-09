@@ -15,7 +15,6 @@ import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/comm
 import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
@@ -40,7 +39,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     closePopup();
   };
 
-  const workflowsEnabled = isWorkflowsFeatureEnabled();
+  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
   const staticDataSources = workflowsEnabled
     ? staticDatasources
     : staticDatasources.filter((ds) => ds?.kind !== 'workflows');

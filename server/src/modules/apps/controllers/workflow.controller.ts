@@ -9,15 +9,12 @@ import { ValidAppGuard } from '../guards/valid-app.guard';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { WorkflowService } from '../services/workflow.service';
 import { IWorkflowController } from '../interfaces/IControllerWorkflow';
-import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { FEATURE_KEY } from '../constants';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
 export class WorkflowController implements IWorkflowController {
   constructor(protected readonly workflowService: WorkflowService) {}
 
-  @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/workflows')
   async fetchWorkflows(@App() app: AppEntity) {

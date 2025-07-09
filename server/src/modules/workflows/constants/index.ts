@@ -3,8 +3,6 @@ export enum FEATURE_KEY {
   WORKFLOW_EXECUTION_STATUS = 'workflow_execution_status',
   WORKFLOW_EXECUTION_DETAILS = 'workflow_execution_details',
   LIST_WORKFLOW_EXECUTIONS = 'list_workflow_executions',
-  FETCH_EXECUTION_LOGS = 'fetch_execution_logs',
-  FETCH_EXECUTION_NODES = 'fetch_execution_nodes',
   PREVIEW_QUERY_NODE = 'preview_query_node',
 
   CREATE_WORKFLOW_SCHEDULE = 'create_workflow_schedule',

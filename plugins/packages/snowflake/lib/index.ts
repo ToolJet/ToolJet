@@ -3,8 +3,7 @@ import {
   QueryResult,
   QueryService,
   ConnectionTestResult,
-  cacheConnectionWithConfiguration,
-  generateSourceOptionsHash,
+  cacheConnection,
   getCachedConnection,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
@@ -94,15 +93,13 @@ export default class Snowflake implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<any> {
     if (checkCache) {
-      const optionsHash = generateSourceOptionsHash(sourceOptions);
-      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
-      let connection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
+      let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
 
       if (connection && (await connection.isValidAsync())) {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
+        await cacheConnection(dataSourceId, connection);
         return connection;
       }
     } else {

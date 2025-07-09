@@ -21,7 +21,6 @@ import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { OrganizationConstantsUtilService } from '@modules/organization-constants/util.service';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
-import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -32,8 +31,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly encryptionService: EncryptionService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
-    protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly inMemoryCacheService: InMemoryCacheService
+    protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService
   ) {}
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -105,25 +103,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
       for (const option of optionsWithOauth) {
         if (option['encrypted']) {
-          if (option['workspace_constant']) {
-            const credential = await this.credentialService.create(option['workspace_constant'], entityManager);
+          const credential = await this.credentialService.create(
+            resetSecureData ? '' : option['value'] || '',
+            entityManager
+          );
 
-            parsedOptions[option['key']] = {
-              credential_id: credential.id,
-              workspace_constant: option['workspace_constant'],
-              encrypted: option['encrypted'],
-            };
-          } else {
-            const credential = await this.credentialService.create(
-              resetSecureData ? '' : option['value'] || '',
-              entityManager
-            );
-
-            parsedOptions[option['key']] = {
-              credential_id: credential.id,
-              encrypted: option['encrypted'],
-            };
-          }
+          parsedOptions[option['key']] = {
+            credential_id: credential.id,
+            encrypted: option['encrypted'],
+          };
         } else {
           parsedOptions[option['key']] = {
             value: option['value'],
@@ -147,17 +135,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const queryService = await this.pluginsServiceSelector.getService(plugin_id, provider);
 
       // const queryService = new allPlugins[provider]();
-      let accessDetailsPromise: Promise<any>;
-
-      const cacheKey = `${provider}_${authCode}`;
-
-      if (this.inMemoryCacheService.has(cacheKey)) {
-        accessDetailsPromise = this.inMemoryCacheService.get(cacheKey);
-      } else {
-        accessDetailsPromise = queryService.accessDetailsFrom(authCode, options, resetSecureData);
-        this.inMemoryCacheService.set(cacheKey, accessDetailsPromise);
-      }
-      const accessDetails = await accessDetailsPromise;
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options, resetSecureData);
 
       for (const row of accessDetails) {
         const option = {};
@@ -187,58 +165,52 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       throw new BadRequestException('Cannot update configuration of sample data source');
     }
 
-    try {
-      await dbTransactionWrap(async (manager: EntityManager) => {
-        const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
-          LICENSE_FIELD.MULTI_ENVIRONMENT,
-          organizationId
-        );
-        const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
-        // if datasource is restapi then reset the token data
-        if (dataSource.kind === 'restapi')
-          options.push({
-            key: 'tokenData',
-            value: undefined,
-            encrypted: false,
-          });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+      const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
 
-        if (isMultiEnvEnabled) {
+      // if datasource is restapi then reset the token data
+      if (dataSource.kind === 'restapi')
+        options.push({
+          key: 'tokenData',
+          value: undefined,
+          encrypted: false,
+        });
+
+      if (isMultiEnvEnabled) {
+        dataSource.options = (
+          await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+        ).options;
+
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
+        await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+      } else {
+        const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
+        /* 
+          Basic plan customer. lets update all environment options. 
+          this will help us to run the queries successfully when the user buys enterprise plan 
+          */
+
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
+        for (const env of allEnvs) {
           dataSource.options = (
-            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
           ).options;
 
-          const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
-          await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
-        } else {
-          const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
-          /* 
-            Basic plan customer. lets update all environment options. 
-            this will help us to run the queries successfully when the user buys enterprise plan 
-            */
-
-          for (const env of allEnvs) {
-            dataSource.options = (
-              await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
-            ).options;
-            const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
-
-            await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
-          }
+          await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
         }
-        const updatableParams = {
-          id: dataSourceId,
-          name,
-          updatedAt: new Date(),
-        };
+      }
+      const updatableParams = {
+        id: dataSourceId,
+        name,
+        updatedAt: new Date(),
+      };
 
-        // Remove keys with undefined values
-        cleanObject(updatableParams);
+      // Remove keys with undefined values
+      cleanObject(updatableParams);
 
-        await manager.save(DataSource, updatableParams);
-      });
-    } finally {
-      this.inMemoryCacheService.clear();
-    }
+      await manager.save(DataSource, updatableParams);
+    });
   }
 
   async decrypt(options: Record<string, any>) {
@@ -261,67 +233,33 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
     const parsedOptions = {};
-
-    if (dataSource?.options) {
-      for (const key in dataSource.options) {
-        if (dataSource.options[key]?.workspace_constant) {
-          parsedOptions[key] = {
-            workspace_constant: dataSource.options[key].workspace_constant,
-            credential_id: dataSource.options[key].credential_id,
-            encrypted: dataSource.options[key].encrypted,
-          };
-        }
-      }
-    }
-
     return await dbTransactionWrap(async (entityManager: EntityManager) => {
       for (const option of optionsWithOauth) {
-        const key = option['key'];
-        const credentialValue = option['value'];
-
         if (option['encrypted']) {
           const existingCredentialId =
-            dataSource?.options && dataSource.options[key] && dataSource.options[key]['credential_id'];
-
-          if (credentialValue && (credentialValue.includes('{{constants') || credentialValue.includes('{{secrets'))) {
-            if (!parsedOptions[key]) {
-              parsedOptions[key] = {};
-            }
-            parsedOptions[key].workspace_constant = credentialValue;
-          } else {
-            if (
-              existingCredentialId &&
-              credentialValue !== undefined &&
-              credentialValue !== (await this.credentialService.getValue(existingCredentialId))
-            ) {
-              if (parsedOptions[key]) {
-                delete parsedOptions[key].workspace_constant;
-              }
-            }
-          }
+            dataSource?.options &&
+            dataSource.options[option['key']] &&
+            dataSource.options[option['key']]['credential_id'];
 
           if (existingCredentialId) {
-            if (credentialValue !== undefined) {
-              await this.credentialService.update(existingCredentialId, credentialValue || '');
-            }
+            (option['value'] || option['value'] === '') &&
+              (await this.credentialService.update(existingCredentialId, option['value'] || ''));
 
-            if (!parsedOptions[key]) {
-              parsedOptions[key] = {};
-            }
-            parsedOptions[key].credential_id = existingCredentialId;
-            parsedOptions[key].encrypted = option['encrypted'];
+            parsedOptions[option['key']] = {
+              credential_id: existingCredentialId,
+              encrypted: option['encrypted'],
+            };
           } else {
-            const credential = await this.credentialService.create(credentialValue || '', entityManager);
+            const credential = await this.credentialService.create(option['value'] || '', entityManager);
 
-            if (!parsedOptions[key]) {
-              parsedOptions[key] = {};
-            }
-            parsedOptions[key].credential_id = credential.id;
-            parsedOptions[key].encrypted = option['encrypted'];
+            parsedOptions[option['key']] = {
+              credential_id: credential.id,
+              encrypted: option['encrypted'],
+            };
           }
         } else {
-          parsedOptions[key] = {
-            value: credentialValue,
+          parsedOptions[option['key']] = {
+            value: option['value'],
             encrypted: false,
           };
         }
@@ -474,7 +412,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const credentialId = parsedOptions[key]?.['credential_id'];
         if (credentialId) {
           const encryptedKeyValue = await this.credentialService.getValue(credentialId);
-          constantMatcher.lastIndex = 0;
 
           //check if encrypted key value is a constant
           if (constantMatcher.test(encryptedKeyValue)) {
@@ -548,10 +485,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
-      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
-        LICENSE_FIELD.MULTI_ENVIRONMENT,
-        organizationId
-      );
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT,organizationId);
 
       if (isMultiEnvEnabled) {
         await this.appEnvironmentUtilService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
@@ -647,7 +581,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     let errorObj = {};
     try {
       errorObj = JSON.parse(error);
-    } catch (error) {
+    } catch (err) {
       errorObj['error_details'] = error;
     }
 
@@ -678,7 +612,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     for (const key of Object.keys(options)) {
       const currentOption = options[key]?.['value'];
-      constantMatcher.lastIndex = 0;
 
       //! request options are nested arrays with constants and variables
       if (Array.isArray(currentOption)) {
@@ -757,9 +690,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (existingAccessTokenCredentialId) {
       await this.credentialService.update(existingAccessTokenCredentialId, accessTokenDetails['access_token']);
 
-      if (existingRefreshTokenCredentialId && accessTokenDetails['refresh_token']) {
-        await this.credentialService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']);
-      }
+      existingRefreshTokenCredentialId &&
+        accessTokenDetails['refresh_token'] &&
+        (await this.credentialService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']));
     } else if (dataSourceId) {
       const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
       const updatedTokenData = this.changeCurrentToken(

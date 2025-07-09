@@ -530,24 +530,58 @@ export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
   return draggingWidgetWidth;
 };
 
-export const positionDragGhostWidget = (draggedElement) => {
-  const ghostElement = document.getElementById('moveable-drag-ghost');
+/**
+ * Positions a ghost/feedback element relative to the main canvas
+ * @param {HTMLElement} targetElement - The element being dragged/resized
+ * @param {string} ghostElementId - The ID of the ghost element to position
+ * @param {Object} options - Additional positioning options
+ * @param {boolean} options.includeSize - Whether to update width/height of ghost element
+ */
+export const positionGhostElement = (targetElement, ghostElementId) => {
+  const ghostElement = document.getElementById(ghostElementId);
 
-  if (!ghostElement || !draggedElement) return;
+  if (!ghostElement || !targetElement) return;
 
   const mainCanvas = document.getElementById('real-canvas');
   if (!mainCanvas) return;
 
   const mainCanvasRect = mainCanvas.getBoundingClientRect();
-  const draggedRect = draggedElement.getBoundingClientRect();
+  const targetRect = targetElement.getBoundingClientRect();
 
   // Calculate position relative to main canvas
-  const relativeLeft = draggedRect.left - mainCanvasRect.left;
-  const relativeTop = draggedRect.top - mainCanvasRect.top;
+  const relativeLeft = targetRect.left - mainCanvasRect.left;
+  const relativeTop = targetRect.top - mainCanvasRect.top;
 
   // Apply the position
   ghostElement.style.left = `${relativeLeft}px`;
   ghostElement.style.top = `${relativeTop}px`;
-  ghostElement.style.width = `${draggedRect.width}px`;
-  ghostElement.style.height = `${draggedRect.height}px`;
+  ghostElement.style.width = `${targetRect.width}px`;
+  ghostElement.style.height = `${targetRect.height}px`;
+};
+
+
+/**
+ * Finds the new parent ID based on the current mouse position during drag operations
+ * @param {number} clientX - The X coordinate of the mouse position
+ * @param {number} clientY - The Y coordinate of the mouse position
+ * @param {string} currentTargetId - The ID of the currently dragged element to exclude from search
+ * @returns {string|null} - The new parent ID or null if no valid parent is found
+ */
+export const findNewParentIdFromMousePosition = (clientX, clientY, currentTargetId) => {
+  if (!document.elementFromPoint(clientX, clientY)) {
+    return null;
+  }
+
+  const targetElems = document.elementsFromPoint(clientX, clientY);
+  const draggedOverElements = targetElems.filter(
+    (ele) => (ele.id !== currentTargetId && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
+  );
+
+  const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
+  const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
+
+  // Determine potential new parent
+  const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+
+  return newParentId || null;
 };

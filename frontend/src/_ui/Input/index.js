@@ -5,21 +5,20 @@ import SolidIcon from '../Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
 
 const Input = ({ helpText, onBlur, ...props }) => {
-  const { workspaceVariables, workspaceConstants, value, type, disabled, encrypted, isWorkspaceConstant } = props;
+  const { workspaceVariables, workspaceConstants, value, type, disabled, encrypted } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const inputType = type === 'password' || encrypted ? (showPassword ? 'text' : 'password') : type;
-  const iconType = showPassword ? 'eye' : 'eyedisable';
-
-  useEffect(() => {
-    if (isWorkspaceConstant) {
-      setShowPassword(true);
-    }
-  }, [isWorkspaceConstant]);
+  const [showPasswordProps, setShowPasswordProps] = useState({
+    inputType: type,
+    iconType: 'eyedisable',
+  });
 
   const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
+    if (inputType !== 'text') {
+      setShowPasswordProps({ inputType: 'text', iconType: 'eye' });
+    } else {
+      setShowPasswordProps({ inputType: 'password', iconType: 'eyedisable' });
+    }
   };
 
   const handleCopyToClipboard = async () => {
@@ -37,6 +36,12 @@ const Input = ({ helpText, onBlur, ...props }) => {
     }
   };
 
+  useEffect(() => {
+    if (disabled && encrypted) setShowPasswordProps({ inputType: 'password', iconType: 'eyedisable' });
+  }, [disabled]);
+
+  const { inputType, iconType } = showPasswordProps;
+
   return (
     <div className="tj-app-input">
       <div
@@ -52,10 +57,8 @@ const Input = ({ helpText, onBlur, ...props }) => {
           }}
         />
         {(type === 'password' || encrypted) && (
-          <div
-            onClick={!disabled ? toggleShowPassword : undefined}
-            style={{ cursor: !disabled ? 'pointer' : 'default' }}
-          >
+          <div onClick={!disabled && toggleShowPassword}>
+            {' '}
             <SolidIcon className="eye-icon" name={iconType} />
           </div>
         )}
@@ -63,10 +66,12 @@ const Input = ({ helpText, onBlur, ...props }) => {
           value &&
           (!isCopied ? (
             <div style={{ cursor: 'pointer' }} onClick={handleCopyToClipboard}>
+              {' '}
               <SolidIcon className="copy-icon" name="copy" />
             </div>
           ) : (
             <div style={{ color: 'green' }}>
+              {' '}
               <span>Copied!</span>
             </div>
           ))}

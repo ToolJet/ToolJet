@@ -4,13 +4,11 @@ import { QueryService, QueryResult, QueryError } from '@tooljet/plugins/dist/pac
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
 import { isEmpty } from 'lodash';
 import { maybeSetSubPath } from 'src/helpers/utils.helper';
-
 import { AST, Parser } from 'node-sql-parser/build/postgresql';
 import {
   createTooljetDatabaseConnection,
   decryptTooljetDatabasePassword,
   findTenantSchema,
-  isSQLModeDisabled,
   modifyTjdbErrorObject,
 } from 'src/helpers/tooljet_db.helper';
 import { EntityManager, In, QueryFailedError } from 'typeorm';
@@ -171,10 +169,10 @@ export class TooljetDbDataOperationsService implements QueryService {
           );
           if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
         }
-        if (!isEmpty(whereQuery)) query.push(whereQuery);
-        if (!isEmpty(orderQuery)) query.push(orderQuery);
-        if (!isEmpty(limit)) query.push(`limit=${limit}`);
-        if (!isEmpty(offset)) query.push(`offset=${offset}`);
+        !isEmpty(whereQuery) && query.push(whereQuery);
+        !isEmpty(orderQuery) && query.push(orderQuery);
+        !isEmpty(limit) && query.push(`limit=${limit}`);
+        !isEmpty(offset) && query.push(`offset=${offset}`);
       }
 
       const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
@@ -220,7 +218,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       return Object.assign(acc, { [colOpts.column]: colOpts.value });
     }, {});
 
-    if (!isEmpty(whereQuery)) query.push(whereQuery);
+    !isEmpty(whereQuery) && query.push(whereQuery);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
@@ -253,8 +251,8 @@ export class TooljetDbDataOperationsService implements QueryService {
       throw new QueryError('An incorrect limit value.', 'Limit should be a valid integer', {});
     }
 
-    if (!isEmpty(whereQuery)) query.push(whereQuery);
-    if (limit && limit !== '') query.push(`limit=${limit}&order=id`);
+    !isEmpty(whereQuery) && query.push(whereQuery);
+    limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
@@ -327,7 +325,7 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   async sqlExecution(queryOptions, context): Promise<QueryResult> {
-    if (isSQLModeDisabled())
+    if (this.configService.get<string>('TJDB_SQL_MODE_DISABLE') === 'true')
       throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
 
     const { organization_id: organizationId } = context.app;

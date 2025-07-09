@@ -1,9 +1,8 @@
 import React, { memo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
+import { ResizeGhostWidget } from './GhostWidgets';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
-import { useGridStore } from '@/_stores/gridStore';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -35,7 +34,7 @@ const WidgetWrapper = memo(
     const temporaryLayouts = useStore((state) => state.temporaryLayouts?.[id], shallow);
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
-    const isResizing = useGridStore((state) => state.resizingComponentId === id);
+    const isResizing = useStore((state) => state.resizingComponentId === id);
     const componentType = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow

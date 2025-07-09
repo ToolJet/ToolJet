@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
-import useWorkflowStore from '@/_stores/workflowStore';
 
 export function Workflows({ options, optionsChanged, currentState }) {
   const { moduleId } = useModuleContext();
@@ -16,9 +15,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
 
-  const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
-  const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
-  const appId = workflowIdFromStore || appIdFromStore;
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   usePopoverObserver(
     document.getElementsByClassName('query-details')[0],
