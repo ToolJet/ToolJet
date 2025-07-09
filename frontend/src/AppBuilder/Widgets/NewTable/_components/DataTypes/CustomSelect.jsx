@@ -36,7 +36,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
     <div
       className="table-select-custom-menu-list"
       onClick={(e) => e.stopPropagation()}
-      style={{ 
+      style={{
         backgroundColor: 'var(--cc-surface1-surface)',
         border: '1px solid var(--cc-default-border)',
       }}
@@ -382,16 +382,18 @@ export const CustomSelectColumn = ({
             optionColors={optionColors}
           />
         </div>
-        <div
-          onClick={() => {
-            if (!isValid) {
-              setIsFocused(true); // Open the dropdown
-            }
-          }}
-          className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}
-        >
-          {validationError}
-        </div>
+        {isEditable && !isValid && (
+          <div
+            onClick={() => {
+              if (!isValid) {
+                setIsFocused(true); // Open the dropdown
+              }
+            }}
+            className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}
+          >
+            {validationError}
+          </div>
+        )}
       </>
     </OverlayTrigger>
   );
