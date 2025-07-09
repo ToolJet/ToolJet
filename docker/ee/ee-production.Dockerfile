@@ -24,8 +24,15 @@ RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
-# Checkout the same branch in submodules if it exists, otherwise stay on default branch
-RUN git submodule foreach 'git checkout ${BRANCH_NAME} || true'
+# Checkout the same branch in submodules if it exists, otherwise fallback to main
+RUN git submodule foreach " \
+  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    git checkout ${BRANCH_NAME}; \
+  else \
+    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+    git checkout main; \
+  fi"
 
 # Scripts for building
 COPY ./package.json ./package.json
