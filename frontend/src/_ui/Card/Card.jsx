@@ -11,6 +11,7 @@ const Card = ({
   width = 50,
   usePluginIcon = false,
   className,
+  cardClassName,
   titleClassName,
   actionButton,
   darkMode,
@@ -37,7 +38,7 @@ const Card = ({
   return (
     <div style={{ height: '112px', width: '164px' }} className={`col-md-2  mb-4 ${className}`}>
       <div
-        className="card"
+        className={`card ${cardClassName}`}
         role="button"
         onClick={(e) => {
           e.preventDefault();

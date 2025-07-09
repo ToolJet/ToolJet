@@ -44,7 +44,9 @@ export class WorkflowsModule extends SubModule {
       WorkflowSchedulesService,
       TemporalService,
       WorkflowWebhooksListener,
+      WorkflowTriggersListener,
       FeatureAbilityFactory,
+      WorkflowStreamService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -55,7 +57,9 @@ export class WorkflowsModule extends SubModule {
       'services/workflow-schedules.service',
       'services/temporal.service',
       'listeners/workflow-webhooks.listener',
+      'listeners/workflow-triggers.listener',
       'ability/app',
+      'services/workflow-stream.service',
     ]);
 
     // Get apps related providers
@@ -126,6 +130,8 @@ export class WorkflowsModule extends SubModule {
         PageService,
         EventsService,
         WorkflowExecutionsService,
+        WorkflowStreamService,
+        WorkflowTriggersListener,
         WorkflowWebhooksListener,
         WorkflowWebhooksService,
         OrganizationConstantsService,
