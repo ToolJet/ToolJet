@@ -88,6 +88,12 @@
       "type": "string",
       "title": "Root cert",
       "description": "Enter root certificate"
+    },
+    "allow_dynamic_connection_parameters": {
+      "type": "boolean",
+      "title": "Allow dynamic connection parameters",
+      "description": "Turning this on will allow dynamically setting host name and database from application",
+      "default": false
     }
   },
   "tj:encrypted": [
@@ -226,6 +232,13 @@
               "description": "Name of the database",
               "widget": "text-v3",
               "required": true
+            },
+            "allow_dynamic_connection_parameters": {
+              "$ref": "#/properties/allow_dynamic_connection_parameters",
+              "key": "allow_dynamic_connection_parameters",
+              "label": "Allow dynamic connection parameters",
+              "description": "Turning this on will allow dynamically setting host name and database from application",
+              "widget": "toggle"
             }
           }
         },

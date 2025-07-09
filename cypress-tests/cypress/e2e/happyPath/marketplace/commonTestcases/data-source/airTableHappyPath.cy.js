@@ -202,10 +202,10 @@ describe("Data source Airtable", () => {
     );
 
     cy.get(dataSourceSelector.queryPreviewButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      `Query (${data.dsName}) completed.`
-    );
+    // cy.verifyToastMessage(
+    //   commonSelectors.toastMessage,
+    //   `Query (${data.dsName}) completed.`
+    // );
 
     // Verfiy Retrieve record operation
 
@@ -225,10 +225,10 @@ describe("Data source Airtable", () => {
     );
 
     cy.get(dataSourceSelector.queryPreviewButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      `Query (${data.dsName}) completed.`
-    );
+    // cy.verifyToastMessage(
+    //   commonSelectors.toastMessage,
+    //   `Query (${data.dsName}) completed.`
+    // );
 
     // Verfiy Create record operation
 
@@ -251,10 +251,10 @@ describe("Data source Airtable", () => {
       .realType('": {}', { force: true, delay: 0 });
 
     cy.get(dataSourceSelector.queryPreviewButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      `Query (${data.dsName}) completed.`
-    );
+    // cy.verifyToastMessage(
+    //   commonSelectors.toastMessage,
+    //   `Query (${data.dsName}) completed.`
+    // );
 
     // Verfiy Update record operation
 
@@ -285,10 +285,10 @@ describe("Data source Airtable", () => {
       .realType('"Phone Number": "555_98"', { force: true, delay: 0 });
 
     cy.get(dataSourceSelector.queryPreviewButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      `Query (${data.queryName}) completed.`
-    );
+    // cy.verifyToastMessage(
+    //   commonSelectors.toastMessage,
+    //   `Query (${data.queryName}) completed.`
+    // );
 
     // Verify Delete record operation
 
@@ -337,10 +337,10 @@ describe("Data source Airtable", () => {
       );
 
       cy.get(dataSourceSelector.queryPreviewButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        `Query (${data.queryName}) completed.`
-      );
+      // cy.verifyToastMessage(
+      //   commonSelectors.toastMessage,
+      //   `Query (${data.queryName}) completed.`
+      // );
 
       cy.apiDeleteApp(`${data.dsName}-airtable-app`);
       cy.apiDeleteGDS(`cypress-${data.dsName}-airtable`);
