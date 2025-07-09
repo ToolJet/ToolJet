@@ -72,8 +72,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.TOKEN_PR }}
-          commit-message: "🔄 chore: update submodules to latest main after auto-merge"
-          title: "🔄 chore: update submodules"
+          commit-message: "🚀 chore: update submodules to latest main after auto-merge"
+          title: "🚀 chore: update submodules"
           body: "Auto-generated PR to update submodules after base PR merge"
           branch: auto/update-submodules-${{ github.run_id }}
           base: main
