@@ -47,7 +47,6 @@ jobs:
       - name: Checkout base repo
         uses: actions/checkout@v4
         with:
-          repository: ToolJet/ToolJet
           token: ${{ secrets.TOKEN_PR }}
           ref: main
           submodules: recursive
@@ -63,13 +62,30 @@ jobs:
           git add frontend/ee server/ee
 
           if git diff --cached --quiet; then
-            echo "No submodule updates found."
-          else
-            git commit -m "🔄 chore: update submodules to latest main after auto-merge"
-            git push origin main
+            echo "No submodule updates found." && exit 0
           fi
         env:
-          GH_TOKEN: ${{ secrets.TOKEN_PR }}          
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+
+      - name: Create PR for submodule update
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.TOKEN_PR }}
+          commit-message: "🚀 chore: update submodules to latest main after auto-merge"
+          title: "🚀 chore: update submodules"
+          body: "Auto-generated PR to update submodules after base PR merge"
+          branch: auto/update-submodules-${{ github.run_id }}
+          base: main
+
+      - name: Auto-merge PR
+        if: steps.cpr.outputs.pull-request-number != ''
+        run: |
+          echo "Merging submodule update PR #${PR_NUMBER}"
+          gh pr merge --squash --admin "$PR_NUMBER" --repo ToolJet/ToolJet
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
 
   check-submodule-prs:
     if: github.event.action == 'labeled' && github.event.label.name == 'ready-to-merge'
