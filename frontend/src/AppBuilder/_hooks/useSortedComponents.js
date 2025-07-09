@@ -22,15 +22,23 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
   const sortedComponents = useMemo(() => {
     const { triggerUpdate, shouldReorder } = reorderContainerChildren;
 
-    // If this container is not the target of the reorder, return cached order
-    if (!shouldReorder) {
-      return prevComponentsOrder.current;
-    }
+    // Always recalculate if components array has changed (new component added/removed)
+    const componentsChanged =
+      prevComponentsOrder.current.length !== components.length ||
+      !components.every((comp) => prevComponentsOrder.current.includes(comp));
 
     // If a forced update occurred for this container, recalculate order
     const isForcedUpdate = prevForceUpdateRef.current !== triggerUpdate;
     if (isForcedUpdate) {
       prevForceUpdateRef.current = triggerUpdate;
+    }
+
+    // Skip recalculation only if:
+    // 1. This container is not the target of reorder
+    // 2. Components haven't changed
+    // 3. No forced update occurred
+    if (!shouldReorder && !componentsChanged && !isForcedUpdate) {
+      return prevComponentsOrder.current;
     }
 
     const currentPageComponents = getCurrentPageComponents();
