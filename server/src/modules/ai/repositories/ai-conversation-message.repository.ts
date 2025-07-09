@@ -18,7 +18,7 @@ export class AiConversationMessageRepository extends Repository<AiConversationMe
       order: {
         createdAt: 'ASC',
       },
-      relations: ['aiResponseVote'],
+      relations: ['aiResponseVote', 'artifacts'],
     });
   }
 

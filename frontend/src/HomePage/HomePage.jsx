@@ -264,19 +264,21 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName) => {
+  createApp = async (appName, type, prompt) => {
     let _self = this;
     _self.setState({ creatingApp: true });
-
     try {
       const data = await appsService.createApp({
         icon: sample(iconList),
         name: appName,
         type: this.props.appType,
+        prompt,
       });
       const workspaceId = getWorkspaceId();
-      _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
-      toast.success(`${this.getAppType()} created successfully!`);
+      _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
+        state: { commitEnabled: this.state.commitEnabled, prompt },
+      });
+      this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
@@ -476,7 +478,7 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
+        ({ installedPluginsInfo =[] } = await pluginsService.installDependentPlugins(
           this.state.dependentPlugins,
           true
         ));
@@ -484,8 +486,7 @@ class HomePageComponent extends React.Component {
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
-            this.props.appType === 'module' ? 'modules' : 'apps'
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${this.props.appType === 'module' ? 'modules' : 'apps'
           } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
           { style: { maxWidth: '425px' } }
         );
@@ -1223,9 +1224,8 @@ class HomePageComponent extends React.Component {
 
               <div className="groups-list">
                 <div
-                  className={`border rounded text-sm container ${
-                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
-                  }`}
+                  className={`border rounded text-sm container ${missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                    }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
                     User groups
@@ -1301,8 +1301,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
-                : deleteModuleText,
+                  ? 'homePage.deleteAppAndData'
+                  : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1567,11 +1567,10 @@ class HomePageComponent extends React.Component {
                             {this.props.appType === 'module'
                               ? 'Create new module'
                               : this.props.t(
-                                  `${
-                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                  }.header.createNewApplication`,
-                                  'Create new app'
-                                )}
+                                `${this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                }.header.createNewApplication`,
+                                'Create new app'
+                              )}
                           </>
                         </Button>
                         <Dropdown.Toggle
@@ -1632,8 +1631,8 @@ class HomePageComponent extends React.Component {
                       classes="mb-3 small"
                       limits={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1652,12 +1651,7 @@ class HomePageComponent extends React.Component {
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>
 
-            <div
-              className={cx('col home-page-content', {
-                'bg-light-gray': !this.props.darkMode,
-              })}
-              data-cy="home-page-content"
-            >
+            <div className={cx('col home-page-content')} data-cy="home-page-content">
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
@@ -1684,15 +1678,12 @@ class HomePageComponent extends React.Component {
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     {!(isLoading && !appSearchKey) && (
-                      <>
-                        <HomeHeader
-                          onSearchSubmit={this.onSearchSubmit}
-                          darkMode={this.props.darkMode}
-                          appType={this.props.appType}
-                          disabled={this.props.appType === 'module' && invalidLicense}
-                        />
-                        <div className="liner"></div>
-                      </>
+                      <HomeHeader
+                        onSearchSubmit={this.onSearchSubmit}
+                        darkMode={this.props.darkMode}
+                        appType={this.props.appType}
+                        disabled={this.props.appType === 'module' && invalidLicense}
+                      />
                     )}
                     <div className="filter-container">
                       <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
@@ -1740,8 +1731,8 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }

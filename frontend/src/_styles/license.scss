@@ -6,16 +6,17 @@
         width: 880px;
         margin: auto;
         border-radius: 6px;
+        border: 1px solid var(--border-weak);
 
         .body-wrapper {
-            border: 1px solid var(--slate5);
+            height: 100%;
             min-height: 620px;
         }
 
         .license-page-sidebar {
             max-width: 220px;
-            background-color: var(--base);
-            border-right: 1px solid var(--slate5) !important;
+            background-color: var(--surfaces-surface-01);
+            border-right: 1px solid var(--border-weak) !important;
             display: grid !important;
             grid-template-rows: auto 1fr auto !important;
 
@@ -29,7 +30,7 @@
         }
 
         .license-content-wrapper {
-            background-color: var(--base);
+            background-color: var(--surfaces-surface-01);
 
             .groups-sub-header-wrap {
                 width: 100%;
@@ -253,11 +254,10 @@
             .license-header-wrap {
                 display: flex;
                 justify-content: space-between;
-                padding-right: 40px;
-                padding-left: 20px;
+                padding: 24px 40px 16px;
                 align-items: center;
                 height: unset !important;
-                background-color: var(--base);
+                background-color: var(--surfaces-surface-01);
 
                 .status-container {
                     border-radius: 20px;
@@ -599,9 +599,9 @@
     align-items: center;
     align-self: stretch;
     border-radius: 8px;
-    background-color: #FFFFFF;
-    border: 1px solid var(--upgrade-weak, #FFAF4140);
-    box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0px 1px 1px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
+    background-color: var(--surfaces-surface-01);
+    border: 1px solid var(--border-weak, #FFAF4140);
+    box-shadow: var(--elevation-000-box-shadow);
 
     .license-loader {
         justify-content: center;
@@ -796,7 +796,7 @@
 }
 
 .license-error-modal {
-    background-color: var(--base);
+    background-color: var(--surfaces-surface-01);
 
     .modal-header {
         background-color: var(--slate3) !important;
@@ -859,7 +859,7 @@
     width: 100%;
     height: 88px;
     border-top: 1px solid var(--slate5) !important;
-    background: var(--base);
+    background: var(--surfaces-surface-01);
     margin-top: 0px !important;
 }
 

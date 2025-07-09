@@ -6,7 +6,7 @@ import { AppUpdateDto } from '../dto';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppBase } from '@entities/app_base.entity';
 export interface IAppsUtilService {
-  create(name: string, user: User, type: string, manager: EntityManager): Promise<App>;
+  create(name: string, user: User, type: string,  isInitialisedFromPrompt: boolean, manager: EntityManager): Promise<App>;
   findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App>;
   validateVersionEnvironment(
     environmentName: string,

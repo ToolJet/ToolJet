@@ -202,7 +202,7 @@ export default function AppCard({
       placement="bottom"
       show={appType === 'module' && props.basicPlan}
     >
-      <div className="card homepage-app-card" ref={cardRef}>
+      <div className="card homepage-app-card card--clickable" ref={cardRef}>
         <div
           className={appType === 'module' && props.basicPlan ? 'disabled-module' : ''}
           key={app?.id}
