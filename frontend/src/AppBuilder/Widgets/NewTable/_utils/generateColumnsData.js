@@ -85,7 +85,7 @@ export default function generateColumnsData({
 
       // Handle disabled dates
       const disabledDates = getResolvedValue(column.disabledDates);
-
+      const parseInUnixTimestamp = getResolvedValue(column.parseInUnixTimestamp);
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
@@ -306,6 +306,8 @@ export default function generateColumnsData({
                   column={column}
                   isEditable={isEditable}
                   disabledDates={disabledDates}
+                  parseInUnixTimestamp={parseInUnixTimestamp}
+                  unixTimestamp={column.unixTimestamp}
                   id={id}
                 />
               );
