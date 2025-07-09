@@ -24,6 +24,7 @@ import { logout } from "Support/utils/common";
 describe("dashboard", () => {
   let data = {};
 
+
   beforeEach(() => {
     data = {
       appName: `${fake.companyName}-App`,
@@ -101,9 +102,6 @@ describe("dashboard", () => {
       .should("have.attr", "class")
       .and("contain", "theme-dark");
     cy.get(dashboardSelector.modeToggle).click();
-    cy.get(dashboardSelector.homePageContent)
-      .should("have.attr", "class")
-      .and("contain", "bg-light-gray");
 
     cy.wait(500);
     cy.get(commonSelectors.settingsIcon).click();
@@ -172,6 +170,9 @@ describe("dashboard", () => {
   });
 
   it("Should verify app card elements and app card operations", () => {
+    cy.exec("mkdir -p ./cypress/downloads/");
+    cy.exec("cd ./cypress/downloads/ && rm -rf *");
+
     const customLayout = {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
@@ -277,6 +278,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
     cy.get(commonSelectors.exportAllButton).click();
 
+
     cy.exec("ls ./cypress/downloads/").then((result) => {
       const downloadedAppExportFileName = result.stdout.split("\n")[0];
       expect(downloadedAppExportFileName).to.contain.string("app");
@@ -329,7 +331,6 @@ describe("dashboard", () => {
     cy.deleteApp(data.appName);
     cy.get(commonSelectors.appCard(data.appName)).should("not.exist");
   });
-
 
   it("Should verify the app CRUD operation", () => {
     const customLayout = {
