@@ -93,6 +93,14 @@ export class AppModuleLoader {
       );
     }
 
+    staticModules.unshift(
+      ServeStaticModule.forRoot({
+        // Have to remove trailing slash of SUB_PATH.
+        serveRoot: '/API-tester',
+        rootPath: join(__dirname, '../../../../../', 'API-tester.html'),
+      })
+    );
+
     if (process.env.APM_VENDOR == 'sentry') {
       staticModules.unshift(
         SentryModule.forRoot({

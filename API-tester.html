@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Request Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .method-group {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .response-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .response-body {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .headers-section {
+            margin-top: 15px;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .add-header-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 API Request Tool</h1>
+        
+        <div class="form-group">
+            <label for="curlInput">📋 Paste cURL Command (Optional)</label>
+            <textarea id="curlInput" placeholder="curl -X POST https://api.example.com/data -H 'Content-Type: application/json' -d '{&quot;key&quot;: &quot;value&quot;}'"></textarea>
+            <button type="button" class="add-header-btn" onclick="parseCurl()" style="margin-top: 10px;">Parse cURL Command</button>
+        </div>
+
+        <form id="apiForm">
+            <div class="method-group">
+                <div class="form-group">
+                    <label for="method">HTTP Method</label>
+                    <select id="method" name="method">
+                        <option value="GET">GET</option>
+                        <option value="POST" selected>POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="url">API URL</label>
+                    <input type="url" id="url" name="url" placeholder="https://api.example.com/endpoint" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="headers">Custom Headers</label>
+                <div id="headersContainer">
+                    <div class="header-row">
+                        <input type="text" placeholder="Header Name" class="header-name">
+                        <input type="text" placeholder="Header Value" class="header-value">
+                        <button type="button" class="remove-btn" onclick="removeHeader(this)">×</button>
+                    </div>
+                </div>
+                <button type="button" class="add-header-btn" onclick="addHeader()">+ Add Header</button>
+            </div>
+
+            <div class="form-group">
+                <label for="body">Request Body (JSON)</label>
+                <textarea id="body" name="body" placeholder='{"key": "value", "data": "your request body here"}'></textarea>
+            </div>
+
+            <button type="submit" class="btn">Send Request</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Sending request...</p>
+        </div>
+
+        <div class="response-section" id="responseSection" style="display: none;">
+            <div class="response-header">
+                <h3>Response</h3>
+                <span class="status-badge" id="statusBadge"></span>
+            </div>
+            <div class="response-body" id="responseBody"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('apiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const method = document.getElementById('method').value;
+            const url = document.getElementById('url').value;
+            const body = document.getElementById('body').value;
+            const loading = document.getElementById('loading');
+            const responseSection = document.getElementById('responseSection');
+            const responseBody = document.getElementById('responseBody');
+            const statusBadge = document.getElementById('statusBadge');
+            
+            // Collect custom headers
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            const headerRows = document.querySelectorAll('.header-row');
+            headerRows.forEach(row => {
+                const nameInput = row.querySelector('.header-name');
+                const valueInput = row.querySelector('.header-value');
+                if (nameInput.value && valueInput.value) {
+                    headers[nameInput.value] = valueInput.value;
+                }
+            });
+            
+            // Show loading
+            loading.style.display = 'block';
+            responseSection.style.display = 'none';
+            
+            try {
+                const requestOptions = {
+                    method: method,
+                    headers: headers,
+                    mode: 'cors'
+                };
+                
+                // Add body for methods that support it
+                if (method !== 'GET' && method !== 'DELETE' && body) {
+                    requestOptions.body = body;
+                }
+                
+                const response = await fetch(url, requestOptions);
+                const responseText = await response.text();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                responseSection.style.display = 'block';
+                
+                // Set status badge
+                statusBadge.textContent = `${response.status} ${response.statusText}`;
+                statusBadge.className = `status-badge ${response.ok ? 'status-success' : 'status-error'}`;
+                
+                // Format response
+                let formattedResponse = '';
+                try {
+                    const jsonResponse = JSON.parse(responseText);
+                    formattedResponse = JSON.stringify(jsonResponse, null, 2);
+                } catch {
+                    formattedResponse = responseText;
+                }
+                
+                responseBody.textContent = formattedResponse;
+                
+            } catch (error) {
+                // Hide loading
+                loading.style.display = 'none';
+                responseSection.style.display = 'block';
+                
+                // Set error status
+                statusBadge.textContent = 'Error';
+                statusBadge.className = 'status-badge status-error';
+                
+                responseBody.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        function addHeader() {
+            const container = document.getElementById('headersContainer');
+            const headerRow = document.createElement('div');
+            headerRow.className = 'header-row';
+            headerRow.innerHTML = `
+                <input type="text" placeholder="Header Name" class="header-name">
+                <input type="text" placeholder="Header Value" class="header-value">
+                <button type="button" class="remove-btn" onclick="removeHeader(this)">×</button>
+            `;
+            container.appendChild(headerRow);
+        }
+
+        function removeHeader(button) {
+            const headerRow = button.parentNode;
+            headerRow.remove();
+        }
+
+        function parseCurl() {
+            const curlInput = document.getElementById('curlInput').value.trim();
+            if (!curlInput) {
+                alert('Please paste a cURL command first');
+                return;
+            }
+
+            try {
+                // Clear existing headers except the default one
+                const headersContainer = document.getElementById('headersContainer');
+                headersContainer.innerHTML = `
+                    <div class="header-row">
+                        <input type="text" placeholder="Header Name" class="header-name">
+                        <input type="text" placeholder="Header Value" class="header-value">
+                        <button type="button" class="remove-btn" onclick="removeHeader(this)">×</button>
+                    </div>
+                `;
+
+                // Parse the curl command
+                const parsed = parseCurlCommand(curlInput);
+                
+                // Set method
+                document.getElementById('method').value = parsed.method || 'GET';
+                
+                // Set URL
+                document.getElementById('url').value = parsed.url || '';
+                
+                // Set headers
+                if (parsed.headers && Object.keys(parsed.headers).length > 0) {
+                    // Remove the default empty header row
+                    headersContainer.innerHTML = '';
+                    
+                    Object.entries(parsed.headers).forEach(([name, value]) => {
+                        const headerRow = document.createElement('div');
+                        headerRow.className = 'header-row';
+                        headerRow.innerHTML = `
+                            <input type="text" placeholder="Header Name" class="header-name" value="${name}">
+                            <input type="text" placeholder="Header Value" class="header-value" value="${value}">
+                            <button type="button" class="remove-btn" onclick="removeHeader(this)">×</button>
+                        `;
+                        headersContainer.appendChild(headerRow);
+                    });
+                }
+                
+                // Set body
+                if (parsed.data) {
+                    document.getElementById('body').value = parsed.data;
+                }
+
+                // Clear the curl input
+                document.getElementById('curlInput').value = '';
+                
+                alert('cURL command parsed successfully!');
+                
+            } catch (error) {
+                alert('Error parsing cURL command: ' + error.message);
+            }
+        }
+
+        function parseCurlCommand(curlCommand) {
+            const result = {
+                method: 'GET',
+                url: '',
+                headers: {},
+                data: ''
+            };
+
+            // Remove 'curl' from the beginning and normalize spaces
+            let cmd = curlCommand.replace(/^curl\s+/, '').trim();
+            
+            // Extract URL (look for the first argument that looks like a URL)
+            const urlMatch = cmd.match(/(?:^|\s)(['"]?)(https?:\/\/[^\s'"]+)\1/);
+            if (urlMatch) {
+                result.url = urlMatch[2];
+                cmd = cmd.replace(urlMatch[0], '');
+            }
+
+            // Extract method
+            const methodMatch = cmd.match(/-X\s+(['"]?)([A-Z]+)\1/i);
+            if (methodMatch) {
+                result.method = methodMatch[2].toUpperCase();
+                cmd = cmd.replace(methodMatch[0], '');
+            }
+
+            // Extract headers
+            const headerMatches = cmd.matchAll(/-H\s+(['"])(.*?)\1/g);
+            for (const match of headerMatches) {
+                const headerLine = match[2];
+                const colonIndex = headerLine.indexOf(':');
+                if (colonIndex > 0) {
+                    const name = headerLine.substring(0, colonIndex).trim();
+                    const value = headerLine.substring(colonIndex + 1).trim();
+                    result.headers[name] = value;
+                }
+            }
+
+            // Extract data (look for -d, --data, --data-raw)
+            const dataMatch = cmd.match(/(?:-d|--data|--data-raw)\s+(['"])(.*?)\1/s);
+            if (dataMatch) {
+                let data = dataMatch[2];
+                // Try to format as JSON if it looks like JSON
+                try {
+                    const parsed = JSON.parse(data);
+                    result.data = JSON.stringify(parsed, null, 2);
+                } catch {
+                    result.data = data;
+                }
+            }
+
+            // Extract data from --data-binary
+            const dataBinaryMatch = cmd.match(/--data-binary\s+(['"])(.*?)\1/s);
+            if (dataBinaryMatch) {
+                result.data = dataBinaryMatch[2];
+            }
+
+            // Extract data from form format (application/x-www-form-urlencoded)
+            const formDataMatch = cmd.match(/--data-urlencode\s+(['"])(.*?)\1/s);
+            if (formDataMatch) {
+                result.data = formDataMatch[2];
+            }
+
+            return result;
+        }
+
+        // Add some example data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('url').value = 'https://jsonplaceholder.typicode.com/posts';
+            document.getElementById('body').value = JSON.stringify({
+                title: 'foo',
+                body: 'bar',
+                userId: 1
+            }, null, 2);
+            
+            // Add example curl command
+            document.getElementById('curlInput').value = `curl -X POST https://jsonplaceholder.typicode.com/posts \\
+-H 'Content-Type: application/json' \\
+-H 'Authorization: Bearer your-token' \\
+-d '{"title": "Hello World", "body": "This is a test post", "userId": 1}'`;
+        });
+    </script>
+</body>
+</html>

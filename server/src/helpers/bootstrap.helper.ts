@@ -207,6 +207,10 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 
     // Custom headers middleware
     app.use((req, res, next) => {
+      res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; script-src 'self'; script-src-attr 'none'; default-src 'self'; style-src 'self'"
+      );
       res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
       res.setHeader('X-Powered-By', 'ToolJet');
 
