@@ -117,6 +117,9 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
         connectionTestError: null,
         datasourceName: this.props.selectedDataSource?.name,
+        validationMessages: {},
+        validationError: [],
+        showValidationErrors: false,
       });
     }
   }
@@ -146,6 +149,9 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceSchema: source.manifestFile?.data,
         selectedDataSourcePluginId: source.id,
         datasourceName: source.name,
+        validationMessages: {},
+        validationError: [],
+        showValidationErrors: false,
       },
       () => this.createDataSource()
     );
@@ -413,6 +419,7 @@ class DataSourceManagerComponent extends React.Component {
     const ComponentToRender = isPlugin ? SourceComponent : SourceComponents[sourceComponentName] || SourceComponent;
     return (
       <ComponentToRender
+        key={this.state.selectedDataSource?.id}
         dataSourceSchema={this.state.dataSourceSchema}
         optionsChanged={(options = {}) => this.setState({ options })}
         optionchanged={this.optionchanged}
@@ -988,7 +995,7 @@ class DataSourceManagerComponent extends React.Component {
                           <input
                             type="text"
                             onChange={(e) => this.onNameChanged(e.target.value)}
-                            className="form-control-plaintext form-control-plaintext-sm color-slate12"
+                            className="form-control-plaintext form-control-plaintext-sm color-slate12 tw-border-x tw-border-y"
                             value={decodeEntities(selectedDataSource.name)}
                             style={{ width: '160px' }}
                             data-cy="data-source-name-input-field"
