@@ -10,13 +10,14 @@ const BaseImportAppMenu = ({
   showCloudMenuItems = false,
   CloudMenuComponent = () => null,
   darkMode = false,
+  appType = 'front-end',
   ...props
 }) => {
   const fileInput = React.createRef();
   const { t } = useTranslation();
   return (
     <Dropdown.Menu className="import-lg-position new-app-dropdown">
-      {props.appType !== 'module' && (
+      {appType !== 'wzorkflow' && appType !== 'module' && (
         <Dropdown.Item
           className="homepage-dropdown-style tj-text tj-text-xsm"
           onClick={showTemplateLibraryModal}

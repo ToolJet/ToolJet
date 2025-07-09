@@ -117,6 +117,9 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
         connectionTestError: null,
         datasourceName: this.props.selectedDataSource?.name,
+        validationMessages: {},
+        validationError: [],
+        showValidationErrors: false,
       });
     }
   }
@@ -146,6 +149,9 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceSchema: source.manifestFile?.data,
         selectedDataSourcePluginId: source.id,
         datasourceName: source.name,
+        validationMessages: {},
+        validationError: [],
+        showValidationErrors: false,
       },
       () => this.createDataSource()
     );
@@ -413,6 +419,7 @@ class DataSourceManagerComponent extends React.Component {
     const ComponentToRender = isPlugin ? SourceComponent : SourceComponents[sourceComponentName] || SourceComponent;
     return (
       <ComponentToRender
+        key={this.state.selectedDataSource?.id}
         dataSourceSchema={this.state.dataSourceSchema}
         optionsChanged={(options = {}) => this.setState({ options })}
         optionchanged={this.optionchanged}
