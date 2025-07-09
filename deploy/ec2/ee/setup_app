@@ -161,6 +161,21 @@ else
   exit 1
 fi
 
+if [[ "$WORKFLOW_WORKER" == "true" ]]; then
+  echo "WORKER is true. Running the worker..."
+  npm run worker:prod &
+else
+  echo "WORKER is not true. Skipping the worker execution."
+fi
+
+if sudo systemctl start neo4j && sudo systemctl enable neo4j
+then
+  echo "Successfully started Neo4j!"
+else
+  echo "Failed to start and enable Neo4j"
+  exit 1
+fi
+
 TOOLJET_EDTION=ee npm --prefix server run db:setup:prod
 
 if sudo -E systemctl start nest
