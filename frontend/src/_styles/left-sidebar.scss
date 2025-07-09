@@ -617,15 +617,14 @@
 
 .page-handler-wrapper {
   background: transparent;
-  height: 100%;
-  scrollbar-width: none;
   overflow: auto;
-  &.viewer{
-    overflow: visible !important;
-  }
+  scrollbar-width: thin;
+  height: 100%;
+  padding-bottom: 48px;
+  scrollbar-color: var(--interactive-selected) transparent;
 
-  &::-webkit-scrollbar {
-      display: none;
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .tj-list-item-selected {
