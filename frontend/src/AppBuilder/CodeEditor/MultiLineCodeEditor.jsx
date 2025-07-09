@@ -56,6 +56,8 @@ const MultiLineCodeEditor = (props) => {
     renderCopilot,
     setCodeEditorView,
   } = props;
+  const editorRef = useRef(null);
+
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
@@ -330,6 +332,11 @@ const MultiLineCodeEditor = (props) => {
     }
   }
 
+  const onAiSuggestionAccept = (newValue) => {
+    currentValueRef.current = newValue;
+    onChange(newValue);
+  };
+
   return (
     <div
       className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
@@ -337,7 +344,19 @@ const MultiLineCodeEditor = (props) => {
       ref={wrapperRef}
     >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
-        <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} renderCopilot={renderCopilot} />
+        <CodeHinterBtns
+          view={editorView}
+          isPanelOpen={isSearchPanelOpen}
+          renderCopilot={() =>
+            renderCopilot({
+              darkMode,
+              language: lang,
+              editorRef,
+              onAiSuggestionAccept,
+            })
+          }
+        />
+
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
@@ -362,6 +381,7 @@ const MultiLineCodeEditor = (props) => {
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
+                ref={editorRef}
                 value={initialValueWithReplacedIds}
                 placeholder={placeholder}
                 height={'100%'}

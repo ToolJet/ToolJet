@@ -3,7 +3,6 @@ import { EntityManager, In } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { DataSourceTypes } from '@modules/data-sources/constants';
 import { Response } from 'express';
 import { DataQueryRepository } from './repository';
 import { decode } from 'js-base64';
@@ -22,7 +21,7 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository
-  ) { }
+  ) {}
 
   async getAll(user: User, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
