@@ -37,13 +37,16 @@ const DropdownComponent = ({ options = {}, ...props }) => {
   };
 
   return (
-    <div>
+    <div className={props.className}>
       {props.label && <DropdownLabel label={props.label} disabled={props.disabled} required={props.required} />}
       <Select {...props} onOpenChange={handleOpenChange} onValueChange={handleChange}>
         <SelectTrigger ref={triggerRef} open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
-        <SelectContent style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}>
+        <SelectContent
+          className={`${props.className}__content`}
+          style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}
+        >
           <SelectGroup>
             {Object.keys(options).map((key) => (
               <SelectItem
@@ -93,6 +96,7 @@ DropdownComponent.propTypes = {
   leadingIcon: PropTypes.bool,
   trailingAction: PropTypes.oneOf(['icon', 'counter']),
   helperText: PropTypes.string,
+  className: PropTypes.string,
 };
 
 DropdownComponent.defaultProps = {
@@ -109,4 +113,5 @@ DropdownComponent.defaultProps = {
   leadingIcon: false,
   trailingAction: '',
   helperText: '',
+  className: '',
 };
