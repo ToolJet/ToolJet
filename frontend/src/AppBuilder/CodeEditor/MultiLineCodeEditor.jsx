@@ -348,7 +348,7 @@ const MultiLineCodeEditor = (props) => {
           view={editorView}
           isPanelOpen={isSearchPanelOpen}
           renderCopilot={() =>
-            renderCopilot({
+            renderCopilot?.({
               darkMode,
               language: lang,
               editorRef,
