@@ -79,7 +79,7 @@ const WidgetWrapper = memo(
     return (
       <>
         <div
-          className={cx(`moveable-box ele-${id}`, {
+          className={cx(`ele-${id}`, {
             [`target widget-target target1  moveable-box widget-${id}`]: !readOnly,
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': readOnly,

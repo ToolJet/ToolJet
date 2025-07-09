@@ -1103,6 +1103,13 @@ export class AppImportExportService {
 
             const savedComponent = await manager.save(newComponent);
 
+            // Handle ModuleViewer component query input mapping
+            if (savedComponent.type === 'ModuleViewer') {
+              await this.handleModuleViewerComponent(savedComponent, appResourceMappings.dataQueryMapping, manager);
+              // Save the component again if properties were updated
+              await manager.save(savedComponent);
+            }
+
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
@@ -2292,6 +2299,93 @@ export class AppImportExportService {
       await manager.save(event);
     }
   }
+
+  /**
+   * Handle ModuleViewer component by fetching module definition and updating input properties
+   * during app import
+   */
+  protected async handleModuleViewerComponent(
+    component: Component,
+    dataQueryMapping: Record<string, unknown>,
+    manager: EntityManager
+  ): Promise<void> {
+    const properties = component.properties;
+
+    // Skip processing if moduleAppId is not present
+    if (!properties?.moduleAppId?.value) {
+      return;
+    }
+
+    const moduleAppId = properties.moduleAppId.value;
+    try {
+      // Fetch the module from database using moduleAppId
+      const moduleApp = (await manager.findOne(App, {
+        where: { id: moduleAppId },
+        relations: ['appVersions'],
+      })) as App;
+
+      if (!moduleApp) {
+        console.warn(`Module with ID ${moduleAppId} not found`);
+        return;
+      }
+
+      // Get the module's editing version or latest version
+      const moduleVersion = moduleApp.appVersions?.[0]; // Assuming first version is the editing version
+      if (!moduleVersion) {
+        console.warn(`No version found for module with ID ${moduleAppId}`);
+        return;
+      }
+
+      // Find the ModuleContainer component in the module to get input definitions
+      const moduleComponents = await manager.find(Component, {
+        where: {
+          pageId: moduleVersion.homePageId,
+          type: 'ModuleContainer',
+        },
+      });
+
+      const moduleContainer = moduleComponents[0];
+      if (!moduleContainer) {
+        console.warn(`ModuleContainer not found in module ${moduleAppId}`);
+        return;
+      }
+
+      const inputItems = moduleContainer.properties?.inputItems?.value || [];
+
+      // Process each property in the ModuleViewer component
+      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'moduleEnvironmentId', 'visibility'];
+
+      for (const [propertyKey, propertyValue] of Object.entries(properties)) {
+        // Skip excluded properties
+        if (excludedProperties.includes(propertyKey)) {
+          continue;
+        }
+
+        // Find matching input definition in module container
+        const inputDefinition = inputItems.find((item) => item.name === propertyKey);
+
+        if (inputDefinition && inputDefinition.type === 'query') {
+          // This is a query input, check if we need to map the value to a new query ID
+          const currentValue = (propertyValue as any)?.value;
+
+          if (currentValue && dataQueryMapping[currentValue]) {
+            // Update the property value with the new query ID
+            properties[propertyKey] = {
+              ...(propertyValue as any),
+              value: dataQueryMapping[currentValue],
+            };
+          }
+        }
+        // For data type inputs, no special handling needed as they are just values
+      }
+
+      // Update component properties with the processed values
+      component.properties = properties;
+    } catch (error) {
+      console.error(`Error handling ModuleViewer component ${component.id}:`, error);
+      // Continue processing even if module handling fails
+    }
+  }
 }
 
 export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
@@ -2381,7 +2475,8 @@ function transformComponentData(
   componentsMapping: Record<string, string>,
   isNormalizedAppDefinitionSchema = true,
   tooljetVersion: string,
-  moduleResourceMappings?: Record<string, unknown>
+  moduleResourceMappings?: Record<string, unknown>,
+  dataQueryMapping?: Record<string, string>
 ): Component[] {
   const transformedComponents: Component[] = [];
 
