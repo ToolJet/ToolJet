@@ -259,7 +259,8 @@ describe(
       );
 
       // cy.get('[data-cy="viewer-page-logo"]').click();
-      cy.go("back");
+      cy.visit("/my-workspace");
+      cy.wait(2000);
       logout();
       cy.wait(1000);
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
