@@ -1545,12 +1545,7 @@ class HomePageComponent extends React.Component {
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>
 
-            <div
-              className={cx('col home-page-content', {
-                'bg-light-gray': !this.props.darkMode,
-              })}
-              data-cy="home-page-content"
-            >
+            <div className={cx('col home-page-content')} data-cy="home-page-content">
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
@@ -1577,15 +1572,12 @@ class HomePageComponent extends React.Component {
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     {!(isLoading && !appSearchKey) && (
-                      <>
-                        <HomeHeader
-                          onSearchSubmit={this.onSearchSubmit}
-                          darkMode={this.props.darkMode}
-                          appType={this.props.appType}
-                          disabled={this.props.appType === 'module' && invalidLicense}
-                        />
-                        <div className="liner"></div>
-                      </>
+                      <HomeHeader
+                        onSearchSubmit={this.onSearchSubmit}
+                        darkMode={this.props.darkMode}
+                        appType={this.props.appType}
+                        disabled={this.props.appType === 'module' && invalidLicense}
+                      />
                     )}
                     <div className="filter-container">
                       <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
