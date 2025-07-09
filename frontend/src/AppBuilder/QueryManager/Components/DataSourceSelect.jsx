@@ -35,7 +35,6 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const handleChangeDataSource = (source) => {
-    console.log({ source });
     createDataQuery(source);
     setPreviewData(null);
     closePopup();

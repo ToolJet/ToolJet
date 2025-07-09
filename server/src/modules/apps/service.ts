@@ -62,9 +62,9 @@ export class AppsService implements IAppsService {
     protected readonly appGitRepository: AppGitRepository
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
-    const { name, icon, type } = appCreateDto;
+    const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;

@@ -1,4 +1,5 @@
 export interface IAiUtilService {
+  getColorScheme(prd: any): any;
   getAgentAssetPath(filename: string): any;
 
   mergeSteps(componentsJson: any, newStepsJson: any): any;
@@ -32,10 +33,6 @@ export interface IAiUtilService {
   createQueryfromSteps(steps: any): Promise<any>;
 
   getQueriesfromsteps(steps: any): Promise<any>;
-
-  createQuerySteps(prd: string, lld: string, tableName: any, components: any, organizationId: any): Promise<any>;
-
-  createEventSteps(prd: string, Query: any, components: any, organizationId: any): Promise<any>;
 
   convertToSteps(jsonData: any): Promise<any>;
 
