@@ -505,9 +505,8 @@ class TableComponent extends React.Component {
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   handleMakeAllColumnsEditable = (value) => {
-    const columns = resolveReferences(this.props.component.component.definition.properties.columns);
+    const columns = this.props.component.component.definition.properties.columns;
     const columnValues = columns.value || [];
-
     const newValue = columnValues
       .filter((column) => column)
       .map((column) => ({
