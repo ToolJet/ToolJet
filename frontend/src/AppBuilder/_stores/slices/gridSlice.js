@@ -10,12 +10,10 @@ const initialState = {
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
   draggingComponentId: null,
-  resizingComponentId: null,
   reorderContainerChildren: {
     containerId: null,
     triggerUpdate: 0,
   },
-  shouldPreventDrop: false,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -37,7 +35,6 @@ export const createGridSlice = (set, get) => ({
     get().toggleCanvasUpdater();
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
-  setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
@@ -472,8 +469,5 @@ export const createGridSlice = (set, get) => ({
     set((state) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
     }));
-  },
-  setShouldPreventDrop: (shouldPreventDrop) => {
-    set(() => ({ shouldPreventDrop }));
   },
 });

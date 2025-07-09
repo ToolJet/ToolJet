@@ -96,4 +96,5 @@ npm install -g npm@10.9.2
 
 # Building ToolJet app
 npm install -g @nestjs/cli
+export NODE_OPTIONS='--max-old-space-size=8000'
 TOOLJET_EDTION=ee npm run build

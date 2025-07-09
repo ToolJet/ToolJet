@@ -22,6 +22,7 @@ export function defineWorkflowVersionAbility(
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
         FEATURE_KEY.PROMOTE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );
@@ -41,6 +42,7 @@ export function defineWorkflowVersionAbility(
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
         FEATURE_KEY.PROMOTE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );
@@ -58,6 +60,7 @@ export function defineWorkflowVersionAbility(
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
         FEATURE_KEY.PROMOTE,
+        FEATURE_KEY.APP_VERSION_UPDATE,
       ],
       App
     );
