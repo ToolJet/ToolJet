@@ -1,7 +1,13 @@
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class UpdateFirstUserAsSuperAdminForCEInstances1698843356891 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
+      console.log('Skipping migration as it is not EE edition');
+      return;
+    }
     const manager = queryRunner.manager;
     /* Check for first user or super-admin  */
     const query = `

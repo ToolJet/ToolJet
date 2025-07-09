@@ -27,6 +27,7 @@ import {
   createTooljetDatabaseConnection,
   decryptTooljetDatabasePassword,
   grantTenantRoleToTjdbAdminRole,
+  isSQLModeDisabled,
 } from 'src/helpers/tooljet_db.helper';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 const crypto = require('crypto');
@@ -830,11 +831,11 @@ export class TooljetDbTableOperationsService {
     }
   }
 
-  async getTablesLimit() {
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
-      LICENSE_FIELD.TABLE_COUNT,
-      LICENSE_FIELD.STATUS,
-    ]);
+  async getTablesLimit(organizationId: string) {
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
     return {
       tablesCount: generatePayloadForLimits(
         licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
@@ -851,9 +852,15 @@ export class TooljetDbTableOperationsService {
     const { joinQueryJson, dataQuery, user } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
 
-    const tjdbTenantConfigs = await this.manager.findOne(OrganizationTjdbConfigurations, {
-      where: { organizationId },
-    });
+    const tjdbTenantConfigs = isSQLModeDisabled()
+      ? {
+          pgUser: this.configService.get<string>('TOOLJET_DB_USER'),
+          pgPassword: this.configService.get<string>('TOOLJET_DB_PASS'),
+        }
+      : await this.manager.findOne(OrganizationTjdbConfigurations, {
+          where: { organizationId },
+        });
+
     if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exists`);
 
     // Gathering tables used, from Join coditions
@@ -931,7 +938,7 @@ export class TooljetDbTableOperationsService {
   protected buildJoinQuery(
     queryJson,
     internalTableIdToNameMap,
-    // eslint-disable-next-line
+
     tooljetDbTenantConnection: Connection
   ): SelectQueryBuilder<any> {
     const queryBuilder: SelectQueryBuilder<any> = tooljetDbTenantConnection.createQueryBuilder();
@@ -1524,6 +1531,8 @@ export class TooljetDbTableOperationsService {
   }
 
   async createTooljetDbTenantSchemaAndRole(organizationId: string, entityManager: EntityManager) {
+    if (isSQLModeDisabled()) return;
+
     const dbUser = `user_${organizationId}`;
     const dbSchema = `workspace_${organizationId}`;
     const dbPassword = crypto.randomBytes(8).toString('hex');

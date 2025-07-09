@@ -36,8 +36,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(dataQuery?.data_source_id) ||
-        canReadDataSource(dataQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(dataQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
@@ -121,9 +121,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           {isRenaming ? (
             <input
               data-cy={`query-edit-input-field`}
-              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
-                darkMode && 'text-white'
-              }`}
+              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${darkMode && 'text-white'
+                }`}
               type="text"
               defaultValue={decodeEntities(dataQuery.name)}
               autoFocus={true}
@@ -181,6 +180,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             variant="outline"
             className=""
             id={`query-handler-menu-${dataQuery?.id}`}
+            data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
           />
         </div>
       </div>

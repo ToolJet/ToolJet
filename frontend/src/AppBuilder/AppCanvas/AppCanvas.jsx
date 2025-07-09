@@ -109,15 +109,15 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
 
-  useEffect(() => { }, [isViewerSidebarPinned]);
+  useEffect(() => {}, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -182,7 +182,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
           )}
           style={canvasContainerStyles}
         >
-          {showOnDesktop && (
+          {showOnDesktop && appType !== 'module' && (
             <PagesSidebarNavigation
               showHeader={showHeader}
               isMobileDevice={currentLayout === 'mobile'}
@@ -202,6 +202,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
               scrollbarWidth: 'none',
               overflow: 'auto',
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
+              ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
             className={`app-${appId} _tooljet-page-${getPageId()}`}
           >
@@ -213,7 +214,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
               {environmentLoadingState !== 'loading' && (
                 <div>
                   <Container
-                    id="canvas"
+                    id={moduleId}
                     gridWidth={gridWidth}
                     canvasWidth={canvasWidth}
                     canvasHeight={canvasHeight}

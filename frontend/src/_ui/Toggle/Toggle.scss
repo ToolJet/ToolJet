@@ -16,7 +16,7 @@
 }
 
 .form-check>.form-check-input:not(:checked) {
-    background-color: #ffffff;
+    background-color: var(--slider-track);
 }
 .text-wrappers{
     display: flex;

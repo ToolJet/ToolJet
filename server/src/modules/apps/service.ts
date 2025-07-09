@@ -62,15 +62,15 @@ export class AppsService implements IAppsService {
     protected readonly appGitRepository: AppGitRepository
   ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
-    const { name, icon, type } = appCreateDto;
+    const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
-      await this.appsUtilService.update(app, appUpdateDto, null, manager);
+      await this.appsUtilService.update(app, appUpdateDto, user.organizationId, manager);
 
       //APP_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -182,7 +182,6 @@ export class AppsService implements IAppsService {
     const { id } = app;
 
     await this.appRepository.delete({ id, organizationId });
-    console.log('deleted app');
 
     //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -217,8 +216,8 @@ export class AppsService implements IAppsService {
 
       if (type === 'module') {
         for (const app of apps) {
-          const appVersionId = app?.appVersions[0]?.id;
-          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId);
+          const appVersionId = app?.appVersions?.[0]?.id;
+          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
         }
       }
 
@@ -254,7 +253,9 @@ export class AppsService implements IAppsService {
       ? await this.versionRepository.findDataQueriesForVersion(app.editingVersion.id)
       : [];
 
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
+    const pagesForVersion = app.editingVersion
+      ? await this.pageService.findPagesForVersion(app.editingVersion.id, user.organizationId)
+      : [];
     const eventsForVersion = app.editingVersion
       ? await this.eventService.findEventsForVersion(app.editingVersion.id)
       : [];
@@ -288,7 +289,10 @@ export class AppsService implements IAppsService {
     }
 
     if (response['editing_version']) {
-      const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        app.organizationId
+      );
       let shouldFreezeEditor = false;
       let appVersionEnvironment: AppEnvironment;
       if (hasMultiEnvLicense) {
@@ -327,7 +331,9 @@ export class AppsService implements IAppsService {
         ? await this.versionRepository.findVersion(app.currentVersionId)
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+      const pagesForVersion = app.editingVersion
+        ? await this.pageService.findPagesForVersion(versionToLoad.id, user.organizationId)
+        : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
         app.organizationId,
@@ -385,7 +391,10 @@ export class AppsService implements IAppsService {
         })
         .getOne();
 
-      const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        user.organizationId
+      );
       /* 
           Allow version release only if the environment is on 
           production with a valid license or 

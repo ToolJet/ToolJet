@@ -19,7 +19,7 @@ import { RIGHT_SIDE_BAR_TAB } from '../rightSidebarConstants';
 import { SortableTree } from './PageMenu/Tree/SortableTree';
 import SortableList from '@/_components/SortableList';
 import { PageMenuItem } from './PageMenu/PageMenuItem';
-import { get } from 'lodash';
+import { camelCase, get, startCase, toLower, upperFirst } from 'lodash';
 import { Button } from '@/components/ui/Button/Button';
 import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
 import { AddNewPagePopup } from './PageMenu/AddNewPagePopup';
@@ -79,7 +79,6 @@ export const PageSettings = () => {
           </div>
           {style.type === 'colorSwatches' && (
             <ColorSwatches
-              onReset={handleReset}
               value={currentStyles[name]?.value}
               onChange={(value) => handleStyleChange(name, value, false)}
             />
@@ -162,8 +161,8 @@ export const PageSettings = () => {
     <div className="inspector pages-settings">
       <div>
         <div className="row inspector-component-title-input-holder d-flex align-items-center">
-          <div className={`col-9 p-0 mx-2 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
-          <div className="d-flex">
+          <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
+          <div className="d-flex icon-holder">
             <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
               <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin' : 'pin'} width="16" />
             </div>
@@ -174,82 +173,6 @@ export const PageSettings = () => {
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
                 <div className="tj-text-xsm color-slate12 ">
-                  {/* <CollapsableToggle pageSettingChanged={pageSettingChanged} settings={pageSettings} />
-                  <LabelStyleToggle pageSettingChanged={pageSettingChanged} settings={pageSettings} />
-                  <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor')}>
-                    <div className={cx('d-flex align-items-center justify-content-between')}>
-                      <div className={`field`}>
-                        <ToolTip
-                          label={'Hide page menu in viewer mode'}
-                          labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
-                            darkMode && 'color-whitish-darkmode'
-                          }`}
-                        />
-                      </div>
-                      <div className={`flex-grow-1`}>
-                        <div
-                          style={{ marginBottom: forceCodeBox ? '0.5rem' : '0px' }}
-                          className={`d-flex align-items-center justify-content-end`}
-                        >
-                          <div
-                            className={`col-auto pt-0 mx-1 fx-button-container ${
-                              forceCodeBox && 'show-fx-button-container'
-                            }`}
-                          >
-                            <FxButton
-                              active={forceCodeBox}
-                              onPress={() => {
-                                if (forceCodeBox) {
-                                  setForceCodeBox(false);
-                                } else {
-                                  setForceCodeBox(true);
-                                }
-                              }}
-                            />
-                          </div>
-
-                          {!forceCodeBox && (
-                            <div className="form-check form-switch m-0">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                checked={resolveReferences(properties?.disableMenu?.value)}
-                                onChange={(e) =>
-                                  pageSettingChanged(
-                                    {
-                                      disableMenu: {
-                                        value: `{{${e.target.checked}}}`,
-                                        fxActive: forceCodeBox,
-                                      },
-                                    },
-                                    'properties'
-                                  )
-                                }
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    {forceCodeBox && (
-                      <CodeHinter
-                        initialValue={properties?.disableMenu?.value}
-                        lang="javascript"
-                        lineNumbers={false}
-                        onChange={(value) => {
-                          pageSettingChanged(
-                            {
-                              disableMenu: {
-                                value: value,
-                                fxActive: forceCodeBox,
-                              },
-                            },
-                            'properties'
-                          );
-                        }}
-                      />
-                    )}
-                  </div> */}
                   <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
                   <Accordion items={appHeaderMenuItems} />
                   <Accordion items={devices} />
@@ -287,7 +210,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
   return Object.keys(groupedStyles).map((style) => {
     const items = [
       {
-        title: `${style}`,
+        title: `${upperFirst(toLower(startCase(style)))}`,
         children: Object.entries(groupedStyles[style]).map(([key, value]) => {
           const defaultValue = pagesMeta.definition.styles[key].value;
           return {
@@ -335,12 +258,16 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseVali
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show logo
+          <LicenseTooltip message={"Logo can't be hidden on free plans"} placement="bottom" show={!licenseValid}>
+            <div className="d-flex align-items-center">{!licenseValid && <SolidIcon name="enterprisecrown" />}</div>
+          </LicenseTooltip>
         </label>
         <label className={`form-switch`}>
           <input
             className="form-check-input"
             type="checkbox"
-            checked={!hideLogo}
+            checked={licenseValid ? !hideLogo : true}
+            disabled={!licenseValid}
             onChange={(e) => {
               pageSettingChanged({ hideLogo: !e.target.checked }, 'properties');
             }}

@@ -35,22 +35,27 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 let appContext: INestApplicationContext = undefined;
 
 async function handleLicensingInit(app: NestExpressApplication) {
-  const importPath = await getImportPath(false);
+  const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+
+  if (tooljetEdition !== TOOLJET_EDITIONS.EE) {
+    // If the edition is not EE, we don't need to initialize licensing
+    return;
+  }
+
+  const importPath = await getImportPath(false, tooljetEdition);
   const { LicenseUtilService } = await import(`${importPath}/licensing/util.service`);
 
   const licenseInitService = app.get<LicenseInitService>(LicenseInitService);
   const licenseUtilService = app.get<ILicenseUtilService>(LicenseUtilService);
+
   await licenseInitService.init();
 
-  if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
-    return;
-  }
-  const LicenseModule = await import(`${importPath}/licensing/configs/License`);
-  const License = LicenseModule.default;
-  licenseUtilService.validateHostnameSubpath(License.Instance()?.domains);
+  const License = await import(`${importPath}/licensing/configs/License`);
+  const license = License.default;
+  licenseUtilService.validateHostnameSubpath(license.Instance()?.domains);
 
   console.log(
-    `License valid : ${License.Instance().isValid} License Terms : ${JSON.stringify(License.Instance().terms)} 🚀`
+    `License valid : ${license.Instance().isValid} License Terms : ${JSON.stringify(license.Instance().terms)} 🚀`
   );
 }
 function replaceSubpathPlaceHoldersInStaticAssets() {
@@ -166,17 +171,14 @@ async function bootstrap() {
     process.exit(0);
   });
 
-  process.on('SIGTERM', async () => {
-    console.log('SIGTERM signal received: closing application...');
-    await app.close();
-    process.exit(0);
-  });
-
   if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
     replaceSubpathPlaceHoldersInStaticAssets();
   }
+  console.log(getTooljetEdition(), 'ToolJet Edition 🚀');
 
-  await handleLicensingInit(app);
+  if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
+    await handleLicensingInit(app);
+  }
 
   const configService = app.get<ConfigService>(ConfigService);
 
@@ -265,6 +267,7 @@ export function getAppContext(): INestApplicationContext {
   return appContext;
 }
 if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   process.env.WORKER ? bootstrapWorker() : bootstrap();
 } else {
   bootstrap();

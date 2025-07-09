@@ -417,6 +417,17 @@
             }
         }
     }
+
+    .enterprise-feature {
+        gap: 6px;
+        svg {
+            fill: #FCA23F !important;
+
+            path {
+                fill: #FCA23F !important
+            }
+        }
+    }
 }
 
 #add-new-page-popup {

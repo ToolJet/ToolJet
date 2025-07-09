@@ -178,7 +178,7 @@ const useAppData = (
       }
       styleTag.innerHTML = data?.css || null;
     } catch (error) {
-      console.log('Failed to fetch custom styles:', error);
+      // Silently handle error - custom styles are optional
     }
   };
 
@@ -351,9 +351,24 @@ const useAppData = (
             homePageId: homePageId,
             isPublic: appData.is_public,
             creationMode: appData.creation_mode,
+            appGeneratedFromPrompt: appData.app_generated_from_prompt,
+            aiGenerationMetadata: appData.ai_generation_metadata || {},
+            appBuilderMode: appData.app_builder_mode || 'visual',
           },
           moduleId
         );
+
+        if (appData.app_builder_mode === 'ai') {
+          setSelectedSidebarItem('tooljetai');
+          toggleLeftSidebar(true);
+
+          // If the app builder mode is AI
+          // - Do not show zero state - if there is some conversation already done or if route state has prompt
+          setConversationZeroState(
+            state?.prompt ? true : Boolean(appData.ai_conversation?.aiConversationMessages?.length)
+          );
+        }
+
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
           const global_settings = mapKeys(
@@ -483,17 +498,14 @@ const useAppData = (
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
+
         if (
           !moduleMode &&
-          state.ai &&
           state?.prompt &&
           initialLoadRef.current &&
           (conversation?.aiConversationMessages || []).length === 0
         ) {
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar('true');
           sendMessage(state.prompt);
-          setConversationZeroState(true);
           showWalkthrough = false;
         }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);

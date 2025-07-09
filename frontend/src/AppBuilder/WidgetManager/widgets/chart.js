@@ -138,6 +138,15 @@ export const chartConfig = {
       displayName: 'Background color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
     },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'container',
+    },
     padding: {
       type: 'code',
       displayName: 'Padding',
@@ -233,6 +242,7 @@ export const chartConfig = {
       borderRadius: { value: '{{4}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };
