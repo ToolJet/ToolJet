@@ -9,12 +9,15 @@ export function DeletePageConfirmationModal({ darkMode }) {
   const editingPage = useStore((state) => state.editingPage);
   const show = useStore((state) => state.showDeleteConfirmationModal);
   const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
+  const openPageEditPopover = useStore((state) => state.openPageEditPopover);
+
   const deletePageGroup = useStore((state) => state.deletePageGroup);
   const deletePage = useStore((state) => state.deletePage);
   const { t } = useTranslation();
 
   const handleClose = () => {
     toggleDeleteConfirmationModal(false);
+    openPageEditPopover(null);
   };
 
   const handleConfirm = () => {

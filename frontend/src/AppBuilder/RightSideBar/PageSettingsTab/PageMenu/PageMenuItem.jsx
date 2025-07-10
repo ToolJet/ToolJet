@@ -280,7 +280,7 @@ export const PageMenuItem = withRouter(
         <>
           <div
             className={`page-menu-item ${darkMode && 'dark-theme'} ${
-              showPageOptions || showEditingPopover || isEditingPage ? 'is-selected' : ''
+              (showPageOptions || showEditingPopover) && isEditingPage ? 'is-selected' : ''
             }`}
             style={{
               position: 'relative',
