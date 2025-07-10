@@ -4,8 +4,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 @Injectable()
 export class AppsActionsListener {
   constructor() {}
-  @OnEvent('beforeAppDelete')
+  @OnEvent('app.deleted')
   async handleAppDeletion(args: { appId: string }) {
-    throw new Error('Method not implemented');
+    console.log(`App with ID ${args.appId} has been deleted.`);
   }
 }
