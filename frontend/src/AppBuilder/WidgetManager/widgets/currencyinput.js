@@ -26,10 +26,10 @@ export const currencyinputConfig = {
       },
     },
     value: {
-      type: 'code',
+      type: 'number',
       displayName: 'Default value',
       validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        schema: { schemas: { type: 'number' } },
         defaultValue: 0,
       },
     },
