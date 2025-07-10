@@ -8,10 +8,7 @@ import { AppsModule } from '@modules/apps/module';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { VersionModule } from '@modules/versions/module';
 import { UserPersonalAccessTokenRepository } from '../users/repositories/UserPersonalAccessTokens.repository';
-import { AppsRepository } from '@modules/apps/repository';
 import { SessionModule } from '@modules/session/module';
-import { UserRepository } from '@modules/users/repositories/repository';
-import { OrganizationRepository } from '@modules/organizations/repository';
 import { UsersModule } from '@modules/users/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { GitSyncModule } from '@modules/git-sync/module';
@@ -21,14 +18,15 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
-import { getImportPath } from '@modules/app/constants';
-export class ExternalApiModule {
+export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { ExternalApisController } = await import(`${importPath}/external-apis/controller`);
-    const { ExternalApisService } = await import(`${importPath}/external-apis/service`);
-    const { ExternalApiUtilService } = await import(`${importPath}/external-apis/util.service`);
-    const { ExternalApisAppsController } = await import(`${importPath}/external-apis/controllers/apps.controller`);
+    const { ExternalApisController, ExternalApisService, ExternalApiUtilService, ExternalApisAppsController } =
+      await this.getProviders(configs, 'external-apis', [
+        'controller',
+        'service',
+        'util.service',
+        'controllers/apps.controller',
+      ]);
 
     return {
       module: ExternalApiModule,

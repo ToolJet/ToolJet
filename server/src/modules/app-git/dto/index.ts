@@ -68,6 +68,7 @@ export class AppGitPullDto {
   @IsOptional()
   allowEditing: boolean;
 }
+
 export class AppGitPullUpdateDto {
   @IsString()
   gitVersionId: string;
