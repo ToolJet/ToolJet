@@ -6,6 +6,7 @@ import { Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { DefaultSSOList, DefaultSSOModal } from '@/modules/common/components';
+import { Button } from '@/components/ui/Button/Button';
 class BaseSSOConfigurationList extends React.Component {
   protectedSSO = ['openid', 'ldap', 'saml'];
   constructor(props) {
@@ -304,7 +305,8 @@ class BaseSSOConfigurationList extends React.Component {
         noTooltipIfValid={true}
         placement="left"
       >
-        <div
+        <Button
+          variant="outline"
           className="sso-option"
           key={key}
           onClick={isFeatureAvailable ? () => this.openModal(key) : (e) => e.preventDefault()}
@@ -345,7 +347,7 @@ class BaseSSOConfigurationList extends React.Component {
             />
             <span className="slider round"></span>
           </label>
-        </div>
+        </Button>
       </LicenseTooltip>
     );
   };
@@ -381,12 +383,13 @@ class BaseSSOConfigurationList extends React.Component {
               bsPrefix="no-caret-dropdown-toggle"
               data-cy="dropdown-custom-toggle"
             >
-              <div
+              <Button
+                variant="outline"
                 className="sso-option-label"
                 style={{
                   paddingLeft: '12px',
                   width: '270px',
-                  paddingRight: '220px',
+                  paddingRight: '160px',
                   paddingTop: '6px',
                   paddingBottom: '6px',
                   height: '34px',
@@ -395,7 +398,7 @@ class BaseSSOConfigurationList extends React.Component {
               >
                 Instance SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
                 <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
-              </div>
+              </Button>
             </Dropdown.Toggle>
 
             <Dropdown.Menu style={{ width: '100%' }}>

@@ -2,6 +2,9 @@ import React, { useEffect } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { showGridLines, hideGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { useSubContainerResizable } from '@/AppBuilder/_hooks/useSubContainerResizable';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const HorizontalSlot = React.memo(
   ({
@@ -14,10 +17,11 @@ export const HorizontalSlot = React.memo(
     slotName = 'header', // 'header' or 'footer'
     slotStyle = {},
     onResize,
-    isEditing,
     maxHeight,
     componentType,
   }) => {
+    const { moduleId } = useModuleContext();
+    const isEditing = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'edit', shallow);
     const parsedHeight = parseInt(height, 10);
     const { getRootProps, getHandleProps, getResizeState } = useSubContainerResizable({
       initialHeight: parsedHeight,

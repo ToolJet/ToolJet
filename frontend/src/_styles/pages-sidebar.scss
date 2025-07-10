@@ -142,11 +142,21 @@
 
     .accordion-header {
         height: 32px;
-        background-color: var(--interactive-default);
 
         .accordion-title-text {
             color: var(--text-default);
             text-transform: unset !important;
+        }
+    }
+
+    .form-control.is-invalid {
+        background-image: none;
+    }
+
+    input[type='text'] {
+        border-radius: 6px;
+        &:focus {
+            border: 2px solid var(--border-accent-strong);
         }
     }
 
@@ -217,7 +227,7 @@
             position: relative;
             bottom: 2px;
             justify-content: center;
-            padding-top: 32px;
+            padding-top: 16px;
             margin-top: auto;
 
             .sidebar-svg-icon {
@@ -241,6 +251,7 @@
             align-items: center;
             width: unset !important;
             margin-bottom: 20px;
+            min-height: 28px;
 
             .collapse-icon {
                 margin-left: auto;
@@ -276,6 +287,23 @@
         }
 
         .page-group-wrapper {
+            padding: 0px !important;
+
+            .icon-btn {
+                height: unset !important;
+                width: unset !important;
+                padding: 0px !important;
+                padding-right: 12px !important;
+                &:hover {
+                    background-color: unset !important
+                }
+            }
+            .tj-list-item {
+                margin-bottom: 0px !important;
+                padding-right: 0px !important;
+                flex-shrink: 1;
+                min-width: 0;
+            }
             &.tj-list-item-selected {
                 border-radius: 6px;
                 background: var(--background-accent-weak);
@@ -342,14 +370,15 @@
             .app-name {
                 flex-direction: column-reverse;
                 margin-bottom: 0px;
+                gap: 0px;
                 .cursor-pointer {
                    img {
-                        margin-top: 20px;
                         margin-bottom: 20px;
                     }
                    }
                 .icon-btn {
                     margin-left: 0px;
+                    margin-bottom: 20px
                 }
             }
         }
@@ -365,6 +394,7 @@
         }
         .accordion-body{
             padding: 4px 0 4px 16px !important;
+            border-bottom: 0px !important;
         }
         .accordion-header{
             height: auto !important;
@@ -429,11 +459,12 @@
             padding-top: 0px;
             overflow: hidden !important;
             justify-content: space-between;
+            border-right: 0px !important;
 
             .page-handler-wrapper {
                 width: 100%;
                 align-items: center;
-                gap: 1px;
+                gap: 8px;
             }
 
             .page-dark-mode-btn-wrapper {
@@ -453,6 +484,36 @@
                 .tj-list-item {
                     padding-right: 0px !important;
                     width: unset !important;
+                    margin-bottom: 0px !important;
+                }
+                .page-group-wrapper {
+                    gap: 2px;
+                    padding: 6px 10px !important;
+                    padding-right: 0px !important;
+
+                    &:hover {
+                        background-color: var(--interactive-overlays-fill-hover);
+                    }
+
+                    button {
+                        &:hover {
+                        background-color: unset !important;
+                        }
+                    }
+
+                    .icon-btn {
+                        height: unset !important;
+                        width: unset !important;
+                        padding: 0px !important;
+                        padding-right: 10px !important;
+                        &:hover {
+                            background-color: unset !important
+                        }
+                    }
+
+                    .tj-list-item {
+                        padding: 0px !important;
+                    }
                 }
             }
 
@@ -484,8 +545,9 @@
 
             .tj-list-item {
                 outline: none !important;
-                padding: 6px 10px;
                 height: 32px;
+                padding: 6px 10px !important;
+                margin-bottom: 0px !important;
             }
 
             .page-name {
@@ -498,11 +560,23 @@
 
             .page-handler-wrapper {
                 display: flex;
+                padding-bottom: unset !important;
+                overflow: hidden;
+
+                .more-btn-pages {
+                    &.tj-list-item-selected {
+                        svg {
+                            path {
+                                fill: var(--icon-accent);
+                            }
+                        }
+                    }
+                }
             }
         }
 
         &.right-sidebar-open {
-            width: calc(100% + 299px) !important;
+            width: calc(100% + 300px) !important;
             position: sticky !important;
 
         }
@@ -514,7 +588,7 @@
         }
 
         &.right-sidebar-open.left-sidebar-open {
-            width: calc(100% + 646px) !important;
+            width: calc(100% + 650px) !important;
             position: sticky !important;
         }
     }
@@ -526,7 +600,7 @@
         width: fit-content;
 
         .tj-list-item{
-            padding: 8px 12px;
+            padding: 6px 12px;
             color: var(--text-placeholder);
             justify-content: flex-start;
 
@@ -550,11 +624,8 @@
         .accordion-body {
             padding: 0px 12px !important;
             padding-left: 28px !important;
+            border-bottom: 0px !important;
         }
-
-        .accordion-body {
-
-            }
 
         .page-group-collapse {
             // right: 4px;
@@ -601,8 +672,19 @@
             display: flex;
             align-items: center;
             padding: 0px;
+
+            .icon-btn {
+                height: unset !important;
+                width: unset !important;
+                padding: 0px !important;
+                padding-right: 12px !important;
+                &:hover {
+                    background-color: unset !important
+                }
+            }
             .tj-list-item {
-                padding-right: 0px;
+                padding: 8px 12px !important;
+                padding-right: 0px !important;
                 width: unset !important;
             }
             &.tj-list-item-selected {

@@ -96,17 +96,12 @@ module.exports = defineConfig({
         experimentalModfyObstructiveThirdPartyCode: true,
         baseUrl: environment.baseUrl,
         configFile: environment.configFile,
-        // specPattern: [
-        //     "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
-        //     // Exclude specific files from ceTestcases/apps and ceTestcases/workspace
-        //     "cypress/e2e/happyPath/platform/ceTestcases/apps/appSlug.cy.js",
-        //     "cypress/e2e/happyPath/platform/ceTestcases/**/!(*appSlug|appImport|privateAndpublicApps|version).cy.js",
-        //     // Exclude workspaceConstants.cy.js explicitly
-        //     "cypress/e2e/happyPath/platform/ceTestcases/workspace/!(*groupDuplication|workspaceConstants).cy.js",
-        //     "!cypress/e2e/happyPath/platform/ceTestcases/workspace/workspaceConstants.cy.js",
-        //     "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
-        // ]
-        specPattern: [ ],
+        specPattern: [
+            "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
+            "cypress/e2e/happyPath/platform/ceTestcases/apps/appSlug.cy.js",
+            "cypress/e2e/happyPath/platform/ceTestcases/**/!(*appSlug).cy.js",
+            "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+        ],
         numTestsKeptInMemory: 1,
         redirectionLimit: 15,
         experimentalMemoryManagement: true,

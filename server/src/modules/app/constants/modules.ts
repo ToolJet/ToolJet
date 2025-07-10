@@ -22,7 +22,6 @@ export enum MODULES {
   CUSTOM_STYLES = 'CustomStyles',
   SMTP = 'SMTP',
   ONBOARDING = 'Onboarding',
-  APP_GIT = 'AppGit', //register
   INSTANCE_SETTINGS = 'instanceSettings',
   LICENSING = 'Licensing',
   FILE = 'file',
@@ -41,5 +40,6 @@ export enum MODULES {
   EXTERNAL_APIS = 'externalApis',
   ORGANIZATION_PAYMENTS = 'organizationPayments',
   MODULES = 'Modules',
-  GIT_SYNC = 'GitSync', //register
+  APP_GIT = 'AppGit',
+  GIT_SYNC = 'GitSync',
 }

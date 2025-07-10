@@ -1,7 +1,7 @@
 @import "./colors.scss";
 @import "./designtheme.scss";
 .left-sidebar {
-  background: var(--page-default) !important;
+  background: var(--page-weak) !important;
   display: flex;
   gap: 16px;
 
@@ -617,15 +617,14 @@
 
 .page-handler-wrapper {
   background: transparent;
-  height: 100%;
-  scrollbar-width: none;
   overflow: auto;
-  &.viewer{
-    overflow: visible !important;
-  }
+  scrollbar-width: thin;
+  height: 100%;
+  padding-bottom: 48px;
+  scrollbar-color: var(--interactive-selected) transparent;
 
-  &::-webkit-scrollbar {
-      display: none;
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .tj-list-item-selected {
@@ -785,7 +784,7 @@
   align-items: center;
   padding-top: 0px;
   width: 48px;
-  border-right: 1px solid var(--slate5);
+  border-right: 1px solid var(--border-weak);
 }
 
 .tj-leftsidebar-icon-wrap {

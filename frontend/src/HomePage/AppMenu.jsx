@@ -85,12 +85,6 @@ export const AppMenu = function AppMenu({
                 )}
                 {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>
-                    {appType !== 'workflow' && (
-                      <Field
-                        text={t('homePage.appCard.cloneApp', 'Clone app')}
-                        onClick={() => openAppActionModal('clone-app')}
-                      />
-                    )}
                     <Field
                       text={
                         appType === 'workflow' ? 'Clone workflow' : appType === 'module' ? 'Clone module' : 'Clone app'
@@ -119,7 +113,7 @@ export const AppMenu = function AppMenu({
         </div>
       }
     >
-      <div className={'cursor-pointer menu-ico'} data-cy={`app-card-menu-icon`}>
+      <div className={'cursor-pointer menu-ico menu-icon--trigger'} data-cy={`app-card-menu-icon`}>
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

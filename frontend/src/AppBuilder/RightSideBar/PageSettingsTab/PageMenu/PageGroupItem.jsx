@@ -138,7 +138,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
       >
         <div
           className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${darkMode ? 'dark-theme' : ''} ${
-            showPageOptions && isEditing ? 'is-selected' : ''
+            (showPageOptions || showEditPopover) && isEditing ? 'is-selected' : ''
           }`}
           onClick={() => {
             handleOpenPopup('group', page);
