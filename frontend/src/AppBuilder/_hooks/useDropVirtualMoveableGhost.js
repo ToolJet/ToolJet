@@ -12,7 +12,7 @@ export const useDropVirtualMoveableGhost = () => {
     if (ghostElementRef.current) return;
 
     const ghost = document.createElement('div');
-    ghost.id = 'moveable-ghost-element';
+    ghost.id = 'moveable-virtual-ghost-element';
     ghost.className = 'moveable-ghost target';
     ghost.style.cssText = `
       position: absolute;

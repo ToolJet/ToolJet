@@ -76,13 +76,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
   const [dragParentId, setDragParentId] = useState(null);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
-  const { elementGuidelines } = useElementGudelines(
-    boxList,
-    selectedComponents,
-    dragParentId,
-    getResolvedValue,
-    virtualTarget
-  );
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
@@ -93,26 +86,33 @@ export default function Grid({ gridWidth, currentLayout }) {
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
-  const toggleRightSidebar = useStore((state) => state.toggleRightSidebar, shallow);
   const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
   const resizingComponentId = useStore((state) => state.resizingComponentId, shallow);
 
-  const snapContainer = useMemo(() => {
-    if (currentDragCanvasId) {
-      return `#canvas-${currentDragCanvasId}`;
-    }
-    if (dragParentId) {
-      return `#canvas-${dragParentId}`;
-    }
-    return '#real-canvas';
-  }, [currentDragCanvasId, dragParentId]);
+  const { elementGuidelines } = useElementGudelines(
+    boxList,
+    selectedComponents,
+    dragParentId,
+    getResolvedValue,
+    virtualTarget
+  );
 
-  const getMoveableTarget = () => {
+  // const snapContainer = useMemo(() => {
+  //   if (currentDragCanvasId) {
+  //     return `#canvas-${currentDragCanvasId}`;
+  //   }
+  //   if (dragParentId) {
+  //     return `#canvas-${dragParentId}`;
+  //   }
+  //   return '#real-canvas';
+  // }, [currentDragCanvasId, dragParentId]);
+
+  const getMoveableTarget = useCallback(() => {
     if (virtualTarget) {
-      return '#moveable-ghost-element';
+      return '#moveable-virtual-ghost-element';
     }
     return groupedTargets?.length > 1 ? groupedTargets : '.target';
-  };
+  }, [virtualTarget, groupedTargets]);
 
   // Set moveable reference in grid store for access by other components
   useEffect(() => {
@@ -623,6 +623,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         flushSync={flushSync}
         target={getMoveableTarget()}
+
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze && mode !== 'view'}
@@ -862,14 +863,13 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         checkInput
         onDragStart={(e) => {
-          if (e.target.id === 'moveable-ghost-element') {
+          if (e.target.id === 'moveable-virtual-ghost-element') {
             return true;
           }
           // This is to prevent parent component from being dragged and the stop the propagation of the event
           if (getHoveredComponentForGrid() !== e.target.id) {
             return false;
           }
-          toggleRightSidebar();
           newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
 
@@ -913,11 +913,9 @@ export default function Grid({ gridWidth, currentLayout }) {
               return false;
             }
           }
-          handleActivateNonDraggingComponents();
         }}
         onDragEnd={(e) => {
-          handleDeactivateTargets();
-          if (e.target.id === 'moveable-ghost-element') {
+          if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
           try {
@@ -976,9 +974,11 @@ export default function Grid({ gridWidth, currentLayout }) {
           setCanvasBounds({ ...CANVAS_BOUNDS });
           hideGridLines();
           toggleCanvasUpdater();
+          handleDeactivateTargets();
+
         }}
         onDrag={(e) => {
-          if (e.target.id === 'moveable-ghost-element') {
+          if (e.target.id === 'moveable-virtual-ghost-element') {
             showGridLines();
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
             let left = e.translate[0];
@@ -996,6 +996,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
             useStore.getState().setDraggingComponentId(e.target.id);
+            handleActivateNonDraggingComponents();
             showGridLines();
             isDraggingRef.current = true;
           }
@@ -1082,7 +1083,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           // Build the drag context from the event
           const source = { slotId: oldParentId };
           let scrollDelta = computeScrollDeltaOnDrag({ source });
-
           e.target.style.transform = `translate(${left}px, ${top - scrollDelta}px)`;
           e.target.setAttribute(
             'widget-pos2',

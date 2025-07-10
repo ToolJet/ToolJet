@@ -433,19 +433,44 @@ export function hideGridLinesOnSlot(slotId) {
 
 // Track previously active elements for efficient cleanup
 let previousActiveWidgets = null;
-let previousActiveCanvas = null;
+let previousActiveCanvas = null
+let processedComponents = new Set();
 
 export const handleActivateNonDraggingComponents = () => {
-  // Only add non-dragging class to visible components in viewport
-  document.querySelectorAll('.moveable-box:not(.active-target)').forEach((component) => {
-    // Check if element is visible in viewport
-    const rect = component.getBoundingClientRect();
-    const isVisible =
-      rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0;
-
-    if (isVisible) {
-      component.classList.add('non-dragging-component');
+  // Get viewport bounds once
+  const viewport = {
+    top: 0,
+    left: 0,
+    bottom: window.innerHeight,
+    right: window.innerWidth
+  };
+  
+  const components = document.getElementsByClassName('moveable-box');
+  
+  for (let i = 0; i < components.length; i++) {
+    const component = components[i];
+    
+    // Skip if already processed or is active target
+    if (processedComponents.has(component) || component.classList.contains('active-target')) {
+      continue;
     }
+    
+    // Quick visibility check - only get rect if needed
+    const rect = component.getBoundingClientRect();
+    
+    if (rect.bottom > viewport.top && rect.top < viewport.bottom && 
+        rect.right > viewport.left && rect.left < viewport.right) {
+      component.classList.add('non-dragging-component');
+      processedComponents.add(component);
+    }
+  }
+};
+
+// Clear cache when drag ends
+export const clearNonDraggingComponentsCache = () => {
+  processedComponents.clear();
+  document.querySelectorAll('.non-dragging-component').forEach(component => {
+    component.classList.remove('non-dragging-component');
   });
 };
 
@@ -499,7 +524,7 @@ export const handleDeactivateTargets = () => {
     previousActiveCanvas.classList.remove('dragging-component-canvas');
     previousActiveCanvas = null;
   }
-
+  clearNonDraggingComponentsCache()
   document.querySelectorAll('.non-dragging-component').forEach((component) => {
     component.classList.remove('non-dragging-component');
   });
