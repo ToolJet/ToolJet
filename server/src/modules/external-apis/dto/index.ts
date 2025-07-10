@@ -174,10 +174,7 @@ export class GithubHttpsConfigDTO extends OrganizationGitCreateDto {
 
 export class AppGitPullDto {
   @IsString()
-  gitAppId: string;
-
-  @IsString()
-  gitVersionId: string;
+  appId: string;
 
   @IsString()
   organizationId: string;

@@ -234,12 +234,12 @@ export class VersionRepository extends Repository<AppVersion> {
     });
   }
 
-  async getAppVersionByIdOrName(versionId: string) {
+  async getAppVersionByIdOrName(versionId: string, appId?: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let version;
       try {
         version = await manager.findOneOrFail(AppVersion, {
-          where: { name: versionId },
+          where: { name: versionId, appId: appId },
           relations: ['app'],
         });
       } catch (error) {
