@@ -34,17 +34,7 @@ export const useGridStore = create(
         setCurrentDragCanvasId: (canvasId) => set({ currentDragCanvasId: canvasId }),
         setGhostDragPosition: (position) => set({ ghostDragPosition: position }),
       },
-      addToElementGuidelines: (selector) =>
-        set((state) => ({
-          dynamicElementGuidelines: [...state.dynamicElementGuidelines, selector],
-        })),
-      removeFromElementGuidelines: (selector) =>
-        set((state) => ({
-          dynamicElementGuidelines: state.dynamicElementGuidelines.filter((item) => item !== selector),
-        })),
-      clearDynamicElementGuidelines: () => set({ dynamicElementGuidelines: [] }),
       setMoveableRef: (ref) => set({ moveableRef: ref }),
-
       getGhostDragPosition: () => get().ghostDragPosition,
     }),
     { name: 'Grid Store' }

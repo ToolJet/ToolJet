@@ -638,12 +638,14 @@ export default function Grid({ gridWidth, currentLayout }) {
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
           const temporaryLayouts = getTemporaryLayouts();
+          const currentWidget = boxList.find(({ id }) => id === e.target.id);
+
           if (resizingComponentId !== e.target.id) {
             useStore.getState().setResizingComponentId(e.target.id);
+            setDragParentId(currentWidget.component?.parent);
             showGridLines();
           }
 
-          const currentWidget = boxList.find(({ id }) => id === e.target.id);
 
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
 
@@ -713,6 +715,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onResizeEnd={(e) => {
           try {
             useStore.getState().setResizingComponentId(null);
+            setDragParentId(null);
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;
             });
