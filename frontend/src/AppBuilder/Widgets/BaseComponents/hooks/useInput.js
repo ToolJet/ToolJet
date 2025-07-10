@@ -168,13 +168,13 @@ export const useInput = ({
       };
     }
 
-    if (inputType !== 'phone') {
+    if (inputType !== 'phone' && inputType !== 'currency') {
       exposedVariables.setText = async function (text) {
         setInputValue(text);
         fireEvent('onChange');
       };
     }
-    
+
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
   }, []);
