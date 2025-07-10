@@ -13,6 +13,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { debounce } from 'lodash';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const { moduleId } = useModuleContext();
@@ -63,8 +65,16 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
     );
   };
 
+  const { appId } = useAppDataStore(
+    (state) => ({
+      appId: state?.appId,
+    }),
+    shallow
+  );
+
   const previewButtonOnClick = () => {
     const _options = { ...selectedQuery.options };
+    posthogHelper.captureEvent('click_preview', { dataSource: selectedDataSource?.kind, appId });
     const query = {
       data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
       pluginId: selectedDataSource.pluginId,

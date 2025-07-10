@@ -7,6 +7,7 @@ import { getCookie } from '@/_helpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export function Authorize({ navigate }) {
   const [error, setError] = useState('');
@@ -85,6 +86,17 @@ export function Authorize({ navigate }) {
           });
           onLoginSuccess(restResponse, navigate);
         }
+        const event = `${redirect_url ? 'signup' : 'signin'}_${
+          router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
+        }`;
+        posthogHelper.initPosthog(restResponse);
+        posthogHelper.captureEvent(event, {
+          email: restResponse?.email,
+          workspace_id:
+            organizationId ||
+            authenticationService?.currentSessionValue?.current_organization_id ||
+            restResponse?.organization_id,
+        });
       })
       .catch((err) => {
         const details = err?.data?.message;

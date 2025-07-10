@@ -44,6 +44,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import EmbedApp from '@/AppBuilder/EmbedApp';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -104,6 +105,63 @@ class AppComponent extends React.Component {
     });
   };
 
+  initTelemetryAndSupport(currentUser) {
+    //FreshChat integration
+
+    // const isApplicationsPath = window.location.pathname.includes('/applications/');
+    // function initFreshChat() {
+    //   window.fcWidget.init({
+    //     token: '0ef214a3-8ae1-41fb-b0d0-57764bf8f64b',
+    //     host: 'https://wchat.freshchat.com',
+    //     config: {
+    //       cssNames: {
+    //         widget: 'custom_fc_frame',
+    //       },
+    //       content: {
+    //         actions: {
+    //           push_notify_yes: 'Yes',
+    //         },
+    //       },
+    //       headerProperty: {
+    //         hideChatButton: true,
+    //         direction: 'rtl',
+    //       },
+    //     },
+    //   });
+
+    //   window.fcWidget.user.setFirstName(`${currentUser.first_name} ${currentUser.last_name}`);
+
+    //   window.fcWidget.user.setEmail(currentUser.email);
+    // }
+    // function initialize(i, t) {
+    //   var e;
+    //   i.getElementById(t)
+    //     ? initFreshChat()
+    //     : (((e = i.createElement('script')).id = t),
+    //       (e.async = !0),
+    //       (e.src = 'https://wchat.freshchat.com/js/widget.js'),
+    //       (e.onload = initFreshChat),
+    //       i.head.appendChild(e));
+    // }
+    // function initiateCall() {
+    //   initialize(document, 'Freshdesk Messaging-js-sdk');
+    // }
+
+    // if (!isApplicationsPath) {
+    //   //freshchat needed only in editor mode and not in viwermode
+    //   window.addEventListener
+    //     ? window.addEventListener('load', initiateCall, !1)
+    //     : window.attachEvent('load', initiateCall, !1);
+
+    //   try {
+    //     initiateCall();
+    //   } catch (e) {
+    //     console.log(e);
+    //   }
+    // }
+    posthogHelper.initPosthog(currentUser);
+  }
+
   async componentDidMount() {
     setFaviconAndTitle();
     authorizeWorkspace();
@@ -114,6 +172,19 @@ class AppComponent extends React.Component {
     const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
     this.setState({ showBanner: isBasicPlan });
     this.updateColorScheme();
+    let counter = 0;
+    let interval;
+
+    interval = setInterval(async () => {
+      ++counter;
+      const current_user = authenticationService.currentSessionValue?.current_user;
+      if (current_user?.id) {
+        this.initTelemetryAndSupport(current_user); //Call when currentuser is available
+        clearInterval(interval);
+      } else if (counter > 10) {
+        clearInterval(interval);
+      }
+    }, 1000);
   }
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {

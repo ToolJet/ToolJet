@@ -37,6 +37,7 @@ import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
 import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -138,6 +139,11 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   selectDataSource = (source) => {
+    posthogHelper.captureEvent('choose_datasource', {
+      dataSource: source.kind,
+      source: source,
+      appId: this.state.appId,
+    });
     this.hideModal();
     this.setState(
       {
@@ -253,6 +259,8 @@ class DataSourceManagerComponent extends React.Component {
     const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
+
+    posthogHelper.captureEvent('save_connection_datasource', { dataSource: kind, appId }); //posthog event
 
     const parsedOptions = Object?.keys(options)?.map((key) => {
       let keyMeta = dataSourceMeta.options[key];

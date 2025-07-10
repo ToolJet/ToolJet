@@ -50,7 +50,7 @@ import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPro
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 
 const MAX_APPS_PER_PAGE = 9;
@@ -274,6 +274,14 @@ class HomePageComponent extends React.Component {
         type: this.props.appType,
         prompt,
       });
+      /* Posthog Event */
+      posthogHelper.captureEvent('click_new_app', {
+        workspace_id:
+          authenticationService?.currentUserValue?.organization_id ||
+          authenticationService?.currentSessionValue?.current_organization_id,
+        app_id: data?.id,
+        button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
+      });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
         state: { commitEnabled: this.state.commitEnabled, prompt },
@@ -478,7 +486,7 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo =[] } = await pluginsService.installDependentPlugins(
+        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
           this.state.dependentPlugins,
           true
         ));
@@ -486,7 +494,8 @@ class HomePageComponent extends React.Component {
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${this.props.appType === 'module' ? 'modules' : 'apps'
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
           } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
           { style: { maxWidth: '425px' } }
         );
@@ -769,6 +778,13 @@ class HomePageComponent extends React.Component {
         toast.success('Added to folder.');
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
+        posthogHelper.captureEvent('click_add_to_folder_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: appOperations?.selectedApp?.id,
+          folder_id: appOperations?.selectedFolder,
+        });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -899,6 +915,12 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
+    posthogHelper.captureEvent('click_import_from_template', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_from_template',
+    });
     this.setState({ showTemplateLibraryModal: true });
   };
   hideTemplateLibraryModal = () => {
@@ -956,6 +978,13 @@ class HomePageComponent extends React.Component {
   };
 
   openImportAppModal = async () => {
+    /* Posthog Events */
+    posthogHelper.captureEvent('click_import_button', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_dropdown_button',
+    });
     this.setState({ showImportAppModal: true });
   };
 
@@ -1224,8 +1253,9 @@ class HomePageComponent extends React.Component {
 
               <div className="groups-list">
                 <div
-                  className={`border rounded text-sm container ${missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
-                    }`}
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
                     User groups
@@ -1301,8 +1331,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                  ? 'homePage.deleteAppAndData'
-                  : deleteModuleText,
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1567,10 +1597,11 @@ class HomePageComponent extends React.Component {
                             {this.props.appType === 'module'
                               ? 'Create new module'
                               : this.props.t(
-                                `${this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                }.header.createNewApplication`,
-                                'Create new app'
-                              )}
+                                  `${
+                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                  }.header.createNewApplication`,
+                                  'Create new app'
+                                )}
                           </>
                         </Button>
                         <Dropdown.Toggle
@@ -1631,8 +1662,8 @@ class HomePageComponent extends React.Component {
                       classes="mb-3 small"
                       limits={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1726,8 +1757,8 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }

@@ -4,6 +4,7 @@ import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export const TestConnection = ({
   kind,
@@ -35,6 +36,8 @@ export const TestConnection = ({
 
   function testDataSource() {
     setTestingStatus(true);
+    posthogHelper.captureEvent('test_connection_datasource', { dataSource: kind, pluginId });
+    //posthog event
 
     const testConnectionBody = {
       kind,

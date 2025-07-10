@@ -7,7 +7,7 @@ import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
-import _ from 'lodash';
+import _, { get } from 'lodash';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
@@ -30,13 +30,13 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
-import { get } from 'lodash';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { components as selectComponents } from 'react-select';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export const EventManager = ({
   sourceId,
@@ -413,6 +413,28 @@ export const EventManager = ({
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
+    //----------------- Posthog Analytics for event handlers -----------------//
+    let postHogEventType = 'Event Handler';
+
+    switch (eventSourceType) {
+      case 'component':
+        postHogEventType = components[sourceId]['component']['component'];
+        break;
+
+      case 'page':
+        postHogEventType = `Page - ${sourceId}`;
+        break;
+
+      case 'data_query':
+        postHogEventType = `Query - ${sourceId}`;
+        break;
+
+      default:
+        break;
+    }
+
+    posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
+    //----------------- Posthog Analytics -----------------//
     createAppVersionEventHandlers({
       event: {
         eventId: Object.keys(eventMetaDefinition?.events)[0],
@@ -438,8 +460,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-        })
+            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+          })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -991,9 +1013,9 @@ export const EventManager = ({
                   (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => {
                     let optionsList = param.isDynamicOpiton
                       ? get({ ...components[event?.componentId] }, param.optionsGetter, []).map((tab) => ({
-                        name: tab.title,
-                        value: tab.id,
-                      }))
+                          name: tab.title,
+                          value: tab.id,
+                        }))
                       : param.options;
 
                     return (
@@ -1020,8 +1042,9 @@ export const EventManager = ({
                           </div>
                         ) : (
                           <div
-                            className={`${param?.type ? '' : 'fx-container-eventmanager-code'
-                              } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            className={`${
+                              param?.type ? '' : 'fx-container-eventmanager-code'
+                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                             data-cy="action-options-text-input-field"
                           >
                             <CodeHinter
