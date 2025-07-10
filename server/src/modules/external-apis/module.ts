@@ -58,6 +58,8 @@ export class ExternalApiModule extends SubModule {
         OrganizationRepository,
         UserRepository,
         UserPersonalAccessTokenRepository,
+        UserRepository,
+        AppsRepository,
       ],
       controllers: [ExternalApisController, ExternalApisAppsController],
       exports: [ExternalApiUtilService],
