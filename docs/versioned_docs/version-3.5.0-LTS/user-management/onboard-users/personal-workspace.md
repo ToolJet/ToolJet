@@ -3,7 +3,6 @@ id: personal-workspace
 title: Personal Workspaces
 ---
 
-
 Personal workspaces give each user a private environment within an instance. Ideal for onboarding, learning ToolJet, or safely prototyping internal tools, they let users build and test without impacting shared workspaces.
 
 Personal Workspaces are an **instance-level** setting that can be toggled on or off by the **super admin** of a ToolJet instance. When enabled, a separate personal workspace is automatically created for each user upon signing up. This includes all sign-up methods configured at the instance level.
@@ -28,11 +27,9 @@ To manage the personal workspace setting, follow the steps:
 | Setting      | Effect on User Signup |
 |--------------|------------------------|
 | **Enabled**  | A personal workspace is automatically created for every new user upon signup using any [instance-level login](/docs/user-management/authentication/self-hosted/instance-login) method. |
-| **Disabled** | No personal workspace is created for users signing up or logging in via instance-level login methods. Access to workspaces must be managed manually by the admin. |
-
+| **Disabled** | Instance-level self-signup is not allowed in this mode. However, super-admins can enable self-signup at the workspace level, allowing users to sign up directly into specific workspaces. |
 
 :::note
-- If you want to enable [self-signup](/docs/user-management/onboard-users/self-signup-user) for your instance, personal workspaces must be enabled.
 - Personal workspace dependency will be deprecated in the upcoming LTS for instance level sign up.
 :::
 
