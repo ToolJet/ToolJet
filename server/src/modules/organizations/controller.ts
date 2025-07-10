@@ -50,30 +50,6 @@ export class OrganizationsController implements IOrganizationsController {
     return;
   }
 
-  @InitFeature(FEATURE_KEY.WORKSPACE_ARCHIVE)
-  @UseGuards(JwtAuthGuard)
-  @Patch('/archive/:id')
-  async archiveOrganization(
-    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
-    @Param('id') organizationId: string,
-    @User() user: UserEntity
-  ) {
-    await this.organizationsService.updateOrganizationStatus(organizationId, organizationUpdateDto, user);
-    return;
-  }
-
-  @InitFeature(FEATURE_KEY.WORKSPACE_UNARCHIVE)
-  @UseGuards(JwtAuthGuard)
-  @Patch('/unarchive/:id')
-  async unarchiveOrganization(
-    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
-    @Param('id') organizationId: string,
-    @User() user: UserEntity
-  ) {
-    await this.organizationsService.updateOrganizationStatus(organizationId, organizationUpdateDto, user);
-    return;
-  }
-
   @InitFeature(FEATURE_KEY.CHECK_UNIQUE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get('/is-unique')
@@ -86,5 +62,27 @@ export class OrganizationsController implements IOrganizationsController {
   @UseGuards(FeatureAbilityGuard)
   async checkUniqueWorkspaceName(@Query('name') name: string) {
     return this.organizationsService.checkWorkspaceNameUniqueness(name);
+  }
+
+  @InitFeature(FEATURE_KEY.WORKSPACE_ARCHIVE)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/archive/:id')
+  async archiveOrganization(
+    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
+    @Param('id') organizationId: string,
+    @User() user: UserEntity
+  ) {
+    throw new Error('Not implemented');
+  }
+
+  @InitFeature(FEATURE_KEY.WORKSPACE_UNARCHIVE)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/unarchive/:id')
+  async unarchiveOrganization(
+    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
+    @Param('id') organizationId: string,
+    @User() user: UserEntity
+  ) {
+    throw new Error('Not implemented');
   }
 }

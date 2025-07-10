@@ -17,7 +17,6 @@ function setupFirstUser({ companyName, buildPurpose, name, workspaceName, passwo
       password,
     }),
   };
-  console.log(requestOptions.body, 'BRUH');
 
   return fetch(`${config.apiUrl}/onboarding/setup-super-admin`, requestOptions)
     .then(handleResponse)
