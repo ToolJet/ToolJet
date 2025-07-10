@@ -365,6 +365,7 @@ export class AppsService implements IAppsService {
         globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
+        appId: app.id,
       };
     };
 
