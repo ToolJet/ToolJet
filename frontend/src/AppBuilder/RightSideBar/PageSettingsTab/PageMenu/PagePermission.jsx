@@ -22,9 +22,9 @@ export default function PagePermission({ darkMode }) {
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const editingPage = useStore((state) => state.editingPage);
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
-  const selectedUserGroups = useStore((state) => state.selectedUserGroups);
+  const selectedUserGroups = useStore((state) => state.appPermission.selectedUserGroups);
   const setSelectedUserGroups = useStore((state) => state.setSelectedUserGroups);
-  const selectedUsers = useStore((state) => state.selectedUsers);
+  const selectedUsers = useStore((state) => state.appPermission.selectedUsers);
   const setSelectedUsers = useStore((state) => state.setSelectedUsers);
   const pagePermission = useStore((state) => state.pagePermission);
   const setPagePermission = useStore((state) => state.setPagePermission);
@@ -353,7 +353,7 @@ export default function PagePermission({ darkMode }) {
 const UserGroupSelect = () => {
   const { moduleId } = useModuleContext();
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
-  const selectedUserGroups = useStore((state) => state.selectedUserGroups);
+  const selectedUserGroups = useStore((state) => state.appPermission.selectedUserGroups);
   const setSelectedUserGroups = useStore((state) => state.setSelectedUserGroups);
   const [userGroups, setUserGroups] = useState([]);
   useEffect(() => {
@@ -415,7 +415,7 @@ const UserSelect = () => {
   const { moduleId } = useModuleContext();
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const editingPage = useStore((state) => state.editingPage);
-  const selectedUsers = useStore((state) => state.selectedUsers);
+  const selectedUsers = useStore((state) => state.appPermission.selectedUsers);
   const setSelectedUsers = useStore((state) => state.setSelectedUsers);
   const [users, setUsers] = useState([]);
   useEffect(() => {

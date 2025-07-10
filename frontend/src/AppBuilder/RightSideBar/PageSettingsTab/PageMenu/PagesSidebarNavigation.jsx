@@ -33,7 +33,7 @@ export const PagesSidebarNavigation = ({
   const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
-  const currentMode = useStore((state) => state.currentMode);
+  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const license = useStore((state) => state.license);
@@ -266,6 +266,10 @@ export const PagesSidebarNavigation = ({
   const headerHidden = isLicensed ? hideHeader : false;
   const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
+  if (hideHeader && hideLogo && isPagesSidebarHidden) {
+    return null;
+  }
+
   return (
     <div>
       <button
@@ -297,58 +301,60 @@ export const PagesSidebarNavigation = ({
         ref={navRef}
         className={cx('navigation-area', {
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
-          // 'sidebar-overlay': !isSidebarPinned && properties?.collapsable,
           'icon-only': style === 'icon' || (style === 'texticon' && !isSidebarPinned && position === 'side'),
-          'position-top': position === 'top',
+          'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
-          'right-sidebar-open': isRightSidebarOpen && position === 'top',
-          'left-sidebar-open': isSidebarOpen && position === 'top',
+          'right-sidebar-open': isRightSidebarOpen && (position === 'top' || isPagesSidebarHidden),
+          'left-sidebar-open': isSidebarOpen && (position === 'top' || isPagesSidebarHidden),
         })}
         style={{
           width: 226,
           position: 'sticky',
-          // height: `calc(100% - ${showHeader ? APP_HEADER_HEIGHT : 0}px)`,
-          // height,
-          height: '100%',
-          // top: showHeader ? '47px' : '0px',
+          height: currentMode === 'edit' ? '100%' : `calc(100% - 32px)`,
           top: '4px',
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
           border: `${styles?.pillRadius?.value}px`,
-          borderRight: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
-          borderTop: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
+          borderRight:
+            !styles?.borderColor?.isDefault && position === 'side' ? `1px solid ${styles?.borderColor?.value}` : '',
+          borderBottom:
+            !styles?.borderColor?.isDefault && position === 'top' ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
           boxShadow: 'var(--elevation-100-box-shadow)',
-          scrollbarWidth: 'none',
-          // ...(position === 'side' && isSidebarOpen ? { marginLeft: isSidebarPinned ? '574px' : '392px' } : {}),
         }}
       >
-        <div className="position-relative">
-          <div
-            style={{
-              marginRight: headerHidden && position == 'top' && '0px',
-            }}
-            className="app-name"
-          >
-            {!hideLogo && (
-              <div onClick={switchToHomePage} className="cursor-pointer">
-                <AppLogo isLoadingFromHeader={false} />
-              </div>
-            )}
-            {!headerHidden && ((isPinnedWithLabel && !labelHidden) || position === 'top') && (
-              <span>{name?.trim() ? name : appName}</span>
-            )}
-            {collapsable && !isTopPositioned && style == 'texticon' && position === 'side' && (
-              <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
-                <SolidIcon
-                  className="cursor-pointer"
-                  fill="var(--icon-strong)"
-                  width="14px"
-                  name={isSidebarPinned ? 'remove03' : 'menu'}
-                />
-              </div>
-            )}
-          </div>
+        <div style={{ overflow: 'hidden' }} className="position-relative">
+          {(collapsable || !headerHidden || !hideLogo) && (
+            <div
+              style={{
+                marginRight: hideHeader && hideLogo && position == 'top' && '0px',
+              }}
+              className="app-name"
+            >
+              {!hideLogo && (
+                <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
+                  <AppLogo isLoadingFromHeader={false} />
+                </div>
+              )}
+              {!headerHidden && ((isPinnedWithLabel && !labelHidden) || position === 'top') && (
+                <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
+              )}
+              {collapsable &&
+                !isTopPositioned &&
+                style == 'texticon' &&
+                position === 'side' &&
+                !isPagesSidebarHidden && (
+                  <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
+                    <SolidIcon
+                      className="cursor-pointer"
+                      fill="var(--icon-strong)"
+                      width="14px"
+                      name={isSidebarPinned ? 'remove03' : 'menu'}
+                    />
+                  </div>
+                )}
+            </div>
+          )}
           {isLicensed && !isPagesSidebarHidden ? (
             <RenderPageAndPageGroup
               switchPageWrapper={switchPageWrapper}
@@ -414,12 +420,13 @@ const RenderPagesWithoutGroup = ({
   moreBtnRef,
 }) => {
   const [showPopover, setShowPopover] = useState(false);
-  const filteredPagesVisible = visibleLinks.filter(
+  const filteredPagesVisible = (position == 'top' ? visibleLinks : pages).filter(
     (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
   );
   const filteredPagesOverflow = overflowLinks.filter(
     (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
   );
+
   return (
     <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
       {filteredPagesVisible.map((page) => {

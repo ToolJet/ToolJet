@@ -21,4 +21,10 @@ export enum FEATURE_KEY {
   OAUTH_SAML_CONFIGS = '/oauth/saml/configs/:configId',
   OAUTH_COMMON_SIGN_IN = '/oauth/sign-in/common/:ssoType',
   OAUTH_SAML_RESPONSE = '/oauth/saml/:configId',
+
+  // AI Onboarding
+  AI_ONBOARDING = 'aiOnboarding', // POST 'ai-onboarding'
+  AI_ONBOARDING_SSO = 'aiOnboardingSSO', // POST 'sign-in/common/:ssoType
+  AI_COOKIE_SET = 'aiCookieSet', // POST 'set-ai-cookie'
+  AI_COOKIE_DELETE = 'aiCookieDelete', // GET 'delete-ai-cookies'
 }

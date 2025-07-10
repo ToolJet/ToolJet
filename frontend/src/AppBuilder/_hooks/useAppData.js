@@ -327,11 +327,10 @@ const useAppData = (
           appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
 
         appTypeRef.current = appData.type;
-
         setApp(
           {
             appName: appData.name,
-            appId: appData.id,
+            appId: appId || appData?.appId || appData?.app_id,
             slug: appData.slug,
             currentAppEnvironmentId: editorEnvironment.id,
             isMaintenanceOn:

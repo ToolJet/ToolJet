@@ -77,7 +77,7 @@ export const AppsRoute = ({ children, componentType }) => {
 
   const handleBrowserNavigation = (e) => {
     const { id, handle } = e.state;
-    switchPage(id, handle, [], true);
+    switchPage(id, handle, []);
   };
 
   return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;

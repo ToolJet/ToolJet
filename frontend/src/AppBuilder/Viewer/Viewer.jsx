@@ -16,6 +16,8 @@ import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
+import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
+import TooljetBanner from '../../Editor/Viewer/TooljetBanner';
 
 export const Viewer = ({
   id: appId,
@@ -106,6 +108,8 @@ export const Viewer = ({
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
+  const isLicenseNotValid = checkIfLicenseNotValid();
+
   // ---remove
   const handleAppEnvironmentChanged = useCallback((environment) => {
     console.log('setAppVersionCurrentEnvironment', environment);
@@ -217,19 +221,6 @@ export const Viewer = ({
                         }}
                       >
                         <div className={`areas d-flex flex-rows app-${appId}`}>
-                          {/* {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
-                            <PagesSidebarNavigation
-                              showHeader={showHeader}
-                              isMobileDevice={currentLayout === 'mobile'}
-                              pages={pages}
-                              currentPageId={currentPageId ?? homePageId}
-                              darkMode={darkMode}
-                              isSidebarPinned={isSidebarPinned}
-                              toggleSidebarPinned={toggleSidebarPinned}
-                              switchPage={switchPage}
-                            />
-                          )} */}
-
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
                               close: !isSidebarPinned,
@@ -279,6 +270,7 @@ export const Viewer = ({
                                 darkMode={darkMode}
                               />
                             </div>
+                            {isLicenseNotValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

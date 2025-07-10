@@ -56,6 +56,7 @@ export class EmailService implements IEmailService {
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;
     this.defaultWhiteLabelState = whiteLabelSettings?.default;
+    await this.emailUtilService.init();
   }
 
   protected compileTemplate(templatePath: string, templateData: object) {
@@ -77,7 +78,6 @@ export class EmailService implements IEmailService {
       redirectTo,
     } = payload;
     await this.init(organizationId);
-    await this.emailUtilService.init(organizationId);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
     const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo);
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
