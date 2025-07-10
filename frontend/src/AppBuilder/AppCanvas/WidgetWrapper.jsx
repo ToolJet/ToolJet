@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { ResizeGhostWidget } from './GhostWidgets';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
@@ -128,7 +127,6 @@ const WidgetWrapper = memo(
             onOptionsChange={onOptionsChange}
           />
         </div>
-        <ResizeGhostWidget isResizing={isResizing} />
       </>
     );
   }

@@ -22,11 +22,9 @@ export const DragGhostWidget = () => {
   );
 };
 
-export const ResizeGhostWidget = ({ isResizing }) => {
-  if (!isResizing) {
-    return '';
-  }
-
+export const ResizeGhostWidget = ({ }) => {
+  const resizingComponentId = useStore((state) => state.resizingComponentId);
+  if (!resizingComponentId) return null;
   return (
     <div
       id="resize-ghost-widget"

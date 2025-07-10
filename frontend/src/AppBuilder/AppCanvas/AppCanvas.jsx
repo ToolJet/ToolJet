@@ -20,8 +20,9 @@ import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { resolveReferences } from '@/_helpers/utils';
 import useRightSidebarMargin from './userRightSidebarMargin';
-import { DragGhostWidget } from './GhostWidgets';
+import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
+
 
 export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -109,15 +110,15 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
 
-  useEffect(() => {}, [isViewerSidebarPinned]);
+  useEffect(() => { }, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -226,6 +227,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
                     appType={appType}
                   />
                   <DragGhostWidget />
+                  <ResizeGhostWidget />
                   <div id="component-portal" />
                   {appType !== 'module' && <div id="component-portal" />}
                 </div>
