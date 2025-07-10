@@ -191,6 +191,7 @@ export default function generateColumnsData({
                   }
                   toggleOnBg={column?.toggleOnBg}
                   toggleOffBg={column?.toggleOffBg}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -263,6 +264,7 @@ export default function generateColumnsData({
                   readOnly={!isEditable}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
                   containerWidth={columnSize}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -280,6 +282,7 @@ export default function generateColumnsData({
                       tableColumnEvents,
                     });
                   }}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -334,6 +337,7 @@ export default function generateColumnsData({
                   height={column?.height ? `${column?.height}px` : '100%'}
                   borderRadius={column?.borderRadius}
                   objectFit={column?.objectFit}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
