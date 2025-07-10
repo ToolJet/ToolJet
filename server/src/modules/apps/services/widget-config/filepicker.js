@@ -19,19 +19,27 @@ export const filepickerConfig = {
     {
       handle: 'setFileName',
       displayName: 'Set File Name',
+      params: [
+        { handle: 'indexOrUpdates', displayName: 'Index' },
+        { handle: 'newNameIfSingle', displayName: 'New File Name' },
+      ],
     },
     {
       handle: 'setVisibility',
       displayName: 'Set Visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setLoading',
       displayName: 'Set Loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setDisable',
       displayName: 'Set Disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+
   ],
   properties: {
     label: {
