@@ -38,6 +38,7 @@ import {
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
@@ -112,6 +113,7 @@ class AppComponent extends React.Component {
     const featureAccess = await licenseService.getFeatureAccess();
     const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
     this.setState({ showBanner: isBasicPlan });
+    this.updateColorScheme();
   }
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {
@@ -121,7 +123,7 @@ class AppComponent extends React.Component {
     return false;
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     // Check if the current location is the dashboard (homepage)
     if (
       this.props.location.pathname === `/${getWorkspaceIdOrSlugFromURL()}` &&
@@ -134,18 +136,24 @@ class AppComponent extends React.Component {
     }
     // Update margin when showBanner changes
     this.updateMargin();
+    // Update color scheme if darkMode changed
+    if (prevState.darkMode !== this.state.darkMode) {
+      this.updateColorScheme();
+    }
   }
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
     this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
+    this.updateColorScheme(newMode);
   };
   isEditorOrViewerFromPath = () => {
     const pathname = this.props.location.pathname;
     if (pathname.includes('/apps/')) {
       return 'editor';
-    } else if (pathname.includes('/applications/') || pathname.includes('/embed-apps/')) {
+    }
+    if (pathname.includes('/applications/') || pathname.includes('/embed-apps/')) {
       return 'viewer';
     }
     return '';
@@ -155,6 +163,14 @@ class AppComponent extends React.Component {
   };
   isExistingPlanUser = (date) => {
     return new Date(date) < new Date('2025-04-24'); //show banner if user created before 2 april (24 for testing)
+  };
+  updateColorScheme = (darkModeValue) => {
+    const isDark = darkModeValue !== undefined ? darkModeValue : this.state.darkMode;
+    if (isDark) {
+      document.documentElement.style.setProperty('color-scheme', 'dark');
+    } else {
+      document.documentElement.style.removeProperty('color-scheme');
+    }
   };
   render() {
     const { updateAvailable, darkMode, isEditorOrViewer, showBanner } = this.state;
@@ -278,7 +294,7 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
-                {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                {isWorkflowsFeatureEnabled() && (
                   <Route
                     exact
                     path="/:workspaceId/workflows/*"
@@ -289,17 +305,19 @@ class AppComponent extends React.Component {
                     }
                   />
                 )}
-                <Route
-                  path="/:workspaceId/workspace-settings/*"
-                  element={<WorkspaceSettings {...mergedProps} />}
-                ></Route>
+                <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...mergedProps} />} />
                 <Route
                   path="settings/*"
                   element={
                     <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
                   }
-                ></Route>
-                <Route path="/:workspaceId/settings/*" element={<InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />}></Route>
+                />
+                <Route
+                  path="/:workspaceId/settings/*"
+                  element={
+                    <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
+                  }
+                />
                 <Route
                   exact
                   path="/:workspaceId/modules"
@@ -422,7 +440,7 @@ class AppComponent extends React.Component {
                 />
               </Routes>
             </BreadCrumbContext.Provider>
-            <div id="modal-div"></div>
+            <div id="modal-div" />
           </div>
 
           <Toast toastOptions={toastOptions} />

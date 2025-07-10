@@ -8,6 +8,7 @@ import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import * as envConfigs from 'config';
 
 const SignupPage = ({ configs, organizationId }) => {
   const edition = fetchEdition();
@@ -27,7 +28,7 @@ const SignupPage = ({ configs, organizationId }) => {
   const paramInviteOrganizationSlug = params.organizationId;
   const redirectTo = location?.search?.split('redirectTo=')[1];
   if (!paramInviteOrganizationSlug && edition === 'cloud') {
-    window.location.href = 'https://www.tooljet.ai/signup';
+    window.location.href = envConfigs.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup';
   }
   useEffect(() => {
     const errorMessage = location?.state?.errorMessage;

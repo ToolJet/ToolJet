@@ -203,12 +203,14 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 
     logger.log(`Frame embedding ${configService.get('DISABLE_APP_EMBED') !== 'true' ? 'enabled' : 'disabled'}`);
 
+    const subPath = configService.get<string>('SUB_PATH');
+
     // Custom headers middleware
     app.use((req, res, next) => {
       res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
       res.setHeader('X-Powered-By', 'ToolJet');
 
-      if (req.path.startsWith('/api/')) {
+      if (req.path.startsWith(`${subPath || '/'}api/`)) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       } else {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');

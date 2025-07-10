@@ -24,8 +24,15 @@ RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
-# Checkout the same branch in submodules if it exists, otherwise stay on default branch
-RUN git submodule foreach 'git checkout ${BRANCH_NAME} || true'
+# Checkout the same branch in submodules if it exists, otherwise fallback to main
+RUN git submodule foreach " \
+  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    git checkout ${BRANCH_NAME}; \
+  else \
+    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+    git checkout main; \
+  fi"
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -156,7 +163,7 @@ COPY --from=builder --chown=appuser:0 /app/server/node_modules ./app/server/node
 COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templates
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
-COPY --from=builder --chown=appuser:0 /app/server/src/assets ./app/server/src/assets
+COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \

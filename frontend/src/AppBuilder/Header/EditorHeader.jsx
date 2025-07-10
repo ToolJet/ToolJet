@@ -15,13 +15,16 @@ import UpdatePresenceMultiPlayer from './UpdatePresenceMultiPlayer';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const EditorHeader = ({ darkMode }) => {
+import Steps from './Steps';
+
+export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased } = useStore(
+  const { isSaving, saveError, isVersionReleased, aiGenerationMetadata } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
+      aiGenerationMetadata: state.appStore.modules[moduleId].app?.aiGenerationMetadata,
     }),
     shallow
   );
@@ -80,44 +83,64 @@ export const EditorHeader = ({ darkMode }) => {
                       <EditAppName />
                     </div>
                   </div>
-                  <HeaderActions darkMode={darkMode} />
-                  <div className="d-flex align-items-center">
-                    <div style={{ width: '100px' }}>
-                      <span
-                        className={cx('autosave-indicator tj-text-xsm', {
-                          'autosave-indicator-saving': isSaving,
-                          'text-danger': saveError,
-                          'd-none': isVersionReleased,
-                        })}
-                        data-cy="autosave-indicator"
-                      >
-                        {getSaveIndicator()}
-                      </span>
-                    </div>
-                    {shouldEnableMultiplayer && (
-                      <div className="mx-2 p-2">
-                        <RealtimeAvatars />
-                      </div>
-                    )}
-                    {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
-                  </div>
-                </div>
-                {!isModuleEditor && <div className="navbar-seperator"></div>}
-              </div>
-              <div className="d-flex align-items-center p-0">
-                <div className="d-flex version-manager-container p-0 mx-2  align-items-center ">
-                  {!isModuleEditor && (
+
+                  {isUserInZeroToOneFlow && (
+                    <Steps
+                      steps={aiGenerationMetadata?.steps?.map((step) => ({ label: step.name, value: step.id })) ?? []}
+                      activeStep={aiGenerationMetadata?.active_step}
+                    />
+                  )}
+
+                  {!isUserInZeroToOneFlow && (
                     <>
-                      <AppEnvironments darkMode={darkMode} />
-                      <AppVersionsManager darkMode={darkMode} />
-                      <GitSyncManager />
+                      <HeaderActions darkMode={darkMode} />
+                      <div className="d-flex align-items-center">
+                        <div style={{ width: '100px' }}>
+                          <span
+                            className={cx('autosave-indicator tj-text-xsm', {
+                              'autosave-indicator-saving': isSaving,
+                              'text-danger': saveError,
+                              'd-none': isVersionReleased,
+                            })}
+                            data-cy="autosave-indicator"
+                          >
+                            {getSaveIndicator()}
+                          </span>
+                        </div>
+                        {shouldEnableMultiplayer && (
+                          <div className="mx-2 p-2">
+                            <RealtimeAvatars />
+                          </div>
+                        )}
+                        {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
+                      </div>
                     </>
                   )}
                 </div>
+                {!isModuleEditor && !isUserInZeroToOneFlow && <div className="navbar-seperator"></div>}
               </div>
+
+              {!isUserInZeroToOneFlow && (
+                <div className="d-flex align-items-center p-0">
+                  <div className="d-flex version-manager-container p-0 mx-2  align-items-center ">
+                    {!isModuleEditor && (
+                      <>
+                        <AppEnvironments darkMode={darkMode} />
+                        <AppVersionsManager darkMode={darkMode} />
+                        <GitSyncManager />
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-            <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
-            <BuildSuggestions />
+
+            {!isUserInZeroToOneFlow && (
+              <>
+                <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
+                <BuildSuggestions />
+              </>
+            )}
           </div>
         </div>
       </header>

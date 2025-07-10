@@ -7,6 +7,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 import { hasBuilderRole } from '@/_helpers/utils';
+import './styles/styles.scss';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,

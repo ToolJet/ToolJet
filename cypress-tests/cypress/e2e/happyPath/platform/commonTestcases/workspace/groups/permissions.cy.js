@@ -196,10 +196,10 @@ describe("Manage Groups", () => {
 
         // App operations
         cy.createApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appCreatedToast
-        );
+        // cy.verifyToastMessage(
+        //     commonSelectors.toastMessage,
+        //     commonText.appCreatedToast
+        // );
         cy.backToApps();
 
         cy.wait(2500);

@@ -433,13 +433,7 @@ export class AppImportExportService {
 
       const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-      const importedApp = await this.createImportedAppForUser(
-        manager,
-        schemaUnifiedAppParams,
-        user,
-        isGitApp,
-        appParams?.type
-      );
+      const importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user, isGitApp);
 
       const resourceMapping = await this.setupImportedAppAssociations(
         manager,
@@ -527,23 +521,22 @@ export class AppImportExportService {
         await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
       }
     }
+
+    if (appVersionIds.length > 0) {
+      await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
+    }
   }
 
-  async createImportedAppForUser(
-    manager: EntityManager,
-    appParams: any,
-    user: User,
-    isGitApp = false,
-    type?: APP_TYPES
-  ): Promise<App> {
+  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
+        type: appParams.type || APP_TYPES.FRONT_END,
+        isMaintenanceOn: appParams.isMaintenanceOn || false,
         organizationId: user?.organizationId,
         userId: user.id, //fetch super admin user id for EE
         slug: null,
         icon: appParams.icon,
-        type: type || APP_TYPES.FRONT_END,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
         createdAt: new Date(),
@@ -605,7 +598,7 @@ export class AppImportExportService {
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>
-  ) {
+  ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
     // TODO: have version based conditional based on app versions
@@ -1270,6 +1263,61 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  /**
+   * Updates workflow definition query references with newly created query IDs during app import.
+   *
+   * Note: For workflow apps, the entire workflow definition (including nodes, edges, and query mappings)
+   * is stored as JSON in the app_versions.definition column. Unlike regular apps where queries are
+   * stored as separate entities, workflow queries are referenced within this JSON structure through
+   * a queries array that maps workflow node IDs (idOnDefinition) to actual data query IDs.
+   *
+   * During import, new data queries are created with different IDs, so we need to update the
+   * workflow definition's queries array to reference these new IDs while preserving the
+   * idOnDefinition values that link to workflow nodes.
+   */
+  private async updateWorkflowDefinitionQueryReferences(
+    manager: EntityManager,
+    appVersionIds: string[],
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    // Get the app versions with their definitions and associated apps
+    const appVersionsWithDefinitions = await manager
+      .createQueryBuilder(AppVersion, 'appVersion')
+      .leftJoinAndSelect('appVersion.app', 'app')
+      .where('appVersion.id IN(:...appVersionIds)', { appVersionIds })
+      .select(['appVersion.id', 'appVersion.definition', 'app.type'])
+      .getMany();
+
+    const workflowAppVersions = appVersionsWithDefinitions.filter(
+      (appVersion) => appVersion.app?.type === 'workflow' && appVersion.definition?.queries
+    );
+
+    if (workflowAppVersions.length > 0) {
+      for (const appVersion of workflowAppVersions) {
+        const definition = appVersion.definition;
+        let definitionUpdated = false;
+
+        // Update query IDs in the workflow definition
+        if (definition.queries && Array.isArray(definition.queries)) {
+          definition.queries = definition.queries.map((query) => {
+            if (query.id && resourceMapping.dataQueryMapping[query.id]) {
+              definitionUpdated = true;
+              return {
+                ...query,
+                id: resourceMapping.dataQueryMapping[query.id],
+              };
+            }
+            return query;
+          });
+        }
+
+        if (definitionUpdated) {
+          await manager.update(AppVersion, { id: appVersion.id }, { definition });
+        }
+      }
+    }
+  }
+
   async rejectMarketplacePluginsNotInstalled(
     manager: EntityManager,
     importingDataSources: DataSource[]
@@ -1849,6 +1897,7 @@ export class AppImportExportService {
         key: key,
         value: options[key]['value'],
         encrypted: options[key]['encrypted'],
+        workspace_constant: options[key]['workspace_constant'],
       };
     });
   }

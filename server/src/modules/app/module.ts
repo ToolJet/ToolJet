@@ -3,6 +3,8 @@ import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
 import { AppModuleLoader } from './loader';
 import * as Sentry from '@sentry/node';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { AbilityModule } from '@modules/ability/module';
 import { LicenseModule } from '@modules/licensing/module';
@@ -54,6 +56,7 @@ import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
+import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -68,7 +71,7 @@ export class AppModule implements OnModuleInit {
      * █                                                                  █
      * ████████████████████████████████████████████████████████████████████
      */
-    const imports = [
+    const baseImports = [
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs),
@@ -103,7 +106,6 @@ export class AppModule implements OnModuleInit {
       await ImportExportResourcesModule.register(configs),
       await TemplatesModule.register(configs),
       await TooljetDbModule.register(configs),
-      await WorkflowsModule.register(configs),
       await ModulesModule.register(configs),
       await AiModule.register(configs),
       await CustomStylesModule.register(configs),
@@ -115,7 +117,15 @@ export class AppModule implements OnModuleInit {
       await CrmModule.register(configs),
       await OrganizationPaymentModule.register(configs),
       await EmailListenerModule.register(configs),
+      await InMemoryCacheModule.register(configs),
     ];
+
+    const conditionalImports = [];
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
+      conditionalImports.push(await WorkflowsModule.register(configs));
+    }
+
+    const imports = [...baseImports, ...conditionalImports];
 
     return {
       module: AppModule,
