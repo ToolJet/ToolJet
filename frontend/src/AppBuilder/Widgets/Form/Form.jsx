@@ -315,19 +315,22 @@ const FormComponent = (props) => {
     onOptionsChange(transformedExposedValues, id, component);
   }
 
-  const onOptionChange = (key, value, id, component) => {
-    if (!component) {
-      component = childComponents?.[id]?.component?.component;
-    }
-    const optionData = {
-      ...(childDataRef.current[id] ?? {}),
-      name: component?.name,
-      [key]: value,
-      formKey: component?.formKey,
-    };
-    childDataRef.current = { ...childDataRef.current, [id]: optionData };
-    setChildrenData(childDataRef.current);
-  };
+  const onOptionChange = useCallback(
+    (key, value, id, component) => {
+      if (!component) {
+        component = childComponents?.[id]?.component?.component;
+      }
+      const optionData = {
+        ...(childDataRef.current[id] ?? {}),
+        name: component?.name,
+        [key]: value,
+        formKey: component?.formKey,
+      };
+      childDataRef.current = { ...childDataRef.current, [id]: optionData };
+      setChildrenData(childDataRef.current);
+    },
+    [childComponents]
+  );
 
   const onOptionsChange = useCallback(
     (exposedValues, id, component) => {
