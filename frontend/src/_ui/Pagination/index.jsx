@@ -9,6 +9,11 @@ const Pagination = ({
   totalPage,
   isDisabled,
   disableInput = false,
+  showFirstLastButtons = false,
+  gotoFirstPage,
+  gotoLastPage,
+  showPageNumbers = false,
+  pageNumbersToShow = 5,
 }) => {
   const [currentPageNumber, setCurrentPageNumber] = React.useState(currentPage);
 
@@ -29,8 +34,50 @@ const Pagination = ({
     setCurrentPageNumber(currentPage);
   }, [currentPage]);
 
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const halfPageNumbersToShow = Math.floor(pageNumbersToShow / 2);
+    let startPage = Math.max(1, currentPage - halfPageNumbersToShow);
+    let endPage = Math.min(totalPage, currentPage + halfPageNumbersToShow);
+
+    if (currentPage <= halfPageNumbersToShow) {
+      endPage = Math.min(totalPage, pageNumbersToShow);
+    } else if (currentPage + halfPageNumbersToShow >= totalPage) {
+      startPage = Math.max(1, totalPage - pageNumbersToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(
+        <button
+          key={i}
+          className={`page-number ${i === currentPage ? 'active' : ''}`}
+          onClick={() => gotoNextPage(true, i)}
+          disabled={isDisabled}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return pageNumbers;
+  };
+
   return (
     <div className="pagination-container d-flex" data-cy="pagination-section">
+      {showFirstLastButtons && (
+        <Button.UnstyledButton
+          onClick={(event) => {
+            event.stopPropagation();
+            gotoFirstPage();
+          }}
+          classNames={darkMode ? 'dark' : 'nothing'}
+          styles={{ height: '20px', width: '20px' }}
+          disabled={isDisabled || currentPage === 1}
+        >
+          <Button.Content iconSrc={'assets/images/icons/chevron-double-left.svg'} />
+        </Button.UnstyledButton>
+      )}
+
       <Button.UnstyledButton
         onClick={(event) => {
           event.stopPropagation();
@@ -42,6 +89,8 @@ const Pagination = ({
       >
         <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
       </Button.UnstyledButton>
+
+      {showPageNumbers && renderPageNumbers()}
 
       <div className="d-flex align-items-center mx-1">
         <input
@@ -78,6 +127,20 @@ const Pagination = ({
       >
         <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
       </Button.UnstyledButton>
+
+      {showFirstLastButtons && (
+        <Button.UnstyledButton
+          onClick={(event) => {
+            event.stopPropagation();
+            gotoLastPage();
+          }}
+          classNames={darkMode ? 'dark' : 'nothing'}
+          styles={{ height: '20px', width: '20px' }}
+          disabled={isDisabled || currentPage === totalPage}
+        >
+          <Button.Content iconSrc={'assets/images/icons/chevron-double-right.svg'} />
+        </Button.UnstyledButton>
+      )}
     </div>
   );
 };
