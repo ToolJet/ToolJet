@@ -37,59 +37,76 @@ export function renderCustomStyles(
   const definition = paramTypeDefinition[param] || {};
   const meta = customMeta ?? componentMeta[paramType]?.[accordian]?.[param];
 
-  if (
-    componentConfig.component == 'DropDown' ||
-    componentConfig.component == 'Form' ||
-    componentConfig.component == 'Listview' ||
-    componentConfig.component == 'TextInput' ||
-    componentConfig.component == 'NumberInput' ||
-    componentConfig.component == 'PasswordInput' ||
-    componentConfig.component == 'EmailInput' ||
-    componentConfig.component == 'PhoneInput' ||
-    componentConfig.component == 'CurrencyInput' ||
-    componentConfig.component == 'ToggleSwitchV2' ||
-    componentConfig.component == 'Checkbox' ||
-    componentConfig.component == 'Table' ||
-    componentConfig.component == 'DropdownV2' ||
-    componentConfig.component == 'MultiselectV2' ||
-    componentConfig.component == 'RadioButtonV2' ||
-    componentConfig.component == 'Button' ||
-    componentConfig.component == 'Image' ||
-    componentConfig.component == 'ModalV2' ||
-    componentConfig.component == 'RangeSlider' ||
-    componentConfig.component == 'FilePicker'
-  ) {
+  const componentsWithConditionalStyles = [
+    'DropDown',
+    'Form',
+    'Listview',
+    'TextInput',
+    'NumberInput',
+    'PasswordInput',
+    'EmailInput',
+    'PhoneInput',
+    'CurrencyInput',
+    'ToggleSwitchV2',
+    'Checkbox',
+    'Table',
+    'DropdownV2',
+    'MultiselectV2',
+    'RadioButtonV2',
+    'Button',
+    'Image',
+    'ModalV2',
+    'RangeSlider',
+    'FilePicker',
+  ];
+
+  if (componentsWithConditionalStyles.includes(componentConfig.component)) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
     const getResolvedValue = (key) => {
-      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
+      const paramDef = paramTypeDefinition?.[key];
+      if (paramDef && typeof paramDef.value !== 'undefined') {
+        return resolveReferences(paramDef.value, currentState, components);
+      }
+      return resolveReferences(paramDef, currentState, components);
     };
 
-    const utilFuncForMultipleChecks = (conditionallyRender) => {
-      return conditionallyRender.reduce((acc, condition) => {
-        const { key, value } = condition;
-        if (paramTypeDefinition?.[key] ?? value) {
-          const resolvedValue = getResolvedValue(key);
-          acc.push(resolvedValue?.value !== value);
-        }
-        return acc;
-      }, []);
+    const evaluateCondition = (condition) => {
+      const { key, value, comparator = 'eq' } = condition;
+
+      const resolvedValue = getResolvedValue(key);
+
+      switch (comparator) {
+        case 'eq':
+          return resolvedValue === value;
+        case 'ne':
+          return resolvedValue !== value;
+        case 'in':
+          return Array.isArray(value) && value.includes(resolvedValue);
+        case 'not-in':
+          return Array.isArray(value) && !value.includes(resolvedValue);
+        default:
+          return false;
+      }
     };
 
     if (conditionallyRender) {
-      const isConditionallyRenderArray = Array.isArray(conditionallyRender);
-
-      if (isConditionallyRenderArray && utilFuncForMultipleChecks(conditionallyRender).includes(true)) {
-        return;
+      if (Array.isArray(conditionallyRender)) {
+        const shouldHide = conditionallyRender.some((condition) => !evaluateCondition(condition));
+        if (shouldHide) {
+          return;
+        }
       } else {
-        const { key, value } = conditionallyRender;
-        if (paramTypeDefinition?.[key] ?? value) {
-          const resolvedValue = getResolvedValue(key);
-          if (resolvedValue?.value !== value) {
-            return;
-          }
+        let shouldRender = evaluateCondition(conditionallyRender);
+
+        if (conditionallyRender.and) {
+          shouldRender = shouldRender && evaluateCondition(conditionallyRender.and);
+        }
+
+        if (!shouldRender) {
+          return;
         }
       }
     }

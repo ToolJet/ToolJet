@@ -3,6 +3,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Spinner from '@/_ui/Spinner';
+
 export const RangeSlider = ({
   height,
   properties,
@@ -14,7 +15,22 @@ export const RangeSlider = ({
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
+
+  const {
+    value,
+    min,
+    max,
+    type,
+    label,
+    schema,
+    endValue,
+    startValue,
+    visibility,
+    disabledState,
+    loadingState,
+    stepSize,
+    enableTwoHandle,
+  } = properties;
 
   const {
     trackColor,
@@ -32,124 +48,205 @@ export const RangeSlider = ({
 
   const sliderRef = useRef(null);
 
-  const [defaultSliderValue, setDefaultSliderValue] = useState(value);
-  const [defaultRangeValue, setDefaultRangeValue] = useState([startValue, endValue]);
-  const [labelWidth, setLabelWidth] = useState(auto ? 'auto' : width);
-  // <- HAVE COMMENTED THIS VARIABLE FOR YOUR REFERENCE ->
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [disabled, setDisabled] = useState(properties?.disabledState);
-  const [loading, setLoading] = useState(properties?.loadingState);
+  const [newSliderValue, setNewSliderValue] = useState(value);
+  const [newRangeValue, setNewRangeValue] = useState([startValue, endValue]);
+  const [newVisibility, setNewVisibility] = useState(visibility);
+  const [newDisabled, setNewDisabled] = useState(disabledState);
+  const [newLoading, setNewLoading] = useState(loadingState);
+
+  const [legacyValue, setLegacyValue] = useState(properties.value);
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const _width = auto ? 'auto' : `${(width / 100) * 70}%`;
 
   const toArray = (data) => (Array.isArray(data) ? data : [data, max]);
-  const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
-  const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
   useEffect(() => {
-    if (auto) {
-      setLabelWidth('auto');
+    if (type === 'legacy') {
+      setExposedVariables({
+        value: legacyValue,
+        label: null,
+        isVisible: null,
+        isDisabled: null,
+        isLoading: null,
+        setValue: null,
+        setRangeValue: null,
+        setVisibility: null,
+        setDisable: null,
+        setLoading: null,
+        reset: null,
+      });
     } else {
-      setLabelWidth(width > 0 ? `${width}%` : '33%');
+      const currentExposedValue = type === 'slider' ? newSliderValue : newRangeValue;
+      const exposedVariables = {
+        value: currentExposedValue,
+        label: label,
+        isVisible: newVisibility,
+        isDisabled: newDisabled,
+        isLoading: newLoading,
+
+        setValue: async function (val) {
+          setNewSliderValue(val);
+          setExposedVariable('value', val);
+          fireEvent('onChange');
+        },
+        setRangeValue: async function (num1, num2) {
+          setNewRangeValue([num1, num2]);
+          setExposedVariable('value', [num1, num2]);
+          fireEvent('onChange');
+        },
+        setVisibility: async function (val) {
+          setNewVisibility(val);
+          setExposedVariable('isVisible', val);
+        },
+        setDisable: async function (val) {
+          setNewDisabled(val);
+          setExposedVariable('isDisabled', val);
+        },
+        setLoading: async function (val) {
+          setNewLoading(val);
+          setExposedVariable('isLoading', val);
+        },
+        reset: () => {
+          if (type === 'slider') {
+            setNewSliderValue(value ?? min);
+            setExposedVariable('value', value ?? min);
+          } else {
+            const start = startValue ?? min;
+            const end = endValue ?? max;
+            setExposedVariable('value', [start, end]);
+            setNewRangeValue([start, end]);
+          }
+        },
+      };
+      setExposedVariables(exposedVariables);
     }
-  }, [auto, width]);
 
-  useEffect(() => {
-    const exposedVariables = {
-      setValue: async function (value) {
-        setDefaultSliderValue(value);
-        setExposedVariable('value', value);
-        fireEvent('onChange');
-      },
-      setRangeValue: async function (num1, num2) {
-        setDefaultRangeValue([num1, num2]);
-        setExposedVariable('value', [num1, num2]);
-        fireEvent('onChange');
-      },
-      setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
-      },
-      setDisable: async function (value) {
-        setDisabled(value);
-        setExposedVariable('isDisabled', value);
-      },
-      setLoading: async function (value) {
-        setLoading(value);
-        setExposedVariable('isLoading', value);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    isInitialRender.current = false;
-  }, []);
-
-  useEffect(() => {
-    setExposedVariable('reset', () => {
-      if (enableTwoHandle === 'slider') {
-        setDefaultSliderValue(value ?? min);
-        setExposedVariable('value', value ?? min);
+    if (isInitialRender.current) {
+      if (type === 'legacy') {
+        setLegacyValue(value);
       } else {
-        const start = startValue ?? min;
-        const end = endValue ?? max;
-        setExposedVariable('value', [start, end]);
-        setDefaultRangeValue([start, end]);
+        if (type === 'slider') {
+          setNewSliderValue(value);
+        } else {
+          setNewRangeValue([startValue, endValue]);
+        }
       }
-    });
-  }, [min, max, startValue, endValue]);
+    }
+    isInitialRender.current = false;
+  }, [
+    type,
+    value,
+    startValue,
+    endValue,
+    min,
+    max,
+    legacyValue,
+    properties.value,
+    label,
+    newVisibility,
+    newDisabled,
+    newLoading,
+    newSliderValue,
+    newRangeValue,
+  ]);
 
   useEffect(() => {
-    disabled !== properties.disabledState && setDisabled(properties.disabledState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.disabledState]);
+    if (type !== 'legacy') {
+      newDisabled !== disabledState && setNewDisabled(disabledState);
+    }
+  }, [disabledState, newDisabled, type]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
+    if (type !== 'legacy') {
+      newVisibility !== visibility && setNewVisibility(visibility);
+    }
+  }, [visibility, newVisibility, type]);
 
   useEffect(() => {
-    loading !== properties.loadingState && setLoading(properties.loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
+    if (type !== 'legacy') {
+      newLoading !== loadingState && setNewLoading(loadingState);
+    }
+  }, [loadingState, newLoading, type]);
+
+  useEffect(() => {
+    if (type !== 'legacy') {
+      newLoading !== loadingState && setNewLoading(loadingState);
+    }
+  }, [loadingState, newLoading, type]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    if (enableTwoHandle === 'slider') {
-      setDefaultSliderValue(value);
-    } else {
+    if (type === 'slider') {
+      setNewSliderValue(value);
+      setExposedVariable('value', value);
+    }
+  }, [value, type]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    if (type === 'rangeSlider') {
+      setNewRangeValue([startValue, endValue]);
+      setExposedVariable('value', [startValue, endValue]);
+    }
+  }, [startValue, endValue, type]);
+
+  // This useEffect ensures that when the 'type' changes, the value reflected
+  // in the exposed variable is immediately updated to match the active slider type.
+  useEffect(() => {
+    if (isInitialRender.current) return; // Skip on initial render
+    if (type === 'legacy') {
+      // For legacy, use properties.value (initial value) as base
+      setLegacyValue(properties.value);
+      setExposedVariable('value', properties.value);
+    } else if (type === 'slider') {
+      // For single slider, use the newSliderValue state
+      setNewSliderValue(value ?? min); // Reset to default or min if changing type
+      setExposedVariable('value', value ?? min);
+    } else if (type === 'rangeSlider') {
+      // For range slider, use the newRangeValue state
       const start = startValue ?? min;
       const end = endValue ?? max;
-
-      setDefaultRangeValue([start, end]);
+      setNewRangeValue([start, end]); // Reset to default or min/max if changing type
+      setExposedVariable('value', [start, end]);
     }
+  }, [type, value, startValue, endValue, min, max, properties.value]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, enableTwoHandle, startValue, endValue]);
-
-  const onSliderChange = (value) => {
-    setExposedVariable('value', value);
-    setDefaultSliderValue(value);
+  const onNewSliderChange = (val) => {
+    setExposedVariable('value', val);
+    setNewSliderValue(val);
   };
 
-  const onRangeChange = (value) => {
-    setExposedVariable('value', value);
-    setDefaultRangeValue(value);
+  const onNewRangeChange = (val) => {
+    setExposedVariable('value', val);
+    setNewRangeValue(val);
   };
 
-  const rangeStyles = {
-    handleStyle: toArray(defaultRangeValue).map(() => ({
-      backgroundColor: `${handleColor}`,
-      borderColor: handleColor,
-      border: `1px solid ${handleBorderColor}`,
-      height: 16,
-      width: 16,
-      opacity: 1,
-    })),
-    trackStyle: toArray(defaultRangeValue).map(() => ({
-      backgroundColor: trackColor,
-      height: 8,
-    })),
+  const onLegacyChange = (val) => {
+    console.log({ val }, 'happening');
+    setExposedVariable('value', val);
+    setLegacyValue(val);
+  };
+
+  const commonRangeStyles = {
+    handleStyle: (val) => {
+      const currentVal = Array.isArray(val) ? val : [val];
+      return currentVal.map(() => ({
+        backgroundColor: `${handleColor}`,
+        borderColor: handleBorderColor,
+        border: `1px solid ${handleBorderColor}`,
+        height: 16,
+        width: 16,
+        opacity: 1,
+      }));
+    },
+    trackStyle: (val) => {
+      const currentVal = Array.isArray(val) ? val : [val];
+      return currentVal.map(() => ({
+        backgroundColor: trackColor,
+        height: 8,
+      }));
+    },
     railStyle: { backgroundColor: lineColor, height: 8 },
     dotStyle: {
       width: 4,
@@ -164,7 +261,7 @@ export const RangeSlider = ({
   };
 
   const Label = ({ label, color, defaultAlignment, direction }) => {
-    if (!label) return null;
+    if (type === 'legacy' || !label) return null;
 
     return (
       <div
@@ -192,111 +289,153 @@ export const RangeSlider = ({
   };
 
   const containerStyle = {
-    display: visibility ? 'flex' : 'none',
-    flexDirection: defaultAlignment === 'top' ? 'column' : 'row',
-    alignItems: defaultAlignment === 'top' ? (direction === 'right' ? 'flex-end' : 'flex-start') : 'center',
-    justifyContent: 'flex-start',
-    padding: '0px',
+    height,
+    display: (type === 'legacy' ? visibility : newVisibility) ? 'flex' : 'none',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: type === 'legacy' ? '0px 2px' : styles.padding === 'none' ? '0px' : '0px',
     boxShadow,
     width: '100%',
-    height: defaultAlignment === 'top' ? 'auto' : height,
-    gap: '0px',
-    ...(defaultAlignment === 'side' && direction === 'right' && { flexDirection: 'row-reverse' }),
-    ...(disabled && {
-      pointerEvents: 'none',
-      cursor: 'not-allowed',
-      opacity: 0.5,
+    ...(type !== 'legacy' && {
+      flexDirection: defaultAlignment === 'top' ? 'column' : 'row',
+      alignItems: defaultAlignment === 'top' ? (direction === 'right' ? 'flex-end' : 'flex-start') : 'center',
+      justifyContent: 'flex-start',
+      height: defaultAlignment === 'top' ? 'auto' : height,
+      gap: '0px',
+      ...(defaultAlignment === 'side' && direction === 'right' && { flexDirection: 'row-reverse' }),
+      ...(newDisabled && {
+        pointerEvents: 'none',
+        cursor: 'not-allowed',
+        opacity: 0.5,
+      }),
+      visibility: newVisibility ? 'visible' : 'hidden',
     }),
-    visibility: visibility ? 'visible' : 'hidden',
   };
 
   const sliderContainerStyle = {
     width: '100%',
-    paddingRight: '12px',
-    visibility: visibility ? 'visible' : 'hidden',
+    paddingRight: type === 'legacy' ? '0px' : '12px',
+    visibility: (type === 'legacy' ? visibility : newVisibility) ? 'visible' : 'hidden',
   };
-  return (
-    <div style={containerStyle} className="range-slider" data-cy={dataCy}>
-      {loading ? (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-            width: '100%',
-          }}
-        >
-          <Spinner />
-        </div>
-      ) : (
-        <>
-          <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
 
-          <div style={sliderContainerStyle}>
-            {enableTwoHandle !== 'slider' ? (
-              <Slider
-                range
-                min={min}
-                max={max}
-                defaultValue={defaultRangeValue}
-                onChange={onRangeChange}
-                onAfterChange={() => fireEvent('onChange')}
-                value={defaultRangeValue}
-                ref={sliderRef}
-                trackStyle={rangeStyles.trackStyle}
-                railStyle={rangeStyles.railStyle}
-                handleStyle={rangeStyles.handleStyle}
-                dotStyle={rangeStyles.dotStyle}
-                activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
-                  acc[item.value] = {
-                    style: { color: markerLabel },
-                    label: item.label.replace('%', ''),
-                  };
-                  return acc;
-                }, {})}
-                handleRender={(node, handleProps) => {
-                  return (
-                    <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
-                      {node}
-                    </OverlayTrigger>
-                  );
-                }}
-              />
-            ) : (
-              <Slider
-                min={min}
-                max={max}
-                defaultValue={defaultSliderValue}
-                value={defaultSliderValue}
-                ref={sliderRef}
-                onChange={onSliderChange}
-                onAfterChange={() => fireEvent('onChange')}
-                trackStyle={rangeStyles.trackStyle}
-                railStyle={rangeStyles.railStyle}
-                handleStyle={rangeStyles.handleStyle}
-                dotStyle={rangeStyles.dotStyle}
-                activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
-                  acc[item.value] = {
-                    style: { color: markerLabel },
-                    label: item.label.replace('%', ''),
-                  };
-                  return acc;
-                }, {})}
-                handleRender={(node, handleProps) => {
-                  return (
-                    <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
-                      {node}
-                    </OverlayTrigger>
-                  );
-                }}
-              />
-            )}
+  if (type === 'legacy') {
+    return (
+      <div style={containerStyle} className="range-slider" data-cy={dataCy}>
+        {enableTwoHandle ? (
+          <Slider
+            range
+            min={min}
+            max={max}
+            defaultValue={toArray(properties.value)}
+            onChange={onLegacyChange}
+            onAfterChange={() => fireEvent('onChange')}
+            value={toArray(legacyValue)}
+            ref={sliderRef}
+            trackStyle={commonRangeStyles.trackStyle(legacyValue)}
+            railStyle={commonRangeStyles.railStyle}
+            handleStyle={commonRangeStyles.handleStyle(legacyValue)}
+          />
+        ) : (
+          <Slider
+            min={min}
+            max={max}
+            defaultValue={Array.isArray(properties.value) ? properties.value[0] : properties.value}
+            value={legacyValue}
+            ref={sliderRef}
+            onChange={onLegacyChange}
+            onAfterChange={() => fireEvent('onChange')}
+            trackStyle={commonRangeStyles.trackStyle(legacyValue)}
+            railStyle={commonRangeStyles.railStyle}
+            handleStyle={commonRangeStyles.handleStyle(legacyValue)}
+          />
+        )}
+      </div>
+    );
+  } else {
+    return (
+      <div style={containerStyle} className="range-slider" data-cy={dataCy}>
+        {newLoading ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100%',
+              width: '100%',
+            }}
+          >
+            <Spinner />
           </div>
-        </>
-      )}
-    </div>
-  );
+        ) : (
+          <>
+            <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
+            <div style={sliderContainerStyle}>
+              {type === 'rangeSlider' ? (
+                <Slider
+                  range
+                  min={min}
+                  max={max}
+                  defaultValue={newRangeValue}
+                  onChange={onNewRangeChange}
+                  onAfterChange={() => fireEvent('onChange')}
+                  value={newRangeValue}
+                  ref={sliderRef}
+                  step={stepSize}
+                  trackStyle={commonRangeStyles.trackStyle(newRangeValue)}
+                  railStyle={commonRangeStyles.railStyle}
+                  handleStyle={commonRangeStyles.handleStyle(newRangeValue)}
+                  dotStyle={commonRangeStyles.dotStyle}
+                  activeDotStyle={commonRangeStyles.activeDotStyle}
+                  marks={schema.reduce((acc, item) => {
+                    acc[item.value] = {
+                      style: { color: markerLabel },
+                      label: item.label.replace('%', ''),
+                    };
+                    return acc;
+                  }, {})}
+                  handleRender={(node, handleProps) => {
+                    return (
+                      <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                        {node}
+                      </OverlayTrigger>
+                    );
+                  }}
+                />
+              ) : (
+                <Slider
+                  min={min}
+                  max={max}
+                  defaultValue={newSliderValue}
+                  value={newSliderValue}
+                  ref={sliderRef}
+                  onChange={onNewSliderChange}
+                  onAfterChange={() => fireEvent('onChange')}
+                  step={stepSize}
+                  trackStyle={commonRangeStyles.trackStyle(newSliderValue)}
+                  railStyle={commonRangeStyles.railStyle}
+                  handleStyle={commonRangeStyles.handleStyle(newSliderValue)}
+                  dotStyle={commonRangeStyles.dotStyle}
+                  activeDotStyle={commonRangeStyles.activeDotStyle}
+                  marks={schema.reduce((acc, item) => {
+                    acc[item.value] = {
+                      style: { color: markerLabel },
+                      label: item.label.replace('%', ''),
+                    };
+                    return acc;
+                  }, {})}
+                  handleRender={(node, handleProps) => {
+                    return (
+                      <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                        {node}
+                      </OverlayTrigger>
+                    );
+                  }}
+                />
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
 };

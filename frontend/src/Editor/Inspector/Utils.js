@@ -129,20 +129,77 @@ export function renderElement(
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
 
-  if (
-    componentConfig.component == 'DropDown' ||
-    componentConfig.component == 'Form' ||
-    componentConfig.component == 'Listview'
-  ) {
+  const componentsWithConditionalElements = [
+    'DropDown',
+    'Form',
+    'Listview',
+    'TextInput',
+    'NumberInput',
+    'PasswordInput',
+    'EmailInput',
+    'PhoneInput',
+    'CurrencyInput',
+    'ToggleSwitchV2',
+    'Checkbox',
+    'Table',
+    'DropdownV2',
+    'MultiselectV2',
+    'RadioButtonV2',
+    'Button',
+    'Image',
+    'ModalV2',
+    'RangeSlider',
+    'FilePicker',
+  ];
+
+  if (componentsWithConditionalElements.includes(componentConfig.component)) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
+    const getResolvedValue = (key) => {
+      const paramDef = paramTypeDefinition?.[key];
+      if (paramDef && typeof paramDef.value !== 'undefined') {
+        return resolveReferences(paramDef.value, currentState, components);
+      }
+      return resolveReferences(paramDef, currentState, components);
+    };
+
+    const evaluateCondition = (condition) => {
+      const { key, value, comparator = 'eq' } = condition;
+
+      const resolvedValue = getResolvedValue(key);
+
+      switch (comparator) {
+        case 'eq':
+          return resolvedValue === value;
+        case 'ne':
+          return resolvedValue !== value;
+        case 'in':
+          return Array.isArray(value) && value.includes(resolvedValue);
+        case 'not-in':
+          return Array.isArray(value) && !value.includes(resolvedValue);
+        default:
+          return false;
+      }
+    };
+
     if (conditionallyRender) {
-      const { key, value } = conditionallyRender;
-      if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
-        if (resolvedValue?.value !== value) return;
+      if (Array.isArray(conditionallyRender)) {
+        const shouldHide = conditionallyRender.some((condition) => !evaluateCondition(condition));
+        if (shouldHide) {
+          return;
+        }
+      } else {
+        let shouldRender = evaluateCondition(conditionallyRender);
+
+        if (conditionallyRender.and) {
+          shouldRender = shouldRender && evaluateCondition(conditionallyRender.and);
+        }
+
+        if (!shouldRender) {
+          return;
+        }
       }
     }
   }

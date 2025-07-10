@@ -12,12 +12,13 @@ export const rangeSliderConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    enableTwoHandle: {
+    type: {
       type: 'switch',
       displayName: 'Slider type',
       options: [
         { displayName: 'Slider', value: 'slider' },
         { displayName: 'Range slider', value: 'rangeSlider' },
+        { displayName: 'Legacy', value: 'legacy' },
       ],
       isFxNotRequired: true,
       defaultValue: { value: 'slider' },
@@ -27,79 +28,99 @@ export const rangeSliderConfig = {
       type: 'code',
       displayName: 'Label',
       validation: { schema: { type: 'string' }, defaultValue: 'Label' },
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     min: {
-      type: 'number',
       displayName: 'Min value',
+      type: 'code',
       validation: {
         schema: { type: 'number' },
         defaultValue: 0,
       },
     },
     max: {
-      type: 'number',
       displayName: 'Max value',
+      type: 'code',
       validation: {
         schema: { type: 'number' },
         defaultValue: 100,
       },
     },
     value: {
-      type: 'number',
-      displayName: 'Default value',
-      conditionallyRender: {
-        key: 'enableTwoHandle',
-        value: 'slider',
-      },
-
+      type: 'code',
+      displayName: 'Value',
       validation: {
         schema: {
-          schema: { type: 'number' },
-          defaultValue: 50,
+          type: 'union',
+          schemas: [{ type: 'array', element: { type: 'number' } }, { type: 'number' }],
         },
+        defaultValue: 50,
+      },
+      conditionallyRender: {
+        key: 'type',
+        value: 'legacy',
       },
     },
     startValue: {
-      type: 'number',
+      type: 'code',
       displayName: 'Default start value',
       conditionallyRender: {
-        key: 'enableTwoHandle',
+        key: 'type',
         value: 'rangeSlider',
       },
-
       validation: {
-        schema: {
-          schema: { type: 'number' },
-          defaultValue: 50,
-        },
+        schema: { type: 'number' },
+        defaultValue: 50,
       },
     },
     endValue: {
-      type: 'number',
+      type: 'code',
       displayName: 'Default end value',
       conditionallyRender: {
-        key: 'enableTwoHandle',
+        key: 'type',
         value: 'rangeSlider',
       },
-
       validation: {
-        schema: {
-          schema: { type: 'number' },
-          defaultValue: 80,
-        },
+        schema: { type: 'number' },
+        defaultValue: 80,
       },
     },
     stepSize: {
-      type: 'number',
+      type: 'code',
       displayName: 'Step size',
       validation: {
         schema: { type: 'number' },
         defaultValue: 1,
       },
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
+    },
+    enableTwoHandle: {
+      type: 'toggle',
+      displayName: 'Two handles',
+      isFxNotRequired: true,
+      fullWidth: true,
+      defaultValue: false,
+      conditionallyRender: {
+        key: 'type',
+        value: 'legacy',
+      },
     },
     schema: {
       type: 'code',
       displayName: 'Set marks',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     loadingState: {
       type: 'toggle',
@@ -109,6 +130,11 @@ export const rangeSliderConfig = {
         defaultValue: false,
       },
       section: 'additionalActions',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     visibility: {
       type: 'toggle',
@@ -127,6 +153,11 @@ export const rangeSliderConfig = {
         defaultValue: false,
       },
       section: 'additionalActions',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     tooltip: {
       type: 'code',
@@ -134,6 +165,11 @@ export const rangeSliderConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
   },
   events: {
@@ -145,6 +181,11 @@ export const rangeSliderConfig = {
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     alignment: {
       type: 'switch',
@@ -155,6 +196,11 @@ export const rangeSliderConfig = {
         { displayName: 'Top', value: 'top' },
       ],
       accordian: 'label',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     direction: {
       type: 'switch',
@@ -168,16 +214,22 @@ export const rangeSliderConfig = {
       ],
       accordian: 'label',
       isFxNotRequired: true,
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     width: {
       type: 'slider',
       displayName: 'Width',
       accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
       isFxNotRequired: true,
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     auto: {
       type: 'checkbox',
@@ -186,8 +238,9 @@ export const rangeSliderConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
       },
       isFxNotRequired: true,
     },
@@ -234,6 +287,10 @@ export const rangeSliderConfig = {
         defaultValue: '#1B1F24',
       },
       accordian: 'slider',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+      },
     },
     padding: {
       type: 'switch',
@@ -249,32 +306,20 @@ export const rangeSliderConfig = {
       ],
       accordian: 'container',
     },
-    padding: {
-      type: 'switch',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 'default',
-      },
-      isFxNotRequired: true,
-      options: [
-        { displayName: 'Default', value: 'default' },
-        { displayName: 'None', value: 'none' },
-      ],
-    },
   },
   exposedVariables: {
     value: null,
-    label: 'Label',
-    isVisible: true,
-    isDisabled: false,
-    isLoading: false,
   },
   actions: [
     {
       handle: 'setValue',
       displayName: 'Set value',
       params: [{ handle: 'num1', displayName: 'Value', defaultValue: 'New value' }],
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     {
       handle: 'setRangeValue',
@@ -283,25 +328,50 @@ export const rangeSliderConfig = {
         { handle: 'num1', displayName: 'Min value' },
         { handle: 'num2', displayName: 'Max value' },
       ],
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     {
       handle: 'reset',
       displayName: 'Reset',
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     {
       handle: 'setDisable',
       displayName: 'Set disable',
       params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     {
       handle: 'setLoading',
       displayName: 'Set loading',
       params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      conditionallyRender: {
+        key: 'type',
+        value: ['slider', 'rangeSlider'],
+        comparator: 'in',
+      },
     },
   ],
   definition: {
@@ -326,7 +396,8 @@ export const rangeSliderConfig = {
       endValue: {
         value: '{{80}}',
       },
-      enableTwoHandle: { value: 'slider' },
+      enableTwoHandle: { value: false },
+      type: { value: 'slider' },
       stepSize: {
         value: '{{1}}',
       },
@@ -350,8 +421,6 @@ export const rangeSliderConfig = {
       alignment: { value: 'side' },
       color: { value: 'var(--cc-primary-text)' },
       auto: { value: '{{true}}' },
-      padding: { value: 'default' },
-      visibility: { value: '{{true}}' },
       padding: { value: 'default' },
     },
   },
