@@ -182,7 +182,7 @@ export const PageSettings = () => {
                 <div className="tj-text-xsm color-slate12 ">
                   <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
                   <Accordion items={appHeaderMenuItems} />
-                  <Accordion items={devices} />
+                  {/* <Accordion items={devices} /> */}
                 </div>
               </div>
             </Tab>

@@ -582,7 +582,7 @@
         }
 
         &.left-sidebar-open {
-            width: calc(100% + 348px) !important;
+            width: calc(100% + 350px) !important;
             position: sticky !important;
 
         }
@@ -708,7 +708,6 @@
 
     .flex-grow-1 {
         &.canvas-box {
-            flex-grow: unset !important;
 
             #sidebar-page-navigation {
                 .navigation-area {

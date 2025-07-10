@@ -248,8 +248,8 @@ export const Viewer = ({
                               className="canvas-area"
                               ref={canvasRef}
                               style={{
-                                width: isMobilePreviewMode ? '390px' : currentCanvasWidth,
-                                maxWidth: isMobilePreviewMode ? '390px' : computeCanvasMaxWidth(),
+                                width: isMobilePreviewMode ? '450px' : currentCanvasWidth,
+                                maxWidth: isMobilePreviewMode ? '450px' : computeCanvasMaxWidth(),
                                 margin: 0,
                                 padding: 0,
                                 position: 'relative',

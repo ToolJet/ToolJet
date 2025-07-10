@@ -301,7 +301,9 @@ export const PagesSidebarNavigation = ({
         ref={navRef}
         className={cx('navigation-area', {
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
-          'icon-only': style === 'icon' || (style === 'texticon' && !isSidebarPinned && position === 'side'),
+          'icon-only':
+            style === 'icon' ||
+            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
           'right-sidebar-open': isRightSidebarOpen && (position === 'top' || isPagesSidebarHidden),
@@ -336,7 +338,7 @@ export const PagesSidebarNavigation = ({
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
               )}
-              {!headerHidden && ((isPinnedWithLabel && !labelHidden) || position === 'top') && (
+              {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
                 <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
               )}
               {collapsable &&
