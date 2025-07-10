@@ -101,7 +101,7 @@ export const stepsConfig = {
     },
     {
       handle: 'setDisabled',
-      displayName: 'Set disabled',
+      displayName: 'Set disable',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {

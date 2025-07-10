@@ -67,7 +67,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
       const lastLabelWidth = lastLabelRef.current.offsetWidth;
       const maxLabelWidth = Math.max(firstLabelWidth, lastLabelWidth);
 
-      const calculatedPadding = (maxLabelWidth / 2) - 1;
+      const calculatedPadding = maxLabelWidth / 2 - 1;
       setContainerPadding(Math.max(2, calculatedPadding)); // Ensure minimum padding of 2px
     }
   };
@@ -118,20 +118,18 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
 
     setExposedVariable('setStepVisible', (stepId, visibility) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) =>
-          item.id == stepId ? { ...item, visible: visibility } : item
-        );
+        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, visible: visibility } : item));
         setExposedVariable('steps', updatedSteps);
+        setFilteredSteps(updatedSteps.filter((step) => step.visible));
         return updatedSteps;
       });
     });
 
     setExposedVariable('setStepDisable', (stepId, disabled) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) =>
-          item.id == stepId ? { ...item, disabled: disabled } : item
-        );
+        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, disabled: disabled } : item));
         setExposedVariable('steps', updatedSteps);
+        setFilteredSteps(updatedSteps.filter((step) => step.visible));
         return updatedSteps;
       });
     });
@@ -163,7 +161,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
         boxShadow,
         padding: theme === 'titles' ? `0 ${containerPadding}px` : 2,
         paddingTop: theme === 'plain' ? `3px` : theme === 'numbers' ? `2px` : 0,
-        ...dynamicStyle
+        ...dynamicStyle,
       }}
       data-cy={dataCy}
     >
@@ -177,15 +175,15 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
           const isLastStep = index === filteredSteps.length - 1;
 
           return (
-            <React.Fragment key={index}> {/* using index as key to avoid issues due to duplicate step ids */}
-              <ToolTip
-                show={!step.disabled && !isDisabled && step.tooltip}
-                message={step.tooltip || ''}
-              >
+            <React.Fragment key={index}>
+              {' '}
+              {/* using index as key to avoid issues due to duplicate step ids */}
+              <ToolTip show={!step.disabled && !isDisabled && step.tooltip} message={step.tooltip || ''}>
                 <div
                   onClick={() => stepsSelectable && handleStepClick(step.id)}
-                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${isDisabled || isStepDisabled ? 'disabled' : ''
-                    } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
+                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${
+                    isDisabled || isStepDisabled ? 'disabled' : ''
+                  } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                 >
                   {theme === 'numbers' ? (
                     index + 1
@@ -194,8 +192,10 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                       <div
                         className={`dot ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                         style={{
-                          border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent}`,
-                          backgroundColor: isActive ? 'transparent' : (isCompleted ? completedAccent : incompletedAccent)
+                          border: `2px solid ${
+                            isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
+                          }`,
+                          backgroundColor: isActive ? 'transparent' : isCompleted ? completedAccent : incompletedAccent,
                         }}
                       />
                       {theme === 'titles' && (
@@ -211,11 +211,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                   )}
                 </div>
               </ToolTip>
-
               {index < filteredSteps.length - 1 && (
-                <div
-                  className={`step-connector ${isCompleted ? 'completed' : 'incomplete'}`}
-                />
+                <div className={`step-connector ${isCompleted ? 'completed' : 'incomplete'}`} />
               )}
             </React.Fragment>
           );

@@ -1,0 +1,26 @@
+.calendar-widget {
+  .rbc-day-bg {
+    background-color: var(--cc-surface1-surface);
+  }
+
+  .rbc-day-bg.rbc-today {
+    background-color: var(--cc-primary-brand) !important;
+    opacity: 0.1;
+  }
+
+  .rbc-timeslot-group {
+    background-color: var(--cc-surface1-surface);
+  }
+
+  .rbc-row-segment {
+    .rbc-event {
+        background-color: var(--cc-primary-brand) !important;
+    }
+   }
+  .rbc-events-container {
+    .rbc-event {
+      background-color: var(--cc-primary-brand) !important;
+    }
+  }
+}
+

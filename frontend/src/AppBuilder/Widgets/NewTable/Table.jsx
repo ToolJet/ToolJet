@@ -38,7 +38,6 @@ export const Table = memo(
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
-    console.log('selectedTheme', selectedTheme);
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);

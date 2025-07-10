@@ -6,6 +6,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import CustomDatePickerHeader from './_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -77,6 +79,7 @@ export const DatepickerColumn = ({
   onChange,
   readOnly,
   isTimeChecked,
+  isEditable,
   dateDisplayFormat,
   parseDateFormat,
   timeZoneValue,
@@ -86,6 +89,7 @@ export const DatepickerColumn = ({
   disabledDates,
   unixTimestamp = 'seconds',
   parseInUnixTimestamp,
+  column,
   darkMode,
   textColor,
   id,
@@ -96,6 +100,32 @@ export const DatepickerColumn = ({
   const [inputValue, setInputValue] = useState('');
   const dateInputRef = useRef(null);
   const cellTextColor = useTextColor(id, textColor);
+
+  const validateDates = useStore((state) => state.validateDates, shallow);
+  const { isValid, validationError } = validateDates({
+    validationObject: {
+      minDate: {
+        value: column.minDate,
+      },
+      maxDate: {
+        value: column.maxDate,
+      },
+      minTime: {
+        value: column.minTime,
+      },
+      maxTime: {
+        value: column.maxTime,
+      },
+      parseDateFormat: {
+        value: column.parseDateFormat,
+      },
+      customRule: {
+        value: column.customRule,
+      },
+    },
+    widgetValue: value,
+    customResolveObjects: { cellValue: value },
+  });
 
   const computeDateString = useCallback(
     (date) => {
@@ -226,8 +256,11 @@ export const DatepickerColumn = ({
     }
   }, [disabledDates]);
 
+
   return (
-    <div className="h-100 d-flex align-items-center">
+    <div
+      className={`h-100 d-flex align-items-center flex-column justify-content-center ${!isValid ? 'is-invalid' : ''}`}
+    >
       <DatePickerComponent
         className="input-field form-control validation-without-icon px-2"
         popperClassName={cx('tj-table-datepicker', {
@@ -274,6 +307,7 @@ export const DatepickerColumn = ({
           setIsInputFocused(false);
         }}
       />
+      {isEditable && !isValid && <div className="invalid-feedback-date text-truncate">{validationError}</div>}
     </div>
   );
 };
