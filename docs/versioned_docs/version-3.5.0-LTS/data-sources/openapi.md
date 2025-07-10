@@ -13,7 +13,9 @@ Connections are created based on OpenAPI specifications. The available authentic
 
 OpenAPI datasource accepts specifications in JSON or YAML format only. After providing a valid JSON or YAML spec and selecting OAuth2 as the authentication type, you can enter custom headers and client credentials.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/openapi/openapiconnect-v3.png" alt="OpenAPI" />
+You can also configure different hosts for different environments from the configuration page. The host configured here takes precedence over the host defined in the query.
+
+<img className="screenshot-full img-l" src="/img/datasource-reference/openapi/openapiconnect-v4.png" alt="OpenAPI" />
 
 </div>
 
