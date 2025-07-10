@@ -22,9 +22,7 @@
     "id": "openai",
     "author": "Tooljet",
     "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "AWS Textract",
@@ -122,9 +120,7 @@
     "id": "portkey",
     "author": "Portkey",
     "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Pinecone",
@@ -133,9 +129,7 @@
     "id": "pinecone",
     "author": "Tooljet",
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Cohere",
@@ -144,9 +138,7 @@
     "id": "cohere",
     "author": "Tooljet",
     "timestamp": "Tue, 21 Jan 2025 05:09:30 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Mistral",
@@ -155,9 +147,7 @@
     "id": "mistral_ai",
     "author": "Tooljet",
     "timestamp": "Tue, 21 Jan 2025 06:35:01 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Hugging Face",
@@ -166,9 +156,7 @@
     "id": "hugging_face",
     "author": "Tooljet",
     "timestamp": "Thu, 23 Jan 2025 06:44:25 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Gemini",
@@ -177,9 +165,7 @@
     "id": "gemini",
     "author": "Tooljet",
     "timestamp": "Fri, 17 Jan 2025 18:04:48 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Anthropic",
@@ -188,9 +174,7 @@
     "id": "anthropic",
     "author": "Tooljet",
     "timestamp": "Mon, 20 Jan 2025 08:04:46 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Qdrant",
@@ -199,9 +183,7 @@
     "id": "qdrant",
     "author": "Tooljet",
     "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Weaviate DB",
@@ -210,9 +192,7 @@
     "id": "weaviate",
     "author": "Tooljet",
     "timestamp": "Tue, 21 Jan 2025 16:55:28 GMT",
-    "tags": [
-      "AI"
-    ]
+    "tags": ["AI"]
   },
   {
     "name": "Azure Repos",
@@ -229,5 +209,13 @@
     "id": "clickup",
     "author": "Tooljet",
     "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
+  },
+  {
+    "name": "aws-bedrock",
+    "description": "api plugin from aws-bedrock",
+    "version": "1.0.0",
+    "id": "aws-bedrock",
+    "author": "Tooljet",
+    "timestamp": "Fri, 04 Jul 2025 05:17:22 GMT"
   }
 ]

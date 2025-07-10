@@ -65,6 +65,7 @@
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^8.34.0",
-    "eslint-config-prettier": "^10.1.5"
+    "eslint-config-prettier": "^10.1.5",
+    "lz4": "^0.6.5"
   }
 }

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "AWS Bedrock datasource",
+  "description": "A schema defining AWS Bedrock datasource",
+  "type": "api",
+  "defaults": {
+    "content_type": "application/json"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        { "value": "generate_content", "name": "Generate content" },
+        { "value": "list_foundation_models", "name": "List foundation models" }
+      ]
+    },
+    "generate_content": {
+      "model_id": {
+        "label": "Model ID",
+        "key": "model_id",
+        "type": "codehinter",
+        "description": "The foundation model ID to use",
+        "className": "codehinter-plugins",
+        "placeholder": "model-id"
+      },
+      "request_body": {
+        "label": "Request Body",
+        "key": "request_body",
+        "type": "codehinter",
+        "description": "JSON body for the invoke model request",
+        "className": "codehinter-plugins",
+        "placeholder": "{\"prompt\": \"Hello\"}",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "content_type": {
+        "label": "Content-Type",
+        "key": "content_type",
+        "type": "codehinter",
+        "description": "The foundation model ID to use",
+        "className": "codehinter-plugins",
+        "placeholder": "application/json"
+      }
+    },
+    "list_foundation_models": {
+      "customization_type": {
+        "label": "Customization Type",
+        "key": "customization_type",
+        "type": "text",
+        "description": "Customization type filter (optional)"
+      },
+      "inference_type": {
+        "label": "Inference Type",
+        "key": "inference_type",
+        "type": "text",
+        "description": "Inference type filter (optional)"
+      },
+      "output_modality": {
+        "label": "Output Modality",
+        "key": "output_modality",
+        "type": "text",
+        "description": "Output modality filter (optional)"
+      },
+      "provider": {
+        "label": "Provider",
+        "key": "provider",
+        "type": "text",
+        "description": "Provider filter (optional)"
+      }
+    }
+  }
+}
