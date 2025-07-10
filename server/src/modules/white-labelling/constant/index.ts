@@ -7,6 +7,7 @@ export const DEFAULT_WHITE_LABELLING_SETTINGS = {
 export enum FEATURE_KEY {
   GET = 'GET', // For the get method (fetching general white-labelling info)
   UPDATE = 'UPDATE', // For the update method (updating white-labelling settings)
-  GET_WORKSPACE_SETTINGS = 'GET_WORKSPACE_SETTINGS', // For the getCloudSettings method
-  UPDATE_WORKSPACE_SETTINGS = 'UPDATE_WORKSPACE_SETTINGS', // For the updateCloudSettings method
+  GET_ORGANIZATION_WHITE_LABELS = 'GET_ORGANIZATION_WHITE_LABELS', // For the getCloudSettings method
+  UPDATE_ORGANIZATION_WHITE_LABELS = 'UPDATE_WORKSPACE_SETTINGS_CLOUD', // For the updateCloudSettings method
 }
+// Review the name change : name looks ambigous for cloud white labelling.

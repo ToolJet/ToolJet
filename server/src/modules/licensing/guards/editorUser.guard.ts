@@ -21,7 +21,7 @@ export class EditorUserCountGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const organizationId = request.body.organizationId;
     const isWorkspaceSignup = !!organizationId;
-    if (!isWorkspaceSignup && getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
+    if (isWorkspaceSignup && getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
       // Not needed for cloud edition, as it is not used in the cloud
       return true;
     }

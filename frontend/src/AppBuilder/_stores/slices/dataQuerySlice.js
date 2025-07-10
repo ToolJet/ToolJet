@@ -115,7 +115,7 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
-          setSelectedQuery(data.id, data);
+          setSelectedQuery(data.id);
           if (shouldRunQuery) setQueryToBeRun(data);
 
           /** Checks if there is an API call cached. If yes execute it */
@@ -321,10 +321,10 @@ export const createDataQuerySlice = (set, get) => ({
               type: queryToClone.permissions[0]?.type,
               ...(queryToClone.permissions[0]?.type === 'GROUP'
                 ? {
-                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
-                      (group) => group.permissionGroupsId || group.permission_groups_id
-                    ),
-                  }
+                  groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                    (group) => group.permissionGroupsId || group.permission_groups_id
+                  ),
+                }
                 : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
             };
             appPermissionService

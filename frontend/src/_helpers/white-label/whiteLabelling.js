@@ -7,6 +7,11 @@ export const whiteLabellingOptions = {
   WHITE_LABEL_LOGO: 'white_label_logo',
   WHITE_LABEL_FAVICON: 'white_label_favicon',
 };
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'assets/images/tj-logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'assets/images/logo.svg',
+};
 
 export function retrieveWhiteLabelFavicon() {
   const { whiteLabelFavicon } = useWhiteLabellingStore.getState();
@@ -137,8 +142,14 @@ export async function resetToDefaultWhiteLabels() {
 
 // Check if current settings match the default values
 export function checkWhiteLabelsDefaultState() {
-  const { isDefaultWhiteLabel } = useWhiteLabellingStore.getState();
-  return isDefaultWhiteLabel;
+  const whiteLabelText = retrieveWhiteLabelText();
+  const whiteLabelFavicon = retrieveWhiteLabelFavicon();
+  const whiteLabelLogo = retrieveWhiteLabelLogo();
+  return (
+    (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
+    (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
+    (!whiteLabelFavicon || whiteLabelFavicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
+  );
 }
 
 export const pageTitles = {

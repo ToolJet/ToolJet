@@ -85,12 +85,6 @@ export const AppMenu = function AppMenu({
                 )}
                 {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>
-                    {appType !== 'workflow' && (
-                      <Field
-                        text={t('homePage.appCard.cloneApp', 'Clone app')}
-                        onClick={() => openAppActionModal('clone-app')}
-                      />
-                    )}
                     <Field
                       text={
                         appType === 'workflow' ? 'Clone workflow' : appType === 'module' ? 'Clone module' : 'Clone app'
