@@ -17,6 +17,8 @@ interface Features {
   [FEATURE_KEY.UPDATE_LICENSE]: FeatureConfig;
   [FEATURE_KEY.GET_ORGANIZATION_LIMITS]: FeatureConfig;
   [FEATURE_KEY.GET_APP_LIMITS]: FeatureConfig;
+  [FEATURE_KEY.GENERATE_CLOUD_TRIAL_LICENSE]: FeatureConfig;
+  [FEATURE_KEY.GENERATE_EE_TRIAL_LICENSE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

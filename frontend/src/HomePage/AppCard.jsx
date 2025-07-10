@@ -24,6 +24,7 @@ export default function AppCard({
   canUpdateApp,
   currentFolder,
   appType,
+  ...props
 }) {
   const canUpdate = canUpdateApp(app);
   const [hoverRef, isHovered] = useHover();
@@ -180,9 +181,9 @@ export default function AppCard({
       <h3
         ref={tooltipRef}
         className="app-card-name font-weight-500 tj-text-md"
-        data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
+        data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-title`}
       >
-        {decodeEntities(app.name)}
+        {decodeEntities(app?.name)}
       </h3>
     );
 
@@ -196,77 +197,88 @@ export default function AppCard({
   }
 
   return (
-    <div className="card homepage-app-card" ref={cardRef}>
-      <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
-        <div className="row home-app-card-header">
-          <div className="col-12 d-flex justify-content-between">
-            <div>
-              <div className="app-icon-main">
-                <div className="app-icon d-flex" data-cy={`app-card-${app?.icon}-icon`}>
-                  {AppIcon && AppIcon}
+    <ToolTip
+      message="Modules are available only on paid plans"
+      placement="bottom"
+      show={appType === 'module' && props.basicPlan}
+    >
+      <div className="card homepage-app-card card--clickable" ref={cardRef}>
+        <div
+          className={appType === 'module' && props.basicPlan ? 'disabled-module' : ''}
+          key={app?.id}
+          ref={hoverRef}
+          data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-card`}
+        >
+          <div className="row home-app-card-header">
+            <div className="col-12 d-flex justify-content-between">
+              <div>
+                <div className="app-icon-main">
+                  <div className="app-icon d-flex" data-cy={`app-card-${app?.icon}-icon`}>
+                    {AppIcon && AppIcon}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div visible={focused ? true : undefined}>
-              {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app)) && (
-                <AppMenu
-                  onMenuOpen={onMenuToggle}
-                  openAppActionModal={appActionModalCallBack}
-                  canCreateApp={canCreateApp()}
-                  canDeleteApp={canDeleteApp(app)}
-                  canUpdateApp={canUpdateApp(app)}
-                  deleteApp={() => deleteApp(app)}
-                  exportApp={() => exportApp(app)}
-                  isMenuOpen={setMenuOpen}
-                  popoverVisible={popoverVisible}
-                  setMenuOpen={setMenuOpen}
-                  darkMode={darkMode}
-                  currentFolder={currentFolder}
-                  appType={appType}
-                  appCreationMode={app?.creation_mode || app?.creationMode}
-                />
-              )}
+              <div visible={focused ? true : undefined}>
+                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app)) && (
+                  <AppMenu
+                    onMenuOpen={onMenuToggle}
+                    openAppActionModal={appActionModalCallBack}
+                    canCreateApp={canCreateApp()}
+                    canDeleteApp={canDeleteApp(app)}
+                    canUpdateApp={canUpdateApp(app)}
+                    deleteApp={() => deleteApp(app)}
+                    exportApp={() => exportApp(app)}
+                    isMenuOpen={setMenuOpen}
+                    popoverVisible={popoverVisible}
+                    setMenuOpen={setMenuOpen}
+                    darkMode={darkMode}
+                    currentFolder={currentFolder}
+                    appType={appType}
+                    appCreationMode={app?.creation_mode || app?.creationMode}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <AppNameDisplay tooltipRef={tooltipRef} />
-        </div>
-        <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
-          {canUpdate && (
-            <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
-              <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-                <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
-              </ToolTip>
-            </div>
-          )}
-        </div>
-        <div className="appcard-buttons-wrap">
-          {canUpdate && (
-            <div>
-              <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
-                <Link
-                  to={getPrivateRoute('editor', {
-                    slug: isValidSlug(app.slug) ? app.slug : app.id,
-                  })}
-                  reloadDocument
-                >
-                  <button
-                    type="button"
-                    className="tj-primary-btn tj-text-xsm edit-button"
-                    style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
-                    data-cy="edit-button"
+          <div>
+            <AppNameDisplay tooltipRef={tooltipRef} />
+          </div>
+          <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
+            {canUpdate && (
+              <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
+                <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+                  <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
+                </ToolTip>
+              </div>
+            )}
+          </div>
+          <div className="appcard-buttons-wrap">
+            {canUpdate && (
+              <div>
+                <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
+                  <Link
+                    to={getPrivateRoute('editor', {
+                      slug: isValidSlug(app.slug) ? app.slug : app.id,
+                    })}
+                    reloadDocument
                   >
-                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
-                    &nbsp;{t('globals.edit', 'Edit')}
-                  </button>
-                </Link>
-              </ToolTip>
-            </div>
-          )}
-          {LaunchButton}
+                    <button
+                      type="button"
+                      className="tj-primary-btn tj-text-xsm edit-button"
+                      style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+                      data-cy="edit-button"
+                    >
+                      <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                      &nbsp;{t('globals.edit', 'Edit')}
+                    </button>
+                  </Link>
+                </ToolTip>
+              </div>
+            )}
+            {appType !== 'module' && LaunchButton}
+          </div>
         </div>
       </div>
-    </div>
+    </ToolTip>
   );
 }

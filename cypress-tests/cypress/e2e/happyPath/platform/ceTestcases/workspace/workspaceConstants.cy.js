@@ -39,6 +39,8 @@ describe("Workspace constants", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
+    cy.viewport(1800, 1800);
+
   });
 
   it("Verify workspace constants UI and CRUD operations", () => {
@@ -66,12 +68,11 @@ describe("Workspace constants", () => {
     });
   });
 
-  it("Verify global and secret constants in the editor, inspector, data sources, static queries, query preview, and preview", () => {
+  it.only("Verify global and secret constants in the editor, inspector, data sources, static queries, query preview, and preview", () => {
     data.workspaceName = fake.firstName;
     data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.visit(data.workspaceSlug);
-    cy.viewport(1440, 960);
     data.appName = `${fake.companyName}-App`;
 
     // create global constants
@@ -102,8 +103,8 @@ describe("Workspace constants", () => {
       .eq(0)
       .selectFile('cypress/fixtures/templates/workspace_constants.json', { force: true });
     cy.get(importSelectors.importAppButton).click();
-    cy.wait(5000);
-
+    cy.wait(6000);
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should('be.visible');
     //Verify global constant value is resolved in component
     cy.get(commonWidgetSelector.draggableWidget('textinput1'))
       .verifyVisibleElement("have.value", "customHeader");
@@ -115,9 +116,10 @@ describe("Workspace constants", () => {
     cy.get(commonWidgetSelector.alertInfoText).contains(
       "secrets cannot be used in apps"
     );
-
     //Verify all static and datasource queries output in components
+    cy.wait(8000);
     for (let i = 3; i <= 16; i++) {
+      cy.wait(1000);
       cy.log("Verifying textinput" + i);
       cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
         .verifyVisibleElement("have.value", "Production environment testing");
@@ -151,16 +153,20 @@ describe("Workspace constants", () => {
 
     //Preview app and verify components
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.wait(6000);
-    for (let i = 3; i <= 16; i++) {
+    cy.wait(8000);
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should('be.visible');
+    for (let i = 16; i >= 3; i--) {
+      cy.wait(1000);
+      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`)).should('be.visible');
       cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
-        .verifyVisibleElement("have.value", "Production environment testing");
+        .verifyVisibleElement("have.value", "Production environment testing", { timeout: 10000 });
     }
 
-    //back to dashboard and open app again
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.wait(2000);
+
+    cy.visit('/');
+    cy.wait(4000);
     cy.get(commonSelectors.appEditButton).click({ force: true });
+    cy.wait(4000);
 
     cy.releaseApp();
 

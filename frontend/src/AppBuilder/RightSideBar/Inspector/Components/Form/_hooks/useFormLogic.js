@@ -26,6 +26,12 @@ export const useFormLogic = (component, paramUpdated) => {
   // Save data section function
   const saveDataSection = (fields) => {
     formState.savedSourceValue.current = formState.source.value;
+    const newJsonData = formState.JSONData;
+
+    if (newJsonData?.value === undefined) {
+      newJsonData.value = resolveReferences('canvas', formState.source.value);
+    }
+
     saveFormDataSectionData(
       component?.id,
       {

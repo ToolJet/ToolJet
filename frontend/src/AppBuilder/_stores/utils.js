@@ -579,6 +579,16 @@ export function convertAllKeysToSnakeCase(o) {
   return o;
 }
 
+export function convertKeysToCamelCase(object) {
+  if (_.isEmpty(object)) return null;
+
+  return Object.keys(object).reduce((acc, key) => {
+    acc[_.camelCase(key)] = object[key];
+
+    return acc;
+  }, {});
+}
+
 // export function createReferencesLookup(refState, forQueryParams = false, initalLoad = false) {
 //   if (forQueryParams && _.isEmpty(refState['parameters'])) {
 //     return { suggestionList: [] };

@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { join } from 'path';
 import handlebars from 'handlebars';
 import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
-import * as nodemailer from 'nodemailer';
 import {
   SendWelcomeEmailPayload,
   SendOrganizationUserWelcomeEmailPayload,
@@ -11,11 +9,7 @@ import {
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
-import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 import { WhiteLabellingUtilService } from '@modules/white-labelling/util.service';
-
-const path = require('path');
-const fs = require('fs');
 
 handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
@@ -34,15 +28,6 @@ export class EmailService implements IEmailService {
   protected WHITE_LABEL_TEXT;
   protected WHITE_LABEL_LOGO;
   protected SUB_PATH;
-  protected SMTP: {
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]: boolean;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_PORT]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]: string;
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED]: boolean;
-  };
   protected defaultWhiteLabelState: boolean;
 
   constructor(
@@ -55,144 +40,27 @@ export class EmailService implements IEmailService {
   }
 
   protected registerPartials() {
-    const partialsDir = join(__dirname, '..', '..', 'mails', 'base', 'partials');
-    const filenames = ['header.hbs', 'footer.hbs', 'body.hbs']; // Add all your partial filenames here
-
-    filenames.forEach((filename) => {
-      const filePath = join(partialsDir, filename);
-      const partialName = filename.split('.')[0]; // Remove the file extension to get the partial name
-      const template = fs.readFileSync(filePath, 'utf8');
-      handlebars.registerPartial(partialName, template);
-    });
+    this.emailUtilService.registerPartials();
   }
 
   mailTransport(smtp) {
-    let smtpSettings;
-
-    if (smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED] === 'true') {
-      // Use environment variables for SMTP settings
-      smtpSettings = {
-        host: process.env.SMTP_DOMAIN,
-        port: process.env.SMTP_PORT,
-        username: process.env.SMTP_USERNAME,
-        password: process.env.SMTP_PASSWORD,
-      };
-    } else {
-      smtpSettings = {
-        host: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN],
-        port: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_PORT],
-        username: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME],
-        password: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD],
-      };
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: smtpSettings.host,
-      port: smtpSettings.port,
-      secure: smtpSettings.port === 465, // Use `true` for port 465, `false` for others
-      ignoreTLS: process.env.SMTP_IGNORE_TLS === 'true' ? true : false,
-      auth: {
-        user: smtpSettings.username,
-        pass: smtpSettings.password,
-      },
-    });
-
-    return transporter;
+    this.emailUtilService.mailTransport(smtp);
   }
 
   async sendEmail(to: string, subject: string, templateData: any) {
-    this.registerPartials();
-
-    // Load the main template file
-    const templatePath = join(__dirname, '..', '..', 'mails', 'base', 'base_template.hbs');
-    const templateSource = fs.readFileSync(templatePath, 'utf8');
-
-    // Compile the template
-    const template = handlebars.compile(templateSource);
-    // Generate the HTML by applying the context to the template
-    const htmlToSend = template(templateData);
-
-    // Define the email options
-    const mailOptions = {
-      to,
-      subject,
-      html: htmlToSend,
-      from: `"${this.WHITE_LABEL_TEXT}" <${this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]}>`,
-      ...(templateData?.whiteLabelText === 'ToolJet' && {
-        attachments: [
-          {
-            filename: 'rocket.png',
-            path: join(__dirname, '..', '../mails/assets/rocket.png'),
-            cid: 'rocket',
-          },
-          {
-            filename: 'twitter.png',
-            path: join(__dirname, '..', '../mails/assets/twitter.png'),
-            cid: 'twitter',
-          },
-          {
-            filename: 'linkedin.png',
-            path: join(__dirname, '..', '../mails/assets/linkedin.png'),
-            cid: 'linkedin',
-          },
-          {
-            filename: 'youtube.png',
-            path: join(__dirname, '..', '../mails/assets/youtube.png'),
-            cid: 'youtube',
-          },
-          {
-            filename: 'github.png',
-            path: join(__dirname, '..', '../mails/assets/github.png'),
-            cid: 'github',
-          },
-        ],
-      }),
-    };
-
-    try {
-      // Skip sending email if test env or production and smtp disabled
-      if (
-        this.NODE_ENV === 'test' ||
-        (this.NODE_ENV !== 'development' && !this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED])
-      )
-        return;
-
-      /* if development environment and disabled SMTP, log the content of email instead of sending actual emails */
-      if (this.NODE_ENV === 'development' && !this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]) {
-        console.log('Captured email');
-        console.log('to: ', to);
-        console.log('Subject: ', subject);
-        console.log('content: ', htmlToSend);
-        const previewEmail = require('preview-email');
-        const transport = nodemailer.createTransport({
-          jsonTransport: true,
-        });
-        const result = await transport.sendMail(mailOptions);
-        previewEmail(JSON.parse(result.message)).then(console.log).catch(console.error);
-      } else {
-        const transport = this.mailTransport(this.SMTP);
-        const result = await transport.sendMail(mailOptions);
-        console.log('Message sent: %s', result);
-        return result;
-      }
-    } catch (error) {
-      if (this.NODE_ENV === 'test' || this.NODE_ENV == 'development') return;
-      console.log(error);
-    }
+    await this.emailUtilService.sendEmail(to, subject, templateData);
   }
 
   async init(organizationId?: string | null) {
     const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(null);
-    this.SMTP = await this.emailUtilService.retrieveSmtpSettings();
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;
     this.defaultWhiteLabelState = whiteLabelSettings?.default;
+    await this.emailUtilService.init();
   }
 
   protected compileTemplate(templatePath: string, templateData: object) {
-    const emailContent = fs.readFileSync(path.join(__dirname, '..', '..', 'mails', templatePath), 'utf8');
-    const templateCompile = handlebars.compile(emailContent);
-    return templateCompile(templateData);
+    return this.emailUtilService.compileTemplate(templatePath, templateData);
   }
 
   protected stripTrailingSlash(hostname: string) {
@@ -230,8 +98,8 @@ export class EmailService implements IEmailService {
         ? 'default_invite_user.hbs'
         : 'invite_user.hbs'
       : this.defaultWhiteLabelState
-      ? 'default_setup_account.hbs'
-      : 'setup_account.hbs';
+        ? 'default_setup_account.hbs'
+        : 'setup_account.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
 
     return await this.sendEmail(to, subject, {

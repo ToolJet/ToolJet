@@ -8,8 +8,11 @@ import {
 import { User as UserEntity } from 'src/entities/user.entity';
 import { IGitSyncController } from './Interfaces/IController';
 import { ProviderConfigDTO } from './dto/provider-config.dto';
+import { InitModule } from '@modules/app/decorators/init-module';
+import { MODULES } from '@modules/app/constants/modules';
 
 @Controller('git-sync')
+@InitModule(MODULES.GIT_SYNC)
 export class GitSyncController implements IGitSyncController {
   constructor() {}
 

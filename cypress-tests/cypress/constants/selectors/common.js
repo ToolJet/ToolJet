@@ -177,7 +177,7 @@ export const commonSelectors = {
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
   duplicateOption: '[data-cy="duplicate-group-card-option"]',
-  confirmDuplicateButton: '[data-cy="confim-button"]',
+  confirmDuplicateButton: '[data-cy="confirm-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
   labelEmailInput: '[data-cy="email-label"]',
   inputFieldEmailAddress: '[data-cy="email-input"]',
@@ -288,6 +288,7 @@ export const commonSelectors = {
   labelFieldAlert: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
+  pageLogo: '[data-cy="page-logo"]',
 };
 
 export const commonWidgetSelector = {

@@ -1,20 +1,24 @@
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SSOConfigsRepository } from './repository';
 import { EncryptionModule } from '@modules/encryption/module';
 import { FeatureAbilityFactory } from './ability';
 import { SsoConfigOidcGroupSyncRepository } from './oidc-group-sync.repository';
+import { SubModule } from '@modules/app/sub-module';
 
-export class LoginConfigsModule {
+export class LoginConfigsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { LoginConfigsService } = await import(`${importPath}/login-configs/service`);
-    const { LoginConfigsController } = await import(`${importPath}/login-configs/controller`);
-    const { LoginConfigsUtilService } = await import(`${importPath}/login-configs/util.service`);
-    const { SSOGuard } = await import(`${importPath}/licensing/guards/sso.guard`);
-    const { FeatureGuard } = await import(`${importPath}/licensing/guards/feature.guard`);
+    const { LoginConfigsService, LoginConfigsController, LoginConfigsUtilService } = await this.getProviders(
+      configs,
+      'login-configs',
+      ['service', 'controller', 'util.service']
+    );
+
+    const { SSOGuard, FeatureGuard } = await this.getProviders(configs, 'licensing', [
+      'guards/sso.guard',
+      'guards/feature.guard',
+    ]);
 
     return {
       module: LoginConfigsModule,

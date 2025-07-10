@@ -12,6 +12,8 @@ import {
   verifyRestrictedAccess,
   onboardUserFromAppLink,
 } from "Support/utils/apps";
+import { appPromote } from "Support/utils/platform/multiEnv";
+import { InstanceSSO } from "Support/utils/platform/eeCommon";
 
 describe(
   "Private and Public apps",
@@ -98,7 +100,7 @@ describe(
       );
 
       // Test public access
-      cy.get(commonSelectors.viewerPageLogo).click();
+      // cy.get(commonSelectors.viewerPageLogo).click();
       cy.openApp(
         "appSlug",
         Cypress.env("workspaceId"),
@@ -150,7 +152,7 @@ describe(
         "be.visible"
       );
 
-      cy.get(commonSelectors.viewerPageLogo).click();
+      // cy.get(commonSelectors.viewerPageLogo).click();
 
       // Test public access
       cy.defaultWorkspaceLogin();
@@ -183,6 +185,9 @@ describe(
       setupAppWithSlug(data.appName, data.slug);
 
       cy.apiLogout();
+      cy.ifEnv("Enterprise", () => {
+        InstanceSSO(true, true, true);
+      });
       userSignUp(data.firstName, data.email, data.workspaceName);
       cy.wait(1000);
       cy.visitSlug({
@@ -253,7 +258,9 @@ describe(
         "be.visible"
       );
 
-      cy.get('[data-cy="viewer-page-logo"]').click();
+      // cy.get('[data-cy="viewer-page-logo"]').click();
+      cy.visit("/my-workspace");
+      cy.wait(2000);
       logout();
       cy.wait(1000);
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
@@ -312,7 +319,9 @@ describe(
       cy.apiLogout();
       cy.apiLogin();
       cy.visit(`${data.workspaceSlug}`);
-      cy.apiDeleteGranularPermission("end-user");
+
+      cy.apiDeleteGranularPermission("end-user", ["app", "workflow"]);
+
       setSignupStatus(true, data.workspaceName);
 
       setupAppWithSlug(data.appName, data.slug);

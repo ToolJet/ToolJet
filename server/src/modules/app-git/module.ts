@@ -1,5 +1,4 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { AppsRepository } from '@modules/apps/repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { GitSyncModule } from '@modules/git-sync/module';
@@ -7,43 +6,35 @@ import { AppsModule } from '@modules/apps/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { VersionModule } from '@modules/versions/module';
-import { AppGitAbilityFactory } from '@modules/app-git/ability/index';
+import { FeatureAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppGitRepository } from './repository';
-export class AppGitModule {
+import { SubModule } from '@modules/app/sub-module';
+export class AppGitModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const { AppGitController } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/controller`);
-    const { AppGitService } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/service`);
-    const { SourceControlProviderService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/source-control-provider`
-    );
-    const { SSHAppGitService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-ssh/service`
-    );
-    const { HTTPSAppGitService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-https/service`
-    );
-    const { GitLabAppGitService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/gitlab/service`
-    );
-    const { HTTPSAppGitUtilityService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-https/util.service`
-    );
-    const { SSHAppGitUtilityService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/github-ssh/util.service`
-    );
-    const { GitLabAppGitUtilityService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/providers/gitlab/util.service`
-    );
-    const { BaseGitUtilService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git-util.service`
-    );
-    const { BaseGitSyncService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git.service`
-    );
-    const { AppVersionRenameListener } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/app-git/listener`
-    );
+    const {
+      AppGitController,
+      AppGitService,
+      SourceControlProviderService,
+      SSHAppGitService,
+      HTTPSAppGitService,
+      GitLabAppGitService,
+      SSHAppGitUtilityService,
+      HTTPSAppGitUtilityService,
+      GitLabAppGitUtilityService,
+      AppVersionRenameListener,
+    } = await this.getProviders(configs, 'app-git', [
+      'controller',
+      'service',
+      'source-control-provider',
+      'providers/github-ssh/service',
+      'providers/github-https/service',
+      'providers/gitlab/service',
+      'providers/github-https/util.service',
+      'providers/github-ssh/util.service',
+      'providers/gitlab/util.service',
+      'listener',
+    ]);
     return {
       module: AppGitModule,
       imports: [
@@ -67,9 +58,7 @@ export class AppGitModule {
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
         VersionRepository,
-        BaseGitUtilService,
-        BaseGitSyncService,
-        AppGitAbilityFactory,
+        FeatureAbilityFactory,
         AppVersionRenameListener,
       ],
       exports: [SSHAppGitUtilityService, HTTPSAppGitUtilityService, GitLabAppGitUtilityService],

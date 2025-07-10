@@ -1,16 +1,13 @@
-import { getImportPath } from '@modules/app/constants';
 import { EncryptionModule } from '@modules/encryption/module';
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { SubModule } from '@modules/app/sub-module';
 
-export class InstanceSettingsModule {
+export class InstanceSettingsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-
-    const { InstanceSettingsService } = await import(`${importPath}/instance-settings/service`);
-    const { InstanceSettingsUtilService } = await import(`${importPath}/instance-settings/util.service`);
-    const { InstanceSettingsController } = await import(`${importPath}/instance-settings/controller`);
+    const { InstanceSettingsService, InstanceSettingsUtilService, InstanceSettingsController } =
+      await this.getProviders(configs, 'instance-settings', ['service', 'controller', 'util.service']);
 
     return {
       module: InstanceSettingsModule,

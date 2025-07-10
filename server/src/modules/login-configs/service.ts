@@ -25,13 +25,13 @@ export class LoginConfigsService implements ILoginConfigsService {
     protected oidcGroupSyncRepository: SsoConfigOidcGroupSyncRepository
   ) {}
 
-  async getProcessedOrganizationDetails(organizationId: string) {
+  async getProcessedOrganizationDetails(organizationId?: string) {
     const existingOrganizationId = (await this.organizationsRepository.getSingleOrganization())?.id;
     if (!existingOrganizationId) {
       throw new NotFoundException();
     }
     if (!organizationId) {
-      const result = await this.loginConfigsUtilService.constructSSOConfigs();
+      const result = await this.loginConfigsUtilService.constructSSOConfigs(existingOrganizationId);
       return result;
     }
 

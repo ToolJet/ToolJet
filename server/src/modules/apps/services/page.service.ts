@@ -23,9 +23,14 @@ export class PageService implements IPageService {
     protected eventHandlerService: EventsService
   ) {}
 
-  async findPagesForVersion(appVersionId: string, mode?: string, manager?: EntityManager): Promise<Page[]> {
+  async findPagesForVersion(
+    appVersionId: string,
+    organizationId: string,
+    mode?: string,
+    manager?: EntityManager
+  ): Promise<Page[]> {
     // const allPages = await this.pageRepository.find({ where: { appVersionId }, order: { index: 'ASC' } });
-    const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
+    const allPages = await this.pageHelperService.fetchPages(appVersionId, organizationId, manager);
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
         const components = await this.componentsService.getAllComponents(page.id, manager);
@@ -42,15 +47,15 @@ export class PageService implements IPageService {
     });
   }
 
-  async createPage(page: CreatePageDto, appVersionId: string): Promise<Page> {
+  async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
-      const newPage = await this.pageHelperService.preparePageObject(page, appVersionId);
+      const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
 
       return await manager.save(Page, newPage);
     }, appVersionId);
   }
 
-  async clonePage(pageId: string, appVersionId: string) {
+  async clonePage(pageId: string, appVersionId: string, organizationId: string) {
     // TODO - Should use manager here - multiple db operations found
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
@@ -87,14 +92,14 @@ export class PageService implements IPageService {
 
       await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
 
-      const pages = await this.findPagesForVersion(appVersionId, '', manager);
+      const pages = await this.findPagesForVersion(appVersionId, organizationId, '', manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
     }, appVersionId);
   }
 
-  async cloneGroup(groupPageId: string, appVersionId: string) {
+  async cloneGroup(groupPageId: string, appVersionId: string, organizationId) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const groupToClone = await manager.findOne(Page, {
         where: { id: groupPageId, appVersionId, isPageGroup: true },
@@ -180,7 +185,7 @@ export class PageService implements IPageService {
         await this.clonePageEventsAndComponents(child.id, newChildPage.id, manager);
       }
 
-      const pages = await this.findPagesForVersion(appVersionId, '', manager);
+      const pages = await this.findPagesForVersion(appVersionId,organizationId, '', manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
@@ -344,8 +349,8 @@ export class PageService implements IPageService {
     }, manager);
   }
 
-  async reorderPages(diff, appVersionId: string) {
-    return this.pageHelperService.reorderPages(diff, appVersionId);
+  async reorderPages(diff, appVersionId: string, organizationId: string) {
+    return this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
   }
 
   async updatePage(pageUpdates: UpdatePageDto, appVersionId: string) {
@@ -369,7 +374,8 @@ export class PageService implements IPageService {
     pageId: string,
     appVersionId: string,
     editingVersion: AppVersion,
-    deleteAssociatedPages: boolean = false
+    deleteAssociatedPages: boolean = false,
+    organizationId: string
   ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
@@ -384,7 +390,12 @@ export class PageService implements IPageService {
         throw new Error('Cannot delete home page');
       }
       if (pageExists.isPageGroup) {
-        return await this.pageHelperService.deletePageGroup(pageExists, appVersionId, deleteAssociatedPages);
+        return await this.pageHelperService.deletePageGroup(
+          pageExists,
+          appVersionId,
+          deleteAssociatedPages,
+          organizationId
+        );
       }
       this.eventHandlerService.cascadeDeleteEvents(pageExists.id);
       const pageDeleted = await manager.delete(Page, pageId);
@@ -393,11 +404,11 @@ export class PageService implements IPageService {
         throw new Error('Page not deleted');
       }
 
-      return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager);
+      return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
     }, appVersionId);
   }
 
-  async findModuleContainer(appVersionId: string): Promise<any> {
-    return this.pageHelperService.findModuleContainer(appVersionId);
+  async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {
+    return this.pageHelperService.findModuleContainer(appVersionId, organizationId);
   }
 }

@@ -20,6 +20,7 @@ export default function ModalBase({
   headerAction,
   showHeader = true,
   showFooter = true,
+  footerBody,
 }) {
   return (
     <Modal
@@ -49,30 +50,35 @@ export default function ModalBase({
           </div>
         )}
       </Modal.Body>
-      {showFooter && (
-        <Modal.Footer>
-          <ButtonSolid disabled={cancelDisabled} variant={'tertiary'} onClick={handleClose} data-cy="cancel-button">
-            Cancel
-          </ButtonSolid>
-          <ToolTip
-            show={confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled}
-            message={confirmBtnProps?.tooltipMessage}
-          >
-            <div>
-              <ButtonSolid
-                disabled={isLoading || confirmBtnProps?.disabled}
-                isLoading={isLoading}
-                variant={confirmBtnProps?.variant || 'primary'}
-                onClick={handleConfirm}
-                {...confirmBtnProps}
-                data-cy="confim-button"
-              >
-                {confirmBtnProps?.title || 'Continue'}
-              </ButtonSolid>
-            </div>
-          </ToolTip>
-        </Modal.Footer>
-      )}
+      <Modal.Footer>
+        {footerBody ? (
+          footerBody
+        ) : (
+          <>
+            <ButtonSolid disabled={cancelDisabled} variant="tertiary" onClick={handleClose} data-cy="cancel-button">
+              Cancel
+            </ButtonSolid>
+
+            <ToolTip
+              show={confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled}
+              message={confirmBtnProps?.tooltipMessage}
+            >
+              <div>
+                <ButtonSolid
+                  disabled={isLoading || confirmBtnProps?.disabled}
+                  isLoading={isLoading}
+                  variant={confirmBtnProps?.variant || 'primary'}
+                  onClick={handleConfirm}
+                  {...confirmBtnProps}
+                  data-cy="confirm-button"
+                >
+                  {confirmBtnProps?.title || 'Continue'}
+                </ButtonSolid>
+              </div>
+            </ToolTip>
+          </>
+        )}
+      </Modal.Footer>
     </Modal>
   );
 }

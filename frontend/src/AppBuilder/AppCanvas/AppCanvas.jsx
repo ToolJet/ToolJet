@@ -8,7 +8,13 @@ import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import {
+  LEFT_SIDEBAR_WIDTH,
+  NO_OF_GRIDS,
+  PAGES_SIDEBAR_WIDTH_COLLAPSED,
+  PAGES_SIDEBAR_WIDTH_EXPANDED,
+  RIGHT_SIDEBAR_WIDTH,
+} from './appCanvasConstants';
 import cx from 'classnames';
 import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
@@ -109,15 +115,15 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
 
-  useEffect(() => { }, [isViewerSidebarPinned]);
+  useEffect(() => {}, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -134,7 +140,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
       width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
-      borderRight: currentMode === 'edit' && isRightSidebarOpen && '299' + 'px solid',
+      borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
       paddingBottom: currentMode === 'edit' && '2px',
     };
@@ -152,15 +158,34 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     const shouldAdjust = isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit');
 
     if (!shouldAdjust) return '';
-
     let offset;
-    if (isViewerSidebarPinned) {
-      offset = position === 'side' ? '352px' : '126px';
+    if (isViewerSidebarPinned && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      }
     } else {
-      offset = position === 'side' ? '171px' : '126px';
+      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      }
     }
 
-    return `calc(100vw - ${offset})`;
+    if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
+      offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
+    } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
+      offset = `${LEFT_SIDEBAR_WIDTH}px`;
+    } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
+      offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+    }
+
+    return `calc(100% + ${offset})`;
   }
 
   return (
@@ -177,12 +202,12 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
             'canvas-container d-flex page-container',
             { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
             { 'overflow-x-auto': currentMode === 'edit' },
-            { 'position-top': position === 'top' },
+            { 'position-top': position === 'top' || isPagesSidebarHidden },
             { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
           )}
           style={canvasContainerStyles}
         >
-          {showOnDesktop && (
+          {showOnDesktop && appType !== 'module' && (
             <PagesSidebarNavigation
               showHeader={showHeader}
               isMobileDevice={currentLayout === 'mobile'}
@@ -202,6 +227,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
               scrollbarWidth: 'none',
               overflow: 'auto',
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
+              ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
             className={`app-${appId} _tooljet-page-${getPageId()}`}
           >
@@ -213,7 +239,7 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
               {environmentLoadingState !== 'loading' && (
                 <div>
                   <Container
-                    id="canvas"
+                    id={moduleId}
                     gridWidth={gridWidth}
                     canvasWidth={canvasWidth}
                     canvasHeight={canvasHeight}

@@ -12,6 +12,7 @@
 
   &.tooljetai {
     width: 440px;
+    overflow: auto !important;
   }
 
   select {
@@ -50,7 +51,7 @@
 
 div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
   margin-top: 48px;
-  margin-left: 47px !important;
+  margin-left: 48px !important;
   transform: none !important;
   z-index: 2 !important;
 }
@@ -58,6 +59,6 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
 @-moz-document url-prefix() {
   div[data-radix-popper-content-wrapper] {
     z-index: 100 !important;
-    left: 1px !important;
+    // left: 1px !important;
   }
 }

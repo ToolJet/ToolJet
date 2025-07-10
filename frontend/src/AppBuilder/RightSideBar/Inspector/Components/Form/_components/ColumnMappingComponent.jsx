@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import Checkbox from '@/components/ui/Checkbox/Index';
 import cx from 'classnames';
@@ -78,10 +78,8 @@ const ModalFooter = ({ currentStatus, refreshData, handleSubmit, isSaving, allSe
  * Loader component
  */
 const LoaderComponent = () => (
-  <div style={{ width: '100%', height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <center>
-      <Loader width="32" absolute={false} />
-    </center>
+  <div className="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10">
+    <Loader width="32" absolute={false} />
   </div>
 );
 
@@ -388,19 +386,40 @@ const ColumnMappingComponent = ({
   const [isSaving, setIsSaving] = useState(false);
   const [refreshedColumns, setRefreshedColumns] = useState([]);
   const [showLoader, setShowLoader] = useState(false);
+  const bodyContainerRef = useRef(null);
+  const lastBodyHeightRef = useRef(60);
 
   useEffect(() => {
     setShowLoader(isDataLoading);
   }, [isDataLoading]);
 
+  // Track body height when content is loaded
+  useEffect(() => {
+    if (!showLoader && bodyContainerRef.current) {
+      // Use setTimeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (bodyContainerRef.current) {
+          const height = bodyContainerRef.current.scrollHeight;
+          if (height > 0) {
+            lastBodyHeightRef.current = height;
+          }
+        }
+      }, 0);
+    }
+  }, [showLoader, groupedColumns]);
+
   const currentStatus = currentStatusRef.current;
+
+  console.log('here--- existingResolvedJsonData--- ', existingResolvedJsonData);
 
   const columnsToUse = useColumnBuilder(
     component,
     currentStatus,
     newResolvedJsonData,
     existingResolvedJsonData,
-    refreshedColumns?.length === 0 ? newResolvedJsonData : refreshedColumns,
+    refreshedColumns?.length === 0 || Object.keys(refreshedColumns).length === 0
+      ? newResolvedJsonData
+      : refreshedColumns,
     getFormFields,
     getComponentDefinition
   );
@@ -459,7 +478,11 @@ const ColumnMappingComponent = ({
 
   const modalBody = (
     <>
-      <div className="tw-w-full column-mapping-modal-body-container tw-max-h-[500px] tw-overflow-y-auto tw-p-4 tw-pb-0">
+      <div
+        ref={bodyContainerRef}
+        className="tw-w-full column-mapping-modal-body-container tw-max-h-[500px] tw-overflow-y-auto tw-p-4 tw-pb-0 tw-relative"
+        style={showLoader && lastBodyHeightRef.current ? { minHeight: `${lastBodyHeightRef.current}px` } : undefined}
+      >
         {showLoader && <LoaderComponent />}
 
         {!showLoader && (
