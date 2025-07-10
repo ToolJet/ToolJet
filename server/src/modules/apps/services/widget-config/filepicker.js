@@ -259,10 +259,24 @@ export const filepickerConfig = {
       validation: { schema: { type: 'string' }, defaultValue: '0px 1px 3px rgba(0,0,0,0.1)' },
       accordian: 'Container',
     },
-    containerPadding: {
-      type: 'numberInput',
+    // containerPadding: {
+    //   type: 'numberInput',
+    //   displayName: 'Padding',
+    //   validation: { schema: { type: 'string' }, defaultValue: 16 },
+    //   accordian: 'Container',
+    // },
+    padding: {
+      type: 'switch',
       displayName: 'Padding',
-      validation: { schema: { type: 'string' }, defaultValue: 16 },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
       accordian: 'Container',
     },
   },
@@ -303,7 +317,7 @@ export const filepickerConfig = {
       containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBorder: { value: 'var(--cc-default-border)' },
       containerBoxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
-      containerPadding: { value: '16px' },
+      padding: { value: 'default' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

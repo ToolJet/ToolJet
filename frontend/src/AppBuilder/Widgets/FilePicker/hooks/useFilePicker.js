@@ -34,8 +34,8 @@ export const useFilePicker = ({
 
   const maxFileCount = validation?.maxFileCount ?? 2;
   const fileTypeCategory = validation?.fileType ?? '*/*';
-  const maxSize = validation?.maxSize ?? 51200000;
-  const minSize = validation?.minSize ?? 50;
+  const maxSize = typeof validation?.maxSize === 'number' ? validation.maxSize : 51200000;
+  const minSize = typeof validation?.minSize === 'number' ? validation.minSize : 0;
   const minFileCount = validation?.minFileCount ?? 0;
   const isMandatory = validation?.enableValidation ?? false;
 
@@ -43,7 +43,7 @@ export const useFilePicker = ({
   const containerBackgroundColor = styles?.containerBackgroundColor ?? 'var(--color-surface-1)';
   const containerBorder = styles?.containerBorder ?? 'transparent';
   const containerBoxShadow = styles?.containerBoxShadow ?? 'none';
-  const containerPadding = styles?.containerPadding ?? 16;
+  const containerPadding = styles?.padding ?? 'default';
   const borderRadius = styles?.borderRadius ?? 8;
 
   const dropzoneTitleColor = styles?.dropzoneTitleColor ?? 'var(--text-primary';
