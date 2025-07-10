@@ -4,6 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { CustomMenuList } from './CustomMenuList';
 import { CustomOption } from './CustomOption';
 import { CustomValueContainer } from './CustomValueContainer';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   const {
@@ -16,9 +17,15 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
     computedStyles,
     darkMode,
     filterOption,
+    componentId,
   } = rest;
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const mode = useStore((state) => state.modeStore.modules.canvas.currentMode);
+  const selectedComponents = useStore((state) => state.selectedComponents);
+  const isComponentSelected = selectedComponents.length === 1 && selectedComponents[0] === componentId;
+  const setSelectedComponents = useStore((state) => state.setSelectedComponents);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -96,8 +103,20 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   return (
     <div
       onClick={() => {
-        if (disabledState || !isCountryChangeEnabled) return;
-        setMenuIsOpen((prev) => !prev);
+        // Use onClick to toggle dropdown in view mode (normal way)
+        if (mode !== 'edit' && !disabledState && isCountryChangeEnabled) {
+          setMenuIsOpen((prev) => !prev);
+        }
+      }}
+      onMouseDownCapture={(e) => {
+        // Use onMouseDownCapture to toggle dropdown in edit mode (fix: to prevent unexpected behaviour)
+        if (mode === 'edit') {
+          e.stopPropagation();
+          if (!isComponentSelected) setSelectedComponents([componentId]);
+          if (!disabledState && isCountryChangeEnabled) {
+            setMenuIsOpen((prev) => !prev);
+          }
+        }
       }}
       ref={dropdownRef}
     >
