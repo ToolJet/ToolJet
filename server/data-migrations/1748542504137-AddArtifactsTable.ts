@@ -1,8 +1,7 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class AddArtifactsTable1750927083207 implements MigrationInterface {
-
-  public async up(queryRunner: QueryRunner): Promise<void> {
+export class AddArtifactsTable1748542504137 implements MigrationInterface {
+    public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
                 name: 'artifacts',
