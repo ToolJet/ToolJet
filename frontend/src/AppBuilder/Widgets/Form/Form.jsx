@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
@@ -329,21 +329,24 @@ const FormComponent = (props) => {
     setChildrenData(childDataRef.current);
   };
 
-  const onOptionsChange = (exposedValues, id, component) => {
-    if (!component) {
-      component = childComponents?.[id]?.component?.component;
-    }
-    Object.entries(exposedValues).forEach(([key, value]) => {
-      const optionData = {
-        name: component?.name,
-        ...(childDataRef.current[id] ?? {}),
-        [key]: value,
-        formKey: component?.formKey,
-      };
-      childDataRef.current = { ...childDataRef.current, [id]: optionData };
-    });
-    setChildrenData(childDataRef.current);
-  };
+  const onOptionsChange = useCallback(
+    (exposedValues, id, component) => {
+      if (!component) {
+        component = childComponents?.[id]?.component?.component;
+      }
+      Object.entries(exposedValues).forEach(([key, value]) => {
+        const optionData = {
+          name: component?.name,
+          ...(childDataRef.current[id] ?? {}),
+          [key]: value,
+          formKey: component?.formKey,
+        };
+        childDataRef.current = { ...childDataRef.current, [id]: optionData };
+      });
+      setChildrenData(childDataRef.current);
+    },
+    [childComponents]
+  );
 
   const mode = useStore((state) => state.currentMode, shallow);
   const isEditing = mode === 'edit';
