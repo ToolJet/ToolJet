@@ -312,6 +312,7 @@ export default function generateColumnsData({
                   parseInUnixTimestamp={parseInUnixTimestamp}
                   unixTimestamp={column.unixTimestamp}
                   id={id}
+                  containerWidth={columnSize}
                 />
               );
 
