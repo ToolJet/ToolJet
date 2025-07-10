@@ -1549,11 +1549,6 @@ class HomePageComponent extends React.Component {
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
-                    <LicenseBanner
-                      classes="mt-3"
-                      limits={featureAccess}
-                      type={featureAccess?.licenseStatus?.licenseType}
-                    />
                     <AppTypeTab
                       appType={this.props.appType}
                       navigate={this.props.navigate}

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
@@ -45,7 +45,12 @@ export const PageSettings = () => {
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const switchPage = useStore((state) => state.switchPage);
   const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+
+  const handleToggle = () => {
+    setActiveRightSideBarTab(null);
+    setRightSidebarOpen(false);
+  };
   const treeRef = useRef(null);
 
   const license = useStore((state) => state.license);
@@ -161,10 +166,12 @@ export const PageSettings = () => {
     <div className="inspector pages-settings">
       <div>
         <div className="row inspector-component-title-input-holder d-flex align-items-center">
-          <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>Pages and navigation</div>
+          <div style={{ padding: '7px 6px' }} className={`col-9 ${isVersionReleased && 'disabled'}`}>
+            Pages and navigation
+          </div>
           <div className="d-flex icon-holder">
-            <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
-              <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin' : 'pin'} width="16" />
+            <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleToggle}>
+              <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
             </div>
           </div>
         </div>
@@ -223,13 +230,51 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
   });
 });
 
-const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseValid }) => {
+export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseValid }) => {
   const { moduleId } = useModuleContext();
   const [appName] = useStore((state) => [state.appStore.modules[moduleId].app.appName], shallow);
 
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { hideHeader, name, hideLogo } = properties ?? {};
+
   const [_name, _setName] = useState(name?.trim() ? name : appName);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const newNameValue = name?.trim() ? name : appName;
+    if (_name !== newNameValue) {
+      _setName(newNameValue);
+    }
+  }, [name, appName]);
+
+  const handleNameChange = (e) => {
+    const newValue = e.target.value;
+    _setName(newValue);
+    setError(null);
+  };
+
+  const handleNameBlur = (e) => {
+    const newValue = e.target.value.trim();
+
+    if (newValue === '') {
+      setError('Title cannot be empty.');
+      _setName(name?.trim() ? name : appName);
+      return;
+    }
+
+    if (newValue.length > 32) {
+      setError('Title cannot exceed 32 characters.');
+      _setName(name?.trim() ? name : appName);
+      return;
+    }
+
+    if (newValue !== (name?.trim() ? name : appName)) {
+      pageSettingChanged({ name: newValue }, 'properties');
+      setError(null);
+    } else {
+      setError(null);
+    }
+  };
 
   return (
     <>
@@ -279,14 +324,17 @@ const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseVali
           <label className="form-label font-weight-400 mb-0">Title</label>
           <input
             type="text"
-            onBlur={(e) => {
-              pageSettingChanged({ name: e.target.value }, 'properties');
-            }}
-            onChange={(e) => _setName(e.target.value)}
-            className="form-control"
+            onBlur={handleNameBlur}
+            onChange={handleNameChange}
+            className={`form-control ${error ? 'is-invalid' : ''}`}
             value={_name}
-            minLength="1"
+            maxLength={32}
           />
+          {error && (
+            <div className="invalid-feedback" style={{ display: 'block' }}>
+              {error}
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -317,6 +365,8 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
   function stringToBoolean(str) {
     return str.toLowerCase() === 'true';
   }
+
+  const [selectedStyle, setSelectedStyle] = useState(style);
 
   return (
     <>
@@ -357,6 +407,7 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
                   pageSettingChanged({ position: value }, 'properties');
                 }}
                 defaultValue={position?.toString()}
+                style={{ width: '168px' }}
               >
                 {POSTIONS.map((mode) => (
                   <ToggleGroupItem key={mode.value} value={mode.value}>
@@ -371,14 +422,14 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
               <label className="form-label font-weight-400 mb-0">Style</label>
               <Select
                 options={styleOptions}
-                search={true}
-                value={style}
+                value={selectedStyle}
                 onChange={(value) => {
+                  setSelectedStyle(value);
                   pageSettingChanged({ style: value }, 'properties');
                 }}
                 placeholder={'Select...'}
                 useMenuPortal={false}
-                width={'142px'}
+                width={'168px'}
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
@@ -389,12 +440,10 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {
-                    // if (position === 'side' && value == 'false') {
-                    //   pageSettingChanged({ style: 'texticon' }, 'properties');
-                    // }
                     pageSettingChanged({ collapsable: stringToBoolean(value) }, 'properties');
                   }}
                   defaultValue={collapsable?.toString()}
+                  style={{ width: '168px' }}
                 >
                   {COLLAPSABLE_TOGGLES.map((mode) => (
                     <ToggleGroupItem key={mode.value} value={mode.value}>

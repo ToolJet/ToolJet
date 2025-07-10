@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { LICENSE_FIELD, ORGANIZATION_INSTANCE_KEY } from '@modules/licensing/constants';
 import { LicenseInitService } from '../interfaces/IService';
 import { LicenseTermsService as ILicenseTermsService } from '../interfaces/IService';
 import License from '../configs/License';
-
 @Injectable()
 export class LicenseTermsService extends ILicenseTermsService {
   constructor(protected readonly licenseInitService: LicenseInitService) {
@@ -11,7 +10,7 @@ export class LicenseTermsService extends ILicenseTermsService {
   }
 
   async getLicenseTermsInstance(type: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
-    throw new Error('Method not implemented. This method is not supported on cloud.');
+    return this.getLicenseTerms(type, ORGANIZATION_INSTANCE_KEY);
   }
 
   // This function should be called to get a specific license term

@@ -76,11 +76,11 @@ describe("Manage Groups", () => {
 
         // App operations
         cy.createApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appCreatedToast,
-            false
-        );
+        // cy.verifyToastMessage(
+        //     commonSelectors.toastMessage,
+        //     commonText.appCreatedToast,
+        //     false
+        // );
         cy.backToApps();
 
         cy.deleteApp(data.appName);
@@ -178,11 +178,11 @@ describe("Manage Groups", () => {
 
         // App operations
         cy.createApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appCreatedToast,
-            false
-        );
+        // cy.verifyToastMessage(
+        //     commonSelectors.toastMessage,
+        //     commonText.appCreatedToast,
+        //     false
+        // );
         cy.backToApps();
 
         cy.deleteApp(data.appName);

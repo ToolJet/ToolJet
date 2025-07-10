@@ -338,22 +338,10 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     type="checkbox"
                     checked={isHomePage}
                     onChange={() => markAsHomePage(page?.id)}
-                    disabled={isHomePage}
+                    disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
                   />
                 </label>
               </div>
-              {/* <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Hide this page on navigation</label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={page?.hidden}
-                    onChange={(e) => updatePageVisibility(page?.id, !page?.hidden)}
-                    disabled={isHomePage}
-                  />
-                </label>
-              </div> */}
               <HidePageOnNavigation
                 hidden={page?.hidden}
                 page={page}

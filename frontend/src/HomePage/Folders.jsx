@@ -16,7 +16,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 
-export const Folders = function Folders({
+export const Folders = function Folders ({
   folders,
   foldersLoading,
   currentFolder,
@@ -74,7 +74,7 @@ export const Folders = function Folders({
     setFilteredData(filtered);
   };
 
-  function saveFolder() {
+  function saveFolder () {
     const newName = newFolderName?.trim();
     if (!newName) {
       setErrorText("Folder name can't be empty");
@@ -103,7 +103,7 @@ export const Folders = function Folders({
     return `All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`;
   };
 
-  function handleFolderChange(folder) {
+  function handleFolderChange (folder) {
     if (_.isEmpty(folder)) {
       setActiveFolder({});
     } else {
@@ -115,31 +115,30 @@ export const Folders = function Folders({
     updateFolderQuery(folder?.name);
   }
 
-  function updateFolderQuery(name) {
+  function updateFolderQuery (name) {
     const search = `${name ? `?folder=${name}` : ''}`;
     navigate(
       {
-        pathname: `/${getWorkspaceId()}${
-          appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
-        }`,
+        pathname: `/${getWorkspaceId()}${appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
+          }`,
         search,
       },
       { replace: true }
     );
   }
 
-  function deleteFolder(folder) {
+  function deleteFolder (folder) {
     setShowDeleteConfirmation(true);
     setDeletingFolder(folder);
   }
 
-  function updateFolder(folder) {
+  function updateFolder (folder) {
     setNewFolderName(folder.name);
     setShowUpdateForm(true);
     setUpdatingFolder(folder);
   }
 
-  function executeDeletion() {
+  function executeDeletion () {
     setDeletionStatus(true);
     folderService
       .deleteFolder(deletingFolder.id)
@@ -157,12 +156,12 @@ export const Folders = function Folders({
       });
   }
 
-  function cancelDeleteDialog() {
+  function cancelDeleteDialog () {
     setShowDeleteConfirmation(false);
     setDeletingFolder(null);
   }
 
-  function executeEditFolder() {
+  function executeEditFolder () {
     const folderName = newFolderName?.trim();
     if (folderName === updatingFolder?.name) {
       setUpdationStatus(false);
@@ -213,7 +212,7 @@ export const Folders = function Folders({
     showUpdateForm ? setShowUpdateForm(false) : setShowForm(false);
   };
 
-  function handleClose() {
+  function handleClose () {
     setShowInput(false);
     setFilteredData(folders);
   }
@@ -269,7 +268,7 @@ export const Folders = function Folders({
                     onClick={() => {
                       setShowInput(true);
                     }}
-                    data-cy="create-new-folder-button"
+                    data-cy="folder-search-icon"
                   >
                     <SolidIcon
                       name="search"
@@ -311,9 +310,9 @@ export const Folders = function Folders({
             {appType === 'module'
               ? 'All modules'
               : t(
-                  `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
-                  'All apps'
-                )}
+                `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
+                'All apps'
+              )}
           </a>
         </div>
       )}

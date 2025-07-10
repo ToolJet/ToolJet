@@ -1,7 +1,6 @@
-import { MigrationInterface, QueryRunner, TableColumn } from "typeorm";
+import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddAiGenerationFlagsInApp1750927057649 implements MigrationInterface {
-
+export class AddAiGenerationFlagsInApp1748331051836 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add is_initialised_from_prompt column
     await queryRunner.addColumn(
@@ -58,5 +57,4 @@ export class AddAiGenerationFlagsInApp1750927057649 implements MigrationInterfac
     await queryRunner.dropColumn('apps', 'app_generated_from_prompt');
     await queryRunner.dropColumn('apps', 'is_initialised_from_prompt');
   }
-
 }

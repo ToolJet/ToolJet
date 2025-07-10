@@ -29,8 +29,6 @@ export class DataSourcesModule extends SubModule {
       'services/sample-ds.service',
     ]);
 
-    const { OrganizationsService } = await this.getProviders(configs, 'organizations', ['service']);
-
     return {
       module: DataSourcesModule,
       imports: [
@@ -51,7 +49,6 @@ export class DataSourcesModule extends SubModule {
         PluginsRepository,
         SampleDataSourceService,
         FeatureAbilityFactory,
-        OrganizationsService,
         OrganizationRepository,
       ],
       controllers: [DataSourcesController],

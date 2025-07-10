@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { formatJoinsJSONBPath, formatJSONB } from 'src/helpers/utils.helper';
+import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -29,7 +29,7 @@ import {
   grantTenantRoleToTjdbAdminRole,
 } from 'src/helpers/tooljet_db.helper';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 import {
   PostgrestError,
   TooljetDatabaseColumn,
@@ -45,6 +45,7 @@ import { ConfigService } from '@nestjs/config';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@modules/licensing/constants';
 import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 enum AggregateFunctions {
   sum = 'SUM',
@@ -79,7 +80,7 @@ export class TooljetDbTableOperationsService {
     protected eventEmitter: EventEmitter2,
     protected licenseTermsService: LicenseTermsService,
     protected readonly configService: ConfigService
-  ) {}
+  ) { }
 
   async perform(
     organizationId: string,
@@ -518,11 +519,11 @@ export class TooljetDbTableOperationsService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -536,11 +537,11 @@ export class TooljetDbTableOperationsService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -550,11 +551,11 @@ export class TooljetDbTableOperationsService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -571,11 +572,11 @@ export class TooljetDbTableOperationsService {
               type: old_column.data_type,
               ...(old_column?.column_default &&
                 old_column.data_type !== 'serial' && {
-                  default:
-                    old_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(old_column.column_default)
-                      : old_column.column_default,
-                }),
+                default:
+                  old_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(old_column.column_default)
+                    : old_column.column_default,
+              }),
               isNullable: !old_column?.constraints_type.is_not_null,
               isUnique: old_column?.constraints_type.is_unique,
               isPrimary: old_column?.constraints_type.is_primary_key || false,
@@ -585,11 +586,11 @@ export class TooljetDbTableOperationsService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -831,15 +832,31 @@ export class TooljetDbTableOperationsService {
   }
 
   async getTablesLimit(organizationId: string) {
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
-      LICENSE_FIELD.TABLE_COUNT,
-      LICENSE_FIELD.STATUS,
-    ], organizationId);
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
+    if (licenseTerms[LICENSE_FIELD.TABLE_COUNT] === LICENSE_LIMIT.UNLIMITED) {
+      return {
+        tablesCount: generatePayloadForLimits(
+          0,
+          licenseTerms[LICENSE_FIELD.TABLE_COUNT],
+          licenseTerms[LICENSE_FIELD.STATUS],
+          LICENSE_LIMITS_LABEL.TABLES
+        ),
+      };
+    }
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const tableCount =
+      edition === TOOLJET_EDITIONS.Cloud
+        ? await this.manager
+          .createQueryBuilder(InternalTable, 'internal_table')
+          .where('internal_table.organizationId = :organizationId', { organizationId })
+          .getCount()
+        : await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount();
     return {
       tablesCount: generatePayloadForLimits(
-        licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
-          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
-          : 0,
+        tableCount,
         licenseTerms[LICENSE_FIELD.TABLE_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.TABLES
@@ -1052,9 +1069,8 @@ export class TooljetDbTableOperationsService {
       let leftField;
       if (condition.leftField.type == 'Column') {
         leftField = condition.leftField.jsonpath
-          ? `"${internalTableIdToNameMap[condition.leftField.table]}"."${
-              condition.leftField.columnName
-            }"${formatJoinsJSONBPath(condition.leftField.jsonpath)}`
+          ? `"${internalTableIdToNameMap[condition.leftField.table]}"."${condition.leftField.columnName
+          }"${formatJoinsJSONBPath(condition.leftField.jsonpath)}`
           : `"${internalTableIdToNameMap[condition.leftField.table]}"."${condition.leftField.columnName}"`;
       } else {
         leftField = `${condition.leftField.columnName}`;
@@ -1063,9 +1079,8 @@ export class TooljetDbTableOperationsService {
       let rightField;
       if (condition.rightField.type == 'Column') {
         rightField = condition.rightField.jsonpath
-          ? `"${internalTableIdToNameMap[condition.rightField.table]}"."${
-              condition.rightField.columnName
-            }"${formatJoinsJSONBPath(condition.rightField.jsonpath)}`
+          ? `"${internalTableIdToNameMap[condition.rightField.table]}"."${condition.rightField.columnName
+          }"${formatJoinsJSONBPath(condition.rightField.jsonpath)}`
           : `"${internalTableIdToNameMap[condition.rightField.table]}"."${condition.rightField.columnName}"`;
       } else {
         rightField = maybeParameterizeValue(condition.operator, paramName, condition.rightField.value);
