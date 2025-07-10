@@ -4,7 +4,7 @@ title: Personal Workspace
 ---
 
 
-The personal workspaces feature, designed to give every user their own dedicated workspace environment within an instance and is managed by the super admin of the instance. This feature is particularly useful in environments where users need a private space to build, test, or experiment without affecting shared workspaces.
+The personal workspaces feature, designed to give every user their own dedicated workspace environment within an instance and is managed by the super admin of the instance. This feature is particularly useful in environments where users need a private space to build, test, or experiment without affecting shared workspaces such as during onboarding, learning ToolJet, or safely prototyping internal tools before moving them to a team workspace.
 
 Personal Workspaces are an **instance-level** setting that can be toggled on or off by the **super admin** of a ToolJet instance. When enabled, a separate personal workspace is automatically created for each user upon signing up. This includes all sign-up methods configured at the instance level.
 
@@ -29,8 +29,14 @@ To manage the personal workspace setting, follow the steps:
 
 | Setting      | Effect on User Signup |
 |--------------|------------------------|
-| **Enabled**  | A personal workspace is automatically created for every new user upon signup using any instance-level login method (e.g., email/password, SSO). Note that, to use the instance-level [self-signup](/docs/user-management/onboard-users/self-signup-user) feature, personal workspaces must be enabled.* |
+| **Enabled**  | A personal workspace is automatically created for every new user upon signup using any [instance-level login](/docs/user-management/authentication/self-hosted/instance-login) method. |
 | **Disabled** | No personal workspace is created for users signing up or logging in via instance-level login methods. Access to workspaces must be managed manually by the admin. |
+
+
+:::note
+- If you want to enable [self-signup](/docs/user-management/onboard-users/self-signup-user) for your instance, personal workspaces must be enabled.
+- Personal workspace dependency will be completely deprecated in the upcoming LTS for instance level sign up.
+:::
 
 
 By managing this feature appropriately, super admins can configure the user experience to suit their organization.
