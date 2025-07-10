@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "types": ["node", "rxjs"],
+    "types": [
+      "node",
+      "rxjs"
+    ],
     "resolveJsonModule": true,
     "module": "commonjs",
     "declaration": true,
@@ -17,22 +20,25 @@
     "incremental": true,
     "skipLibCheck": true,
     "paths": {
-      "@ee/*": ["ee/*"],
-      "@apps/*": ["ee/apps/*"],
-      "@entities/*": ["src/entities/*"],
-      "@services/*": ["src/services/*"],
-      "@controllers/*": ["src/controllers/*"],
-      "@repositories/*": ["src/repositories/*"],
-      "@dto/*": ["src/dto/*"],
-      "@modules/*": ["src/modules/*"],
-      "@helpers/*": ["src/helpers/*"],
-      "@instance-settings/*": ["ee/instance-settings/*"],
+      "@ee/*": [
+        "ee/*"
+      ],
+      "@entities/*": [
+        "src/entities/*"
+      ],
+      "@dto/*": [
+        "src/dto/*"
+      ],
+      "@modules/*": [
+        "src/modules/*"
+      ],
+      "@helpers/*": [
+        "src/helpers/*"
+      ],
     },
   },
   "exclude": [
     "node_modules",
     "dist",
-    "src/services/ignored",
-    "ee/ignored"
   ]
 }

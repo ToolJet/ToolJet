@@ -1,14 +1,6 @@
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 export class AddGracePeriodExpiryDateColumnInOrganizationLicenseTable1710780718114 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
-    // If edition is not cloud, skip this migration
-    if (edition !== TOOLJET_EDITIONS.Cloud) {
-      console.log('Migration is only restricted for cloud edition.');
-      return; // Exit the migration early
-    }
     await queryRunner.query('ALTER TABLE organization_license ADD COLUMN expiry_with_grace_period TIMESTAMP');
 
     // Update the new column with expiry_date + 14 days

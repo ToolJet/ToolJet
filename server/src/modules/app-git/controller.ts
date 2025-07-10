@@ -10,9 +10,7 @@ import {
 } from '@modules/app-git/dto';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { RequireFeature } from '@modules/app/decorators/require-feature.decorator';
 import { FEATURE_KEY } from './constants';
 
 @InitModule(MODULES.APP_GIT)
@@ -20,7 +18,6 @@ import { FEATURE_KEY } from './constants';
 export class AppGitController {
   constructor() {}
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_GET_APPS)
   @UseGuards(JwtAuthGuard)
   @Get('gitpull')
@@ -28,7 +25,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_SYNC_APP)
   @UseGuards(JwtAuthGuard)
   @Post('gitpush/:appGitId/:versionId')
@@ -40,7 +36,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_GET_APP)
   @UseGuards(JwtAuthGuard)
   @Get('gitpull/app/:appId')
@@ -48,7 +43,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_GET_APP_CONFIG)
   @UseGuards(JwtAuthGuard)
   @Get(':workspaceId/app/:versionId')
@@ -60,7 +54,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_CREATE_APP)
   @UseGuards(JwtAuthGuard)
   @Post('gitpull/app')
@@ -68,7 +61,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_UPDATE_APP)
   @UseGuards(JwtAuthGuard)
   @Post('gitpull/app/:appId')
@@ -76,7 +68,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_APP_VERSION_RENAME)
   @Put('app/:appId/rename')
   async renameAppOrVersion(
@@ -87,7 +78,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @InitFeature(FEATURE_KEY.GIT_APP_CONFIGS_UPDATE)
   @Put(':appId/configs')
   async updateAppGitConfigs(
@@ -98,7 +88,6 @@ export class AppGitController {
     throw new NotFoundException();
   }
 
-  @RequireFeature(LICENSE_FIELD.GIT_SYNC)
   @Get(':workspaceId/app/:versionId/configs')
   async getAppGitConfigs(
     @User() user,

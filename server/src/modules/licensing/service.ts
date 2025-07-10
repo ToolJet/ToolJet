@@ -24,7 +24,7 @@ export class LicenseService implements ILicenseService {
   async plans(): Promise<{ plans: any }> {
     try {
       /* TODO API request to the cloud server to a specific version license plans */
-    } catch (error) {
+    } catch {
       throw new HttpException('Failed to fetch plans', 500);
     }
     return { plans: PLAN_DETAILS };
