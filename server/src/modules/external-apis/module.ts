@@ -18,6 +18,9 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { AppsRepository } from '@modules/apps/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
+
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const { ExternalApisController, ExternalApisService, ExternalApiUtilService, ExternalApisAppsController } =
@@ -48,10 +51,12 @@ export class ExternalApiModule extends SubModule {
         ExternalApisService,
         FeatureAbilityFactory,
         RolesRepository,
+        AppsRepository,
         GroupPermissionsRepository,
         VersionRepository,
         AppGitRepository,
         OrganizationRepository,
+        UserRepository,
         UserPersonalAccessTokenRepository,
       ],
       controllers: [ExternalApisController, ExternalApisAppsController],
