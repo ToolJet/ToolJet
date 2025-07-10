@@ -38,6 +38,7 @@ class BaseManageGranularAccess extends React.Component {
       isAll: true,
       isCustom: false,
       addableApps: [],
+      addableDs: [],
       modalType: 'add',
       modalTitle: 'Add app permissions',
       showAutoRoleChangeModal: false,
@@ -75,6 +76,7 @@ class BaseManageGranularAccess extends React.Component {
 
   componentDidMount() {
     this.fetchAppsCanBeAdded();
+    this.fetchDsCanBeAdded();
     this.fetchGranularPermissions(this.props.groupPermissionId);
   }
 
@@ -112,7 +114,29 @@ class BaseManageGranularAccess extends React.Component {
         toast.error(err.error);
       });
   };
-
+  fetchDsCanBeAdded = () => {
+    if (this.props.isBasicPlan) {
+      return;
+    }
+    groupPermissionV2Service
+      .fetchAddableDs()
+      .then((data) => {
+        console.log('data', data);
+        const addableDs = data.map((ds) => {
+          return {
+            name: ds.name,
+            value: ds.id,
+            label: ds.name,
+          };
+        });
+        this.setState({
+          addableDs,
+        });
+      })
+      .catch((err) => {
+        toast.error(err.error);
+      });
+  };
   fetchGranularPermissions = (groupPermissionId) => {
     this.setState({
       isLoading: true,
@@ -347,6 +371,7 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   getAddableResources = (resourceType) => {
+    console.log('this state', this.state);
     switch (resourceType) {
       case RESOURCE_TYPE.APPS:
         return this.state.addableApps;
