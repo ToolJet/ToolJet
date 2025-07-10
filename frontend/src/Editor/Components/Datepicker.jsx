@@ -119,6 +119,8 @@ export const Datepicker = function Datepicker({
         onFocus={(event) => {
           onComponentClick(id);
         }}
+        minDate={new Date('1900-01-01')}
+        maxDate={new Date('2100-12-31')}
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
