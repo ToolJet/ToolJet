@@ -111,8 +111,10 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
       onMouseDownCapture={(e) => {
         // Use onMouseDownCapture to toggle dropdown in edit mode (fix: to prevent unexpected behaviour)
         if (mode === 'edit') {
+          const menu = document.querySelector(`.country-${componentId}__menu`);
+          if (menu && menu.contains(e.target)) return; // Return early if user clicks on the menu to search or select option
           e.stopPropagation();
-          if (!isComponentSelected) setSelectedComponents([componentId]);
+          if (!isComponentSelected) setSelectedComponents([componentId]); // Select component if not selected, to show component properties in right sidebar
           if (!disabledState && isCountryChangeEnabled) {
             setMenuIsOpen((prev) => !prev);
           }
@@ -152,8 +154,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         darkMode={darkMode}
         isDisabled={disabledState}
         menuIsOpen={menuIsOpen}
-        onMenuOpen={() => setMenuIsOpen(true)}
-        onMenuClose={() => setMenuIsOpen(false)}
+        classNamePrefix={`country-${componentId}`}
       />
     </div>
   );
