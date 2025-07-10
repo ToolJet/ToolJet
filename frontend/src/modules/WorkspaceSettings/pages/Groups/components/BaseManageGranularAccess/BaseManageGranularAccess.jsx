@@ -121,7 +121,6 @@ class BaseManageGranularAccess extends React.Component {
     groupPermissionV2Service
       .fetchAddableDs()
       .then((data) => {
-        console.log('data', data);
         const addableDs = data.map((ds) => {
           return {
             name: ds.name,
@@ -371,7 +370,6 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   getAddableResources = (resourceType) => {
-    console.log('this state', this.state);
     switch (resourceType) {
       case RESOURCE_TYPE.APPS:
         return this.state.addableApps;
