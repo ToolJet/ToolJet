@@ -393,7 +393,7 @@ const FormComponent = (props) => {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
-      {!advanced && showHeader && (
+      {!advanced && showHeader && !isLoading && (
         <HorizontalSlot
           slotName="header"
           slotStyle={formHeader}
@@ -474,7 +474,7 @@ const FormComponent = (props) => {
           </fieldset>
         )}
       </div>
-      {!advanced && showFooter && (
+      {!advanced && showFooter && !isLoading && (
         <HorizontalSlot
           slotName="footer"
           slotStyle={formFooter}
