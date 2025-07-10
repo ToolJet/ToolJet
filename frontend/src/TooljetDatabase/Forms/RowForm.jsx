@@ -501,7 +501,7 @@ const RowForm = ({
 
       case 'boolean':
         return (
-          <label className={`form-switch`}>
+          <label className={`form-switch`} style={{ width: 'fit-content' }}>
             <input
               className="form-check-input"
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-check-input`}
