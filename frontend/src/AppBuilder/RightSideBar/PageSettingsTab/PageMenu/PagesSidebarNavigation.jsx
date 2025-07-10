@@ -339,7 +339,7 @@ export const PagesSidebarNavigation = ({
                 </div>
               )}
               {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
-                <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
+                <div style={{ wordWrap: 'break-word', overflow: 'hidden' }}>{name?.trim() ? name : appName}</div>
               )}
               {collapsable &&
                 !isTopPositioned &&

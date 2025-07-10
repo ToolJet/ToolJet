@@ -248,7 +248,7 @@
             font-size: 16px;
             color: var(--text-default);
             margin-left: 0px;
-            align-items: center;
+            align-items: baseline;
             width: unset !important;
             margin-bottom: 20px;
             min-height: 28px;
@@ -537,6 +537,7 @@
                 white-space: nowrap;
                 flex-shrink: 0;
                 margin-right: 40px;
+                align-items: center;
 
                 img {
                     flex-shrink: 0;
