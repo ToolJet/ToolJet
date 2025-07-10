@@ -178,6 +178,7 @@ export default function generateColumnsData({
                   row={row}
                   id={id}
                   searchText={searchText}
+                  darkMode={darkMode}
                 />
               );
 
