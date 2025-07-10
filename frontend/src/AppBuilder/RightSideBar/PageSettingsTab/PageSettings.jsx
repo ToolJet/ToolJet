@@ -402,6 +402,7 @@ const NavigationMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
               <ToggleGroup
                 onValueChange={(value) => {
                   if (position?.toString() === 'side' && style === 'icon') {
+                    setSelectedStyle('texticon');
                     pageSettingChanged({ style: 'texticon' }, 'properties');
                   }
                   pageSettingChanged({ position: value }, 'properties');
