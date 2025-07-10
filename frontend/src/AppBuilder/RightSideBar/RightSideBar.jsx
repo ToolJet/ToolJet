@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { ComponentConfigurationTab } from './ComponentConfigurationTab';
 import ComponentsManagerTab from './ComponentManagerTab';
@@ -13,12 +13,7 @@ export const RightSideBar = ({ darkMode }) => {
 
   const activeTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
-
-  const sidebarRef = useRef(null);
 
   useEffect(() => {
     if (!isDraggingQueryPane) {
@@ -31,30 +26,10 @@ export const RightSideBar = ({ darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPanelHeight, isDraggingQueryPane]);
 
-  // useEffect(() => {
-  //   const rigthSidebarMenu = document.querySelector('.right-sidebar-toggle');
-  //   function handleClickOutside(event) {
-  //     if (
-  //       sidebarRef.current &&
-  //       !sidebarRef.current.contains(event.target) &&
-  //       !rigthSidebarMenu.contains(event.target) &&
-  //       !isRightSidebarPinned
-  //     ) {
-  //       setRightSidebarOpen(false);
-  //       setActiveRightSideBarTab(null);
-  //     }
-  //   }
-
-  //   document.addEventListener('mousedown', handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleClickOutside);
-  //   };
-  // }, [isRightSidebarPinned, setActiveRightSideBarTab, setRightSidebarOpen]);
-
   if (!isRightSidebarOpen) return null;
 
   return (
-    <div ref={sidebarRef} className="sub-section">
+    <div className="sub-section">
       <div
         style={{ height: `${popoverContentHeight}vh`, overflow: 'auto' }}
         className={cx('editor-sidebar', { 'dark-theme theme-dark': darkMode })}
