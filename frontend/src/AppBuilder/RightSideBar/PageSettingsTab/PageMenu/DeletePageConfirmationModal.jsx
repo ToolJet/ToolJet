@@ -83,6 +83,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
       size="sm"
       centered={true}
       contentClassName={darkMode ? 'dark-theme' : ''}
+      className="delete-page-modal"
     >
       <Modal.Header>
         <Modal.Title>{'Delete Page'}</Modal.Title>

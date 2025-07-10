@@ -795,3 +795,17 @@
         }
     }
 }
+
+.modal-backdrop.show {
+    z-index: 9999;
+    & + .delete-folder-modal {
+        z-index: 9999;
+    }
+}
+
+.modal-backdrop.show {
+    z-index: 9999;
+    & + .delete-page-modal {
+        z-index: 9999;
+    }
+}
