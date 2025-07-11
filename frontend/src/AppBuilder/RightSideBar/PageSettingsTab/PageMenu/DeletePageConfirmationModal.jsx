@@ -38,6 +38,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
         className={`${darkMode && 'dark-theme'} delete-folder-modal `}
         backdrop="static"
         onClick={(event) => event.stopPropagation()}
+        backdropClassName={'delete-folder-backdrop'}
       >
         <Modal.Header>
           <Modal.Title data-cy={'delete-folder-modal'}>Delete folder</Modal.Title>
@@ -84,6 +85,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
       centered={true}
       contentClassName={darkMode ? 'dark-theme' : ''}
       className="delete-page-modal"
+      backdropClassName={'delete-page-backdrop'}
     >
       <Modal.Header>
         <Modal.Title>{'Delete Page'}</Modal.Title>
