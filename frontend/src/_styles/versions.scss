@@ -146,7 +146,7 @@
 
 	.env-popover {
 		position: absolute;
-		top: 128%;
+		top: 36px;
 		left: 0;
 		width: 100%;
 		width: 176px;
@@ -161,15 +161,16 @@
 	}
 
 	.env-popover>.selected-env {
-		height: 40px;
-		padding: 16px 14px;
+		height: 36px;
+		padding: 8px 16px;
 		font-style: normal;
-		font-weight: 400;
-		font-size: 14px;
+		font-weight: 500;
+		font-size: 11px;
 		line-height: 20px;
+		color: var(--text-placeholder);
 		display: flex;
 		align-items: center;
-		border-bottom: 1px solid #F1F3F5;
+		border-bottom: 1px solid var(--border-weak);
 	}
 
 	.env-popover>.popover-options {

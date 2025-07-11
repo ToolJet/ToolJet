@@ -73,7 +73,7 @@ const PreviewAndShareIcons = () => {
   return (
     <>
       <div class="navbar-seperator" />
-      <div className="preview-share-wrap navbar-nav flex-row">
+      <div className="preview-share-wrap navbar-nav flex-row tw-mr-1">
         <div className="nav-item">
           {appId && (
             <ManageAppUsers
@@ -90,7 +90,6 @@ const PreviewAndShareIcons = () => {
           )}
         </div>
       </div>
-      <div class="navbar-seperator" />
     </>
   );
 };
