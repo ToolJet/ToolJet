@@ -94,6 +94,11 @@ export const AppMenu = function AppMenu({
                     <Field text={appType === 'module' ? 'Export module' : 'Export app'} onClick={exportApp} />
                   </>
                 )}
+                {canUpdateApp && canCreateApp && appType === 'workflow' && (
+                  <>
+                    <Field text={'Export workflow'} onClick={exportApp} />
+                  </>
+                )}
                 {canDeleteApp && (
                   <Field
                     text={
