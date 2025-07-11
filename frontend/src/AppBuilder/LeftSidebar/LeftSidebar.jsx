@@ -13,6 +13,8 @@ import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import SupportButton from './SupportButton';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -159,10 +161,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-            // toggleAppMaintenance={toggleAppMaintenance}
-            // isMaintenanceOn={isMaintenanceOn}
-            // app={app}
-            // backgroundFxQuery={backgroundFxQuery}
+          // toggleAppMaintenance={toggleAppMaintenance}
+          // isMaintenanceOn={isMaintenanceOn}
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }
@@ -268,6 +270,7 @@ export const BaseLeftSidebar = ({
               ref={setSideBarBtnRefs('comments')}
             />
           </div> */}
+          <SupportButton />
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
       </div>
