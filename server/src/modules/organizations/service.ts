@@ -14,8 +14,6 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationWithPlan } from '@modules/organizations/interfaces/IService';
-import { getTooljetEdition } from 'src/helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
@@ -32,8 +30,7 @@ export class OrganizationsService implements IOrganizationsService {
     perPageCount?: number,
     name?: string
   ): Promise<{ organizations: OrganizationWithPlan[] | Organization[]; totalCount: number }> {
-    const edition = getTooljetEdition();
-    if (isSuperAdmin(user) && edition !== TOOLJET_EDITIONS.Cloud) {
+    if (isSuperAdmin(user)) {
       return this.organizationRepository.fetchOrganizationsForSuperAdmin(status, currentPage, perPageCount, name);
     } else {
       const { organizations, totalCount } = await this.organizationRepository.fetchOrganizationsForRegularUser(
