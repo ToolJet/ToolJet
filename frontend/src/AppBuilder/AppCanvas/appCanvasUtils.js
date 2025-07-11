@@ -66,10 +66,10 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
     componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
     componentData.definition.properties.visibility = { value: true };
-    customLayouts = moduleInfo.moduleContainer.layouts;
+    customLayouts = moduleInfo?.moduleContainer?.layouts;
 
     const inputItems = Object.values(
-      moduleInfo.moduleContainer.component.definition.properties?.input_items?.value ?? {}
+      moduleInfo.moduleContainer?.component.definition.properties?.input_items?.value ?? {}
     );
 
     for (const { name, default_value } of inputItems) {
@@ -85,7 +85,6 @@ export const addNewWidgetToTheEditor = (
     left = Math.max(0, NO_OF_GRIDS - width);
     width = Math.min(width, NO_OF_GRIDS);
   }
-
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;

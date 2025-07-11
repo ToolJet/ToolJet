@@ -40,7 +40,7 @@ import { USER_ROLE } from '@modules/group-permissions/constants';
 import { ActivateAccountWithTokenDto } from '@modules/onboarding/dto/activate-account-with-token.dto';
 import { AppSignupDto } from '@modules/auth/dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { ResendInviteDto } from '@modules/onboarding/dto/resend-invite.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -368,7 +368,7 @@ export class OnboardingService implements IOnboardingService {
         },
       });
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organization?.id);
       return this.sessionUtilService.generateLoginResultPayload(
         response,
         user,
@@ -399,6 +399,7 @@ export class OnboardingService implements IOnboardingService {
           type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
           payload: {
             to: user.email,
+            // eslint-disable-next-line no-constant-binary-expression
             name: `${user.firstName} ${user.lastName}` || '',
             invitationtoken: user.invitationToken,
             organizationInvitationToken: `${organizationUser.invitationToken}`,
@@ -424,7 +425,7 @@ export class OnboardingService implements IOnboardingService {
         await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
       }
       const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
       const auditLogEntry = {
         userId: user.id,
         organizationId: organization.id,
@@ -544,7 +545,7 @@ export class OnboardingService implements IOnboardingService {
           CASE: user redirected to signup to activate his account with password. 
           Till now user doesn't have an organization.
         */
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, invitedUser['invitedOrganizationId']);
       const auditLogsData = {
         userId: signupUser.id,
         organizationId: signupUser.organizationUsers[0].organizationId,

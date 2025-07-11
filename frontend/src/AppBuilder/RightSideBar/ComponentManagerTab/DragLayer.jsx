@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { WidgetBox } from '../WidgetBox';
 import { ModuleWidgetBox } from '@/modules/Modules/components';
 import { useDrag, useDragLayer } from 'react-dnd';
@@ -9,9 +9,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { noop } from 'lodash';
-import { useGridStore } from '@/_stores/gridStore';
 
-export const DragLayer = ({ index, component, isModuleTab = false }) => {
+export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(
     (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
     shallow
@@ -27,9 +26,7 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
     }),
     [component.component]
   );
-  const getMoveableRef = useGridStore((state) => state.moveableRef);
-  const setVirtualTarget = useGridStore((state) => state.actions.setVirtualTarget);
-  const newDiv = useRef(null);
+
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
@@ -40,8 +37,6 @@ export const DragLayer = ({ index, component, isModuleTab = false }) => {
         toggleRightSidebar(!isRightSidebarOpen);
       }
       setShowModuleBorder(true);
-    } else {
-      setShowModuleBorder(false);
     }
   }, [isDragging, setShowModuleBorder, isModuleEditor, toggleRightSidebar]);
 

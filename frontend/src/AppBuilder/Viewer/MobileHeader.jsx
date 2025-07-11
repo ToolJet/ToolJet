@@ -18,7 +18,6 @@ const MobileHeader = ({
   appName,
   changeToDarkMode,
   darkMode,
-  pages,
   currentPageId,
   switchPage,
   setAppDefinitionFromVersion,
@@ -61,7 +60,6 @@ const MobileHeader = ({
 
   const _renderMobileNavigationMenu = () => (
     <MobileNavigationMenu
-      pages={pages}
       currentPageId={currentPageId}
       switchPage={switchPage}
       darkMode={darkMode}

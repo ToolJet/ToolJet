@@ -69,7 +69,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
       const organizationId = user.organizationId;
       const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
       // License validation - Update not allowed on basic plan
-      const isLicenseValid = await this.licenseUtilService.isValidLicense();
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
       if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
         throw new ForbiddenException(ERROR_HANDLER.INVALID_LICENSE);
       }
@@ -124,7 +124,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
       }, [DATA_BASE_CONSTRAINTS.GROUP_NAME_UNIQUE]);
 
       // Validating license
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
       //GROUP_PERMISSION_UPDATE audit
       const auditLogsData = {
         userId: user.id,
@@ -212,7 +212,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
         // CE - EE changes - removed data source
       }
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
 
       //GROUP_PERMISSION_DUPLICATE audit
       const auditLogsData = {
@@ -236,7 +236,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager);
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
       const group = await this.groupPermissionsRepository.getGroup(
         { id: addGroupUserDto.groupId, organizationId: organizationId },
         manager

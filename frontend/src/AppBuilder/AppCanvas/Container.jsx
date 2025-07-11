@@ -4,7 +4,7 @@ import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useDrop, useDragLayer } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import {
   addChildrenWidgetsToParent,
   addNewWidgetToTheEditor,
@@ -12,7 +12,15 @@ import {
   getSubContainerWidthAfterPadding,
   addDefaultButtonIdToForm,
 } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN, GRID_HEIGHT } from './appCanvasConstants';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  GRID_HEIGHT,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
@@ -22,7 +30,6 @@ import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { noop } from 'lodash';
-import { useGhostMoveable } from '@/AppBuilder/_hooks/useGhostMoveable';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -30,7 +37,7 @@ import { useGhostMoveable } from '@/AppBuilder/_hooks/useGhostMoveable';
   index - used to identify the subcontainer index
   onOptionChange - used to pass the onOptionChange function to the child components and pass the exposedValues to the parent component
 */
-export const Container = React.memo(
+const Container = React.memo(
   ({
     id,
     canvasWidth,
@@ -67,28 +74,9 @@ export const Container = React.memo(
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
 
-    // Initialize ghost moveable hook (only for main canvas)
-    const { activateGhost, deactivateGhost } = useGhostMoveable(id);
-
-    // Monitor drag layer to update ghost position continuously
-    const { isDragging } = useDragLayer((monitor) => ({
-      isDragging: monitor.isDragging(),
-    }));
-
-    // // Cleanup ghost when drag ends
-    // useEffect(() => {
-    //   if (!isDragging) {
-    //     setTimeout(() => {
-    //       deactivateGhost();
-    //     }, 1000);
-    //   }
-    // }, [id, isDragging, deactivateGhost]);
-
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [index, componentType, currentMode]);
-
-    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -231,7 +219,6 @@ export const Container = React.memo(
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -292,7 +279,7 @@ export const Container = React.memo(
         </div>
       );
     };
-    const sortedComponents = useSortedComponents(components, currentLayout, id);
+    const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
 
     return (
       <div
@@ -358,6 +345,7 @@ export const Container = React.memo(
               mode={currentMode}
               currentLayout={currentLayout}
               darkMode={darkMode}
+              moduleId={moduleId}
             />
           ))}
         </div>
@@ -366,3 +354,7 @@ export const Container = React.memo(
     );
   }
 );
+
+Container.displayName = 'Container';
+
+export { Container };

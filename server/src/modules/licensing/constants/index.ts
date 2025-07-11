@@ -122,6 +122,7 @@ export enum LICENSE_FIELD {
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
   EXTERNAL_API = 'externalApiEnabled',
+  PLAN = 'plan',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -167,4 +168,8 @@ export enum FEATURE_KEY {
   GET_ORGANIZATION_LIMITS = 'get_organization_limits',
   GET_USER_LIMITS = 'get_user_limits',
   GET_WORKFLOW_LIMITS = 'get_workflow_limits',
+  GENERATE_CLOUD_TRIAL_LICENSE = 'generate_cloud_trial_license',
+  GENERATE_EE_TRIAL_LICENSE = 'generate_ee_trial_license',
 }
+
+export const ORGANIZATION_INSTANCE_KEY = 'INSTANCE';
