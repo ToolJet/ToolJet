@@ -3,6 +3,9 @@ import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import EncryptedFieldWrapper from '@/_components/EncyrptedFieldWrapper';
+import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { shallow } from 'zustand/shallow';
 
 const CommonOAuthFields = ({
   clientConfig,
@@ -22,6 +25,12 @@ const CommonOAuthFields = ({
   const { workspaceConstants } = workspaceConfig;
   const { selectedDataSource, options } = opt;
   const { oauthTypes } = oauth_configs || {};
+  const { tooljetVersion } = useAppDataStore(
+    (state) => ({
+      tooljetVersion: state?.metadata?.installed_version,
+    }),
+    shallow
+  );
 
   React.useEffect(() => {
     if (oauthTypes?.default_value && !options?.oauth_type?.value) {
@@ -29,10 +38,15 @@ const CommonOAuthFields = ({
     }
   }, []);
 
-  const oauthTypeOptions = [
-    { name: 'ToolJet app', value: 'tooljet_app' },
-    { name: 'Custom app', value: 'custom_app' },
-  ];
+  const oauthTypeOptions = checkIfToolJetCloud(tooljetVersion)
+    ? [
+        { name: 'ToolJet app', value: 'tooljet_app' },
+        { name: 'Custom app', value: 'custom_app' },
+      ]
+    : [
+        { name: 'Use environment variables', value: 'tooljet_app' },
+        { name: 'Custom app', value: 'custom_app' },
+      ];
 
   const showClientFields = !oauthTypes || options?.oauth_type?.value === 'custom_app';
 
