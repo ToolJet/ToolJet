@@ -16,7 +16,6 @@ function get(organizationId = null) {
   };
   const edition = fetchEdition();
   const orgId = headers['tj-workspace-id'];
-  console.log('organization-id', organizationId, orgId);
   if (edition === 'cloud') {
     return fetch(`${config.apiUrl}/white-labelling/${organizationId || orgId}`, requestOptions).then(
       handleResponseWithoutValidation
