@@ -166,7 +166,7 @@ export const Image = function Image({
       src={sourceURL}
       className={`zoom-image-wrap`}
       style={{
-        backgroundColor,
+        backgroundColor: backgroundColor || (imageShape === 'thumbnail' ? '#f4f6fa' : ''),
         padding: padding === 'default' ? '0px' : Number.parseInt(customPadding),
         objectFit: imageFit ? imageFit : 'contain',
         cursor: hasOnClickEvent ? 'pointer' : 'inherit',
@@ -175,8 +175,13 @@ export const Image = function Image({
         height,
         transform: `rotate(${rotation}deg)`,
         border: '1px solid',
-        borderRadius: imageShape === 'circle' ? '50%' : `${borderRadius}px`,
-        borderColor: borderColor ? borderColor : 'transparent',
+        borderRadius:
+          imageShape === 'circle'
+            ? '50%'
+            : imageShape === 'rounded' || imageShape === 'thumbnail'
+            ? '4px'
+            : `${borderRadius}px`,
+        borderColor: borderColor || (imageShape === 'thumbnail' ? '#e7eaef' : 'transparent'),
         objectPosition: alignment,
       }}
       height={height}
