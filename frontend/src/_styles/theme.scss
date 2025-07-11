@@ -4138,7 +4138,7 @@ input[type="text"] {
 .calendar-widget {
   padding: 10px;
   background-color: white;
-  background-color: var(--cc-primary-brand) !important;
+  background-color: var(--cc-surface1-surface) !important;
   border: transparent;
 
   .rbc-day-slot .rbc-event,
@@ -4265,7 +4265,7 @@ input[type="text"] {
 
 .code-editor-widget {
   border-radius: 0;
-
+  border: 1px solid var(--cc-default-border);
   .CodeMirror {
     border-radius: 0 !important;
     margin-top: -1px !important;
@@ -6123,7 +6123,7 @@ div#driver-page-overlay {
 .widget-buttongroup-label {
   font-weight: 600;
   margin-right: 10px;
-  color: #3e525b;
+  color: var(--cc-primary-text);
 }
 
 .editor-actions {
@@ -6626,7 +6626,7 @@ input.hide-input-arrows {
 
 
 .custom-checkbox-tree {
-  overflow-y: scroll;
+  overflow-y: auto;
   color: #3e525b;
 
   .react-checkbox-tree label:hover {
@@ -15949,20 +15949,37 @@ fieldset:disabled {
 }
 
 
+#component-portal {
+  .datepicker-component {
+    .react-datepicker {
+      .react-datepicker__month-container {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+        border-bottom-left-radius: 5px !important;
+      }
+    }
+  }
+}
 
 .datetimepicker-component,
 #component-portal,
 .custom-inspector-validation-time-picker {
 
+  .react-datepicker__month-container:first-of-type {
+    border-top-left-radius: 10px !important;
+    border-bottom-left-radius: 5px !important;
+  }
 
-
-
+  .react-datepicker__month-container:last-of-type {
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+  }
 
   .react-datepicker__month-container {
     background-color: var(--cc-surface1-surface) !important;
-    border-top-left-radius: 10px !important;
-    border-bottom-left-radius: 10px !important;
   }
+
+
 
   .custom-time-input {
     background-color: var(--cc-surface1-surface) !important;

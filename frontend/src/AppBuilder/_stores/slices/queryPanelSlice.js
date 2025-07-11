@@ -1341,10 +1341,7 @@ export const createQueryPanelSlice = (set, get) => ({
         const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
         const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
         const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
-        const proxiedFormattedParams = createProxy(
-          !_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : [],
-          'params'
-        );
+        const proxiedFormattedParams = createProxy(!_.isEmpty(formattedParams) ? [formattedParams] : [], 'parameters');
 
         const fnParams = [
           'moment',
@@ -1373,7 +1370,7 @@ export const createQueryPanelSlice = (set, get) => ({
           proxiedVariables,
           actions,
           proxiedConstants,
-          ...proxiedFormattedParams,
+          ...(!_.isEmpty(formattedParams) ? proxiedFormattedParams : []),
         ];
 
         result = {

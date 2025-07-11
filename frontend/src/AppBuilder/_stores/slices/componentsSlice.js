@@ -1072,7 +1072,7 @@ export const createComponentsSlice = (set, get) => ({
           attachedTo: component.id,
           index: event?.index,
         };
-        await eventsSlice.createAppVersionEventHandlers(newEvent);
+        await eventsSlice.createAppVersionEventHandlers(newEvent, moduleId);
       }
     }
   },

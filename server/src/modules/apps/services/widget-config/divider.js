@@ -131,9 +131,7 @@ export const dividerConfig = {
       accordian: 'container',
     },
   },
-  exposedVariables: {
-    value: {},
-  },
+  exposedVariables: {},
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

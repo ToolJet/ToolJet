@@ -83,6 +83,9 @@ export default function generateColumnsData({
         }
       }
 
+      // Handle disabled dates
+      const disabledDates = getResolvedValue(column.disabledDates);
+      const parseInUnixTimestamp = getResolvedValue(column.parseInUnixTimestamp);
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
@@ -175,6 +178,7 @@ export default function generateColumnsData({
                   row={row}
                   id={id}
                   searchText={searchText}
+                  darkMode={darkMode}
                 />
               );
 
@@ -188,6 +192,7 @@ export default function generateColumnsData({
                   }
                   toggleOnBg={column?.toggleOnBg}
                   toggleOffBg={column?.toggleOffBg}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -260,6 +265,7 @@ export default function generateColumnsData({
                   readOnly={!isEditable}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
                   containerWidth={columnSize}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -277,6 +283,7 @@ export default function generateColumnsData({
                       tableColumnEvents,
                     });
                   }}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -300,7 +307,13 @@ export default function generateColumnsData({
                   }
                   darkMode={darkMode}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  column={column}
+                  isEditable={isEditable}
+                  disabledDates={disabledDates}
+                  parseInUnixTimestamp={parseInUnixTimestamp}
+                  unixTimestamp={column.unixTimestamp}
                   id={id}
+                  containerWidth={columnSize}
                 />
               );
 
@@ -326,6 +339,7 @@ export default function generateColumnsData({
                   height={column?.height ? `${column?.height}px` : '100%'}
                   borderRadius={column?.borderRadius}
                   objectFit={column?.objectFit}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 

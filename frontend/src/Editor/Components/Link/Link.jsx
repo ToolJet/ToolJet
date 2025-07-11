@@ -68,13 +68,13 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
         clickRef.current.click();
       },
       setVisibility: async function (value) {
-        setIsVisible(value);
+        setIsVisible(!!value);
       },
       setDisable: async function (value) {
-        setIsDisabled(value);
+        setIsDisabled(!!value);
       },
       setLoading: async function (value) {
-        setIsLoading(value);
+        setIsLoading(!!value);
       },
       setLinkTarget: async function (value) {
         setLinkTargetState(value);

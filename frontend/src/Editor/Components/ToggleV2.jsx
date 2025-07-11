@@ -200,16 +200,16 @@ export const ToggleSwitchV2 = ({
         setUserInteracted(true);
       },
       setVisibility: async function (state) {
-        setVisibility(state);
-        setExposedVariable('isVisible', state);
+        setVisibility(!!state);
+        setExposedVariable('isVisible', !!state);
       },
       setDisable: async function (disable) {
-        setDisable(disable);
-        setExposedVariable('isDisabled', disable);
+        setDisable(!!disable);
+        setExposedVariable('isDisabled', !!disable);
       },
       setLoading: async function (loading) {
-        setLoading(loading);
-        setExposedVariable('isLoading', loading);
+        setLoading(!!loading);
+        setExposedVariable('isLoading', !!loading);
       },
       label: label,
       isMandatory: isMandatory,
