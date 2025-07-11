@@ -3,15 +3,19 @@ title: "Overview"
 id: overview
 ---
 
-Modules in ToolJet are reusable units of functionality—composed of components, queries, actions, and logic—that you can plug into multiple apps within the same workspace. Think of a module as a mini-app that encapsulates functionality and design, ready to be reused anywhere.
+Modules in ToolJet are reusable units of functionality, composed of components, queries, actions, and logic that you can plug into multiple apps within the same workspace. Think of a module as a mini-app that encapsulates functionality and design, ready to be reused anywhere.
 
-They help reduce duplication of UI and logic, maintain design and behavior consistency, and speed up development—especially when working with repeatable patterns like forms, dashboards, or table-driven views.
+They help reduce duplication of UI and logic, maintain design and behavior consistency, and speed up development especially when working with repeatable patterns like forms, dashboards, or table-driven views.
 
-Let’s say your organization has multiple internal apps—one for sales teams, one for customer support, and another for analytics. 
+Let’s say your organization has multiple internal apps one for sales teams, one for customer support, and another for analytics. 
 
-Each of these apps needs to display a customer summary panel. Traditionally, you would have to recreate this panel from scratch in each app. That means duplicating UI components, queries, and logic—making it harder to maintain and prone to inconsistencies when updates are needed.
+Each of these apps needs to display a customer summary panel. Traditionally, you would have to recreate this panel from scratch in each app. That means duplicating UI components, queries, and logic making it harder to maintain and prone to inconsistencies when updates are needed.
 
 With ToolJet Modules, you can build it once as a module and reuse it across sales, support, and analytics dashboards.
+
+If you ever need to make changes like adding a new field or updating a data query—you do it once in the module, and all apps using it are instantly updated.
+
+This approach dramatically reduces duplication, improves consistency, and speeds up development.
 
 ## When to Use Modules
 
