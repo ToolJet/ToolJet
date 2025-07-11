@@ -25,7 +25,6 @@ import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { resolveReferences } from '@/_helpers/utils';
 import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
-import { DragGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
 
