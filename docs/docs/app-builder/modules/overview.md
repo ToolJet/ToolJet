@@ -7,6 +7,12 @@ Modules in ToolJet are reusable units of functionality—composed of components,
 
 They help reduce duplication of UI and logic, maintain design and behavior consistency, and speed up development—especially when working with repeatable patterns like forms, dashboards, or table-driven views.
 
+Let’s say your organization has multiple internal apps—one for sales teams, one for customer support, and another for analytics. 
+
+Each of these apps needs to display a customer summary panel. Traditionally, you would have to recreate this panel from scratch in each app. That means duplicating UI components, queries, and logic—making it harder to maintain and prone to inconsistencies when updates are needed.
+
+With ToolJet Modules, you can build it once as a module and reuse it across sales, support, and analytics dashboards.
+
 ## When to Use Modules
 
 Use modules when:
