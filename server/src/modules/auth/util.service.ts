@@ -7,7 +7,7 @@ import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
 import { generateNextNameAndSlug } from 'src/helpers/utils.helper';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
 import {
@@ -121,7 +121,7 @@ export class AuthUtilService implements IAuthUtilService {
     try {
       const signedJwt = this.sessionUtilService.verifyToken(token);
       return signedJwt;
-    } catch (err) {
+    } catch {
       return null;
     }
   }

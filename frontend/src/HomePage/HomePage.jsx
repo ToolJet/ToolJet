@@ -478,7 +478,7 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo =[] } = await pluginsService.installDependentPlugins(
+        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
           this.state.dependentPlugins,
           true
         ));
@@ -486,7 +486,8 @@ class HomePageComponent extends React.Component {
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${this.props.appType === 'module' ? 'modules' : 'apps'
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
           } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
           { style: { maxWidth: '425px' } }
         );
@@ -495,7 +496,7 @@ class HomePageComponent extends React.Component {
       }
 
       const data = await appsService.importResource(requestBody, this.props.appType);
-      toast.success(`${this.props.appType === 'module' ? 'Module' : 'App'} imported successfully.`);
+      toast.success(`${this.getAppType()} imported successfully.`);
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -1154,13 +1155,14 @@ class HomePageComponent extends React.Component {
         closeModal: () => this.setState({ showImportAppModal: false }),
         processApp: this.importFile,
         show: this.openImportAppModal,
-        title: 'Import app',
-        actionButton: 'Import app',
+        title: `Import ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `Import ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Importing',
         fileContent: fileContent,
         selectedAppName: fileName,
         dependentPluginsDetail: dependentPluginsDetail,
         dependentPlugins: dependentPlugins,
+        appType: this.props.appType,
       },
       template: {
         modalType: 'template',
@@ -1224,8 +1226,9 @@ class HomePageComponent extends React.Component {
 
               <div className="groups-list">
                 <div
-                  className={`border rounded text-sm container ${missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
-                    }`}
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
                     User groups
@@ -1301,8 +1304,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                  ? 'homePage.deleteAppAndData'
-                  : deleteModuleText,
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1567,10 +1570,11 @@ class HomePageComponent extends React.Component {
                             {this.props.appType === 'module'
                               ? 'Create new module'
                               : this.props.t(
-                                `${this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                }.header.createNewApplication`,
-                                'Create new app'
-                              )}
+                                  `${
+                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                  }.header.createNewApplication`,
+                                  'Create new app'
+                                )}
                           </>
                         </Button>
                         <Dropdown.Toggle
@@ -1631,8 +1635,8 @@ class HomePageComponent extends React.Component {
                       classes="mb-3 small"
                       limits={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1655,11 +1659,6 @@ class HomePageComponent extends React.Component {
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
-                    <LicenseBanner
-                      classes="mt-3"
-                      limits={featureAccess}
-                      type={featureAccess?.licenseStatus?.licenseType}
-                    />
                     <AppTypeTab
                       appType={this.props.appType}
                       navigate={this.props.navigate}
@@ -1731,8 +1730,8 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
