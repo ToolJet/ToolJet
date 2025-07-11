@@ -78,38 +78,38 @@ export const pageConfig = {
     styles: {
       textColor: {
         value: 'var(--cc-placeholder-text)',
-        isDefault: true,
+        isDefault: false,
       },
       iconColor: {
         value: 'var(--cc-default-icon)',
-        isDefault: true,
+        isDefault: false,
       },
       selectedTextColor: {
         value: 'var(--cc-primary-text)',
-        isDefault: true,
+        isDefault: false,
       },
       selectedIconColor: {
         value: 'var(--cc-primary-brand)',
-        isDefault: true,
+        isDefault: false,
       },
       pillHoverBackgroundColor: {
         value: 'var(--cc-surface2-surface)',
-        isDefault: true,
+        isDefault: false,
       },
       pillSelectedBackgroundColor: {
         value: '#F0F4FF',
-        isDefault: true,
+        isDefault: false,
       },
       pillRadius: {
         value: '6',
       },
       backgroundColor: {
         value: 'var(--cc-surface1-surface)',
-        isDefault: true,
+        isDefault: false,
       },
       borderColor: {
         value: 'var(--cc-default-border)',
-        isDefault: true,
+        isDefault: false,
       },
     },
   },
