@@ -8,7 +8,7 @@ import { FeatureAbilityGuard } from './ability/guard';
 
 @Controller('organization/payment')
 @InitModule(MODULES.ORGANIZATION_PAYMENTS)
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+// @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class OrganizationPaymentController implements IOrganizationPaymentController {
   constructor() {}
   getUpcomingInvoice(organizationId: string): Promise<any> {
