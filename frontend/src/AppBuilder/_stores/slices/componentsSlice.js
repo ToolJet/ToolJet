@@ -1627,7 +1627,7 @@ export const createComponentsSlice = (set, get) => ({
 
   getComponentIdFromName: (componentName, moduleId = 'canvas') => {
     const { modules } = get();
-    return modules[moduleId].componentNameIdMapping[componentName];
+    return modules?.[moduleId]?.componentNameIdMapping?.[componentName];
   },
   // Get the component name from the component id
   getComponentNameFromId: (componentId, moduleId = 'canvas') => {
