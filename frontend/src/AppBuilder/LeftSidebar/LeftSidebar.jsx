@@ -13,7 +13,6 @@ import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
