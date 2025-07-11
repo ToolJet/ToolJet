@@ -58,11 +58,11 @@ class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
-    const currentSession = authenticationService.currentSessionValue;
+    const currentSession = authenticationService?.currentSessionValue;
     this.fileInput = React.createRef();
     this.state = {
       currentUser: {
-        id: currentSession?.current_user.id,
+        id: currentSession?.current_user?.id,
         organization_id: currentSession?.current_organization_id,
       },
       shouldRedirect: false,
@@ -1113,6 +1113,9 @@ class HomePageComponent extends React.Component {
       missingGroups,
       missingGroupsExpanded,
     } = this.state;
+
+    const currentSession = authenticationService?.currentSessionValue;
+    console.log('currentSession Inside Homepage', currentSession);
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
     const deleteModuleText =
