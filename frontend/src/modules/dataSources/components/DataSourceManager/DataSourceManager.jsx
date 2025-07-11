@@ -955,6 +955,7 @@ class DataSourceManagerComponent extends React.Component {
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
       ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
       : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce'];
     return (
       pluginsLoaded && (
         <div>
@@ -1084,7 +1085,10 @@ class DataSourceManagerComponent extends React.Component {
 
                 {selectedDataSource &&
                   !dataSourceMeta.customTesting &&
-                  options?.grant_type?.value !== 'authorization_code' && (
+                  (!OAuthDs.includes(selectedDataSource?.kind) ||
+                    (OAuthDs.includes(selectedDataSource?.kind) &&
+                      (options?.grant_type?.value !== 'authorization_code' ||
+                        options?.multiple_auth_enabled?.value === true))) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
                         <div className="row w-100">
@@ -1206,40 +1210,45 @@ class DataSourceManagerComponent extends React.Component {
                     </Modal.Footer>
                   )}
 
-                {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
-                  <Modal.Footer>
-                    <div className="col">
-                      <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
-                      <a
-                        className="color-primary tj-docs-link tj-text-sm"
-                        data-cy="link-read-documentation"
-                        href={
-                          selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-                            ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
-                            : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource.kind}`
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {this.props.t('globals.readDocumentation', 'Read documentation')}
-                      </a>
-                    </div>
-                    <div className="col-auto" data-cy="db-connection-save-button">
-                      <ButtonSolid
-                        leftIcon="floppydisk"
-                        fill={'#FDFDFE'}
-                        className="m-2"
-                        disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-                        variant="primary"
-                        onClick={this.createDataSource}
-                      >
-                        {isSaving
-                          ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
-                          : this.props.t('globals.save', 'Save')}
-                      </ButtonSolid>
-                    </div>
-                  </Modal.Footer>
-                )}
+                {!dataSourceMeta?.hideSave &&
+                  selectedDataSource &&
+                  dataSourceMeta.customTesting &&
+                  (!OAuthDs.includes(selectedDataSource?.kind) ||
+                    options?.grant_type?.value !== 'authorization_code' ||
+                    options?.multiple_auth_enabled?.value === true) && (
+                    <Modal.Footer>
+                      <div className="col">
+                        <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
+                        <a
+                          className="color-primary tj-docs-link tj-text-sm"
+                          data-cy="link-read-documentation"
+                          href={
+                            selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+                              ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
+                              : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource.kind}`
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {this.props.t('globals.readDocumentation', 'Read documentation')}
+                        </a>
+                      </div>
+                      <div className="col-auto" data-cy="db-connection-save-button">
+                        <ButtonSolid
+                          leftIcon="floppydisk"
+                          fill={'#FDFDFE'}
+                          className="m-2"
+                          disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                          variant="primary"
+                          onClick={this.createDataSource}
+                        >
+                          {isSaving
+                            ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
+                            : this.props.t('globals.save', 'Save')}
+                        </ButtonSolid>
+                      </div>
+                    </Modal.Footer>
+                  )}
               </>
             )}
           </Modal>
