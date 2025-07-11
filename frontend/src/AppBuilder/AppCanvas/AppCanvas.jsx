@@ -16,7 +16,6 @@ import {
   RIGHT_SIDEBAR_WIDTH,
 } from './appCanvasConstants';
 import cx from 'classnames';
-import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
@@ -25,19 +24,19 @@ import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { resolveReferences } from '@/_helpers/utils';
-import useRightSidebarMargin from './userRightSidebarMargin';
 import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
+import { DragGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
+import { debounce } from 'lodash';
 
-
-export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode }) => {
+export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
-  const creationMode = useStore((state) => state.appStore.modules[moduleId].app.creationMode);
   const environmentLoadingState = useStore(
-    (state) => state.environmentLoadingState || state.loaderStore.modules[moduleId].isEditorLoading
+    (state) => state.environmentLoadingState || state.loaderStore.modules[moduleId].isEditorLoading,
+    shallow
   );
   const [canvasWidth, setCanvasWidth] = useState(getCanvasWidth(moduleId));
   const gridWidth = canvasWidth / NO_OF_GRIDS;
@@ -47,18 +46,14 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
   const { isAppDarkMode } = useAppDarkMode();
-  const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', isAppDarkMode), shallow);
   const canvasContainerHeight = computeCanvasContainerHeight(queryPanelHeight, isDraggingQueryPane);
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(), shallow);
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
-  // const editorMarginRight = useRightSidebarMargin(canvasContainerRef);
-  // const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned, shallow);
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
@@ -66,10 +61,9 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
     localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
-  const { globalSettings, pages, pageSettings, switchPage } = useStore(
+  const { globalSettings, pageSettings, switchPage } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
-      pages: state.modules.canvas.pages,
       pageSettings: state.pageSettings,
       switchPage: state.switchPage,
     }),
@@ -77,11 +71,9 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
   );
 
   const showHeader = !globalSettings?.hideHeader;
-  const { definition: { styles = {}, properties = {} } = {} } = pageSettings ?? {};
+  const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
   const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
-
-  const hideSidebar = isModuleMode || isPagesSidebarHidden || appType === 'module';
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -91,13 +83,15 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
   }, []);
 
   useEffect(() => {
-    function handleResize() {
+    function handleResizeImmediate() {
       const _canvasWidth =
         moduleId === 'canvas'
           ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
           : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
+
+    const handleResize = debounce(handleResizeImmediate, 300);
 
     if (moduleId === 'canvas') {
       window.addEventListener('resize', handleResize);
@@ -109,14 +103,16 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
       return () => {
         if (elem) resizeObserver.unobserve(elem);
         resizeObserver.disconnect();
+        handleResize.cancel();
       };
     }
-    handleResize();
+    handleResizeImmediate();
 
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      handleResize.cancel();
+    };
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
-
-  useEffect(() => { }, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
@@ -212,7 +208,6 @@ export const AppCanvas = ({ appId, isViewer = false, switchDarkMode, darkMode })
             <PagesSidebarNavigation
               showHeader={showHeader}
               isMobileDevice={currentLayout === 'mobile'}
-              pages={pages}
               currentPageId={currentPageId ?? homePageId}
               switchPage={switchPage}
               height={currentMode === 'edit' ? canvasContainerHeight : '100%'}

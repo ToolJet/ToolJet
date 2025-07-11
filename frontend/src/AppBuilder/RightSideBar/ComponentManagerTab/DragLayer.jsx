@@ -48,8 +48,6 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
         toggleRightSidebar(!isRightSidebarOpen);
       }
       setShowModuleBorder(true);
-    } else {
-      setShowModuleBorder(false);
     }
   }, [isDragging, setShowModuleBorder, isModuleEditor, toggleRightSidebar]);
 

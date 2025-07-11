@@ -1002,6 +1002,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             handleActivateNonDraggingComponents();
             showGridLines();
             isDraggingRef.current = true;
+            toggleRightSidebar();
           }
           const currentWidget = boxList.find((box) => box.id === e.target.id);
           const currentParentId =

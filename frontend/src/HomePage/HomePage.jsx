@@ -431,7 +431,7 @@ class HomePageComponent extends React.Component {
       }
 
       const data = await appsService.importResource(requestBody, this.props.appType);
-      toast.success(`${this.props.appType === 'module' ? 'Module' : 'App'} imported successfully.`);
+      toast.success(`${this.getAppType()} imported successfully.`);
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -1043,13 +1043,14 @@ class HomePageComponent extends React.Component {
         closeModal: () => this.setState({ showImportAppModal: false }),
         processApp: this.importFile,
         show: this.openImportAppModal,
-        title: 'Import app',
-        actionButton: 'Import app',
+        title: `Import ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `Import ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Importing',
         fileContent: fileContent,
         selectedAppName: fileName,
         dependentPluginsDetail: dependentPluginsDetail,
         dependentPlugins: dependentPlugins,
+        appType: this.props.appType,
       },
       template: {
         modalType: 'template',

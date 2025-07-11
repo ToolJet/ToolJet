@@ -48,6 +48,11 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
     ]);
 
+    const { AppsActionsListener, TemporalService } = await this.getProviders(configs, 'workflows', [
+      'listeners/app-actions.listener',
+      'services/temporal.service',
+    ]);
+
     return {
       module: AppsModule,
       imports: [
@@ -69,6 +74,8 @@ export class AppsModule extends SubModule {
         VersionRepository,
         AppsRepository,
         AppGitRepository,
+        AppsActionsListener,
+        TemporalService,
         PageService,
         EventsService,
         AppsUtilService,

@@ -16,7 +16,7 @@ const BaseImportAppMenu = ({
   const { t } = useTranslation();
   return (
     <Dropdown.Menu className="import-lg-position new-app-dropdown">
-      {props.appType !== 'module' && (
+      {appType !== 'workflow' && appType !== 'module' && (
         <Dropdown.Item
           className="homepage-dropdown-style tj-text tj-text-xsm"
           onClick={showTemplateLibraryModal}
