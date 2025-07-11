@@ -157,18 +157,23 @@ export class EmailUtilService implements IEmailUtilService {
         (this.NODE_ENV !== 'development' && !this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED])
       )
         return;
-
+      const previewEmail = require('preview-email');
+      const transport = nodemailer.createTransport({
+        jsonTransport: true,
+      });
+      const result = await transport.sendMail(mailOptions);
+      previewEmail(JSON.parse(result.message)).then(console.log).catch(console.error);
       /* if development environment and disabled SMTP, log the content of email instead of sending actual emails */
       if (this.NODE_ENV === 'development' && !this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]) {
         console.log('Captured email');
         console.log('to: ', to);
         console.log('Subject: ', subject);
         console.log('content: ', htmlToSend);
-        const previewEmail = require('preview-email');
-        const transport = nodemailer.createTransport({
-          jsonTransport: true,
-        });
-        const result = await transport.sendMail(mailOptions);
+        // const previewEmail = require('preview-email');
+        // const transport = nodemailer.createTransport({
+        //   jsonTransport: true,
+        // });
+        // const result = await transport.sendMail(mailOptions);
         previewEmail(JSON.parse(result.message)).then(console.log).catch(console.error);
       } else {
         const transport = this.mailTransport(this.SMTP);
