@@ -13,7 +13,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
 const initialState = {
-  isQueryPaneExpanded: false,
+  isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
@@ -1487,5 +1487,30 @@ export const createQueryPanelSlice = (set, get) => ({
       set((state) => {
         state.queryPanel.deletingQueryId = queryId;
       }),
+    expandQueryPaneIfNeeded: () => {
+      const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
+        isExpanded: true,
+        queryPanelHeight: 100,
+      };
+
+      // If query pane is not expanded, expand it
+      if (!queryManagerPreferences.isExpanded) {
+        const newPreferences = {
+          ...queryManagerPreferences,
+          isExpanded: true,
+          queryPanelHeight: 70, // Default expanded height
+        };
+        localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
+
+        // Update the store state
+        set((state) => {
+          state.queryPanel.isQueryPaneExpanded = true;
+        });
+
+        return true; // Indicates that expansion was needed and performed
+      }
+
+      return false; // Indicates that expansion was not needed
+    },
   },
 });

@@ -62,6 +62,7 @@ export const BaseLeftSidebar = ({
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
+    localStorage.setItem('selectedSidebarItem', item);
     if (item === selectedSidebarItem && !pinned) {
       return toggleLeftSidebar(false);
     }
