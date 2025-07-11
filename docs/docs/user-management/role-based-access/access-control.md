@@ -12,6 +12,8 @@ The following permissions can be configured for the given resources:
 |:----------------------------|:----------------------|:--------------------------------------------------------------------------------------------|
 | **Apps**                    | Create                | Allows users of the group to create new applications within the workspace.                  |
 |                             | Delete                | Allows users of the group to delete applications from the workspace.                        |
+|                             | Promote               | Allows users of the group to promote the applications from one environment to the other.    |
+|                             | Release               | Allows users of the group to release the applications from the production environment.      |
 | **Data sources**            | Create                | Allows users of the group to add new data sources in the workspace.                         |
 |                             | Delete                | Allows users of the group to remove data sources from the workspace.                        |
 | **Folder**                  | Create/Update/Delete  | Allows users of the group to create, update, or delete folders to organize resources.       |

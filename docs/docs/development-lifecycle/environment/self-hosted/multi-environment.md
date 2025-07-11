@@ -74,3 +74,11 @@ Each environment has a different impact on your application. Please refer the fo
 
 
 Checkout the [Environment-Example](/docs/development-lifecycle/environment/self-hosted/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.
+
+### Promote Application Permission
+
+You can configure the Promote Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles, such as team leads, to promote the application from one environment to another.
+
+<img className="screenshot-full img-s" src="/img/development-lifecycle/environments/disable-button.png" alt="self-hosted-env-concept" />
+
+    
