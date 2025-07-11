@@ -2057,6 +2057,7 @@ export const createComponentsSlice = (set, get) => ({
             validation: componentDefinition.component.definition?.validation,
           },
           name: componentName,
+          displayName: componentDefinition.component.displayName,
           parent: componentDefinition.component.parent,
         },
         layouts: componentDefinition.layouts,

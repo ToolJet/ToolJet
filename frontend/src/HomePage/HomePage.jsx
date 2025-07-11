@@ -264,19 +264,21 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName) => {
+  createApp = async (appName, type, prompt) => {
     let _self = this;
     _self.setState({ creatingApp: true });
-
     try {
       const data = await appsService.createApp({
         icon: sample(iconList),
         name: appName,
         type: this.props.appType,
+        prompt,
       });
       const workspaceId = getWorkspaceId();
-      _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
-      toast.success(`${this.getAppType()} created successfully!`);
+      _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
+        state: { commitEnabled: this.state.commitEnabled, prompt },
+      });
+      this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
@@ -494,7 +496,7 @@ class HomePageComponent extends React.Component {
       }
 
       const data = await appsService.importResource(requestBody, this.props.appType);
-      toast.success(`${this.props.appType === 'module' ? 'Module' : 'App'} imported successfully.`);
+      toast.success(`${this.getAppType()} imported successfully.`);
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -1153,13 +1155,14 @@ class HomePageComponent extends React.Component {
         closeModal: () => this.setState({ showImportAppModal: false }),
         processApp: this.importFile,
         show: this.openImportAppModal,
-        title: 'Import app',
-        actionButton: 'Import app',
+        title: `Import ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `Import ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Importing',
         fileContent: fileContent,
         selectedAppName: fileName,
         dependentPluginsDetail: dependentPluginsDetail,
         dependentPlugins: dependentPlugins,
+        appType: this.props.appType,
       },
       template: {
         modalType: 'template',
@@ -1652,20 +1655,10 @@ class HomePageComponent extends React.Component {
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>
 
-            <div
-              className={cx('col home-page-content', {
-                'bg-light-gray': !this.props.darkMode,
-              })}
-              data-cy="home-page-content"
-            >
+            <div className={cx('col home-page-content')} data-cy="home-page-content">
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
-                    <LicenseBanner
-                      classes="mt-3"
-                      limits={featureAccess}
-                      type={featureAccess?.licenseStatus?.licenseType}
-                    />
                     <AppTypeTab
                       appType={this.props.appType}
                       navigate={this.props.navigate}
@@ -1684,15 +1677,12 @@ class HomePageComponent extends React.Component {
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     {!(isLoading && !appSearchKey) && (
-                      <>
-                        <HomeHeader
-                          onSearchSubmit={this.onSearchSubmit}
-                          darkMode={this.props.darkMode}
-                          appType={this.props.appType}
-                          disabled={this.props.appType === 'module' && invalidLicense}
-                        />
-                        <div className="liner"></div>
-                      </>
+                      <HomeHeader
+                        onSearchSubmit={this.onSearchSubmit}
+                        darkMode={this.props.darkMode}
+                        appType={this.props.appType}
+                        disabled={this.props.appType === 'module' && invalidLicense}
+                      />
                     )}
                     <div className="filter-container">
                       <span>{currentFolder?.count ?? meta?.total_count} APPS</span>

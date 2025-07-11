@@ -21,9 +21,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const { superAdmin, isAdmin } = userPermissions;
 
     if (isAdmin || superAdmin) {
-      can([FEATURE_KEY.UPDATE, FEATURE_KEY.UPDATE_WORKSPACE_SETTINGS], WhiteLabelling);
+      can([FEATURE_KEY.UPDATE, FEATURE_KEY.UPDATE_ORGANIZATION_WHITE_LABELS], WhiteLabelling);
     }
     // All users can perform these actions
-    can([FEATURE_KEY.GET, FEATURE_KEY.GET_WORKSPACE_SETTINGS], WhiteLabelling);
+    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ORGANIZATION_WHITE_LABELS], WhiteLabelling);
   }
 }

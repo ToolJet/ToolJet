@@ -4,7 +4,6 @@ import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
 import { RolesModule } from '@modules/roles/module';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
-import { OnboardingModule } from '@modules/onboarding/module';
 import { ProfileModule } from '@modules/profile/module';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
@@ -18,6 +17,7 @@ import { SetupOrganizationsModule } from '@modules/setup-organization/module';
 import { SSOConfigsRepository } from '@modules/login-configs/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { SubModule } from '@modules/app/sub-module';
+import { OnboardingModule } from '@modules/onboarding/module';
 
 @Module({})
 export class AuthModule extends SubModule {
@@ -33,6 +33,8 @@ export class AuthModule extends SubModule {
       GoogleOAuthService,
       OidcOAuthService,
       LdapService,
+      WebsiteAuthController,
+      WebsiteAuthService,
     } = await this.getProviders(configs, 'auth', [
       'controller',
       'service',
@@ -44,6 +46,8 @@ export class AuthModule extends SubModule {
       'oauth/util-services/google-oauth.service',
       'oauth/util-services/oidc-auth.service',
       'oauth/util-services/ldap.service',
+      'website/controller',
+      'website/service',
     ]);
 
     return {
@@ -53,16 +57,15 @@ export class AuthModule extends SubModule {
         await InstanceSettingsModule.register(configs),
         await OrganizationUsersModule.register(configs),
         await RolesModule.register(configs),
-        await OnboardingModule.register(configs),
         await GroupPermissionsModule.register(configs),
         await ProfileModule.register(configs),
         await SessionModule.register(configs),
-        await OrganizationUsersModule.register(configs),
         await LoginConfigsModule.register(configs),
         await SetupOrganizationsModule.register(configs),
         await AppEnvironmentsModule.register(configs),
+        await OnboardingModule.register(configs),
       ],
-      controllers: [AuthController, OauthController],
+      controllers: [AuthController, OauthController, WebsiteAuthController],
       providers: [
         AuthService,
         UserRepository,
@@ -80,6 +83,7 @@ export class AuthModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
         SSOConfigsRepository,
+        WebsiteAuthService,
       ],
       exports: [AuthUtilService],
     };
