@@ -197,7 +197,7 @@ const MobileNavigationMenu = ({
     },
   };
 
-  const currentPage = pages.find((page) => page.id === currentPageId);
+  const currentPage = pages?.find((page) => page.id === currentPageId);
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
@@ -264,7 +264,7 @@ const MobileNavigationMenu = ({
                   currentPage={currentPage}
                 />
               ) : (
-                pages.map((page) => {
+                pages?.map((page) => {
                   const isHomePage = page.id === homePageId;
                   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
                   // eslint-disable-next-line import/namespace

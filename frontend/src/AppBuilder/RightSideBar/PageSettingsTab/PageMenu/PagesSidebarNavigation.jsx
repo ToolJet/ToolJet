@@ -15,7 +15,6 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
-import { resolveReferences } from '@/_helpers/utils';
 import { Overlay, Popover } from 'react-bootstrap';
 // import useSidebarMargin from './useSidebarMargin';
 
@@ -42,6 +41,7 @@ export const PagesSidebarNavigation = ({
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
+  const isPagesSidebarHidden = useStore((state) => state.resolvedStore.modules[moduleId].others.isPagesSidebarHidden);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -264,7 +264,6 @@ export const PagesSidebarNavigation = ({
   const sidebarCollapsed = !isSidebarPinned;
   const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
-  const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
   if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
