@@ -310,6 +310,7 @@ const sidebars = {
             'app-builder/modules/create-module',
             'app-builder/modules/input-output',
             'app-builder/modules/data-flow',
+            'app-builder/modules/using-modules',
             'app-builder/modules/import-export-modules',
             'app-builder/modules/use-cases',
           ]

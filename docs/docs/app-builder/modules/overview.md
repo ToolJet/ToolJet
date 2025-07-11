@@ -3,9 +3,9 @@ title: "Overview"
 id: overview
 ---
 
-Modules in ToolJet are reusable units of functionality, made up of components, queries, actions, and logic, that you can use across multiple apps in the same workspace. Think of a module as a mini-app that can be plugged into other ToolJet apps.
+Modules in ToolJet are reusable units of functionality—composed of components, queries, actions, and logic—that you can plug into multiple apps within the same workspace. Think of a module as a mini-app that encapsulates functionality and design, ready to be reused anywhere.
 
-They help you, reduce duplication of logic/UI across apps, maintain consistency in common features, build faster, especially for repetitive patterns like forms, charts, input flows, or table views.
+They help reduce duplication of UI and logic, maintain design and behavior consistency, and speed up development—especially when working with repeatable patterns like forms, dashboards, or table-driven views.
 
 ## When to Use Modules
 
@@ -19,4 +19,4 @@ Unlike copying/pasting UI blocks or duplicating pages, modules provide centraliz
 
 <img className="screenshot-full img-full" src="/img/app-builder/modules/module-builder.png" alt="Module Builder" />
 
-Learn how to create a module in the [Create Module](/docs/beta/app-builder/modules/create-module) guide.
+To get started with modules, check out the [Create Module](/docs/beta/app-builder/modules/create-module) guide. Once your module is built, you can [use it inside any app](/docs/beta/app-builder/modules/use-module) in your workspace.
