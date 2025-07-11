@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ToolTip } from '@/_components';
 
-const isTextOverflowing = (element, children, maxLetters, verticalTolerance = 4) => {
+const isTextOverflowing = (element, maxLetters, children, verticalTolerance = 4) => {
   if (!element) return false;
 
   const horizontalOverflow = element.scrollWidth > element.clientWidth;
@@ -25,7 +25,7 @@ export default function OverflowTooltip({
 
   const checkOverflow = useCallback(() => {
     if (textContentRef.current) {
-      setIsOverflowed(isTextOverflowing(textContentRef.current, maxLetters));
+      setIsOverflowed(isTextOverflowing(textContentRef.current, maxLetters, children));
     }
   }, [children, maxLetters]);
 
