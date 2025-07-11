@@ -424,9 +424,10 @@ export const createQueryPanelSlice = (set, get) => ({
         rawData = rawData || data;
 
         if (dataQuery.options.enableTransformation) {
+          const language = query.options.transformationLanguage;
           finalData = await runTransformation(
             finalData,
-            query.options.transformation,
+            query.options.transformations?.[language] ?? query.options.transformation,
             query.options.transformationLanguage,
             query,
             mode,
@@ -876,9 +877,10 @@ export const createQueryPanelSlice = (set, get) => ({
                   icon: '🚀',
                 });
                 if (query.options.enableTransformation) {
+                  const language = query.options.transformationLanguage;
                   finalData = await runTransformation(
                     finalData,
-                    query.options.transformation,
+                    query.options.transformations?.[language] ?? query.options.transformation,
                     query.options.transformationLanguage,
                     query,
                     'edit',
