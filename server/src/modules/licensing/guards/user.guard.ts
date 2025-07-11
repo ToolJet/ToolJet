@@ -20,7 +20,7 @@ export class UserCountGuard implements CanActivate {
       : await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.TOTAL_USERS);
     if (
       totalUsers !== LICENSE_LIMIT.UNLIMITED &&
-      (await this.licenseCountsService.getUsersCount(organizationId)) >= totalUsers
+      (await this.licenseCountsService.getUsersCount(organizationId, true)) >= totalUsers
     ) {
       throw new HttpException('License violation - Maximum user limit reached', 451);
     }

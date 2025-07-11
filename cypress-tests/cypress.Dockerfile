@@ -22,7 +22,7 @@ RUN git checkout ${BRANCH_NAME}
 RUN git submodule update --init --recursive
 
 # Checkout the same branch in submodules if it exists, otherwise stay on default branch
-RUN git submodule foreach 'git checkout main'
+RUN git submodule foreach 'git checkout ${BRANCH_NAME}'
 
 # Scripts for building
 COPY ./package.json ./package.json
