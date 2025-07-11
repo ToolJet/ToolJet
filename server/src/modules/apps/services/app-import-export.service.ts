@@ -2398,23 +2398,16 @@ function migrateProperties(
         styles.padding = { value: 'custom' };
       }
 
-      if (styles.borderType?.value === 'rounded-circle') {
-        styles.imageShape = { value: 'circle' };
-        delete styles.borderType;
-      }
+      const borderTypeMapping: Record<string, string> = {
+        'rounded-circle': 'circle',
+        'rounded': 'rounded',
+        'img-thumbnail': 'thumbnail',
+        'none': 'none',
+      };
 
-      if (styles.borderType?.value === 'rounded') {
-        styles.imageShape = { value: 'rounded' };
-        delete styles.borderType;
-      }
-
-      if (styles.borderType?.value === 'img-thumbnail') {
-        styles.imageShape = { value: 'thumbnail' };
-        delete styles.borderType;
-      }
-
-      if (styles.borderType?.value === 'none') {
-        styles.imageShape = { value: 'none' };
+      const mappedShape = borderTypeMapping[styles.borderType?.value];
+      if (mappedShape) {
+        styles.imageShape = { value: mappedShape };
         delete styles.borderType;
       }
     }
