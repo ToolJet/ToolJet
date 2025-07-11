@@ -135,7 +135,9 @@ export const imageConfig = {
       displayName: 'Shape',
       options: [
         { name: 'None', value: 'none' },
+        { name: 'Rounded', value: 'rounded' },
         { name: 'Circle', value: 'circle' },
+        { name: 'Thumbnail', value: 'thumbnail' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -258,7 +260,7 @@ export const imageConfig = {
     styles: {
       imageFit: { value: 'contain' },
       imageShape: { value: 'none' },
-      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      backgroundColor: { value: '' },
       borderColor: { value: '' },
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
