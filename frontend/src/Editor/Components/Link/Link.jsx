@@ -56,7 +56,6 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
       isVisible: visibility,
       isDisabled: disabledState,
     };
-
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility, disabledState, loadingState]);
@@ -69,18 +68,29 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
       },
       setVisibility: async function (value) {
         setIsVisible(value);
+        setExposedVariables({
+          isVisible: value,
+        });
       },
       setDisable: async function (value) {
         setIsDisabled(value);
+        setExposedVariables({
+          isDisabled: value,
+        });
       },
       setLoading: async function (value) {
         setIsLoading(value);
+        setExposedVariables({
+          isLoading: value,
+        });
       },
       setLinkTarget: async function (value) {
         setLinkTargetState(value);
       },
       setLinkText: async function (value) {
-        setLinkTextState(value);
+        if (typeof value === 'string') {
+          setLinkTextState(value);
+        }
       },
     };
     setExposedVariables(exposedVariables);
@@ -106,6 +116,10 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
         {...(linkTargetState != '' ? { href: linkTargetState } : {})}
         target={targetType === 'new' && '_blank'}
         onClick={(event) => {
+          if (isDisabled) {
+            event.preventDefault();
+            return;
+          }
           event.stopPropagation();
           fireEvent('onClick');
         }}
@@ -114,6 +128,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
         }}
         style={{ width: '100%' }}
         ref={clickRef}
+        disabled={isDisabled}
       >
         <span
           className="d-flex"

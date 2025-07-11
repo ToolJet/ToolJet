@@ -16,9 +16,9 @@ const universalProps = {
     others: {},
     events: [],
     styles: {},
-    generalStyles: {
-      boxShadow: { value: '0px 0px 0px 0px #00000040' },
-    },
+    // generalStyles: {
+    //   boxShadow: { value: '0px 0px 0px 0px #00000040' },
+    // },
   },
 };
 
