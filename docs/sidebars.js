@@ -302,6 +302,18 @@ const sidebars = {
             },
           ],
         },
+        {
+          'type': 'category',
+          'label': 'Modules',
+          'items': [
+            'app-builder/modules/overview',
+            'app-builder/modules/create-module',
+            'app-builder/modules/input-output',
+            'app-builder/modules/data-flow',
+            'app-builder/modules/import-export-modules',
+            'app-builder/modules/use-cases',
+          ]
+        },
         'app-builder/walkthrough/row-level-security',
         'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
