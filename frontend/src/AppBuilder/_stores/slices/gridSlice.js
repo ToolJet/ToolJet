@@ -127,7 +127,7 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         const componentType = getComponentTypeFromId(componentId);
-
+        if (componentType === 'Listview') return ;
         const element = document.querySelector(`.dynamic-${componentId}`);
         if (!element) {
           deleteContainerTemporaryLayouts(componentId);
@@ -185,6 +185,7 @@ export const createGridSlice = (set, get) => ({
           if (showFooter && isProperNumber(footerHeight)) {
             extraHeight += footerHeight;
           }
+          extraHeight += 20;
         } else if (componentType === 'Tabs') {
           extraHeight = 20;
         }
@@ -302,11 +303,11 @@ export const createGridSlice = (set, get) => ({
           const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
           if (hasHorizontalOverlap) {
             const newTop = (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) + realDiff;
-            const currentTransform = window.getComputedStyle(element).transform;
+            // const currentTransform = window.getComputedStyle(element).transform;
 
-            const matrix = new DOMMatrix(currentTransform);
-            const currentX = matrix.m41;
-            element.style.transform = `translate(${currentX}px, ${newTop}px)`;
+            // const matrix = new DOMMatrix(currentTransform);
+            // const currentX = matrix.m41;
+            // element.style.transform = `translate(${currentX}px, ${newTop}px)`;
 
             updatedLayouts[component.id] = {
               ...component.layouts[currentLayout],

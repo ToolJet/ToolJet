@@ -57,6 +57,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const selectedComponents = useStore((state) => state.selectedComponents, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
+  const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const temporaryHeight = useStore((state) => state.temporaryLayouts?.[selectedComponents?.[0]]?.height, shallow);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
@@ -86,6 +87,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
   const toggleRightSidebar = useStore((state) => state.toggleRightSidebar, shallow);
+  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -195,6 +197,21 @@ export default function Grid({ gridWidth, currentLayout }) {
             left: Math.round(x / gw),
           },
         });
+        const parentElement = getComponentDefinition(id, moduleId)?.component?.parent;
+        if (parentElement) {
+          const isDynamicHeightEnabled = getResolvedComponent(parentElement, moduleId)?.properties?.dynamicHeight;
+          if (isDynamicHeightEnabled) {
+            // Extract logic from useDynamicHeight hook since hooks can't be called in callbacks
+            const element = document.querySelector(`.ele-${parentElement}`);
+            if (element) {
+              element.style.height = 'auto';
+              // Wait for the next frame to ensure the height has updated
+              requestAnimationFrame(() => {
+                adjustComponentPositions(id, currentLayout, false, false, false);
+              });
+            }
+          }
+        }
       });
     },
     [canvasWidth, gridWidth, setComponentLayout]
@@ -994,8 +1011,8 @@ export default function Grid({ gridWidth, currentLayout }) {
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
-          const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
-          e.target.style.width = `${draggingWidgetWidth}px`;
+          // const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
+          // e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
