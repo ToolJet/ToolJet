@@ -871,7 +871,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (getHoveredComponentForGrid() !== e.target.id) {
             return false;
           }
-          toggleRightSidebar();
           newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
 
@@ -983,6 +982,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             useStore.getState().setDraggingComponentId(e.target.id);
             showGridLines();
             isDraggingRef.current = true;
+            toggleRightSidebar();
           }
           const currentWidget = boxList.find((box) => box.id === e.target.id);
           const currentParentId =

@@ -86,6 +86,9 @@ export const CLOUD_EDITION_SETTINGS = {
   SMTP_ENV_CONFIGURED: {
     value: 'true',
   },
+  ENABLE_SIGNUP: {
+    value: 'true',
+  },
 };
 
 export const BUSINESS_PLAN_TERMS = {
