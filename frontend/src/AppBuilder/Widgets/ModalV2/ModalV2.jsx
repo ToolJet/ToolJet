@@ -238,6 +238,7 @@ export const ModalV2 = function Modal({
           modalWidth,
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
+          darkMode
         }}
       />
     </div>
