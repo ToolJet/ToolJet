@@ -7,6 +7,7 @@ import classnames from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import { Button } from '@/components/ui/Button/Button';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
@@ -83,9 +84,12 @@ export const DarkModeToggle = function DarkModeToggle({
         </Tooltip>
       }
     >
-      <div
-        className={classnames('unstyled-button dark-theme-toggle-btn  sidebar-svg-icon  left-sidebar-item')}
+      <Button
+        className={classnames('left-sidebar-item')}
         onClick={toggleDarkMode}
+        variant="ghost"
+        size="default"
+        iconOnly
       >
         <animated.svg
           xmlns="http://www.w3.org/2000/svg"
@@ -93,7 +97,7 @@ export const DarkModeToggle = function DarkModeToggle({
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          color={'var(--slate8)'}
+          color={'var(--icon-strong)'}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -109,7 +113,7 @@ export const DarkModeToggle = function DarkModeToggle({
             <animated.circle style={maskedCircleProps} r="9" fill="black" />
           </mask>
 
-          <animated.circle cx="12" cy="12" style={centerCircleProps} fill={'var(--slate8)'} mask="url(#myMask2)" />
+          <animated.circle cx="12" cy="12" style={centerCircleProps} fill={'var(--icon-strong)'} mask="url(#myMask2)" />
           <animated.g stroke="currentColor" style={linesProps}>
             <line x1="12" y1="1" x2="12" y2="3" />
             <line x1="12" y1="21" x2="12" y2="23" />
@@ -127,7 +131,7 @@ export const DarkModeToggle = function DarkModeToggle({
             Switch to {!darkMode ? 'dark mode' : 'light mode'}
           </span>
         )}
-      </div>
+      </Button>
     </OverlayTrigger>
   );
 };

@@ -120,10 +120,8 @@
 	gap: 4px;
 	position: relative;
 	width: 100%;
-	min-width: 176px;
 	z-index: 1;
 	color: #11181C;
-	padding-right: 12px;
 	height: 32px;
 	border-top-left-radius: 4px;
 	border-bottom-left-radius: 4px;
@@ -228,4 +226,14 @@
 	color: var(--purple9);
 	margin-left: 2px !important;
 	margin-right: 8px !important;
+}
+
+.version-manager-container {
+	.app-environment-menu {
+		min-width: unset;
+	}
+
+	.env-container {
+		min-width: unset;
+	}
 }

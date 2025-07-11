@@ -1,26 +1,36 @@
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React, { forwardRef } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
+import { Button } from '@/components/ui/Button/Button';
+
 import { useTranslation } from 'react-i18next';
 
 // TODO: remove refs and related dependancies
 export const SidebarItem = forwardRef(
-  ({ tip = '', selectedSidebarItem, className, icon, iconFill = 'var(--slate8)', text, onClick, ...rest }, ref) => {
+  (
+    { tip = '', selectedSidebarItem, className, icon, iconFill = 'var(--slate8)', text, onClick, children, ...rest },
+    ref
+  ) => {
     const { t } = useTranslation();
-    let displayIcon = icon;
+    // let displayIcon = icon;
     return (
-      <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
-        {icon && (
+      <Button
+        {...rest}
+        className={className}
+        onClick={onClick && onClick}
+        ref={ref}
+        variant="ghost"
+        size="default"
+        iconOnly
+      >
+        {children && (
           <div
             className={`sidebar-svg-icon  position-relative ${selectedSidebarItem && 'sidebar-item'}`}
             data-cy={`right-sidebar-${icon.toLowerCase()}-button`}
           >
-            <SolidIcon name={displayIcon} width={20} fill={selectedSidebarItem ? '#3E63DD' : iconFill} />
+            {children}
           </div>
         )}
         <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
-      </div>
+      </Button>
     );
   }
 );

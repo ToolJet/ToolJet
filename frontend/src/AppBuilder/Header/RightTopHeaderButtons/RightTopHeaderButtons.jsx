@@ -5,15 +5,16 @@ import { ManageAppUsers } from './ManageAppUsers';
 import { shallow } from 'zustand/shallow';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import GitSyncManager from '../GitSyncManager';
 import useStore from '@/AppBuilder/_stores/store';
 import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RightTopHeaderButtons = ({ isModuleEditor }) => {
   return (
-    <div className="d-flex justify-content-end navbar-right-section" style={{ width: '300px', paddingRight: '12px' }}>
-      <div className=" release-buttons navbar-nav flex-row">
+    <div className="d-flex justify-content-end navbar-right-section">
+      <div className=" release-buttons">
+        <GitSyncManager />
         <PreviewAndShareIcons />
         {!isModuleEditor && <PromoteReleaseButton />}
       </div>
@@ -70,35 +71,27 @@ const PreviewAndShareIcons = () => {
   }, [slug, currentVersionId, editingVersion, selectedEnvironment?.id, currentPageHandle]);
 
   return (
-    <div className="preview-share-wrap navbar-nav flex-row" style={{ gap: '4px' }}>
-      <div className="nav-item">
-        {appId && (
-          <ManageAppUsers
-            currentEnvironment={selectedEnvironment}
-            multiEnvironmentEnabled={featureAccess?.multiEnvironment}
-            app={app}
-            appId={appId}
-            slug={slug}
-            pageHandle={currentPageHandle}
-            darkMode={darkMode}
-            isVersionReleased={isVersionReleased}
-            isPublic={isPublic ?? false}
-          />
-        )}
+    <>
+      <div class="navbar-seperator" />
+      <div className="preview-share-wrap navbar-nav flex-row">
+        <div className="nav-item">
+          {appId && (
+            <ManageAppUsers
+              currentEnvironment={selectedEnvironment}
+              multiEnvironmentEnabled={featureAccess?.multiEnvironment}
+              app={app}
+              appId={appId}
+              slug={slug}
+              pageHandle={currentPageHandle}
+              darkMode={darkMode}
+              isVersionReleased={isVersionReleased}
+              isPublic={isPublic ?? false}
+            />
+          )}
+        </div>
       </div>
-      <div className="nav-item">
-        <Link
-          title="Preview"
-          to={appPreviewLink}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="preview-link-button"
-          className="editor-header-icon tj-secondary-btn"
-        >
-          <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
-        </Link>
-      </div>
-    </div>
+      <div class="navbar-seperator" />
+    </>
   );
 };
 

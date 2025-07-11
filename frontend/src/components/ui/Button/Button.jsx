@@ -162,18 +162,17 @@ const Button = forwardRef(
       return (
         <div className="tw-flex tw-justify-center tw-items-center">
           <Loader color={iconFillColor} width={getIconSize(size)} />
-          <a className="tw-invisible">{props.children}</a>
+          <span className="tw-invisible">{props.children}</span>
         </div>
       );
     };
 
+    // Add pressed class if aria-selected is true
+    const pressed = props['aria-selected'] === true;
+    const buttonClassName = cn(buttonVariants({ variant, size, iconOnly, className }), { 'tw-pressed': pressed });
+
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, iconOnly, className }))}
-        ref={ref}
-        disabled={disabled}
-        {...props}
-      >
+      <Comp className={buttonClassName} ref={ref} disabled={disabled} {...props}>
         {isLoading ? (
           renderLoader()
         ) : (

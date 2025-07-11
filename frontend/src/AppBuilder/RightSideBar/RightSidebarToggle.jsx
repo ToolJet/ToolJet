@@ -4,7 +4,7 @@ import { shallow } from 'zustand/shallow';
 import cx from 'classnames';
 import Tooltip from 'react-bootstrap/Tooltip';
 import './rightSidebarToggle.scss';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Plus, PencilRuler, BookOpen } from 'lucide-react';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarItem } from './SidebarItem';
@@ -41,7 +41,10 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         icon="plus"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Components"
-      />
+      >
+        <Plus width="16" height="16" className="tw-text-icon-strong" />
+      </SidebarItem>
+
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION}
         onClick={() => {
@@ -51,7 +54,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         icon="inspect"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Component properties"
-      />
+      >
+        <PencilRuler width="16" height="16" className="tw-text-icon-strong" />
+      </SidebarItem>
       {appType !== 'module' && (
         <SidebarItem
           selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES}
@@ -62,7 +67,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           icon="file01"
           className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
           tip="Page settings"
-        />
+        >
+          <BookOpen width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
       )}
     </div>
   );
