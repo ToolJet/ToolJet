@@ -205,10 +205,10 @@ export const Image = function Image({
             <Loader width="16" absolute={false} />
           </center>
         )}
-        {!isLoading && alternativeText && (
+        {!isLoading && (
           <>
             <BrokenImage />
-            <p>{alternativeText}</p>
+            {alternativeText && <p>{alternativeText}</p>}
           </>
         )}
       </div>
