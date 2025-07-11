@@ -4180,7 +4180,7 @@ input[type="text"] {
   border-left: none !important;
 
   .rbc-timeslot-group {
-    border-left: 2.5px solid #dadcde !important;
+    border-left: 2.5px solid var(--cc-weak-border) !important;
   }
 }
 
@@ -4188,8 +4188,8 @@ input[type="text"] {
   border: none !important;
 
   .rbc-row {
-    border-left: 1.5px solid #dadcde;
-    border-right: 1.5px solid #dadcde;
+    border-left: 1.5px solid var(--cc-weak-border);
+    border-right: 1.5px solid var(--cc-weak-border);
   }
 }
 
@@ -4198,8 +4198,8 @@ input[type="text"] {
 }
 
 .resources-week-cls .rbc-time-view-resources .rbc-header {
-  border-left: 1.5px solid #dadcde !important;
-  border-right: 1.5px solid #dadcde !important;
+  border-left: 1.5px solid var(--cc-weak-border) !important;
+  border-right: 1.5px solid var(--cc-weak-border) !important;
 }
 
 .calendar-widget.hide-view-switcher {
@@ -18456,10 +18456,6 @@ section.ai-message-prompt-input-wrapper {
           color: var(--cc-primary-text);
         }
       }
-    }
-
-    .rbc-day-bg {
-      border: 1px solid var(--cc-weak-border) !important;
     }
 
     .rbc-button-link {
