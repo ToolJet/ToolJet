@@ -10,6 +10,7 @@ const initialState = {
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
   draggingComponentId: null,
+  resizingComponentId: null,
   reorderContainerChildren: {
     containerId: null,
     triggerUpdate: 0,
@@ -24,7 +25,7 @@ export const createGridSlice = (set, get) => ({
   checkHoveredComponentDynamicHeight: () => {
     const { hoveredComponentForGrid, getResolvedComponent } = get();
     const resolvedProperties = getResolvedComponent(hoveredComponentForGrid, null)?.properties;
-    const { dynamicHeight } = resolvedProperties;
+    const { dynamicHeight } = resolvedProperties || {};
     return dynamicHeight;
   },
   setHoveredComponentBoundaryId: (id) =>
@@ -35,6 +36,7 @@ export const createGridSlice = (set, get) => ({
     get().toggleCanvasUpdater();
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
+  setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
