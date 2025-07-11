@@ -76,7 +76,8 @@ type NewRevampedComponent =
   | 'TextArea'
   | 'Container'
   | 'Tabs'
-  | 'Form';
+  | 'Form'
+  | 'Image';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -101,6 +102,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Container',
   'Tabs',
   'Form',
+  'Image',
 ];
 
 @Injectable()
@@ -2398,6 +2400,33 @@ function migrateProperties(
     if (componentType === 'Tabs') {
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
+      }
+    }
+
+    if (componentType === 'Image') {
+      if (styles.padding) {
+        styles.customPadding = styles.padding;
+        styles.padding = { value: 'custom' };
+      }
+
+      if (styles.borderType?.value === 'rounded-circle') {
+        styles.imageShape = { value: 'circle' };
+        delete styles.borderType;
+      }
+
+      if (styles.borderType?.value === 'rounded') {
+        styles.imageShape = { value: 'rounded' };
+        delete styles.borderType;
+      }
+
+      if (styles.borderType?.value === 'img-thumbnail') {
+        styles.imageShape = { value: 'thumbnail' };
+        delete styles.borderType;
+      }
+
+      if (styles.borderType?.value === 'none') {
+        styles.imageShape = { value: 'none' };
+        delete styles.borderType;
       }
     }
   }
