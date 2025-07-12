@@ -8,7 +8,7 @@ export class OrganizationIdSlugValidationGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const workspaceId = request?.query['organizationId'];
+    const workspaceId = request?.params.organizationId;
     let organization: Organization;
 
     try {

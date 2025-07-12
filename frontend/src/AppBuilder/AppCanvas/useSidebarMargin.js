@@ -9,6 +9,7 @@ const useSidebarMargin = (canvasContainerRef) => {
   const { moduleId } = useModuleContext();
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
 
   useEffect(() => {
@@ -17,10 +18,10 @@ const useSidebarMargin = (canvasContainerRef) => {
   }, [isSidebarOpen, mode]);
 
   useEffect(() => {
-    if (!isEmpty(canvasContainerRef?.current)) {
+    if (!isEmpty(canvasContainerRef?.current) && isSidebarOpen && canvasContainerRef.current.scrollLeft === 0) {
       canvasContainerRef.current.scrollLeft += editorMarginLeft;
     }
-  }, [editorMarginLeft, canvasContainerRef]);
+  }, [editorMarginLeft, canvasContainerRef, isSidebarOpen]);
 
   return editorMarginLeft;
 };

@@ -23,17 +23,20 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
             where: { slug: workspaceSlug, status: WORKSPACE_STATUS.ACTIVE },
             select: ['id'],
           });
-          if (organization){ 
-          await queryRunner.query(`
+          if (organization) {
+            await queryRunner.query(
+              `
             UPDATE organizations 
             SET is_default = true 
             WHERE slug = $1
-          `, [workspaceSlug]);
-          return;
+          `,
+              [workspaceSlug]
+            );
+            return;
           }
           console.log(`No active organization found with slug: ${workspaceSlug}`);
         }
-      } catch (err) {
+      } catch {
         console.log('Invalid TOOLJET_DEFAULT_WORKSPACE_URL format');
       }
     }
@@ -63,4 +66,4 @@ export class SetDefaultWorkspace1740401100000 implements MigrationInterface {
       SET is_default = false;
     `);
   }
-} 
+}

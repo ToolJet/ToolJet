@@ -102,7 +102,7 @@ export const List = ({ updateSelectedDatasource }) => {
     setFilteredData(filtered);
   };
 
-  function handleClose() {
+  function handleClose () {
     setShowInput(false);
     setFilteredData(dataSources);
   }
@@ -150,7 +150,7 @@ export const List = ({ updateSelectedDatasource }) => {
                       onClick={() => {
                         setShowInput(true);
                       }}
-                      data-cy="create-new-folder-button"
+                      data-cy="added-ds-search-icon"
                     >
                       <SolidIcon name="search" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
                     </Button>

@@ -34,6 +34,7 @@ const initialState = {
   showDeleteConfirmation: false,
   renamingQueryId: null,
   deletingQueryId: null,
+  asyncQueryRuns: [],
 };
 
 export const createQueryPanelSlice = (set, get) => ({

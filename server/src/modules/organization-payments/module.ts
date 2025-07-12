@@ -3,6 +3,7 @@ import { WhiteLabellingModule } from '../white-labelling/module';
 import { EmailModule } from '@modules/email/module';
 import { CrmModule } from '@modules/CRM/module';
 import { SubModule } from '@modules/app/sub-module';
+import { FeatureAbilityFactory } from './ability';
 
 @Module({})
 export class OrganizationPaymentModule extends SubModule {
@@ -21,7 +22,7 @@ export class OrganizationPaymentModule extends SubModule {
         await CrmModule.register(configs),
       ],
       controllers: [OrganizationPaymentController],
-      providers: [OrganizationPaymentService],
+      providers: [OrganizationPaymentService, FeatureAbilityFactory],
       exports: [],
     };
   }

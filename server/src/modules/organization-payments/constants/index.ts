@@ -1,6 +1,6 @@
 export enum FEATURE_KEY {
   GET_UPCOMING_INVOICE = 'get_upcoming_invoice',
-  GENERATE_PAYMENT_LINK = 'generate_payment_link',
+  GET_CURRENT_PLAN_DETAILS = 'get_current_plan_details',
   UPDATE_INVOICE = 'update_invoice',
   GET_PRORATION = 'get_proration',
   CREATE_PORTAL_LINK = 'create_portal_link',

@@ -37,7 +37,7 @@ import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { OnboardingUtilService } from '@modules/onboarding/util.service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 
 @Injectable()
 export class OauthService implements IOAuthService {
@@ -221,7 +221,11 @@ export class OauthService implements IOAuthService {
             if (!isInviteRedirect) {
               // no SSO login enabled organization available for user - creating new one
               const { name, slug } = generateNextNameAndSlug('My workspace');
-              organizationDetails = await this.setupOrganizationsUtilService.create({ name, slug }, userDetails, manager);
+              organizationDetails = await this.setupOrganizationsUtilService.create(
+                { name, slug },
+                userDetails,
+                manager
+              );
               await this.userRepository.updateOne(
                 userDetails.id,
                 { defaultOrganizationId: organizationDetails.id },
@@ -283,9 +287,8 @@ export class OauthService implements IOAuthService {
             signupOrganizationId !== defaultOrganizationId;
           let personalWorkspace: Organization;
           if (shouldActivatePersonalWorkspace) {
-            const defaultOrganizationUser = await this.organizationUsersRepository.getOrganizationUser(
-              defaultOrganizationId
-            );
+            const defaultOrganizationUser =
+              await this.organizationUsersRepository.getOrganizationUser(defaultOrganizationId);
             await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
           }
 
