@@ -34,7 +34,6 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     isInviteFlw,
   });
 
-  console.log(current_user, 'current_user');
   const redirectPath = redirectTo || getCookie('redirectPath');
   const path = getRedirectURL(redirectPath);
   const archivedCase = isCurrentOrganizationArchived && !noActiveWorkspaces;

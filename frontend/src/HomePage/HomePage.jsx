@@ -1114,9 +1114,6 @@ class HomePageComponent extends React.Component {
       missingGroupsExpanded,
     } = this.state;
 
-    const currentSession = authenticationService?.currentSessionValue;
-    console.log('currentSession Inside Homepage', currentSession);
-
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';

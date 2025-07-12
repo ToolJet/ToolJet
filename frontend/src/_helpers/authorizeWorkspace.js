@@ -162,8 +162,6 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
 
 export const updateCurrentSession = (newSession) => {
   const currentSession = authenticationService.currentSessionValue;
-  console.log('currentSession', currentSession);
-  console.log('newSession', newSession);
 
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };
