@@ -1,0 +1,83 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Google Calendar",
+  "description": "Integrate with Google Calendar API for event management",
+  "type": "api",
+    "source": {
+    "name": "Google Calendar",
+    "kind": "googlecalendar",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+
+    }
+  },
+  "defaults": {
+    "redirect_url": {
+        "value": "http://localhost:8082/oauth2/authorize",
+        "encrypted": false
+    },
+    "auth_url": {
+        "value": "https://accounts.google.com/o/oauth2/v2/auth",
+        "encrypted": false
+    },
+    "allowed_auth_types": {
+        "value": "oauth2",
+        "encrypted": false
+    },
+    "auth_type": {
+        "value": "oauth2"
+    },
+    "grant_type": {
+        "value": "authorization_code"
+    },
+    "scopes": {
+        "value": ""
+    },
+    "oauth_type": {
+      "value": "tooljet_app"
+    },
+    "access_token_url": {
+      "value": "https://oauth2.googleapis.com/token"
+    },
+    "client_id_env_key": {
+      "value": "GOOGLE_CLIENT_ID"
+    },
+    "client_secret_env_key": {
+      "value": "GOOGLE_CLIENT_SECRET"
+    }
+  },
+  "properties": {
+    "oauth": {
+        "key": "oauth",
+        "type": "react-component-oauth",
+        "description": "A component for Google Calendar",
+        "oauth_configs": {
+          "allowed_field_groups": {
+            "authorization_code": [
+              "client_id",
+              "client_secret"
+            ],
+            "basic": [
+              "password",
+              "username"
+            ]
+          },
+          "oauthTypes": {
+            "required": true
+          },
+          "allowed_auth_types": [
+            "oauth2"
+          ],
+          "allowed_grant_types": [
+            "authorization_code"
+          ]
+        }
+      }
+    },
+  "required": []
+}

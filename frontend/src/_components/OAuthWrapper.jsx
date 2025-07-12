@@ -25,7 +25,7 @@ const OAuthWrapper = ({
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
   const needConnectionButton = options?.grant_type?.value === 'authorization_code';
-  const dataSourceNameCapitalize = capitalize(selectedDataSource?.kind);
+  const dataSourceNameCapitalize = selectedDataSource?.plugin?.name;
 
   const hostUrl = window.public_config?.TOOLJET_HOST;
   const subPathUrl = window.public_config?.SUB_PATH;

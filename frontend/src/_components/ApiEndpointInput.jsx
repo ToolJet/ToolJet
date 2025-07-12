@@ -139,13 +139,24 @@ const ApiEndpointInput = (props) => {
     if (value === '') {
       removeParam(paramType, paramName);
     } else {
+      let parsedValue = value;
+
+      if (paramType === 'request') {
+        try {
+          parsedValue = JSON.parse(value);
+        } catch (e) {
+          console.error(`Invalid JSON for request param "${paramName}":`, e);
+          parsedValue = value;
+        }
+      }
+
       const newOptions = {
         ...options,
         params: {
           ...options.params,
           [paramType]: {
             ...options.params[paramType],
-            [paramName]: value,
+            [paramName]: parsedValue,
           },
         },
       };
@@ -294,7 +305,7 @@ const ApiEndpointInput = (props) => {
       {loadingSpec && (
         <div className="p-3">
           <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          {props.t('stripe', 'Please wait while we load the OpenAPI specification.')}
+          {props.t('Google Calendar', 'Please wait while we load the OpenAPI specification.')}
         </div>
       )}
       {options && !loadingSpec && (

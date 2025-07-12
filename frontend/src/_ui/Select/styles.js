@@ -33,7 +33,6 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
       display: 'flex',
       height: height,
       marginBottom: '4px',
-      ...(styles.fontSize ? { fontSize: styles.fontSize } : {}),
     }),
     indicatorsContainer: (provided, state) => ({
       ...provided,
@@ -58,7 +57,6 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
       ':hover': {
         backgroundColor: darkMode ? '#323C4B' : '#d8dce9',
       },
-      ...(styles.fontSize ? { fontSize: styles.fontSize } : {}),
     }),
     placeholder: (provided) => ({
       ...provided,
@@ -88,25 +86,23 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
         backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
       },
     }),
-    control: (provided, state) => ({
+    control: (provided) => ({
       ...provided,
       boxShadow: 'none',
-      backgroundColor: state.isDisabled ? (darkMode ? '#1f2936' : '#f4f6fa') : darkMode ? '#2b3547' : '#ffffff',
+      backgroundColor: darkMode ? '#2b3547' : '#ffffff',
       borderRadius: '6px',
       height: 32,
       minHeight: 32,
-      borderColor: state.isDisabled && darkMode ? 'none' : darkMode ? 'inherit' : '#D7DBDF',
+      borderColor: darkMode ? 'inherit' : ' #D7DBDF',
       '&:hover': {
-        backgroundColor: state.isDisabled ? (darkMode ? '#1f2936' : '#f4f6fa') : darkMode ? '' : '#F8F9FA',
-        cursor: state.isDisabled ? 'not-allowed !important' : 'pointer',
+        backgroundColor: darkMode ? '' : '#F8F9FA',
       },
       '&:active': {
-        backgroundColor: state.isDisabled ? (darkMode ? '#1f2936' : '#f4f6fa') : darkMode ? '' : '#F8FAFF',
-        borderColor: state.isDisabled ? (darkMode ? 'none' : '#D7DBDF') : '#3E63DD',
-        boxShadow: state.isDisabled ? 'none' : '0px 0px 0px 2px #C6D4F9',
+        backgroundColor: darkMode ? '' : '#F8FAFF',
+        borderColor: '#3E63DD',
+        boxShadow: '0px 0px 0px 2px #C6D4F9 ',
       },
-      cursor: state.isDisabled ? 'not-allowed !important' : 'pointer',
-      pointerEvents: state.isDisabled ? 'none' : 'auto',
+      cursor: 'pointer',
     }),
     container: (provided) => ({
       ...provided,
@@ -118,9 +114,9 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
       ...provided,
       marginBottom: '0',
     }),
-    singleValue: (provided, state) => ({
+    singleValue: (provided) => ({
       ...provided,
-      color: state.isDisabled ? (darkMode ? '#6b7280' : '#9ca3af') : darkMode ? '#fff' : '#11181C',
+      color: darkMode ? '#fff' : '#11181C',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -129,17 +125,17 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
     indicatorSeparator: (_state) => ({
       display: 'none',
     }),
-    input: (provided, state) => ({
+    input: (provided) => ({
       ...provided,
-      color: state.isDisabled ? (darkMode ? '#6b7280' : '#9ca3af') : darkMode ? '#fff' : '#232e3c',
+      color: darkMode ? '#fff' : '#232e3c',
     }),
     menu: (provided) => ({
       ...provided,
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
-    placeholder: (provided, state) => ({
+    placeholder: (provided) => ({
       ...provided,
-      color: state.isDisabled ? (darkMode ? '#6b7280' : '#9ca3af') : darkMode ? '#fff' : '#11181C',
+      color: darkMode ? '#fff' : '#11181C',
     }),
   };
 }
