@@ -264,9 +264,7 @@ export const ToggleSwitchV2 = ({
             width={width - 20}
           >
             {label}
-            {isMandatory && !on && (
-              <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
-            )}
+            {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
           </OverflowTooltip>
 
           <Switch
