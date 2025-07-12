@@ -23,8 +23,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import { resolveReferences } from '@/_helpers/utils';
-import { DragGhostWidget , ResizeGhostWidget} from './GhostWidgets';
+import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
 
@@ -32,6 +31,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
+  const resolveReferences = useStore((state) => state.resolveReferences);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
     (state) => state.environmentLoadingState || state.loaderStore.modules[moduleId].isEditorLoading,
@@ -72,7 +72,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
-  const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
+  const isPagesSidebarHidden = useStore((state) => state.resolvedStore.modules[moduleId].others.isPagesSidebarHidden);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components

@@ -77,7 +77,7 @@ type NewRevampedComponent =
   | 'Container'
   | 'Tabs'
   | 'Form'
-
+  | 'Image';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -101,8 +101,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'TextArea',
   'Container',
   'Tabs',
-  'Form'
-
+  'Form',
+  'Image',
 ];
 
 @Injectable()
@@ -114,7 +114,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -226,10 +226,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -241,10 +241,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -252,16 +252,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .leftJoinAndSelect('components.permissions', 'permission')
-            .leftJoinAndSelect('permission.users', 'componentUser')
-            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .leftJoinAndSelect('components.permissions', 'permission')
+              .leftJoinAndSelect('permission.users', 'componentUser')
+              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -284,10 +284,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -342,11 +342,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-          .createQueryBuilder(App, 'app')
-          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-          .distinct(true)
-          .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .distinct(true)
+            .getMany()
         : [];
 
     // Process each module from the import data
@@ -670,6 +670,11 @@ export class AppImportExportService {
       tooljetVersion,
       moduleResourceMappings
     );
+
+    const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
+    if (importedAppVersionIds.length > 0) {
+      await applyPageSettingsMigration(manager, importedAppVersionIds);
+    }
 
     if (!isNormalizedAppDefinitionSchema) {
       for (const importingAppVersion of importingAppVersions) {
@@ -1027,7 +1032,6 @@ export class AppImportExportService {
         const newComponentIdsMap = {};
         for (const component of pageComponents) {
           newComponentIdsMap[component.id] = uuid();
-
         }
 
         for (const component of pageComponents) {
@@ -1041,7 +1045,8 @@ export class AppImportExportService {
           }
 
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
-          const isParentHeaderOrFooter = component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
+          const isParentHeaderOrFooter =
+            component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
           if (isParentTabOrCalendar) {
             const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
@@ -1379,10 +1384,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -2098,10 +2103,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-              query.options,
-              externalResourceMappings['tooljet_database'],
-              user?.organizationId
-            )
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user?.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2391,6 +2396,32 @@ function migrateProperties(
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
     }
+
+    if (componentType === 'Tabs') {
+      if (properties.useDynamicOptions === undefined) {
+        properties.useDynamicOptions = { value: true };
+      }
+    }
+
+    if (componentType === 'Image') {
+      if (styles.padding) {
+        styles.customPadding = styles.padding;
+        styles.padding = { value: 'custom' };
+      }
+
+      const borderTypeMapping: Record<string, string> = {
+        'rounded-circle': 'circle',
+        'rounded': 'rounded',
+        'img-thumbnail': 'thumbnail',
+        'none': 'none',
+      };
+
+      const mappedShape = borderTypeMapping[styles.borderType?.value];
+      if (mappedShape) {
+        styles.imageShape = { value: mappedShape };
+        delete styles.borderType;
+      }
+    }
   }
   return { properties, styles, general, generalStyles, validation };
 }
@@ -2542,4 +2573,44 @@ const isChildOfKanbanModal = (
   }
 
   return parentComponent?.type === 'Kanban';
+};
+
+const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds: string[]) => {
+  const appVersions = await manager.find(AppVersion, {
+    where: {
+      id: In(appVersionIds),
+    },
+    select: ['id', 'pageSettings', 'globalSettings'],
+  });
+
+  for (const version of appVersions) {
+    let pageSettings = version.pageSettings as any;
+    const globalSettings = version.globalSettings as any;
+
+    if (!pageSettings) {
+      pageSettings = { properties: {} };
+    }
+    if (!pageSettings.properties) {
+      pageSettings.properties = {};
+    }
+
+    if (!('position' in pageSettings.properties)) {
+      pageSettings.properties.position = 'side';
+    }
+
+    if (globalSettings && 'hideHeader' in globalSettings) {
+      pageSettings.properties.hideHeader = globalSettings.hideHeader;
+      pageSettings.properties.hideLogo = globalSettings.hideHeader;
+      delete globalSettings.hideHeader;
+    }
+
+    await manager.update(
+      AppVersion,
+      { id: version.id },
+      {
+        pageSettings: pageSettings,
+        globalSettings: globalSettings,
+      }
+    );
+  }
 };
