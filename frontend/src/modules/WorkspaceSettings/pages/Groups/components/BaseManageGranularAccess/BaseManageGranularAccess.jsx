@@ -376,7 +376,7 @@ class BaseManageGranularAccess extends React.Component {
         this.closeAddPermissionModal();
         toast.success('Permission updated successfully');
       })
-      .catch(({ error }) => {
+      .catch(({ error, statusCode }) => {
         if (error?.type) {
           this.setState({
             showAutoRoleChangeModal: true,
@@ -389,14 +389,16 @@ class BaseManageGranularAccess extends React.Component {
           });
           return;
         }
-        this.props.updateParentState({
-          showEditRoleErrorModal: true,
-          errorTitle: error?.title ? error?.title : 'Cannot update the permissions',
-          errorMessage: error.error,
-          errorIconName: 'usergear',
-          errorListItems: error.data,
-          showAddPermissionModal: false,
-        });
+        if (statusCode !== 451) {
+          this.props.updateParentState({
+            showEditRoleErrorModal: true,
+            errorTitle: error?.title ? error?.title : 'Cannot update the permissions',
+            errorMessage: error.error,
+            errorIconName: 'usergear',
+            errorListItems: error.data,
+            showAddPermissionModal: false,
+          });
+        }
       });
   };
 
