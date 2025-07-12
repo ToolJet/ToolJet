@@ -286,11 +286,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       }
       e.props.target.classList.add('hovered');
       e.controlBox.classList.add('moveable-control-box-d-block');
-      const isHorizontallyExpandable = checkHoveredComponentDynamicHeight();
-      if (isHorizontallyExpandable) {
-        e.controlBox.classList.add('moveable-horizontal-only');
-      }
-      setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     },
     mouseLeave(e) {
       e.props.target.classList.remove('hovered');
@@ -473,6 +468,12 @@ export default function Grid({ gridWidth, currentLayout }) {
         return;
       }
       useStore.getState().setHoveredComponentBoundaryId(targetId);
+      const isHorizontallyExpandable = checkHoveredComponentDynamicHeight(targetId);
+      const moveableControlBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
+      if (moveableControlBox && isHorizontallyExpandable) {
+        moveableControlBox.classList.add('moveable-horizontal-only');
+      }
+      setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     };
     const hideConfigHandle = () => {
       useStore.getState().setHoveredComponentBoundaryId('');

@@ -21,9 +21,9 @@ export const createGridSlice = (set, get) => ({
   setHoveredComponentForGrid: (id) =>
     set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
   getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
-  checkHoveredComponentDynamicHeight: () => {
-    const { hoveredComponentForGrid, getResolvedComponent } = get();
-    const resolvedProperties = getResolvedComponent(hoveredComponentForGrid, null)?.properties;
+  checkHoveredComponentDynamicHeight: (id) => {
+    const { getResolvedComponent } = get();
+    const resolvedProperties = getResolvedComponent(id)?.properties;
     const { dynamicHeight } = resolvedProperties;
     return dynamicHeight;
   },
