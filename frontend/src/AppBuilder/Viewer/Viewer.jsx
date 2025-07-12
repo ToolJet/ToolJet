@@ -109,6 +109,7 @@ export const Viewer = ({
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
   const isLicenseNotValid = checkIfLicenseNotValid();
+  const pages = useStore((state) => state.modules[moduleId].pages);
 
   // ---remove
   const handleAppEnvironmentChanged = useCallback((environment) => {
@@ -174,6 +175,7 @@ export const Viewer = ({
             handleAppEnvironmentChanged={handleAppEnvironmentChanged}
             changeToDarkMode={changeToDarkMode}
             switchPage={switchPage}
+            pages={pages}
           />
         )}
       </>
@@ -257,6 +259,7 @@ export const Viewer = ({
                                   handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
+                                  pages={pages}
                                 />
                               )}
                               <AppCanvas
