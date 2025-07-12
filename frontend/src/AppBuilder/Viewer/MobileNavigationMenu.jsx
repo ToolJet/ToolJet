@@ -173,7 +173,7 @@ const MobileNavigationMenu = ({
     },
     bmMenu: {
       background: darkMode ? '#202B37' : '#fff',
-      padding: '16px 8px',
+      padding: '16px 16px',
     },
     bmMorphShape: {
       fill: '#373a47',
@@ -197,7 +197,7 @@ const MobileNavigationMenu = ({
     },
   };
 
-  const currentPage = pages.find((page) => page.id === currentPageId);
+  const currentPage = pages?.find((page) => page.id === currentPageId);
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
@@ -222,7 +222,7 @@ const MobileNavigationMenu = ({
         }
         right={false}
       >
-        <div className="pt-0">
+        <div style={{ height: '95%' }} className="pt-0">
           <Header styles={{ paddingBottom: '24px' }} className={'mobile-header'}>
             <div onClick={() => setHamburgerMenuOpen(false)} className="cursor-pointer">
               <div className="icon-btn">
@@ -253,7 +253,7 @@ const MobileNavigationMenu = ({
             </div>
           </Header>
 
-          <div style={{ paddingBottom: '48px' }} className="w-100 overflow-auto h-100">
+          <div style={{ paddingBottom: '56px' }} className="w-100 overflow-auto h-100">
             <div className={`pages-container ${darkMode && 'dark'}`}>
               {isLicensed ? (
                 <RenderPageGroups
@@ -264,7 +264,7 @@ const MobileNavigationMenu = ({
                   currentPage={currentPage}
                 />
               ) : (
-                pages.map((page) => {
+                pages?.map((page) => {
                   const isHomePage = page.id === homePageId;
                   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
                   // eslint-disable-next-line import/namespace
