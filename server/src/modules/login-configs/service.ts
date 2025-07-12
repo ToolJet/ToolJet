@@ -103,7 +103,12 @@ export class LoginConfigsService implements ILoginConfigsService {
     };
 
     if (automaticSsoLogin === true) {
-      const result = await this.loginConfigsUtilService.fetchOrganizationDetails(organizationId, [true], true, true);
+      const result = await this.loginConfigsUtilService.fetchOrganizationDetails(
+        organizationId,
+        [true, false],
+        true,
+        true
+      );
       let enabledSSOCount = 0;
       let isFormLoginDisabled = true;
 
