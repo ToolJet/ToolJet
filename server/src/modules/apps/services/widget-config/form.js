@@ -85,6 +85,8 @@ export const formConfig = {
       showLabel: false,
       validation: {
         schema: { type: 'object' },
+        defaultValue:
+          "{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }",
       },
     },
     newJsonSchema: {
@@ -308,15 +310,15 @@ export const formConfig = {
         value: [],
       },
       JSONData: {
-        value: undefined,  
-      }
+        value: undefined,
+      },
     },
     events: [],
     styles: {
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderRadius: { value: '06' },
+      borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-default-border)' },
     },
   },
