@@ -147,7 +147,7 @@ export const modalV2Config = {
         icon: 'IconAlignBoxBottomLeft',
         text: 'Button1',
         type: 'outline',
-        borderColor: '#CCD1D5',
+        borderColor: 'var(--cc-default-border)',
         iconColor: 'var(--cc-default-icon)',
         borderRadius: 6,
         iconVisibility: false,
