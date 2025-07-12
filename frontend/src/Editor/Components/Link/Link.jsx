@@ -126,7 +126,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
         onMouseOver={() => {
           fireEvent('onHover');
         }}
-        style={{ width: '100%' }}
+        style={{ width: '100%', textDecorationColor: textColor }}
         ref={clickRef}
         disabled={isDisabled}
       >
