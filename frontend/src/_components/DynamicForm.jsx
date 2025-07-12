@@ -27,6 +27,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
+import OAuthWrapper from './OAuthWrapper';
 
 const DynamicForm = ({
   schema,
@@ -213,6 +214,8 @@ const DynamicForm = ({
         return Salesforce;
       case 'react-component-sharepoint':
         return Sharepoint;
+      case 'react-component-oauth':
+        return OAuthWrapper;
       default:
         return <div>Type is invalid</div>;
     }
@@ -250,6 +253,7 @@ const DynamicForm = ({
     buttonText,
     text,
     subtext,
+    oauth_configs,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -389,6 +393,7 @@ const DynamicForm = ({
       case 'react-component-zendesk':
       case 'react-component-salesforce':
       case 'react-component-sharepoint':
+      case 'react-component-oauth':
         return {
           optionchanged,
           createDataSource,
@@ -399,6 +404,9 @@ const DynamicForm = ({
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           optionsChanged,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          scopes: options?.scopes?.value,
+          oauth_configs,
         };
       case 'tooljetdb-operations':
         return {
@@ -642,6 +650,7 @@ const DynamicForm = ({
                   style={{ width: '100%' }}
                 >
                   <Element
+                    key={`${selectedDataSource?.id}-${propertyKey}`}
                     {...getElementProps(obj[key])}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}
