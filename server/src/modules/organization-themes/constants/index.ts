@@ -5,7 +5,7 @@ export enum THEME_UPDATE_TYPE {
   DEFAULT = 'default',
 }
 
-export const defaultThemeName = 'Tooljet';
+export const defaultThemeName = 'ToolJet';
 
 export const TJDefaultTheme: Definition = {
   brand: {

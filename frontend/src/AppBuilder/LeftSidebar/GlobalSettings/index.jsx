@@ -31,7 +31,6 @@ const GlobalSettings = ({ darkMode }) => {
           </div>
           <div style={{ padding: '12px 16px' }} className={cx({ disabled: shouldFreeze })}>
             <MaintenanceMode darkMode={darkMode} />
-            <HideHeaderToggle darkMode={darkMode} />
           </div>
           <div className={cx({ 'dark-theme': darkMode })}>
             <span className="canvas-styles-header">Canvas Styles</span>
