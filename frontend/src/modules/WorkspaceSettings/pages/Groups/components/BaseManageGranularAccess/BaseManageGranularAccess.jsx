@@ -77,6 +77,13 @@ class BaseManageGranularAccess extends React.Component {
     this.fetchAppsCanBeAdded();
     this.fetchGranularPermissions(this.props.groupPermissionId);
   }
+  componentDidUpdate(prevProps) {
+    if (prevProps.addableDs !== this.props.addableDs) {
+      this.setState({
+        addableDs: this.props.addableDs,
+      });
+    }
+  }
 
   fetchAppsCanBeAdded = () => {
     if (this.props.isBasicPlan) {
@@ -112,7 +119,6 @@ class BaseManageGranularAccess extends React.Component {
         toast.error(err.error);
       });
   };
-
   fetchGranularPermissions = (groupPermissionId) => {
     this.setState({
       isLoading: true,
@@ -124,7 +130,6 @@ class BaseManageGranularAccess extends React.Component {
       });
     });
   };
-
   deleteGranularPermissions = () => {
     const { currentEditingPermissions } = this.state;
     this.setState({
