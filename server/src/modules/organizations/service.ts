@@ -11,12 +11,16 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { OrganizationWithPlan } from '@modules/organizations/interfaces/IService';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
   constructor(
     protected organizationRepository: OrganizationRepository,
-    protected readonly licenseOrganizationService: LicenseOrganizationService
+    protected readonly licenseOrganizationService: LicenseOrganizationService,
+    protected readonly licenseTermsService: LicenseTermsService
   ) {}
 
   async fetchOrganizations(
@@ -25,17 +29,34 @@ export class OrganizationsService implements IOrganizationsService {
     currentPage?: number,
     perPageCount?: number,
     name?: string
-  ): Promise<{ organizations: Organization[]; totalCount: number }> {
+  ): Promise<{ organizations: OrganizationWithPlan[] | Organization[]; totalCount: number }> {
     if (isSuperAdmin(user)) {
       return this.organizationRepository.fetchOrganizationsForSuperAdmin(status, currentPage, perPageCount, name);
     } else {
-      return this.organizationRepository.fetchOrganizationsForRegularUser(
+      const { organizations, totalCount } = await this.organizationRepository.fetchOrganizationsForRegularUser(
         user,
         status,
         currentPage,
         perPageCount,
         name
       );
+
+      const updatedOrganizations = await Promise.all(
+        organizations.map(async (org) => {
+          const licensePlan = await this.licenseTermsService.getLicenseTerms(
+            [LICENSE_FIELD.PLAN, LICENSE_FIELD.STATUS],
+            org.id
+          );
+          const orgWithPlan = new OrganizationWithPlan();
+          Object.assign(orgWithPlan, org);
+          orgWithPlan.plan = licensePlan?.plan;
+          orgWithPlan.license_type = licensePlan?.status;
+
+          return orgWithPlan;
+        })
+      );
+
+      return { organizations: updatedOrganizations, totalCount };
     }
   }
 
