@@ -6,7 +6,6 @@ import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 
 const WidgetWrapper = memo(
@@ -21,8 +20,8 @@ const WidgetWrapper = memo(
     readOnly,
     mode,
     darkMode,
+    moduleId,
   }) => {
-    const { moduleId } = useModuleContext();
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const stylesDefinition = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
@@ -127,6 +126,7 @@ const WidgetWrapper = memo(
             onOptionChange={onOptionChange}
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}
+            moduleId={moduleId}
           />
         </div>
         <ResizeGhostWidget isResizing={isResizing} />
@@ -134,5 +134,7 @@ const WidgetWrapper = memo(
     );
   }
 );
+
+WidgetWrapper.displayName = 'WidgetWrapper';
 
 export default WidgetWrapper;

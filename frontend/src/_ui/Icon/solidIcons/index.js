@@ -24,6 +24,8 @@ import CheveronLeft from './CheveronLeft.jsx';
 import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
+import CaretDown from './CaretDown.jsx';
+import CaretUp from './CaretUp.jsx';
 import Clock from './Clock.jsx';
 import CursorClick from './CursorClick.jsx';
 import LockGradient from './LockGradient.jsx';
@@ -262,6 +264,7 @@ import Delete01 from './Delete01.jsx';
 import SourceControl from './SourceControl.jsx';
 import Push from './PushIcon.jsx';
 import Pull from './PullIcon.jsx';
+import PropertiesStyles from './PropertiesStyles.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
 
 const Icon = (props) => {
@@ -336,6 +339,10 @@ const Icon = (props) => {
       return <Debugger {...props} />;
     case 'calender':
       return <Calender {...props} />;
+    case 'caretdown':
+      return <CaretDown {...props} />;
+    case 'caretup':
+      return <CaretUp {...props} />;
     case 'checkrectangle':
       return <CheckRectangle {...props} />;
     case 'cheverondown':
@@ -536,6 +543,8 @@ const Icon = (props) => {
       return <Pin {...props} />;
     case 'unpin01':
       return <Unpin01 {...props} />;
+    case 'propertiesstyles':
+      return <PropertiesStyles {...props} />;
     case 'unpin':
       return <Unpin {...props} />;
     case 'play':
