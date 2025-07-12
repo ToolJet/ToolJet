@@ -102,8 +102,8 @@ export const ModalV2 = function Modal({
   };
 
   const onHideModal = () => {
-    onHideSideEffects(() => fireEvent('onOpen'));
     hideModal();
+    onHideSideEffects(() => fireEvent('onClose'));
     setSelectedComponentAsModal(null);
   };
 
