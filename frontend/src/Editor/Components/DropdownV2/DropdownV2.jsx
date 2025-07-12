@@ -113,8 +113,8 @@ export const DropdownV2 = ({
     if (!Array.isArray(schema)) {
       _schema = [];
     }
-    const foundItem = _schema?.find((item) => item?.default === true);
-    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
+    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
+    return defaultItem?.value;
   }
 
   const selectOptions = useMemo(() => {
@@ -141,15 +141,6 @@ export const DropdownV2 = ({
       setInputValue(value);
       fireEvent('onSelect');
     }
-  }
-
-  function hasVisibleFalse(value) {
-    for (let i = 0; i < schema?.length; i++) {
-      if (schema[i].value === value && schema[i].visible === false) {
-        return true;
-      }
-    }
-    return false;
   }
 
   const onSearchTextChange = (searchText, actionProps) => {
