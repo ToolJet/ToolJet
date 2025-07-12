@@ -410,7 +410,8 @@
                 "marketplace/plugins/marketplace-plugin-qdrant",
                 "marketplace/plugins/marketplace-plugin-azurerepos",
                 "marketplace/plugins/marketplace-plugin-clickup",
-                "marketplace/plugins/marketplace-plugin-prometheus"
+                "marketplace/plugins/marketplace-plugin-prometheus",
+                "marketplace/plugins/marketplace-plugin-googlecalendar"
               ]
             }
           ]
