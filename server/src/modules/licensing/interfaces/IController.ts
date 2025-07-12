@@ -2,6 +2,7 @@ import { User } from '@entities/user.entity';
 import { LicenseUpdateDto } from '../dto';
 import { Terms } from './terms';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
+import { UserEntity } from '@modules/app/decorators/user.decorator';
 
 export interface ILicenseController {
   /**
@@ -63,7 +64,7 @@ export interface ILicenseOrganizationController {
    * Retrieves the organization limits based on the current license.
    * @returns A promise that resolves to the limits set for the organization.
    */
-  getLimits(req: Request): Promise<any>;
+  getLimits(user: UserEntity): Promise<any>;
 }
 
 /**

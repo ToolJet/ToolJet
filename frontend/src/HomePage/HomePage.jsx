@@ -58,11 +58,11 @@ class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
-    const currentSession = authenticationService.currentSessionValue;
+    const currentSession = authenticationService?.currentSessionValue;
     this.fileInput = React.createRef();
     this.state = {
       currentUser: {
-        id: currentSession?.current_user.id,
+        id: currentSession?.current_user?.id,
         organization_id: currentSession?.current_organization_id,
       },
       shouldRedirect: false,
