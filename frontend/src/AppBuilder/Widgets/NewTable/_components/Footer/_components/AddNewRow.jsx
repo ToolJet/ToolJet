@@ -116,13 +116,13 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                   <th key={header.id} className="th" style={{ width: header.column.getSize() }}>
                     <div className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper">
                       <div>
-                        <SolidIcon
+                        {header.column.columnDef.meta?.columnType !== 'image' && <SolidIcon
                           name="editable"
                           width="16px"
                           height="16px"
                           fill={darkMode ? '#4C5155' : '#C1C8CD'}
                           vievBox="0 0 16 16"
-                        />
+                        />}
                       </div>
                       <div className="tj-text-xsm header-text">
                         {flexRender(header.column.columnDef.header, header.getContext())}
