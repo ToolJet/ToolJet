@@ -53,7 +53,7 @@ jobs:
 
       - name: Update submodules to latest main
         run: |
-          git config user.name "adishM98 Bot"
+          git config user.name "ToolJet Bot"
           git config user.email "adish.madhu@gmail.com"
 
           git submodule update --remote frontend/ee
@@ -67,14 +67,43 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOKEN_PR }}
 
+      - name: Get latest authors from submodules
+        id: submodule-authors
+        run: |
+          set -e
+
+          cd frontend/ee
+          FRONTEND_AUTHOR=$(git log -1 --pretty=format:'%an <%ae>')
+          FRONTEND_COMMIT=$(git rev-parse HEAD)
+          cd -
+
+          cd server/ee
+          SERVER_AUTHOR=$(git log -1 --pretty=format:'%an <%ae>')
+          SERVER_COMMIT=$(git rev-parse HEAD)
+          cd -
+
+          echo "FRONTEND_AUTHOR=$FRONTEND_AUTHOR" >> $GITHUB_ENV
+          echo "FRONTEND_COMMIT=$FRONTEND_COMMIT" >> $GITHUB_ENV
+          echo "SERVER_AUTHOR=$SERVER_AUTHOR" >> $GITHUB_ENV
+          echo "SERVER_COMMIT=$SERVER_COMMIT" >> $GITHUB_ENV
+
       - name: Create PR for submodule update
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.TOKEN_PR }}
-          commit-message: "🚀 chore: update submodules to latest main after auto-merge"
+          commit-message: |
+            🚀 chore: update submodules to latest main after auto-merge
+
+            - frontend/ee -> ${{ env.FRONTEND_COMMIT }} by ${{ env.FRONTEND_AUTHOR }}
+            - server/ee   -> ${{ env.SERVER_COMMIT }} by ${{ env.SERVER_AUTHOR }}
           title: "🚀 chore: update submodules"
-          body: "Auto-generated PR to update submodules after base PR merge"
+          body: |
+            Auto-generated PR to update submodules after base PR merge.
+
+            **Submodule updates:**
+            - frontend/ee -> `${{ env.FRONTEND_COMMIT }}` by `${{ env.FRONTEND_AUTHOR }}`
+            - server/ee   -> `${{ env.SERVER_COMMIT }}` by `${{ env.SERVER_AUTHOR }}`
           branch: auto/update-submodules-${{ github.run_id }}
           base: main
 
