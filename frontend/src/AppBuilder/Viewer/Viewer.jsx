@@ -74,11 +74,11 @@ export const Viewer = ({
 
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
-  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
 
-  const hideSidebar = moduleMode || isPagesSidebarHidden || appType === 'module';
+  const hideSidebar = moduleMode || !isPagesSidebarVisible || appType === 'module';
 
   const computeCanvasMaxWidth = useCallback(() => {
     if (globalSettings?.maxCanvasWidth) {
@@ -233,7 +233,7 @@ export const Viewer = ({
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
                               marginLeft:
-                                isPagesSidebarHidden || currentLayout === 'mobile'
+                                !isPagesSidebarVisible || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
                                   ? '0px'

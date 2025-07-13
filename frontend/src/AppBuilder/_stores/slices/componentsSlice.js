@@ -782,7 +782,13 @@ export const createComponentsSlice = (set, get) => ({
   getOtherFieldsToBeResolved: (moduleId) => {
     return {
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
-      isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
+      isPagesSidebarVisible: get().pageSettings?.definition?.properties?.showMenu?.value,
+      pages: get().modules[moduleId].pages.reduce((accumulator, currentObject) => {
+        if (currentObject && currentObject.id) {
+          accumulator[currentObject.id] = { hidden: currentObject.hidden };
+        }
+        return accumulator;
+      }, {}),
     };
   },
 

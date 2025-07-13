@@ -42,7 +42,7 @@ export const PagesSidebarNavigation = ({
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
-  const isPagesSidebarHidden = useStore((state) => state.resolvedStore.modules[moduleId].others.isPagesSidebarHidden);
+  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -385,7 +385,7 @@ export const PagesSidebarNavigation = ({
   const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
 
-  if (hideHeader && hideLogo && isPagesSidebarHidden) {
+  if (hideHeader && hideLogo && !isPagesSidebarVisible) {
     return null;
   }
 
@@ -438,11 +438,11 @@ export const PagesSidebarNavigation = ({
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
             style === 'icon' ||
-            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
-          'position-top': position === 'top' || isPagesSidebarHidden,
+            (style === 'texticon' && !isSidebarPinned && position === 'side' && isPagesSidebarVisible),
+          'position-top': position === 'top' || !isPagesSidebarVisible,
           'text-only': style === 'text',
-          'right-sidebar-open': isRightSidebarOpen && (position === 'top' || isPagesSidebarHidden),
-          'left-sidebar-open': isSidebarOpen && (position === 'top' || isPagesSidebarHidden),
+          'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
         })}
         style={{
           width: 226,
@@ -474,14 +474,14 @@ export const PagesSidebarNavigation = ({
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
               )}
-              {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
+              {!headerHidden && (!labelHidden || isPagesSidebarVisible) && (
                 <div style={{ wordWrap: 'break-word', overflow: 'hidden' }}>{name?.trim() ? name : appName}</div>
               )}
               {collapsable &&
                 !isTopPositioned &&
                 style == 'texticon' &&
                 position === 'side' &&
-                !isPagesSidebarHidden && (
+                isPagesSidebarVisible && (
                   <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
                     <SolidIcon
                       className="cursor-pointer"
@@ -493,7 +493,7 @@ export const PagesSidebarNavigation = ({
                 )}
             </div>
           )}
-          {isLicensed && !isPagesSidebarHidden ? (
+          {isLicensed && isPagesSidebarVisible ? (
             <RenderPageAndPageGroup
               switchPageWrapper={switchPageWrapper}
               pages={pages}
@@ -510,7 +510,7 @@ export const PagesSidebarNavigation = ({
               isSidebarPinned={isSidebarPinned}
             />
           ) : (
-            !isPagesSidebarHidden && (
+            isPagesSidebarVisible && (
               <RenderPagesWithoutGroup
                 darkMode={darkMode}
                 homePageId={homePageId}
