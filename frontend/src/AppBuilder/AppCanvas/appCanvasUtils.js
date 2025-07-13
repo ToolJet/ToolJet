@@ -605,21 +605,6 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     // Adjust width if parent changed
     let width = component.layouts[currentLayout].width;
 
-    if (targetParentId !== component.component?.parent) {
-      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
-      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
-      width = Math.round((width * oldContainerWidth) / containerWidth);
-
-      // Ensure minimum width
-      width = Math.max(width, 1);
-
-      // Adjust position and width if exceeding grid bounds
-      if (width + component.layouts[currentLayout].left > NO_OF_GRIDS) {
-        component.layouts[currentLayout].left = Math.max(0, NO_OF_GRIDS - width);
-        width = Math.min(width, NO_OF_GRIDS);
-      }
-    }
-
     component.layouts[currentLayout] = {
       ...component.layouts[currentLayout],
       width,
