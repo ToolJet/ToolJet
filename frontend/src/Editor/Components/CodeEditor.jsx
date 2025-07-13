@@ -88,7 +88,7 @@ export const CodeEditor = ({
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
       <div
-        className={`code-hinter codehinter-default-input code-editor-widget`}
+        className={`code-hinter codehinter-default-input code-editor-widget scrollbar-container`}
         style={{
           height: dynamicHeight ? 'auto' : height || 'auto',
           ...(dynamicHeight

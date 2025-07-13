@@ -18753,3 +18753,28 @@ section.ai-message-prompt-input-wrapper {
 .width-unset {
   width: unset !important;
 }
+
+.scrollbar-container {
+  scrollbar-width: 8px;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  
+  &::-webkit-scrollbar {
+    width: 16px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    width: 16px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    width: 8px;
+    margin: 0 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}

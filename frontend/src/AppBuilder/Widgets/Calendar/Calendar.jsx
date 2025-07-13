@@ -131,6 +131,7 @@ export const Calendar = function ({
       id={id}
       style={{ display: styles.visibility ? 'block' : 'none', boxShadow: styles.boxShadow }}
       data-cy={dataCy}
+      className="scrollbar-container"
     >
       <ReactCalendar
         className={`calendar-widget
