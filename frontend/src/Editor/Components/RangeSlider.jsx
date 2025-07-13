@@ -71,6 +71,10 @@ export const RangeSlider = ({
 
   useEffect(() => {
     const exposedVariables = {
+      label: label,
+      isLoading: properties?.loadingState,
+      isVisible: properties?.visibility,
+      isDisabled: properties?.disabledState,
       setValue: async function (value) {
         setDefaultSliderValue(value);
         setExposedVariable('value', value);
@@ -109,19 +113,31 @@ export const RangeSlider = ({
   }, [enableTwoHandle, value, min, max, startValue, endValue]);
 
   useEffect(() => {
-    disabled !== properties.disabledState && setDisabled(properties.disabledState);
+    if (disabled !== properties.disabledState) setDisabled(properties.disabledState);
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
+    if (loading !== properties.loadingState) setLoading(properties.loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.disabledState]);
+  }, [properties.disabledState, properties.visibility, properties.loadingState]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isInitialRender.current) return;
+    setExposedVariable('label', label);
+  }, [label]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
   }, [properties.visibility]);
 
   useEffect(() => {
-    loading !== properties.loadingState && setLoading(properties.loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', properties.loadingState);
   }, [properties.loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', properties.disabledState);
+  }, [properties.disabledState]);
 
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
