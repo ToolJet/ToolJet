@@ -88,23 +88,25 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
         backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
       },
     }),
-    control: (provided) => ({
+    control: (provided, state) => ({
       ...provided,
       boxShadow: 'none',
-      backgroundColor: darkMode ? '#2b3547' : '#ffffff',
+      backgroundColor: state.isDisabled ? (darkMode ? '#1f2936' : '#f4f6fa') : darkMode ? '#2b3547' : '#ffffff',
       borderRadius: '6px',
       height: 32,
       minHeight: 32,
-      borderColor: darkMode ? 'inherit' : ' #D7DBDF',
+      borderColor: state.isDisabled && darkMode ? 'none' : darkMode ? 'inherit' : '#D7DBDF',
       '&:hover': {
-        backgroundColor: darkMode ? '' : '#F8F9FA',
+        backgroundColor: state.isDisabled ? (darkMode ? '#1f2936' : '#f4f6fa') : darkMode ? '' : '#F8F9FA',
+        cursor: state.isDisabled ? 'not-allowed !important' : 'pointer',
       },
       '&:active': {
-        backgroundColor: darkMode ? '' : '#F8FAFF',
-        borderColor: '#3E63DD',
-        boxShadow: '0px 0px 0px 2px #C6D4F9 ',
+        backgroundColor: state.isDisabled ? (darkMode ? '#1f2936' : '#f4f6fa') : darkMode ? '' : '#F8FAFF',
+        borderColor: state.isDisabled ? (darkMode ? 'none' : '#D7DBDF') : '#3E63DD',
+        boxShadow: state.isDisabled ? 'none' : '0px 0px 0px 2px #C6D4F9',
       },
-      cursor: 'pointer',
+      cursor: state.isDisabled ? 'not-allowed !important' : 'pointer',
+      pointerEvents: state.isDisabled ? 'none' : 'auto',
     }),
     container: (provided) => ({
       ...provided,
@@ -116,9 +118,9 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
       ...provided,
       marginBottom: '0',
     }),
-    singleValue: (provided) => ({
+    singleValue: (provided, state) => ({
       ...provided,
-      color: darkMode ? '#fff' : '#11181C',
+      color: state.isDisabled ? (darkMode ? '#6b7280' : '#9ca3af') : darkMode ? '#fff' : '#11181C',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -127,17 +129,17 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
     indicatorSeparator: (_state) => ({
       display: 'none',
     }),
-    input: (provided) => ({
+    input: (provided, state) => ({
       ...provided,
-      color: darkMode ? '#fff' : '#232e3c',
+      color: state.isDisabled ? (darkMode ? '#6b7280' : '#9ca3af') : darkMode ? '#fff' : '#232e3c',
     }),
     menu: (provided) => ({
       ...provided,
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
-    placeholder: (provided) => ({
+    placeholder: (provided, state) => ({
       ...provided,
-      color: darkMode ? '#fff' : '#11181C',
+      color: state.isDisabled ? (darkMode ? '#6b7280' : '#9ca3af') : darkMode ? '#fff' : '#11181C',
     }),
   };
 }

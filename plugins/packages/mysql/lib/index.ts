@@ -34,8 +34,20 @@ export default class MysqlQueryService implements QueryService {
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
+    let checkCache, knexInstance;
+    if (sourceOptions['allow_dynamic_connection_parameters']) {
+      if (sourceOptions.connection_type === 'hostname') {
+        sourceOptions['host'] = queryOptions['host'] ? queryOptions['host'] : sourceOptions['host'];
+        sourceOptions['database'] = queryOptions['database'] ? queryOptions['database'] : sourceOptions['database'];
+      } else if (sourceOptions.connection_type === 'socket_path') {
+        sourceOptions['database'] = queryOptions['database'] ? queryOptions['database'] : sourceOptions['database'];
+      }
+    }
+
     try {
-      const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+      // If dynamic connection parameters is toggled on - We don't cache the connection also destroy the connection created.
+      checkCache = sourceOptions['allow_dynamic_connection_parameters'] ? false : true;
+      knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
 
       switch (queryOptions.mode) {
         case 'sql':
@@ -60,6 +72,8 @@ export default class MysqlQueryService implements QueryService {
       }
 
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+    } finally {
+      if (!checkCache) await knexInstance.destroy();
     }
   }
 

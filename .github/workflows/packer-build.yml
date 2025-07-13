@@ -16,11 +16,11 @@ jobs:
     name: packer-ee
 
     steps:
-      - name: Checkout code to lts-3.6 branch
+      - name: Checkout code to lts-3.16 branch
         if: contains(github.event.release.tag_name, '-ee-lts')
         uses: actions/checkout@v2
         with:
-          ref: refs/heads/lts-3.6
+          ref: refs/heads/lts-3.16
 
       - name: Setting tag
         if: "${{ github.event.inputs.version != '' }}"

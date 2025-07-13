@@ -330,7 +330,7 @@ export const RenderPageAndPageGroup = ({
           );
         }
       })}
-      {filteredPagesOverflow.length > 0 && position === 'top' && (
+      {filteredPagesOverflow?.length > 0 && position === 'top' && (
         <>
           <button
             ref={moreBtnRef}
