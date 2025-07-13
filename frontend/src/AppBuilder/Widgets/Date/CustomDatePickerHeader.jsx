@@ -99,7 +99,7 @@ const CustomDatePickerHeader = (props) => {
     }),
     option: (provided, state) => ({
       ...provided,
-      color: state.isSelected ? '#333' : 'black', // Adjust text color for selected state
+      color: 'var(--cc-primary-text)', // Adjust text color for selected state
       paddingLeft: '20px',
       position: 'relative',
     }),
@@ -167,7 +167,7 @@ const CustomDatePickerHeader = (props) => {
             </div>
           )}
           {datepickerSelectionType === 'range' && (
-            <div className="daterangepicker-header">
+            <div className="daterangepicker-header" style={{ color: 'var(--cc-primary-text)' }}>
               {!['month', 'year'].includes(datepickerMode) && (
                 <Select
                   options={months.map((option) => ({ name: option, value: option }))}
