@@ -7,7 +7,10 @@ import { PAGE_PERMISSION_TYPE } from '../constants';
 
 @Injectable()
 export class QueryPermissionsRepository extends Repository<QueryPermission> {
-  constructor(private dataSource: DataSource, private readonly queryUsersRepository: QueryUsersRepository) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly queryUsersRepository: QueryUsersRepository
+  ) {
     super(QueryPermission, dataSource.createEntityManager());
   }
 
@@ -29,6 +32,13 @@ export class QueryPermissionsRepository extends Repository<QueryPermission> {
         return permission;
       });
     }, manager || this.manager);
+  }
+
+  async getManyQueryPermissionsByIds(queryIds: string[]): Promise<QueryPermission[]> {
+    if (queryIds.length === 0) {
+      return [];
+    }
+    return this.createQueryBuilder('qp').where('qp.queryId IN (:...queryIds)', { queryIds }).getMany();
   }
 
   async createQueryPermissions(

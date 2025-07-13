@@ -7,7 +7,10 @@ import { PAGE_PERMISSION_TYPE } from '../constants';
 
 @Injectable()
 export class ComponentPermissionsRepository extends Repository<ComponentPermission> {
-  constructor(private dataSource: DataSource, private readonly componentUsersRepository: ComponentUsersRepository) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly componentUsersRepository: ComponentUsersRepository
+  ) {
     super(ComponentPermission, dataSource.createEntityManager());
   }
 
@@ -29,6 +32,13 @@ export class ComponentPermissionsRepository extends Repository<ComponentPermissi
         return permission;
       });
     }, manager || this.manager);
+  }
+
+  async getManyComponentPermissionsByIds(componentIds: string[]): Promise<ComponentPermission[]> {
+    if (componentIds.length === 0) {
+      return [];
+    }
+    return this.createQueryBuilder('cp').where('cp.componentId IN (:...componentIds)', { componentIds }).getMany();
   }
 
   async createComponentPermissions(

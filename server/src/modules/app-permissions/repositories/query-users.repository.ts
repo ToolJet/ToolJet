@@ -80,4 +80,40 @@ export class QueryUsersRepository extends Repository<QueryUser> {
       return !!queryUser;
     }, manager || this.manager);
   }
+
+  async checkManyQueryUsersWithGroups(
+    permissionIds: string[],
+    userId: string,
+    manager: EntityManager
+  ): Promise<Set<string>> {
+    if (permissionIds.length === 0) return new Set();
+    const results = await manager
+      .createQueryBuilder(QueryUser, 'query_user')
+      .innerJoin('query_user.permissionGroup', 'group')
+      .innerJoin('group.groupUsers', 'groupUser')
+      .where('query_user.queryPermissionId IN (:...permissionIds)', { permissionIds })
+      .andWhere('groupUser.userId = :userId', { userId })
+      .select('query_user.queryPermissionId', 'permissionId')
+      .distinct(true)
+      .getRawMany();
+
+    return new Set(results.map((r) => r.permissionId));
+  }
+
+  async checkManyQueryUsersWithSingle(
+    permissionIds: string[],
+    userId: string,
+    manager: EntityManager
+  ): Promise<Set<string>> {
+    if (permissionIds.length === 0) return new Set();
+    const results = await manager
+      .createQueryBuilder(QueryUser, 'query_user')
+      .where('query_user.queryPermissionId IN (:...permissionIds)', { permissionIds })
+      .andWhere('query_user.userId = :userId', { userId })
+      .select('query_user.queryPermissionId', 'permissionId')
+      .distinct(true)
+      .getRawMany();
+
+    return new Set(results.map((r) => r.permissionId));
+  }
 }

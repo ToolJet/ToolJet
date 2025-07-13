@@ -80,4 +80,40 @@ export class ComponentUsersRepository extends Repository<ComponentUser> {
       return !!componentUser;
     }, manager || this.manager);
   }
+
+  async checkManyComponentUsersWithGroups(
+    permissionIds: string[],
+    userId: string,
+    manager: EntityManager
+  ): Promise<Set<string>> {
+    if (permissionIds.length === 0) return new Set();
+    const results = await manager
+      .createQueryBuilder(ComponentUser, 'component_user')
+      .innerJoin('component_user.permissionGroup', 'group')
+      .innerJoin('group.groupUsers', 'groupUser')
+      .where('component_user.componentPermissionId IN (:...permissionIds)', { permissionIds })
+      .andWhere('groupUser.userId = :userId', { userId })
+      .select('component_user.componentPermissionId', 'permissionId')
+      .distinct(true)
+      .getRawMany();
+
+    return new Set(results.map((r) => r.permissionId));
+  }
+
+  async checkManyComponentUsersWithSingle(
+    permissionIds: string[],
+    userId: string,
+    manager: EntityManager
+  ): Promise<Set<string>> {
+    if (permissionIds.length === 0) return new Set();
+    const results = await manager
+      .createQueryBuilder(ComponentUser, 'component_user')
+      .where('component_user.componentPermissionId IN (:...permissionIds)', { permissionIds })
+      .andWhere('component_user.userId = :userId', { userId })
+      .select('component_user.componentPermissionId', 'permissionId')
+      .distinct(true)
+      .getRawMany();
+
+    return new Set(results.map((r) => r.permissionId));
+  }
 }

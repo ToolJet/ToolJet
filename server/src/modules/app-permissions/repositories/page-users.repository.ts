@@ -88,4 +88,40 @@ export class PageUsersRepository extends Repository<PageUser> {
       return pagePermission;
     }, manager || this.manager);
   }
+
+  async checkManyUsersInPermissionGroups(
+    permissionIds: string[],
+    userId: string,
+    manager: EntityManager
+  ): Promise<Set<string>> {
+    if (permissionIds.length === 0) return new Set();
+    const results = await manager
+      .createQueryBuilder(PageUser, 'page_user')
+      .innerJoin('page_user.permissionGroup', 'group')
+      .innerJoin('group.groupUsers', 'groupUser')
+      .where('page_user.pagePermissionId IN (:...permissionIds)', { permissionIds })
+      .andWhere('groupUser.userId = :userId', { userId })
+      .select('page_user.pagePermissionId', 'permissionId')
+      .distinct(true)
+      .getRawMany();
+
+    return new Set(results.map((r) => r.permissionId));
+  }
+
+  async checkManyUsersInSingleConfigs(
+    permissionIds: string[],
+    userId: string,
+    manager: EntityManager
+  ): Promise<Set<string>> {
+    if (permissionIds.length === 0) return new Set();
+    const results = await manager
+      .createQueryBuilder(PageUser, 'page_user')
+      .where('page_user.pagePermissionId IN (:...permissionIds)', { permissionIds })
+      .andWhere('page_user.userId = :userId', { userId })
+      .select('page_user.pagePermissionId', 'permissionId')
+      .distinct(true)
+      .getRawMany();
+
+    return new Set(results.map((r) => r.permissionId));
+  }
 }
