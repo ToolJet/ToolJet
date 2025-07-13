@@ -306,7 +306,7 @@ export const multiselectV2Config = {
       displayName: 'Box Shadow',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #00000090',
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'field',
     },
@@ -395,7 +395,7 @@ export const multiselectV2Config = {
       direction: { value: 'left' },
       alignment: { value: 'side' },
       padding: { value: 'default' },
-      boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       iconColor: { value: 'var(--cc-default-icon)' },
