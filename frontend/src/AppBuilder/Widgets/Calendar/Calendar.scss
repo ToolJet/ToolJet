@@ -2,6 +2,20 @@
   .rbc-day-bg {
     background-color: var(--cc-surface1-surface);
   }
+  
+  .rbc-toolbar {
+    .rbc-btn-group {
+      button:hover {
+        background-color: var(--cc-surface1-surface) !important;
+        filter: brightness(0.9);
+      }
+
+      button.rbc-active {
+        background-color: var(--cc-surface1-surface) !important;
+        filter: brightness(0.87);
+      }
+    }
+  }
 
   .rbc-day-bg.rbc-today {
     background-color: var(--cc-primary-brand) !important;
