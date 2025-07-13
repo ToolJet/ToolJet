@@ -103,6 +103,7 @@ export const Viewer = ({
   const { position } = properties ?? {};
 
   const canvasRef = useRef(null);
+  const viewerWrapperRef = useRef(null);
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
   const switchPage = useStore((state) => state.switchPage);
@@ -176,6 +177,7 @@ export const Viewer = ({
             changeToDarkMode={changeToDarkMode}
             switchPage={switchPage}
             pages={pages}
+            viewerWrapperRef={viewerWrapperRef}
           />
         )}
       </>
@@ -204,9 +206,9 @@ export const Viewer = ({
         <ErrorBoundary>
           <Suspense fallback={<div>Loading...</div>}>
             <div
+              ref={viewerWrapperRef}
               className={cx('viewer wrapper', {
                 'mobile-layout': currentLayout,
-                'theme-dark dark-theme': darkMode,
                 'offset-top-bar-navigation': !isReleasedVersionId,
                 'mobile-view': currentLayout === 'mobile',
               })}
@@ -260,6 +262,7 @@ export const Viewer = ({
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                   pages={pages}
+                                  viewerWrapperRef={viewerWrapperRef}
                                 />
                               )}
                               <AppCanvas

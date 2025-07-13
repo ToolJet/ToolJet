@@ -618,14 +618,10 @@
 .page-handler-wrapper {
   background: transparent;
   overflow: auto;
-  scrollbar-width: thin;
+  scrollbar-width: thin !important;
   height: 100%;
   padding-bottom: 48px;
   scrollbar-color: var(--interactive-selected) transparent;
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
 
   .tj-list-item-selected {
     .custom-icon {
@@ -900,7 +896,6 @@
 
 .left-sidebar-scrollbar {
   &::-webkit-scrollbar {
-    width: 6px;
     margin-right: 3px;
   }
 

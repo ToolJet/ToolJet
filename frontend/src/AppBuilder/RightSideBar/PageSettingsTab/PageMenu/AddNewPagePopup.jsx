@@ -346,6 +346,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               </div>
               <HidePageOnNavigation
                 hidden={page?.hidden}
+                disabled={page?.disabled}
                 page={page}
                 updatePageVisibility={updatePageVisibility}
                 darkMode={darkMode}
@@ -578,11 +579,11 @@ const PageEvents = ({ page, allPages }) => {
   );
 };
 
-const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage }) => {
+const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled }) => {
   const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
 
   return (
-    <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
+    <div className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip
