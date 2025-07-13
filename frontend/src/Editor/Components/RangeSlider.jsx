@@ -77,7 +77,7 @@ export const RangeSlider = ({
       isDisabled: properties?.disabledState,
       setValue: async function (value) {
         setDefaultSliderValue(value);
-        setExposedVariable('value', value);
+        setExposedVariable('value', Number(value));
         fireEvent('onChange');
       },
       setRangeValue: async function (num1, num2) {
