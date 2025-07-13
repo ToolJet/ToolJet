@@ -142,6 +142,11 @@ class HomePageComponent extends React.Component {
         return;
       }
     }
+    if (this.props.appType === 'module' && authenticationService.currentSessionValue?.role?.name == 'end-user') {
+      //Restrict route
+      this.setState({ shouldRedirect: true });
+      return;
+    }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
