@@ -135,7 +135,9 @@ export const imageConfig = {
       displayName: 'Shape',
       options: [
         { name: 'None', value: 'none' },
+        { name: 'Rounded', value: 'rounded' },
         { name: 'Circle', value: 'circle' },
+        { name: 'Thumbnail', value: 'thumbnail' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -173,6 +175,10 @@ export const imageConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
+      conditionallyRender: {
+        key: 'imageShape',
+        value: 'none',
+      },
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'Container',
     },

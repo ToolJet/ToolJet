@@ -76,7 +76,8 @@ type NewRevampedComponent =
   | 'TextArea'
   | 'Container'
   | 'Tabs'
-  | 'Form';
+  | 'Form'
+  | 'Image';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -101,6 +102,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Container',
   'Tabs',
   'Form',
+  'Image',
 ];
 
 @Injectable()
@@ -668,6 +670,11 @@ export class AppImportExportService {
       tooljetVersion,
       moduleResourceMappings
     );
+
+    const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
+    if (importedAppVersionIds.length > 0) {
+      await applyPageSettingsMigration(manager, importedAppVersionIds);
+    }
 
     if (!isNormalizedAppDefinitionSchema) {
       for (const importingAppVersion of importingAppVersions) {
@@ -2407,6 +2414,26 @@ function migrateProperties(
         properties.useDynamicOptions = { value: true };
       }
     }
+
+    if (componentType === 'Image') {
+      if (styles.padding) {
+        styles.customPadding = styles.padding;
+        styles.padding = { value: 'custom' };
+      }
+
+      const borderTypeMapping: Record<string, string> = {
+        'rounded-circle': 'circle',
+        rounded: 'rounded',
+        'img-thumbnail': 'thumbnail',
+        none: 'none',
+      };
+
+      const mappedShape = borderTypeMapping[styles.borderType?.value];
+      if (mappedShape) {
+        styles.imageShape = { value: mappedShape };
+        delete styles.borderType;
+      }
+    }
   }
   return { properties, styles, general, generalStyles, validation };
 }
@@ -2558,4 +2585,44 @@ const isChildOfKanbanModal = (
   }
 
   return parentComponent?.type === 'Kanban';
+};
+
+const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds: string[]) => {
+  const appVersions = await manager.find(AppVersion, {
+    where: {
+      id: In(appVersionIds),
+    },
+    select: ['id', 'pageSettings', 'globalSettings'],
+  });
+
+  for (const version of appVersions) {
+    let pageSettings = version.pageSettings as any;
+    const globalSettings = version.globalSettings as any;
+
+    if (!pageSettings) {
+      pageSettings = { properties: {} };
+    }
+    if (!pageSettings.properties) {
+      pageSettings.properties = {};
+    }
+
+    if (!('position' in pageSettings.properties)) {
+      pageSettings.properties.position = 'side';
+    }
+
+    if (globalSettings && 'hideHeader' in globalSettings) {
+      pageSettings.properties.hideHeader = globalSettings.hideHeader;
+      pageSettings.properties.hideLogo = globalSettings.hideHeader;
+      delete globalSettings.hideHeader;
+    }
+
+    await manager.update(
+      AppVersion,
+      { id: version.id },
+      {
+        pageSettings: pageSettings,
+        globalSettings: globalSettings,
+      }
+    );
+  }
 };
