@@ -43,12 +43,6 @@ export const timePickerConfig = {
       },
       accordian: 'Data',
     },
-    isTimezoneEnabled: {
-      type: 'toggle',
-      displayName: 'Manage time zones',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'Date',
-    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -114,11 +108,6 @@ export const timePickerConfig = {
       ],
     },
     {
-      handle: 'setValueInTimestamp',
-      displayName: 'Set value in timestamp',
-      params: [{ handle: 'value', displayName: 'Value' }],
-    },
-    {
       handle: 'setMinTime',
       displayName: 'Set min time',
       params: [{ handle: 'value', displayName: 'Value' }],
@@ -126,16 +115,6 @@ export const timePickerConfig = {
     {
       handle: 'setMaxTime',
       displayName: 'Set max time',
-      params: [{ handle: 'value', displayName: 'Value' }],
-    },
-    {
-      handle: 'setDisplayTimezone',
-      displayName: 'Set display timezone',
-      params: [{ handle: 'value', displayName: 'Value' }],
-    },
-    {
-      handle: 'setStoreTimezone',
-      displayName: 'Set store timezone',
       params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
@@ -321,9 +300,6 @@ export const timePickerConfig = {
       label: { value: 'Label' },
       defaultValue: { value: '00:00' },
       timeFormat: { value: 'HH:mm' },
-      isTimezoneEnabled: { value: '{{false}}' },
-      displayTimezone: { value: 'UTC' },
-      storeTimezone: { value: 'UTC' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

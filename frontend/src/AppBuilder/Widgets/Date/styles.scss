@@ -49,3 +49,10 @@
         color: var(--cc-primary-text) !important;
     }
 }
+
+.cc-timepicker-widget {
+    .react-datepicker__input-time-container {
+        border-radius: 10px;
+        overflow: clip !important;
+    }
+}
