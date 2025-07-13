@@ -2413,6 +2413,16 @@ function migrateProperties(
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
       }
+
+      if (styles.highlightColor) {
+        if (styles.selectedText === undefined) {
+          styles.selectedText = styles.highlightColor;
+        }
+        if (styles.accent === undefined) {
+          styles.accent = styles.highlightColor;
+        }
+        delete styles.highlightColor;
+      }
     }
 
     if (componentType === 'Image') {
