@@ -996,8 +996,8 @@ export default function Grid({ gridWidth, currentLayout }) {
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
-          // const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
-          // e.target.style.width = `${draggingWidgetWidth}px`;
+          const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
+          e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
