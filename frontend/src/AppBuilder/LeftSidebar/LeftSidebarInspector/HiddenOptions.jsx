@@ -7,6 +7,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { DefaultCopyIcon } from './DefaultCopyIcon';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { formatPathForCopy } from './utils';
 
 export const HiddenOptions = (props) => {
   const { nodeSpecificFilteredActions, generalActionsFiltered, darkMode, setActionClicked, data } = props;
@@ -17,7 +18,8 @@ export const HiddenOptions = (props) => {
   };
 
   const copyPath = () => {
-    generalActionsFiltered[0].dispatchAction(data?.selectedNodePath, false);
+    const formattedPath = formatPathForCopy(data?.selectedNodePath);
+    generalActionsFiltered[0].dispatchAction(formattedPath, false);
   };
 
   const copyValue = () => {
@@ -133,7 +135,7 @@ export const HiddenOptions = (props) => {
                 event.stopPropagation();
                 setShowMenu((prev) => !prev);
               }}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <SolidIcon fill="var(--icon-strong)" width="12" height="12" name="copy" />
             </span>
