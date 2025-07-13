@@ -47,6 +47,20 @@ export const RangeSlider = ({
   const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
   const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
+  const resetFn = async () => {
+    let defaultValue;
+    if (enableTwoHandle === 'slider') {
+      defaultValue = value ?? min;
+      setDefaultSliderValue(defaultValue);
+    } else {
+      const start = startValue ?? min;
+      const end = endValue ?? max;
+      defaultValue = [start, end];
+      setDefaultRangeValue(defaultValue);
+    }
+    setExposedVariable('value', defaultValue);
+  };
+
   useEffect(() => {
     if (auto) {
       setLabelWidth('auto');
@@ -85,18 +99,14 @@ export const RangeSlider = ({
   }, []);
 
   useEffect(() => {
-    setExposedVariable('reset', () => {
-      if (enableTwoHandle === 'slider') {
-        setDefaultSliderValue(value ?? min);
-        setExposedVariable('value', value ?? min);
-      } else {
-        const start = startValue ?? min;
-        const end = endValue ?? max;
-        setExposedVariable('value', [start, end]);
-        setDefaultRangeValue([start, end]);
-      }
-    });
-  }, [min, max, startValue, endValue]);
+    if (isInitialRender.current) return;
+    resetFn();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, enableTwoHandle, startValue, endValue]);
+
+  useEffect(() => {
+    setExposedVariable('reset', resetFn);
+  }, [enableTwoHandle, value, min, max, startValue, endValue]);
 
   useEffect(() => {
     disabled !== properties.disabledState && setDisabled(properties.disabledState);
@@ -112,20 +122,6 @@ export const RangeSlider = ({
     loading !== properties.loadingState && setLoading(properties.loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    if (enableTwoHandle === 'slider') {
-      setDefaultSliderValue(value);
-    } else {
-      const start = startValue ?? min;
-      const end = endValue ?? max;
-
-      setDefaultRangeValue([start, end]);
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, enableTwoHandle, startValue, endValue]);
 
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
