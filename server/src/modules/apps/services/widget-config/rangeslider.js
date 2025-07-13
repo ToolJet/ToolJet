@@ -5,7 +5,7 @@ export const rangeSliderConfig = {
   component: 'RangeSlider',
   defaultSize: {
     width: 9,
-    height: 30,
+    height: 60,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },

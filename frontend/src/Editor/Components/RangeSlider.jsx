@@ -268,7 +268,7 @@ export const RangeSlider = ({
                   };
                   return acc;
                 }, {})}
-                step={stepSize}
+                step={stepSize || 1}
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
@@ -298,7 +298,7 @@ export const RangeSlider = ({
                   };
                   return acc;
                 }, {})}
-                step={stepSize}
+                step={stepSize || 1}
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
