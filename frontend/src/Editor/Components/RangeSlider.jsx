@@ -14,7 +14,7 @@ export const RangeSlider = ({
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, stepSize } = properties;
 
   const {
     trackColor,
@@ -268,6 +268,7 @@ export const RangeSlider = ({
                   };
                   return acc;
                 }, {})}
+                step={stepSize}
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
@@ -297,6 +298,7 @@ export const RangeSlider = ({
                   };
                   return acc;
                 }, {})}
+                step={stepSize}
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
