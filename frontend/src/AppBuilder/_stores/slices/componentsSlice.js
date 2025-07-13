@@ -1168,9 +1168,10 @@ export const createComponentsSlice = (set, get) => ({
       // Adjust component positions
 
       //If new parent is dynamic, adjust the parent positions
-      const isParentDynamic = getResolvedComponent(newParentId)?.properties?.dynamicHeight;
+      const transformedParentId = (newParentId || oldParentId)?.substring(0, 36);
+      const isParentDynamic = getResolvedComponent(transformedParentId)?.properties?.dynamicHeight;
       if (isParentDynamic) {
-        adjustComponentPositions(newParentId, currentLayout, false, true);
+        adjustComponentPositions(transformedParentId, currentLayout, false, true);
       }
 
       // If the parent is changed, adjust the old parent positions

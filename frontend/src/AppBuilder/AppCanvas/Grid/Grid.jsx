@@ -87,7 +87,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
   const toggleRightSidebar = useStore((state) => state.toggleRightSidebar, shallow);
-  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -197,21 +196,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             left: Math.round(x / gw),
           },
         });
-        const parentElement = getComponentDefinition(id, moduleId)?.component?.parent;
-        if (parentElement) {
-          const isDynamicHeightEnabled = getResolvedComponent(parentElement, moduleId)?.properties?.dynamicHeight;
-          if (isDynamicHeightEnabled) {
-            // Extract logic from useDynamicHeight hook since hooks can't be called in callbacks
-            const element = document.querySelector(`.ele-${parentElement}`);
-            if (element) {
-              element.style.height = 'auto';
-              // Wait for the next frame to ensure the height has updated
-              requestAnimationFrame(() => {
-                adjustComponentPositions(id, currentLayout, false, false, false);
-              });
-            }
-          }
-        }
       });
     },
     [canvasWidth, gridWidth, setComponentLayout]
