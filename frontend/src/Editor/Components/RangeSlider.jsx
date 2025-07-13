@@ -261,7 +261,7 @@ export const RangeSlider = ({
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
+                marks={(schema === '' ? [] : schema).reduce((acc, item) => {
                   acc[item.value] = {
                     style: { color: markerLabel },
                     label: item.label.replace('%', ''),
@@ -291,7 +291,7 @@ export const RangeSlider = ({
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
+                marks={(schema === '' ? [] : schema).reduce((acc, item) => {
                   acc[item.value] = {
                     style: { color: markerLabel },
                     label: item.label.replace('%', ''),
