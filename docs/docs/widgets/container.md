@@ -31,10 +31,6 @@ The following actions of the component can be controlled using the component-spe
 | isVisible | Indicates if the component is visible. | `{{components.container1.isVisible}}` |
 | isDisabled | Indicates if the component is disabled. | `{{components.container1.isDisabled}}` |
 
-## Tooltip
-
-You can add a Tooltip to the component in string format. Once you pass a value in the tooltip input, hovering over the component will display the value on the right.
-
 ## Additional Actions
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
