@@ -1,5 +1,4 @@
 import { widgets } from './configs/widgetConfig';
-import {NEW_REVAMPED_COMPONENTS} from '@/AppBuilder/AppCanvas/appCanvasConstants'
 
 const universalProps = {
   properties: {},
