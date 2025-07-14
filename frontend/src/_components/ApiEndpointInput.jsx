@@ -187,7 +187,7 @@ const ApiEndpointInput = (props) => {
           <div className="flex-grow-1">
             <div>{path}</div>
             {summary && !isSelected && (
-              <small className="text-muted d-block" style={{ fontSize: '0.875em', marginTop: '2px' }}>
+              <small className="text-muted d-block" style={{ fontSize: '0.875em' }}>
                 {summary}
               </small>
             )}
@@ -305,7 +305,7 @@ const ApiEndpointInput = (props) => {
       {loadingSpec && (
         <div className="p-3">
           <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          {props.t('Google Calendar', 'Please wait while we load the OpenAPI specification.')}
+          {props.t('', 'Please wait while we load the OpenAPI specification.')}
         </div>
       )}
       {options && !loadingSpec && (
@@ -347,7 +347,7 @@ const ApiEndpointInput = (props) => {
               />
               {options?.selectedOperation && (
                 <small
-                  style={{ margintTop: '10px' }}
+                  style={{ marginTop: '10px' }}
                   className="my-2"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(options?.selectedOperation?.description) }}
                 />

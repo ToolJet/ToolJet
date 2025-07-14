@@ -57,6 +57,10 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
       ':hover': {
         backgroundColor: darkMode ? '#323C4B' : '#d8dce9',
       },
+      minHeight: '40px', // or whatever height you want
+      padding: '10px 12px', // adjust padding to vertically center the text
+      display: 'flex',
+      alignItems: 'center',
     }),
     placeholder: (provided) => ({
       ...provided,
@@ -85,6 +89,10 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
       ':hover': {
         backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
       },
+      minHeight: '40px', // or your desired height
+      padding: '10px 12px',
+      display: 'flex',
+      alignItems: 'center',
     }),
     control: (provided) => ({
       ...provided,
