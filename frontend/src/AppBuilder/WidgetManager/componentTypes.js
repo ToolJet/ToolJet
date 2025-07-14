@@ -1,4 +1,5 @@
 import { widgets } from './configs/widgetConfig';
+import {NEW_REVAMPED_COMPONENTS} from '@/AppBuilder/AppCanvas/appCanvasConstants'
 
 const universalProps = {
   properties: {},
@@ -16,9 +17,9 @@ const universalProps = {
     others: {},
     events: [],
     styles: {},
-    // generalStyles: {
-    //   boxShadow: { value: '0px 0px 0px 0px #00000040' },
-    // },
+    generalStyles: {
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+    },
   },
 };
 
