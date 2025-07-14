@@ -64,6 +64,9 @@ export const createInspectorSlice = (set, get) => ({
           }, []);
         return res;
       }
+      case 'Kanban': {
+        return [...get().getContainerChildrenMapping(id), ...get().getContainerChildrenMapping(`${id}-modal`)];
+      }
       default:
         return get().getContainerChildrenMapping(id);
     }

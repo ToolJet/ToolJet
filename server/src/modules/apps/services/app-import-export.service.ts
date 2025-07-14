@@ -76,7 +76,8 @@ type NewRevampedComponent =
   | 'TextArea'
   | 'Container'
   | 'Tabs'
-  | 'Form';
+  | 'Form'
+  | 'Image';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -101,6 +102,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Container',
   'Tabs',
   'Form',
+  'Image',
 ];
 
 @Injectable()
@@ -668,6 +670,11 @@ export class AppImportExportService {
       tooljetVersion,
       moduleResourceMappings
     );
+
+    const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
+    if (importedAppVersionIds.length > 0) {
+      await applyPageSettingsMigration(manager, importedAppVersionIds);
+    }
 
     if (!isNormalizedAppDefinitionSchema) {
       for (const importingAppVersion of importingAppVersions) {
@@ -2343,22 +2350,30 @@ function migrateProperties(
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
-      properties.visibility = styles.visibility;
+      if (properties.visibility === undefined) {
+        properties.visibility = styles.visibility;
+      }
       delete styles.visibility;
     }
 
     if (styles.disabledState) {
-      properties.disabledState = styles.disabledState;
+      if (properties.disabledState === undefined) {
+        properties.disabledState = styles.disabledState;
+      }
       delete styles.disabledState;
     }
 
     if (general?.tooltip) {
-      properties.tooltip = general?.tooltip;
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
       delete general?.tooltip;
     }
 
     if (generalStyles?.boxShadow) {
-      styles.boxShadow = generalStyles?.boxShadow;
+      if (styles.boxShadow === undefined) {
+        styles.boxShadow = generalStyles?.boxShadow;
+      }
       delete generalStyles?.boxShadow;
     }
 
@@ -2372,12 +2387,16 @@ function migrateProperties(
 
     if (componentType === 'NumberInput') {
       if (properties.minValue) {
-        validation.minValue = properties?.minValue;
+        if (validation.minValue === undefined) {
+          validation.minValue = properties?.minValue;
+        }
         delete properties.minValue;
       }
 
       if (properties.maxValue) {
-        validation.maxValue = properties?.maxValue;
+        if (validation.maxValue === undefined) {
+          validation.maxValue = properties?.maxValue;
+        }
         delete properties.maxValue;
       }
     }
@@ -2393,6 +2412,36 @@ function migrateProperties(
     if (componentType === 'Tabs') {
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
+      }
+
+      if (styles.highlightColor) {
+        if (styles.selectedText === undefined) {
+          styles.selectedText = styles.highlightColor;
+        }
+        if (styles.accent === undefined) {
+          styles.accent = styles.highlightColor;
+        }
+        delete styles.highlightColor;
+      }
+    }
+
+    if (componentType === 'Image') {
+      if (styles.padding) {
+        styles.customPadding = styles.padding;
+        styles.padding = { value: 'custom' };
+      }
+
+      const borderTypeMapping: Record<string, string> = {
+        'rounded-circle': 'circle',
+        rounded: 'rounded',
+        'img-thumbnail': 'thumbnail',
+        none: 'none',
+      };
+
+      const mappedShape = borderTypeMapping[styles.borderType?.value];
+      if (mappedShape) {
+        styles.imageShape = { value: mappedShape };
+        delete styles.borderType;
       }
     }
   }
@@ -2546,4 +2595,44 @@ const isChildOfKanbanModal = (
   }
 
   return parentComponent?.type === 'Kanban';
+};
+
+const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds: string[]) => {
+  const appVersions = await manager.find(AppVersion, {
+    where: {
+      id: In(appVersionIds),
+    },
+    select: ['id', 'pageSettings', 'globalSettings'],
+  });
+
+  for (const version of appVersions) {
+    let pageSettings = version.pageSettings as any;
+    const globalSettings = version.globalSettings as any;
+
+    if (!pageSettings) {
+      pageSettings = { properties: {} };
+    }
+    if (!pageSettings.properties) {
+      pageSettings.properties = {};
+    }
+
+    if (!('position' in pageSettings.properties)) {
+      pageSettings.properties.position = 'side';
+    }
+
+    if (globalSettings && 'hideHeader' in globalSettings) {
+      pageSettings.properties.hideHeader = globalSettings.hideHeader;
+      pageSettings.properties.hideLogo = globalSettings.hideHeader;
+      delete globalSettings.hideHeader;
+    }
+
+    await manager.update(
+      AppVersion,
+      { id: version.id },
+      {
+        pageSettings: pageSettings,
+        globalSettings: globalSettings,
+      }
+    );
+  }
 };

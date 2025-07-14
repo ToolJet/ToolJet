@@ -9,6 +9,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DefaultCopyIcon } from './DefaultCopyIcon';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { formatPathForCopy } from './utils';
 
 export const TreeViewHeader = (props) => {
   const { path, backFn, darkMode, data, nodeSpecificActions, type, generalActions } = props;
@@ -22,7 +23,8 @@ export const TreeViewHeader = (props) => {
   };
 
   const copyPath = () => {
-    generalActions[0].dispatchAction(data?.selectedNodePath, false);
+    const formattedPath = formatPathForCopy(data?.selectedNodePath);
+    generalActions[0].dispatchAction(formattedPath, false);
   };
 
   const copyValue = () => {

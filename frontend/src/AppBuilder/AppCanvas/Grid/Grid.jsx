@@ -87,7 +87,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
   const toggleRightSidebar = useStore((state) => state.toggleRightSidebar, shallow);
-  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -197,21 +196,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             left: Math.round(x / gw),
           },
         });
-        const parentElement = getComponentDefinition(id, moduleId)?.component?.parent;
-        if (parentElement) {
-          const isDynamicHeightEnabled = getResolvedComponent(parentElement, moduleId)?.properties?.dynamicHeight;
-          if (isDynamicHeightEnabled) {
-            // Extract logic from useDynamicHeight hook since hooks can't be called in callbacks
-            const element = document.querySelector(`.ele-${parentElement}`);
-            if (element) {
-              element.style.height = 'auto';
-              // Wait for the next frame to ensure the height has updated
-              requestAnimationFrame(() => {
-                adjustComponentPositions(id, currentLayout, false, false, false);
-              });
-            }
-          }
-        }
       });
     },
     [canvasWidth, gridWidth, setComponentLayout]
@@ -286,11 +270,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       }
       e.props.target.classList.add('hovered');
       e.controlBox.classList.add('moveable-control-box-d-block');
-      const isHorizontallyExpandable = checkHoveredComponentDynamicHeight();
-      if (isHorizontallyExpandable) {
-        e.controlBox.classList.add('moveable-horizontal-only');
-      }
-      setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     },
     mouseLeave(e) {
       e.props.target.classList.remove('hovered');
@@ -473,6 +452,12 @@ export default function Grid({ gridWidth, currentLayout }) {
         return;
       }
       useStore.getState().setHoveredComponentBoundaryId(targetId);
+      const isHorizontallyExpandable = checkHoveredComponentDynamicHeight(targetId);
+      const moveableControlBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
+      if (moveableControlBox && isHorizontallyExpandable) {
+        moveableControlBox.classList.add('moveable-horizontal-only');
+      }
+      setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     };
     const hideConfigHandle = () => {
       useStore.getState().setHoveredComponentBoundaryId('');
@@ -1011,8 +996,8 @@ export default function Grid({ gridWidth, currentLayout }) {
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
-          // const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
-          // e.target.style.width = `${draggingWidgetWidth}px`;
+          const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
+          e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {

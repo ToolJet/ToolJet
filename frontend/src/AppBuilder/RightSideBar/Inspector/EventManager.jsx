@@ -7,7 +7,7 @@ import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
-import _ from 'lodash';
+import _, { get } from 'lodash';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
@@ -30,7 +30,6 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
-import { get } from 'lodash';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
@@ -267,7 +266,7 @@ export const EventManager = ({
     );
     const actions = targetComponentMeta.actions;
 
-    const options = actions.map((action) => ({
+    const options = (actions || []).map((action) => ({
       name: action?.displayName,
       value: action.handle,
     }));
@@ -284,7 +283,7 @@ export const EventManager = ({
       (componentType) => component.component.component === componentType.component
     );
     const actions = targetComponentMeta.actions;
-    return actions.find((action) => action.handle === actionHandle);
+    return (actions || []).find((action) => action.handle === actionHandle);
   }
 
   function getComponentActionDefaultParams(componentId, actionHandle) {
@@ -438,8 +437,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-        })
+            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+          })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -991,9 +990,9 @@ export const EventManager = ({
                   (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => {
                     let optionsList = param.isDynamicOpiton
                       ? get({ ...components[event?.componentId] }, param.optionsGetter, []).map((tab) => ({
-                        name: tab.title,
-                        value: tab.id,
-                      }))
+                          name: tab.title,
+                          value: tab.id,
+                        }))
                       : param.options;
 
                     return (
@@ -1020,8 +1019,9 @@ export const EventManager = ({
                           </div>
                         ) : (
                           <div
-                            className={`${param?.type ? '' : 'fx-container-eventmanager-code'
-                              } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            className={`${
+                              param?.type ? '' : 'fx-container-eventmanager-code'
+                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                             data-cy="action-options-text-input-field"
                           >
                             <CodeHinter

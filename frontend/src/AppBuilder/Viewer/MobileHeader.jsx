@@ -22,6 +22,7 @@ const MobileHeader = ({
   switchPage,
   setAppDefinitionFromVersion,
   showViewerNavigation,
+  pages,
 }) => {
   const { isReleasedVersionId } = useStore(
     (state) => ({
@@ -35,6 +36,7 @@ const MobileHeader = ({
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { disableMenu, showOnMobile } = properties ?? {};
   const resolvedDisableMenu = resolveReferences(disableMenu?.value);
+  
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);
@@ -67,6 +69,7 @@ const MobileHeader = ({
       showHeader={showHeader}
       showDarkModeToggle={showDarkModeToggle}
       appName={appName}
+      pages={pages}
     />
   );
 

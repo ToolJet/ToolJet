@@ -837,8 +837,8 @@
 
       &:focus-within {
         outline: 0;
-        background: var(--slate4, #ECEEF0) !important;
-        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
+        background: var(--cc-table-header-active, --slate4, #ECEEF0) !important;
+        box-shadow: 0px 0px 0px 4px var(--cc-table-header-active-border,--slate6) !important;
         z-index: 999;
         margin: 4px 0;
 

@@ -138,7 +138,7 @@ export const BaseInput = ({
     <>
       <div
         data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input d-flex ${
+        className={`text-input scrollbar-container d-flex ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'

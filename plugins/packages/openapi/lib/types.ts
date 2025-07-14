@@ -8,6 +8,7 @@ export type SourceOptions = {
   api_keys: any;
   auth_key: string;
   spec: any;
+  host?: string;
 };
 export type QueryOptions = {
   host: string;
