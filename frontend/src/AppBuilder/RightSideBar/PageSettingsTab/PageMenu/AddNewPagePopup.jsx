@@ -300,6 +300,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
                   }}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
@@ -313,6 +314,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   onBlur={(e) => handleSave(e)}
                   value={handle}
                   minLength="1"
+                  maxLength="32"
                 />
                 <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
                   {error}
@@ -380,6 +382,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
                   }}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
@@ -447,6 +450,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
                   }}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
@@ -515,6 +519,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   onChange={(e) => setPageName(e.target.value)}
                   onBlur={(e) => pageName && pageName !== page?.name && updatePageName(page?.id, pageName, true)}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
