@@ -18,6 +18,27 @@
     "customTesting": true
   },
   "defaults": {
+    "username": {
+      "value": ""
+    },
+    "account": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "database": {
+      "value": ""
+    },
+    "schema": {
+      "value": ""
+    },
+    "warehouse": {
+      "value": ""
+    },
+    "role": {
+      "value": ""
+    },
     "redirect_url": {
         "value": "http://localhost:8082/oauth2/authorize",
         "encrypted": false
@@ -40,7 +61,7 @@
         "value": ""
     },
     "oauth_type": {
-      "value": "tooljet_app"
+      "value": "custom_app"
     },
     "access_token_url": {
       "value": "https://oauth2.googleapis.com/token"
@@ -67,9 +88,6 @@
               "password",
               "username"
             ]
-          },
-          "oauthTypes": {
-            "required": true
           },
           "allowed_auth_types": [
             "oauth2"
