@@ -127,7 +127,7 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         const componentType = getComponentTypeFromId(componentId);
-        if (componentType === 'Listview') return ;
+        if (componentType === 'Listview') return;
         const element = document.querySelector(`.dynamic-${componentId}`);
         if (!element) {
           deleteContainerTemporaryLayouts(componentId);
@@ -159,7 +159,7 @@ export const createGridSlice = (set, get) => ({
         const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
 
         // Calculate the maximum height of the container
-        const currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
+        let currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
           if (!layout) {
             return max;
           }
@@ -178,14 +178,22 @@ export const createGridSlice = (set, get) => ({
           }
         } else if (componentType === 'Form') {
           const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-          const { showHeader, showFooter, headerHeight, footerHeight } = properties;
-          if (showHeader && isProperNumber(headerHeight)) {
-            extraHeight += headerHeight;
+          const { generateFormFrom, showHeader, showFooter, headerHeight, footerHeight } = properties;
+          if (generateFormFrom === 'jsonSchema') {
+            //Inside element go inside fieldset and then find the last element and get the height
+            const lastElement = element.querySelector('fieldset:last-child');
+            if (lastElement) {
+              currentMax = lastElement.offsetHeight;
+            }
+          } else {
+            if (showHeader && isProperNumber(headerHeight)) {
+              extraHeight += headerHeight;
+            }
+            if (showFooter && isProperNumber(footerHeight)) {
+              extraHeight += footerHeight;
+            }
+            extraHeight += 20;
           }
-          if (showFooter && isProperNumber(footerHeight)) {
-            extraHeight += footerHeight;
-          }
-          extraHeight += 20;
         } else if (componentType === 'Tabs') {
           extraHeight = 20;
         }
