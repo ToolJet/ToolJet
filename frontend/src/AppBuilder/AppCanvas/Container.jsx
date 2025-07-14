@@ -63,6 +63,8 @@ const Container = React.memo(
 
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+    const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
+
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
@@ -133,6 +135,7 @@ const Container = React.memo(
         }
 
         setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+        setRightSidebarOpen(true);
 
         const canvas = document.querySelector('.canvas-container');
         const sidebar = document.querySelector('.editor-sidebar');

@@ -474,8 +474,10 @@ export const PagesSidebarNavigation = ({
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
               )}
-              {!headerHidden && (!labelHidden || isPagesSidebarVisible) && (
-                <div style={{ wordWrap: 'break-word', overflow: 'hidden' }}>{name?.trim() ? name : appName}</div>
+              {!headerHidden && (!labelHidden || !isPagesSidebarVisible) && (
+                <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
+                  {name?.trim() ? name : appName}
+                </div>
               )}
               {collapsable &&
                 !isTopPositioned &&

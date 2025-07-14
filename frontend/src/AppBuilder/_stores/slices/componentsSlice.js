@@ -1477,8 +1477,9 @@ export const createComponentsSlice = (set, get) => ({
       (state) => {
         state.selectedComponents = components;
         if (components.length === 1) {
-          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
-          state.isRightSidebarOpen = true;
+          if (state.isRightSidebarOpen) {
+            state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          }
         }
       },
       false,
@@ -1489,7 +1490,9 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = [componentId];
-        state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+        if (state.isRightSidebarOpen) {
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+        }
       },
       false,
       { type: 'setSelectedComponentAsModal', payload: { componentId } }

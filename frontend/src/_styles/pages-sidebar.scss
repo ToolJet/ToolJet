@@ -257,6 +257,15 @@
             margin-bottom: 20px;
             min-height: 28px;
 
+            .app-text {
+                -webkit-line-clamp: 3;
+                line-clamp: 3;
+                -webkit-box-orient: vertical;
+                display: -webkit-box;
+                max-width: 260px;
+                text-overflow: ellipsis;
+            }
+
             .collapse-icon {
                 margin-left: auto;
             }
