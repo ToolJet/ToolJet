@@ -540,7 +540,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     } else {
       const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
-      const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
+      const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled, dataSource);
       const tokenData = this.getCurrentToken(
         isMultiAuthEnabled,
         dataSource.options['tokenData']?.value,
@@ -628,14 +628,30 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return params;
   }
 
+  private fetchEnvVariables(pluginKind: string, keyAppend: string): string {
+    const dataSourcePrefix = {
+      googlecalendar: 'GOOGLE',
+    };
+    const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
+    return key;
+  }
+
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  async fetchOAuthToken(sourceOptions: any, code: string, userId: any, isMultiAuthEnabled: boolean): Promise<any> {
+  async fetchOAuthToken(
+    sourceOptions: any,
+    code: string,
+    userId: any,
+    isMultiAuthEnabled: boolean,
+    dataSource: DataSource
+  ): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
-      sourceOptions['client_id'] = process.env[sourceOptions['client_id_env_key']];
-      sourceOptions['client_secret'] = process.env[sourceOptions['client_secret_env_key']];
+      const clientIdKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_ID');
+      const clientSecretKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_SECRET');
+      sourceOptions['client_id'] = process.env[sourceOptions[clientIdKey]];
+      sourceOptions['client_secret'] = process.env[sourceOptions[clientSecretKey]];
     }
     const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
     const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
