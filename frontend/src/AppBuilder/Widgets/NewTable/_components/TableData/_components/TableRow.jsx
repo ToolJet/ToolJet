@@ -94,6 +94,8 @@ export const TableRow = ({
               'has-radio': cell.column.columnDef?.meta?.columnType === 'radio',
               'has-toggle': cell.column.columnDef?.meta?.columnType === 'toggle',
               'has-textarea': ['string', 'text'].includes(cell.column.columnDef?.meta?.columnType),
+              'has-multiselect': cell.column.columnDef?.meta?.columnType === 'multiselect',
+              'has-dropdown': cell.column.columnDef?.meta?.columnType === 'dropdown',
               isEditable: isEditable,
             })}
             onClick={(e) => {

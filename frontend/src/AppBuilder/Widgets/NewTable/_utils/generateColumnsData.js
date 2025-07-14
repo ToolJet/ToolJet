@@ -23,7 +23,6 @@ import {
   HTMLColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
-
 import SelectSearch from 'react-select-search';
 
 export default function generateColumnsData({
@@ -39,6 +38,7 @@ export default function generateColumnsData({
   validateDates,
   searchText,
   columnForAddNewRow = false,
+  t,
 }) {
   const getResolvedValue = useStore.getState().getResolvedValue;
   const getEditedRowFromIndex = useTableStore.getState().getEditedRowFromIndex;
@@ -202,16 +202,21 @@ export default function generateColumnsData({
             case 'dropdown':
             case 'multiselect':
               return (
-                <SelectSearch
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-                  readOnly={!isEditable}
-                  darkMode={darkMode}
-                  containerWidth={columnSize}
-                  isEditable={isEditable}
-                  multiple={columnType === 'multiselect'}
-                />
+                <div className="h-100 d-flex align-items-center custom-select">
+                  <SelectSearch
+                    printOptions="on-focus"
+                    multiple={columnType === 'multiselect'}
+                    search={true}
+                    placeholder={t('globals.select', 'Select') + '...'}
+                    options={columnOptions.selectOptions}
+                    value={cellValue}
+                    onChange={(value) =>
+                      handleCellValueChange(row.index, column.key || column.name, value, row.original)
+                    }
+                    disabled={!isEditable}
+                    className={'select-search'}
+                  />
+                </div>
               );
 
             case 'select':

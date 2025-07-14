@@ -171,6 +171,22 @@
         &.has-badge,
         &.has-badges {
           overflow-y: visible !important;
+          .select-search-options {
+            background-color: var(--cc-default-border);
+            .select-search-row {
+              button {
+                background-color: var(--cc-surface1-surface);
+                color: var(--cc-primary-text);
+                &:hover {
+                  filter: brightness(0.9);
+                }
+              }
+              button.select-search-is-selected {
+                color: var(--cc-primary-brand);
+              }
+            }
+          }
+
         }
 
         // &.has-number {
@@ -1210,6 +1226,9 @@
 .table-custom-select-badge-badges {
   .select-search-value {
     width: 90%;
+    input {
+      z-index:0;
+    } 
 
     div {
       display: flex;
