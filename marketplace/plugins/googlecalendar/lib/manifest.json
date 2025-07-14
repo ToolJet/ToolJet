@@ -58,7 +58,7 @@
         "value": "authorization_code"
     },
     "scopes": {
-        "value": ""
+        "value": "https://www.googleapis.com/auth/calendar"
     },
     "oauth_type": {
       "value": "custom_app"
