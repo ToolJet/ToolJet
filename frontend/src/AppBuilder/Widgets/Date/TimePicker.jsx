@@ -13,6 +13,7 @@ import {
 } from './utils';
 import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
 import { BaseDateComponent } from './BaseDateComponent';
+import './styles.scss';
 
 export const TimePicker = ({
   height,

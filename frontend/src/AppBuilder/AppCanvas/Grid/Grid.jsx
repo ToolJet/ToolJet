@@ -57,6 +57,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const selectedComponents = useStore((state) => state.selectedComponents, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
+  const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const temporaryHeight = useStore((state) => state.temporaryLayouts?.[selectedComponents?.[0]]?.height, shallow);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
@@ -269,11 +270,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       }
       e.props.target.classList.add('hovered');
       e.controlBox.classList.add('moveable-control-box-d-block');
-      const isHorizontallyExpandable = checkHoveredComponentDynamicHeight();
-      if (isHorizontallyExpandable) {
-        e.controlBox.classList.add('moveable-horizontal-only');
-      }
-      setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     },
     mouseLeave(e) {
       e.props.target.classList.remove('hovered');
@@ -456,6 +452,12 @@ export default function Grid({ gridWidth, currentLayout }) {
         return;
       }
       useStore.getState().setHoveredComponentBoundaryId(targetId);
+      const isHorizontallyExpandable = checkHoveredComponentDynamicHeight(targetId);
+      const moveableControlBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
+      if (moveableControlBox && isHorizontallyExpandable) {
+        moveableControlBox.classList.add('moveable-horizontal-only');
+      }
+      setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     };
     const hideConfigHandle = () => {
       useStore.getState().setHoveredComponentBoundaryId('');
@@ -994,8 +996,8 @@ export default function Grid({ gridWidth, currentLayout }) {
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
-          const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
-          e.target.style.width = `${draggingWidgetWidth}px`;
+          // const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
+          // e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {

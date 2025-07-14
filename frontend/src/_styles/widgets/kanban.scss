@@ -105,7 +105,7 @@ $focused-outline-color: #4c9ffe;
     box-sizing: border-box;
     list-style: none;
     transform-origin: 50% 50%;
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--cc-default-border);
 
     -webkit-tap-highlight-color: transparent;
 
@@ -250,11 +250,11 @@ $focused-outline-color: #4c9ffe;
     background-color: #fff;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--cc-default-border);
 
-    &.dark {
-      border-bottom: 1px solid rgba(229, 229, 229, 0.08);
-    }
+    // &.dark {
+    //   border-bottom: 1px solid rgba(229, 229, 229, 0.08);
+    // }
   }
 
   .actions {

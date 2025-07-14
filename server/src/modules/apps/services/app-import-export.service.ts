@@ -2350,22 +2350,30 @@ function migrateProperties(
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
-      properties.visibility = styles.visibility;
+      if (properties.visibility === undefined) {
+        properties.visibility = styles.visibility;
+      }
       delete styles.visibility;
     }
 
     if (styles.disabledState) {
-      properties.disabledState = styles.disabledState;
+      if (properties.disabledState === undefined) {
+        properties.disabledState = styles.disabledState;
+      }
       delete styles.disabledState;
     }
 
     if (general?.tooltip) {
-      properties.tooltip = general?.tooltip;
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
       delete general?.tooltip;
     }
 
     if (generalStyles?.boxShadow) {
-      styles.boxShadow = generalStyles?.boxShadow;
+      if (styles.boxShadow === undefined) {
+        styles.boxShadow = generalStyles?.boxShadow;
+      }
       delete generalStyles?.boxShadow;
     }
 
@@ -2379,12 +2387,16 @@ function migrateProperties(
 
     if (componentType === 'NumberInput') {
       if (properties.minValue) {
-        validation.minValue = properties?.minValue;
+        if (validation.minValue === undefined) {
+          validation.minValue = properties?.minValue;
+        }
         delete properties.minValue;
       }
 
       if (properties.maxValue) {
-        validation.maxValue = properties?.maxValue;
+        if (validation.maxValue === undefined) {
+          validation.maxValue = properties?.maxValue;
+        }
         delete properties.maxValue;
       }
     }
@@ -2411,9 +2423,9 @@ function migrateProperties(
 
       const borderTypeMapping: Record<string, string> = {
         'rounded-circle': 'circle',
-        'rounded': 'rounded',
+        rounded: 'rounded',
         'img-thumbnail': 'thumbnail',
-        'none': 'none',
+        none: 'none',
       };
 
       const mappedShape = borderTypeMapping[styles.borderType?.value];

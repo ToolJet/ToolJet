@@ -302,6 +302,7 @@ export const Modal = function Modal({
           hideCloseButton,
           hideModal: onHideModal,
           component,
+          darkMode,
           showConfigHandler: mode === 'edit',
         }}
       >
@@ -338,6 +339,7 @@ const Component = ({ children, ...restProps }) => {
     hideCloseButton,
     hideModal,
     showConfigHandler,
+    darkMode,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -381,6 +383,7 @@ const Component = ({ children, ...restProps }) => {
               className="cursor-pointer"
               data-cy={`modal-close-button`}
               size="sm"
+              style={{ color: darkMode ? '#fff' : '#000' }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

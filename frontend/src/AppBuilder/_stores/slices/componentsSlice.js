@@ -1072,7 +1072,7 @@ export const createComponentsSlice = (set, get) => ({
           attachedTo: component.id,
           index: event?.index,
         };
-        await eventsSlice.createAppVersionEventHandlers(newEvent);
+        await eventsSlice.createAppVersionEventHandlers(newEvent, moduleId);
       }
     }
   },
@@ -1168,9 +1168,10 @@ export const createComponentsSlice = (set, get) => ({
       // Adjust component positions
 
       //If new parent is dynamic, adjust the parent positions
-      const isParentDynamic = getResolvedComponent(newParentId)?.properties?.dynamicHeight;
+      const transformedParentId = (newParentId || oldParentId)?.substring(0, 36);
+      const isParentDynamic = getResolvedComponent(transformedParentId)?.properties?.dynamicHeight;
       if (isParentDynamic) {
-        adjustComponentPositions(newParentId, currentLayout, false, true);
+        adjustComponentPositions(transformedParentId, currentLayout, false, true);
       }
 
       // If the parent is changed, adjust the old parent positions
@@ -1627,7 +1628,7 @@ export const createComponentsSlice = (set, get) => ({
 
   getComponentIdFromName: (componentName, moduleId = 'canvas') => {
     const { modules } = get();
-    return modules[moduleId].componentNameIdMapping[componentName];
+    return modules?.[moduleId]?.componentNameIdMapping?.[componentName];
   },
   // Get the component name from the component id
   getComponentNameFromId: (componentId, moduleId = 'canvas') => {

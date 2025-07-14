@@ -38,3 +38,14 @@
     }
 
 }
+
+
+.react-datepicker-time-component.tj-datepicker-widget {
+    width: 124px !important;
+}
+
+.daterangepicker-header {
+    .react-select__menu .react-select__menu-list .react-select__option > div > span{
+        color: var(--cc-primary-text) !important;
+    }
+}

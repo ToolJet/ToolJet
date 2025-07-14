@@ -372,6 +372,7 @@ export const tabsConfig = {
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
+            fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
           },
           {
             id: 't1',
@@ -381,6 +382,7 @@ export const tabsConfig = {
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
+            fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
           },
           {
             id: 't2',
@@ -390,6 +392,7 @@ export const tabsConfig = {
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
+            fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
           },
         ],
       },
@@ -416,7 +419,7 @@ export const tabsConfig = {
       transition: { value: 'slide' },
       borderRadius: { value: '{{6}}' },
       border: { value: 'var(--cc-default-border)' },
-      boxShadow: { value: '0px 0px 0px 0px #121212' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
     },
   },

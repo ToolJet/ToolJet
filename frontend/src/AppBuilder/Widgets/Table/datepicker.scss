@@ -53,6 +53,14 @@
     }
 }
 
+.inspector-validation-date-picker {
+    .tj-table-datepicker {
+        .react-datepicker__time-container {
+            right: 0px;
+        }
+    }
+}
+
 // Changes for react date picker in table
 .tj-table-datepicker {
     .react-datepicker__header {

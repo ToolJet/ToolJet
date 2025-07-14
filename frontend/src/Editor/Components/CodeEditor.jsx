@@ -9,6 +9,7 @@ import { sql } from '@codemirror/lang-sql';
 import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import './codeEditor.scss';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
