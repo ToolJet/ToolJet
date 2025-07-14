@@ -54,7 +54,10 @@ export const TableRow = ({
     >
       {row.getVisibleCells().map((cell) => {
         const cellStyles = {
-          width: cell.column.getSize(),
+          width:
+            cell.column.id === 'rightActions' || cell.column.id === 'leftActions'
+              ? 'fit-content'
+              : cell.column.getSize(),
           backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
             rowData: row.original,
             cellValue: cell.getValue(),
@@ -64,6 +67,9 @@ export const TableRow = ({
           alignItems: 'center',
           textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
         };
+        if (cell.column.id === 'rightActions' || cell.column.id === 'leftActions') {
+          cellStyles.maxWidth = 'fit-content';
+        }
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
           rowData: row.original,
@@ -75,6 +81,9 @@ export const TableRow = ({
             key={cell.id}
             style={cellStyles}
             className={cx('table-cell td', {
+              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+              'has-left-actions': cell.column.id === 'leftActions',
+              'has-right-actions': cell.column.id === 'rightActions',
               'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
               'table-text-align-right': cell.column.columnDef?.meta?.horizontalAlignment === 'right',
               'table-text-align-left': cell.column.columnDef?.meta?.horizontalAlignment === 'left',
