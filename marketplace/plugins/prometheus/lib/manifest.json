@@ -1,21 +1,18 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Redis datasource",
-  "description": "A schema defining redis datasource",
-  "type": "database",
+  "title": "Prometheus datasource",
+  "description": "A schema defining Prometheus datasource",
+  "type": "api",
   "source": {
-    "name": "Redis",
-    "kind": "redis",
+    "name": "Prometheus",
+    "kind": "prometheus",
     "exposedVariables": {
       "isLoading": false,
       "data": {},
       "rawData": {}
     },
     "options": {
-      "host": {
-        "type": "string"
-      },
-      "port": {
+      "server_url": {
         "type": "string"
       },
       "username": {
@@ -25,43 +22,24 @@
         "type": "string",
         "encrypted": true
       },
-      "database": {
-        "type": "string"
-      },
       "ca_cert": {
+        "type": "string",
         "encrypted": true
       },
       "client_key": {
+        "type": "string",
         "encrypted": true
       },
       "client_cert": {
+        "type": "string",
         "encrypted": true
       }
     }
   },
-  "defaults": {
-    "host": {
-      "value": "localhost"
-    },
-    "port": {
-      "value": 6379
-    },
-    "username": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    },
-    "tls_enabled": {
-      "value": false
-    },
-    "tls_certificate": {
-      "value": "none"
-    }
-  },
+  "defaults": {},
   "properties": {
     "tls_certificate": {
-      "label": "TLS Certificate",
+      "label": "TLS settings",
       "key": "tls_certificate",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for choosing certificates",
@@ -80,41 +58,23 @@
         }
       ],
       "commonFields": {
-        "host": {
-          "label": "Host",
-          "key": "host",
+        "server_url": {
+          "label": "Prometheus server URL",
+          "key": "server_url",
           "type": "text",
-          "description": "Enter host"
-        },
-        "port": {
-          "label": "Port",
-          "key": "port",
-          "type": "text",
-          "description": "Enter port"
-        },
-        "database": {
-          "label": "Database",
-          "key": "database",
-          "type": "text",
-          "description": "Enter database name"
+          "description": "prometheus.example.com"
         },
         "username": {
           "label": "Username",
           "key": "username",
           "type": "text",
-          "description": "Enter username"
+          "description": "your-username"
         },
         "password": {
           "label": "Password",
           "key": "password",
           "type": "password",
-          "description": "Enter password"
-        },
-        "tls_enabled": {
-          "label": "TLS",
-          "key": "tls_enabled",
-          "type": "toggle",
-          "description": "Toggle for TLS"
+          "encrypted": true
         }
       }
     },
@@ -124,7 +84,7 @@
         "key": "ca_cert",
         "type": "textarea",
         "encrypted": true,
-        "description": "Enter ca certificate"
+        "description": "Enter CA certificate"
       }
     },
     "client_certificate": {
@@ -147,14 +107,13 @@
         "key": "ca_cert",
         "type": "textarea",
         "encrypted": true,
-        "description": "Enter ca certificate"
+        "description": "Enter CA certificate"
       }
     }
   },
   "required": [
-    "scheme",
-    "host",
-    "port",
+    "server_url",
+    "username",
     "password"
   ]
 }

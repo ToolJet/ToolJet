@@ -75,7 +75,8 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
   const moreBtnRef = useRef(null);
   const optionsBtnRef = useRef(null);
 
-  const { openPageEditPopover, toggleDeleteConfirmationModal } = useStore();
+  const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
+  const openPageEditPopover = useStore((state) => state.openPageEditPopover);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
   const cloneGroup = useStore((state) => state.cloneGroup);
   const setEditingPage = useStore((state) => state.setEditingPage);
@@ -233,8 +234,10 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
+                            setEditingPage(page);
                             toggleShowPageOptions(false);
                             openPageEditPopover(page);
+                            setNewPagePopupConfig({ show: false, mode: null, type: null });
                             toggleDeleteConfirmationModal(true);
                           }}
                         />
@@ -250,7 +253,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                       setNewPagePopupConfig({ show: false, mode: null, type: null });
                       setShowEditPopover(false);
                       setEditingPage(null);
-                      showPageOptions(false);
+                      toggleShowPageOptions(false);
                     }}
                   >
                     <AddEditPagePopup darkMode={darkMode} />
