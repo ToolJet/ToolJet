@@ -125,9 +125,11 @@ export const useFilePicker = ({
           type: file.type,
           webkitRelativePath: file.webkitRelativePath,
           content: readFileAsText,
+          dataURL: base64Data,
           base64Data: base64Data,
           parsedValue: parsedValue,
           parsedData: parsedData,
+          filePath: file.path
         };
       } catch (error) {
         console.error(`Error reading file ${file.name}:`, error);
