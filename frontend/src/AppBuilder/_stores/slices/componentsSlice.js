@@ -249,15 +249,27 @@ export const createComponentsSlice = (set, get) => ({
     property,
     unResolvedValue,
     isUpdate = false,
-    moduleId = 'canvas'
+    moduleId = 'canvas',
+    nestedPath
   ) => {
+    console.log({ nestedPath });
     const { addDependency, updateDependency } = get();
     if (allRefs.length !== 0) {
       allRefs.forEach(({ entityType, entityNameOrId, entityKey }, index) => {
         const propertyValue = entityNameOrId
           ? `${entityType}.${entityNameOrId}.${entityKey}`
           : `${entityType}.${entityKey}`;
-        const propertyPath = paramType === undefined ? `others.${key}` : `components.${key}.${paramType}.${property}`;
+        let propertyPath;
+        // const propertyPath = paramType === undefined ? `others.${key}` : `components.${key}.${paramType}.${property}`;
+        if (paramType === undefined) {
+          propertyPath = `others.${key}`;
+        } else if (paramType) {
+          propertyPath = `components.${key}.${paramType}.${property}`;
+        } else if (nestedPath) {
+          propertyPath = nestedPath;
+        }
+        console.log({ propertyPath });
+
         if (isUpdate && index === 0) {
           updateDependency(propertyValue, propertyPath, unResolvedValue, moduleId);
         } else {
@@ -801,17 +813,102 @@ export const createComponentsSlice = (set, get) => ({
     } = get();
     const items = otherObj || getOtherFieldsToBeResolved(moduleId);
     const resolvedValues = {};
-    Object.entries(items).forEach(([key, item]) => {
-      if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+    // Object.entries(items).forEach(([key, item]) => {
+    //   if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+    //     const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
+    //       item,
+    //       get().modules[moduleId].componentNameIdMapping,
+    //       get().modules[moduleId].queryNameIdMapping
+    //     );
+    //     const resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
+    //     console.log({ resolvedValue });
+    //     resolvedValues[key] = resolvedValue;
+    //     generateDependencyGraphForRefs(allRefs, key, undefined, undefined, valueWithBrackets, isUpdate, moduleId);
+    //   } else {
+    //     resolvedValues[key] = item;
+    //   }
+    // });
+    // Helper function to resolve dynamic properties
+    const resolveDynamicProperty = (value, currentModuleId, key, nestedPath) => {
+      if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
         const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
-          item,
-          get().modules[moduleId].componentNameIdMapping,
-          get().modules[moduleId].queryNameIdMapping
+          value,
+          get().modules[currentModuleId].componentNameIdMapping,
+          get().modules[currentModuleId].queryNameIdMapping
         );
-        const resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
-        resolvedValues[key] = resolvedValue;
-        generateDependencyGraphForRefs(allRefs, key, undefined, undefined, valueWithBrackets, isUpdate, moduleId);
+        const resolvedValue = resolveDynamicValues(
+          valueWithBrackets,
+          getAllExposedValues(currentModuleId),
+          {},
+          false,
+          []
+        );
+        console.log({ value, resolvedValue });
+        // Note: For 'hidden' values, we typically link dependencies to the 'hidden' key of the page
+        // or a more specific identifier if available. For simplicity, if we're resolving within
+        // the 'pages' object, `key` (which is 'pages') is less specific, so passing undefined for `refKey`
+        // allows the graph generation to handle it generally. You might need to refine this
+        // if you need more granular dependency tracking for individual page properties.
+        generateDependencyGraphForRefs(
+          allRefs,
+          key,
+          undefined,
+          undefined,
+          valueWithBrackets,
+          isUpdate,
+          currentModuleId,
+          nestedPath
+        );
+        return resolvedValue;
+      }
+      return value;
+    };
+
+    Object.entries(items).forEach(([key, item]) => {
+      if (key === 'pages' && typeof item === 'object' && item !== null && !Array.isArray(item)) {
+        // Handle 'pages' as an object of page objects
+        resolvedValues.pages = {};
+        Object.entries(item).forEach(([pageId, pageObject]) => {
+          const newPageObject = { ...pageObject }; // Create a shallow copy of the page object
+
+          // --- Logic for 'hidden' property within each page ---
+          if (newPageObject.hidden === null || newPageObject.hidden === undefined) {
+            // Case 1: hidden is null or undefined, set defaults
+            newPageObject.hidden = { fxActive: false, value: false };
+          } else if (typeof newPageObject.hidden === 'object') {
+            // Case 2: hidden is an object, check its value
+            if (typeof newPageObject.hidden.value === 'boolean') {
+              // Case 2a: hidden.value is already a boolean, just assign it
+              newPageObject.hidden = {
+                fxActive: newPageObject.hidden.fxActive || false, // Ensure fxActive is set if not present
+                value: newPageObject.hidden.value,
+              };
+            } else if (typeof newPageObject.hidden.value === 'string' && newPageObject.hidden.value.includes('{{')) {
+              // Case 2b: hidden.value is a dynamic string, resolve it
+              newPageObject.hidden = {
+                ...newPageObject.hidden,
+                value: resolveDynamicProperty(
+                  newPageObject.hidden.value,
+                  moduleId,
+                  key,
+                  `others.pages.${pageId}.hidden.value`
+                ),
+              };
+              console.log({ ads: `others.pages.${pageId}.hidden.value` });
+            }
+            // If hidden.value is a non-dynamic string that doesn't include '{{', or any other type,
+            // it will be assigned as is by the spread operator.
+          }
+          // If newPageObject.hidden is not an object and not null/undefined (e.g., directly a boolean, though less likely with fxActive), it remains as is.
+          // --- END Logic for 'hidden' property ---
+
+          resolvedValues.pages[pageId] = newPageObject;
+        });
+      } else if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+        // Existing logic for other dynamic string values
+        resolvedValues[key] = resolveDynamicProperty(item, moduleId, undefined);
       } else {
+        // For non-dynamic values
         resolvedValues[key] = item;
       }
     });

@@ -12,6 +12,7 @@ import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { shallow } from 'zustand/shallow';
 
 export const RenderPage = ({
   page,
@@ -27,7 +28,8 @@ export const RenderPage = ({
   position,
   onPageClick,
 }) => {
-  const resolveReferences = useStore((state) => state.resolveReferences);
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility, shallow);
+  const resolvedStore = useStore((state) => state.resolvedStore, shallow);
   const currentMode = useStore((state) => state.currentMode);
   const isHomePage = page.id === homePageId;
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
@@ -44,7 +46,12 @@ export const RenderPage = ({
 
     return <Icon {...props} />;
   };
-  return resolveReferences('canvas', page?.hidden?.value) || page.disabled || page?.restricted ? null : (
+  console.log({
+    pagename: page?.name,
+    ad: getPagesVisibility('canvas', page?.id),
+    adf: resolvedStore.modules['canvas'].others.pages,
+  });
+  return getPagesVisibility('canvas', page?.id) || page.disabled || page?.restricted ? null : (
     <div
       key={page.name}
       data-id={page.id}
@@ -255,6 +262,7 @@ export const RenderPageAndPageGroup = ({
   const currentPage = pages.find((page) => page.id === currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const [showPopover, setShowPopover] = useState(false);
+  const resolveReferences = useStore((state) => state.resolveReferences);
 
   const handleAccordionToggle = (groupId) => {
     setExpandedPageGroupId((prevId) => (prevId === groupId ? null : groupId));
@@ -270,11 +278,14 @@ export const RenderPageAndPageGroup = ({
     <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
       {/* <Accordion alwaysOpen defaultActiveKey={tree.map((page) => page.id)}> */}
       {visibleLinks.map((page, index) => {
+        console.log({ pages: page?.children?.map((child) => resolveReferences('canvas', child?.hidden?.value)) });
+
         if (
           page.isPageGroup &&
           page.children?.length === 0 &&
           labelStyle?.label?.hidden &&
-          !page.children.some((child) => child?.restricted === true)
+          !page.children.some((child) => child?.restricted === true) &&
+          !page.children.some((child) => resolveReferences('canvas', child?.hidden?.value) === false)
         ) {
           return null;
         }
@@ -349,7 +360,8 @@ export const RenderPageAndPageGroup = ({
                     page.isPageGroup &&
                     page.children.length === 0 &&
                     labelStyle?.label?.hidden &&
-                    !page.children.some((child) => child?.restricted === true)
+                    !page.children.some((child) => child?.restricted === true) &&
+                    !page.children.some((child) => resolveReferences('canvas', child?.hidden?.value) === false)
                   ) {
                     return null;
                   }
