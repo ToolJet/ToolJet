@@ -7,6 +7,7 @@ import { getCookie } from '@/_helpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 export function Authorize({ navigate }) {
   const [error, setError] = useState('');
@@ -131,20 +132,31 @@ export function Authorize({ navigate }) {
     };
 
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const isAiOnboarding =
-      hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
-      router.query.state?.includes('tj_api_source=ai_onboarding');
-    const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
-    if (isNormalFlow) {
-      /* For workspace signup and signin */
+
+    // FIXME: later create different component/login for cloud and ce/ee
+    const edition = fetchEdition();
+    if (edition === 'cloud') {
+      const isAiOnboarding =
+        hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
+        router.query.state?.includes('tj_api_source=ai_onboarding');
+      const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
+      if (isNormalFlow) {
+        /* For workspace signup and signin */
+        authenticationService
+          .signInViaOAuth(router.query.configId, router.query.origin, authParams)
+          .then(handleAuthResponse)
+          .catch(handleAuthError);
+      } else {
+        /* For ai onboarding */
+        aiOnboardingService
+          .signInViaOAuth(router.query.origin, authParams)
+          .then(handleAuthResponse)
+          .catch(handleAuthError);
+      }
+      return;
+    } else {
       authenticationService
         .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-        .then(handleAuthResponse)
-        .catch(handleAuthError);
-    } else {
-      /* For ai onboarding */
-      aiOnboardingService
-        .signInViaOAuth(router.query.origin, authParams)
         .then(handleAuthResponse)
         .catch(handleAuthError);
     }
