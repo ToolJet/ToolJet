@@ -3,6 +3,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { App } from '@entities/app.entity';
 import { FeatureAbility } from './index';
+import { MODULES } from '@modules/app/constants/modules';
 
 export function defineAppVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
@@ -11,6 +12,7 @@ export function defineAppVersionAbility(
 ): void {
   const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
   const userAppPermissions = userPermission?.[resource[0].resourceType];
+  const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
   if (isAdmin || superAdmin) {
     can(
@@ -126,7 +128,7 @@ export function defineAppVersionAbility(
     can([FEATURE_KEY.GET_EVENTS], App);
   }
 
-  if (isBuilder) {
+  if (isBuilder && resourceType === MODULES.MODULES) {
     //For Modules
     can(
       [

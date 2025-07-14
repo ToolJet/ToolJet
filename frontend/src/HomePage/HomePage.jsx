@@ -1552,7 +1552,13 @@ class HomePageComponent extends React.Component {
                 <div className="create-new-app-license-wrapper">
                   <LicenseTooltip
                     limits={appsLimit}
-                    feature={this.props.appType === 'workflow' ? 'workflows' : 'apps'}
+                    feature={
+                      this.props.appType === 'workflow'
+                        ? 'workflows'
+                        : this.props.appType === 'module'
+                        ? 'modules'
+                        : 'apps'
+                    }
                     isAvailable={true}
                     noTooltipIfValid={true}
                   >
