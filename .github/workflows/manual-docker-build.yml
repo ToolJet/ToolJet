@@ -55,3 +55,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
+
+      - name: Show the full Docker tag
+        run: |
+          echo "✅ Docker image will be tagged as: ${{ steps.taggen.outputs.tag }}"
