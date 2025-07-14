@@ -258,7 +258,7 @@ const RunButton = ({ buttonLoadingState }) => {
           leadingIcon="play01"
           disabled={isInDraft}
           isLoading={isLoading}
-          className={isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
+          className={isMac ? '!tw-w-[92px]' : '!tw-w-[127px]'}
           data-cy="query-run-button"
         >
           Run
