@@ -3,7 +3,7 @@ import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import EncryptedFieldWrapper from '@/_components/EncyrptedFieldWrapper';
-import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { checkIfToolJetCloud, checkIfToolJetEE } from '@/_helpers/utils';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 
@@ -38,15 +38,26 @@ const CommonOAuthFields = ({
     }
   }, []);
 
-  const oauthTypeOptions = checkIfToolJetCloud(tooljetVersion)
-    ? [
-        { name: 'ToolJet app', value: 'tooljet_app' },
-        { name: 'Custom app', value: 'custom_app' },
-      ]
-    : [
-        { name: 'Use environment variables', value: 'tooljet_app' },
-        { name: 'Custom app', value: 'custom_app' },
-      ];
+  const oauthTypeOptions = React.useMemo(() => {
+    const isCloud = checkIfToolJetCloud(tooljetVersion);
+
+    const allOptions = [
+      {
+        name: isCloud ? 'ToolJet app' : 'Use environment variables',
+        value: 'tooljet_app',
+      },
+      { name: 'Custom app', value: 'custom_app' },
+    ];
+
+    if (oauthTypes?.editions) {
+      const currentEdition = isCloud ? 'cloud' : checkIfToolJetEE(tooljetVersion) ? 'ee' : 'ce';
+
+      const allowedValues = oauthTypes.editions[currentEdition] || [];
+      return allOptions.filter((option) => allowedValues.includes(option.value));
+    } else {
+      return allOptions;
+    }
+  }, [tooljetVersion, oauthTypes]);
 
   const showClientFields = !oauthTypes || options?.oauth_type?.value === 'custom_app';
 
