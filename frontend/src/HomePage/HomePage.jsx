@@ -142,6 +142,11 @@ class HomePageComponent extends React.Component {
         return;
       }
     }
+    if (this.props.appType === 'module' && authenticationService.currentSessionValue?.role?.name == 'end-user') {
+      //Restrict route
+      this.setState({ shouldRedirect: true });
+      return;
+    }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
@@ -1547,7 +1552,13 @@ class HomePageComponent extends React.Component {
                 <div className="create-new-app-license-wrapper">
                   <LicenseTooltip
                     limits={appsLimit}
-                    feature={this.props.appType === 'workflow' ? 'workflows' : 'apps'}
+                    feature={
+                      this.props.appType === 'workflow'
+                        ? 'workflows'
+                        : this.props.appType === 'module'
+                        ? 'modules'
+                        : 'apps'
+                    }
                     isAvailable={true}
                     noTooltipIfValid={true}
                   >
