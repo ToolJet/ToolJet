@@ -45,6 +45,7 @@ const DynamicForm = ({
   disableMenuPortal = false,
   onBlur,
   layout = 'vertical',
+  elementsProps = null,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -330,6 +331,7 @@ const DynamicForm = ({
           encrypted: options?.[key]?.encrypted,
           buttonText,
           width: width,
+          ...elementsProps?.[key],
         };
       }
       case 'react-component-sort': {

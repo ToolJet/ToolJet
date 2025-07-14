@@ -4,6 +4,7 @@ import { datasourceService, pluginsService, globalDatasourceService, libraryAppS
 import cx from 'classnames';
 import { Modal, Button, Tab, Row, Col, ListGroup, ModalBody } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
 import { getWorkspaceId, deepEqual, returnDevelopmentEnv, decodeEntities } from '@/_helpers/utils';
@@ -436,6 +437,7 @@ class DataSourceManagerComponent extends React.Component {
         setDefaultOptions={this.setDefaultOptions}
         showValidationErrors={showValidationErrors}
         clearValidationErrorBanner={() => this.setState({ validationError: [] })}
+        elementsProps={this.props.formProps?.[kind]}
       />
     );
   };
@@ -921,6 +923,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   render() {
+    const { classes } = this.props;
+
     const {
       dataSourceMeta,
       selectedDataSource,
@@ -969,7 +973,7 @@ class DataSourceManagerComponent extends React.Component {
             container={this.props.container}
             {...this.props.modalProps}
           >
-            <Modal.Header className={'d-block'}>
+            <Modal.Header className={cn('d-block', classes?.modalHeader)}>
               <div className="d-flex align-items-center justify-content-between">
                 <div className="d-flex">
                   {selectedDataSource && this.props.showBackButton && (
@@ -987,7 +991,7 @@ class DataSourceManagerComponent extends React.Component {
                       />
                     </div>
                   )}
-                  <Modal.Title className="mt-3">
+                  <Modal.Title className={cn('mt-3', classes?.modalTitleContainer)}>
                     {selectedDataSource && !isSampleDb ? (
                       <div className="row selected-ds">
                         {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
@@ -1027,7 +1031,7 @@ class DataSourceManagerComponent extends React.Component {
                       </span>
                     )}
                   </Modal.Title>
-                  {!this.props.isEditing && (
+                  {!this.props.isEditing && !this.props.hideCloseIcon && (
                     <span
                       data-cy="button-close-ds-connection-modal"
                       className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
