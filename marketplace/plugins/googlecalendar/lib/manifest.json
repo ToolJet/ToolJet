@@ -14,7 +14,8 @@
     },
     "options": {
 
-    }
+    },
+    "customTesting": true
   },
   "defaults": {
     "redirect_url": {
