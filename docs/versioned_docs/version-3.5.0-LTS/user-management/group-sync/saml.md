@@ -119,3 +119,17 @@ TJ_SAML_GROUP_MAPPINGS__my_workspace='{"Support": "Support_Team", "Admin": "Admi
 ```
 
 Now, when a user logs into ToolJet through SAML, their role and custom groups will be updated according to the specified mappings.
+
+
+## Disabling Group Sync (Optional)
+
+By default, ToolJet syncs user groups during SSO login with SAML. If you’d like to skip group synchronization, for example, to avoid unintended permission changes, you can disable this behavior using an environment variable.
+
+To disable group sync for SAML, set the following in your .env file:
+
+```bash
+DISABLE_SAML_GROUP_SYNC=true
+```
+When this variable is set to true, ToolJet will skip group sync during the SAML login process. If the variable is not set or is set to false, group sync will continue as usual.
+
+This gives you more control over how user permissions and access groups are managed during authentication.
