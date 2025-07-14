@@ -2310,7 +2310,6 @@ export const computeQueryState = (queries) => {
 };
 
 export const buildComponentMetaDefinition = (components = {}) => {
-  console.log('components', components);
   for (const componentId in components) {
     const currentComponentData = components[componentId];
 
