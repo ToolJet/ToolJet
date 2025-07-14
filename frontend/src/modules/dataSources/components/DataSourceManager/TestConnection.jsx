@@ -14,6 +14,7 @@ export const TestConnection = ({
   environmentId,
   dataSourceId,
   dataSourceType,
+  appId,
 }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
@@ -36,7 +37,7 @@ export const TestConnection = ({
 
   function testDataSource() {
     setTestingStatus(true);
-    posthogHelper.captureEvent('test_connection_datasource', { dataSource: kind, pluginId });
+    posthogHelper.captureEvent('test_connection_datasource', { dataSource: kind, appId });
     //posthog event
 
     const testConnectionBody = {

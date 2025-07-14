@@ -95,7 +95,8 @@ export function Authorize({ navigate }) {
           workspace_id:
             organizationId ||
             authenticationService?.currentSessionValue?.current_organization_id ||
-            restResponse?.organization_id,
+            restResponse?.organization_id ||
+            restResponse?.current_organization_id,
         });
       })
       .catch((err) => {

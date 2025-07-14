@@ -78,7 +78,7 @@ class DataSourceManagerComponent extends React.Component {
       showBackButton: props?.showBackButton ?? true,
       defaultOptions: {},
       pluginsLoaded: false,
-      dataSourceConfirmModalProps: { isOpen: false, dataSource: null },
+      dataSourceConfirmModalProps: { isOpen: false, dataSource: null, category: null },
       addingDataSource: false,
       createdDataSource: null,
       unsavedChangesModal: false,
@@ -138,10 +138,10 @@ class DataSourceManagerComponent extends React.Component {
     return DataSourceTypes.find((source) => source?.kind === dataSource?.kind);
   };
 
-  selectDataSource = (source) => {
+  selectDataSource = (source, category) => {
     posthogHelper.captureEvent('choose_datasource', {
-      dataSource: source.kind,
-      source: source,
+      dataSource: source?.kind,
+      category,
       appId: this.state.appId,
     });
     this.hideModal();
@@ -220,6 +220,7 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceConfirmModalProps: {
         isOpen: false,
         dataSource: null,
+        category: null,
       },
     });
   };
@@ -718,6 +719,7 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceConfirmModalProps: {
           isOpen: true,
           dataSource,
+          category: type,
         },
       });
 
@@ -946,8 +948,8 @@ class DataSourceManagerComponent extends React.Component {
       validationMessages,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
-    const createSelectedDataSource = (dataSource) => {
-      this.selectDataSource(dataSource);
+    const createSelectedDataSource = (dataSource, category) => {
+      this.selectDataSource(dataSource, category);
     };
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
     const sampleDBmodalBodyStyle = isSampleDb ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' } : {};
@@ -1192,6 +1194,7 @@ class DataSourceManagerComponent extends React.Component {
                         environmentId={this.props.currentEnvironment?.id}
                         dataSourceId={selectedDataSource?.id}
                         dataSourceType={selectedDataSource?.type}
+                        appId={this.state.appId}
                       />
                     </div>
                     {!isSampleDb && (
@@ -1253,7 +1256,9 @@ class DataSourceManagerComponent extends React.Component {
             title={'Add datasource'}
             show={dataSourceConfirmModalProps.isOpen}
             message={`Do you want to add ${dataSourceConfirmModalProps?.dataSource?.name}`}
-            onConfirm={() => createSelectedDataSource(dataSourceConfirmModalProps.dataSource)}
+            onConfirm={() =>
+              createSelectedDataSource(dataSourceConfirmModalProps.dataSource, dataSourceConfirmModalProps?.category)
+            }
             onCancel={this.resetDataSourceConfirmModal}
             confirmButtonText={'Add datasource'}
             confirmButtonType="primary"
