@@ -73,7 +73,11 @@ type NewRevampedComponent =
   | 'VerticalDivider'
   | 'Link'
   | 'DaterangePicker'
-  | 'TextArea';
+  | 'TextArea'
+  | 'Container'
+  | 'Tabs'
+  | 'Form'
+  | 'Image';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -95,6 +99,10 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Link',
   'DaterangePicker',
   'TextArea',
+  'Container',
+  'Tabs',
+  'Form',
+  'Image',
 ];
 
 @Injectable()
@@ -402,7 +410,6 @@ export class AppImportExportService {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
       }
-
       let appParams = appParamsObj;
 
       if (appParams?.appV2) {
@@ -663,6 +670,11 @@ export class AppImportExportService {
       tooljetVersion,
       moduleResourceMappings
     );
+
+    const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
+    if (importedAppVersionIds.length > 0) {
+      await applyPageSettingsMigration(manager, importedAppVersionIds);
+    }
 
     if (!isNormalizedAppDefinitionSchema) {
       for (const importingAppVersion of importingAppVersions) {
@@ -1018,7 +1030,6 @@ export class AppImportExportService {
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
         const newComponentIdsMap = {};
-
         for (const component of pageComponents) {
           newComponentIdsMap[component.id] = uuid();
         }
@@ -1034,6 +1045,8 @@ export class AppImportExportService {
           }
 
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+          const isParentHeaderOrFooter =
+            component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
           if (isParentTabOrCalendar) {
             const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
@@ -1047,6 +1060,11 @@ export class AppImportExportService {
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-modal`;
+          } else if (isParentHeaderOrFooter) {
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
+            const mappedParentId = newComponentIdsMap[_parentId];
+            const headerOrFooter = component.parent?.includes('header') ? 'header' : 'footer';
+            parentId = `${mappedParentId}-${headerOrFooter}`;
           } else {
             if (component.parent && !newComponentIdsMap[parentId]) {
               skipComponent = true;
@@ -2323,7 +2341,6 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
-
   if (!tooljetVersion) {
     return { properties, styles, general, generalStyles, validation };
   }
@@ -2369,6 +2386,40 @@ function migrateProperties(
       if (properties.maxValue) {
         validation.maxValue = properties?.maxValue;
         delete properties.maxValue;
+      }
+    }
+    if (componentType === 'Container') {
+      properties.showHeader = properties?.showHeader || false;
+    }
+
+    if (componentType === 'Form') {
+      properties.showHeader = properties?.showHeader || false;
+      properties.showFooter = properties?.showFooter || false;
+    }
+
+    if (componentType === 'Tabs') {
+      if (properties.useDynamicOptions === undefined) {
+        properties.useDynamicOptions = { value: true };
+      }
+    }
+
+    if (componentType === 'Image') {
+      if (styles.padding) {
+        styles.customPadding = styles.padding;
+        styles.padding = { value: 'custom' };
+      }
+
+      const borderTypeMapping: Record<string, string> = {
+        'rounded-circle': 'circle',
+        'rounded': 'rounded',
+        'img-thumbnail': 'thumbnail',
+        'none': 'none',
+      };
+
+      const mappedShape = borderTypeMapping[styles.borderType?.value];
+      if (mappedShape) {
+        styles.imageShape = { value: mappedShape };
+        delete styles.borderType;
       }
     }
   }
@@ -2522,4 +2573,44 @@ const isChildOfKanbanModal = (
   }
 
   return parentComponent?.type === 'Kanban';
+};
+
+const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds: string[]) => {
+  const appVersions = await manager.find(AppVersion, {
+    where: {
+      id: In(appVersionIds),
+    },
+    select: ['id', 'pageSettings', 'globalSettings'],
+  });
+
+  for (const version of appVersions) {
+    let pageSettings = version.pageSettings as any;
+    const globalSettings = version.globalSettings as any;
+
+    if (!pageSettings) {
+      pageSettings = { properties: {} };
+    }
+    if (!pageSettings.properties) {
+      pageSettings.properties = {};
+    }
+
+    if (!('position' in pageSettings.properties)) {
+      pageSettings.properties.position = 'side';
+    }
+
+    if (globalSettings && 'hideHeader' in globalSettings) {
+      pageSettings.properties.hideHeader = globalSettings.hideHeader;
+      pageSettings.properties.hideLogo = globalSettings.hideHeader;
+      delete globalSettings.hideHeader;
+    }
+
+    await manager.update(
+      AppVersion,
+      { id: version.id },
+      {
+        pageSettings: pageSettings,
+        globalSettings: globalSettings,
+      }
+    );
+  }
 };

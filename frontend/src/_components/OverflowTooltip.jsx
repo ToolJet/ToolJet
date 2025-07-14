@@ -1,5 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ToolTip } from '@/_components';
+
+const isTextOverflowing = (element, verticalTolerance = 4) => {
+  if (!element) return false;
+
+  const horizontalOverflow = element.scrollWidth > element.clientWidth;
+  const verticalOverflow = element.scrollHeight > element.clientHeight + verticalTolerance;
+
+  return horizontalOverflow || verticalOverflow;
+};
 
 export default function OverflowTooltip({
   children,
@@ -10,20 +19,43 @@ export default function OverflowTooltip({
   maxLetters,
   ...rest
 }) {
-  const [isOverflowed, setIsOverflow] = useState(false);
-  const textElementRef = useRef();
+  const [isOverflowed, setIsOverflowed] = useState(false);
+  const textContentRef = useRef(null);
+
+  const checkOverflow = useCallback(() => {
+    if (textContentRef.current) {
+      setIsOverflowed(isTextOverflowing(textContentRef.current));
+    }
+  }, []);
 
   useEffect(() => {
-    setIsOverflow(
-      textElementRef.current.scrollWidth > textElementRef.current.clientWidth ||
-        textElementRef.current.clientHeight < textElementRef.current.scrollHeight - 4
-    );
-  }, [children, boxWidth]);
+    const currentTextElement = textContentRef.current;
+    if (!currentTextElement) {
+      return;
+    }
+
+    checkOverflow();
+
+    const observer = new ResizeObserver((entries) => {
+      checkOverflow();
+    });
+
+    observer.observe(currentTextElement);
+
+    return () => {
+      observer.unobserve(currentTextElement);
+      observer.disconnect();
+    };
+  }, [children, checkOverflow]);
 
   const displayText =
     maxLetters && typeof children === 'string' && children.length > maxLetters
       ? `${children.substring(0, maxLetters)}...`
       : children;
+
+  useEffect(() => {
+    checkOverflow();
+  }, [maxLetters, checkOverflow]);
 
   return (
     <ToolTip
@@ -36,7 +68,7 @@ export default function OverflowTooltip({
       width={rest?.width}
     >
       <div
-        ref={textElementRef}
+        ref={textContentRef}
         className={rest.childrenClassName}
         style={{
           whiteSpace,

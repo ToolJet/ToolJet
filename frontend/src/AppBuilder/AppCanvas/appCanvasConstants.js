@@ -14,9 +14,13 @@ export const DEFAULT_CANVAS_WIDTH = 1292;
 
 export const APP_HEADER_HEIGHT = 47;
 
-export const LEFT_SIDEBAR_WIDTH = 348; // exclusive of border
+export const LEFT_SIDEBAR_WIDTH = 350;
 
-export const RIGHT_SIDEBAR_WIDTH = 299;
+export const RIGHT_SIDEBAR_WIDTH = 300;
+
+export const PAGES_SIDEBAR_WIDTH_EXPANDED = 226;
+
+export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 44;
 
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
 
