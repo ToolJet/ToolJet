@@ -559,11 +559,9 @@ export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
  * Positions a ghost/feedback element relative to the main canvas
  * @param {HTMLElement} targetElement - The element being dragged/resized
  * @param {string} ghostElementId - The ID of the ghost element to position
- * @param {Object} options - Additional positioning options
- * @param {boolean} options.includeSize - Whether to update width/height of ghost element
  */
 export const positionGhostElement = (targetElement, ghostElementId) => {
-  const ghostElement = document.getElementById(ghostElementId);
+  const ghostElement = document.getElementById('moveable-drag-ghost');
 
   if (!ghostElement || !targetElement) return;
 
