@@ -15,13 +15,11 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
-import { resolveReferences } from '@/_helpers/utils';
 import { Overlay, Popover } from 'react-bootstrap';
 // import useSidebarMargin from './useSidebarMargin';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
-  pages,
   currentPageId,
   switchPage,
   darkMode,
@@ -42,6 +40,8 @@ export const PagesSidebarNavigation = ({
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const pages = useStore((state) => state.modules.canvas.pages, shallow);
+  const isPagesSidebarHidden = useStore((state) => state.resolvedStore.modules[moduleId].others.isPagesSidebarHidden);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -264,7 +264,6 @@ export const PagesSidebarNavigation = ({
   const sidebarCollapsed = !isSidebarPinned;
   const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
-  const isPagesSidebarHidden = resolveReferences(disableMenu?.value);
 
   if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
@@ -301,7 +300,9 @@ export const PagesSidebarNavigation = ({
         ref={navRef}
         className={cx('navigation-area', {
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
-          'icon-only': style === 'icon' || (style === 'texticon' && !isSidebarPinned && position === 'side'),
+          'icon-only':
+            style === 'icon' ||
+            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
           'right-sidebar-open': isRightSidebarOpen && (position === 'top' || isPagesSidebarHidden),
@@ -336,8 +337,8 @@ export const PagesSidebarNavigation = ({
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
               )}
-              {!headerHidden && ((isPinnedWithLabel && !labelHidden) || position === 'top') && (
-                <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
+              {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
+                <div style={{ wordWrap: 'break-word', overflow: 'hidden' }}>{name?.trim() ? name : appName}</div>
               )}
               {collapsable &&
                 !isTopPositioned &&

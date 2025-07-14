@@ -1,9 +1,8 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class MoveHideHeaderAndAddPositionToPageSettings1751283157638 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-      const appVersions = await queryRunner.manager.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    const appVersions = await queryRunner.manager.query(`
       SELECT id, page_settings, global_settings FROM app_versions
     `);
 
@@ -33,7 +32,6 @@ export class MoveHideHeaderAndAddPositionToPageSettings1751283157638 implements 
       if (globalSettings && 'hideHeader' in globalSettings) {
         pageSettings.properties.hideHeader = globalSettings.hideHeader;
         pageSettings.properties.hideLogo = globalSettings.hideHeader;
-
       }
 
       await queryRunner.manager.query(
@@ -41,9 +39,7 @@ export class MoveHideHeaderAndAddPositionToPageSettings1751283157638 implements 
         [JSON.stringify(pageSettings), JSON.stringify(globalSettings), version.id]
       );
     }
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

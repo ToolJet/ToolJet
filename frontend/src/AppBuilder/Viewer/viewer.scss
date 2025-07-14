@@ -129,6 +129,13 @@
   z-index: 1201;
 }
 
+.bm-menu-wrap,
+.bm-overlay {
+  left: calc(50vw - 207px) !important;
+  width: calc(450px - 86px) !important;
+}
+
+
 
 .powered-with-tj {
   cursor: pointer;
@@ -167,9 +174,6 @@
       .navbar, .header {
         height: 60px !important;
         max-height: 60px !important;
-      }
-      .header {
-        box-shadow: var(--elevation-100-box-shadow);
       }
       .preview-settings-mobile {
         height: 44px !important;
