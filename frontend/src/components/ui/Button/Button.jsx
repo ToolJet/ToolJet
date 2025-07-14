@@ -134,20 +134,10 @@ const Button = forwardRef(
     const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
     const Comp = asChild ? Slot : 'Button';
     const leadingIconElement = leadingIcon && (
-      <div
-        className="tw-flex tw-justify-center tw-items-center"
-        style={{ width: getIconSize(size), height: getIconSize(size) }}
-      >
-        <SolidIcon name={leadingIcon} fill={iconFillColor} />
-      </div>
+      <SolidIcon name={leadingIcon} height={getIconSize(size)} width={getIconSize(size)} fill={iconFillColor} />
     );
     const trailingIconElement = trailingIcon && (
-      <div
-        className="tw-flex tw-justify-center tw-items-center"
-        style={{ width: getIconSize(size), height: getIconSize(size) }}
-      >
-        <SolidIcon name={trailingIcon} fill={iconFillColor} />
-      </div>
+      <SolidIcon name={trailingIcon} height={getIconSize(size)} width={getIconSize(size)} fill={iconFillColor} />
     );
 
     const renderLoader = () => {
