@@ -24,7 +24,7 @@ export default class GoogleCalendar implements QueryService {
       clientId = source_options?.client_id?.value;
       clientSecret = source_options?.client_secret?.value;
     }
-    const scope = source_options.scopes.value;
+    const scope = 'https://www.googleapis.com/auth/calendar';
     if (!clientId) {
       throw new Error(
         `Google OAuth "clientId" ${oauth_type === 'tooljet_app' ? 'environment variable' : 'config'} is missing`
@@ -37,11 +37,6 @@ export default class GoogleCalendar implements QueryService {
       );
     }
 
-    if (!scope) {
-      throw new Error(
-        `Google OAuth "scope" ${oauth_type === 'tooljet_app' ? 'environment variable' : 'config'} is missing`
-      );
-    }
     const encodedScope = this.encodeOAuthScope(scope);
     const baseUrl =
       'https://accounts.google.com/o/oauth2/v2/auth' +
@@ -52,9 +47,7 @@ export default class GoogleCalendar implements QueryService {
   }
 
   private encodeOAuthScope(scope: string): string {
-    // If scope is an array, join with spaces
-    const scopeString = Array.isArray(scope) ? scope.join(' ') : scope;
-    return encodeURIComponent(scopeString);
+    return encodeURIComponent(scope);
   }
 
   async run(
@@ -169,6 +162,7 @@ export default class GoogleCalendar implements QueryService {
   private constructSourceOptions(sourceOptions) {
     const baseUrl = 'https://www.googleapis.com/calendar/v3';
     const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+    const scope = 'https://www.googleapis.com/auth/calendar';
     const addSourceOptions = {
       url: baseUrl,
       auth_url: authUrl,
@@ -190,7 +184,7 @@ export default class GoogleCalendar implements QueryService {
       ssl_certificate: 'none',
       retry_network_errors: true,
 
-      scopes: this.encodeOAuthScope(sourceOptions.scopes),
+      scopes: this.encodeOAuthScope(scope),
     };
     const newSourcOptions = {
       ...sourceOptions,
