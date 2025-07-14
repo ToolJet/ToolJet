@@ -102,21 +102,23 @@ const OAuthWrapper = ({
           oauth_configs={oauth_configs}
         />
       </div>
-      <div>
-        <label className="form-label mt-3">Scope(s)</label>
-        <Input
-          type="text"
-          className="form-control"
-          onChange={(e) => optionchanged('scopes', e.target.value)}
-          value={scopes}
-          workspaceConstants={workspaceConstants}
-        />
-        {oauth_configs.scopeHelperText?.length > 0 && (
-          <span className="text-muted" style={{ fontSize: '12px' }}>
-            {oauth_configs.scopeHelperText}
-          </span>
-        )}
-      </div>
+      {oauth_configs.allowed_scope_field && (
+        <div>
+          <label className="form-label mt-3">Scope(s)</label>
+          <Input
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('scopes', e.target.value)}
+            value={scopes}
+            workspaceConstants={workspaceConstants}
+          />
+          {oauth_configs.scopeHelperText?.length > 0 && (
+            <span className="text-muted" style={{ fontSize: '12px' }}>
+              {oauth_configs.scopeHelperText}
+            </span>
+          )}
+        </div>
+      )}
       <div>
         <label className="form-label mt-3">Redirect URI</label>
         <Input
