@@ -68,7 +68,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           tableData: addNewRowDetailsLength > 0 ? [...addNewRowDetails.values()] : [newEmptyRow],
           id,
           darkMode,
-          fireEvent: () => {},
+          fireEvent: () => { },
           tableRef: addRowTableRef,
           handleCellValueChange,
           searchText: '',
@@ -115,7 +115,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                 {headerGroup.headers.map((header) => (
                   <th key={header.id} className="th" style={{ width: header.column.getSize() }}>
                     <div className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper">
-                      <div>
+                      {header.column.columnDef.meta?.columnType !== 'image' && <div>
                         <SolidIcon
                           name="editable"
                           width="16px"
@@ -123,7 +123,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                           fill={darkMode ? '#4C5155' : '#C1C8CD'}
                           vievBox="0 0 16 16"
                         />
-                      </div>
+                      </div>}
                       <div className="tj-text-xsm header-text">
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </div>
@@ -158,9 +158,8 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                     style={{ width: cell.column.getSize() }}
                   >
                     <div
-                      className={`td-container ${
-                        cell.column.columnDef.meta?.columnType === 'image' && 'jet-table-image-column'
-                      } ${cell.column.columnDef.meta?.columnType !== 'image' && 'w-100 h-100'}`}
+                      className={`td-container ${cell.column.columnDef.meta?.columnType === 'image' && 'jet-table-image-column'
+                        } ${cell.column.columnDef.meta?.columnType !== 'image' && 'w-100 h-100'}`}
                     >
                       {flexRender(cell.column.columnDef.cell, {
                         ...cell.getContext(),
