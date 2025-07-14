@@ -7,9 +7,8 @@ import cx from 'classnames';
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   { path: '/:worspace_id', breadcrumb: 'Applications' },
-  { path: '/:workspace_id/modules', breadcrumb: 'All modules' },
+  { path: '/:workspace_id/modules', breadcrumb: 'Modules' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
-  { path: '/:workspace_id/modules', breadcrumb: 'All modules' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/:worpsace_id/audit-logs', breadcrumb: ' ' },
   { path: '/data-sources', breadcrumb: 'Data sources' },
@@ -35,7 +34,6 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
   const location = useLocation();
   const search = location.search || '';
-
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.map(({ breadcrumb, beta }, i) => {
