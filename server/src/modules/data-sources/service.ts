@@ -205,8 +205,8 @@ export class DataSourcesService implements IDataSourcesService {
   ): Promise<DataSource> {
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
-      organizationId,
-      environmentId
+      environmentId,
+      organizationId
     );
     delete dataSource['dataSourceOptions'];
     return dataSource;
@@ -220,8 +220,8 @@ export class DataSourcesService implements IDataSourcesService {
     const { environment_id, dataSourceId } = testDataSourceDto;
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
-      user.defaultOrganizationId,
-      environment_id
+      environment_id,
+      user.defaultOrganizationId
     );
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
