@@ -767,9 +767,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   if (componentType === 'Container' || componentType === 'Form') {
     padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
   }
-  if (componentType === 'Tabs') {
-    padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
-  }
+  // if (componentType === 'Tabs') {
+  //   padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  // }
   if (componentType === 'ModalV2') {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {
