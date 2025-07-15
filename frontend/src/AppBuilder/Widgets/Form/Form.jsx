@@ -288,9 +288,9 @@ const FormComponent = (props) => {
     });
   };
 
-  const handleFormSubmission = ({ detail: { buttonComponentId } }) => {
+  const handleFormSubmission = ({ detail: { buttonComponentId, buttonModuleId } }) => {
     if (!advanced) {
-      if (buttonToSubmit === buttonComponentId) {
+      if (buttonToSubmit === buttonComponentId && buttonModuleId === moduleId) {
         fireSubmissionEvent();
       }
     } else if (buttonComponentId == uiComponents.length - 1 && JSONSchema.hasOwnProperty('submitButton')) {
