@@ -85,6 +85,8 @@ const sidebars = {
             'setup/upgrade-to-lts',
             'setup/upgrade-to-v3',
             'setup/cloud-v3-migration',
+            'setup/upgrade-to-v3.16',
+
           ]
         }
       ],
