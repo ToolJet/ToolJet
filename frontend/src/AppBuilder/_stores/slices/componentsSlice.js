@@ -784,8 +784,44 @@ export const createComponentsSlice = (set, get) => ({
   getOtherFieldsToBeResolved: (moduleId) => {
     return {
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
-      isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
+      isPagesSidebarVisible: get().pageSettings?.definition?.properties?.showMenu?.value,
+      pages: get().modules[moduleId].pages.reduce((accumulator, currentObject) => {
+        if (currentObject && currentObject.id) {
+          accumulator[currentObject.id] = { hidden: currentObject.hidden };
+        }
+        return accumulator;
+      }, {}),
     };
+  },
+
+  // TODO: This function is used to resolve the page hidden value, needs to be refactored to use the same logic as resolveOthers
+  resolvePageHiddenValue: (moduleId, isUpdate = false, pageId, item) => {
+    const { getAllExposedValues, generateDependencyGraphForRefs } = get();
+    let resolvedValue = item;
+    if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+      const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
+        item,
+        get().modules[moduleId].componentNameIdMapping,
+        get().modules[moduleId].queryNameIdMapping
+      );
+      resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
+      generateDependencyGraphForRefs(
+        allRefs,
+        `pages.${pageId}.hidden`,
+        undefined,
+        undefined,
+        valueWithBrackets,
+        isUpdate,
+        moduleId
+      );
+    }
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId].others.pages[pageId] = { hidden: resolvedValue };
+      },
+      false,
+      'resolvePageHiddenValue'
+    );
   },
 
   resolveOthers: (moduleId, isUpdate = false, otherObj) => {
@@ -798,7 +834,36 @@ export const createComponentsSlice = (set, get) => ({
     const items = otherObj || getOtherFieldsToBeResolved(moduleId);
     const resolvedValues = {};
     Object.entries(items).forEach(([key, item]) => {
-      if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+      if (key === 'pages') {
+        Object.entries(item).forEach(([pageId, page]) => {
+          const { hidden = null } = page;
+          if (!resolvedValues[key]) {
+            resolvedValues[key] = {};
+          }
+
+          if (typeof hidden?.value === 'string' && hidden?.value?.includes('{{') && hidden?.value?.includes('}}')) {
+            const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
+              hidden.value,
+              get().modules[moduleId].componentNameIdMapping,
+              get().modules[moduleId].queryNameIdMapping
+            );
+
+            const resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
+            resolvedValues[key][pageId] = { hidden: resolvedValue };
+            generateDependencyGraphForRefs(
+              allRefs,
+              `pages.${pageId}.hidden`,
+              undefined,
+              undefined,
+              valueWithBrackets,
+              isUpdate,
+              moduleId
+            );
+          } else {
+            resolvedValues[key][pageId] = { hidden };
+          }
+        });
+      } else if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
         const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
           item,
           get().modules[moduleId].componentNameIdMapping,
@@ -1482,8 +1547,9 @@ export const createComponentsSlice = (set, get) => ({
       (state) => {
         state.selectedComponents = components;
         if (components.length === 1) {
-          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
-          state.isRightSidebarOpen = true;
+          if (state.isRightSidebarOpen) {
+            state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          }
         }
       },
       false,
@@ -1494,7 +1560,9 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = [componentId];
-        state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+        if (state.isRightSidebarOpen) {
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+        }
       },
       false,
       { type: 'setSelectedComponentAsModal', payload: { componentId } }

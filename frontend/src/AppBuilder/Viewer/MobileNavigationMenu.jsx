@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as MobileMenu } from 'react-burger-menu';
@@ -139,13 +139,24 @@ const MobileNavigationMenu = ({
   changeToDarkMode,
   showDarkModeToggle,
   appName,
+  viewerWrapperRef,
 }) => {
   const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const license = useStore((state) => state.license);
-
+  const [isViewportNarrow, setIsViewportNarrow] = useState(false);
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (viewerWrapperRef.current) {
+      viewerWrapperRef.current.offsetWidth > 450 ? setIsViewportNarrow(false) : setIsViewportNarrow(true);
+    }
+  }, []);
+
+  const dynamicMenuWrapClass = isViewportNarrow ? 'bm-menu-wrap--viewport-narrow' : '';
+  const dynamicOverlayClass = isViewportNarrow ? 'bm-overlay--viewport-narrow' : '';
+
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
     const queryParams = {
@@ -215,6 +226,8 @@ const MobileNavigationMenu = ({
         pageWrapId={'page-wrap'}
         outerContainerId={'outer-container'}
         onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
+        className={dynamicMenuWrapClass}
+        overlayClassName={dynamicOverlayClass}
         customBurgerIcon={
           <div className="icon-btn">
             <SolidIcon fill="var(--icon-strong)" name="menu" />
