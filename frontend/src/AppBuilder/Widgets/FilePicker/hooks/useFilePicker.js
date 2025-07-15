@@ -126,7 +126,6 @@ export const useFilePicker = ({
           type: file.type,
           webkitRelativePath: file.webkitRelativePath,
           content: readFileAsText,
-          dataURL: base64Data,
           base64Data: base64Data,
           parsedValue: parsedValue,
           parsedData: parsedData,
@@ -490,14 +489,31 @@ export const useFilePicker = ({
       setIsMinCountMet(minMet);
       setIsMandatoryMet(mandatoryMet);
       setIsValid(currentIsValid);
+      const legacySelectedFiles = [];
+      const formattedSelectedFiles = [];
+
+      selectedFiles.forEach(file => {
+        const { filePath, ...formattedFile } = file;
+
+        legacySelectedFiles.push({
+          name: file.name,
+          type: file.type,
+          content: file.content,
+          dataURL: file.base64Data,
+          base64Data: file.base64Data,
+          parsedData: file.parsedData,
+          filePath: file.filePath
+        });
+        formattedSelectedFiles.push(formattedFile);
+      })
 
       // useExposeState handles: isLoading, isVisible, isDisabled, setVisibility, setLoading, setDisable
       // We manually expose widget-specific items:
       setExposedVariables?.({
         clearFiles: clearFiles,
         setFileName: setFileName,
-        files: selectedFiles, // Contains parsedValue
-        file: selectedFiles, // Contains parsedValue
+        files: formattedSelectedFiles, // Contains parsedValue
+        file: legacySelectedFiles, // Contains parsedValue
         isParsing: isParsing,
         isMandatory: isMandatory,
         isValid: currentIsValid,
