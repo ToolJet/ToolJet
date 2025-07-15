@@ -447,7 +447,7 @@ export const handleActivateNonDraggingComponents = () => {
 };
 
 export const handleActivateTargets = (parentId) => {
-  const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban'];
+  const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban', 'ModalV2'];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;
