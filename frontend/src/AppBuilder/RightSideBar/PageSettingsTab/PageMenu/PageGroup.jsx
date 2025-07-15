@@ -27,8 +27,7 @@ export const RenderPage = ({
   position,
   onPageClick,
 }) => {
-  const resolveReferences = useStore((state) => state.resolveReferences);
-  const currentMode = useStore((state) => state.currentMode);
+  const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
   const isHomePage = page.id === homePageId;
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
   const IconElement = (props) => {
@@ -44,7 +43,7 @@ export const RenderPage = ({
 
     return <Icon {...props} />;
   };
-  return resolveReferences('canvas', page?.hidden?.value) || page.disabled || page?.restricted ? null : (
+  return pageVisibility || page.disabled || page?.restricted ? null : (
     <div
       key={page.name}
       data-id={page.id}

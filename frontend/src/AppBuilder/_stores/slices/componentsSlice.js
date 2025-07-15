@@ -802,7 +802,36 @@ export const createComponentsSlice = (set, get) => ({
     const items = otherObj || getOtherFieldsToBeResolved(moduleId);
     const resolvedValues = {};
     Object.entries(items).forEach(([key, item]) => {
-      if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+      if (key === 'pages') {
+        Object.entries(item).forEach(([pageId, page]) => {
+          const { hidden = null } = page;
+          if (!resolvedValues[key]) {
+            resolvedValues[key] = {};
+          }
+
+          if (typeof hidden?.value === 'string' && hidden?.value?.includes('{{') && hidden?.value?.includes('}}')) {
+            const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
+              hidden.value,
+              get().modules[moduleId].componentNameIdMapping,
+              get().modules[moduleId].queryNameIdMapping
+            );
+
+            const resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
+            resolvedValues[key][pageId] = { hidden: resolvedValue };
+            generateDependencyGraphForRefs(
+              allRefs,
+              `pages.${pageId}.hidden`,
+              undefined,
+              undefined,
+              valueWithBrackets,
+              isUpdate,
+              moduleId
+            );
+          } else {
+            resolvedValues[key][pageId] = { hidden };
+          }
+        });
+      } else if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
         const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
           item,
           get().modules[moduleId].componentNameIdMapping,

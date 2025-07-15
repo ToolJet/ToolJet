@@ -491,7 +491,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   getPagesVisibility: (moduleId = 'canvas', id) => {
-    return get().resolvedStore.modules[moduleId].others.pages[id];
+    return get().resolvedStore.modules[moduleId].others.pages[id].hidden ?? false;
   },
 
   setResolvedValueForOthers: (values, moduleId = 'canvas') => {
