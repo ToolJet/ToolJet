@@ -1,0 +1,241 @@
+name: Cloud Build Image, Deploy to AKS & Deploy Frontend to Netlify
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'Git branch to build from'
+        required: true
+        default: 'main'
+      dockerfile_path:
+        description: 'Path to Dockerfile'
+        required: true
+        default: './docker/cloud/cloud-server.Dockerfile'
+        type: choice
+        options:
+          - ./docker/cloud/cloud-server.Dockerfile
+          - ./docker/dev/dev-server.Dockerfile
+          - ./docker/cloud/cloud-server-arm.Dockerfile
+      docker_tag:
+        description: 'Docker tag suffix (e.g., cloud-staging-v14)'
+        required: true
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_tag: ${{ steps.taggen.outputs.tag }}
+
+    steps:
+
+      - name: ✅ Check user authorization
+        run: |
+          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+
+          if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                "${{ github.actor }}" != "$allowed_user2" && \
+                "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '${{ github.actor }}' is authorized."
+          fi
+
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: DockerHub Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Generate full Docker tag
+        id: taggen
+        run: |
+          input_tag="${{ github.event.inputs.docker_tag }}"
+          if [[ "$input_tag" == *"/"* ]]; then
+            echo "tag=$input_tag" >> $GITHUB_OUTPUT
+          else
+            echo "tag=tooljet/tj-osv:$input_tag" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ${{ github.event.inputs.dockerfile_path }}
+          push: true
+          tags: ${{ steps.taggen.outputs.tag }}
+          platforms: linux/amd64
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.inputs.branch_name }}
+
+      - name: Show the full Docker tag
+        run: |
+          echo "✅ Docker image will be tagged as: ${{ steps.taggen.outputs.tag }}"
+
+
+  deploy-to-aks:
+    name: Deploy to AKS
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.32.4'
+
+      - name: Set AKS Context
+        run: |
+          az aks get-credentials --resource-group tj-cloud-stage \
+            --name tj-stage-cluster \
+            --overwrite-existing
+
+      - name: Set Image in AKS Deployment
+        run: |
+          kubectl set image deployment/tooljet \
+            tooljet=${{ needs.build-and-push.outputs.image_tag }}
+
+      - name: Wait for pod readiness
+        run: |
+          echo "⏳ Waiting for pod(s) in deployment 'tooljet' to be ready..."
+          kubectl rollout status deployment/tooljet --timeout=10m
+
+      - name: 🐞 Debug rollout failure (if any)
+        if: failure()
+        run: |
+          echo "🔍 Deployment rollout failed. Dumping events and pod logs..."
+          kubectl describe deployment tooljet
+          kubectl get pods -l app=tooljet
+          kubectl logs --tail=50 -l app=tooljet
+
+      - name: Wait until backend is reachable
+        run: |
+          for i in {1..60}; do
+            if curl -s --fail https://gcpstage-server.tooljet.ai/healthz; then
+              echo "✅ Backend is up"
+              exit 0
+            fi
+            echo "⏳ Waiting for backend to be ready... ($i/60)"
+            sleep 5
+          done
+          echo "❌ Backend not ready in time"
+          exit 1
+
+
+  deploy-frontend:
+    name: Deploy Frontend to Netlify
+    runs-on: ubuntu-latest
+    needs: wait-for-stabilization
+
+    steps:
+      - name: ✅ Check user authorization
+        run: |
+          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+
+          if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                "${{ github.actor }}" != "$allowed_user2" && \
+                "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '${{ github.actor }}' is authorized."
+          fi
+
+      - name: 📥 Manual Git checkout with submodules
+        run: |
+          set -e
+          BRANCH="${{ github.event.inputs.branch_name }}"
+          REPO="https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git config --global http.version HTTP/1.1
+          git config --global http.postBuffer 524288000
+
+          echo "👉 Cloning $REPO (branch: $BRANCH)"
+          git clone --recurse-submodules --depth=1 --branch "$BRANCH" "$REPO" repo
+          cd repo
+
+          echo "🔁 Updating submodules"
+          git submodule update --init --recursive
+
+          echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
+
+          BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
+            name="$sm_path"
+            echo "↪ $name: checking out branch $BRANCH"
+            if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+              git fetch origin "$BRANCH:$BRANCH"
+              git checkout "$BRANCH"
+            else
+              echo "⚠️ Branch not found, falling back to main"
+              git checkout main && git pull origin main
+            fi
+          '
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 22.15.1
+
+      - name: 📦 Install dependencies
+        run: npm install
+        working-directory: repo
+
+      - name: 🛠️ Build project
+        run: npm run build:plugins:prod && npm run build:frontend
+        working-directory: repo
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
+          NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
+          NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
+          SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
+          SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
+          TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
+          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
+          TOOLJET_EDITION: cloud
+          WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/ai-create-account
+
+      - name: 🚀 Deploy to Netlify
+        run: |
+          npm install -g netlify-cli
+          netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_NETLIFY_SITE_ID }}
+        working-directory: repo
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
+          NODE_ENV: ${{ secrets.CLOUD_NODE_ENV }}
+          NODE_OPTIONS: ${{ secrets.CLOUD_NODE_OPTIONS }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.CLOUD_SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.CLOUD_SENTRY_PROJECT }}
+          SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
+          SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
+          TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
+          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
+          WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/ai-create-account
+          TOOLJET_EDITION: cloud
