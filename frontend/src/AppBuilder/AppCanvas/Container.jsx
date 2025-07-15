@@ -108,7 +108,7 @@ const Container = React.memo(
       currentMode === 'edit' &&
       (id === 'canvas' || componentType === 'ModuleContainer') &&
       components.length === 0 &&
-      !isOverCurrent;
+      !isDragging;
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
@@ -159,7 +159,6 @@ const Container = React.memo(
       );
     };
     const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
-
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -193,8 +192,7 @@ const Container = React.memo(
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
-          'show-grid':
-            isOverCurrent && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
           'module-container': appType === 'module',
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
