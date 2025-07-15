@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Google Cloud Spanner datasource",
+  "description": "A schema defining Google Cloud Spanner datasource",
+  "type": "database",
+  "source": {
+    "name": "Google Cloud Spanner",
+    "kind": "spanner",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_email": {
+        "type": "string"
+      },
+      "project_id": {
+        "type": "string"
+      },
+      "private_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "instance_id": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "client_email": {
+      "label": "Client Email",
+      "key": "client_email",
+      "type": "text",
+      "description": "Enter the Google Cloud service account client email",
+      "hint": "You can get this from your Google Cloud Console under Service Accounts."
+    },
+    "project_id": {
+      "label": "Project ID",
+      "key": "project_id",
+      "type": "text",
+      "description": "Enter Project ID",
+      "hint": "This is the ID of your Google Cloud project where the Spanner instance is hosted."
+    },
+    "private_key": {
+      "label": "Private Key",
+      "key": "private_key",
+      "type": "password",
+      "description": "Enter the Google Cloud service account private key",
+      "hint": "You can generate a service account key from your Google Cloud Console."
+    },
+    "instance_id": {
+      "label": "Instance ID",
+      "key": "instance_id",
+      "type": "text",
+      "description": "Enter the Google Cloud Spanner instance ID"
+    }
+  },
+  "required": [
+    "client_email",
+    "project_id",
+    "private_key",
+    "instance_id"
+  ]
+}
