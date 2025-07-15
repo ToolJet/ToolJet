@@ -63,6 +63,11 @@ jobs:
         id: taggen
         run: |
           input_tag="${{ github.event.inputs.docker_tag }}"
+          if [[ -z "$input_tag" ]]; then
+            echo "❌ docker_tag input is empty. Aborting..."
+            exit 1
+          fi
+
           if [[ "$input_tag" == *"/"* ]]; then
             echo "tag=$input_tag" >> $GITHUB_OUTPUT
           else
@@ -102,6 +107,15 @@ jobs:
 
       - name: Set AKS Context
         run: ${{ secrets.CONNECT_TO_AKS_STAGE }}
+
+      - name: Validate image tag before deployment
+        run: |
+          if [[ -z "${{ needs.build-and-push.outputs.image_tag }}" ]]; then
+            echo "❌ Docker image tag is empty. Cannot proceed with deployment."
+            exit 1
+          fi
+          echo "✅ Image tag is: ${{ needs.build-and-push.outputs.image_tag }}"
+
 
       - name: Set Image in AKS Deployment
         run: |
