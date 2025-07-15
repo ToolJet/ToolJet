@@ -224,7 +224,7 @@ export const createAppSlice = (set, get) => ({
     const appId = get().appStore.modules[moduleId].app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
-      if (key === 'env' && isLicenseValid) return false;
+      if (key === 'env' && !isLicenseValid) return false;
       return true;
     });
 
