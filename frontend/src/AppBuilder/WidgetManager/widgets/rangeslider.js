@@ -1,6 +1,6 @@
 export const rangeSliderConfig = {
-  name: 'RangeSlider',
-  displayName: 'Range Slider',
+  name: 'RangeSliderLegacy',
+  displayName: 'Range Slider (Legacy)',
   description: 'Adjust value range',
   component: 'RangeSlider',
   defaultSize: {

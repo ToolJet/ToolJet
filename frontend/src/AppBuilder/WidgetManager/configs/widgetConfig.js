@@ -44,6 +44,7 @@ import {
   spinnerConfig,
   statisticsConfig,
   rangeSliderConfig,
+  rangeSliderV2Config,
   timelineConfig,
   svgImageConfig,
   htmlConfig,
@@ -94,7 +95,7 @@ export const widgets = [
   numberinputConfig,
   phoneinputConfig,
   currencyinputConfig,
-  rangeSliderConfig,
+  rangeSliderV2Config,
   starratingConfig,
 
   //Select inputs
@@ -153,6 +154,7 @@ export const widgets = [
   toggleswitchConfig,
   dropdownConfig,
   multiselectConfig,
+  rangeSliderConfig,
 
   //Module
   moduleContainerConfig,

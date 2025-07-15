@@ -2,10 +2,10 @@ export const rangeSliderV2Config = {
   name: 'RangeSlider',
   displayName: 'Range Slider',
   description: 'Adjust value range',
-  component: 'RangeSlider',
+  component: 'RangeSliderV2',
   defaultSize: {
     width: 9,
-    height: 30,
+    height: 60,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },

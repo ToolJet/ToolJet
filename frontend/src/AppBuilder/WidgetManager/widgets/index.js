@@ -131,4 +131,5 @@ export {
   boundedBoxConfig,
   moduleContainerConfig,
   moduleViewerConfig,
+  rangeSliderV2Config
 };

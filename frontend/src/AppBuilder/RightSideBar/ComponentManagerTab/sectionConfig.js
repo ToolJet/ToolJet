@@ -21,7 +21,7 @@ const sectionConfig = {
   },
   numberInputs: {
     title: 'Number inputs',
-    valueSet: new Set(['NumberInput', 'PhoneInput', 'CurrencyInput', 'RangeSlider', 'StarRating']),
+    valueSet: new Set(['NumberInput', 'PhoneInput', 'CurrencyInput', 'RangeSliderV2', 'StarRating']),
   },
   selectInputs: {
     title: 'Select inputs',
@@ -63,7 +63,7 @@ const sectionConfig = {
   },
   legacy: {
     title: 'Legacy',
-    valueSet: new Set(['Modal', 'Datepicker', 'RadioButton', 'ToggleSwitch', 'DropDown', 'Multiselect']),
+    valueSet: new Set(['Modal', 'Datepicker', 'RadioButton', 'ToggleSwitch', 'DropDown', 'Multiselect', 'RangeSlider']),
   },
 };
 
