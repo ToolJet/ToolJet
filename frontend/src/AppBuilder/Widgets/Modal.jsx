@@ -85,7 +85,6 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      fireEvent('onOpen');
     }
   };
 
@@ -99,7 +98,6 @@ export const Modal = function Modal({
     if (canvasElement && realCanvasEl && modalContainer) {
       modalContainer.style.height = ``;
       modalContainer.style.top = ``;
-      fireEvent('onClose');
     }
     if (canvasElement && !hasManyModalsOpen) {
       canvasElement.style.overflow = 'auto';

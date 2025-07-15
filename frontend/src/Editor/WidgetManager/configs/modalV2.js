@@ -112,11 +112,12 @@ export const modalV2Config = {
       displayName: 'ModalHeaderTitle',
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'fontWeight'],
       defaultValue: {
         text: 'Modal title',
         textSize: 20,
         textColor: '#000',
+        fontWeight: 'bold',
       },
     },
     {
@@ -131,6 +132,7 @@ export const modalV2Config = {
       properties: ['text'],
       styles: ['type', 'borderColor', 'padding'],
       defaultValue: {
+        textColor: 'var(--cc-primary-text)',
         text: 'Button1',
         type: 'outline',
         borderColor: '#CCD1D5',

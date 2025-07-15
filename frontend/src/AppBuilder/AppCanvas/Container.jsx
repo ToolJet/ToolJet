@@ -108,7 +108,7 @@ const Container = React.memo(
       currentMode === 'edit' &&
       (id === 'canvas' || componentType === 'ModuleContainer') &&
       components.length === 0 &&
-      !isOverCurrent;
+      !isDragging;
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
@@ -159,7 +159,6 @@ const Container = React.memo(
       );
     };
     const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
-
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -174,8 +173,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -192,8 +191,9 @@ const Container = React.memo(
           ...styles,
         }}
         className={cx('real-canvas', {
-          'sub-canvas': id !== 'canvas',
-          'show-grid': isOverCurrent && (index === 0 || index === null) && currentMode === 'edit',
+          'sub-canvas': id !== 'canvas' && appType !== 'module',
+          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          'module-container': appType === 'module',
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"
@@ -211,10 +211,10 @@ const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {sortedComponents.map((id) => (
+          {sortedComponents.map((componentId) => (
             <WidgetWrapper
-              id={id}
-              key={id}
+              id={componentId}
+              key={componentId}
               gridWidth={gridWidth}
               subContainerIndex={index}
               onOptionChange={onOptionChange}
@@ -225,6 +225,7 @@ const Container = React.memo(
               currentLayout={currentLayout}
               darkMode={darkMode}
               moduleId={moduleId}
+              parentId={id}
             />
           ))}
         </div>

@@ -22,6 +22,7 @@ import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import { diff } from 'deep-object-diff';
 import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
 import Spinner from '@/_ui/Spinner';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 import './form.scss';
 import { getModifiedColor } from '@/Editor/Components/utils';
@@ -45,8 +46,10 @@ const FormComponent = (props) => {
     componentCount,
     onComponentClick,
   } = props;
-  const childComponents = useStore((state) => state.getChildComponents(id), checkDiff);
-  const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id), shallow);
+
+  const { moduleId } = useModuleContext();
+  const childComponents = useStore((state) => state.getChildComponents(id, moduleId), checkDiff);
+  const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id, moduleId), shallow);
 
   const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
 
@@ -288,9 +291,9 @@ const FormComponent = (props) => {
     });
   };
 
-  const handleFormSubmission = ({ detail: { buttonComponentId } }) => {
+  const handleFormSubmission = ({ detail: { buttonComponentId, buttonModuleId } }) => {
     if (!advanced) {
-      if (buttonToSubmit === buttonComponentId) {
+      if (buttonToSubmit === buttonComponentId && buttonModuleId === moduleId) {
         fireSubmissionEvent();
       }
     } else if (buttonComponentId == uiComponents.length - 1 && JSONSchema.hasOwnProperty('submitButton')) {

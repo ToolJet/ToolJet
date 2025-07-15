@@ -97,7 +97,9 @@ export const createComponentsSlice = (set, get) => ({
           if (!state.containerChildrenMapping[parentId]) {
             state.containerChildrenMapping[parentId] = [];
           }
-          state.containerChildrenMapping[parentId].push(componentId);
+          if (!state.containerChildrenMapping[parentId].includes(componentId)) {
+            state.containerChildrenMapping[parentId].push(componentId);
+          }
         });
       },
       false,
@@ -996,8 +998,8 @@ export const createComponentsSlice = (set, get) => ({
           if (state.containerChildrenMapping[id]) {
             delete state.containerChildrenMapping[id];
           }
-          if (state.containerChildrenMapping?.canvas?.includes(id)) {
-            state.containerChildrenMapping[moduleId].canvas = state.containerChildrenMapping[moduleId].filter(
+          if (state.containerChildrenMapping?.[moduleId]?.includes(id)) {
+            state.containerChildrenMapping[moduleId] = state.containerChildrenMapping[moduleId].filter(
               (wid) => wid !== id
             );
           }
@@ -1146,9 +1148,13 @@ export const createComponentsSlice = (set, get) => ({
                 if (!state.containerChildrenMapping[newParentId]) {
                   state.containerChildrenMapping[newParentId] = [];
                 }
-                state.containerChildrenMapping[newParentId].push(componentId);
+                if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
+                  state.containerChildrenMapping[newParentId].push(componentId);
+                }
               } else {
-                state.containerChildrenMapping[moduleId].push(componentId);
+                if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
+                  state.containerChildrenMapping[moduleId].push(componentId);
+                }
               }
             }
 
@@ -1410,9 +1416,13 @@ export const createComponentsSlice = (set, get) => ({
           if (!state.containerChildrenMapping[newParentId]) {
             state.containerChildrenMapping[newParentId] = [];
           }
-          state.containerChildrenMapping[newParentId].push(componentId);
+          if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
+            state.containerChildrenMapping[newParentId].push(componentId);
+          }
         } else {
-          state.containerChildrenMapping[moduleId].push(componentId);
+          if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
+            state.containerChildrenMapping[moduleId].push(componentId);
+          }
         }
       }, skipUndoRedo),
       false,

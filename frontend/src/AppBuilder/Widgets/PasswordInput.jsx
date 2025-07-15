@@ -2,19 +2,15 @@ import React from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-
 export const PasswordInput = (props) => {
   const inputLogic = useInput(props);
-
   const toggleVisibility = () => {
     inputLogic.setIconVisibility(!inputLogic.iconVisibility);
   };
-
   const { width, direction, auto, alignment } = props?.styles || {};
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const { label } = props?.properties || {};
   const { labelWidth } = inputLogic;
-
   const passwordIcon = (
     <div
       onClick={toggleVisibility}
@@ -51,7 +47,6 @@ export const PasswordInput = (props) => {
       />
     </div>
   );
-
   return (
     <BaseInput
       {...props}
