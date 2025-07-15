@@ -193,7 +193,7 @@ describe("Datasource Manager", () => {
         Username: Cypress.env("pg_user"),
         Password: Cypress.env("pg_password"),
       },
-      ".form-switch"
+      '[data-cy="ssl-enabled-toggle-input"]'
     );
     // cy.wait("@datasource");
     cy.wait(1000);
