@@ -10,7 +10,7 @@ export function defineAppAbility(
   UserAllPermissions: UserAllPermissions,
   appId?: string
 ): void {
-  const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
+  const {   superAdmin, isAdmin, userPermission } = UserAllPermissions;
   const userAppPermissions = userPermission?.[MODULES.APP];
   const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
   const isAllAppsCreatable = !!userPermission?.appCreate;

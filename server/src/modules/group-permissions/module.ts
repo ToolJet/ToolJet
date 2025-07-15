@@ -46,7 +46,7 @@ export class GroupPermissionsModule extends SubModule {
         GroupPermissionsRepository,
         FeatureAbilityFactory,
       ],
-      exports: [GroupPermissionsUtilService],
+      exports: [GroupPermissionsUtilService, GroupPermissionsRepository],
     };
   }
 }

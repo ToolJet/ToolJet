@@ -24,6 +24,8 @@ import { UsersModule } from '@modules/users/module';
 import { UserSessionRepository } from '@modules/session/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { GroupPermissionsModule } from '@modules/group-permissions/module';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 @Module({})
 export class AppsModule extends SubModule {
@@ -71,6 +73,7 @@ export class AppsModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await UsersModule.register(configs),
         await AppEnvironmentsModule.register(configs),
+        await GroupPermissionsModule.register(configs),
       ],
       controllers: [AppsController, WorkflowController],
       providers: [
@@ -94,6 +97,7 @@ export class AppsModule extends SubModule {
         RolesRepository,
         UserSessionRepository,
         UserRepository,
+        GroupPermissionsRepository,
       ],
       exports: [AppsUtilService, AppImportExportService],
     };
