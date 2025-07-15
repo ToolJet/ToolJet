@@ -1,4 +1,4 @@
-name: Cloud Build Image, Deploy to AKS & Deploy Frontend to Netlify
+name: Cloud Stage Build Image, Deploy to AKS & Deploy Frontend to Netlify
 
 on:
   workflow_dispatch:
@@ -97,10 +97,8 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS_STAGE }}
 
-      - name: Install kubectl
+      - name: Set up kubectl
         uses: azure/setup-kubectl@v3
-        with:
-          version: '1.32.4'
 
       - name: Set AKS Context
         run: ${{ secrets.CONNECT_TO_AKS_STAGE }}
