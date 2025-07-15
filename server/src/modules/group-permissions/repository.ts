@@ -54,6 +54,24 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     }, manager || this.manager);
   }
 
+  async getAllUserGroupsAndRoles(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions[]> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.find(GroupPermissions, {
+        where: {
+          organizationId: organizationId,
+          groupUsers: {
+            userId: userId,
+          },
+        },
+        relations: {
+          groupUsers: {
+            group: true,
+          },
+        },
+      });
+    }, manager || this.manager);
+  }
+
   async createGroup(
     organizationId: string,
     createGroupObject: CreateDefaultGroupObject,
