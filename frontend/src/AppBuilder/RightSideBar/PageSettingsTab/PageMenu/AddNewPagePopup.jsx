@@ -580,6 +580,7 @@ const PageEvents = ({ page, allPages }) => {
 };
 
 const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled }) => {
+  const resolvePageHiddenValue = useStore((state) => state.resolvePageHiddenValue);
   const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
 
   return (
@@ -618,12 +619,14 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
                   type="checkbox"
                   checked={resolveReferences(hidden?.value)}
                   disabled={isHomePage}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     updatePageVisibility(page?.id, {
                       value: `{{${e.target.checked}}}`,
                       fxActive: forceCodeBox,
-                    })
-                  }
+                    });
+
+                    resolvePageHiddenValue('canvas', true, page?.id, `{{${e.target.checked}}}`);
+                  }}
                 />
               </div>
             )}
@@ -640,6 +643,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
               value: value,
               fxActive: forceCodeBox,
             });
+            resolvePageHiddenValue('canvas', true, page?.id, value);
           }}
         />
       )}

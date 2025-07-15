@@ -792,6 +792,36 @@ export const createComponentsSlice = (set, get) => ({
     };
   },
 
+  // TODO: This function is used to resolve the page hidden value, needs to be refactored to use the same logic as resolveOthers
+  resolvePageHiddenValue: (moduleId, isUpdate = false, pageId, item) => {
+    const { getAllExposedValues, generateDependencyGraphForRefs } = get();
+    let resolvedValue = item;
+    if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+      const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
+        item,
+        get().modules[moduleId].componentNameIdMapping,
+        get().modules[moduleId].queryNameIdMapping
+      );
+      resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
+      generateDependencyGraphForRefs(
+        allRefs,
+        `pages.${pageId}.hidden`,
+        undefined,
+        undefined,
+        valueWithBrackets,
+        isUpdate,
+        moduleId
+      );
+    }
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId].others.pages[pageId] = { hidden: resolvedValue };
+      },
+      false,
+      'resolvePageHiddenValue'
+    );
+  },
+
   resolveOthers: (moduleId, isUpdate = false, otherObj) => {
     const {
       getOtherFieldsToBeResolved,
