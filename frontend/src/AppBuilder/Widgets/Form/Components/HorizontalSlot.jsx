@@ -54,7 +54,9 @@ export const HorizontalSlot = React.memo(
 
     return (
       <div
-        className={`jet-${componentType?.toLowerCase()}-${slotName} wj-${componentType?.toLowerCase()}-${slotName}`}
+        className={`jet-${componentType?.toLowerCase()}-${slotName} wj-${componentType?.toLowerCase()}-${slotName} ${
+          isEditing ? 'tw-select-none' : ''
+        }`}
         style={slotStyle}
       >
         <div
