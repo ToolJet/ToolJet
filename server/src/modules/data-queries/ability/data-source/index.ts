@@ -5,6 +5,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../../constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { DataSource } from '@entities/data_source.entity';
+import { DataSourceTypes } from '@modules/data-sources/constants';
 
 type Subjects = InferSubjects<typeof DataSource> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -30,13 +31,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isAllViewable = !!resourcePermissions?.isAllUsable;
 
     const dataSourceId = request?.tj_resource_id;
-    const isStatic = request?.resource_type === 'static';
-
-    // Always grant RUN_EDITOR and RUN_VIEWER permissions
-    can([FEATURE_KEY.RUN_EDITOR, FEATURE_KEY.RUN_VIEWER], DataSource);
+    const dataSource = request?.tj_data_source as DataSource;
+    const isStatic = dataSource?.type === DataSourceTypes.STATIC;
 
     // Define permissions for data queries
-
     if (isStatic || isAdmin || superAdmin || isAllEditable || isCanCreate || isCanDelete) {
       can(
         [
