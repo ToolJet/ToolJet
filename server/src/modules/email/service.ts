@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
-import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { generateInviteURL, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
 import {
   SendWelcomeEmailPayload,
   SendOrganizationUserWelcomeEmailPayload,
@@ -20,6 +20,12 @@ handlebars.registerHelper('highlightMentionedUser', function (comment) {
   return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
 });
 handlebars.registerHelper('eq', (a, b) => a == b);
+handlebars.registerHelper('or', (a, b) => {
+  return a || b;
+});
+handlebars.registerHelper('and', (a, b) => {
+  return a && b;
+});
 
 @Injectable()
 export class EmailService implements IEmailService {
@@ -143,11 +149,14 @@ export class EmailService implements IEmailService {
     await this.init(organizationId);
     const subject = 'Reset your password';
     const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
+    const tooljetEdition = getTooljetEdition();
+    console.log(tooljetEdition, 'edition');
     const templateData = {
       name: firstName || '',
       resetLink: url,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition, // Pass edition to template
     };
     const templatePath = this.defaultWhiteLabelState ? 'default_reset_password.hbs' : 'reset_password.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
