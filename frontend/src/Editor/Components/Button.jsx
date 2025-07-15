@@ -5,6 +5,7 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
 import { getModifiedColor } from './utils';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
@@ -21,6 +22,7 @@ export const Button = function Button(props) {
     padding,
     iconVisibility,
   } = styles;
+  const moduleId = useModuleId();
 
   const { loadingState, disabledState } = properties;
   const [label, setLabel] = useState(typeof properties.text === 'string' ? properties.text : '');
@@ -168,7 +170,7 @@ export const Button = function Button(props) {
 
   const handleClick = () => {
     if (!disable && !loading) {
-      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
+      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } });
       document.dispatchEvent(event1);
       fireEvent('onClick');
     }
