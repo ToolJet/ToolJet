@@ -1,0 +1,24 @@
+{
+  "name": "@tooljet-plugins/hubspot",
+  "version": "0.0.1",
+  "description": "HubSpot datasource plugin for ToolJet",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@tooljet-plugins/common": "file:../common",
+    "got": "^11.8.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.5.2",
+    "@types/node": "^18.15.0",
+    "jest": "^27.5.1",
+    "typescript": "^4.9.5"
+  },
+  "files": [
+    "dist/**/*",
+    "lib/**/*"
+  ]
+}

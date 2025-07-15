@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "HubSpot datasource",
+  "description": "A schema defining HubSpot datasource",
+  "type": "api",
+  "source": {
+    "name": "HubSpot",
+    "kind": "hubspot",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API key",
+      "key": "api_key",
+      "type": "password",
+      "description": "API key for HubSpot"
+    }
+  },
+  "required": [
+    "api_key"
+  ]
+}
