@@ -340,7 +340,7 @@ class Restapi extends React.Component {
                 </div>
                 <div
                   className={`field rest-methods-url ${dataSourceURL && 'data-source-exists'}`}
-                  style={{ width: isWorkflowNode ? '100%' : 'calc(100% - 125px)' }}
+                  style={{ width: isWorkflowNode ? '100%' : 'calc(100% - 248px)' }}
                 >
                   <div className="font-weight-medium color-slate12">URL</div>
                   <div className="d-flex h-100 w-100">
