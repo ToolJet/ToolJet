@@ -12,6 +12,7 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 export const MultiselectV2 = ({
   id,
@@ -236,13 +237,16 @@ export const MultiselectV2 = ({
         setInputValue([]);
       },
       setVisibility: async function (value) {
-        setVisibility(value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsMultiSelectLoading(value);
+        setIsMultiSelectLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsMultiSelectDisabled(value);
+        setIsMultiSelectDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       label: label,
       isVisible: properties.visibility,
@@ -377,10 +381,7 @@ export const MultiselectV2 = ({
           isDisabled: isMultiSelectDisabled,
         }),
         '&:hover': {
-          borderColor:
-            state.isFocused || isMultiselectOpen
-              ? getInputFocusedColor({ accentColor })
-              : tinycolor(fieldBorderColor).darken(24).toString(),
+          borderColor: getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
@@ -414,6 +415,10 @@ export const MultiselectV2 = ({
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
         borderRadius: '6px',
       },
+    }),
+    placeholder: (provided, _state) => ({
+      ...provided,
+      color: 'var(--cc-placeholder-text)',
     }),
     dropdownIndicator: (provided, _state) => ({
       ...provided,

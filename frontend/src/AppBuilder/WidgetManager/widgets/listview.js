@@ -173,7 +173,7 @@ export const listviewConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 4,
+        defaultValue: 6,
       },
     },
   },
@@ -210,7 +210,7 @@ export const listviewConfig = {
       borderColor: { value: 'var(--cc-default-border)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
     },
   },
 };

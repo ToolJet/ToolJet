@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
@@ -25,6 +25,7 @@ import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 import './form.scss';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const FormComponent = (props) => {
   const {
@@ -80,6 +81,7 @@ const FormComponent = (props) => {
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
 
+  const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
   const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
@@ -93,6 +95,7 @@ const FormComponent = (props) => {
     boxShadow,
     flexDirection: 'column',
     clipPath: `inset(0 round ${computedBorderRadius})`,
+    '--cc-form-scroll-bar-color': activeColor,
   };
 
   const formContent = {
@@ -315,36 +318,46 @@ const FormComponent = (props) => {
     onOptionsChange(transformedExposedValues, id, component);
   }
 
-  const onOptionChange = (key, value, id, component) => {
-    if (!component) {
-      component = childComponents?.[id]?.component?.component;
-    }
-    const optionData = {
-      ...(childDataRef.current[id] ?? {}),
-      name: component?.name,
-      [key]: value,
-      formKey: component?.formKey,
-    };
-    childDataRef.current = { ...childDataRef.current, [id]: optionData };
-    setChildrenData(childDataRef.current);
-  };
-
-  const onOptionsChange = (exposedValues, id, component) => {
-    if (!component) {
-      component = childComponents?.[id]?.component?.component;
-    }
-    Object.entries(exposedValues).forEach(([key, value]) => {
+  const onOptionChange = useCallback(
+    (key, value, id, component) => {
+      if (!component) {
+        component = childComponents?.[id]?.component?.component;
+      }
       const optionData = {
-        name: component?.name,
         ...(childDataRef.current[id] ?? {}),
+        name: component?.name,
         [key]: value,
         formKey: component?.formKey,
       };
       childDataRef.current = { ...childDataRef.current, [id]: optionData };
-    });
-    setChildrenData(childDataRef.current);
-  };
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+      setChildrenData(childDataRef.current);
+    },
+    [childComponents]
+  );
+
+  const onOptionsChange = useCallback(
+    (exposedValues, id, component) => {
+      if (!component) {
+        component = childComponents?.[id]?.component?.component;
+      }
+      Object.entries(exposedValues).forEach(([key, value]) => {
+        const optionData = {
+          name: component?.name,
+          ...(childDataRef.current[id] ?? {}),
+          [key]: value,
+          formKey: component?.formKey,
+        };
+        childDataRef.current = { ...childDataRef.current, [id]: optionData };
+      });
+      setChildrenData(childDataRef.current);
+    },
+    [childComponents]
+  );
+
+  const mode = useStore((state) => state.currentMode, shallow);
+  const isEditing = mode === 'edit';
+
+  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
@@ -382,7 +395,7 @@ const FormComponent = (props) => {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
-      {!advanced && showHeader && (
+      {!advanced && showHeader && !isLoading && (
         <HorizontalSlot
           slotName="header"
           slotStyle={formHeader}
@@ -462,7 +475,7 @@ const FormComponent = (props) => {
           </fieldset>
         )}
       </div>
-      {!advanced && showFooter && (
+      {!advanced && showFooter && !isLoading && (
         <HorizontalSlot
           slotName="footer"
           slotStyle={formFooter}
