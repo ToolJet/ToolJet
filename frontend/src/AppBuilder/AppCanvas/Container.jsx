@@ -174,8 +174,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -211,10 +211,10 @@ const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {sortedComponents.map((id) => (
+          {sortedComponents.map((componentId) => (
             <WidgetWrapper
-              id={id}
-              key={id}
+              id={componentId}
+              key={componentId}
               gridWidth={gridWidth}
               subContainerIndex={index}
               onOptionChange={onOptionChange}
@@ -225,6 +225,7 @@ const Container = React.memo(
               currentLayout={currentLayout}
               darkMode={darkMode}
               moduleId={moduleId}
+              parentId={id}
             />
           ))}
         </div>

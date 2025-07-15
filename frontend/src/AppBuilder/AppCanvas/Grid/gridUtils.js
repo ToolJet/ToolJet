@@ -433,7 +433,7 @@ export function hideGridLinesOnSlot(slotId) {
 
 // Track previously active elements for efficient cleanup
 let previousActiveWidgets = null;
-let previousActiveCanvas = null
+let previousActiveCanvas = null;
 let processedComponents = new Set();
 
 export const handleActivateNonDraggingComponents = () => {
@@ -442,24 +442,28 @@ export const handleActivateNonDraggingComponents = () => {
     top: 0,
     left: 0,
     bottom: window.innerHeight,
-    right: window.innerWidth
+    right: window.innerWidth,
   };
-  
+
   const components = document.getElementsByClassName('moveable-box');
-  
+
   for (let i = 0; i < components.length; i++) {
     const component = components[i];
-    
+
     // Skip if already processed or is active target
     if (processedComponents.has(component) || component.classList.contains('active-target')) {
       continue;
     }
-    
+
     // Quick visibility check - only get rect if needed
     const rect = component.getBoundingClientRect();
-    
-    if (rect.bottom > viewport.top && rect.top < viewport.bottom && 
-        rect.right > viewport.left && rect.left < viewport.right) {
+
+    if (
+      rect.bottom > viewport.top &&
+      rect.top < viewport.bottom &&
+      rect.right > viewport.left &&
+      rect.left < viewport.right
+    ) {
       component.classList.add('non-dragging-component');
       processedComponents.add(component);
     }
@@ -469,7 +473,7 @@ export const handleActivateNonDraggingComponents = () => {
 // Clear cache when drag ends
 export const clearNonDraggingComponentsCache = () => {
   processedComponents.clear();
-  document.querySelectorAll('.non-dragging-component').forEach(component => {
+  document.querySelectorAll('.non-dragging-component').forEach((component) => {
     component.classList.remove('non-dragging-component');
   });
 };
@@ -524,7 +528,7 @@ export const handleDeactivateTargets = () => {
     previousActiveCanvas.classList.remove('dragging-component-canvas');
     previousActiveCanvas = null;
   }
-  clearNonDraggingComponentsCache()
+  clearNonDraggingComponentsCache();
   document.querySelectorAll('.non-dragging-component').forEach((component) => {
     component.classList.remove('non-dragging-component');
   });
@@ -561,7 +565,7 @@ export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
  * @param {string} ghostElementId - The ID of the ghost element to position
  */
 export const positionGhostElement = (targetElement, ghostElementId) => {
-  const ghostElement = document.getElementById('moveable-drag-ghost');
+  const ghostElement = document.getElementById(ghostElementId);
 
   if (!ghostElement || !targetElement) return;
 
@@ -581,7 +585,6 @@ export const positionGhostElement = (targetElement, ghostElementId) => {
   ghostElement.style.width = `${targetRect.width}px`;
   ghostElement.style.height = `${targetRect.height}px`;
 };
-
 
 /**
  * Finds the new parent ID based on the current mouse position during drag operations
@@ -607,4 +610,15 @@ export const findNewParentIdFromMousePosition = (clientX, clientY, currentTarget
   const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
 
   return newParentId || null;
+};
+
+export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => {
+  const components = Array.from(document.querySelectorAll('.active-target')).filter(
+    (component) => !selectedComponents.includes(component.getAttribute('widgetid'))
+  );
+  if (components.length > 0) {
+    for (const component of components) {
+      component?.classList?.remove('active-target');
+    }
+  }
 };

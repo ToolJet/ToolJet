@@ -19,6 +19,7 @@ const WidgetWrapper = memo(
     mode,
     darkMode,
     moduleId,
+    parentId,
   }) => {
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const stylesDefinition = useStore(
@@ -88,6 +89,7 @@ const WidgetWrapper = memo(
           id={id}
           widgetid={id}
           component-type={componentType}
+          parent-id={parentId}
           style={{
             // zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
             ...styles,
