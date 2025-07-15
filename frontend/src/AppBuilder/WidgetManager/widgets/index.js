@@ -40,6 +40,7 @@ import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
+import { rangeSliderV2Config } from './rangesliderV2';
 import { timelineConfig } from './timeline';
 import { svgImageConfig } from './svgImage';
 import { htmlConfig } from './html';
