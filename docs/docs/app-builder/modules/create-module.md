@@ -3,44 +3,39 @@ id: create-module
 title: Creating a Module
 ---
 
-A module is a reusable component that can be imported into other apps. It allows you to build complex functionality once and reuse it across multiple applications without having to rewrite code each time. This guide explains how to create a module in ToolJet.
+A module is a reusable interface that can be imported into applications. It allows you to build complex functionality once and reuse it across multiple applications without having to rewrite code each time. This guide explains how to create a module in ToolJet.
 
 Follow these steps to get started with creating a module:
 
-### 1. Navigate to the Modules Tab
-   Go to the **Modules** section from the ToolJet dashboard.
+- Go to the **Modules** section from the ToolJet dashboard.
 
-<img className="screenshot-full img-full" src="/img/app-builder/modules/dashboard.png" alt="Dashboard" /> 
+<!-- <img className="screenshot-full img-full" src="/img/app-builder/modules/dashboard.png" alt="Dashboard" />  -->
 
-### 2. Create a New Module
-   Click the **Create Module** button. In the popup, enter a name for your module.
+- Click on the **Create Module** button. In the popup, enter a name for the module.
 <img className="screenshot-full img-s" src="/img/app-builder/modules/create-module-modal.png" alt="Create Module" />
 
-
-### 3. Build Your Module
-   - Add components, queries, and actions just like you would in a normal app.  
-   - Use the **Module container** to place and resize your components. The same size will be used when this module is added to any app.
+- Add components, queries, and actions just like you would in a normal app. place and resize your components on the **Module container**. 
 
 <img className="screenshot-full img-full" src="/img/app-builder/modules/module-builder.png" alt="Module Builder" />
 
-### 4. Configure Module Properties
-Click on the module container to open the **properties panel**. Click here to learn more about module properties.
+- Click on the module container to open the properties panel Here you can see the **Input** and **Output** that help in defining how the module communicates with the parent application. These settings define how the module communicates with the parent app, making it easier to build dynamic, reusable modules that work across different data sets and queries.
 
 <img className="screenshot-full img-s" src="/img/app-builder/modules/module-container-property.png" alt="Properties Panel" /> 
 
-Let's say you’re building a form module, you can define inputs and outputs to send data from the parent app into the module and receive data back from the module into the parent app.
+<!-- ## Example
+
+Suppose you're building a **Form** module that needs to communicate with its parent app. You can do this by configuring inputs to receive data from the parent app and outputs to send data back.
 
 Here’s how it works:
 
-**Inputs**: Send data or trigger queries from the parent app into the module.
+- **Inputs**: Send data or trigger queries from the parent app into the module.
 
 <img className="screenshot-full img-m" style={{ marginBottom:'15px' }} src="/img/app-builder/modules/module-input.png" alt="Module Input" /> 
 
-**Outputs**: Send data back from the module to the parent app.
+- **Outputs**: Send data back from the module to the parent app.
 <img className="screenshot-full img-m" style={{ marginBottom:'15px' }}  src="/img/app-builder/modules/module-output.png" alt="Module Output" /> 
 
-**Test Input**: Use this to test your input configuration before importing the module into an app.
-<img className="screenshot-full img-full" style={{ marginBottom:'15px' }}   src="/img/app-builder/modules/module-test.png" alt="Test Input" /> 
+- **Test Input**: Use this to test your input configuration before importing the module into an app.
+<img className="screenshot-full img-full" style={{ marginBottom:'15px' }}   src="/img/app-builder/modules/module-test.png" alt="Test Input" />  -->
 
-
-Now, let's understand how you can use inputs and outputs in your module to pass data between the parent app and the module. Please refer to [Input and Output](/docs/beta/app-builder/modules/input-output) documentation for detailed information.
+Please refer to the **[Input and Output](/docs/beta/app-builder/modules/input-output)** documentation for detailed information on how to manage the inputs and outputs of a module.

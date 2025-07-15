@@ -4,8 +4,6 @@ title: Use Cases
 sidebar_label: Use Cases
 ---
 
-# Overview
-
 Modules let you reuse blocks of functionality across different applications. They help you save time by reducing repetitive work and make app development faster and more consistent.
 
 This guide explains how modules work and showcases common use cases where they can improve your development workflow.
