@@ -42,7 +42,7 @@ export const useFilePicker = ({
   // --- Resolved Styles ---
   const containerBackgroundColor = styles?.containerBackgroundColor ?? 'var(--color-surface-1)';
   const containerBorder = styles?.containerBorder ?? 'transparent';
-  const containerBoxShadow = styles?.containerBoxShadow ?? 'none';
+  const boxShadow = styles?.boxShadow ?? 'none';
   const containerPadding = styles?.containerPadding ?? 16;
   const borderRadius = styles?.borderRadius ?? 8;
 
@@ -576,7 +576,7 @@ export const useFilePicker = ({
     borderRadius, // Needed for styling
     containerBackgroundColor,
     containerBorder,
-    containerBoxShadow,
+    boxShadow,
     containerPadding,
     dropzoneTitleColor,
     dropzoneActiveColor,
