@@ -14,8 +14,6 @@ on:
         type: choice
         options:
           - ./docker/cloud/cloud-server.Dockerfile
-          - ./docker/dev/dev-server.Dockerfile
-          - ./docker/cloud/cloud-server-arm.Dockerfile
       docker_tag:
         description: 'Docker tag suffix (e.g., cloud-staging-v14)'
         required: true
