@@ -37,18 +37,21 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.map(({ breadcrumb, beta }, i) => {
-        if (i == 1 || breadcrumbs?.length == 1) {
+        if (i === 1 || breadcrumbs?.length === 1) {
           return (
-            <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
-              <p className=" tj-text-xsm ">{breadcrumb}</p>
-              {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
-              <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
-                {' '}
-                {sidebarNav && decodeEntities(sidebarNav)}
-              </li>
-            </div>
+            breadcrumb &&
+            sidebarNav?.length > 0 && (
+              <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+                <p className="tj-text-xsm">{breadcrumb}</p>
+                <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />
+                <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+                  {sidebarNav && decodeEntities(sidebarNav)}
+                </li>
+              </div>
+            )
           );
         }
+        return null;
       })}
     </ol>
   );

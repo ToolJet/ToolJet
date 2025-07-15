@@ -10,17 +10,18 @@ export function defineAppAbility(
   UserAllPermissions: UserAllPermissions,
   appId?: string
 ): void {
-  const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const userAppPermissions = userPermission?.[MODULES.APP];
   const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
   const isAllAppsCreatable = !!userPermission?.appCreate;
   const isAllAppsDeletable = !!userPermission?.appDelete;
   const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
+  const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
   // App listing is available to all
   can(FEATURE_KEY.GET, App);
 
-  if (isAdmin || superAdmin) {
+  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
     // Admin or super admin and do all operations
     can(
       [
