@@ -96,6 +96,11 @@ export class App extends BaseEntity {
     completedSteps: string[];
     activeStep: string;
     version: string;
+    dataSource: {
+      kind: string;
+      name: string;
+      id: string;
+    }
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })

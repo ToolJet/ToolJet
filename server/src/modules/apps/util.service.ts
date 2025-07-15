@@ -83,6 +83,16 @@ export class AppsUtilService implements IAppsUtilService {
                     loadingStates: ['Generating app', 'App generated successfully'],
                   },
                   {
+                    name: 'Select datasource',
+                    id: 'select_data_source',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                  {
+                    name: 'Connect datasource',
+                    id: 'connect_datasource',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                  {
                     name: 'Generate app',
                     id: 'generate_app',
                     loadingStates: ['Generating app', 'App generated successfully'],
@@ -90,7 +100,7 @@ export class AppsUtilService implements IAppsUtilService {
                 ],
                 activeStep: 'describe_app',
                 completedSteps: [],
-                version: 'v1',
+                version: 'v2',
               },
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
