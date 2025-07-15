@@ -52,11 +52,11 @@ export class EmailService implements IEmailService {
   }
 
   async init(organizationId?: string | null) {
-    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(null);
+    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(organizationId);
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;
     this.defaultWhiteLabelState = whiteLabelSettings?.default;
-    await this.emailUtilService.init();
+    await this.emailUtilService.init(organizationId);
   }
 
   protected compileTemplate(templatePath: string, templateData: object) {
