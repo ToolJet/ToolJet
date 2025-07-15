@@ -247,10 +247,12 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
-    editorType = 'basic',
+    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
+    editor_type,
     spec_url = '',
     disabled = false,
-    buttonText,
+    buttonText: buttonTextProp,
+    button_text, // For marketplace plugins, it currently receives button_text instead of buttonText
     text,
     subtext,
     oauth_configs,
@@ -261,6 +263,11 @@ const DynamicForm = ({
     const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
+    
+    // Prefer buttonText over button_text
+    const buttonText = buttonTextProp || button_text;
+
+    const editorType = editorTypeProp || editor_type;
 
     switch (type) {
       case 'password':
