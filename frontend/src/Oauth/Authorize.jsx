@@ -105,6 +105,7 @@ export function Authorize({ navigate }) {
     };
 
     const handleAuthError = (err) => {
+      console.log('SSO login error', err);
       const details = err?.data?.message;
       const inviteeEmail = details?.inviteeEmail;
       if (inviteeEmail) setInviteeEmail(inviteeEmail);
@@ -167,7 +168,6 @@ export function Authorize({ navigate }) {
   const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
     !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
   }`;
-
   return (
     <div>
       <TJLoader />
