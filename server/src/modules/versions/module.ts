@@ -10,6 +10,8 @@ import { AppsRepository } from '@modules/apps/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { GroupPermissionsModule } from '@modules/group-permissions/module';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 
 export class VersionModule extends SubModule {
@@ -49,6 +51,7 @@ export class VersionModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
+        await GroupPermissionsModule.register(configs),
       ],
       controllers: [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2],
       providers: [
@@ -67,6 +70,7 @@ export class VersionModule extends SubModule {
         VersionService,
         VersionUtilService,
         FeatureAbilityFactory,
+        GroupPermissionsRepository,
       ],
       exports: [VersionUtilService],
     };
