@@ -23,7 +23,7 @@ export interface IDataSourcesService {
 
   changeScope(dataSourceId: string, user: User): Promise<void>;
 
-  findOneByEnvironment(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSource>;
+  findOneByEnvironment(dataSourceId: string, environmentId: string, organizationId?: string): Promise<DataSource>;
 
   testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
 

@@ -1557,7 +1557,6 @@ export const createComponentsSlice = (set, get) => ({
       !selectedText
     ) {
       clearSelectedComponents();
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
       // if (!isRightSidebarPinned) {
       //   setRightSidebarOpen(false);
       // }
