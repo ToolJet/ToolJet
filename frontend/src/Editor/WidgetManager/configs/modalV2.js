@@ -105,7 +105,7 @@ export const modalV2Config = {
       componentName: 'Text',
       slotName: 'header',
       layout: {
-        top: 21,
+        top: 20,
         left: 1,
         height: 40,
       },
@@ -124,7 +124,7 @@ export const modalV2Config = {
       componentName: 'Button',
       slotName: 'footer',
       layout: {
-        top: 24,
+        top: 20,
         left: 22,
         height: 40,
       },
@@ -142,7 +142,7 @@ export const modalV2Config = {
       componentName: 'Button',
       slotName: 'footer',
       layout: {
-        top: 24,
+        top: 20,
         left: 32,
         height: 40,
       },

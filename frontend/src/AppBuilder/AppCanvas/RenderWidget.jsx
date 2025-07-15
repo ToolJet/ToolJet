@@ -191,7 +191,7 @@ const RenderWidget = ({
           role={'Box'}
           className={`canvas-component ${
             inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          } ${disabledState || loadingState ? 'disabled' : ''}`} //required for custom CSS
+          } ${disabledState || (loadingState && componentType !== 'ModalV2') ? 'disabled' : ''}`} //required for custom CSS
         >
           <ComponentToRender
             id={id}
