@@ -95,7 +95,7 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ secrets.AZURE_CREDENTIALS_STAGE }}
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
@@ -103,10 +103,7 @@ jobs:
           version: '1.32.4'
 
       - name: Set AKS Context
-        run: |
-          az aks get-credentials --resource-group tj-cloud-stage \
-            --name tj-stage-cluster \
-            --overwrite-existing
+        run: ${{ secrets.CONNECT_TO_AKS_STAGE }}
 
       - name: Set Image in AKS Deployment
         run: |
