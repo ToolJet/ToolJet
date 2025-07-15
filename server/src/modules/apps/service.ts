@@ -42,6 +42,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 
 @Injectable()
@@ -60,7 +61,8 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly groupPermissionsRepository: GroupPermissionsRepository
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
