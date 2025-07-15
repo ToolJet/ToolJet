@@ -109,14 +109,15 @@ jobs:
       - name: Wait until backend is reachable
         run: |
           for i in {1..60}; do
-            if curl -s --fail https://gcpstage-server.tooljet.ai/health; then
-              echo "✅ Backend is up"
+            response=$(curl -s --fail https://gcpstage-server.tooljet.ai/health || true)
+            if [[ "$response" == *'"works":"yeah"'* ]]; then
+              echo "✅ Backend is up and healthy"
               exit 0
             fi
             echo "⏳ Waiting for backend to be ready... ($i/60)"
             sleep 5
           done
-          echo "❌ Backend not ready in time"
+          echo "❌ Backend not ready in time or response invalid"
           exit 1
 
   deploy-frontend:
