@@ -109,7 +109,7 @@ jobs:
       - name: Wait until backend is reachable
         run: |
           for i in {1..60}; do
-            if curl -s --fail https://gcpstage-server.tooljet.ai/healthz; then
+            if curl -s --fail https://gcpstage-server.tooljet.ai/health; then
               echo "✅ Backend is up"
               exit 0
             fi
@@ -118,10 +118,6 @@ jobs:
           done
           echo "❌ Backend not ready in time"
           exit 1
-
-      # Sleep for stabilization
-      - name: ⏱️ Sleep 4 minutes
-        run: sleep 240
 
   deploy-frontend:
     name: Deploy Frontend to Netlify
