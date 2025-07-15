@@ -136,6 +136,14 @@ jobs:
           echo "❌ Backend not ready in time"
           exit 1
 
+  wait-for-stabilization:
+    name: Wait for 4 min
+    runs-on: ubuntu-latest
+    needs: deploy-to-aks
+
+    steps:
+      - name: ⏱️ Sleep 4 minutes
+        run: sleep 240
 
   deploy-frontend:
     name: Deploy Frontend to Netlify
