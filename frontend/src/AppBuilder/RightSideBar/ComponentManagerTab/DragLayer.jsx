@@ -60,7 +60,8 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
       <div
         ref={disabled ? undefined : drag}
         className={`draggable-box${disabled ? ' disabled' : ''}`}
-        style={{ height: '100%', width: isModuleTab && '100%' }}>
+        style={{ height: '100%', width: isModuleTab && '100%' }}
+      >
         {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
       </div>
     </>

@@ -5,17 +5,14 @@ import useStore from '@/AppBuilder/_stores/store';
 
 export const useElementGuidelines = (boxList, selectedComponents, dragParentId, getResolvedValue, virtualTarget) => {
   const [elementGuidelines, setElementGuidelines] = useState([]);
-  const draggingComponentId = useStore((state) => state.draggingComponentId);
-  const resizingComponentId = useStore((state) => state.resizingComponentId);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
-    const draggingOrResizingId = draggingComponentId || resizingComponentId;
     const isGrouped = findHighestLevelofSelection().length > 1;
     const firstSelectedParent =
       selectedComponents.length > 0 ? boxList.find((b) => b.id === selectedComponents[0])?.parent : null;
-    const selectedParent = dragParentId || firstSelectedParent;
+    const selectedParent = firstSelectedParent;
     const isAnyModalOpen = document.querySelector('#modal-container') ? true : false;
 
     const guidelines = boxList
@@ -26,6 +23,9 @@ export const useElementGuidelines = (boxList, selectedComponents, dragParentId, 
 
         // Early return for non-visible elements
         if (!isVisible) return false;
+
+        // If component is selected, don't show its guidelines
+        if (selectedSet.has(box.id)) return false;
 
         // Don't show guidelines for components which are outside the modal specially on main canvas
         if (virtualTarget && isAnyModalOpen) {
@@ -48,25 +48,11 @@ export const useElementGuidelines = (boxList, selectedComponents, dragParentId, 
           return selectedParent ? box.parent === selectedParent : !box.parent;
         }
 
-        if (draggingOrResizingId) {
-          if (box.id === draggingOrResizingId) return false;
-          return dragParentId ? box.parent === dragParentId : !box.parent;
-        }
-
         return true;
       })
       .map((box) => `.ele-${box.id}`);
     setElementGuidelines(guidelines);
-  }, [
-    boxList,
-    dragParentId,
-    draggingComponentId,
-    resizingComponentId,
-    selectedComponents,
-    getResolvedValue,
-    currentDragCanvasId,
-    virtualTarget,
-  ]);
+  }, [boxList, selectedComponents, getResolvedValue, currentDragCanvasId, virtualTarget]);
 
   return { elementGuidelines };
 };
