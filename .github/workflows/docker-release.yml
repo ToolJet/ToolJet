@@ -12,13 +12,13 @@ jobs:
     steps:
 
       - name: Checkout code to main for pre-release CE edition
-        if: "!contains(github.event.release.tag_name, 'ce-lts')"
+        if: "!contains(github.event.release.tag_name, '-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
 
       - name: Checkout code to LTS for CE LTS edition
-        if: "contains(github.event.release.tag_name, '-ce-lts')"
+        if: "contains(github.event.release.tag_name, '-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-3.16
@@ -45,7 +45,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for pre-release tag
-        if: "!contains(github.event.release.tag_name, '-ce-lts')"
+        if: "!contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -58,7 +58,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, '-ce-lts')"
+        if: "contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -105,7 +105,7 @@ jobs:
           ref: refs/heads/main
 
       - name: Checkout code to LTS for EE LTS edition
-        if: "contains(github.event.release.tag_name, '-ee-lts')"
+        if: "contains(github.event.release.tag_name, '-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-3.16
@@ -133,7 +133,7 @@ jobs:
 
 
       - name: Build and Push Docker image for pre-release tag
-        if: "!contains(github.event.release.tag_name, '-ee-lts')"
+        if: "!contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -149,7 +149,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, '-ee-lts')"
+        if: "contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -182,7 +182,7 @@ jobs:
 
     steps:
       - name: Checkout code to LTS for Cloud LTS edition
-        if: "contains(github.event.release.tag_name, '-cloud-lts')"
+        if: "contains(github.event.release.tag_name, '-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-3.16
@@ -209,7 +209,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, '-cloud-lts')"
+        if: "contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -242,13 +242,13 @@ jobs:
 
     steps:
       - name: Checkout code to develop
-        if: "!contains(github.event.release.tag_name, 'ee-lts')"
+        if: "!contains(github.event.release.tag_name, '-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
 
       - name: Checkout code to lts-3.16
-        if: contains(github.event.release.tag_name, '-ee-lts')
+        if: contains(github.event.release.tag_name, '-lts')
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-3.16
@@ -291,7 +291,7 @@ jobs:
           fi
 
       - name: Build and Push Docker image for non-EE-LTS
-        if: "!contains(github.event.release.tag_name, '-ee-lts')"
+        if: "!contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -304,7 +304,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for EE-LTS-3.0
-        if: contains(github.event.release.tag_name, '-ee-lts')
+        if: contains(github.event.release.tag_name, '-lts')
         uses: docker/build-push-action@v4
         with:
           context: .

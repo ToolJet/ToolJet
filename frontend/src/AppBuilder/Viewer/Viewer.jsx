@@ -17,7 +17,7 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
 import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
-import TooljetBanner from '../../Editor/Viewer/TooljetBanner';
+import TooljetBanner from './TooljetBanner';
 
 export const Viewer = ({
   id: appId,

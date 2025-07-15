@@ -77,7 +77,9 @@ type NewRevampedComponent =
   | 'Container'
   | 'Tabs'
   | 'Form'
-  | 'Image';
+  | 'Image'
+  | 'FilePicker'
+
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -103,6 +105,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tabs',
   'Form',
   'Image',
+  'FilePicker'
 ];
 
 @Injectable()
@@ -114,7 +117,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) {}
+  ) { }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -226,10 +229,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -241,10 +244,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -252,16 +255,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-              .createQueryBuilder(Component, 'components')
-              .leftJoinAndSelect('components.layouts', 'layouts')
-              .leftJoinAndSelect('components.permissions', 'permission')
-              .leftJoinAndSelect('permission.users', 'componentUser')
-              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-              .where('components.pageId IN(:...pageId)', {
-                pageId: pages.map((v) => v.id),
-              })
-              .orderBy('components.created_at', 'ASC')
-              .getMany()
+            .createQueryBuilder(Component, 'components')
+            .leftJoinAndSelect('components.layouts', 'layouts')
+            .leftJoinAndSelect('components.permissions', 'permission')
+            .leftJoinAndSelect('permission.users', 'componentUser')
+            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+            .where('components.pageId IN(:...pageId)', {
+              pageId: pages.map((v) => v.id),
+            })
+            .orderBy('components.created_at', 'ASC')
+            .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -284,10 +287,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -342,11 +345,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-            .createQueryBuilder(App, 'app')
-            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-            .distinct(true)
-            .getMany()
+          .createQueryBuilder(App, 'app')
+          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+          .distinct(true)
+          .getMany()
         : [];
 
     // Process each module from the import data
@@ -1121,6 +1124,13 @@ export class AppImportExportService {
 
             const savedComponent = await manager.save(newComponent);
 
+            // Handle ModuleViewer component query input mapping
+            if (savedComponent.type === 'ModuleViewer') {
+              await this.handleModuleViewerComponent(savedComponent, appResourceMappings.dataQueryMapping, manager);
+              // Save the component again if properties were updated
+              await manager.save(savedComponent);
+            }
+
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
@@ -1384,10 +1394,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-              importingQuery.options,
-              externalResourceMappings['tooljet_database'],
-              organizationId
-            )
+            importingQuery.options,
+            externalResourceMappings['tooljet_database'],
+            organizationId
+          )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -2129,10 +2139,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-                query.options,
-                externalResourceMappings['tooljet_database'],
-                user?.organizationId
-              )
+              query.options,
+              externalResourceMappings['tooljet_database'],
+              user?.organizationId
+            )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2336,6 +2346,93 @@ export class AppImportExportService {
       await manager.save(event);
     }
   }
+
+  /**
+   * Handle ModuleViewer component by fetching module definition and updating input properties
+   * during app import
+   */
+  protected async handleModuleViewerComponent(
+    component: Component,
+    dataQueryMapping: Record<string, unknown>,
+    manager: EntityManager
+  ): Promise<void> {
+    const properties = component.properties;
+
+    // Skip processing if moduleAppId is not present
+    if (!properties?.moduleAppId?.value) {
+      return;
+    }
+
+    const moduleAppId = properties.moduleAppId.value;
+    try {
+      // Fetch the module from database using moduleAppId
+      const moduleApp = (await manager.findOne(App, {
+        where: { id: moduleAppId },
+        relations: ['appVersions'],
+      })) as App;
+
+      if (!moduleApp) {
+        console.warn(`Module with ID ${moduleAppId} not found`);
+        return;
+      }
+
+      // Get the module's editing version or latest version
+      const moduleVersion = moduleApp.appVersions?.[0]; // Assuming first version is the editing version
+      if (!moduleVersion) {
+        console.warn(`No version found for module with ID ${moduleAppId}`);
+        return;
+      }
+
+      // Find the ModuleContainer component in the module to get input definitions
+      const moduleComponents = await manager.find(Component, {
+        where: {
+          pageId: moduleVersion.homePageId,
+          type: 'ModuleContainer',
+        },
+      });
+
+      const moduleContainer = moduleComponents[0];
+      if (!moduleContainer) {
+        console.warn(`ModuleContainer not found in module ${moduleAppId}`);
+        return;
+      }
+
+      const inputItems = moduleContainer.properties?.inputItems?.value || [];
+
+      // Process each property in the ModuleViewer component
+      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'moduleEnvironmentId', 'visibility'];
+
+      for (const [propertyKey, propertyValue] of Object.entries(properties)) {
+        // Skip excluded properties
+        if (excludedProperties.includes(propertyKey)) {
+          continue;
+        }
+
+        // Find matching input definition in module container
+        const inputDefinition = inputItems.find((item) => item.name === propertyKey);
+
+        if (inputDefinition && inputDefinition.type === 'query') {
+          // This is a query input, check if we need to map the value to a new query ID
+          const currentValue = (propertyValue as any)?.value;
+
+          if (currentValue && dataQueryMapping[currentValue]) {
+            // Update the property value with the new query ID
+            properties[propertyKey] = {
+              ...(propertyValue as any),
+              value: dataQueryMapping[currentValue],
+            };
+          }
+        }
+        // For data type inputs, no special handling needed as they are just values
+      }
+
+      // Update component properties with the processed values
+      component.properties = properties;
+    } catch (error) {
+      console.error(`Error handling ModuleViewer component ${component.id}:`, error);
+      // Continue processing even if module handling fails
+    }
+  }
 }
 
 export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
@@ -2376,41 +2473,53 @@ function migrateProperties(
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
-      properties.visibility = styles.visibility;
+      if (properties.visibility === undefined) {
+        properties.visibility = styles.visibility;
+      }
       delete styles.visibility;
     }
 
     if (styles.disabledState) {
-      properties.disabledState = styles.disabledState;
+      if (properties.disabledState === undefined) {
+        properties.disabledState = styles.disabledState;
+      }
       delete styles.disabledState;
     }
 
     if (general?.tooltip) {
-      properties.tooltip = general?.tooltip;
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
       delete general?.tooltip;
     }
 
     if (generalStyles?.boxShadow) {
-      styles.boxShadow = generalStyles?.boxShadow;
+      if (styles.boxShadow === undefined) {
+        styles.boxShadow = generalStyles?.boxShadow;
+      }
       delete generalStyles?.boxShadow;
     }
 
     // Set empty label for specific components
     if (
       (shouldHandleBackwardCompatibility && ['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) ||
-      (['TextArea', 'DaterangePicker'].includes(componentType) && !properties.label)
+      (['TextArea', 'DaterangePicker', 'FilePicker'].includes(componentType) && !properties.label)
     ) {
       properties.label = '';
     }
 
     if (componentType === 'NumberInput') {
       if (properties.minValue) {
-        validation.minValue = properties?.minValue;
+        if (validation.minValue === undefined) {
+          validation.minValue = properties?.minValue;
+        }
         delete properties.minValue;
       }
 
       if (properties.maxValue) {
-        validation.maxValue = properties?.maxValue;
+        if (validation.maxValue === undefined) {
+          validation.maxValue = properties?.maxValue;
+        }
         delete properties.maxValue;
       }
     }
@@ -2426,6 +2535,16 @@ function migrateProperties(
     if (componentType === 'Tabs') {
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
+      }
+
+      if (styles.highlightColor) {
+        if (styles.selectedText === undefined) {
+          styles.selectedText = styles.highlightColor;
+        }
+        if (styles.accent === undefined) {
+          styles.accent = styles.highlightColor;
+        }
+        delete styles.highlightColor;
       }
     }
 
@@ -2458,7 +2577,8 @@ function transformComponentData(
   componentsMapping: Record<string, string>,
   isNormalizedAppDefinitionSchema = true,
   tooljetVersion: string,
-  moduleResourceMappings?: Record<string, unknown>
+  moduleResourceMappings?: Record<string, unknown>,
+  dataQueryMapping?: Record<string, string>
 ): Component[] {
   const transformedComponents: Component[] = [];
 

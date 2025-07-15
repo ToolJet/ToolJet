@@ -97,7 +97,9 @@ export const createComponentsSlice = (set, get) => ({
           if (!state.containerChildrenMapping[parentId]) {
             state.containerChildrenMapping[parentId] = [];
           }
-          state.containerChildrenMapping[parentId].push(componentId);
+          if (!state.containerChildrenMapping[parentId].includes(componentId)) {
+            state.containerChildrenMapping[parentId].push(componentId);
+          }
         });
       },
       false,
@@ -1061,8 +1063,8 @@ export const createComponentsSlice = (set, get) => ({
           if (state.containerChildrenMapping[id]) {
             delete state.containerChildrenMapping[id];
           }
-          if (state.containerChildrenMapping?.canvas?.includes(id)) {
-            state.containerChildrenMapping[moduleId].canvas = state.containerChildrenMapping[moduleId].filter(
+          if (state.containerChildrenMapping?.[moduleId]?.includes(id)) {
+            state.containerChildrenMapping[moduleId] = state.containerChildrenMapping[moduleId].filter(
               (wid) => wid !== id
             );
           }
@@ -1137,7 +1139,7 @@ export const createComponentsSlice = (set, get) => ({
           attachedTo: component.id,
           index: event?.index,
         };
-        await eventsSlice.createAppVersionEventHandlers(newEvent);
+        await eventsSlice.createAppVersionEventHandlers(newEvent, moduleId);
       }
     }
   },
@@ -1211,9 +1213,13 @@ export const createComponentsSlice = (set, get) => ({
                 if (!state.containerChildrenMapping[newParentId]) {
                   state.containerChildrenMapping[newParentId] = [];
                 }
-                state.containerChildrenMapping[newParentId].push(componentId);
+                if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
+                  state.containerChildrenMapping[newParentId].push(componentId);
+                }
               } else {
-                state.containerChildrenMapping[moduleId].push(componentId);
+                if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
+                  state.containerChildrenMapping[moduleId].push(componentId);
+                }
               }
             }
 
@@ -1233,9 +1239,10 @@ export const createComponentsSlice = (set, get) => ({
       // Adjust component positions
 
       //If new parent is dynamic, adjust the parent positions
-      const isParentDynamic = getResolvedComponent(newParentId)?.properties?.dynamicHeight;
+      const transformedParentId = (newParentId || oldParentId)?.substring(0, 36);
+      const isParentDynamic = getResolvedComponent(transformedParentId)?.properties?.dynamicHeight;
       if (isParentDynamic) {
-        adjustComponentPositions(newParentId, currentLayout, false, true);
+        adjustComponentPositions(transformedParentId, currentLayout, false, true);
       }
 
       // If the parent is changed, adjust the old parent positions
@@ -1474,9 +1481,13 @@ export const createComponentsSlice = (set, get) => ({
           if (!state.containerChildrenMapping[newParentId]) {
             state.containerChildrenMapping[newParentId] = [];
           }
-          state.containerChildrenMapping[newParentId].push(componentId);
+          if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
+            state.containerChildrenMapping[newParentId].push(componentId);
+          }
         } else {
-          state.containerChildrenMapping[moduleId].push(componentId);
+          if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
+            state.containerChildrenMapping[moduleId].push(componentId);
+          }
         }
       }, skipUndoRedo),
       false,
@@ -1695,7 +1706,7 @@ export const createComponentsSlice = (set, get) => ({
 
   getComponentIdFromName: (componentName, moduleId = 'canvas') => {
     const { modules } = get();
-    return modules[moduleId].componentNameIdMapping[componentName];
+    return modules?.[moduleId]?.componentNameIdMapping?.[componentName];
   },
   // Get the component name from the component id
   getComponentNameFromId: (componentId, moduleId = 'canvas') => {

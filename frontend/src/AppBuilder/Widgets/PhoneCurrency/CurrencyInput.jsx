@@ -9,7 +9,7 @@ import { getModifiedColor } from '@/Editor/Components/utils';
 const tinycolor = require('tinycolor2');
 
 export const CurrencyInput = (props) => {
-  const { properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
   const transformedProps = {
     ...props,
     inputType: 'currency',
@@ -55,7 +55,6 @@ export const CurrencyInput = (props) => {
     handlePhoneCurrencyInputChange(value);
     setExposedVariables({
       country: country,
-      formattedValue: `${CurrencyMap[country]?.prefix} ${inputRef.current?.value}`,
     });
   };
 
@@ -146,6 +145,14 @@ export const CurrencyInput = (props) => {
   }, [country]);
 
   useEffect(() => {
+    if (!isInitialRender.current) {
+      setExposedVariables({
+        formattedValue: `${CurrencyMap[country]?.prefix} ${inputRef.current?.value}`,
+      });
+    }
+  }, [value]);
+
+  useEffect(() => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
@@ -223,6 +230,7 @@ export const CurrencyInput = (props) => {
                 });
               }
             }}
+            componentId={id}
           />
           <ReactCurrencyInput
             ref={inputRef}

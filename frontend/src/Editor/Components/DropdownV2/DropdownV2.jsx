@@ -14,6 +14,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { getModifiedColor } from '@/Editor/Components/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 
 const { DropdownIndicator, ClearIndicator } = components;
@@ -286,16 +287,16 @@ export const DropdownV2 = ({
         setInputValue(null);
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsDropdownLoading(value);
-        setExposedVariable('isLoading', value);
+        setIsDropdownLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsDropdownDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setIsDropdownDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       selectOption: async function (value) {
         let _value = value;
@@ -345,9 +346,7 @@ export const DropdownV2 = ({
           isDisabled: isDropdownDisabled,
         }),
         '&:hover': {
-          borderColor: state.isFocused
-            ? getInputFocusedColor({ accentColor })
-            : tinycolor(fieldBorderColor).darken(24).toString(),
+          borderColor: getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
@@ -382,6 +381,10 @@ export const DropdownV2 = ({
     }),
     indicatorSeparator: (_state) => ({
       display: 'none',
+    }),
+    placeholder: (provided, _state) => ({
+      ...provided,
+      color: 'var(--cc-placeholder-text)',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,

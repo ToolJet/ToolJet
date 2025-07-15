@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ToolTip } from '@/_components';
 
-const isTextOverflowing = (element, verticalTolerance = 4) => {
+const isTextOverflowing = (element, maxLetters, children, verticalTolerance = 4) => {
   if (!element) return false;
 
   const horizontalOverflow = element.scrollWidth > element.clientWidth;
   const verticalOverflow = element.scrollHeight > element.clientHeight + verticalTolerance;
+  const isMaxLettersOverflowing = maxLetters && typeof children === 'string' && children.length > maxLetters;
 
-  return horizontalOverflow || verticalOverflow;
+  return horizontalOverflow || verticalOverflow || isMaxLettersOverflowing;
 };
 
 export default function OverflowTooltip({
@@ -24,9 +25,9 @@ export default function OverflowTooltip({
 
   const checkOverflow = useCallback(() => {
     if (textContentRef.current) {
-      setIsOverflowed(isTextOverflowing(textContentRef.current));
+      setIsOverflowed(isTextOverflowing(textContentRef.current, maxLetters, children));
     }
-  }, []);
+  }, [children, maxLetters]);
 
   useEffect(() => {
     const currentTextElement = textContentRef.current;
@@ -46,7 +47,7 @@ export default function OverflowTooltip({
       observer.unobserve(currentTextElement);
       observer.disconnect();
     };
-  }, [children, checkOverflow]);
+  }, [children, checkOverflow, maxLetters]);
 
   const displayText =
     maxLetters && typeof children === 'string' && children.length > maxLetters
@@ -64,7 +65,7 @@ export default function OverflowTooltip({
       tooltipClassName="overflow-tooltip"
       placement={placement}
       message={children}
-      show={isOverflowed}
+      show={!!isOverflowed}
       width={rest?.width}
     >
       <div
