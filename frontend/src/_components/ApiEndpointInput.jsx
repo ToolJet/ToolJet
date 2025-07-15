@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { openapiService } from '@/_services';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
@@ -17,27 +17,120 @@ const operationColorMapping = {
   put: 'yellow',
 };
 
+const extractSchemaProperties = (schema) => {
+  if (!schema) return {};
+
+  if (schema.properties) {
+    return schema.properties;
+  }
+
+  // Handle allOf - merge all properties
+  if (schema.allOf) {
+    return schema.allOf.reduce((acc, subSchema) => {
+      const props = extractSchemaProperties(subSchema);
+      return { ...acc, ...props };
+    }, {});
+  }
+
+  if (schema.oneOf) {
+    return schema.oneOf.reduce((acc, subSchema) => {
+      const props = extractSchemaProperties(subSchema);
+      return { ...acc, ...props };
+    }, {});
+  }
+
+  // Handle anyOf - similar to oneOf
+  if (schema.anyOf) {
+    return schema.anyOf.reduce((acc, subSchema) => {
+      const props = extractSchemaProperties(subSchema);
+      return { ...acc, ...props };
+    }, {});
+  }
+
+  if (schema.$ref) {
+    console.warn('$ref found in schema, which may need to be resolved:', schema.$ref);
+    return {};
+  }
+
+  return {};
+};
+
 const ApiEndpointInput = (props) => {
   const [loadingSpec, setLoadingSpec] = useState(true);
   const [options, setOptions] = useState(props.options);
   const [specJson, setSpecJson] = useState(null);
 
-  const fetchOpenApiSpec = () => {
+  // Check if specUrl is an object (multiple specs) or string (single spec)
+  const isMultiSpec = typeof props.specUrl === 'object' && !Array.isArray(props.specUrl);
+  const [selectedSpecType, setSelectedSpecType] = useState(isMultiSpec ? Object.keys(props.specUrl)[0] || '' : null);
+
+  const fetchOpenApiSpec = (specUrlOrType) => {
     setLoadingSpec(true);
+
+    const url = isMultiSpec ? props.specUrl[specUrlOrType] : props.specUrl;
+
     openapiService
-      .fetchSpecFromUrl(props.specUrl)
+      .fetchSpecFromUrl(url)
       .then((response) => response.text())
       .then((text) => {
-        const data = JSON.parse(text);
-        setSpecJson(data);
-        setLoadingSpec(false);
+        const format = url.endsWith('.json') ? 'json' : 'yaml';
+        openapiService.parseOpenapiSpec(text, format).then((data) => {
+          setSpecJson(data);
+
+          if (isMultiSpec) {
+            // Clear all parameters when switching specs
+            const queryParams = {
+              path: {},
+              query: {},
+              request: {},
+            };
+
+            let newOperation = null;
+            let newPath = null;
+            let newSelectedOperation = null;
+
+            if (options?.path && options?.operation && data?.paths?.[options.path]?.[options.operation]) {
+              newOperation = options.operation;
+              newPath = options.path;
+              newSelectedOperation = data.paths[options.path][options.operation];
+            }
+
+            const newOptions = {
+              ...options,
+              operation: newOperation,
+              path: newPath,
+              selectedOperation: newSelectedOperation,
+              params: queryParams,
+            };
+
+            setOptions(newOptions);
+            props.optionsChanged(newOptions);
+          }
+
+          setLoadingSpec(false);
+        });
       });
   };
 
   const changeOperation = (value) => {
     const operation = value.split('/', 2)[0];
     const path = value.substring(value.indexOf('/'));
-    const newOptions = { ...options, path, operation, selectedOperation: specJson.paths[path][operation] };
+
+    // Clear all params when changing operation
+    const queryParams = {
+      path: {},
+      query: {},
+      request: {},
+    };
+
+    const newOptions = {
+      ...options,
+      path,
+      operation,
+      selectedOperation: specJson.paths[path][operation],
+      params: queryParams,
+    };
+
     setOptions(newOptions);
     props.optionsChanged(newOptions);
   };
@@ -46,13 +139,24 @@ const ApiEndpointInput = (props) => {
     if (value === '') {
       removeParam(paramType, paramName);
     } else {
+      let parsedValue = value;
+
+      if (paramType === 'request') {
+        try {
+          parsedValue = JSON.parse(value);
+        } catch (e) {
+          console.error(`Invalid JSON for request param "${paramName}":`, e);
+          parsedValue = value;
+        }
+      }
+
       const newOptions = {
         ...options,
         params: {
           ...options.params,
           [paramType]: {
             ...options.params[paramType],
-            [paramName]: value,
+            [paramName]: parsedValue,
           },
         },
       };
@@ -69,16 +173,24 @@ const ApiEndpointInput = (props) => {
   };
 
   const renderOperationOption = (data) => {
-    const path = data.value.substring(data.value.indexOf('/'));
+    const path = data.displayLabel || data.value.substring(data.value.indexOf('/'));
     const operation = data.operation;
+    const summary = data.summary;
+    const isSelected = data.isSelected;
+
     if (path && operation) {
       return (
-        <div className="row">
-          <div className="col-auto" style={{ width: '60px' }}>
-            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation}</span>
+        <div className="d-flex align-items-start">
+          <div className="me-2" style={{ minWidth: '60px' }}>
+            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation.toUpperCase()}</span>
           </div>
-          <div className="col">
-            <span>{path}</span>
+          <div className="flex-grow-1">
+            <div>{path}</div>
+            {summary && !isSelected && (
+              <small className="text-muted d-block" style={{ fontSize: '0.875em' }}>
+                {summary}
+              </small>
+            )}
           </div>
         </div>
       );
@@ -88,11 +200,19 @@ const ApiEndpointInput = (props) => {
   };
 
   const categorizeOperations = (operation, path, acc, category) => {
+    const operationData = specJson.paths[path][operation];
+    const summary = operationData?.summary || '';
+
+    // Create searchable label that includes both path and summary
+    const searchableLabel = summary ? `${path} ${summary}` : path;
+
     const option = {
       value: `${operation}${path}`,
-      label: `${path}`,
+      label: searchableLabel,
       name: path,
       operation: operation,
+      summary: summary || null,
+      displayLabel: path, // Keep original path for display
     };
     const existingCategory = acc.find((obj) => obj.label === category);
     if (existingCategory) {
@@ -110,13 +230,29 @@ const ApiEndpointInput = (props) => {
     if (isEmpty(paths)) return [];
 
     const pathGroups = Object.keys(paths).reduce((acc, path) => {
-      const operations = Object.keys(paths[path]).filter((op) => Object.keys(operationColorMapping).includes(op));
+      const operations = Object.keys(paths[path]);
       const category = path.split('/')[2];
       operations.forEach((operation) => categorizeOperations(operation, path, acc, category));
       return acc;
     }, []);
 
     return pathGroups;
+  };
+
+  const getRequestBodyProperties = () => {
+    if (!options?.selectedOperation?.requestBody?.content) {
+      return {};
+    }
+
+    const contentTypes = Object.keys(options.selectedOperation.requestBody.content);
+    if (contentTypes.length === 0) {
+      return {};
+    }
+
+    const contentType = contentTypes.includes('application/json') ? 'application/json' : contentTypes[0];
+
+    const schema = options.selectedOperation.requestBody.content[contentType]?.schema;
+    return extractSchemaProperties(schema);
   };
 
   useEffect(() => {
@@ -127,15 +263,49 @@ const ApiEndpointInput = (props) => {
     };
     setLoadingSpec(true);
     setOptions({ ...props.options, params: queryParams });
-    fetchOpenApiSpec();
+
+    if (!isMultiSpec) {
+      fetchOpenApiSpec();
+    }
   }, []);
+
+  useEffect(() => {
+    if (isMultiSpec && selectedSpecType) {
+      fetchOpenApiSpec(selectedSpecType);
+    }
+  }, [selectedSpecType]);
+
+  const specTypeOptions = isMultiSpec
+    ? Object.keys(props.specUrl).map((key) => ({
+        value: key,
+        label: key,
+      }))
+    : [];
 
   return (
     <div>
+      {/* Render spec type dropdown only for multi-spec */}
+      {isMultiSpec && (
+        <div className="d-flex g-2 mb-3">
+          <div className="col-3 form-label">
+            <label className="form-label">{props.t('globals.specType', 'Spec Type')}</label>
+          </div>
+          <div className="col flex-grow-1">
+            <Select
+              options={specTypeOptions}
+              value={{ value: selectedSpecType, label: selectedSpecType }}
+              onChange={(val) => setSelectedSpecType(val)}
+              width={'100%'}
+              styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
+            />
+          </div>
+        </div>
+      )}
+
       {loadingSpec && (
         <div className="p-3">
           <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          <span>Please wait while we load the OpenAPI specification.</span>
+          {props.t('', 'Please wait while we load the OpenAPI specification.')}
         </div>
       )}
       {options && !loadingSpec && (
@@ -147,20 +317,37 @@ const ApiEndpointInput = (props) => {
             <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
               <Select
                 options={computeOperationSelectionOptions()}
-                value={{
-                  operation: options?.operation,
-                  value: `${options?.operation}${options?.path}`,
-                }}
+                value={
+                  options?.operation && options?.path
+                    ? {
+                        operation: options?.operation,
+                        value: `${options?.operation}${options?.path}`,
+                        summary: options?.selectedOperation?.summary || null,
+                        isSelected: true,
+                        displayLabel: options?.path,
+                        label: options?.selectedOperation?.summary
+                          ? `${options?.path} ${options?.selectedOperation?.summary}`
+                          : options?.path,
+                      }
+                    : null
+                }
                 onChange={(value) => changeOperation(value)}
                 width={'100%'}
                 useMenuPortal={true}
                 customOption={renderOperationOption}
                 styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
                 useCustomStyles={true}
+                filterOption={(option, inputValue) => {
+                  if (!inputValue) return true;
+                  const searchValue = inputValue.toLowerCase();
+                  const pathMatch = option.data.displayLabel?.toLowerCase().includes(searchValue);
+                  const summaryMatch = option.data.summary?.toLowerCase().includes(searchValue);
+                  return pathMatch || summaryMatch;
+                }}
               />
               {options?.selectedOperation && (
                 <small
-                  style={{ margintTop: '10px' }}
+                  style={{ marginTop: '10px' }}
                   className="my-2"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(options?.selectedOperation?.description) }}
                 />
@@ -188,11 +375,7 @@ const ApiEndpointInput = (props) => {
                 darkMode={props.darkMode}
               />
               <RenderParameterFields
-                parameters={
-                  options?.selectedOperation?.requestBody?.content[
-                    Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                  ]?.schema?.properties ?? {}
-                }
+                parameters={getRequestBodyProperties()}
                 type="request"
                 label={props.t('globals.requestBody', 'REQUEST BODY')}
                 options={options}
@@ -212,7 +395,7 @@ export default withTranslation()(ApiEndpointInput);
 
 ApiEndpointInput.propTypes = {
   options: PropTypes.object,
-  specUrl: PropTypes.string,
+  specUrl: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   optionsChanged: PropTypes.func,
   darkMode: PropTypes.bool,
   t: PropTypes.func,
@@ -221,70 +404,67 @@ ApiEndpointInput.propTypes = {
 const RenderParameterFields = ({ parameters, type, label, options, changeParam, removeParam, darkMode }) => {
   let filteredParams;
   if (type === 'request') {
-    filteredParams = Object.keys(parameters);
+    filteredParams = Object.keys(parameters || {});
   } else {
     filteredParams = parameters?.filter((param) => param.in === type);
   }
 
   const paramLabelWithDescription = (param) => {
-    const label = type === 'request' ? param : param.name;
-    const description = type === 'request' ? parameters[param]?.description : param.description;
-
     return (
-      <ToolTip message={DOMPurify.sanitize(description)}>
-        <div className="cursor-help d-flex align-items-center">
-          <AutoWidthText value={label} className="form-control form-control-underline" />
+      <ToolTip
+        message={type === 'request' ? DOMPurify.sanitize(parameters[param]?.description || '') : param.description}
+      >
+        <div className="cursor-help">
+          <input
+            type="text"
+            value={type === 'request' ? param : param.name}
+            className="form-control form-control-underline"
+            placeholder="key"
+            disabled
+          />
         </div>
       </ToolTip>
     );
   };
 
   const paramLabelWithoutDescription = (param) => {
-    const label = type === 'request' ? param : param.name;
-
     return (
-      <div className="d-flex align-items-center" style={{ gap: '4px' }}>
-        <AutoWidthText value={label} className="form-control" />
-      </div>
+      <input
+        type="text"
+        value={type === 'request' ? param : param.name}
+        className="form-control"
+        placeholder="key"
+        disabled
+      />
     );
   };
 
   const paramType = (param) => {
-    let paramTypeValue;
-
-    if (type === 'query') {
-      if (param?.schema?.anyOf) {
-        return (
-          <div className="p-2 text-muted">
-            {param.schema.anyOf.map((typeObj, i) =>
-              i < param.schema.anyOf.length - 1
-                ? (typeObj.type || '').toString().substring(0, 3).toUpperCase() + '|'
-                : (typeObj.type || '').toString().substring(0, 3).toUpperCase()
-            )}
-          </div>
-        );
-      }
-      paramTypeValue = param?.schema?.type;
-    } else if (type === 'path') {
-      paramTypeValue = param?.schema?.type;
-    } else if (type === 'request') {
-      paramTypeValue = parameters[param]?.type;
-    }
-
-    const displayType = Array.isArray(paramTypeValue) ? paramTypeValue[0] : paramTypeValue;
-
-    return <div className="p-2 text-muted">{displayType?.toString().substring(0, 3).toUpperCase() || ''}</div>;
+    return (
+      <div className="p-2 text-muted">
+        {type === 'query' &&
+          param?.schema?.anyOf &&
+          param?.schema?.anyOf.map((type, i) =>
+            i < param.schema?.anyOf.length - 1
+              ? type.type.substring(0, 3).toUpperCase() + '|'
+              : type.type.substring(0, 3).toUpperCase()
+          )}
+        {(type === 'path' || (type === 'query' && !param?.schema?.anyOf)) &&
+          param?.schema?.type?.substring(0, 3).toUpperCase()}
+        {type === 'request' && parameters[param]?.type?.substring(0, 3).toUpperCase()}
+      </div>
+    );
   };
 
   const paramDetails = (param) => {
     return (
-      <div className="col-auto d-flex field field-width-179 align-items-center justify-content-between">
-        <div className="d-inline-flex align-items-center gap-3">
-          {(type === 'request' && parameters[param].description) || param?.description
-            ? paramLabelWithDescription(param)
-            : paramLabelWithoutDescription(param)}
-          {param.required && <span className="text-danger fw-bold">*</span>}
-        </div>
+      <div className="col-auto d-flex field field-width-179 align-items-center">
+        {(type === 'request' && parameters[param]?.description) || param?.description
+          ? paramLabelWithDescription(param)
+          : paramLabelWithoutDescription(param)}
+        {(type === 'request' ? parameters[param]?.required : param.required) && (
+          <span className="text-danger fw-bold">*</span>
+        )}
         {paramType(param)}
       </div>
     );
@@ -346,7 +526,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
               <div className="input-group">
                 {paramDetails(param)}
                 <div className="col field overflow-hidden code-hinter-borderless">{inputField(param)}</div>
-                {((type === 'request' && options['params'][type][param]) || options['params'][type][param.name]) &&
+                {((type === 'request' && options['params'][type][param]) || options['params'][type][param?.name]) &&
                   clearButton(param)}
               </div>
             </div>
@@ -365,35 +545,4 @@ RenderParameterFields.propTypes = {
   changeParam: PropTypes.func,
   removeParam: PropTypes.func,
   darkMode: PropTypes.bool,
-};
-
-const AutoWidthText = ({ value, className }) => {
-  const spanRef = useRef(null);
-  const [width, setWidth] = useState(0);
-
-  useLayoutEffect(() => {
-    if (spanRef.current) {
-      setWidth(spanRef.current.offsetWidth);
-    }
-  }, [value]);
-
-  return (
-    <div className={className} style={{ display: 'inline-block', width: width ? `${width}px` : 'auto' }}>
-      <span
-        ref={spanRef}
-        style={{
-          position: 'absolute',
-          visibility: 'hidden',
-          whiteSpace: 'pre',
-          fontSize: '12px',
-          fontFamily: 'inherit',
-          fontWeight: 400,
-          lineHeight: '20px',
-        }}
-      >
-        {value}
-      </span>
-      {value}
-    </div>
-  );
 };
