@@ -431,18 +431,47 @@ export function hideGridLinesOnSlot(slotId) {
 // Track previously active elements for efficient cleanup
 let previousActiveWidgets = null;
 let previousActiveCanvas = null;
+let processedComponents = new Set();
 
 export const handleActivateNonDraggingComponents = () => {
-  // Only add non-dragging class to visible components in viewport
-  document.querySelectorAll('.moveable-box:not(.active-target)').forEach((component) => {
-    // Check if element is visible in viewport
-    const rect = component.getBoundingClientRect();
-    const isVisible =
-      rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0;
+  // Get viewport bounds once
+  const viewport = {
+    top: 0,
+    left: 0,
+    bottom: window.innerHeight,
+    right: window.innerWidth,
+  };
 
-    if (isVisible) {
-      component.classList.add('non-dragging-component');
+  const components = document.getElementsByClassName('moveable-box');
+
+  for (let i = 0; i < components.length; i++) {
+    const component = components[i];
+
+    // Skip if already processed or is active target
+    if (processedComponents.has(component) || component.classList.contains('active-target')) {
+      continue;
     }
+
+    // Quick visibility check - only get rect if needed
+    const rect = component.getBoundingClientRect();
+
+    if (
+      rect.bottom > viewport.top &&
+      rect.top < viewport.bottom &&
+      rect.right > viewport.left &&
+      rect.left < viewport.right
+    ) {
+      component.classList.add('non-dragging-component');
+      processedComponents.add(component);
+    }
+  }
+};
+
+// Clear cache when drag ends
+export const clearNonDraggingComponentsCache = () => {
+  processedComponents.clear();
+  document.querySelectorAll('.non-dragging-component').forEach((component) => {
+    component.classList.remove('non-dragging-component');
   });
 };
 
@@ -496,7 +525,7 @@ export const handleDeactivateTargets = () => {
     previousActiveCanvas.classList.remove('dragging-component-canvas');
     previousActiveCanvas = null;
   }
-
+  clearNonDraggingComponentsCache();
   document.querySelectorAll('.non-dragging-component').forEach((component) => {
     component.classList.remove('non-dragging-component');
   });
@@ -527,24 +556,66 @@ export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
   return draggingWidgetWidth;
 };
 
-export const positionDragGhostWidget = (draggedElement) => {
-  const ghostElement = document.getElementById('moveable-drag-ghost');
+/**
+ * Positions a ghost/feedback element relative to the main canvas
+ * @param {HTMLElement} targetElement - The element being dragged/resized
+ * @param {string} ghostElementId - The ID of the ghost element to position
+ */
+export const positionGhostElement = (targetElement, ghostElementId) => {
+  const ghostElement = document.getElementById(ghostElementId);
 
-  if (!ghostElement || !draggedElement) return;
+  if (!ghostElement || !targetElement) return;
 
   const mainCanvas = document.getElementById('real-canvas');
   if (!mainCanvas) return;
 
   const mainCanvasRect = mainCanvas.getBoundingClientRect();
-  const draggedRect = draggedElement.getBoundingClientRect();
+  const targetRect = targetElement.getBoundingClientRect();
 
   // Calculate position relative to main canvas
-  const relativeLeft = draggedRect.left - mainCanvasRect.left;
-  const relativeTop = draggedRect.top - mainCanvasRect.top;
+  const relativeLeft = targetRect.left - mainCanvasRect.left;
+  const relativeTop = targetRect.top - mainCanvasRect.top;
 
   // Apply the position
   ghostElement.style.left = `${relativeLeft}px`;
   ghostElement.style.top = `${relativeTop}px`;
-  ghostElement.style.width = `${draggedRect.width}px`;
-  ghostElement.style.height = `${draggedRect.height}px`;
+  ghostElement.style.width = `${targetRect.width}px`;
+  ghostElement.style.height = `${targetRect.height}px`;
+};
+
+/**
+ * Finds the new parent ID based on the current mouse position during drag operations
+ * @param {number} clientX - The X coordinate of the mouse position
+ * @param {number} clientY - The Y coordinate of the mouse position
+ * @param {string} currentTargetId - The ID of the currently dragged element to exclude from search
+ * @returns {string|null} - The new parent ID or null if no valid parent is found
+ */
+export const findNewParentIdFromMousePosition = (clientX, clientY, currentTargetId) => {
+  if (!document.elementFromPoint(clientX, clientY)) {
+    return null;
+  }
+
+  const targetElems = document.elementsFromPoint(clientX, clientY);
+  const draggedOverElements = targetElems.filter(
+    (ele) => (ele.id !== currentTargetId && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
+  );
+
+  const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
+  const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
+
+  // Determine potential new parent
+  const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+
+  return newParentId || null;
+};
+
+export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => {
+  const components = Array.from(document.querySelectorAll('.active-target')).filter(
+    (component) => !selectedComponents.includes(component.getAttribute('widgetid'))
+  );
+  if (components.length > 0) {
+    for (const component of components) {
+      component?.classList?.remove('active-target');
+    }
+  }
 };
