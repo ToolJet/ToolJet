@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
 import { formatFileSize } from '@/_helpers/utils';
@@ -249,7 +250,10 @@ export const useFilePicker = ({
 
       if (parseContent) {
         setIsParsing(true);
-        setExposedVariable?.('isParsing', true);
+
+        setExposedVariables?.({
+          isParsing: true,
+        });
       }
 
       const processPromises = newFilesToAdd.map((file) => {
@@ -289,7 +293,9 @@ export const useFilePicker = ({
 
       if (parseContent) {
         setIsParsing(false);
-        setExposedVariable?.('isParsing', false);
+        setExposedVariables?.({
+          isParsing: false,
+        });
       }
 
       // Fire 'onFileLoaded' event after processing
@@ -306,7 +312,7 @@ export const useFilePicker = ({
       selectedFiles,
       parseContent,
       fireEvent,
-      setExposedVariable,
+      setExposedVariables,
       fileReader,
       enableMultiple,
       maxFileCount,
@@ -450,7 +456,9 @@ export const useFilePicker = ({
     setIsValid(newIsValid);
 
     // Update exposed validation status
-    setExposedVariable?.('isValid', newIsValid);
+    setExposedVariables?.({
+      isValid: newIsValid,
+    });
 
     if (isMandatory && selectedFiles.length === 0 && isTouched && !isDragActive) {
       setUiErrorMessage('This field is mandatory. Please select a file.');
@@ -469,7 +477,7 @@ export const useFilePicker = ({
     setUiErrorMessage,
     minFileCount,
     enableMultiple,
-    setExposedVariable,
+    setExposedVariables,
   ]);
 
   useEffect(() => {
@@ -488,14 +496,14 @@ export const useFilePicker = ({
       setExposedVariables?.({
         clearFiles: clearFiles,
         setFileName: setFileName,
+        files: selectedFiles, // Contains parsedValue
+        file: selectedFiles, // Contains parsedValue
+        isParsing: isParsing,
+        isMandatory: isMandatory,
+        isValid: currentIsValid,
+        fileSize: totalFileSize,
+        uiErrorMessage: uiErrorMessage,
       });
-      setExposedVariable?.('files', selectedFiles); // Contains parsedValue
-      setExposedVariable?.('file', selectedFiles); // Contains parsedValue
-      setExposedVariable?.('isParsing', isParsing);
-      setExposedVariable?.('isMandatory', isMandatory);
-      setExposedVariable?.('isValid', currentIsValid);
-      setExposedVariable?.('fileSize', totalFileSize);
-      setExposedVariable?.('uiErrorMessage', uiErrorMessage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -507,7 +515,6 @@ export const useFilePicker = ({
     clearFiles,
     setFileName,
     setExposedVariables,
-    setExposedVariable,
     uiErrorMessage,
     dropzoneRejections,
   ]); // Multi-line dependencies
@@ -520,20 +527,20 @@ export const useFilePicker = ({
     setExposedVariables?.({
       clearFiles: clearFiles,
       setFileName: setFileName,
+      files: [],
+      file: [],
+      isParsing: false,
+      isMandatory: isMandatory,
+      isValid: initialIsValid,
+      fileSize: 0,
+      uiErrorMessage: '',
     });
-    setExposedVariable?.('files', []);
-    setExposedVariable?.('file', []);
-    setExposedVariable?.('isParsing', false);
-    setExposedVariable?.('isMandatory', isMandatory);
-    setExposedVariable?.('isValid', initialIsValid);
-    setExposedVariable?.('fileSize', 0);
-    setExposedVariable?.('uiErrorMessage', '');
 
     setIsMandatoryMet(!isMandatory);
     setIsValid(initialIsValid); // Set initial state using the calculated value
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMandatory, clearFiles, setFileName, setExposedVariables, setExposedVariable]); // Multi-line dependencies
+  }, [isMandatory, clearFiles, setFileName, setExposedVariables]); // Multi-line dependencies
 
   useEffect(() => {
     // Update internal disablePicker based on isDisabled from useExposeState and other logic
