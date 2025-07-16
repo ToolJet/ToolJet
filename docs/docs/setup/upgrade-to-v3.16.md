@@ -12,22 +12,27 @@ We recommend reviewing this guide and testing in a staging environment to evalua
 
 ## App Builder Changes
 
+Applicable for both Cloud and Self-Hosted ToolJet deployments.
+
 ### High Severity (Action Required)
+These changes may visibly impact your app's layout or remove features, manual action may be required.
 
 | Area       |Change     |
 |:-----------|:----------|
-| App Header | Free plan users can **no longer hide the app header**. Ensure your layout accounts for this. |
+| App Header | Free plan users can **no longer hide the app header**. If you have hidden the app header, it will now be visible on all your applications. Ensure your layout accounts for this change.|
+| Dark Mode & Header   | **Toggle App Mode icon** disappears if the page menu is hidden. **Workaround**: Use a Button with the `Toggle App Mode` action.     |
 
 ### Medium Severity (Suggested Updates)
 
+These are layout or usability improvements that may require tweaks depending on your app setup.
+
 | Area       |Change     |
 |:-----------|:----------|
-| Dark Mode & Header   | **Toggle App Mode icon** disappears if the page menu is hidden. **Workaround**: Use a Button with the `Toggle App Mode` action.     |
 | Page Menu            | When collapsed, **icons remain visible** (previously hidden). Icon bar now takes 40px (vs 20px before). May impact layouts.                  |
 
 ### Low Severity (Minor Component Changes)
 
-These changes may cause **minor visual shifts** but require no action unless affecting your layout:
+These changes may cause **minor visual shifts** but require no action unless affecting your layout.
 
 | Component         | Change Description    |
 |:------------------|:----------------------|
@@ -49,10 +54,13 @@ These changes may cause **minor visual shifts** but require no action unless aff
 
 ### Medium Severity 
 
+Audit logs are the reports of all the activities done in your ToolJet account. Below are the default retention periods that determine how long these logs are stored, depending on your deployment type.
+
 | Deployment    | Notes     |
 |:--------------|:----------|
 | Cloud         | No change. Audit logs remain fixed to 90 days.                                                 |
 | Self-Hosted   | Audit logs now default to 90 days. Override via `.env`: `AUDIT_LOG_RETENTION_PERIOD=90`       |
+
 
 ## Need Help?
 
