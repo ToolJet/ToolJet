@@ -28,7 +28,9 @@ These are layout or usability improvements that may require tweaks depending on 
 
 | Area       |Change     |
 |:-----------|:----------|
-| Page Menu            | When collapsed, **icons remain visible** (previously hidden). Icon bar now takes 40px (vs 20px before). May impact layouts.                  |
+| Page Menu (Text and icon)         | For page menus using the **"Text and icon"** style, icons will now stay visible when the menu is collapsed. This was not the case before and may slightly affect your layout. |
+| Page Menu (Text only and Icon only) | Page menus using **"Text only"** or **"Icon only"** styles can no longer be collapsed. If your layout depended on collapsing these, adjustments may be needed. |
+
 
 ### Low Severity (Minor Component Changes)
 
