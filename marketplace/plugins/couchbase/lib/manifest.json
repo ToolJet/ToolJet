@@ -1,0 +1,63 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Couchbase datasource",
+  "description": "A schema defining Couchbase datasource",
+  "type": "database",
+  "source": {
+    "name": "Couchbase",
+    "kind": "couchbase",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "data_api_url": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "data_api_url": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "data_api_url": {
+      "label": "Data API Endpoint",
+      "key": "data_api_url",
+      "type": "text",
+      "description": "Enter your Couchbase Data API endpoint URL (e.g., https://<your-data-api-endpoint>)"
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter your Couchbase username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter your Couchbase password"
+    }
+  },
+  "required": [
+    "data_api_url",
+    "username",
+    "password"
+  ]
+}

@@ -1,0 +1,295 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Couchbase datasource",
+  "description": "A schema defining Couchbase datasource",
+  "type": "database",
+  "defaults": {
+    "document": "{ }"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "name": "Get Document",
+          "value": "get_document"
+        },
+        {
+          "name": "Create Document",
+          "value": "create_document"
+        },
+        {
+          "name": "Update Document",
+          "value": "update_document"
+        },
+        {
+          "name": "Delete Document",
+          "value": "delete_document"
+        },
+        {
+          "name": "Query",
+          "value": "query"
+        },
+        {
+          "name": "FTS Search",
+          "value": "fts_search"
+        }
+      ]
+    },
+    "get_document": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket name",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket name"
+      },
+      "scope": {
+        "label": "Scope",
+        "key": "scope",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scope name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter document ID"
+      }
+    },
+    "create_document": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket name",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket name"
+      },
+      "scope": {
+        "label": "Scope",
+        "key": "scope",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scope name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter document ID"
+      },
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"name\": \"John Doe\", \"email\": \"john@example.com\", \"age\": 30 }",
+        "description": "Enter document data",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "update_document": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket name",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket name"
+      },
+      "scope": {
+        "label": "Scope",
+        "key": "scope",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scope name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter document ID"
+      },
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"age\": 31 }",
+        "description": "Enter updated document data",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "delete_document": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket name",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket name"
+      },
+      "scope": {
+        "label": "Scope",
+        "key": "scope",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scope name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter document ID"
+      }
+    },
+    "query": {
+      "query": {
+        "label": "SQL++ Query",
+        "key": "query",
+        "type": "codehinter",
+        "mode": "sql",
+        "placeholder": "SELECT * FROM `travel-sample`.`inventory`.`airline` WHERE country = ? LIMIT 10",
+        "description": "Enter SQL++ statement with ? placeholders for parameters",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "args": {
+        "label": "Arguments",
+        "key": "args",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "[\"France\"]",
+        "description": "Enter array of arguments to replace ? placeholders in statement (optional)",
+        "height": "100px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "fts_search": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket name",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket name"
+      },
+      "scope": {
+        "label": "Scope",
+        "key": "scope",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scope name (optional, defaults to _default)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "_default"
+      },
+      "index_name": {
+        "label": "Index Name",
+        "key": "index_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter FTS index name",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter FTS index name"
+      },
+      "query": {
+        "label": "Search Query",
+        "key": "search_query",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"query\": { \"match\": \"hotel\", \"field\": \"name\" } }",
+        "description": "Enter FTS search query",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    }
+  }
+}
