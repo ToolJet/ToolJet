@@ -139,6 +139,7 @@ const FormComponent = (props) => {
     currentLayout,
     isContainer: true,
     componentCount,
+    value: isJSONSchema,
   });
 
   const parentRef = useRef(null);
