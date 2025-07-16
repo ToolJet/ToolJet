@@ -8,6 +8,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import Spinner from '@/_ui/Spinner';
 import classNames from 'classnames';
+import { isFalsyOrMultipleZeros } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 
 export const ModalWidget = ({ ...restProps }) => {
   const {
@@ -83,8 +84,12 @@ export const ModalWidget = ({ ...restProps }) => {
     setTimeout(() => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
-        modalContent.style.setProperty('height', _modalHeight, 'important');
-        modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+        if (!isFalsyOrMultipleZeros(modalHeight)) {
+          modalContent.style.setProperty('height', _modalHeight, 'important');
+          modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+        } else {
+          modalContent.style.setProperty('height', '5px', 'important');
+        }
       }
     }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps

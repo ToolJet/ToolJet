@@ -66,7 +66,6 @@ export const ModalV2 = function Modal({
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
-
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
@@ -83,6 +82,7 @@ export const ModalV2 = function Modal({
   }, []);
 
   function hideModal() {
+    fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
   }
@@ -92,16 +92,16 @@ export const ModalV2 = function Modal({
     setShowModal(true);
   }
 
-  useEventListener('resize', onShowSideEffects, window);
+  // useEventListener('resize', onShowSideEffects, window);
 
   const onShowModal = () => {
     openModal();
-    onShowSideEffects();
+    // onShowSideEffects();
     setSelectedComponentAsModal(id);
   };
 
   const onHideModal = () => {
-    onHideSideEffects(() => fireEvent('onClose'));
+    // onHideSideEffects(() => fireEvent('onClose'));
     hideModal();
     setSelectedComponentAsModal(null);
   };
@@ -218,8 +218,13 @@ export const ModalV2 = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onShow={() => onShowModal()}
-        onHide={() => onHideModal()}
+        onShow={() => {
+          onShowModal();
+          fireEvent('onOpen');
+        }}
+        onHide={() => {
+          onHideModal();
+        }}
         onEscapeKeyDown={() => hideOnEsc && onHideModal()}
         id="modal-container"
         component-id={id}

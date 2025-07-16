@@ -94,6 +94,10 @@ export const Container = ({
     display: 'flex',
     height: '100%',
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    ...(isDisabled && {
+      opacity: 0.5,
+      pointerEvents: 'none',
+    }),
   };
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
@@ -126,7 +130,11 @@ export const Container = ({
               componentType="Container"
             />
           )}
-          <div style={containerContentStyles} className={`${properties.dynamicHeight && `dynamic-${id}`}`}>
+          <div
+            style={containerContentStyles}
+            className={`${properties.dynamicHeight && `dynamic-${id}`}`}
+            data-disabled={isDisabled}
+          >
             <ContainerComponent
               id={id}
               styles={{
