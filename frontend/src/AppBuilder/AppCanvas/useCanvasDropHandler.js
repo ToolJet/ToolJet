@@ -23,6 +23,7 @@ export const useCanvasDropHandler = ({ appType }) => {
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
 
   const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
     const realCanvasRef =
@@ -49,12 +50,12 @@ export const useCanvasDropHandler = ({ appType }) => {
     // IMPORTANT: This logic needs to be changed when we implement the module versioning
     const moduleInfo = component?.moduleId
       ? {
-          moduleId: component.moduleId,
-          versionId: component.versionId,
-          environmentId: component.environmentId,
-          moduleName: component.displayName,
-          moduleContainer: component.moduleContainer,
-        }
+        moduleId: component.moduleId,
+        versionId: component.versionId,
+        environmentId: component.environmentId,
+        moduleName: component.displayName,
+        moduleContainer: component.moduleContainer,
+      }
       : undefined;
 
     let addedComponent;
@@ -86,6 +87,7 @@ export const useCanvasDropHandler = ({ appType }) => {
     }
 
     setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+    setRightSidebarOpen(true);
 
     const canvas = document.querySelector('.canvas-container');
     const sidebar = document.querySelector('.editor-sidebar');

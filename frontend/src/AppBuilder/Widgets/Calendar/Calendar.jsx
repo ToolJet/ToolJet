@@ -3,6 +3,7 @@ import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
+import './Calendar.scss';
 import _ from 'lodash';
 
 const localizer = momentLocalizer(moment);
@@ -130,6 +131,7 @@ export const Calendar = function ({
       id={id}
       style={{ display: styles.visibility ? 'block' : 'none', boxShadow: styles.boxShadow }}
       data-cy={dataCy}
+      className="scrollbar-container"
     >
       <ReactCalendar
         className={`calendar-widget

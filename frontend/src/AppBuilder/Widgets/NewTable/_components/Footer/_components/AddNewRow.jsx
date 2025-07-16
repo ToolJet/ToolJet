@@ -191,7 +191,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
             hideAddNewRowPopup();
           }}
           size="sm"
-          customStyles={{ padding: '10px 20px' }}
+          customStyles={{ padding: '10px 20px', backgroundColor: 'var(--cc-primary-brand)' }}
         >
           <span>Save</span>
         </ButtonSolid>

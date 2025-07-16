@@ -38,7 +38,6 @@ export const Table = memo(
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
-    console.log('selectedTheme', selectedTheme);
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
@@ -68,6 +67,7 @@ export const Table = memo(
       columnDeletionHistory,
       autogenerateColumns,
       actions,
+      shouldRender,
       ...restOfProperties
     } = properties;
 
@@ -139,7 +139,9 @@ export const Table = memo(
     // Transform table data if transformations are present
     const tableData = useMemo(() => {
       return transformTableData(restOfProperties.data, transformations, getResolvedValue);
-    }, [getResolvedValue, restOfProperties.data, transformations]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getResolvedValue, restOfProperties.data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
+    // Added to handle the dynamic value (fx) on the table column properties
 
     useDynamicHeight({
       dynamicHeight: properties.dynamicHeight,
@@ -168,7 +170,7 @@ export const Table = memo(
           '--cc-table-footer-action-hover': hoverColor,
           '--cc-table-row-hover': hoverColor,
           '--cc-table-row-active': activeColor,
-          '--cc-table-scroll-bar-color': activeColor, 
+          '--cc-table-scroll-bar-color': activeColor,
         }}
       >
         <TableContainer

@@ -57,7 +57,7 @@ const FilePicker = (props) => {
     containerBackgroundColor,
     borderRadius,
     containerBorder,
-    containerBoxShadow,
+    boxShadow,
     containerPadding,
     dropzoneTitleColor,
     dropzoneActiveColor,
@@ -89,8 +89,8 @@ const FilePicker = (props) => {
     if (containerBorder) {
       rootRef.current.style.setProperty('--file-picker-border', containerBorder);
     }
-    if (containerBoxShadow) {
-      rootRef.current.style.setProperty('--file-picker-box-shadow', containerBoxShadow);
+    if (boxShadow) {
+      rootRef.current.style.setProperty('--file-picker-box-shadow', boxShadow);
     }
     if (containerPadding !== undefined) {
       rootRef.current.style.setProperty(
@@ -105,7 +105,7 @@ const FilePicker = (props) => {
     borderRadius,
     containerBackgroundColor,
     containerBorder,
-    containerBoxShadow,
+    boxShadow,
     containerPadding,
     darkMode,
   ]);
