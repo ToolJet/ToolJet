@@ -19,6 +19,7 @@ This documentation explains the process of exporting and importing applications 
 
 - If you select `Export All`, all the versions of the application will be exported in JSON format. If you select `Export selected version`, only the selected version will be exported in JSON format. 
 - Ticking the `Export ToolJet table schema` checkbox will also export the related ToolJet Database table schemas with your application. In this case, when you import the application in a workspace, the related ToolJet Database tables will also be created.
+- When you export an application, all associated modules linked to that application are automatically included in the export. This ensures that any reusable components or features built as modules are preserved and can be imported along with the app into any other instance or workspace.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/import-export-apps/export-options-v2.png" alt="Export App Options" />
@@ -38,6 +39,7 @@ This documentation explains the process of exporting and importing applications 
 </div>
 
 - After clicking on `Import`, choose the relevant JSON file that you previously downloaded during the application export process.
+- When you import an application, the platform automatically checks for any existing modules with matching names in your workspace or instance. If a module with the same name already exists, the imported application will connect to the existing module, avoiding duplication. However, if no matching module is found, the platform will create a new module from the imported JSON file. This approach ensures that your application imports smoothly while maintaining consistency and avoiding redundant modules.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/import-export-apps/select-app-to-import.png" alt="Select App To Import" />

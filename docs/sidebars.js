@@ -316,6 +316,7 @@ const sidebars = {
         },
         'app-builder/walkthrough/row-level-security',
         'app-builder/anti-patterns',
+        'app-builder/importing-exporting-applications',
         'tutorial/keyboard-shortcuts',
       ],
     },
