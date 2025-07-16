@@ -150,7 +150,6 @@ export class EmailService implements IEmailService {
     const subject = 'Reset your password';
     const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
     const tooljetEdition = getTooljetEdition();
-    console.log(tooljetEdition, 'edition');
     const templateData = {
       name: firstName || '',
       resetLink: url,
