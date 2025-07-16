@@ -305,12 +305,11 @@ export const formConfig = {
       footerHeight: { value: 60 },
       validateOnSubmit: { value: '{{true}}' },
       resetOnSubmit: { value: '{{true}}' },
-      generateFormFrom: '',
-      fields: {
-        value: [],
+      generateFormFrom: {
+        value: '',
       },
       JSONData: {
-        value: undefined,
+        value: {},
       },
     },
     events: [],

@@ -28,7 +28,7 @@ const SECTION_DISPLAY_NAMES = {
  */
 const EditableIcon = ({ darkMode }) => (
   <div className="tw-mr-2 editable-icon">
-    <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} viewBox="0 0 12 12" />
+    <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} />
   </div>
 );
 
@@ -400,7 +400,7 @@ const ColumnMappingComponent = ({
       // Use setTimeout to ensure DOM is fully rendered
       setTimeout(() => {
         if (bodyContainerRef.current) {
-          const height = bodyContainerRef.current.scrollHeight;
+          const height = Math.min(bodyContainerRef.current.scrollHeight, 500);
           if (height > 0) {
             lastBodyHeightRef.current = height;
           }
