@@ -35,7 +35,8 @@ export const PageMenuItem = withRouter(
     const isHomePage = page.id === homePageId;
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
     const isSelected = page.id === currentPageId;
-    const isHidden = resolveReferences(page?.hidden?.value) ?? false;
+    const getPagesVisibility = useStore((state) => state.getPagesVisibility, shallow);
+    const isHidden = getPagesVisibility('canvas', page?.id);
     const isDisabled = page?.disabled ?? false;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());

@@ -480,6 +480,11 @@ export const createPageMenuSlice = (set, get) => {
       });
     },
 
+    setPagePermission: (pagePermission) =>
+      set((state) => {
+        state.pagePermission = pagePermission;
+      }),
+
     setEditingPage: (page) =>
       set((state) => {
         state.editingPage = page;

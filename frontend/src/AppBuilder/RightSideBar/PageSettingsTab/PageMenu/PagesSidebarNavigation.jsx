@@ -43,6 +43,7 @@ export const PagesSidebarNavigation = ({
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const pagesVisibility = useStore((state) => state.resolvedStore.modules[moduleId].others.pages, shallow);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -218,7 +219,7 @@ export const PagesSidebarNavigation = ({
 
     setVisibleLinks(finalVisible);
     setOverflowLinks(finalOverflow);
-  }, [pages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, measuredMoreButtonWidth]);
+  }, [pages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, measuredMoreButtonWidth, pagesVisibility]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -560,12 +561,8 @@ const RenderPagesWithoutGroup = ({
   moreBtnRef,
 }) => {
   const [showPopover, setShowPopover] = useState(false);
-  const filteredPagesVisible = (position == 'top' ? visibleLinks : pages).filter(
-    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
-  );
-  const filteredPagesOverflow = overflowLinks.filter(
-    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
-  );
+  const filteredPagesVisible = visibleLinks.filter((page) => !page?.isPageGroup || page.children?.length > 0);
+  const filteredPagesOverflow = overflowLinks.filter((page) => !page?.isPageGroup || page.children?.length > 0);
 
   return (
     <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
@@ -591,10 +588,11 @@ const RenderPagesWithoutGroup = ({
           <button
             ref={moreBtnRef}
             onClick={() => setShowPopover(!showPopover)}
-            className="tj-list-item page-name"
+            className={`tj-list-item page-name more-btn-pages width-unset ${showPopover && 'tj-list-item-selected'}`}
             style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
           >
             <SolidIcon fill={'var(--icon-weak)'} viewBox="0 3 21 18" width="16px" name="morevertical" />
+
             <div style={{ marginLeft: '6px' }}>More</div>
           </button>
 

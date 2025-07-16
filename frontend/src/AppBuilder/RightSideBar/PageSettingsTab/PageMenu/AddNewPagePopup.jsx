@@ -17,6 +17,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
+import { shallow } from 'zustand/shallow';
 
 const POPOVER_TITLES = {
   add: {
@@ -351,6 +352,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 updatePageVisibility={updatePageVisibility}
                 darkMode={darkMode}
                 isHomePage={isHomePage}
+                moduleId={moduleId}
               />
               <div className=" d-flex justify-content-between align-items-center pb-2">
                 <label className="form-label font-weight-400 mb-0">Disable page</label>
@@ -433,6 +435,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               updatePageVisibility={updatePageVisibility}
               darkMode={darkMode}
               isHomePage={isHomePage}
+              moduleId={moduleId}
             />
           </>
         )}
@@ -504,6 +507,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               updatePageVisibility={updatePageVisibility}
               darkMode={darkMode}
               isHomePage={isHomePage}
+              moduleId={moduleId}
             />
           </>
         )}
@@ -540,6 +544,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               updatePageVisibility={updatePageVisibility}
               darkMode={darkMode}
               isHomePage={isHomePage}
+              moduleId={moduleId}
             />
           </>
         )}
@@ -579,8 +584,13 @@ const PageEvents = ({ page, allPages }) => {
   );
 };
 
-const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled }) => {
+const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled, moduleId }) => {
   const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
+  const resolveOthers = useStore((state) => state.resolveOthers, shallow);
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility, shallow);
+  const resolvedPages = useStore((state) => state.resolvedStore.modules[moduleId].others.pages, shallow);
+
+  const resolvedHidden = getPagesVisibility('canvas', page?.id);
 
   return (
     <div className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}>
@@ -602,11 +612,22 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
               <FxButton
                 active={forceCodeBox}
                 onPress={() => {
-                  if (forceCodeBox) {
-                    setForceCodeBox(false);
-                  } else {
-                    setForceCodeBox(true);
-                  }
+                  updatePageVisibility(page?.id, {
+                    value: resolvedHidden,
+                    fxActive: !forceCodeBox,
+                  });
+                  resolveOthers('canvas', true, {
+                    pages: {
+                      ...resolvedPages,
+                      [page?.id]: {
+                        hidden: {
+                          value: resolvedHidden,
+                          fxActive: !forceCodeBox,
+                        },
+                      },
+                    },
+                  });
+                  setForceCodeBox(!forceCodeBox);
                 }}
               />
             </div>
@@ -616,14 +637,25 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  checked={resolveReferences(hidden?.value)}
+                  checked={resolvedHidden}
                   disabled={isHomePage}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     updatePageVisibility(page?.id, {
                       value: `{{${e.target.checked}}}`,
                       fxActive: forceCodeBox,
-                    })
-                  }
+                    });
+                    resolveOthers('canvas', true, {
+                      pages: {
+                        ...resolvedPages,
+                        [page?.id]: {
+                          hidden: {
+                            value: `{{${e.target.checked}}}`,
+                            fxActive: forceCodeBox,
+                          },
+                        },
+                      },
+                    });
+                  }}
                 />
               </div>
             )}
@@ -639,6 +671,17 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
             updatePageVisibility(page?.id, {
               value: value,
               fxActive: forceCodeBox,
+            });
+            resolveOthers('canvas', true, {
+              pages: {
+                ...resolvedPages,
+                [page?.id]: {
+                  hidden: {
+                    value: value,
+                    fxActive: forceCodeBox,
+                  },
+                },
+              },
             });
           }}
         />
