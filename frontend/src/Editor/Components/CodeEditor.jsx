@@ -108,8 +108,8 @@ export const CodeEditor = ({
           width="100%"
           theme={theme}
           extensions={[langExtention]}
-          onChange={() => {
-            codeChanged();
+          onChange={(value) => {
+            codeChanged(value);
             setForceDynamicHeightUpdate(!forceDynamicHeightUpdate);
           }}
           basicSetup={setupConfig}
