@@ -385,6 +385,7 @@ export const PageMenuItem = withRouter(
                         show={showPageOptions && isEditingPage}
                         placement="bottom-end"
                         rootClose
+                        transition={false}
                         modifiers={[
                           {
                             name: 'preventOverflow',
