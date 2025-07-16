@@ -1,0 +1,42 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Easypost datasource",
+  "description": "A schema defining Easypost datasource",
+  "type": "api",
+  "source": {
+    "name": "EasyPost",
+    "kind": "easypost",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Authentication method for EasyPost API",
+      "list": [
+        {
+          "value": "api_key",
+          "name": "API Key Authentication"
+        }
+      ]
+    },
+    "api_key": {
+      "key": {
+        "label": "API Key",
+        "key": "api_key",
+        "type": "password",
+        "description": "Your EasyPost API key (starts with EZTEST_ or EZPROD_)",
+        "hint": "Get your API key from EasyPost dashboard"
+      }
+    }
+  },
+  "required": []
+}

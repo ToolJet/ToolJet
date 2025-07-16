@@ -1,0 +1,145 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Easypost datasource",
+  "description": "A schema defining Easypost datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an EasyPost operation",
+      "list": [
+        {
+          "value": "create_address",
+          "name": "Create Address"
+        },
+        {
+          "value": "create_shipment",
+          "name": "Create Shipment"
+        },
+        {
+          "value": "buy_shipment",
+          "name": "Buy Shipment"
+        },
+        {
+          "value": "create_tracker",
+          "name": "Create Tracker"
+        },
+        {
+          "value": "get_tracker",
+          "name": "Get Tracker"
+        }
+      ]
+    },
+    "create_address": {
+      "address": {
+        "label": "Address",
+        "key": "address",
+        "type": "codehinter",
+        "lineNumbers": true,
+        "description": "Address object in JSON format",
+        "width": "320px",
+        "height": "200px",
+        "className": "codehinter-plugins",
+        "placeholder": "{\"name\": \"John Doe\", \"street1\": \"417 Montgomery Street\", ...}"
+      },
+      "verify": {
+        "label": "Verification",
+        "key": "verify",
+        "type": "dropdown",
+        "description": "Address verification level",
+        "list": [
+          {
+            "value": "none",
+            "name": "No verification"
+          },
+          {
+            "value": "delivery",
+            "name": "Delivery verification"
+          },
+          {
+            "value": "zip4",
+            "name": "ZIP+4 verification"
+          }
+        ]
+      }
+    },
+    "create_shipment": {
+      "shipment": {
+        "label": "Shipment",
+        "key": "shipment",
+        "type": "codehinter",
+        "lineNumbers": true,
+        "description": "Shipment object in JSON format",
+        "width": "320px",
+        "height": "200px",
+        "className": "codehinter-plugins",
+        "placeholder": "{\"to_address\": {...}, \"from_address\": {...}, \"parcel\": {...}}"
+      }
+    },
+    "buy_shipment": {
+      "shipment_id": {
+        "label": "Shipment ID",
+        "key": "shipment_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "ID of the shipment to buy",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "shp_123..."
+      },
+      "rate_id": {
+        "label": "Rate ID",
+        "key": "rate_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "ID of the rate to purchase",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "rate_123..."
+      }
+    },
+    "create_tracker": {
+      "tracking_code": {
+        "label": "Tracking Code",
+        "key": "tracking_code",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Carrier tracking code",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "940011189956..."
+      },
+      "carrier": {
+        "label": "Carrier",
+        "key": "carrier",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Carrier name (e.g., USPS, FedEx)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "USPS"
+      }
+    },
+    "get_tracker": {
+      "tracker_id": {
+        "label": "Tracker ID",
+        "key": "tracker_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "EasyPost tracker ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "trk_123..."
+      }
+    }
+  }
+}
