@@ -308,7 +308,7 @@ export const createQueryPanelSlice = (set, get) => ({
         selectedEnvironment,
         isPublicAccess,
         currentVersionId,
-        currentMode,
+        modeStore,
       } = get();
       const {
         queryPreviewData,
@@ -565,6 +565,7 @@ export const createQueryPanelSlice = (set, get) => ({
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
         } else {
+          const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
           let versionId = currentVersionId;
           // IMPORTANT: This logic needs to be changed when we implement the module versioning
           if (moduleId !== 'canvas') {
@@ -575,8 +576,14 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             query?.options,
             versionId,
-            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined, //TODO: currentAppEnvironmentId may no longer required. Need to check
-            currentMode
+            (() => {
+              // send undefined if Public/Private released app
+              if (isPublicAccess || (isReleasedApp && !isPublicAccess)) {
+                return undefined;
+              }
+              return (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id; //TODO: currentAppEnvironmentId may no longer required. Need to check
+            })(),
+            modeStore.modules.canvas.currentMode
           );
         }
 

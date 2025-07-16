@@ -49,6 +49,8 @@ function Header({
         return 'Workflows';
       case 'workspace-constants':
         return 'Workspace constants';
+      case 'modules':
+        return 'Modules';
       default:
         return 'Applications';
     }
@@ -65,7 +67,6 @@ function Header({
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
-
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">

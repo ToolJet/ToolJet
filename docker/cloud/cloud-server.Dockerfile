@@ -40,6 +40,9 @@ RUN git submodule foreach " \
 # Scripts for building
 COPY ./package.json ./package.json
 
+# Add GitHub to known_hosts to support SSH-based package installs
+RUN mkdir -p ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
+
 # Building ToolJet plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
@@ -140,6 +143,10 @@ ENV HOME=/home/appuser
 USER appuser
 
 WORKDIR /app
+
+# Installing git for simple git commands
+RUN apt-get update && apt-get install -y git && apt-get clean
+
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
 
