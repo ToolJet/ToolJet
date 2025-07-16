@@ -16,14 +16,6 @@ If the builder attempts to add any of the aforementioned components inside the M
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Add Widgets to Modal
-
-To add widgets to the Modals please refer to **[Tutorial - Adding widgets to a modal](/docs/tutorial/adding-widget#adding-widgets-to-modal)**
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Properties
 
 | <div style={{ width:"100px"}}> Property   </div>   | <div style={{ width:"100px"}}> Description </div> | 

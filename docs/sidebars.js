@@ -221,6 +221,7 @@ const sidebars = {
                 'widgets/listview',
                 'widgets/map',
                 'widgets/modal',
+                'widgets/modal-v2',
                 'widgets/multiselect',
                 'widgets/number-input',
                 'widgets/password-input',
