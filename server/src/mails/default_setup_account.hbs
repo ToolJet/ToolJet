@@ -14,7 +14,7 @@
               onboard! Please confirm your email address by clicking the button
               below to get started.
             </p>
-            {{#if (eq whiteLabelText "ToolJet")}}
+            {{#if (and (eq whiteLabelText "ToolJet") (eq tooljetEdition "cloud"))}}
               <p class="padding-t-20">
                 Should you have any questions or need assistance, our support team
                 is
