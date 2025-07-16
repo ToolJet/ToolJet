@@ -13,6 +13,7 @@ import { shallow } from 'zustand/shallow';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useColumnBuilder, useGroupedColumns, useCheckboxStates } from './hooks/useColumnMapping';
+import { DropdownProvider } from '@/components/ui/Dropdown/DropdownProvider';
 
 // Constants for section display names
 const SECTION_DISPLAY_NAMES = {
@@ -410,8 +411,6 @@ const ColumnMappingComponent = ({
 
   const currentStatus = currentStatusRef.current;
 
-  console.log('here--- existingResolvedJsonData--- ', existingResolvedJsonData);
-
   const columnsToUse = useColumnBuilder(
     component,
     currentStatus,
@@ -521,8 +520,10 @@ const ColumnMappingComponent = ({
 
   return (
     <Modal show={isOpen} onHide={onClose} size="lg">
-      <ModalHeader currentStatus={currentStatus} onClose={onClose} />
-      <div className="column-mapping-modal-body">{modalBody}</div>
+      <DropdownProvider>
+        <ModalHeader currentStatus={currentStatus} onClose={onClose} />
+        <div className="column-mapping-modal-body">{modalBody}</div>
+      </DropdownProvider>
     </Modal>
   );
 };
