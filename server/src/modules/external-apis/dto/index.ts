@@ -12,6 +12,7 @@ import {
   IsNotEmpty,
   IsDefined,
   IsObject,
+  IsUrl,
   IsInt,
   Min,
 } from 'class-validator';
@@ -137,6 +138,52 @@ export class UpdateUserWorkspaceDto {
   groups?: GroupDto[];
 }
 
+export class OrganizationGitCreateDto {
+  @IsString()
+  organizationId: string;
+
+  @IsString()
+  gitUrl: string;
+}
+
+export class GithubHttpsConfigDTO extends OrganizationGitCreateDto {
+  @IsString()
+  @IsNotEmpty()
+  branchName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppInstallationId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppPrivateKey: string;
+
+  @IsUrl()
+  @IsOptional()
+  githubEnterpriseUrl?: string;
+
+  @IsUrl()
+  @IsOptional()
+  githubEnterpriseApiUrl?: string;
+}
+
+export class AppGitPullDto {
+  @IsString()
+  appId: string;
+
+  @IsString()
+  organizationId: string;
+}
+
+export class AppGitPushDto {
+  @IsString()
+  commitMessage: string;
+}
 export class VersionDto {
   id: string;
   name: string;

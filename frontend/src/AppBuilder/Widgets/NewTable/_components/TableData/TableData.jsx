@@ -80,7 +80,7 @@ export const TableData = ({
   // Handles row click for row selection
   const handleRowClick = (row) => {
     if (!allowSelection) return;
-    lastClickedRowRef.current = row.original;
+    lastClickedRowRef.current = { row: row?.original, index: row.index };
 
     // Update row selection
     row.toggleSelected();
@@ -115,7 +115,11 @@ export const TableData = ({
   }
 
   return (
-    <div className={`table-responsive jet-data-table`} style={{ maxHeight: '100%', position: 'relative' }} ref={tableBodyRef}>
+    <div
+      className={`table-responsive jet-data-table`}
+      style={{ maxHeight: '100%', position: 'relative' }}
+      ref={tableBodyRef}
+    >
       <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
         <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: containerBackgroundColor }}>
           {renderTableHeader()}

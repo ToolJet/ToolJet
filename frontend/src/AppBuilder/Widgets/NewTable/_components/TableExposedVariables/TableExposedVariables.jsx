@@ -33,7 +33,7 @@ export const TableExposedVariables = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const mounted = useMounted();
-  const previousLastClickedRow = usePrevious(lastClickedRow);
+  const previousLastClickedRow = usePrevious(lastClickedRow?.row);
 
   const {
     selectedRows,
@@ -134,7 +134,7 @@ export const TableExposedVariables = ({
 
   useEffect(() => {
     if (allowSelection) {
-      if (previousLastClickedRow?.id !== lastClickedRow?.id) {
+      if (previousLastClickedRow?.id !== lastClickedRow?.row?.id) {
         fireEvent('onRowClicked');
       }
     }
@@ -155,7 +155,7 @@ export const TableExposedVariables = ({
       fireEvent('onSort');
       prevSortingLength.current = sorting.length;
     } else {
-      setExposedVariables({ sortApplied: undefined });
+      setExposedVariables({ sortApplied: [] });
       prevSortingLength.current && fireEvent('onSort');
       prevSortingLength.current = null;
     }
@@ -205,7 +205,7 @@ export const TableExposedVariables = ({
 
   // CSA to set page index
   useEffect(() => {
-    function setPage(targetPageIndex) {
+    function setPage(targetPageIndex = 1) {
       setExposedVariables({ pageIndex: targetPageIndex });
       if (clientSidePagination) setPageIndex(targetPageIndex - 1);
     }
@@ -221,8 +221,8 @@ export const TableExposedVariables = ({
         setRowSelection({ [index]: true });
       }
       setExposedVariables({
-        selectedRow: item,
-        selectedRowId: isNaN(item?.id) ? String(item?.id) : item?.id,
+        selectedRow: item === null ? {} : item,
+        selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
       });
     }
     if (defaultSelectedRow) {
@@ -242,8 +242,8 @@ export const TableExposedVariables = ({
   useEffect(() => {
     if (lastClickedRow) {
       setExposedVariables({
-        selectedRow: lastClickedRow,
-        selectedRowId: isNaN(lastClickedRow?.id) ? String(lastClickedRow?.id) : lastClickedRow?.id,
+        selectedRow: lastClickedRow?.row ?? {},
+        selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
       });
     }
   }, [lastClickedRow, setExposedVariables]);
@@ -256,8 +256,8 @@ export const TableExposedVariables = ({
         setRowSelection({ [index]: true });
       }
       setExposedVariables({
-        selectedRow: item,
-        selectedRowId: isNaN(item?.id) ? String(item?.id) : item?.id,
+        selectedRow: item === null ? {} : item,
+        selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
       });
     }
 

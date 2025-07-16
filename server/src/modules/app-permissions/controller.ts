@@ -9,9 +9,10 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { CreatePermissionDto } from './dto';
+import { ValidAppGuard } from './guards/valid-app.guard';
 
 @InitModule(MODULES.APP_PERMISSIONS)
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+@UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
 @Controller('app-permissions')
 export class AppPermissionsController implements IAppPermissionsController {
   constructor() {}

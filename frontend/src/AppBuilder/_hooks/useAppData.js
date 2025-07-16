@@ -59,7 +59,8 @@ const useAppData = (
   darkMode,
   mode = 'edit',
   { environmentId, versionId } = {},
-  moduleMode = false
+  moduleMode = false,
+  appSlug
 ) => {
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
@@ -138,7 +139,7 @@ const useAppData = (
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
-  const appName = useStore((state) => state.appStore.modules[moduleId].app.name);
+  const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
   const location = useRouter().location;
 
@@ -327,6 +328,9 @@ const useAppData = (
           appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
 
         appTypeRef.current = appData.type;
+
+        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+
         setApp(
           {
             appName: appData.name,
@@ -346,6 +350,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
+            isReleasedApp: isReleasedApp
           },
           moduleId
         );
@@ -542,7 +547,7 @@ const useAppData = (
   }, [isComponentLayoutReady, moduleId]);
 
   useEffect(() => {
-    if (moduleId) return;
+    if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
       page: pageTitles.EDITOR,
       appName: appName,
@@ -554,13 +559,14 @@ const useAppData = (
 
   useEffect(() => {
     const root = document.documentElement;
+    const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
     const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
     Object.keys(themeObj).forEach((category) => {
       const categoryObj = themeObj[category];
       Object.keys(categoryObj).forEach((property) => {
         const propertyObj = categoryObj[property];
         Object.keys(propertyObj).forEach((type) => {
-          const color = propertyObj[type][darkMode ? 'dark' : 'light'];
+          const color = propertyObj[type][mode];
           root.style.setProperty(`--cc-${camelCase(type)}-${camelCase(category)}`, `${color}`);
           if (type === 'placeholder' && category === 'text') {
             root.style.setProperty(`--cc-default-icon`, `${color}`);
@@ -575,7 +581,7 @@ const useAppData = (
       });
     });
     detectThemeChange();
-  }, [darkMode, selectedTheme, !!themeAccess]);
+  }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
     if (moduleMode) return;
@@ -601,6 +607,7 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
+        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.name,
           appId: appData.id,
@@ -615,6 +622,7 @@ const useAppData = (
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
+          isReleasedApp: isReleasedApp,
         });
 
         setGlobalSettings(

@@ -342,4 +342,20 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
       }
     }, manager || this.manager);
   }
+
+  async getAdminUserForOrg(organizationId: string, manager?: EntityManager): Promise<User | null> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const result = await manager
+        .createQueryBuilder(User, 'user')
+        .innerJoin('user.userGroups', 'groupUser')
+        .innerJoin('groupUser.group', 'group')
+        .where('group.name = :name', { name: 'admin' })
+        .andWhere('group.organizationId = :organizationId', { organizationId })
+        .andWhere('user.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .limit(1)
+        .getOne();
+
+      return result ?? null;
+    }, manager || this.manager);
+  }
 }

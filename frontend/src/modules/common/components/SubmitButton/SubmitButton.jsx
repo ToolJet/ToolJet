@@ -20,7 +20,7 @@ const SubmitButton = ({
     ...(className ? { [className]: true } : {}),
   });
   return (
-    <div className="row">
+    <div>
       <ButtonSolid
         type="submit"
         className={classes}

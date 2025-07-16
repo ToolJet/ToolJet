@@ -62,6 +62,7 @@ export const BaseLeftSidebar = ({
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
+    localStorage.setItem('selectedSidebarItem', item);
     if (item === selectedSidebarItem && !pinned) {
       return toggleLeftSidebar(false);
     }
@@ -91,15 +92,16 @@ export const BaseLeftSidebar = ({
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-      case 'page':
-        return (
-          <PageMenu
-            setPinned={setPinned}
-            pinned={pinned}
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-          />
-        );
+      // case 'page':
+      //   return (
+      //     <PageMenu
+      //       setPinned={setPinned}
+      //       pinned={pinned}
+      //       darkMode={darkMode}
+      //       selectedSidebarItem={selectedSidebarItem}
+      //     />
+      //   );
+      case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
           <LeftSidebarInspector
@@ -159,10 +161,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-            // toggleAppMaintenance={toggleAppMaintenance}
-            // isMaintenanceOn={isMaintenanceOn}
-            // app={app}
-            // backgroundFxQuery={backgroundFxQuery}
+          // toggleAppMaintenance={toggleAppMaintenance}
+          // isMaintenanceOn={isMaintenanceOn}
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }
