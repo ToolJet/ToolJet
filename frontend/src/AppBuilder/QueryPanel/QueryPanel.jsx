@@ -20,6 +20,8 @@ export const QueryPanel = ({ darkMode }) => {
   const setQueryPanelHeight = useStore((state) => state.queryPanel.setQueryPanelHeight);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
   const setIsDraggingQueryPane = useStore((state) => state.queryPanel.setIsDraggingQueryPane, shallow);
+  const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
+  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -28,7 +30,6 @@ export const QueryPanel = ({ darkMode }) => {
     }
   );
   const queryPaneRef = useRef(null);
-  const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight >= 95
       ? 50
@@ -75,7 +76,7 @@ export const QueryPanel = ({ darkMode }) => {
     //   onQueryPaneDragging(false);
     // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowSize.height, isExpanded, isWindowResizing]);
+  }, [windowSize.height, isQueryPaneExpanded, isWindowResizing]);
 
   const onMouseDown = useCallback(
     (e) => {
@@ -115,12 +116,12 @@ export const QueryPanel = ({ darkMode }) => {
 
         if (isDraggingQueryPane) {
           const newHeight = Math.min(Math.max((clientY / window.innerHeight) * 100, 4.5), 94);
-          setExpanded(newHeight <= 94);
+          setIsQueryPaneExpanded(newHeight <= 94);
           setHeight(newHeight);
         }
       }
     },
-    [isDraggingQueryPane, isTopOfQueryPanel] // Dependencies
+    [isDraggingQueryPane, isTopOfQueryPanel, setIsQueryPaneExpanded]
   );
 
   useEventListener('mousemove', onMouseMove);
@@ -136,26 +137,25 @@ export const QueryPanel = ({ darkMode }) => {
   );
 
   const toggleQueryEditor = useCallback(() => {
-    const newIsExpanded = !isExpanded;
-    setExpanded(newIsExpanded);
+    const newIsExpanded = !isQueryPaneExpanded;
+    setIsQueryPaneExpanded(newIsExpanded);
     localStorage.setItem(
       'queryManagerPreferences',
       JSON.stringify({ isExpanded: newIsExpanded, queryPanelHeight: newIsExpanded ? height : 95 })
     );
     setQueryPanelHeight(newIsExpanded ? height : 95);
-  }, [height, isExpanded, setQueryPanelHeight]);
+  }, [height, isQueryPaneExpanded, setQueryPanelHeight, setIsQueryPaneExpanded]);
 
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
-        className={`query-pane ${isExpanded ? 'expanded' : 'collapsed'}`}
+        className={`query-pane ${isQueryPaneExpanded ? 'expanded' : 'collapsed'}`}
         style={{
           height: 40,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          zIndex: 2,
-          width: '100%',
+          zIndex: 12,
         }}
       >
         <div
@@ -165,8 +165,8 @@ export const QueryPanel = ({ darkMode }) => {
           <div
             style={{
               height: '100%',
-              paddingTop: isExpanded ? '2px' : '4px',
-              borderTop: isExpanded && '2px solid #4368E3',
+              paddingTop: isQueryPaneExpanded ? '2px' : '4px',
+              borderTop: isQueryPaneExpanded && '2px solid #4368E3',
               width: '77px',
             }}
           >
@@ -175,7 +175,7 @@ export const QueryPanel = ({ darkMode }) => {
               className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button gap-1"
               onClick={toggleQueryEditor}
             >
-              <span>{isExpanded ? <SectionCollapse width="13.33" /> : <SectionExpand width="13.33" />}</span>
+              <span>{isQueryPaneExpanded ? <SectionCollapse width="13.33" /> : <SectionExpand width="13.33" />}</span>
               <span>Queries</span>
             </button>
           </div>
@@ -187,16 +187,16 @@ export const QueryPanel = ({ darkMode }) => {
         className="query-pane"
         id="query-manager"
         style={{
-          height: `calc(100% - ${isExpanded ? height : 100}%)`,
+          height: `calc(100% - ${isQueryPaneExpanded ? height : 100}%)`,
           maxHeight: '93.5%',
           cursor: isDraggingQueryPane || isTopOfQueryPanel ? 'row-resize' : 'default',
-          ...(!isExpanded && {
+          ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
         }}
       >
-        {isExpanded && (
-          <QueryKeyHooks isExpanded={isExpanded}>
+        {isQueryPaneExpanded && (
+          <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
             <MemoizedQueryDataPane darkMode={darkMode} />
             <div className="query-definition-pane-wrapper">
               <div className="query-definition-pane">

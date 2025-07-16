@@ -34,13 +34,20 @@
   }
 
   .card {
-    border: 1px solid var(--slate3) !important;
+    border: 1px solid var(--cc-default-border) !important;
+  }
+
+  .table-filters {
+    .card-footer {
+      border-top: 1px solid var(--cc-default-border) !important;
+    }
   }
 
   .card-footer {
     padding: 0.75rem;
     // background-color: var(--cc-surface1-surface) !important;
   }
+
 
   .card-header {
     border-bottom: 0 !important;
@@ -82,7 +89,7 @@
 
 
       .table-global-search {
-        border: 1px solid var(--borders-default) !important;
+        border: 1px solid var(--cc-default-border,--borders-default) !important;
 
         input {
           color: var(--text-primary) !important;
@@ -164,6 +171,22 @@
         &.has-badge,
         &.has-badges {
           overflow-y: visible !important;
+          .select-search-options {
+            background-color: var(--cc-default-border);
+            .select-search-row {
+              button {
+                background-color: var(--cc-surface1-surface);
+                color: var(--cc-primary-text);
+                &:hover {
+                  filter: brightness(0.9);
+                }
+              }
+              button.select-search-is-selected {
+                color: var(--cc-primary-brand);
+              }
+            }
+          }
+
         }
 
         // &.has-number {
@@ -719,6 +742,7 @@
 .popover:has(.dropdown-table-column-hide-common) {
   border: 1px solid var(--slate3) !important;
   background-color: var(--cc-surface1-surface) !important;
+  color: var(--cc-primary-text) !important;
   padding: 4px;
   border-radius: 6px;
 }
@@ -758,8 +782,9 @@
 }
 
 .popover:has(.dropdown-table-column-hide-common) {
-  border: 1px solid var(--slate3) !important;
-  background-color: var(--base) !important;
+  border: 1px solid var(--cc-default-border) !important;
+  background-color: var(--cc-surface1-surface) !important;
+  color: var(--cc-primary-text) !important;
   padding: 4px;
   border-radius: 6px;
 }
@@ -767,7 +792,7 @@
 .jet-table.table-component {
   .pagination-container {
     input {
-      border: 1px solid var(--slate7, #D7DBDF) !important;
+      border: 1px solid var(--cc-default-border, #D7DBDF) !important;
       background-color: var(--cc-surface1-surface)!important;
       color: var(--cc-primary-text) !important;
 
@@ -828,8 +853,8 @@
 
       &:focus-within {
         outline: 0;
-        background: var(--slate4, #ECEEF0) !important;
-        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
+        background: var(--cc-table-header-active, --slate4, #ECEEF0) !important;
+        box-shadow: 0px 0px 0px 4px var(--cc-table-header-active-border,--slate6) !important;
         z-index: 999;
         margin: 4px 0;
 
@@ -1033,6 +1058,8 @@
   gap: 5px;
   align-self: stretch;
   height: 40px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   justify-content: center;
   display: flex;
   flex-direction: row;
@@ -1152,7 +1179,8 @@
   .react-select__menu-list {
     display: flex;
     flex-direction: column;
-    border-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     box-shadow: var(--elevation-400-box-shadow);
     background-color: var(--cc-surface1-surface) !important;
     
@@ -1198,6 +1226,9 @@
 .table-custom-select-badge-badges {
   .select-search-value {
     width: 90%;
+    input {
+      z-index:0;
+    } 
 
     div {
       display: flex;
@@ -1562,7 +1593,7 @@
     position: relative;
     appearance: none;
     -webkit-appearance: none;
-    border: 1px solid var(--borders-default);
+    border: 1px solid var(--cc-default-border,--borders-default);
     border-radius: 3px;
     background-color: var(--cc-surface1-surface);
     cursor: pointer;
@@ -1586,7 +1617,7 @@
     
     &:not(:checked) {
       background-color: var(--cc-surface1-surface);
-      border-color: var(--borders-default);
+      border-color: var(--cc-default-border,--borders-default);
     }
   }
 }

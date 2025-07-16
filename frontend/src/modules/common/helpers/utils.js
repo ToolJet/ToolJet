@@ -19,8 +19,8 @@ const fetchEdition = () => {
 };
 
 const isWorkflowsFeatureEnabled = () => {
-  if (fetchEdition() === 'ee') return true;
-  return false;
+  const edition = fetchEdition();
+  return edition === 'ee';
 };
 
 export { processErrorMessage, clearPageHistory, fetchEdition, isWorkflowsFeatureEnabled };

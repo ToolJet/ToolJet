@@ -15,7 +15,7 @@ const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, 
     <div className={itemClasses} onClick={onClick}>
       <div className="file-details">
         <span className="file-name" title={fileName}>
-          {fileName}
+          {typeof fileName === 'string' ? fileName.replace(/\.[^/.]+$/, '') : fileName}
         </span>
         <span className="file-meta">
           {fileType} {fileSize}

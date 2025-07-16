@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { determineJustifyContentValue } from '@/_helpers/utils';
 
-export const RadioColumn = ({ options = [], value, onChange, readOnly, containerWidth }) => {
+export const RadioColumn = ({ options = [], value, onChange, readOnly, containerWidth, horizontalAlignment }) => {
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
   const containerRef = useRef(null);
@@ -88,7 +89,10 @@ export const RadioColumn = ({ options = [], value, onChange, readOnly, container
         role="radiogroup"
         aria-label="Radio options"
       >
-        <div ref={containerRef} className="table-radio-column-list">
+        <div
+          ref={containerRef}
+          className={`table-radio-column-list justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+        >
           {sanitizedOptions.map(renderOption)}
         </div>
       </div>

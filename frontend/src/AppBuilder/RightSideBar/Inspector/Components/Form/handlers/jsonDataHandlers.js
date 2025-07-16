@@ -22,6 +22,8 @@ export const createJSONDataBlurHandler = ({
   codeEditorView,
 }) => {
   return async (newJSONValue = null) => {
+    if (!newJSONValue?.startsWith('{{') && !newJSONValue?.endsWith('}}')) return;
+
     if (codeEditorView.dom && codeEditorView.dom.parentNode) {
       codeEditorView.dom.parentNode.classList.remove('focused');
     }

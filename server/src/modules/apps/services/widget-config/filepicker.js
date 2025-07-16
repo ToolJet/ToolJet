@@ -5,7 +5,7 @@ export const filepickerConfig = {
   component: 'FilePicker',
   defaultSize: {
     width: 15,
-    height: 100,
+    height: 140,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -19,19 +19,27 @@ export const filepickerConfig = {
     {
       handle: 'setFileName',
       displayName: 'Set File Name',
+      params: [
+        { handle: 'indexOrUpdates', displayName: 'Index' },
+        { handle: 'newNameIfSingle', displayName: 'New File Name' },
+      ],
     },
     {
       handle: 'setVisibility',
       displayName: 'Set Visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setLoading',
       displayName: 'Set Loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setDisable',
       displayName: 'Set Disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+
   ],
   properties: {
     label: {
@@ -253,16 +261,30 @@ export const filepickerConfig = {
       validation: { schema: { type: 'number' }, defaultValue: 6 },
       accordian: 'Container',
     },
-    containerBoxShadow: {
+    boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
-      validation: { schema: { type: 'string' }, defaultValue: '0px 1px 3px rgba(0,0,0,0.1)' },
+      validation: { schema: { type: 'string' }, defaultValue: '0px 1px 3px 0px #0000001A' },
       accordian: 'Container',
     },
-    containerPadding: {
-      type: 'numberInput',
+    // containerPadding: {
+    //   type: 'numberInput',
+    //   displayName: 'Padding',
+    //   validation: { schema: { type: 'string' }, defaultValue: 16 },
+    //   accordian: 'Container',
+    // },
+    padding: {
+      type: 'switch',
       displayName: 'Padding',
-      validation: { schema: { type: 'string' }, defaultValue: 16 },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
       accordian: 'Container',
     },
   },
@@ -302,16 +324,8 @@ export const filepickerConfig = {
       dropzoneErrorColor: { value: 'var(--cc-error-systemStatus)' },
       containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBorder: { value: 'var(--cc-default-border)' },
-      containerBoxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
-      containerPadding: { value: '16px' },
-    },
-    validation: {
-      enableValidation: { value: '{{false}}' },
-      fileType: { value: '{{}}' },
-      minSize: { value: '{{50}}' },
-      maxSize: { value: '{{51200000}}' },
-      minFileCount: { value: '{{0}}' },
-      maxFileCount: { value: '{{2}}' },
+      padding: { value: 'default' },
+      boxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

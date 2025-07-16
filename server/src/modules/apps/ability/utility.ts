@@ -18,6 +18,9 @@ export function createAbility(
     case MODULES.APP:
       defineAppAbility(can, UserAllPermissions, resourceId);
       break;
+    case MODULES.MODULES:
+      defineAppAbility(can, UserAllPermissions, resourceId);
+      break;
     case MODULES.WORKFLOWS:
       defineWorkflowAbility(can, UserAllPermissions, resourceId);
       break;

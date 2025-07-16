@@ -261,7 +261,7 @@ export class EmailUtilService implements IEmailUtilService {
     return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
   }
   async init(organizationId?: string | null) {
-    const whiteLabelSettings = await this.retrieveWhiteLabelSettings(null);
+    const whiteLabelSettings = await this.retrieveWhiteLabelSettings(organizationId);
     this.SMTP = await this.retrieveSmtpSettings();
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;

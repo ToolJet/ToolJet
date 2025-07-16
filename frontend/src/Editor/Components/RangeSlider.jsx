@@ -14,7 +14,7 @@ export const RangeSlider = ({
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
-  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue } = properties;
+  const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, stepSize } = properties;
 
   const {
     trackColor,
@@ -47,6 +47,20 @@ export const RangeSlider = ({
   const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
   const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
+  const resetFn = async () => {
+    let defaultValue;
+    if (enableTwoHandle === 'slider') {
+      defaultValue = value ?? min;
+      setDefaultSliderValue(defaultValue);
+    } else {
+      const start = startValue ?? min;
+      const end = endValue ?? max;
+      defaultValue = [start, end];
+      setDefaultRangeValue(defaultValue);
+    }
+    setExposedVariable('value', defaultValue);
+  };
+
   useEffect(() => {
     if (auto) {
       setLabelWidth('auto');
@@ -57,9 +71,13 @@ export const RangeSlider = ({
 
   useEffect(() => {
     const exposedVariables = {
+      label: label,
+      isLoading: properties?.loadingState,
+      isVisible: properties?.visibility,
+      isDisabled: properties?.disabledState,
       setValue: async function (value) {
         setDefaultSliderValue(value);
-        setExposedVariable('value', value);
+        setExposedVariable('value', Number(value));
         fireEvent('onChange');
       },
       setRangeValue: async function (num1, num2) {
@@ -68,16 +86,16 @@ export const RangeSlider = ({
         fireEvent('onChange');
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setDisable: async function (value) {
-        setDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       setLoading: async function (value) {
-        setLoading(value);
-        setExposedVariable('isLoading', value);
+        setLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
     };
     setExposedVariables(exposedVariables);
@@ -85,47 +103,41 @@ export const RangeSlider = ({
   }, []);
 
   useEffect(() => {
-    setExposedVariable('reset', () => {
-      if (enableTwoHandle === 'slider') {
-        setDefaultSliderValue(value ?? min);
-        setExposedVariable('value', value ?? min);
-      } else {
-        const start = startValue ?? min;
-        const end = endValue ?? max;
-        setExposedVariable('value', [start, end]);
-        setDefaultRangeValue([start, end]);
-      }
-    });
-  }, [min, max, startValue, endValue]);
+    if (isInitialRender.current) return;
+    resetFn();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, enableTwoHandle, startValue, endValue]);
 
   useEffect(() => {
-    disabled !== properties.disabledState && setDisabled(properties.disabledState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.disabledState]);
+    setExposedVariable('reset', resetFn);
+  }, [enableTwoHandle, value, min, max, startValue, endValue]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
+    if (disabled !== properties.disabledState) setDisabled(properties.disabledState);
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
+    if (loading !== properties.loadingState) setLoading(properties.loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.disabledState, properties.visibility, properties.loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('label', label);
+  }, [label]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
   }, [properties.visibility]);
 
   useEffect(() => {
-    loading !== properties.loadingState && setLoading(properties.loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', properties.loadingState);
   }, [properties.loadingState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    if (enableTwoHandle === 'slider') {
-      setDefaultSliderValue(value);
-    } else {
-      const start = startValue ?? min;
-      const end = endValue ?? max;
-
-      setDefaultRangeValue([start, end]);
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, enableTwoHandle, startValue, endValue]);
+    setExposedVariable('isDisabled', properties.disabledState);
+  }, [properties.disabledState]);
 
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
@@ -249,13 +261,14 @@ export const RangeSlider = ({
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
+                marks={(schema === '' ? [] : schema).reduce((acc, item) => {
                   acc[item.value] = {
                     style: { color: markerLabel },
                     label: item.label.replace('%', ''),
                   };
                   return acc;
                 }, {})}
+                step={stepSize || 1}
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
@@ -278,13 +291,14 @@ export const RangeSlider = ({
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={schema.reduce((acc, item) => {
+                marks={(schema === '' ? [] : schema).reduce((acc, item) => {
                   acc[item.value] = {
                     style: { color: markerLabel },
                     label: item.label.replace('%', ''),
                   };
                   return acc;
                 }, {})}
+                step={stepSize || 1}
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>

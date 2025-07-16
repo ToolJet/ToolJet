@@ -78,7 +78,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
         },
         {
           id: 'components',
-          name: 'Components',
+          name: 'Components (current page)',
 
           children: sortedComponents,
           metadata: { type: 'components', path: 'components' },

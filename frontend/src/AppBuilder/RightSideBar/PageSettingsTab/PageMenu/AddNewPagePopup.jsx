@@ -249,7 +249,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   };
 
   return (
-    <Popover id="add-new-page-popup" ref={ref} {...props} className={`${darkMode && 'dark-theme'}`}>
+    <Popover id="add-new-page-popup" ref={ref} {...props} className={`add-new-page-popup ${darkMode && 'dark-theme'}`}>
       <Popover.Header>
         <div className="d-flex justify-content-between align-items-center">
           <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
@@ -346,6 +346,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
               </div>
               <HidePageOnNavigation
                 hidden={page?.hidden}
+                disabled={page?.disabled}
                 page={page}
                 updatePageVisibility={updatePageVisibility}
                 darkMode={darkMode}
@@ -578,11 +579,12 @@ const PageEvents = ({ page, allPages }) => {
   );
 };
 
-const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage }) => {
+const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled }) => {
+  const resolvePageHiddenValue = useStore((state) => state.resolvePageHiddenValue);
   const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
 
   return (
-    <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
+    <div className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip
@@ -617,12 +619,14 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
                   type="checkbox"
                   checked={resolveReferences(hidden?.value)}
                   disabled={isHomePage}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     updatePageVisibility(page?.id, {
                       value: `{{${e.target.checked}}}`,
                       fxActive: forceCodeBox,
-                    })
-                  }
+                    });
+
+                    resolvePageHiddenValue('canvas', true, page?.id, `{{${e.target.checked}}}`);
+                  }}
                 />
               </div>
             )}
@@ -639,6 +643,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
               value: value,
               fxActive: forceCodeBox,
             });
+            resolvePageHiddenValue('canvas', true, page?.id, value);
           }}
         />
       )}

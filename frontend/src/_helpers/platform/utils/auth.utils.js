@@ -33,6 +33,7 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     isOrgSwitchingFailed: null,
     isInviteFlw,
   });
+
   const redirectPath = redirectTo || getCookie('redirectPath');
   const path = getRedirectURL(redirectPath);
   const archivedCase = isCurrentOrganizationArchived && !noActiveWorkspaces;
