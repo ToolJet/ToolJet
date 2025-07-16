@@ -98,41 +98,50 @@ export class ComponentsService implements IComponentsService {
     }, appVersionId);
   }
 
-  async getAllComponents(pageId: string, manager?: EntityManager) {
-    // need to get all components for a page with their layouts
-
+  async getAllComponents(pageId: string, externalManager?: EntityManager) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager
+      const rawComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
         .where('component.pageId = :pageId', { pageId })
-        .andWhere((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('layout.id')
-            .from('layouts', 'layout')
-            .where('layout.componentId = component.id')
-            .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
-            .orderBy('layout.updatedAt', 'DESC')
-            .limit(2)
-            .getQuery();
-          return `layout.id IN ${subQuery}`;
-        })
-        .getMany()
-        .then((components) => {
-          return components.reduce((acc, component) => {
-            const componentId = component.id;
-            const componentData = component;
-            const componentLayout = component.layouts;
+        .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
+        .orderBy('component.id', 'ASC')
+        .addOrderBy('layout.updatedAt', 'DESC')
+        .getMany();
 
-            const transformedData = this.createComponentWithLayout(componentData, componentLayout, manager);
+      const result: Record<string, any> = {};
+      const layoutsToUpdate: Layout[] = [];
 
-            acc[componentId] = transformedData[componentId];
+      for (const component of rawComponents) {
+        const processedLayoutsForComponent: Layout[] = [];
 
-            return acc;
-          }, {});
+        (component.layouts || []).forEach((layout) => {
+          if (layout && layout.type) {
+            const currentLayout = { ...layout };
+
+            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
+              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+              layoutsToUpdate.push(currentLayout);
+            }
+            processedLayoutsForComponent.push(currentLayout);
+          }
         });
-    }, manager);
+
+        const relevantLayouts = processedLayoutsForComponent
+          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+          .slice(0, 2);
+
+        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
+        result[component.id] = transformedData[component.id];
+      }
+
+      if (layoutsToUpdate.length > 0) {
+        await manager.save(Layout, layoutsToUpdate);
+      }
+
+      return result;
+    }, externalManager);
   }
 
   transformComponentData(data: object): Component[] {
