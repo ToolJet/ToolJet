@@ -86,7 +86,8 @@ export const Container = ({
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
-    borderRadius: '6px',
+    borderTopLeftRadius: `${borderRadius}px`,
+    borderTopRightRadius: `${borderRadius}px`,
     ...headerBgColor,
   };
   const containerContentStyles = {
@@ -139,6 +140,7 @@ export const Container = ({
               id={id}
               styles={{
                 ...contentBgColor,
+                borderRadius: `${borderRadius}px`,
                 // Prevent the scroll when dragging a widget inside the container or moving out of the container
                 overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
               }}
