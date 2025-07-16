@@ -182,16 +182,11 @@ export const ModalV2 = function Modal({
   });
 
   return (
-    <div
-      className="container d-flex align-items-center"
-      data-disabled={isDisabledTrigger}
-      data-cy={dataCy}
-      style={{ height }}
-    >
+    <div className="d-flex align-items-center" data-disabled={isDisabledTrigger} data-cy={dataCy} style={{ height }}>
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
-          className="jet-button btn btn-primary p-1 overflow-hidden"
+          className="jet-button btn btn-primary overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
