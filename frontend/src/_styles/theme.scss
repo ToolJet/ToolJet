@@ -18415,6 +18415,10 @@ section.ai-message-prompt-input-wrapper {
 
 .canvas-component,
 .workspace-theme-container {
+  .spinner-border {
+    color: var(--cc-primary-brand);
+  }
+
 
   .kanban-container {
     background-color: var(--cc-surface1-surface);
