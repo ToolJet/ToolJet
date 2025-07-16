@@ -71,7 +71,7 @@ export default function IconSelector({ iconName, iconColor, pageId, iconStyles, 
   };
 
   // eslint-disable-next-line import/namespace
-  const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+  const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
 
   return (
     <OverlayTrigger

@@ -47,8 +47,8 @@ describe("Datasource Manager", () => {
     data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-    const allDataSources = host.includes("8082") ? "All data sources (43)" : "All data sources (45)";
-    const allDatabase = host.includes("8082") ? "Databases (18)" : "Databases (20)";
+    const allDataSources = host.includes("8082") ? "All data sources (45)" : "All data sources (45)";
+    const allDatabase = host.includes("8082") ? "Databases (20)" : "Databases (20)";
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
@@ -193,7 +193,7 @@ describe("Datasource Manager", () => {
         Username: Cypress.env("pg_user"),
         Password: Cypress.env("pg_password"),
       },
-      ".form-switch"
+      '[data-cy="ssl-enabled-toggle-input"]'
     );
     // cy.wait("@datasource");
     cy.wait(1000);

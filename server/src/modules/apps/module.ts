@@ -30,22 +30,31 @@ export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const {
       AppsController,
+      WorkflowController,
       AppsService,
       AppsUtilService,
       PageService,
       EventsService,
       ComponentsService,
+      WorkflowService,
       AppImportExportService,
       PageHelperService,
     } = await this.getProviders(configs, 'apps', [
       'controller',
+      'controllers/workflow.controller',
       'service',
       'util.service',
       'services/page.service',
       'services/event.service',
       'services/component.service',
+      'services/workflow.service',
       'services/app-import-export.service',
       'services/page.util.service',
+    ]);
+
+    const { AppsActionsListener, TemporalService } = await this.getProviders(configs, 'workflows', [
+      'listeners/app-actions.listener',
+      'services/temporal.service',
     ]);
 
     return {
@@ -63,12 +72,15 @@ export class AppsModule extends SubModule {
         await UsersModule.register(configs),
         await AppEnvironmentsModule.register(configs),
       ],
-      controllers: [AppsController],
+      controllers: [AppsController, WorkflowController],
       providers: [
         AppsService,
+        WorkflowService,
         VersionRepository,
         AppsRepository,
         AppGitRepository,
+        AppsActionsListener,
+        TemporalService,
         PageService,
         EventsService,
         AppsUtilService,

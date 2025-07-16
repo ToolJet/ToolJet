@@ -92,14 +92,14 @@ export class PageService implements IPageService {
 
       await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
 
-      const pages = await this.findPagesForVersion(appVersionId, organizationId, manager);
+      const pages = await this.findPagesForVersion(appVersionId, organizationId, '', manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
     }, appVersionId);
   }
 
-  async cloneGroup(groupPageId: string, appVersionId: string) {
+  async cloneGroup(groupPageId: string, appVersionId: string, organizationId) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const groupToClone = await manager.findOne(Page, {
         where: { id: groupPageId, appVersionId, isPageGroup: true },
@@ -185,7 +185,7 @@ export class PageService implements IPageService {
         await this.clonePageEventsAndComponents(child.id, newChildPage.id, manager);
       }
 
-      const pages = await this.findPagesForVersion(appVersionId, '', manager);
+      const pages = await this.findPagesForVersion(appVersionId,organizationId, '', manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };

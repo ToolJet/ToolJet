@@ -7,8 +7,7 @@ import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { decamelizeKeys } from 'humps';
-
-const semver = require('semver');
+import * as semver from 'semver';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -84,7 +83,7 @@ export function isJSONString(value: string): boolean {
   try {
     JSON.parse(value);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

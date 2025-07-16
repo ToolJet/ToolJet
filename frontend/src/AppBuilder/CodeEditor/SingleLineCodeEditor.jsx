@@ -37,7 +37,7 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
-  const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
+  const { initialValue, onChange, enablePreview = true, portalProps, paramName } = restProps;
   const { validation = {} } = fieldMeta;
   const [showPreview, setShowPreview] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -146,17 +146,24 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
         enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
+        setIsFocused={setIsFocused}
         setCursorInsidePreview={setCursorInsidePreview}
         componentName={componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
-        componentId={restProps?.componentId ?? null}
+        componentId={componentId ?? null}
+        fieldMeta={fieldMeta}
+        paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
+        onAiSuggestionAccept={(newValue) => {
+          setCurrentValue(newValue);
+          onChange(newValue);
+        }}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
@@ -176,6 +183,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               showPreview={showPreview}
               wrapperRef={wrapperRef}
               showSuggestions={showSuggestions}
+              cursorInsidePreview={cursorInsidePreview}
               {...restProps}
             />
           </div>
@@ -211,6 +219,7 @@ const EditorInput = ({
   wrapperRef,
   showSuggestions,
   setCodeEditorView = null, // Function to set the CodeMirror view
+  cursorInsidePreview = false,
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
@@ -333,7 +342,8 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setShowPreview(false);
+    !cursorInsidePreview && setShowPreview(false);
+
     if (!delayOnChange) {
       setFirstTimeFocus(false);
       return onBlurUpdate(currentValue);

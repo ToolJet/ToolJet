@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { formatJoinsJSONBPath, formatJSONB } from 'src/helpers/utils.helper';
+import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -27,9 +27,10 @@ import {
   createTooljetDatabaseConnection,
   decryptTooljetDatabasePassword,
   grantTenantRoleToTjdbAdminRole,
+  isSQLModeDisabled,
 } from 'src/helpers/tooljet_db.helper';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 import {
   PostgrestError,
   TooljetDatabaseColumn,
@@ -45,6 +46,7 @@ import { ConfigService } from '@nestjs/config';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@modules/licensing/constants';
 import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 enum AggregateFunctions {
   sum = 'SUM',
@@ -831,15 +833,31 @@ export class TooljetDbTableOperationsService {
   }
 
   async getTablesLimit(organizationId: string) {
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
-      LICENSE_FIELD.TABLE_COUNT,
-      LICENSE_FIELD.STATUS,
-    ], organizationId);
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
+    if (licenseTerms[LICENSE_FIELD.TABLE_COUNT] === LICENSE_LIMIT.UNLIMITED) {
+      return {
+        tablesCount: generatePayloadForLimits(
+          0,
+          licenseTerms[LICENSE_FIELD.TABLE_COUNT],
+          licenseTerms[LICENSE_FIELD.STATUS],
+          LICENSE_LIMITS_LABEL.TABLES
+        ),
+      };
+    }
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const tableCount =
+      edition === TOOLJET_EDITIONS.Cloud
+        ? await this.manager
+            .createQueryBuilder(InternalTable, 'internal_table')
+            .where('internal_table.organizationId = :organizationId', { organizationId })
+            .getCount()
+        : await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount();
     return {
       tablesCount: generatePayloadForLimits(
-        licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
-          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
-          : 0,
+        tableCount,
         licenseTerms[LICENSE_FIELD.TABLE_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.TABLES
@@ -851,9 +869,15 @@ export class TooljetDbTableOperationsService {
     const { joinQueryJson, dataQuery, user } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
 
-    const tjdbTenantConfigs = await this.manager.findOne(OrganizationTjdbConfigurations, {
-      where: { organizationId },
-    });
+    const tjdbTenantConfigs = isSQLModeDisabled()
+      ? {
+          pgUser: this.configService.get<string>('TOOLJET_DB_USER'),
+          pgPassword: this.configService.get<string>('TOOLJET_DB_PASS'),
+        }
+      : await this.manager.findOne(OrganizationTjdbConfigurations, {
+          where: { organizationId },
+        });
+
     if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exists`);
 
     // Gathering tables used, from Join coditions
@@ -931,7 +955,7 @@ export class TooljetDbTableOperationsService {
   protected buildJoinQuery(
     queryJson,
     internalTableIdToNameMap,
-    // eslint-disable-next-line
+
     tooljetDbTenantConnection: Connection
   ): SelectQueryBuilder<any> {
     const queryBuilder: SelectQueryBuilder<any> = tooljetDbTenantConnection.createQueryBuilder();
@@ -1524,6 +1548,8 @@ export class TooljetDbTableOperationsService {
   }
 
   async createTooljetDbTenantSchemaAndRole(organizationId: string, entityManager: EntityManager) {
+    if (isSQLModeDisabled()) return;
+
     const dbUser = `user_${organizationId}`;
     const dbSchema = `workspace_${organizationId}`;
     const dbPassword = crypto.randomBytes(8).toString('hex');

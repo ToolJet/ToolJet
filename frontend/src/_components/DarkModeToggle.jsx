@@ -55,7 +55,8 @@ export const DarkModeToggle = function DarkModeToggle({
     springConfig: { mass: 4, tension: 250, friction: 35 },
   };
 
-  const { r, transform, cx, cy, opacity } = properties[darkMode ? 'moon' : 'sun'];
+  const { r, transform, cx, cy, opacity } =
+    properties[darkMode || (appMode === 'dark' && toggleForCanvas) ? 'moon' : 'sun'];
 
   const svgContainerProps = useSpring({
     transform,

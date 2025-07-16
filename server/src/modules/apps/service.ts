@@ -42,6 +42,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -60,11 +61,11 @@ export class AppsService implements IAppsService {
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) { }
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
-    const { name, icon, type } = appCreateDto;
+    const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, manager);
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
@@ -107,12 +108,12 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-          await this.versionRepository.findLatestVersionForEnvironment(
-            app.id,
-            envId,
-            environmentName,
-            app.organizationId
-          );
+            await this.versionRepository.findLatestVersionForEnvironment(
+              app.id,
+              envId,
+              environmentName,
+              app.organizationId
+            );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -181,7 +182,24 @@ export class AppsService implements IAppsService {
     const { organizationId } = user;
     const { id } = app;
 
-    await this.appRepository.delete({ id, organizationId });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const schedules = await manager
+        .createQueryBuilder(WorkflowSchedule, 'workflowSchedule')
+        .innerJoinAndSelect('workflowSchedule.workflow', 'appVersion')
+        .where('appVersion.appId = :appId', { appId: id })
+        .getMany();
+
+      // Emit event with schedule IDs for temporal schedule cleanup
+      if (schedules.length > 0) {
+        const scheduleIds = schedules.map((schedule) => schedule.id);
+        this.eventEmitter.emit('app.deleted', {
+          appId: id,
+          scheduleIds: scheduleIds,
+        });
+      }
+
+      await manager.delete(App, { id, organizationId });
+    });
 
     //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -332,7 +350,7 @@ export class AppsService implements IAppsService {
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
       const pagesForVersion = app.editingVersion
-        ? await this.pageService.findPagesForVersion(versionToLoad.id, user.organizationId)
+        ? await this.pageService.findPagesForVersion(versionToLoad.id, app.organizationId)
         : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
@@ -365,6 +383,7 @@ export class AppsService implements IAppsService {
         globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
+        appId: app.id,
       };
     };
 

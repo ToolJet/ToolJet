@@ -94,6 +94,11 @@ export const AppMenu = function AppMenu({
                     <Field text={appType === 'module' ? 'Export module' : 'Export app'} onClick={exportApp} />
                   </>
                 )}
+                {canUpdateApp && canCreateApp && appType === 'workflow' && (
+                  <>
+                    <Field text={'Export workflow'} onClick={exportApp} />
+                  </>
+                )}
                 {canDeleteApp && (
                   <Field
                     text={
@@ -113,7 +118,7 @@ export const AppMenu = function AppMenu({
         </div>
       }
     >
-      <div className={'cursor-pointer menu-ico'} data-cy={`app-card-menu-icon`}>
+      <div className={'cursor-pointer menu-ico menu-icon--trigger'} data-cy={`app-card-menu-icon`}>
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

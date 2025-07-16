@@ -1,12 +1,12 @@
 import { useRef, useEffect } from 'react';
 
-function useRenderCount(componentName) {
+function useRenderCount(componentName, options = {}) {
   const renderCountRef = useRef(0);
 
   renderCountRef.current++;
 
   useEffect(() => {
-    console.log(`${componentName} rendered: ${renderCountRef.current} times`);
+    console.log(`here--- ${componentName} rendered: ${renderCountRef.current} times `, options);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renderCountRef.current, componentName]);
 

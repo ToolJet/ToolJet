@@ -3,12 +3,42 @@ import got, { Headers } from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
 export default class SlackQueryService implements QueryService {
-  authUrl(): string {
-    const clientId = process.env.SLACK_CLIENT_ID;
+  authUrl(options): string {
+    const source_options = Object.entries(options).map(([key, value]: [string, any]) => {
+      return { key, ...value };
+    });
+    const { useCredsFromEnv, useCredsFromDatasourceConfiguration, clientIdValue } =
+      this.shouldUseCredentialsFromEnv(source_options);
+
+    let clientId = null;
+    if (useCredsFromEnv) clientId = process.env.SLACK_CLIENT_ID;
+    if (useCredsFromDatasourceConfiguration) clientId = clientIdValue;
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     return `https://slack.com/oauth/v2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${fullUrl}oauth2/authorize`;
+  }
+
+  shouldUseCredentialsFromEnv(sourceOptions = []): {
+    useCredsFromEnv: boolean;
+    useCredsFromDatasourceConfiguration: boolean;
+    clientSecretValue: string | null;
+    clientIdValue: string | null;
+  } {
+    let useCredsFromEnv = false;
+    let useCredsFromDatasourceConfiguration = false;
+    let clientIdValue = null;
+    let clientSecretValue = null;
+
+    sourceOptions.forEach((sourceOption) => {
+      if (sourceOption.key === 'credential_source') {
+        if (sourceOption.value === 'from_env') useCredsFromEnv = true;
+        if (sourceOption.value === 'from_datasource_configuration') useCredsFromDatasourceConfiguration = true;
+      }
+      if (sourceOption.key === 'client_id') clientIdValue = sourceOption.value;
+      if (sourceOption.key === 'client_secret') clientSecretValue = sourceOption.value;
+    });
+    return { useCredsFromEnv, useCredsFromDatasourceConfiguration, clientIdValue, clientSecretValue };
   }
 
   async accessDetailsFrom(authCode: string, options: any, resetSecureData = false): Promise<object> {
@@ -20,8 +50,19 @@ export default class SlackQueryService implements QueryService {
     }
 
     const accessTokenUrl = 'https://slack.com/api/oauth.v2.access';
-    const clientId = process.env.SLACK_CLIENT_ID;
-    const clientSecret = process.env.SLACK_CLIENT_SECRET;
+    const { useCredsFromEnv, useCredsFromDatasourceConfiguration, clientIdValue, clientSecretValue } =
+      this.shouldUseCredentialsFromEnv(options);
+    let clientId = null;
+    let clientSecret = null;
+    if (useCredsFromEnv) {
+      clientId = process.env.SLACK_CLIENT_ID;
+      clientSecret = process.env.SLACK_CLIENT_SECRET;
+    }
+    if (useCredsFromDatasourceConfiguration) {
+      clientId = clientIdValue;
+      clientSecret = clientSecretValue;
+    }
+
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;

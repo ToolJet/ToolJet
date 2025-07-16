@@ -288,6 +288,7 @@ export const commonSelectors = {
   labelFieldAlert: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
+  pageLogo: '[data-cy="page-logo"]',
 };
 
 export const commonWidgetSelector = {

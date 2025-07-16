@@ -9,17 +9,21 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
   const selectedComponentId = useStore((state) => state.selectedComponents?.[0], shallow);
   const activeTab = useStore((state) => state.activeRightSideBarTab, shallow);
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+
+  const handleToggle = () => {
+    setActiveRightSideBarTab(null);
+    setRightSidebarOpen(false);
+  };
   if (!selectedComponentId && activeTab !== RIGHT_SIDE_BAR_TAB.PAGES) {
     // return setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
     return (
       <>
         <div className="empty-configuration-header">
           <div className="header">Component properties</div>
-          <div className="icon-btn cursor-pointer" onClick={() => toggleRightSidebarPin()}>
-            <SolidIcon fill="var(--icon-strong)" name={isRightSidebarPinned ? 'unpin' : 'pin'} width="16" />
+          <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleToggle}>
+            <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
           </div>
         </div>
         <div className="d-flex align-items-center justify-content-center no-component-selected">
@@ -39,6 +43,7 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
       selectedComponentId={selectedComponentId}
       pages={[]}
       isModuleEditor={isModuleEditor}
+      handleRightSidebarToggle={handleToggle}
     />
   );
 };
