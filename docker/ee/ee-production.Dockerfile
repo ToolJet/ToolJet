@@ -206,13 +206,13 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
+# Installing git for simple git commands
+RUN apt-get update && apt-get install -y git && apt-get clean
+
 ENV HOME=/home/appuser
 # Switch back to appuser
 USER appuser
 WORKDIR /app
-
-# Installing git for simple git commands
-RUN apt-get update && apt-get install -y git && apt-get clean
 
 RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
 
