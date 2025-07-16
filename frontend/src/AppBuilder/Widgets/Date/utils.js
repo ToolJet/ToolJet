@@ -54,12 +54,8 @@ export const getSelectedTimestampFromUnixTimestamp = (
   return modifiedTime.valueOf() === 'Invalid date' ? null : modifiedTime.valueOf();
 };
 
-export const getUnixTimestampFromSelectedTimestamp = (
-  selectedTime,
-  displayTimezone = moment.tz.guess(),
-  isTimezoneEnabled = false
-) => {
-  if (!isTimezoneEnabled || !selectedTime) return selectedTime;
+export const getUnixTimestampFromSelectedTimestamp = (selectedTime, displayTimezone = moment.tz.guess()) => {
+  if (!selectedTime) return selectedTime;
   const localTimeOffset = moment(selectedTime).utcOffset();
   const selectedTimeOffset = moment(selectedTime).tz(displayTimezone).utcOffset();
   const modifiedTime = moment(selectedTime).add(localTimeOffset - selectedTimeOffset, 'minutes');

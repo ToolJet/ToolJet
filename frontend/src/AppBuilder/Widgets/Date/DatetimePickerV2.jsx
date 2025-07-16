@@ -29,6 +29,7 @@ export const DatetimePickerV2 = ({
   darkMode,
   fireEvent,
   dataCy,
+  resetComponent,
 }) => {
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
@@ -67,18 +68,26 @@ export const DatetimePickerV2 = ({
   const [storeTimezone, setStoreTimezone] = useState(isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess());
 
   // Unix Timestamp single source of truth
+  const isISOString = defaultValue.includes('T');
   const [unixTimestamp, setUnixTimestamp] = useState(
-    defaultValue ? getUnixTimeFromParsedDate(defaultValue, storeTimezone, displayFormat) : null
+    defaultValue
+      ? isISOString
+        ? moment(defaultValue).valueOf()
+        : getUnixTimeFromParsedDate(defaultValue, storeTimezone, displayFormat)
+      : null
   );
+  console.log('This is the unixTimestamp ', unixTimestamp);
 
   // Selected Date = unixTimestamp + displayTimezone offset
   // But moment(selectedDate) = SelectedTimestamp + local timezone offset
   // SelectedTimestamp + local timezone offset = unixTimestamp + displayTimezone offset
   // SelectedTimestamp = unixTimestamp + displayTimezone offset - local timezone offset
+
   const [selectedTimestamp, setSelectedTimestamp] = useState(
     defaultValue ? getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone) : null
   );
 
+  console.log('This is the selectedTimestamp ', selectedTimestamp);
   const [showValidationError, setShowValidationError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
@@ -88,7 +97,10 @@ export const DatetimePickerV2 = ({
   const [datepickerMode, setDatePickerMode] = useState('date');
 
   const setInputValue = (date, format) => {
-    const unixTimestamp = getUnixTimeFromParsedDate(date, storeTimezone, format ? format : displayFormat);
+    const isISOString = typeof date === 'string' && date.includes('T');
+    const unixTimestamp = isISOString
+      ? moment(date).valueOf()
+      : getUnixTimeFromParsedDate(date, storeTimezone, format ? format : displayFormat);
     const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone);
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);
@@ -100,6 +112,8 @@ export const DatetimePickerV2 = ({
     const selectedTime = getUnixTime(date, displayFormat);
     setSelectedTimestamp(selectedTime);
     const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTime, displayTimezone);
+    console.log('This is the unixTimestamp after onDateSelect', unixTimestamp);
+    console.log('This is the selectedTime after onDateSelect', selectedTime);
     setUnixTimestamp(unixTimestamp);
     setExposedDateVariables(unixTimestamp, selectedTime);
     fireEvent('onSelect');
@@ -138,6 +152,11 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    resetComponent();
+  }, [isTimezoneEnabled]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('dateFormat', dateFormat);
   }, [dateFormat]);
 
@@ -167,7 +186,7 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue);
+    setInputValue(defaultValue, displayFormat);
   }, [defaultValue, displayFormat]);
 
   useEffect(() => {
@@ -179,11 +198,7 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(
-      unixTimestamp,
-      displayTimezone,
-      isTimezoneEnabled
-    );
+    const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone);
     const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
     const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
     const displayValue = getFormattedSelectTimestamp(selectedTimestamp, displayFormat);
@@ -193,7 +208,7 @@ export const DatetimePickerV2 = ({
       selectedDate,
       displayValue,
     });
-  }, [isTimezoneEnabled, displayTimezone, storeTimezone]);
+  }, [isTimezoneEnabled, displayTimezone, displayFormat]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
