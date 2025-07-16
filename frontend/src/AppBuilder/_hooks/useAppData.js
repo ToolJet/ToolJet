@@ -59,7 +59,8 @@ const useAppData = (
   darkMode,
   mode = 'edit',
   { environmentId, versionId } = {},
-  moduleMode = false
+  moduleMode = false,
+  appSlug
 ) => {
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
@@ -327,6 +328,9 @@ const useAppData = (
           appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
 
         appTypeRef.current = appData.type;
+
+        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+
         setApp(
           {
             appName: appData.name,
@@ -346,6 +350,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
+            isReleasedApp: isReleasedApp
           },
           moduleId
         );
@@ -601,6 +606,7 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
+        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.name,
           appId: appData.id,
@@ -615,6 +621,7 @@ const useAppData = (
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
+          isReleasedApp: isReleasedApp,
         });
 
         setGlobalSettings(

@@ -2,8 +2,6 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { User } from '@entities/user.entity';
-import { AbilityService } from '@modules/ability/interfaces/IService';
-import { MODULES } from '@modules/app/constants/modules';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
@@ -23,22 +21,22 @@ import { IDataSourcesService } from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
+import { UserPermissions } from '@modules/ability/types';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
   constructor(
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
-    protected readonly abilityService: AbilityService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
 
-  async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
-    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
-      organizationId: user.organizationId,
-    });
+  async getForApp(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
@@ -51,12 +49,11 @@ export class DataSourcesService implements IDataSourcesService {
     return { data_sources: decamelizedDatasources };
   }
 
-  async getAll(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
-    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
-      organizationId: user.organizationId,
-    });
-
+  async getAll(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
     const selectedEnvironmentId =
       query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
 

@@ -8,8 +8,9 @@ import { FeatureAbility } from './index';
 export function defineDataQueryAppAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  appId?: string
+  app: App
 ): void {
+  const appId = app?.id;
   const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const resourcePermissions = userPermission?.[MODULES.APP];
   const isAllEditable = !!resourcePermissions?.isAllEditable;
@@ -18,8 +19,9 @@ export function defineDataQueryAppAbility(
   const isAllViewable = !!resourcePermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
-  // Always grant RUN_EDITOR and RUN_VIEWER permissions
-  can([FEATURE_KEY.RUN_EDITOR, FEATURE_KEY.RUN_VIEWER], App);
+  if (app?.isPublic) {
+    can([FEATURE_KEY.RUN_VIEWER], App);
+  }
 
   if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
     can(
@@ -74,12 +76,12 @@ export function defineDataQueryAppAbility(
   }
 
   if (isAllViewable) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.PREVIEW, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
+    can([FEATURE_KEY.RUN_VIEWER], App);
     return;
   }
 
   if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.PREVIEW, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
+    can([FEATURE_KEY.RUN_VIEWER], App);
     return;
   }
 }
