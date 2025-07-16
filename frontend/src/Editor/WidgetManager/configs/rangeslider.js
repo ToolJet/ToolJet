@@ -5,7 +5,7 @@ export const rangeSliderConfig = {
   component: 'RangeSlider',
   defaultSize: {
     width: 9,
-    height: 30,
+    height: 60,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -248,19 +248,6 @@ export const rangeSliderConfig = {
         { displayName: 'None', value: 'none' },
       ],
       accordian: 'container',
-    },
-    padding: {
-      type: 'switch',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 'default',
-      },
-      isFxNotRequired: true,
-      options: [
-        { displayName: 'Default', value: 'default' },
-        { displayName: 'None', value: 'none' },
-      ],
     },
   },
   exposedVariables: {

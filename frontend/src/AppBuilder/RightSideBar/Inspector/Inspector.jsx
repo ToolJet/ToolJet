@@ -141,7 +141,7 @@ export const Inspector = ({
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
-
+  console.log('selectedComponentId', selectedComponentId);
   const tempComponentMeta = deepClone(
     componentTypes.find((comp) => allComponents?.[selectedComponentId]?.component.component === comp.component)
   );
@@ -624,7 +624,7 @@ export const Inspector = ({
           </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`}>{renderTabs()}</div>
+        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>{renderTabs()}</div>
       </div>
       <span className="widget-documentation-link">
         <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">

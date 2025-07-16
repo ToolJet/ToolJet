@@ -7,6 +7,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { DefaultCopyIcon } from './DefaultCopyIcon';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { formatPathForCopy } from './utils';
 
 export const HiddenOptions = (props) => {
   const { nodeSpecificFilteredActions, generalActionsFiltered, darkMode, setActionClicked, data } = props;
@@ -17,7 +18,8 @@ export const HiddenOptions = (props) => {
   };
 
   const copyPath = () => {
-    generalActionsFiltered[0].dispatchAction(`{{${data?.selectedNodePath}}}`, false);
+    const formattedPath = formatPathForCopy(data?.selectedNodePath);
+    generalActionsFiltered[0].dispatchAction(formattedPath, false);
   };
 
   const copyValue = () => {
@@ -99,7 +101,8 @@ export const HiddenOptions = (props) => {
                   className="option"
                   data-cy="inspector-copy-path"
                 >
-                  <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
+                  <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
+
                   <span> Copy path</span>
                 </div>
                 <div
@@ -111,7 +114,7 @@ export const HiddenOptions = (props) => {
                   className="option"
                   data-cy="inspector-copy-value"
                 >
-                  <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
+                  <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
                   <span> Copy value</span>
                 </div>
               </div>
@@ -120,17 +123,23 @@ export const HiddenOptions = (props) => {
         }
       >
         <div
-          onClick={(event) => {
-            event.stopPropagation();
-            setShowMenu((prev) => !prev);
-          }}
           className="node-action-icon"
           style={{
             outline: 'none',
             ...(showMenu && { backgroundColor: 'var(--button-outline-pressed, rgba(136, 144, 153, 0.18)' }),
           }}
         >
-          <SolidIcon fill="var(--icon-strong)" width="12" height="12" name="copy" />
+          <ToolTip message="Copy options" trigger={['hover', 'focus']}>
+            <span
+              onClick={(event) => {
+                event.stopPropagation();
+                setShowMenu((prev) => !prev);
+              }}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <SolidIcon fill="var(--icon-strong)" width="12" height="12" name="copy" />
+            </span>
+          </ToolTip>
         </div>
       </OverlayTrigger>
     </div>

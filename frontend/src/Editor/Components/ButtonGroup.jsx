@@ -50,7 +50,7 @@ export const ButtonGroup = function Button({
   }, [JSON.stringify(defaultSelected)]);
 
   useEffect(() => {
-    let dataset = values;
+    let dataset = [...values]; // Make a copy to avoid mutating a read-only array
     if (labels?.length < values?.length) {
       labels.map((item, index) => {
         dataset[index] = item;

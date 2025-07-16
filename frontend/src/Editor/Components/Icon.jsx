@@ -59,16 +59,16 @@ export const Icon = ({
         fireEvent('onClick');
       },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        setVisibility(value);
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
       },
       setLoading: async function (value) {
-        setExposedVariable('isLoading', value);
-        setLoading(value);
+        setExposedVariable('isLoading', !!value);
+        setLoading(!!value);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        setIsDisabled(value);
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
       },
     };
     setExposedVariables(exposedVariables);

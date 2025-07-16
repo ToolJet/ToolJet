@@ -308,7 +308,7 @@ class Restapi extends React.Component {
               <div className={`${isWorkflowNode ? '' : 'd-flex'} flex-row`}>
                 <div
                   className={`me-2 ${isWorkflowNode ? 'mb-2' : ''}`}
-                  style={{ width: isWorkflowNode ? '150px' : '90px', height: '32px' }}
+                  style={{ width: isWorkflowNode ? '150px' : '124px', height: '32px' }}
                 >
                   <label className="font-weight-medium color-slate12">Method</label>
                   <Select
@@ -327,7 +327,7 @@ class Restapi extends React.Component {
                     placeholder="Method"
                     width={isWorkflowNode ? 150 : 100}
                     height={32}
-                    styles={this.customSelectStyles(this.props.darkMode, isWorkflowNode ? 150 : 91)}
+                    styles={this.customSelectStyles(this.props.darkMode, isWorkflowNode ? 150 : 125)}
                     useCustomStyles={true}
                     customClassPrefix="restapi-method-select"
                     onMenuOpen={() => {
@@ -340,7 +340,7 @@ class Restapi extends React.Component {
                 </div>
                 <div
                   className={`field rest-methods-url ${dataSourceURL && 'data-source-exists'}`}
-                  style={{ width: isWorkflowNode ? '100%' : 'calc(100% - 214px)' }}
+                  style={{ width: isWorkflowNode ? '100%' : 'calc(100% - 248px)' }}
                 >
                   <div className="font-weight-medium color-slate12">URL</div>
                   <div className="d-flex h-100 w-100">

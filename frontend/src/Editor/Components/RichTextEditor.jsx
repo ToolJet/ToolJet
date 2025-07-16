@@ -68,6 +68,7 @@ export const RichTextEditor = function RichTextEditor({
       data-disabled={isDisabled}
       style={{ height: dynamicHeight ? 'auto' : `${height}px`, display: isVisible ? '' : 'none', boxShadow }}
       data-cy={dataCy}
+      className="scrollbar-container"
     >
       <DraftEditor
         isInitialRender={isInitialRender}
