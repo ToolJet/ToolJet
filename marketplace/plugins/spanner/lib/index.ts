@@ -13,16 +13,9 @@ export default class Spanner implements QueryService {
       sourceOptions;
 
     if (!project_id || !client_email || !private_key || !instance_id) {
-      throw new QueryError(
-        "Missing credentials",
-        "Required Spanner credentials are missing",
-        {
-          project_id: !!project_id,
-          client_email: !!client_email,
-          private_key: !!private_key,
-          instance_id: !!instance_id,
-        }
-      );
+      const error = new Error("Required Spanner credentials are missing");
+      error.name = "InvalidSourceOptionsError";
+      throw error;
     }
   }
 
@@ -49,37 +42,65 @@ export default class Spanner implements QueryService {
     const instance = spanner.instance(instanceId);
 
     if (!instance) {
-      throw new Error();
+      const error = new Error("Spanner instance not found");
+      error.name = "InstanceNotFoundError";
+      throw error;
     }
 
     return { spanner, instance };
   }
 
   private getDatabase(instance: Instance, databaseId?: string) {
-    if (!databaseId) {
-      throw new Error("Database ID is required");
-    }
-
     const database = instance.database(databaseId);
 
     if (!database) {
-      throw new Error(`Database with ID ${databaseId} not found`);
+      const error = new Error(`Database with ID ${databaseId} not found`);
+      error.name = "DatabaseNotFoundError";
+      throw error;
     }
 
     return database;
+  }
+
+  private validateQueryOptions(queryOptions: QueryOptions) {
+    const { sql, dialect, database_id } = queryOptions;
+
+    if (!database_id || typeof database_id !== "string") {
+      const error = new Error("Database ID must be a non-empty string");
+      error.name = "InvalidDatabaseIdError";
+      throw error;
+    }
+
+    if (!sql || typeof sql !== "string") {
+      const error = new Error("SQL query must be a non-empty string");
+      error.name = "InvalidQueryError";
+      throw error;
+    }
+
+    if (!dialect || !Object.values(Dialect).includes(dialect)) {
+      const error = new Error(
+        "Invalid dialect. Must be 'Standard' or 'Postgres'"
+      );
+      error.name = "InvalidDialectError";
+      throw error;
+    }
+
+    return queryOptions;
   }
 
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions
   ): Promise<QueryResult> {
-    this.validateSourceOptions(sourceOptions);
-
-    const { client_email, project_id, private_key, instance_id } =
-      sourceOptions;
-    const { database_id } = queryOptions;
-
     try {
+      this.validateSourceOptions(sourceOptions);
+      this.validateQueryOptions(queryOptions);
+
+      const { client_email, project_id, private_key, instance_id } =
+        sourceOptions;
+      const { sql, query_params, database_id, param_types, dialect, options } =
+        queryOptions;
+
       const { instance } = this.getSpannerClient({
         projectId: project_id,
         credentials: {
@@ -91,28 +112,16 @@ export default class Spanner implements QueryService {
 
       const database = this.getDatabase(instance, database_id);
 
-      if (!queryOptions.sql || !queryOptions.dialect) {
-        throw new Error(
-          "SQL query and Dialect must be provided for running SQL queries"
-        );
-      }
-
-      const { sql, query_params, param_types, dialect, options } = queryOptions;
-
       let parsedOptions: any = {};
 
-      if (options) {
-        try {
-          parsedOptions = JSON.parse(options);
-        } catch (e) {
-          throw new QueryError(
-            "Invalid options format",
-            "The options field must be a valid JSON string",
-            {
-              options: options,
-            }
-          );
-        }
+      try {
+        if (options) parsedOptions = JSON.parse(options);
+      } catch (parseError) {
+        throw new QueryError(
+          "Query could not be completed",
+          "Invalid JSON in options",
+          { message: parseError.message }
+        );
       }
 
       const params: Record<string, any> = {};
@@ -173,11 +182,31 @@ export default class Spanner implements QueryService {
       const [rows] = await database.run(runOptions);
 
       return { status: "ok", data: rows };
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err.message || "An unknown error occurred";
+      const errorDetails: any = {};
+
+      if (err instanceof Error) {
+        const spannerError = err as any;
+
+        errorDetails.code = spannerError.code ?? null;
+        errorDetails.message = spannerError.details ?? spannerError.message;
+        errorDetails.requestID = spannerError.requestID ?? null;
+        errorDetails.note = spannerError.note ?? null;
+
+        if (
+          Array.isArray(spannerError.statusDetails) &&
+          spannerError.statusDetails.length
+        ) {
+          errorDetails.localizedMessage =
+            spannerError.statusDetails[0]?.message;
+        }
+      }
+
       throw new QueryError(
-        "Query failed",
-        err.message || "Unexpected Spanner error",
-        {}
+        "Query could not be completed",
+        errorMessage,
+        errorDetails
       );
     }
   }
@@ -189,35 +218,24 @@ export default class Spanner implements QueryService {
     const { client_email, project_id, private_key, instance_id } =
       sourceOptions;
 
-    try {
-      const { instance } = this.getSpannerClient({
-        projectId: project_id,
-        credentials: {
-          client_email: client_email,
-          private_key: private_key,
-        },
-        instanceId: instance_id,
-      });
+    const { instance } = this.getSpannerClient({
+      projectId: project_id,
+      credentials: {
+        client_email: client_email,
+        private_key: private_key,
+      },
+      instanceId: instance_id,
+    });
 
-      const exists = await instance.exists();
+    const exists = await instance.exists();
 
-      if (!exists[0]) {
-        throw new Error(
-          `Instance with ID ${instance_id} does not exist or is not accessible`
-        );
-      }
-
-      return { status: "ok" };
-    } catch (err) {
-      const errorMessage = err.message || "An unknown error occurred";
-      const errorDetails: any = {};
-
-      throw new QueryError(
-        "Connection test failed",
-        errorMessage,
-        errorDetails
+    if (!exists[0]) {
+      throw new Error(
+        `Instance with ID ${instance_id} does not exist or is not accessible`
       );
     }
+
+    return { status: "ok" };
   }
 
   private sanitizePrivateKey(key: string) {
