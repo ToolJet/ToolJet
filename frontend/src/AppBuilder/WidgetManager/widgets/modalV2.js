@@ -269,7 +269,7 @@ export const modalV2Config = {
       hideCloseButton: { value: '{{false}}' },
       hideOnEsc: { value: '{{true}}' },
       closeOnClickingOutside: { value: '{{false}}' },
-      modalHeight: { value: 400 },
+      modalHeight: { value: '{{400}}' },
       headerHeight: { value: 80 },
       footerHeight: { value: 80 },
     },
