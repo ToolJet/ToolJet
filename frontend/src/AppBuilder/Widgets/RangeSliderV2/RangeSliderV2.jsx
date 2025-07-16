@@ -3,7 +3,9 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Spinner from '@/_ui/Spinner';
+import Label from '@/_ui/Label';
 import './styles.scss';
+
 
 export const RangeSliderV2 = ({
   height,
@@ -67,7 +69,8 @@ export const RangeSliderV2 = ({
     if (auto) {
       setLabelWidth('auto');
     } else {
-      setLabelWidth(width > 0 ? `${width}%` : '33%');
+      // setLabelWidth(width > 0 ? `${width}%` : '33%');
+      setLabelWidth((width / 100) * 70);
     }
   }, [auto, width]);
 
@@ -177,33 +180,33 @@ export const RangeSliderV2 = ({
     },
   };
 
-  const Label = ({ label, color, defaultAlignment, direction }) => {
-    if (!label) return null;
+  // const Label = ({ label, color, defaultAlignment, direction }) => {
+  //   if (!label) return null;
 
-    return (
-      <div
-        ref={labelRef}
-        style={{
-          color,
-          width: _width,
-          marginRight: defaultAlignment === 'side' && direction === 'left' ? '4px' : '0px',
-          marginLeft: defaultAlignment === 'side' && direction === 'right' ? '4px' : '0px',
-          marginBottom: defaultAlignment === 'top' ? '4px' : '0px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          textAlign: direction === 'right' ? 'right' : 'left',
-          minWidth: defaultAlignment === 'side' ? '40px' : 'auto',
-          maxWidth: defaultAlignment === 'side' ? '50%' : '100%',
-          lineHeight: '1.2',
-          fontSize: '12px',
-          fontWeight: '500',
-        }}
-      >
-        {label}
-      </div>
-    );
-  };
+  //   return (
+  //     <div
+  //       ref={labelRef}
+  //       style={{
+  //         color,
+  //         width: _width,
+  //         marginRight: defaultAlignment === 'side' && direction === 'left' ? '4px' : '0px',
+  //         marginLeft: defaultAlignment === 'side' && direction === 'right' ? '4px' : '0px',
+  //         marginBottom: defaultAlignment === 'top' ? '4px' : '0px',
+  //         whiteSpace: 'nowrap',
+  //         overflow: 'hidden',
+  //         textOverflow: 'ellipsis',
+  //         textAlign: direction === 'right' ? 'right' : 'left',
+  //         minWidth: defaultAlignment === 'side' ? '40px' : 'auto',
+  //         maxWidth: defaultAlignment === 'side' ? '50%' : '100%',
+  //         lineHeight: '1.2',
+  //         fontSize: '12px',
+  //         fontWeight: '500',
+  //       }}
+  //     >
+  //       {label}
+  //     </div>
+  //   );
+  // };
 
   const containerStyle = {
     display: visibility ? 'flex' : 'none',
@@ -244,7 +247,7 @@ export const RangeSliderV2 = ({
         </div>
       ) : (
         <>
-          <Label label={label} color={color} defaultAlignment={defaultAlignment} direction={direction} />
+          <Label label={label} auto={auto} width={width} _width={labelWidth} color={color} defaultAlignment={defaultAlignment} direction={direction} />
 
           <div style={sliderContainerStyle}>
             {enableTwoHandle !== 'slider' ? (
