@@ -51,7 +51,7 @@ const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExpo
         }
       },
       setDisabledDates: (dates) => {
-        setExcludedDates(dates);
+        setExcludedDates(Array.isArray(dates) ? dates : []);
       },
       clearDisabledDates: () => {
         setExcludedDates([]);
