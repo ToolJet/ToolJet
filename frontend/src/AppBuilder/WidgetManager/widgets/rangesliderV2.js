@@ -261,7 +261,7 @@ export const rangeSliderV2Config = {
     {
       handle: 'setValue',
       displayName: 'Set value',
-      params: [{ handle: 'num1', displayName: 'Value', defaultValue: 'New value' }],
+      params: [{ handle: 'num1', displayName: 'Value', defaultValue: '0' }],
     },
     {
       handle: 'setRangeValue',
