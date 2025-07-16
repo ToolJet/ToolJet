@@ -649,6 +649,15 @@ const sidebars = {
         },
         {
           'type': 'category',
+          'label': 'GitSync CI/CD',
+          'items': [
+            'development-lifecycle/cicd/overview',
+            'development-lifecycle/cicd/gitsync-api',
+            'development-lifecycle/cicd/example',
+          ]
+        },
+        {
+          'type': 'category',
           'label': 'Environment',
           'items': [
             {
