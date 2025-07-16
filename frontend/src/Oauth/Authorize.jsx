@@ -75,7 +75,16 @@ export function Authorize({ navigate }) {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
       .then(({ redirect_url, ...restResponse }) => {
+        const { organization_id, current_organization_id, email } = restResponse;
+
+        posthogHelper.initPosthog(restResponse);
+        posthogHelper.captureEvent(event, {
+          email,
+          workspace_id: organization_id || current_organization_id,
+        });
+
         if (redirect_url) {
+          localStorage.setItem('ph-sso-type', router.query.origin); //for posthog event
           window.location.href = redirect_url;
           return;
         }
@@ -95,7 +104,8 @@ export function Authorize({ navigate }) {
           workspace_id:
             organizationId ||
             authenticationService?.currentSessionValue?.current_organization_id ||
-            restResponse?.organization_id,
+            restResponse?.organization_id ||
+            restResponse?.current_organization_id,
         });
       })
       .catch((err) => {

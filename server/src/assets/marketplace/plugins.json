@@ -229,5 +229,21 @@
     "id": "clickup",
     "author": "Tooljet",
     "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
+  },
+  {
+    "name": "Prometheus",
+    "description": "Plugin to query metrics using PromQL",
+    "version": "1.0.0",
+    "id": "prometheus",
+    "author": "Tooljet",
+    "timestamp": "Wed, 11 Jun 2025 11:28:54 GMT"
+  },
+  {
+    "name": "Google Calendar",
+    "description": "Integrate with Google Calendar API for event management",
+    "version": "1.0.0",
+    "id": "googlecalendar",
+    "author": "Tooljet",
+    "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
   }
 ]

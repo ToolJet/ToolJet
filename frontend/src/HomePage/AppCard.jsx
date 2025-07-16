@@ -270,6 +270,15 @@ export default function AppCard({
                     to={getPrivateRoute('editor', {
                       slug: isValidSlug(app.slug) ? app.slug : app.id,
                     })}
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_edit_button_on_card', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                        app_id: app?.id,
+                        folder_id: currentFolder?.id,
+                      });
+                    }}
                     reloadDocument
                   >
                     <button

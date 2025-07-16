@@ -662,11 +662,13 @@ button {
       padding: 4px 12px;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid var(--border-weak);
 
       .header {
         color: var(--text-default);
         font-weight: 500;
         font-size: 12px;
+        padding: 7px 6px;
       }
     }
 
@@ -823,8 +825,13 @@ button {
       background: transparent !important;
     }
 
-    .canvas-container {
-      scrollbar-width: none;
+    :hover {
+      .canvas-container {
+        scrollbar-width: thin;
+        &::-webkit-scrollbar-track {
+          background: transparent !important;
+        }
+      }
     }
 
     .canvas-container {
@@ -839,6 +846,16 @@ button {
       justify-content: center;
       -webkit-box-align: center;
       align-items: center;
+      scrollbar-color: var(--interactive-selected) transparent;
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+       &::-webkit-scrollbar-thumb {
+        background: var(--interactive-default) !important;
+        border-radius: 3px;
+      }
 
       .real-canvas {
         outline: 1px dotted transparent;
@@ -5203,12 +5220,13 @@ input[type="text"] {
   }
 
   .inspector-component-title-input-holder {
-    padding: 2px 12px;
+    padding: 4px 12px;
     margin: 0;
     display: flex;
     align-items: center;
     height: 36px;
     flex-direction: column;
+    justify-content: center;
 
     .icon-btn {
       width: 32px;
@@ -18723,4 +18741,11 @@ section.ai-message-prompt-input-wrapper {
 
 .custom_fc_frame {
   left: 40px !important;
+}
+.min-width-0 {
+  min-width: 0 !important;
+}
+
+.width-unset {
+  width: unset !important;
 }

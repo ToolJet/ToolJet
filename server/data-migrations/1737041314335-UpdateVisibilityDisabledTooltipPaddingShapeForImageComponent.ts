@@ -53,24 +53,23 @@ export class UpdateVisibilityDisabledTooltipPaddingShapeForImageComponent1737041
         styles.padding = { value: 'custom' };
       }
 
+      if (styles.borderType?.value === 'none') {
+        styles.imageShape = { value: 'none' };
+        delete styles.borderType;
+      }
+
       if (styles.borderType?.value === 'rounded-circle') {
         styles.imageShape = { value: 'circle' };
         delete styles.borderType;
       }
 
       if (styles.borderType?.value === 'rounded') {
-        styles.borderRadius = { value: '4' };
+        styles.imageShape = { value: 'rounded' };
         delete styles.borderType;
       }
 
       if (styles.borderType?.value === 'img-thumbnail') {
-        if (!styles.backgroundColor) {
-          styles.backgroundColor = { value: '#f4f6fa' };
-        }
-        styles.borderColor = { value: '#e7eaef' };
-        styles.borderRadius = { value: '4' };
-        styles.padding = { value: 'custom' };
-        styles.customPadding = { value: '4' };
+        styles.imageShape = { value: 'thumbnail' };
         delete styles.borderType;
       }
 

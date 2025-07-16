@@ -262,6 +262,11 @@ export const Folders = function Folders({
                     iconOnly
                     ariaLabel="Create new folder"
                     onClick={() => {
+                      posthogHelper.captureEvent('create_new_folder', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
                       setNewFolderName('');
                       setShowForm(true);
                     }}

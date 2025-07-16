@@ -14,6 +14,8 @@ import DataSourceResourcePermissions from './components/DataSourceResourcePermis
 import WorkflowResourcePermissions from './components/WorkflowResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
 import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
 class BaseManageGranularAccess extends React.Component {
   constructor(props) {
@@ -188,6 +190,12 @@ class BaseManageGranularAccess extends React.Component {
     groupPermissionV2Service
       .createGranularPermission(this.props.groupPermissionId, body)
       .then(() => {
+        posthogHelper.captureEvent('click_add_app_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          group_id: this.props.groupPermissionId,
+        });
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
         toast.success('Permission created successfully!');

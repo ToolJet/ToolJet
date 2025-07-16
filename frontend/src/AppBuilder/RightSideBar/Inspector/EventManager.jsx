@@ -37,6 +37,7 @@ import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { components as selectComponents } from 'react-select';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { APP_MODES } from '@/AppBuilder/LeftSidebar/GlobalSettings/AppModeToggle';
 
 export const EventManager = ({
   sourceId,
@@ -75,7 +76,6 @@ export const EventManager = ({
   const eventToDeleteLoaderIndex = useStore((state) => state.eventsSlice.getEventToDeleteLoaderIndex(), shallow);
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
-
   const { updateState } = useAppDataActions();
 
   const currentEvents = allAppEvents?.filter((event) => {
@@ -267,7 +267,7 @@ export const EventManager = ({
     );
     const actions = targetComponentMeta.actions;
 
-    const options = actions.map((action) => ({
+    const options = (actions || []).map((action) => ({
       name: action?.displayName,
       value: action.handle,
     }));
@@ -284,7 +284,7 @@ export const EventManager = ({
       (componentType) => component.component.component === componentType.component
     );
     const actions = targetComponentMeta.actions;
-    return actions.find((action) => action.handle === actionHandle);
+    return (actions || []).find((action) => action.handle === actionHandle);
   }
 
   function getComponentActionDefaultParams(componentId, actionHandle) {
@@ -460,8 +460,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-          })
+          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+        })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -1042,9 +1042,8 @@ export const EventManager = ({
                           </div>
                         ) : (
                           <div
-                            className={`${
-                              param?.type ? '' : 'fx-container-eventmanager-code'
-                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            className={`${param?.type ? '' : 'fx-container-eventmanager-code'
+                              } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                             data-cy="action-options-text-input-field"
                           >
                             <CodeHinter
@@ -1065,6 +1064,29 @@ export const EventManager = ({
                       </div>
                     );
                   })}
+              </>
+            )}
+            {event.actionId === 'toggle-app-mode' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.appMode', 'App mode')}</div>
+                  <div className="col-9" data-cy="query-selection-field">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={APP_MODES}
+                      value={event?.appMode}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'appMode', value);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
               </>
             )}
             <div className="row mt-3">
