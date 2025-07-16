@@ -262,10 +262,12 @@ export const RangeSliderV2 = ({
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
                 marks={(schema === '' ? [] : schema).reduce((acc, item) => {
-                  acc[item.value] = {
-                    style: { color: markerLabel },
-                    label: item.label.replace('%', ''),
-                  };
+                  if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
+                    acc[item.value] = {
+                      style: { color: markerLabel },
+                      label: String(item.label).replace('%', ''),
+                    };
+                  }
                   return acc;
                 }, {})}
                 step={stepSize || 1}
@@ -292,10 +294,12 @@ export const RangeSliderV2 = ({
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
                 marks={(schema === '' ? [] : schema).reduce((acc, item) => {
-                  acc[item.value] = {
-                    style: { color: markerLabel },
-                    label: item.label.replace('%', ''),
-                  };
+                  if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
+                    acc[item.value] = {
+                      style: { color: markerLabel },
+                      label: String(item.label).replace('%', ''),
+                    };
+                  }
                   return acc;
                 }, {})}
                 step={stepSize || 1}
