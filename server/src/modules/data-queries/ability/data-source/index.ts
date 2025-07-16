@@ -30,14 +30,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isAllViewable = !!resourcePermissions?.isAllUsable;
 
     const dataSourceId = request?.tj_resource_id;
-    const isStatic = request?.resource_type === 'static';
-
-    // Always grant RUN_EDITOR and RUN_VIEWER permissions
-    can([FEATURE_KEY.RUN_EDITOR, FEATURE_KEY.RUN_VIEWER], DataSource);
 
     // Define permissions for data queries
-
-    if (isStatic || isAdmin || superAdmin || isAllEditable || isCanCreate || isCanDelete) {
+    if (isAdmin || superAdmin || isAllEditable || isCanCreate || isCanDelete) {
       can(
         [
           FEATURE_KEY.CREATE,

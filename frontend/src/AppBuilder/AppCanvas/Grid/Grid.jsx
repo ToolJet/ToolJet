@@ -74,11 +74,11 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getTemporaryLayouts = useStore((state) => state.getTemporaryLayouts, shallow);
   const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight, shallow);
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
-  const [dragParentId, setDragParentId] = useState(null);
+  // const [dragParentId, setDragParentId] = useState(null);
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
-  const [isGroupDragging, setIsGroupDragging] = useState(false);
+  // const [isGroupDragging, setIsGroupDragging] = useState(false);
   const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
@@ -104,13 +104,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     };
   }, []);
 
-  const { elementGuidelines } = useElementGuidelines(
-    boxList,
-    selectedComponents,
-    dragParentId,
-    getResolvedValue,
-    virtualTarget
-  );
+  const { elementGuidelines } = useElementGuidelines(boxList, selectedComponents, getResolvedValue, virtualTarget);
 
   useEffect(() => {
     setBoxList(
@@ -464,7 +458,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const handleDragGroupEnd = (e) => {
     try {
       hideGridLines();
-      setIsGroupDragging(false);
+      // setIsGroupDragging(false);
       const { events, clientX, clientY } = e;
       const initialParent = events[0].target.closest('.real-canvas');
       // Get potential new parent using same logic as onDragEnd
@@ -752,8 +746,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             console.error('ResizeEnd error ->', error);
           }
           handleDeactivateTargets();
-          setDragParentId(null);
           toggleCanvasUpdater();
+          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
         }}
         onResizeGroupStart={({ events }) => {
           showGridLines();
@@ -839,6 +833,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
           handleDeactivateTargets();
           toggleCanvasUpdater();
+          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
         }}
         checkInput
         onDragStart={(e) => {
@@ -1098,7 +1093,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroupStart={({ events }) => {
           showGridLines();
-          setIsGroupDragging(true);
+          // setIsGroupDragging(true);
           handleActivateNonDraggingComponents();
         }}
         onDragGroupEnd={(e) => {

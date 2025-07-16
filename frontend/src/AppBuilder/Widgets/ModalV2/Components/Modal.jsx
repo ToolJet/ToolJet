@@ -6,6 +6,10 @@ import { ModalHeader } from '@/AppBuilder/Widgets/ModalV2/Components/Header';
 import { ModalFooter } from '@/AppBuilder/Widgets/ModalV2/Components/Footer';
 import useStore from '@/AppBuilder/_stores/store';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+import Spinner from '@/_ui/Spinner';
+import classNames from 'classnames';
+import { isFalsyOrMultipleZeros } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
+
 export const ModalWidget = ({ ...restProps }) => {
   const {
     customStyles,
@@ -80,8 +84,12 @@ export const ModalWidget = ({ ...restProps }) => {
     setTimeout(() => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
-        modalContent.style.setProperty('height', _modalHeight, 'important');
-        modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+        if (!isFalsyOrMultipleZeros(modalHeight)) {
+          modalContent.style.setProperty('height', _modalHeight, 'important');
+          modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+        } else {
+          modalContent.style.setProperty('height', '5px', 'important');
+        }
       }
     }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,7 +98,9 @@ export const ModalWidget = ({ ...restProps }) => {
   return (
     <BootstrapModal
       {...restProps}
-      contentClassName={`modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`}
+      contentClassName={classNames(
+        `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`
+      )}
       animation={true}
       onEscapeKeyDown={(e) => {
         e.preventDefault();
@@ -150,9 +160,9 @@ export const ModalWidget = ({ ...restProps }) => {
             />
           </>
         ) : (
-          <div className="p-2">
+          <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
             <center>
-              <div className="spinner-border mt-5" role="status"></div>
+              <Spinner />
             </center>
           </div>
         )}

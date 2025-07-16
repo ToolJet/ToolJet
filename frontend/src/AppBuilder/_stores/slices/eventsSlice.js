@@ -868,7 +868,6 @@ export const createEventsSlice = (set, get) => ({
               get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
                 eventId: event.eventId,
               });
-
               return Promise.reject(error);
             }
           }

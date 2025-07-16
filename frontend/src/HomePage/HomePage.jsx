@@ -58,11 +58,11 @@ class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
-    const currentSession = authenticationService.currentSessionValue;
+    const currentSession = authenticationService?.currentSessionValue;
     this.fileInput = React.createRef();
     this.state = {
       currentUser: {
-        id: currentSession?.current_user.id,
+        id: currentSession?.current_user?.id,
         organization_id: currentSession?.current_organization_id,
       },
       shouldRedirect: false,
@@ -141,6 +141,11 @@ class HomePageComponent extends React.Component {
         this.setState({ shouldRedirect: true });
         return;
       }
+    }
+    if (this.props.appType === 'module' && authenticationService.currentSessionValue?.role?.name == 'end-user') {
+      //Restrict route
+      this.setState({ shouldRedirect: true });
+      return;
     }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
@@ -1543,11 +1548,17 @@ class HomePageComponent extends React.Component {
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
-              {this.canCreateApp() && (
-                <div className="create-new-app-license-wrapper">
+              <div className="create-new-app-license-wrapper">
+                {this.canCreateApp() && (
                   <LicenseTooltip
                     limits={appsLimit}
-                    feature={this.props.appType === 'workflow' ? 'workflows' : 'apps'}
+                    feature={
+                      this.props.appType === 'workflow'
+                        ? 'workflows'
+                        : this.props.appType === 'module'
+                        ? 'modules'
+                        : 'apps'
+                    }
                     isAvailable={true}
                     noTooltipIfValid={true}
                   >
@@ -1599,8 +1610,8 @@ class HomePageComponent extends React.Component {
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
-                </div>
-              )}
+                )}
+              </div>
               {this.props.appType === 'module' ? (
                 <div>
                   <p></p>
