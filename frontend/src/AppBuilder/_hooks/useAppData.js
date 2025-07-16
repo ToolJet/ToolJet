@@ -139,7 +139,7 @@ const useAppData = (
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
-  const appName = useStore((state) => state.appStore.modules[moduleId].app.name);
+  const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
   const location = useRouter().location;
 
@@ -547,7 +547,7 @@ const useAppData = (
   }, [isComponentLayoutReady, moduleId]);
 
   useEffect(() => {
-    if (moduleId) return;
+    if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
       page: pageTitles.EDITOR,
       appName: appName,

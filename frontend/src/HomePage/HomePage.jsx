@@ -1548,8 +1548,8 @@ class HomePageComponent extends React.Component {
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
-              {this.canCreateApp() && (
-                <div className="create-new-app-license-wrapper">
+              <div className="create-new-app-license-wrapper">
+                {this.canCreateApp() && (
                   <LicenseTooltip
                     limits={appsLimit}
                     feature={
@@ -1610,8 +1610,8 @@ class HomePageComponent extends React.Component {
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
-                </div>
-              )}
+                )}
+              </div>
               {this.props.appType === 'module' ? (
                 <div>
                   <p></p>

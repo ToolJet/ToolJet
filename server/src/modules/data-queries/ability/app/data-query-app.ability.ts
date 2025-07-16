@@ -11,18 +11,19 @@ export function defineDataQueryAppAbility(
   app: App
 ): void {
   const appId = app?.id;
-  const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const resourcePermissions = userPermission?.[MODULES.APP];
   const isAllEditable = !!resourcePermissions?.isAllEditable;
   const isCanCreate = userPermission.appCreate;
   const isCanDelete = userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
+  const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
   }
 
-  if (isAdmin || superAdmin) {
+  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
     can(
       [
         FEATURE_KEY.CREATE,

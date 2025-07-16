@@ -31,6 +31,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       case MODULES.APP:
         defineDataQueryAppAbility(can, UserAllPermissions, app);
         break;
+      case MODULES.MODULES:
+        defineDataQueryAppAbility(can, UserAllPermissions, resourceId);
+        break;
       case MODULES.WORKFLOWS:
         defineDataQueryWorkflowAbility(can, UserAllPermissions, resourceId);
         break;

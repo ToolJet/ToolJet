@@ -17,7 +17,7 @@
               {{/if}}
               <span class="text-bold">{{organizationName}}</span>. Click the button below to get started!
             </p>
-            {{#if (eq whiteLabelText "ToolJet")}}
+            {{#if (and (eq whiteLabelText "ToolJet") (eq tooljetEdition "cloud"))}}
               <p class="padding-t-20">
                 Should you have any questions or need assistance, our support team
                 is
