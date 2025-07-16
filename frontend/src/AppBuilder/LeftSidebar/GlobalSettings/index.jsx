@@ -11,6 +11,7 @@ import { ThemeSelect } from '@/modules/Appbuilder/components';
 import MaintenanceMode from './MaintenanceMode';
 import HideHeaderToggle from './HideHeaderToggle';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import './styles.scss'
 
 const GlobalSettings = ({ darkMode }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());

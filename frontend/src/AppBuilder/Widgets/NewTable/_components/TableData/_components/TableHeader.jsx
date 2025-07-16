@@ -39,6 +39,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     color: columnTitleColor,
     '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 'hover'),
     '--cc-table-header-active': getModifiedColor(columnBackgroundColor, 'active'),
+    '--cc-table-header-active-border': getModifiedColor(columnBackgroundColor, 21),
   };
 
   return (

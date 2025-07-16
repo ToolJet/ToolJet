@@ -261,10 +261,10 @@ export const filepickerConfig = {
       validation: { schema: { type: 'number' }, defaultValue: 6 },
       accordian: 'Container',
     },
-    containerBoxShadow: {
+    boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
-      validation: { schema: { type: 'string' }, defaultValue: '0px 1px 3px rgba(0,0,0,0.1)' },
+      validation: { schema: { type: 'string' }, defaultValue: '0px 1px 3px 0px #0000001A' },
       accordian: 'Container',
     },
     // containerPadding: {
@@ -324,16 +324,8 @@ export const filepickerConfig = {
       dropzoneErrorColor: { value: 'var(--cc-error-systemStatus)' },
       containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBorder: { value: 'var(--cc-default-border)' },
-      containerBoxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
       padding: { value: 'default' },
-    },
-    validation: {
-      enableValidation: { value: '{{false}}' },
-      fileType: { value: '{{}}' },
-      minSize: { value: '{{50}}' },
-      maxSize: { value: '{{51200000}}' },
-      minFileCount: { value: '{{0}}' },
-      maxFileCount: { value: '{{2}}' },
+      boxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

@@ -13,7 +13,7 @@ import { CountrySelect } from './CountrySelect';
 const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
-  const { properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
   const transformedProps = {
     ...props,
     inputType: 'phone',
@@ -215,6 +215,7 @@ export const PhoneInput = (props) => {
                 setCountry(selectedOption.value);
               }
             }}
+            componentId={id}
           />
           <Input
             ref={inputRef}

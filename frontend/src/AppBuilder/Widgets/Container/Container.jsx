@@ -33,7 +33,6 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
-
   const { dynamicHeight } = properties;
 
   useDynamicHeight({
@@ -51,10 +50,8 @@ export const Container = ({
     shallow
   );
 
-  const isEditing = useStore((state) => state.currentMode === 'edit');
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-
-  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow } = styles;
   const { headerHeight = 80 } = properties;
   const headerMaxHeight = parseInt(height, 10) - 100 - 10;
@@ -89,6 +86,7 @@ export const Container = ({
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
+    borderRadius: '6px',
     ...headerBgColor,
   };
   const containerContentStyles = {
@@ -118,7 +116,6 @@ export const Container = ({
             <HorizontalSlot
               slotName={'header'}
               slotStyle={containerHeaderStyles}
-              isEditing={isEditing}
               id={`${id}-header`}
               height={headerHeight}
               width={width}

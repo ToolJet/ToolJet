@@ -618,14 +618,10 @@
 .page-handler-wrapper {
   background: transparent;
   overflow: auto;
-  scrollbar-width: thin;
+  scrollbar-width: thin !important;
   height: 100%;
   padding-bottom: 48px;
   scrollbar-color: var(--interactive-selected) transparent;
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
 
   .tj-list-item-selected {
     .custom-icon {
@@ -660,7 +656,7 @@
 
   .card {
     background: none;
-    border: none;
+    border: none !important;
     box-shadow: none;
     display: flex;
     height: 40px !important;
@@ -668,6 +664,8 @@
     color: var(--text-placeholder) !important;
     font-weight: 400 !important;
     font-size: 14px !important;
+    outline: none !important;
+    background-color: unset !important;
   }
 
   svg {
@@ -717,7 +715,7 @@
 
 .bm-item {
   &:last-child {
-    width: 78% !important;
+    width: unset !important;
     position: fixed;
     bottom: 0px;
     background: var(--background-surface-layer-01);
@@ -729,9 +727,9 @@
 
   .card.active {
     width: inherit;
-    background-color: var(--background-accent-weak);
-    color: var(--text-default);
-    border: none;
+    background-color: var(--background-accent-weak) !important;
+    color: var(--text-default) !important;
+    border: none !important;
     padding: 0px;
     border-radius: 6px;
   }
@@ -898,7 +896,6 @@
 
 .left-sidebar-scrollbar {
   &::-webkit-scrollbar {
-    width: 6px;
     margin-right: 3px;
   }
 

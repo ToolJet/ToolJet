@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as MobileMenu } from 'react-burger-menu';
@@ -15,11 +15,12 @@ import { Link } from 'react-router-dom';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
-const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
+const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
   const { moduleId } = useModuleContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const groupActive = currentPage.pageGroupId === pageGroup?.id;
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const pages = useStore((state) => state.modules[moduleId].pages);
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
@@ -138,13 +139,24 @@ const MobileNavigationMenu = ({
   changeToDarkMode,
   showDarkModeToggle,
   appName,
+  viewerWrapperRef,
 }) => {
   const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const license = useStore((state) => state.license);
-
+  const [isViewportNarrow, setIsViewportNarrow] = useState(false);
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (viewerWrapperRef.current) {
+      viewerWrapperRef.current.offsetWidth > 450 ? setIsViewportNarrow(false) : setIsViewportNarrow(true);
+    }
+  }, []);
+
+  const dynamicMenuWrapClass = isViewportNarrow ? 'bm-menu-wrap--viewport-narrow' : '';
+  const dynamicOverlayClass = isViewportNarrow ? 'bm-overlay--viewport-narrow' : '';
+
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
     const queryParams = {
@@ -172,7 +184,7 @@ const MobileNavigationMenu = ({
     },
     bmMenu: {
       background: darkMode ? '#202B37' : '#fff',
-      padding: '16px 8px',
+      padding: '16px 16px',
     },
     bmMorphShape: {
       fill: '#373a47',
@@ -196,7 +208,7 @@ const MobileNavigationMenu = ({
     },
   };
 
-  const currentPage = pages.find((page) => page.id === currentPageId);
+  const currentPage = pages?.find((page) => page.id === currentPageId);
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
@@ -214,6 +226,8 @@ const MobileNavigationMenu = ({
         pageWrapId={'page-wrap'}
         outerContainerId={'outer-container'}
         onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
+        className={dynamicMenuWrapClass}
+        overlayClassName={dynamicOverlayClass}
         customBurgerIcon={
           <div className="icon-btn">
             <SolidIcon fill="var(--icon-strong)" name="menu" />
@@ -221,7 +235,7 @@ const MobileNavigationMenu = ({
         }
         right={false}
       >
-        <div className="pt-0">
+        <div style={{ height: '95%' }} className="pt-0">
           <Header styles={{ paddingBottom: '24px' }} className={'mobile-header'}>
             <div onClick={() => setHamburgerMenuOpen(false)} className="cursor-pointer">
               <div className="icon-btn">
@@ -252,7 +266,7 @@ const MobileNavigationMenu = ({
             </div>
           </Header>
 
-          <div style={{ paddingBottom: '48px' }} className="w-100 overflow-auto h-100">
+          <div style={{ paddingBottom: '56px' }} className="w-100 overflow-auto h-100">
             <div className={`pages-container ${darkMode && 'dark'}`}>
               {isLicensed ? (
                 <RenderPageGroups
@@ -263,7 +277,7 @@ const MobileNavigationMenu = ({
                   currentPage={currentPage}
                 />
               ) : (
-                pages.map((page) => {
+                pages?.map((page) => {
                   const isHomePage = page.id === homePageId;
                   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
                   // eslint-disable-next-line import/namespace

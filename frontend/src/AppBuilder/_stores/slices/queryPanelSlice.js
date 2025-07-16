@@ -13,7 +13,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
 const initialState = {
-  isQueryPaneExpanded: false,
+  isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
@@ -34,6 +34,7 @@ const initialState = {
   showDeleteConfirmation: false,
   renamingQueryId: null,
   deletingQueryId: null,
+  asyncQueryRuns: [],
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -423,9 +424,10 @@ export const createQueryPanelSlice = (set, get) => ({
         rawData = rawData || data;
 
         if (dataQuery.options.enableTransformation) {
+          const language = query.options.transformationLanguage;
           finalData = await runTransformation(
             finalData,
-            query.options.transformation,
+            query.options.transformations?.[language] ?? query.options.transformation,
             query.options.transformationLanguage,
             query,
             mode,
@@ -875,9 +877,10 @@ export const createQueryPanelSlice = (set, get) => ({
                   icon: '🚀',
                 });
                 if (query.options.enableTransformation) {
+                  const language = query.options.transformationLanguage;
                   finalData = await runTransformation(
                     finalData,
-                    query.options.transformation,
+                    query.options.transformations?.[language] ?? query.options.transformation,
                     query.options.transformationLanguage,
                     query,
                     'edit',
@@ -1340,10 +1343,7 @@ export const createQueryPanelSlice = (set, get) => ({
         const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
         const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
         const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
-        const proxiedFormattedParams = createProxy(
-          !_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : [],
-          'params'
-        );
+        const proxiedFormattedParams = createProxy(!_.isEmpty(formattedParams) ? [formattedParams] : [], 'parameters');
 
         const fnParams = [
           'moment',
@@ -1372,7 +1372,7 @@ export const createQueryPanelSlice = (set, get) => ({
           proxiedVariables,
           actions,
           proxiedConstants,
-          ...proxiedFormattedParams,
+          ...(!_.isEmpty(formattedParams) ? proxiedFormattedParams : []),
         ];
 
         result = {
@@ -1489,5 +1489,30 @@ export const createQueryPanelSlice = (set, get) => ({
       set((state) => {
         state.queryPanel.deletingQueryId = queryId;
       }),
+    expandQueryPaneIfNeeded: () => {
+      const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
+        isExpanded: true,
+        queryPanelHeight: 100,
+      };
+
+      // If query pane is not expanded, expand it
+      if (!queryManagerPreferences.isExpanded) {
+        const newPreferences = {
+          ...queryManagerPreferences,
+          isExpanded: true,
+          queryPanelHeight: 70, // Default expanded height
+        };
+        localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
+
+        // Update the store state
+        set((state) => {
+          state.queryPanel.isQueryPaneExpanded = true;
+        });
+
+        return true; // Indicates that expansion was needed and performed
+      }
+
+      return false; // Indicates that expansion was not needed
+    },
   },
 });

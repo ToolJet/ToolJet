@@ -7,7 +7,6 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -36,6 +35,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Link',
   'Form',
   'FilePicker',
+  'Tabs',
 ];
 
 const RenderWidget = ({
@@ -48,13 +48,12 @@ const RenderWidget = ({
   widgetWidth,
   inCanvas = false,
   darkMode,
+  moduleId,
 }) => {
-  const { moduleId } = useModuleContext();
-  const componentDefinition = useStore((state) => state.getComponentDefinition(id, moduleId), shallow);
+  const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
   const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
   const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
-  const component = componentDefinition?.component;
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
   const resolvedProperties = useStore(
@@ -74,7 +73,7 @@ const RenderWidget = ({
     (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.generalStyles,
     shallow
   );
-  const unResolvedValidation = componentDefinition?.component?.definition?.validation || {};
+  const unResolvedValidation = component?.definition?.validation || {};
   // const others = useStore((state) => state.getResolvedComponent(id, subContainerIndex)?.others, shallow);
   const updateDependencyValues = useStore((state) => state.updateDependencyValues, shallow);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
@@ -92,6 +91,22 @@ const RenderWidget = ({
   );
   const { t } = useTranslation();
   const transformedStyles = getDefaultStyles(resolvedStyles, componentType);
+
+  const isDisabled = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedDisabled = state.getExposedValueOfComponent(id, moduleId)?.isDisabled;
+    if (typeof componentExposedDisabled === 'boolean') return componentExposedDisabled;
+    if (component?.properties?.disabledState === true || component?.styles?.disabledState === true) return true;
+    return false;
+  });
+
+  const isLoading = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedLoading = state.getExposedValueOfComponent(id, moduleId)?.isLoading;
+    if (typeof componentExposedLoading === 'boolean') return componentExposedLoading;
+    if (component?.properties?.loadingState === true || component?.styles?.loadingState === true) return true;
+    return false;
+  });
 
   const obj = {
     properties: { ...resolvedGeneralProperties, ...resolvedProperties },
@@ -153,10 +168,8 @@ const RenderWidget = ({
   useEffect(() => {
     setExposedVariable('id', id);
   }, []);
-  if (!componentDefinition?.component) return null;
+  if (!component) return null;
 
-  const disabledState = resolvedProperties?.disabledState;
-  const loadingState = resolvedProperties?.loadingState;
 
   return (
     <ErrorBoundary>
@@ -193,7 +206,7 @@ const RenderWidget = ({
           role={'Box'}
           className={`canvas-component ${
             inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          } ${disabledState || loadingState ? 'disabled' : ''}`} //required for custom CSS
+          } ${isDisabled || isLoading ? 'disabled' : ''}`} //required for custom CSS
         >
           <ComponentToRender
             id={id}
@@ -219,4 +232,7 @@ const RenderWidget = ({
     </ErrorBoundary>
   );
 };
+
+RenderWidget.displayName = 'RenderWidget';
+
 export default memo(RenderWidget);

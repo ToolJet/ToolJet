@@ -19,8 +19,8 @@ const BaseColorSwatches = ({
   component,
   styleDefinition,
   componentType = 'color',
-  CustomOptionList = () => {},
-  SwatchesToggle = () => {},
+  CustomOptionList = () => { },
+  SwatchesToggle = () => { },
   onReset,
 }) => {
   value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
@@ -116,7 +116,6 @@ const BaseColorSwatches = ({
     );
   };
   const ColorPickerInputBox = () => {
-    console.log('onReset', onReset);
     return (
       <div
         className="row mx-0 color-picker-input d-flex"
@@ -137,9 +136,9 @@ const BaseColorSwatches = ({
         >
           {colorMap?.[value]
             ? colorMap[value]
-                .split('/')
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join('/')
+              .split('/')
+              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+              .join('/')
             : value}
         </div>
         {typeof onReset === 'function' && (
