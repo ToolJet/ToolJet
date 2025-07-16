@@ -10,7 +10,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { DefaultCopyIcon } from '../../DefaultCopyIcon';
-import { copyToClipboard, extractComponentName } from '../../utils';
+import { copyToClipboard, extractComponentName, formatPathForCopy } from '../../utils';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
@@ -96,7 +96,8 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
             <ToolTip message={'Copy path'}>
               <span
                 onClick={() => {
-                  copyToClipboard(`{{${absolutePath}}}`, false);
+                  const formattedPath = formatPathForCopy(absolutePath);
+                  copyToClipboard(formattedPath, false);
                 }}
                 className="copy-to-clipboard json-viewer-action-icon"
               >

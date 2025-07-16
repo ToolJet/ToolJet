@@ -2,6 +2,11 @@
     margin-top: 2px;
     font-size: 12px;
 
+    .dropdown-menu-container {
+        background-color: var(--background-surface-layer-01, #FFFFFF);
+        border: 1px solid var(--border-default, #CCD1D5);
+    }
+
     .dropdown-menu-trigger {
         height: 34px;
         padding: 7px 12px;
@@ -10,6 +15,8 @@
         align-self: stretch;
         border-radius: 6px;
         border: 1px solid var(--border-default, #CCD1D5);
+        background-color: var(--background-surface-layer-01, #FFFFFF);
+        color: var(--text-default, #1B1F24);
 
         &.is-open {
             border: 2px solid var(--interactive-focus-outline, #4368E3);
@@ -22,14 +29,14 @@
 
     .dropdown-menu-items {
         color: var(--text-default, #1B1F24);
+    }
 
-        >div {
-            border-radius: 6px;
+    .dropdown-menu-item {
+        border-radius: 6px;
 
-            &:hover {
-                cursor: pointer;
-                background-color: var(--slate4);
-            }
+        &:hover {
+            cursor: pointer;
+            background-color: var(--interactive-hover, #ACB2B959);
         }
     }
 
@@ -46,7 +53,7 @@
 
     .separator-text {
         color: var(--text-placeholder, #6A727C);
-        background-color: white;
+        background-color: var(--background-surface-layer-01, #FFFFFF);
         padding: 0 6px;
     }
 }

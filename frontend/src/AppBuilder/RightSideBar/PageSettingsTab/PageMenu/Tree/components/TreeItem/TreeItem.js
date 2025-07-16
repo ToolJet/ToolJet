@@ -33,6 +33,7 @@ export const TreeItem = forwardRef(
     return (
       <li
         {...handleProps}
+        data-draggable="true"
         className={classNames(
           styles.Wrapper,
           clone && styles.clone,

@@ -8,6 +8,8 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
@@ -45,7 +47,8 @@ export class DataSourcesController implements IDataSourcesController {
     @Param('versionId') appVersionId,
     @Param('environmentId') environmentId
   ) {
-    return this.dataSourcesService.getForApp({ appVersionId, environmentId, shouldIncludeWorkflows: false }, user);
+    const shouldIncludeWorkflows = getTooljetEdition() === TOOLJET_EDITIONS.EE;
+    return this.dataSourcesService.getForApp({ appVersionId, environmentId, shouldIncludeWorkflows }, user);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)

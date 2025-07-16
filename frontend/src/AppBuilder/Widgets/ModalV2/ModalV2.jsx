@@ -96,12 +96,10 @@ export const ModalV2 = function Modal({
 
   const onShowModal = () => {
     openModal();
-    // onShowSideEffects();
     setSelectedComponentAsModal(id);
   };
 
   const onHideModal = () => {
-    // onHideSideEffects(() => fireEvent('onClose'));
     hideModal();
     setSelectedComponentAsModal(null);
   };

@@ -14,7 +14,6 @@ import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { Tooltip } from 'react-tooltip';
 import { canCreateDataSource } from '@/_helpers';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import '../queryManager.theme.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { staticDataSources } from '../constants';
@@ -81,8 +80,6 @@ function DataSourcePicker({ darkMode }) {
     navigate(`/${workspaceId}/data-sources`);
   };
 
-  const workflowsEnabled = isWorkflowsFeatureEnabled();
-
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
@@ -106,7 +103,6 @@ function DataSourcePicker({ darkMode }) {
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {updatedStaticDataSources.map((source) => {
-            if (!workflowsEnabled && source.kind === 'workflows') return null;
 
             return (
               <ButtonSolid
