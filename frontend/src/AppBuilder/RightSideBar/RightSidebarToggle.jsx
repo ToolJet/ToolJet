@@ -39,7 +39,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         }}
         darkMode={darkMode}
         icon="plus"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector component-image-holder`}
+        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Components"
       />
       <SidebarItem
