@@ -257,32 +257,43 @@
 
 .files-pane-scrollable {
   overflow-y: auto;
-
+  // scroll-padding: 4px;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
-  height: 100%;
-  overflow: hidden auto;
 
-  /* Hide scrollbar by default */
   &::-webkit-scrollbar {
     width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
     background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
     background: transparent;
+    border-radius: 8px;
   }
 
-  /* Show scrollbar only on hover */
+  // Show scrollbar on hover
   &:hover {
-    &::-webkit-scrollbar-thumb {
-      background-color: #6a727c4d;
-      border-radius: 3px;
+    scrollbar-color: var(--utilities-scrollbar) transparent;
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
     }
-  }
 
-  &:hover {
-    scrollbar-color: #6a727c4d transparent;
+    &::-webkit-scrollbar-thumb {
+      background: var(--utilities-scrollbar);
+      border-radius: 8px;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+
+    &::-webkit-scrollbar-thumb:active {
+      background: var(--utilities-scrollbar);
+    }
   }
 }
 
