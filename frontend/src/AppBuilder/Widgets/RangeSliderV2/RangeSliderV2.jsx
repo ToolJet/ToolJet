@@ -226,7 +226,6 @@ export const RangeSliderV2 = ({
 
   const sliderContainerStyle = {
     width: '100%',
-    paddingRight: '12px',
     visibility: visibility ? 'visible' : 'hidden',
   };
   return (
