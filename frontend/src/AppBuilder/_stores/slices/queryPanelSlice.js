@@ -308,7 +308,7 @@ export const createQueryPanelSlice = (set, get) => ({
         selectedEnvironment,
         isPublicAccess,
         currentVersionId,
-        currentMode,
+        modeStore,
       } = get();
       const {
         queryPreviewData,
@@ -575,7 +575,7 @@ export const createQueryPanelSlice = (set, get) => ({
             query?.options,
             versionId,
             !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined, //TODO: currentAppEnvironmentId may no longer required. Need to check
-            currentMode
+            modeStore.modules.canvas.currentMode
           );
         }
 
