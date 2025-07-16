@@ -1665,7 +1665,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: var(--cc-primary-brand);
+      background-color: var(--cc-primary-brand, --primary-brand);
     }
   }
 }
