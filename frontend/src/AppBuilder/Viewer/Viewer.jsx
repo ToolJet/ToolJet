@@ -32,6 +32,7 @@ export const Viewer = ({
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode);
+  const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
 
   const {
     isEditorLoading,
@@ -130,7 +131,7 @@ export const Viewer = ({
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents, moduleId);
-  }, [currentPageComponents, moduleId, updateCanvasHeight]);
+  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);
