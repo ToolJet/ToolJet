@@ -34,6 +34,7 @@ export const useInput = ({
 
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
+  const decimalPlaces = properties?.decimalPlaces || 0;
 
   const getCountryCallingCodeSafe = (country) => {
     try {
@@ -42,6 +43,15 @@ export const useInput = ({
       return '';
     }
   };
+
+  const formatNumber = (value, digits) => {
+    const num = value?.toString();
+    if (num?.includes('.')) {
+      const [int, dec] = num.split('.');
+      return Number(int + '.' + dec.slice(0, digits));
+    }
+    return num;
+  }
 
   useEffect(() => {
     if (labelRef?.current) {
@@ -118,11 +128,13 @@ export const useInput = ({
   useEffect(() => {
     if (inputType !== 'currency') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
-      setInputValue(value);
+      if (typeof value === 'number' || !isNaN(Number(value))) {
+        setInputValue(formatNumber(value, decimalPlaces)); 
+      } else setInputValue(value);
       setCountry(countryCode);
       fireEvent('onChange');
     });
-  }, [inputType, country]);
+  }, [inputType, country, decimalPlaces]);
 
   useEffect(() => {
     const exposedVariables = {

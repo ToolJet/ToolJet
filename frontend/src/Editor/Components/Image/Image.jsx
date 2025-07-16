@@ -185,7 +185,7 @@ export const Image = function Image({
         objectPosition: alignment,
       }}
       height={height}
-      onClick={() => fireEvent('onClick')}
+      onClick={() => !isDisabled && fireEvent('onClick')}
       alt={alternativeText}
       width={width}
       onError={() => setIsError(true)}
@@ -199,7 +199,7 @@ export const Image = function Image({
 
   const FallbackState = () => {
     return (
-      <div className="broken-url-placeholder" onClick={() => fireEvent('onClick')}>
+      <div className="broken-url-placeholder" onClick={() => !isDisabled && fireEvent('onClick')}>
         {isLoading && (
           <center>
             <Loader width="16" absolute={false} />
