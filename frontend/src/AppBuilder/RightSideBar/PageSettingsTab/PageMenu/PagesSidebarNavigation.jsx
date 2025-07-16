@@ -43,6 +43,12 @@ export const PagesSidebarNavigation = ({
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const { isReleasedVersionId } = useStore(
+    (state) => ({
+      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -443,6 +449,7 @@ export const PagesSidebarNavigation = ({
           'text-only': style === 'text',
           'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
           'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          'no-preview-settings': isReleasedVersionId,
         })}
         style={{
           width: 226,
