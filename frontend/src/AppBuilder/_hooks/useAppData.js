@@ -444,7 +444,7 @@ const useAppData = (
         const queryData =
           isPublicAccess || (mode !== 'edit' && appData.is_public)
             ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
+            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
         const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
