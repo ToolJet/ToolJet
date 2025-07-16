@@ -79,7 +79,8 @@ type NewRevampedComponent =
   | 'Form'
   | 'Image'
   | 'FilePicker'
-
+  | 'Icon'
+  | 'Steps'
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -105,7 +106,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tabs',
   'Form',
   'Image',
-  'FilePicker'
+  'FilePicker',
+  'Icon',
+  'Steps'
 ];
 
 @Injectable()
@@ -2508,6 +2511,7 @@ function migrateProperties(
       properties.label = '';
     }
 
+    // NumberInput
     if (componentType === 'NumberInput') {
       if (properties.minValue) {
         if (validation.minValue === undefined) {
@@ -2523,15 +2527,19 @@ function migrateProperties(
         delete properties.maxValue;
       }
     }
+
+    // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
     }
 
+    // Form
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
     }
 
+    // Tabs
     if (componentType === 'Tabs') {
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
@@ -2548,6 +2556,7 @@ function migrateProperties(
       }
     }
 
+    // Image
     if (componentType === 'Image') {
       if (styles.padding) {
         styles.customPadding = styles.padding;
@@ -2565,6 +2574,38 @@ function migrateProperties(
       if (mappedShape) {
         styles.imageShape = { value: mappedShape };
         delete styles.borderType;
+      }
+    }
+
+    // FilePicker
+    if (componentType === 'FilePicker') {
+      if (properties.enableDropzone) {
+        properties.enableDropzone = { ...properties.enableDropzone, fxActive: properties?.enableDropzone?.fxActive ?? true };
+      }
+      if (properties.enablePicker) {
+        properties.enablePicker = { ...properties.enablePicker, fxActive: properties?.enablePicker?.fxActive ?? true };
+      }
+      if (properties.enableMultiple) {
+        properties.enableMultiple = { ...properties.enableMultiple, fxActive: properties?.enableMultiple?.fxActive ?? true };
+      }
+      if (properties.fileType && !validation.fileType) {
+        validation.fileType = { ...properties.fileType, fxActive: properties.fileType.fxActive ?? true };
+        delete properties.fileType;
+      }
+
+      if (!validation.minFileCount) {
+        validation.minFileCount = { value: '{{0}}' };
+      }
+    }
+
+    // Steps
+    if (componentType === 'Steps') {
+      if (!properties.advanced) {
+        properties.advanced = { value: '{{true}}' };
+      }
+      if (properties.steps && !properties.schema) {
+        properties.schema = properties.steps;
+        delete properties.steps;
       }
     }
   }

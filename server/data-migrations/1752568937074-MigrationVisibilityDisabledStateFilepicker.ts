@@ -51,6 +51,24 @@ export class MigrationVisibilityDisabledStateFilepicker1752568937074 implements 
                 properties.label = '';
             }
 
+            if (properties.enableDropzone) {
+                properties.enableDropzone = { ...properties.enableDropzone, fxActive: properties?.enableDropzone?.fxActive ?? true };
+            }
+            if (properties.enablePicker) {
+                properties.enablePicker = { ...properties.enablePicker, fxActive: properties?.enablePicker?.fxActive ?? true };
+            }
+            if (properties.enableMultiple) {
+                properties.enableMultiple = { ...properties.enableMultiple, fxActive: properties?.enableMultiple?.fxActive ?? true };
+            }
+            if (properties.fileType && !validation.fileType) {
+                validation.fileType = { ...properties.fileType, fxActive: properties.fileType.fxActive ?? true };
+                delete properties.fileType;
+            }
+
+            if (!validation.minFileCount) {
+                validation.minFileCount = { value: '{{0}}' };
+            }
+
             await entityManager.update(Component, component.id, {
                 properties,
                 styles,
