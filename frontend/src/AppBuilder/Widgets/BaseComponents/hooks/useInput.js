@@ -138,12 +138,6 @@ export const useInput = ({
 
   useEffect(() => {
     const exposedVariables = {
-      ...(inputType !== 'phone' && {
-        setText: async function (text) {
-          setInputValue(text);
-          fireEvent('onChange');
-        },
-      }),
       clear: async function () {
         setInputValue('');
         fireEvent('onChange');
@@ -155,16 +149,16 @@ export const useInput = ({
         inputRef.current.blur();
       },
       setVisibility: async function (state) {
-        setVisibility(state);
-        setExposedVariable('isVisible', state);
+        setVisibility(!!state);
+        setExposedVariable('isVisible', !!state);
       },
       setDisable: async function (disable) {
-        setDisable(disable);
-        setExposedVariable('isDisabled', disable);
+        setDisable(!!disable);
+        setExposedVariable('isDisabled', !!disable);
       },
       setLoading: async function (loading) {
-        setLoading(loading);
-        setExposedVariable('isLoading', loading);
+        setLoading(!!loading);
+        setExposedVariable('isLoading', !!loading);
       },
       label,
       isValid,
@@ -174,6 +168,24 @@ export const useInput = ({
       isVisible: visibility,
       isDisabled: disable,
     };
+
+    if (inputType === 'TextInput') {
+      exposedVariables.disable = async function (value) {
+        setDisable(!!value);
+        setExposedVariable('isDisabled', !!value);
+      };
+      exposedVariables.visibility = async function (value) {
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
+      };
+    }
+
+    if (inputType !== 'phone' && inputType !== 'currency') {
+      exposedVariables.setText = async function (text) {
+        setInputValue(text);
+        fireEvent('onChange');
+      };
+    }
 
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;

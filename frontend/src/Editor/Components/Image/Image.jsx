@@ -128,16 +128,16 @@ export const Image = function Image({
         setExposedVariable('imageURL', '');
       },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        setVisibility(value);
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
       },
       setLoading: async function (value) {
-        setExposedVariable('isLoading', value);
-        setIsLoading(value);
+        setExposedVariable('isLoading', !!value);
+        setIsLoading(!!value);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        setIsDisabled(value);
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
       },
     };
     setExposedVariables(exposedVariables);

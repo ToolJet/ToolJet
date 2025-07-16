@@ -163,16 +163,16 @@ export const RadioButtonV2 = ({
         fireEvent('onSelectionChange');
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setDisable: async function (value) {
-        setIsDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setIsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       setLoading: async function (value) {
-        setIsLoading(value);
-        setExposedVariable('isLoading', value);
+        setIsLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
     };
     setExposedVariables(exposedVariables);

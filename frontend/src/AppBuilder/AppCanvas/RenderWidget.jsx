@@ -35,6 +35,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Link',
   'Form',
   'FilePicker',
+  'Tabs',
 ];
 
 const RenderWidget = ({
@@ -90,6 +91,22 @@ const RenderWidget = ({
   );
   const { t } = useTranslation();
   const transformedStyles = getDefaultStyles(resolvedStyles, componentType);
+
+  const isDisabled = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedDisabled = state.getExposedValueOfComponent(id, moduleId)?.isDisabled;
+    if (typeof componentExposedDisabled === 'boolean') return componentExposedDisabled;
+    if (component?.properties?.disabledState === true || component?.styles?.disabledState === true) return true;
+    return false;
+  });
+
+  const isLoading = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedLoading = state.getExposedValueOfComponent(id, moduleId)?.isLoading;
+    if (typeof componentExposedLoading === 'boolean') return componentExposedLoading;
+    if (component?.properties?.loadingState === true || component?.styles?.loadingState === true) return true;
+    return false;
+  });
 
   const obj = {
     properties: { ...resolvedGeneralProperties, ...resolvedProperties },
@@ -153,8 +170,6 @@ const RenderWidget = ({
   }, []);
   if (!component) return null;
 
-  const disabledState = resolvedProperties?.disabledState;
-  const loadingState = resolvedProperties?.loadingState;
 
   return (
     <ErrorBoundary>

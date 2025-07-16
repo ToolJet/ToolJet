@@ -51,7 +51,13 @@ export class VersionsCreateService implements IVersionsCreateService {
       );
 
       const { oldComponentToNewComponentMapping, oldPageToNewPageMapping } =
-        await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+        await this.createNewPagesAndComponentsForVersion(
+          manager,
+          appVersion,
+          versionFrom.id,
+          versionFrom.homePageId,
+          oldDataQueryToNewMapping
+        );
 
       await this.updateEntityReferencesForNewVersion(manager, {
         componentsMapping: oldComponentToNewComponentMapping,
@@ -322,7 +328,8 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager,
     appVersion: AppVersion,
     versionFromId: string,
-    prevHomePagePage: string
+    prevHomePagePage: string,
+    oldDataQueryToNewMapping: Record<string, unknown>
   ) {
     const pages = await manager
       .createQueryBuilder(Page, 'page')

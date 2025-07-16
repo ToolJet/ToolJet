@@ -234,7 +234,7 @@ export const formConfig = {
           type: 'union',
           schemas: [{ type: 'string' }, { type: 'number' }],
         },
-        defaultValue: 0,
+        defaultValue: 6,
       },
     },
     borderColor: {
@@ -316,7 +316,7 @@ export const formConfig = {
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderRadius: { value: '0' },
+      borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-default-border)' },
     },
   },

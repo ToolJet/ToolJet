@@ -12,11 +12,15 @@ const initialState = {
   idGroupDragged: false,
   openModalWidgetId: null,
   subContainerWidths: {},
+  moveableRef: null,
+  virtualTarget: null,
+  currentDragCanvasId: null,
+  ghostDragPosition: null,
 };
 
 export const useGridStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
         setResizingComponentId: (id) => set({ resizingComponentId: id }),
@@ -26,7 +30,12 @@ export const useGridStore = create(
         setOpenModalWidgetId: (openModalWidgetId) => set({ openModalWidgetId }),
         setSubContainerWidths: (id, width) =>
           set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
+        setVirtualTarget: (target) => set({ virtualTarget: target }),
+        setCurrentDragCanvasId: (canvasId) => set({ currentDragCanvasId: canvasId }),
+        setGhostDragPosition: (position) => set({ ghostDragPosition: position }),
       },
+      setMoveableRef: (ref) => set({ moveableRef: ref }),
+      getGhostDragPosition: () => get().ghostDragPosition,
     }),
     { name: 'Grid Store' }
   )

@@ -15,7 +15,6 @@ import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/comm
 import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
@@ -39,11 +38,6 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     setPreviewData(null);
     closePopup();
   };
-
-  const workflowsEnabled = isWorkflowsFeatureEnabled();
-  const staticDataSources = workflowsEnabled
-    ? staticDatasources
-    : staticDatasources.filter((ds) => ds?.kind !== 'workflows');
 
   useEffect(() => {
     const shouldAddSampleDataSource = !!sampleDataSource;
@@ -135,7 +129,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
             <div>
               <DataSourceIcon source={source} height={16} />{' '}
               <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small" style={{ fontSize: '13px' }}>
-                {defaultSources[cleanWord(source.name)].name}
+                {defaultSources[cleanWord(source.name)]?.name}
               </span>
             </div>
           ),
