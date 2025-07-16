@@ -3,7 +3,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Spinner from '@/_ui/Spinner';
-export const RangeSlider = ({
+export const RangeSliderV2 = ({
   height,
   properties,
   styles,
