@@ -28,9 +28,7 @@ export const NumberInput = (props) => {
   const handleBlur = (e) => {
     const value = Number(parseFloat(e.target.value).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(value);
-    e.stopPropagation();
-    props.fireEvent('onBlur');
-    inputLogic.setIsFocused(false);
+    inputLogic.handleBlur(e);
   };
 
   const handleIncrement = (e) => {

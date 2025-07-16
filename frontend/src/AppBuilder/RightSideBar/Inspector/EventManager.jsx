@@ -640,7 +640,7 @@ export const EventManager = ({
                 <div className="col-9">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={getComponentOptions('Modal')}
+                    options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
                     value={event.modal?.id ?? event.modal}
                     search={true}
                     onChange={(value) => {

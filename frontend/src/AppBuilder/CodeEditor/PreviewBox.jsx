@@ -23,40 +23,68 @@ const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
 
   const estimateSizeOfObject = (object) => {
-    let bytes = 0;
+    const visited = new Set();
 
-    function getSizeOfPrimitive(value) {
-      switch (typeof value) {
-        case 'boolean':
-          return 4;
-        case 'number':
-          return 8;
-        case 'string':
-          return value.length * 2;
-        case 'object':
-          if (value === null) {
-            return 0;
-          } else if (Array.isArray(value)) {
-            return value.length * getSizeOfPrimitive(value[0]);
-          } else {
-            return estimateSizeOfObject(value);
+    function sizeOf(obj) {
+      if (obj === null || typeof obj !== 'object') return 0;
+      if (visited.has(obj)) return 0;
+      visited.add(obj);
+
+      let bytes = 0;
+
+      for (let key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          bytes += key.length * 2;
+
+          const value = obj[key];
+          switch (typeof value) {
+            case 'boolean':
+              bytes += 4;
+              break;
+            case 'number':
+              bytes += 8;
+              break;
+            case 'string':
+              bytes += value.length * 2;
+              break;
+            case 'object':
+              if (Array.isArray(value)) {
+                bytes += value.reduce((acc, el) => acc + sizeOf(el), 0);
+              } else {
+                bytes += sizeOf(value);
+              }
+              break;
           }
-        default:
-          return 0;
+        }
       }
+
+      return bytes;
     }
 
-    for (let key in object) {
-      if (object.hasOwnProperty(key)) {
-        bytes += key.length * 2; // key size
-        bytes += getSizeOfPrimitive(object[key]);
-      }
-    }
-
-    return bytes;
+    return sizeOf(object);
   };
 
+  function trimTo5KB(str) {
+    let bytes = 0;
+    let result = '';
+
+    for (let i = 0; i < str.length; i++) {
+      const charCode = str.charCodeAt(i);
+      const charBytes = charCode <= 0x7f ? 1 : 2; // basic approximation for UTF-16
+
+      if (bytes + charBytes > SIZE_LIMIT_KB) {
+        break;
+      }
+
+      result += str[i];
+      bytes += charBytes;
+    }
+
+    return result + '...';
+  }
+
   const sanitize = (input) => {
+    if (typeof input === 'string') return trimTo5KB(input);
     if (typeof input !== 'object' || input === null) return input;
 
     if (Array.isArray(input)) {

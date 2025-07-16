@@ -171,7 +171,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             </div>
           )}
         </div>
-        <div className={`col-auto query-rename-delete-btn ${!shouldFreeze && isQuerySelected ? 'd-flex' : 'd-none'}`}>
+        {!shouldFreeze && <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
           <ButtonComponent
             iconOnly
             leadingIcon="morevertical01"
@@ -182,7 +182,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             id={`query-handler-menu-${dataQuery?.id}`}
             data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
           />
-        </div>
+        </div>}
       </div>
       <Confirm
         show={isDeleting}
