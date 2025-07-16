@@ -916,7 +916,14 @@ export default function Grid({ gridWidth, currentLayout }) {
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
 
             const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
-            let scrollDelta = document.getElementById(`canvas-${target.slotId}`)?.scrollTop || 0;
+            const componentParentType = target?.widget?.componentType;
+            // For now, only doing it for container and form, we need to check it for other components later
+            let scrollDelta =
+              componentParentType === 'Form' || componentParentType === 'Container'
+                ? document.getElementById(`canvas-${target.slotId}`)?.scrollTop || 0
+                : computeScrollDelta({ source });
+            console.log('target', target, source, dragged);
+            console.log('scrollDelta', scrollDelta);
             if (isParentChangeAllowed && !isModalToCanvas) {
               // Special case for Modal; If source widget is modal, prevent drops to canvas
               const parent = target.slotId === 'real-canvas' ? null : target.slotId;
