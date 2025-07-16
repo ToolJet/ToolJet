@@ -3,6 +3,8 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Spinner from '@/_ui/Spinner';
+import './styles.scss';
+
 export const RangeSliderV2 = ({
   height,
   properties,
@@ -86,8 +88,8 @@ export const RangeSliderV2 = ({
         fireEvent('onChange');
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setDisable: async function (value) {
         setDisabled(value);
@@ -261,12 +263,17 @@ export const RangeSliderV2 = ({
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={(schema === '' ? [] : schema).reduce((acc, item) => {
+                marks={(Array.isArray(schema) ? schema : []).reduce((acc, item) => {
                   if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
-                    acc[item.value] = {
-                      style: { color: markerLabel },
-                      label: String(item.label).replace('%', ''),
-                    };
+                    const maxValue = typeof max === 'number' ? max : Number(max);
+                    const itemValue = Number(item.value);
+
+                    if (!isNaN(maxValue) && !isNaN(itemValue) && itemValue <= maxValue) {
+                      acc[item.value] = {
+                        style: { color: markerLabel },
+                        label: String(item.label).replace('%', ''),
+                      };
+                    }
                   }
                   return acc;
                 }, {})}
@@ -293,12 +300,17 @@ export const RangeSliderV2 = ({
                 handleStyle={rangeStyles.handleStyle}
                 dotStyle={rangeStyles.dotStyle}
                 activeDotStyle={rangeStyles.activeDotStyle}
-                marks={(schema === '' ? [] : schema).reduce((acc, item) => {
+                marks={(Array.isArray(schema) ? schema : []).reduce((acc, item) => {
                   if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
-                    acc[item.value] = {
-                      style: { color: markerLabel },
-                      label: String(item.label).replace('%', ''),
-                    };
+                    const maxValue = typeof max === 'number' ? max : Number(max);
+                    const itemValue = Number(item.value);
+
+                    if (!isNaN(maxValue) && !isNaN(itemValue) && itemValue <= maxValue) {
+                      acc[item.value] = {
+                        style: { color: markerLabel },
+                        label: String(item.label).replace('%', ''),
+                      };
+                    }
                   }
                   return acc;
                 }, {})}
