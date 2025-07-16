@@ -78,6 +78,7 @@ export const CodeEditor = ({
     const _setValue = (value) => {
       if (typeof value === 'string') {
         codeChanged(value);
+        setValue(value);
       }
     };
     setExposedVariable('setValue', _setValue);
