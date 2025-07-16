@@ -114,10 +114,14 @@ export const ModalV2 = function Modal({
     const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
     // Scroll to top of canvas content when modal is opened and disbale page overflow
     if (showModal) {
-      canvasContent.scrollTo({ top: 0, behavior: 'instant' });
-      canvasContent.style.overflow = 'hidden';
+      if (canvasContent) {
+        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
+        canvasContent.style.setProperty('overflow', 'hidden', 'important');
+      }
     } else {
-      canvasContent.style.overflow = 'auto';
+      if (canvasContent) {
+        canvasContent.style.setProperty('overflow', 'auto', 'important');
+      }
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
