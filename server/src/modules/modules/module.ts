@@ -16,7 +16,7 @@ import { FeatureAbilityFactory } from './ability';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
-import { GroupPermissionsModule } from '@modules/group-permissions/module';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 @Module({})
 export class ModulesModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -41,7 +41,6 @@ export class ModulesModule {
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
-        await GroupPermissionsModule.register(configs),
       ],
       controllers: [ModulesController],
       providers: [
@@ -58,6 +57,7 @@ export class ModulesModule {
         FeatureAbilityFactory,
         RolesRepository,
         AppGitRepository,
+        GroupPermissionsRepository
       ],
     };
   }
