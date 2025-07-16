@@ -182,7 +182,12 @@ export const ModalV2 = function Modal({
   });
 
   return (
-    <div className="d-flex align-items-center" data-disabled={isDisabledTrigger} data-cy={dataCy} style={{ height }}>
+    <div
+      className="d-flex align-items-center"
+      data-disabled={isDisabledTrigger}
+      data-cy={dataCy}
+      style={{ height: '100%' }}
+    >
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
