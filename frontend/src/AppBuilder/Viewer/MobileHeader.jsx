@@ -35,8 +35,8 @@ const MobileHeader = ({
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { showOnMobile } = properties ?? {};
   const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  const { showOnMobile } = properties ?? {};
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);
@@ -123,9 +123,11 @@ const MobileHeader = ({
 
   return (
     <div>
-      <Header className={'preview-settings-mobile'} styles={{ height: '44px' }}>
-        {!isReleasedVersionId && !isEmpty(editingVersion) && _renderPreviewSettings()}
-      </Header>
+      {!isEmpty(editingVersion) && !isReleasedVersionId && (
+        <Header className={'preview-settings-mobile'} styles={{ height: '44px' }}>
+          {_renderPreviewSettings()}
+        </Header>
+      )}
       <Header
         styles={{
           height: '46px',
@@ -136,7 +138,6 @@ const MobileHeader = ({
           {isPagesSidebarVisible && showOnMobile && _renderMobileNavigationMenu()}
           <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
         </div>
-        {/* {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })} */}
       </Header>
     </div>
   );
