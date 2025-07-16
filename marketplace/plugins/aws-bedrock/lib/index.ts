@@ -5,49 +5,41 @@ import {
   ConnectionTestResult,
 } from "@tooljet-marketplace/common";
 import {
+  BedrockRuntimeClient,
   BedrockClient,
+  InvokeModelCommand,
   ListFoundationModelsCommand,
-} from "@aws-sdk/client-bedrock";
-import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
+  BedrockRuntimeServiceException,
+  BedrockServiceException
+} from "@aws-sdk/client-bedrock-runtime";
 import { SourceOptions, QueryOptions } from "./types";
 import { generateContent, listFoundationModels } from "./query_operations";
 
 export default class AWSBedrock implements QueryService {
-  private createRuntimeClient(
-    sourceOptions: SourceOptions
-  ): BedrockRuntimeClient {
-    return new BedrockRuntimeClient({
-      region: sourceOptions.region,
-      credentials: {
-        accessKeyId: sourceOptions.access_key,
-        secretAccessKey: sourceOptions.secret_key,
-        sessionToken: sourceOptions.session_token,
-      },
-    });
-  }
-
-  private createManagementClient(sourceOptions: SourceOptions): BedrockClient {
-    return new BedrockClient({
-      region: sourceOptions.region,
-      credentials: {
-        accessKeyId: sourceOptions.access_key,
-        secretAccessKey: sourceOptions.secret_key,
-        sessionToken: sourceOptions.session_token,
-      },
-    });
-  }
-
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string
   ): Promise<QueryResult> {
+    const client = this.createClient(sourceOptions);
+
     try {
       let data;
       switch (queryOptions.operation) {
         case "generate_content":
-          const runtimeClient = this.createRuntimeClient(sourceOptions);
-          data = await generateContent(runtimeClient, {
+          if (!queryOptions.model_id || !queryOptions.request_body) {
+            throw new QueryError(
+              "Validation failed",
+              "Model ID and request body are required",
+              {
+                validation: {
+                  model_id: !queryOptions.model_id ? "missing" : "valid",
+                  request_body: !queryOptions.request_body ? "missing" : "valid"
+                }
+              }
+            );
+          }
+          data = await generateContent(client, {
             model_id: queryOptions.model_id,
             request_body: queryOptions.request_body,
             content_type: queryOptions.content_type,
@@ -55,8 +47,7 @@ export default class AWSBedrock implements QueryService {
           break;
 
         case "list_foundation_models":
-          const managementClient = this.createManagementClient(sourceOptions);
-          data = await listFoundationModels(managementClient, {
+          data = await listFoundationModels(client, {
             customization_type: queryOptions.by_customization_type,
             inference_type: queryOptions.by_inference_type,
             output_modality: queryOptions.by_output_modality,
@@ -65,7 +56,13 @@ export default class AWSBedrock implements QueryService {
           break;
 
         default:
-          throw new Error(`Unsupported operation: ${queryOptions.operation}`);
+          throw new QueryError(
+            "Invalid operation",
+            `Unsupported operation: ${queryOptions.operation}`,
+            {
+              supported_operations: ["generate_content", "list_foundation_models"]
+            }
+          );
       }
 
       return {
@@ -73,10 +70,36 @@ export default class AWSBedrock implements QueryService {
         data,
       };
     } catch (error) {
+      // Standardized error handling
+      if (error instanceof QueryError) {
+        throw error; 
+      }
+
+      // Handle AWS SDK errors
+      if (error instanceof BedrockRuntimeServiceException || error instanceof BedrockServiceException) {
+        throw new QueryError(
+          "AWS Bedrock Error",
+          error.message,
+          {
+            aws_error: {
+              name: error.name,
+              code: error.$metadata?.httpStatusCode,
+              request_id: error.$metadata?.requestId,
+              cf_id: error.$metadata?.cfId,
+              extended_request_id: error.$metadata?.extendedRequestId
+            }
+          }
+        );
+      }
+
+      // Fallback for other errors
       throw new QueryError(
-        "Query could not be completed: " + error.message,
-        error.message,
-        {}
+        "Operation failed",
+        error.message || "Unknown error occurred",
+        {
+          error_type: error.constructor.name,
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }
       );
     }
   }
@@ -84,27 +107,48 @@ export default class AWSBedrock implements QueryService {
   async testConnection(
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
-    const client = this.createManagementClient(sourceOptions);
+    const client = this.createClient(sourceOptions);
 
     try {
-      await client.send(new ListFoundationModelsCommand({}));
+      const command = new ListFoundationModelsCommand({});
+      await client.send(command);
       return { status: "ok" };
     } catch (error) {
-      let errorMessage = "Could not establish connection to AWS Bedrock";
+      // Standardized connection test error
+      let errorMessage = "Connection test failed";
+      const errorDetails: any = {};
 
-      if (error.name === "CredentialsProviderError") {
-        errorMessage = "Invalid AWS credentials provided";
-      } else if (error.name === "InvalidSignatureException") {
-        errorMessage = "AWS credentials are invalid or expired";
-      } else if (error.name === "AccessDeniedException") {
-        errorMessage = "AWS credentials do not have sufficient permissions";
+      if (error instanceof BedrockServiceException) {
+        errorMessage = "AWS Bedrock Connection Failed";
+        errorDetails.aws_error = {
+          name: error.name,
+          code: error.$metadata?.httpStatusCode,
+          request_id: error.$metadata?.requestId
+        };
+
+        if (error.name === "CredentialsProviderError") {
+          errorMessage = "Invalid AWS credentials";
+        } else if (error.name === "AccessDeniedException") {
+          errorMessage = "Insufficient permissions";
+        }
       }
 
       throw new QueryError(
-        "Connection test failed",
-        `${errorMessage}. Error: ${error.message}`,
-        {}
+        errorMessage,
+        error.message,
+        errorDetails
       );
     }
+  }
+
+  private createClient(sourceOptions: SourceOptions): BedrockRuntimeClient {
+    return new BedrockRuntimeClient({
+      region: sourceOptions.region,
+      credentials: {
+        accessKeyId: sourceOptions.access_key,
+        secretAccessKey: sourceOptions.secret_access_key,
+        sessionToken: sourceOptions.session_token,
+      },
+    });
   }
 }
