@@ -36,7 +36,6 @@ export class ComponentsService implements IComponentsService {
     });
   }
 
-
   async create(componentDiff: object, pageId: string, appVersionId: string) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
@@ -160,36 +159,26 @@ export class ComponentsService implements IComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData: Component, layoutData = [], manager: EntityManager) {
+  createComponentWithLayout(componentData: Component, layoutData: Layout[] = []) {
+    // Removed manager, it's not used here anymore for DB ops
     const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
-    const layouts = {};
+    const layouts: Record<string, { top: number; left: number; width: number; height: number }> = {};
 
     layoutData.forEach((layout) => {
-      const { type, top, left, width, height, dimensionUnit, id } = layout;
+      if (layout && layout.type) {
+        const { type, top, left, width, height } = layout;
 
-      let adjustedLeftValue = left;
-      if (dimensionUnit === LayoutDimensionUnits.PERCENT) {
-        adjustedLeftValue = this.resolveGridPositionForComponent(left, type);
-        manager.update(
-          Layout,
-          {
-            id,
-          },
-          {
-            dimensionUnit: LayoutDimensionUnits.COUNT,
-            left: adjustedLeftValue,
-          }
-        );
+        // Note: adjustedLeftValue logic will be handled BEFORE calling this function
+        // so 'left' here is already the final desired value for the output.
+        layouts[type] = {
+          top: top ?? 0,
+          left: left ?? 0, // Use the already adjusted 'left' value
+          width: width ?? 0,
+          height: height ?? 0,
+        };
       }
-
-      layouts[type] = {
-        top,
-        left: adjustedLeftValue,
-        width,
-        height,
-      };
     });
 
     const componentWithLayout = {
@@ -331,11 +320,11 @@ export class ComponentsService implements IComponentsService {
                 // Handle Form component with object srcValue like JSONData & JSONSchema
                 return srcValue;
               } else if (
-                  (componentData.type === 'DropdownV2' ||
-                    componentData.type === 'MultiselectV2' ||
-                    componentData.type === 'ModuleContainer' ||
-                    componentData.type === 'Tabs' ||
-                    componentData.type === 'Steps') &&
+                (componentData.type === 'DropdownV2' ||
+                  componentData.type === 'MultiselectV2' ||
+                  componentData.type === 'ModuleContainer' ||
+                  componentData.type === 'Tabs' ||
+                  componentData.type === 'Steps') &&
                 _.isArray(objValue)
               ) {
                 return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
