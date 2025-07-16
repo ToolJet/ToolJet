@@ -383,13 +383,12 @@ class BaseSSOConfigurationList extends React.Component {
               bsPrefix="no-caret-dropdown-toggle"
               data-cy="dropdown-custom-toggle"
             >
-              <Button
-                variant="outline"
+              <div
                 className="sso-option-label"
                 style={{
                   paddingLeft: '12px',
                   width: '270px',
-                  paddingRight: '160px',
+                  paddingRight: '220px',
                   paddingTop: '6px',
                   paddingBottom: '6px',
                   height: '34px',
@@ -398,7 +397,7 @@ class BaseSSOConfigurationList extends React.Component {
               >
                 Instance SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
                 <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
-              </Button>
+              </div>
             </Dropdown.Toggle>
 
             <Dropdown.Menu style={{ width: '100%' }}>
