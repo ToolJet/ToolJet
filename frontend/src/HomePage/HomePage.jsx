@@ -50,6 +50,7 @@ import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPro
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
+import { v4 as uuidv4 } from 'uuid';
 
 const { iconList, defaultIcon } = configs;
 
@@ -134,6 +135,50 @@ class HomePageComponent extends React.Component {
     });
   };
 
+  checkIfUserHasBuilderAccess = () => {
+    const role = authenticationService.currentSessionValue?.role.name;
+    const hasBuilderAccess = role === 'admin' || role === 'builder';
+    return hasBuilderAccess;
+  };
+
+  /* For cloud ai onboarding */
+  handleAiOnboarding = () => {
+    const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
+    const latestPrompt = aiCookies?.tj_ai_prompt;
+    const templateId = aiCookies?.tj_template_id;
+
+    /* First check the user permission */
+    if (latestPrompt || templateId) {
+      if (!this.checkIfUserHasBuilderAccess()) {
+        this.setState({ showInsufficentPermissionModal: true });
+        return;
+      }
+    }
+
+    switch (true) {
+      case !!latestPrompt:
+        // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
+        //   duration: 10000,
+        // });
+        // Optional: Clear the cookie after showing toast
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        break;
+      case !!templateId: {
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        if (templateId) {
+          /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
+          this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, {
+            id: templateId,
+          });
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
   componentDidMount() {
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {
@@ -142,6 +187,7 @@ class HomePageComponent extends React.Component {
         return;
       }
     }
+    this.handleAiOnboarding();
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();

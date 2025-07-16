@@ -45,6 +45,7 @@ export const authorizeWorkspace = () => {
           is_onboarding_completed: isOnboardingCompleted,
           is_first_user_onboarding_completed: isFirstUserOnboardingCompleted,
           consulation_banner_date,
+          ...data
         }) => {
           if (!isFirstUserOnboardingCompleted) {
             const subpath = getSubpath();
@@ -65,6 +66,9 @@ export const authorizeWorkspace = () => {
                 noWorkspaceAttachedInTheSession,
                 authentication_status: true,
                 consulation_banner_date,
+                // For cloud
+                ...(data?.tj_api_source && { tj_api_source: data.tj_api_source }),
+                ...(data?.ai_cookies && { ai_cookies: data.ai_cookies }),
               });
               if (noWorkspaceAttachedInTheSession) {
                 /*

@@ -1,6 +1,7 @@
 import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { getCookie } from '@/_helpers/cookie';
 import { eraseRedirectUrl, getRedirectURL } from '@/_helpers/routes';
+import { authenticationService } from '@/_services';
 
 export const onInvitedUserSignUpSuccess = (response, navigate) => {
   const { organizationInviteUrl, ...currentUser } = response;
@@ -50,12 +51,18 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
       break;
     }
     default: {
-      authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
-        updateCurrentSession({
-          isUserLoggingIn: false,
+      authenticationService
+        .validateSession(null, current_organization_slug || current_organization_id)
+        .then(({ ai_cookies }) => {
+          // Update AI cookies in the session for cloud
+          updateCurrentSession({ ai_cookies });
+          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
+            updateCurrentSession({
+              isUserLoggingIn: false,
+            });
+            navigate(path);
+          });
         });
-        navigate(path);
-      });
     }
   }
 };
