@@ -65,6 +65,7 @@ class HomePageComponent extends React.Component {
         id: currentSession?.current_user?.id,
         organization_id: currentSession?.current_organization_id,
       },
+      tj_api_source: currentSession?.tj_api_source,
       shouldRedirect: false,
       users: null,
       isLoading: true,

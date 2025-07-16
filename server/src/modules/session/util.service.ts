@@ -98,6 +98,7 @@ export class SessionUtilService {
         ...(isPatLogin ? { isPATLogin: true } : {}),
         ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
         ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
+        ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
       if (organization) user.organizationId = organization.id;
@@ -328,13 +329,13 @@ export class SessionUtilService {
     });
   }
 
-  async generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
+  async generateSessionPayload(user: User, currentOrganization: Organization, appData?: any, aiCookies?: any) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const currentOrganizationId = currentOrganization?.id
         ? currentOrganization?.id
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
-        ? user.defaultOrganizationId
-        : user?.organizationIds?.[0];
+          ? user.defaultOrganizationId
+          : user?.organizationIds?.[0];
       const organizationDetails = currentOrganizationId
         ? currentOrganization
           ? currentOrganization
@@ -361,6 +362,8 @@ export class SessionUtilService {
         consulationBannerDate: metadata?.createdAt,
         ...onboardingFlags,
         ...(appData && { appData }),
+        ...(user.tjApiSource && { tjApiSource: user.tjApiSource }),
+        ...(aiCookies && { aiCookies }),
       });
     });
   }
