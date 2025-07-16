@@ -5,6 +5,7 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
 import { getModifiedColor } from './utils';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
@@ -21,6 +22,7 @@ export const Button = function Button(props) {
     padding,
     iconVisibility,
   } = styles;
+  const moduleId = useModuleId();
 
   const { loadingState, disabledState } = properties;
   const [label, setLabel] = useState(typeof properties.text === 'string' ? properties.text : '');
@@ -106,13 +108,13 @@ export const Button = function Button(props) {
         setExposedVariable('buttonText', text);
       },
       disable: async function (value) {
-        setDisable(value);
+        setDisable(!!value);
       },
       visibility: async function (value) {
-        setVisibility(value);
+        setVisibility(!!value);
       },
       loading: async function (value) {
-        setLoading(value);
+        setLoading(!!value);
       },
     };
 
@@ -123,24 +125,24 @@ export const Button = function Button(props) {
 
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
+      setLoading(!!loading);
+      setExposedVariable('isLoading', !!loading);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
   useEffect(() => {
     setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
+      setVisibility(!!state);
+      setExposedVariable('isVisible', !!state);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
     setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
+      setDisable(!!disable);
+      setExposedVariable('isDisabled', !!disable);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
@@ -168,7 +170,7 @@ export const Button = function Button(props) {
 
   const handleClick = () => {
     if (!disable && !loading) {
-      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
+      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } });
       document.dispatchEvent(event1);
       fireEvent('onClick');
     }

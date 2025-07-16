@@ -4,6 +4,7 @@ import { GoogleMap, LoadScript, Marker, Autocomplete, Polygon } from '@react-goo
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
+import './styles.scss';
 
 export const Map = function Map({
   id,

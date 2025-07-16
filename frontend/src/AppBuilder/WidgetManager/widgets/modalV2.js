@@ -112,11 +112,12 @@ export const modalV2Config = {
       displayName: 'ModalHeaderTitle',
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'fontWeight'],
       defaultValue: {
         text: 'Modal title',
         textSize: 20,
         textColor: 'var(--cc-primary-text)',
+        fontWeight: 'bold'
       },
     },
     {
@@ -142,12 +143,12 @@ export const modalV2Config = {
         'padding',
       ],
       defaultValue: {
-        textColor: '#000000',
+        textColor: 'var(--cc-primary-text)',
         loaderColor: 'var(--cc-surface1-surface)',
         icon: 'IconAlignBoxBottomLeft',
         text: 'Button1',
         type: 'outline',
-        borderColor: '#CCD1D5',
+        borderColor: 'var(--cc-default-border)',
         iconColor: 'var(--cc-default-icon)',
         borderRadius: 6,
         iconVisibility: false,

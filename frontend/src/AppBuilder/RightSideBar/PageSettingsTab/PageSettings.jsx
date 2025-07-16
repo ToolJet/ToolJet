@@ -160,6 +160,7 @@ export const PageSettings = () => {
           pageSettingChanged={pageSettingChanged}
           key="navigation-menu"
           darkMode={darkMode}
+          moduleId={moduleId}
         />,
       ],
     },
@@ -359,10 +360,9 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, lice
 };
 
 const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }) => {
-  const resolveReferences = useStore((state) => state.resolveReferences);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { disableMenu, position, style, collapsable } = properties ?? {};
-  const resolvedDisableMenu = resolveReferences(moduleId, disableMenu?.value);
+  const { showMenu, position, style, collapsable } = properties ?? {};
+  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const POSTIONS = [
     { label: 'Top', value: 'top' },
@@ -391,8 +391,8 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
       <div className="section-header pb-2">
         <div className="title">Navigation menu</div>
       </div>
-      <ShowNavigationMenu moduleId={moduleId} darkMode={darkMode} disableMenu={disableMenu} />
-      {!resolvedDisableMenu && (
+      <ShowNavigationMenu moduleId={moduleId} darkMode={darkMode} showMenu={showMenu} />
+      {isPagesSidebarVisible && (
         <>
           <div className="d-flex justify-content-between align-items-center pb-2">
             <label className="form-label font-weight-400 mb-0">Position</label>
@@ -499,10 +499,11 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
   );
 };
 
-const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibility, page, isHomePage }) => {
-  const [forceCodeBox, setForceCodeBox] = useState(disableMenu?.fxActive);
+const ShowNavigationMenu = ({ moduleId, showMenu, darkMode, updatePageVisibility, page, isHomePage }) => {
+  const [forceCodeBox, setForceCodeBox] = useState(showMenu?.fxActive);
   const pageSettingChanged = useStore((state) => state.pageSettingChanged);
-  const resolveReferences = useStore((state) => state.resolveReferences);
+  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const resolveOthers = useStore((state) => state.resolveOthers, shallow);
 
   return (
     <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
@@ -523,12 +524,18 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
             <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
               <FxButton
                 active={forceCodeBox}
-                onPress={() => {
-                  if (forceCodeBox) {
-                    setForceCodeBox(false);
-                  } else {
-                    setForceCodeBox(true);
-                  }
+                onPress={async () => {
+                  pageSettingChanged(
+                    {
+                      showMenu: {
+                        value: isPagesSidebarVisible,
+                        fxActive: !forceCodeBox,
+                      },
+                    },
+                    'properties'
+                  );
+                  resolveOthers('canvas', true, { isPagesSidebarVisible: isPagesSidebarVisible });
+                  setForceCodeBox(!forceCodeBox);
                 }}
               />
             </div>
@@ -538,18 +545,19 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  checked={resolveReferences(moduleId, disableMenu?.value)}
+                  checked={isPagesSidebarVisible}
                   disabled={isHomePage}
                   onChange={(e) => {
                     pageSettingChanged(
                       {
-                        disableMenu: {
+                        showMenu: {
                           value: `{{${e.target.checked}}}`,
                           fxActive: forceCodeBox,
                         },
                       },
                       'properties'
                     );
+                    resolveOthers('canvas', true, { isPagesSidebarVisible: `{{${e.target.checked}}}` });
                   }}
                 />
               </div>
@@ -559,19 +567,20 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
       </div>
       {forceCodeBox && (
         <CodeHinter
-          initialValue={disableMenu?.value}
+          initialValue={showMenu?.value}
           lang="javascript"
           lineNumbers={false}
           onChange={(value) => {
             pageSettingChanged(
               {
-                disableMenu: {
+                showMenu: {
                   value: value,
                   fxActive: forceCodeBox,
                 },
               },
               'properties'
             );
+            resolveOthers('canvas', true, { isPagesSidebarVisible: value });
           }}
         />
       )}

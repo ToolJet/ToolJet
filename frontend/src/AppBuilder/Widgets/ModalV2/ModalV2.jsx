@@ -97,13 +97,12 @@ export const ModalV2 = function Modal({
   const onShowModal = () => {
     openModal();
     onShowSideEffects();
-    fireEvent('onOpen');
     setSelectedComponentAsModal(id);
   };
 
   const onHideModal = () => {
-    onHideSideEffects(() => fireEvent('onOpen'));
     hideModal();
+    onHideSideEffects(() => fireEvent('onClose'));
     setSelectedComponentAsModal(null);
   };
 
@@ -238,6 +237,7 @@ export const ModalV2 = function Modal({
           modalWidth,
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
+          darkMode,
         }}
       />
     </div>

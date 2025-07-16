@@ -374,6 +374,10 @@
         }
     }
 
+    .form-check-input:not(:checked) {
+        background-color: unset !important;
+    }
+
     .form-control.is-invalid {
         background-image: none;
     }

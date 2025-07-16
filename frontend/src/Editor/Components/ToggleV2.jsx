@@ -200,16 +200,16 @@ export const ToggleSwitchV2 = ({
         setUserInteracted(true);
       },
       setVisibility: async function (state) {
-        setVisibility(state);
-        setExposedVariable('isVisible', state);
+        setVisibility(!!state);
+        setExposedVariable('isVisible', !!state);
       },
       setDisable: async function (disable) {
-        setDisable(disable);
-        setExposedVariable('isDisabled', disable);
+        setDisable(!!disable);
+        setExposedVariable('isDisabled', !!disable);
       },
       setLoading: async function (loading) {
-        setLoading(loading);
-        setExposedVariable('isLoading', loading);
+        setLoading(!!loading);
+        setExposedVariable('isLoading', !!loading);
       },
       label: label,
       isMandatory: isMandatory,
@@ -264,9 +264,7 @@ export const ToggleSwitchV2 = ({
             width={width - 20}
           >
             {label}
-            {isMandatory && !on && (
-              <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
-            )}
+            {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
           </OverflowTooltip>
 
           <Switch

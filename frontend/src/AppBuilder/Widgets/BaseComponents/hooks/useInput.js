@@ -34,6 +34,7 @@ export const useInput = ({
 
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
+  const decimalPlaces = properties?.decimalPlaces || 0;
 
   const getCountryCallingCodeSafe = (country) => {
     try {
@@ -42,6 +43,15 @@ export const useInput = ({
       return '';
     }
   };
+
+  const formatNumber = (value, digits) => {
+    const num = value?.toString();
+    if (num?.includes('.')) {
+      const [int, dec] = num.split('.');
+      return Number(int + '.' + dec.slice(0, digits));
+    }
+    return num;
+  }
 
   useEffect(() => {
     if (labelRef?.current) {
@@ -118,20 +128,16 @@ export const useInput = ({
   useEffect(() => {
     if (inputType !== 'currency') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
-      setInputValue(value);
+      if (typeof value === 'number' || !isNaN(Number(value))) {
+        setInputValue(formatNumber(value, decimalPlaces)); 
+      } else setInputValue(value);
       setCountry(countryCode);
       fireEvent('onChange');
     });
-  }, [inputType, country]);
+  }, [inputType, country, decimalPlaces]);
 
   useEffect(() => {
     const exposedVariables = {
-      ...(inputType !== 'phone' && {
-        setText: async function (text) {
-          setInputValue(text);
-          fireEvent('onChange');
-        },
-      }),
       clear: async function () {
         setInputValue('');
         fireEvent('onChange');
@@ -143,16 +149,16 @@ export const useInput = ({
         inputRef.current.blur();
       },
       setVisibility: async function (state) {
-        setVisibility(state);
-        setExposedVariable('isVisible', state);
+        setVisibility(!!state);
+        setExposedVariable('isVisible', !!state);
       },
       setDisable: async function (disable) {
-        setDisable(disable);
-        setExposedVariable('isDisabled', disable);
+        setDisable(!!disable);
+        setExposedVariable('isDisabled', !!disable);
       },
       setLoading: async function (loading) {
-        setLoading(loading);
-        setExposedVariable('isLoading', loading);
+        setLoading(!!loading);
+        setExposedVariable('isLoading', !!loading);
       },
       label,
       isValid,
@@ -162,6 +168,24 @@ export const useInput = ({
       isVisible: visibility,
       isDisabled: disable,
     };
+
+    if (inputType === 'TextInput') {
+      exposedVariables.disable = async function (value) {
+        setDisable(!!value);
+        setExposedVariable('isDisabled', !!value);
+      };
+      exposedVariables.visibility = async function (value) {
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
+      };
+    }
+
+    if (inputType !== 'phone' && inputType !== 'currency') {
+      exposedVariables.setText = async function (text) {
+        setInputValue(text);
+        fireEvent('onChange');
+      };
+    }
 
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
