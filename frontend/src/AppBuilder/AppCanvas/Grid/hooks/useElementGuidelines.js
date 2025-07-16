@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { findHighestLevelofSelection } from '../gridUtils';
-import { useGridStore } from '@/_stores/gridStore';
-import useStore from '@/AppBuilder/_stores/store';
 
-export const useElementGuidelines = (boxList, selectedComponents, dragParentId, getResolvedValue, virtualTarget) => {
+export const useElementGuidelines = (boxList, selectedComponents, getResolvedValue, virtualTarget) => {
   const [elementGuidelines, setElementGuidelines] = useState([]);
-  const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -32,16 +29,6 @@ export const useElementGuidelines = (boxList, selectedComponents, dragParentId, 
           if (box.parent === 'canvas' || !box.parent) return false;
         }
 
-        // This block is for first time drop using react-dnd
-        if (virtualTarget && currentDragCanvasId !== null) {
-          if (currentDragCanvasId === 'canvas') {
-            if (box.parent && box.parent !== 'canvas') return false;
-          } else {
-            // For sub-containers, only show components whose parent matches the canvasId
-            if (box.parent !== currentDragCanvasId) return false;
-          }
-        }
-
         if (isGrouped) {
           // If component is selected, don't show its guidelines
           if (selectedSet.has(box.id)) return false;
@@ -52,7 +39,7 @@ export const useElementGuidelines = (boxList, selectedComponents, dragParentId, 
       })
       .map((box) => `.ele-${box.id}`);
     setElementGuidelines(guidelines);
-  }, [boxList, selectedComponents, getResolvedValue, currentDragCanvasId, virtualTarget]);
+  }, [boxList, selectedComponents, getResolvedValue, virtualTarget]);
 
   return { elementGuidelines };
 };

@@ -189,7 +189,18 @@ export const Modal = function Modal({
       isInitialRender.current = false;
       return;
     }
-
+    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
+    // Scroll to top of canvas content when modal is opened and disbale page overflow
+    if (showModal) {
+      if (canvasContent) {
+        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
+        canvasContent.style.setProperty('overflow', 'hidden', 'important');
+      }
+    } else {
+      if (canvasContent) {
+        canvasContent.style.setProperty('overflow', 'auto', 'important');
+      }
+    }
     fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
