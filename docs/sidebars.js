@@ -603,6 +603,7 @@ const sidebars = {
             'user-management/group-sync/oidc',
           ]
         },
+        'user-management/pat',
         {
           'type': 'category',
           'label': 'Profile Management',
