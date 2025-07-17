@@ -76,7 +76,6 @@ export const DatetimePickerV2 = ({
         : getUnixTimeFromParsedDate(defaultValue, storeTimezone, displayFormat)
       : null
   );
-  console.log('This is the unixTimestamp ', unixTimestamp);
 
   // Selected Date = unixTimestamp + displayTimezone offset
   // But moment(selectedDate) = SelectedTimestamp + local timezone offset
@@ -96,11 +95,15 @@ export const DatetimePickerV2 = ({
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
-  const setInputValue = (date, format) => {
+  const setInputValue = (date, format, propStoreTimezone) => {
     const isISOString = typeof date === 'string' && date.includes('T');
     const unixTimestamp = isISOString
       ? moment(date).valueOf()
-      : getUnixTimeFromParsedDate(date, storeTimezone, format ? format : displayFormat);
+      : getUnixTimeFromParsedDate(
+          date,
+          propStoreTimezone ? propStoreTimezone : storeTimezone,
+          format ? format : displayFormat
+        );
     const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone);
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);
@@ -112,8 +115,6 @@ export const DatetimePickerV2 = ({
     const selectedTime = getUnixTime(date, displayFormat);
     setSelectedTimestamp(selectedTime);
     const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTime, displayTimezone);
-    console.log('This is the unixTimestamp after onDateSelect', unixTimestamp);
-    console.log('This is the selectedTime after onDateSelect', selectedTime);
     setUnixTimestamp(unixTimestamp);
     setExposedDateVariables(unixTimestamp, selectedTime);
     fireEvent('onSelect');
@@ -186,8 +187,10 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue, displayFormat);
-  }, [defaultValue, displayFormat]);
+    setTimeout(() => {
+      setInputValue(defaultValue, displayFormat, properties.storeTimezone);
+    }, 0);
+  }, [defaultValue, displayFormat, properties.storeTimezone]);
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
@@ -209,6 +212,11 @@ export const DatetimePickerV2 = ({
       displayValue,
     });
   }, [isTimezoneEnabled, displayTimezone, displayFormat]);
+
+  useEffect(() => {
+    const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTimestamp, displayTimezone);
+    setUnixTimestamp(unixTimestamp);
+  }, [storeTimezone]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
