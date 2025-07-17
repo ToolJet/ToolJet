@@ -209,6 +209,9 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
 # Installing git for simple git commands
 RUN apt-get update && apt-get install -y git && apt-get clean
 
+#Installing open ssh client for ssh 
+RUN apt-get update && apt-get install -y openssh-client
+
 ENV HOME=/home/appuser
 # Switch back to appuser
 USER appuser
