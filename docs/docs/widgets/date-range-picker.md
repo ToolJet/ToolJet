@@ -1,6 +1,6 @@
 ---
 id: date-range-picker
-title: Date-range Picker
+title: Date Range Picker
 ---
 
 The **Date-Range Picker** component allows users to select a range of dates.
