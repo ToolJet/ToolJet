@@ -227,6 +227,7 @@ const sidebars = {
                 'widgets/password-input',
                 'widgets/pdf',
                 'widgets/pagination',
+                'widgets/phone-input',
                 'widgets/qr-scanner',
                 'widgets/radio-button',
                 'widgets/range-slider',
@@ -298,7 +299,7 @@ const sidebars = {
                 'actions/switch-page',
                 'actions/set-page-variable',
                 'actions/unset-page-variable',
-                'actions/control-component'
+                'actions/control-component',
               ],
             },
           ],
