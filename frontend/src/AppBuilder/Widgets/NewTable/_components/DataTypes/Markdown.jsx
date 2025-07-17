@@ -110,7 +110,7 @@ export const MarkdownColumn = ({
           e.stopPropagation();
         }}
       >
-        <div>{isEditing ? cellValue : <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>}</div>
+        <div className="h-100">{isEditing ? cellValue : <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>}</div>
       </div>
     );
   };
