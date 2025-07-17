@@ -319,7 +319,11 @@ export const RangeSliderV2 = ({
                 step={stepSize || 1}
                 handleRender={(node, handleProps) => {
                   return (
-                    <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                    <OverlayTrigger
+                      show={handleProps.dragging}
+                      placement="top"
+                      overlay={<Tooltip key={handleProps.value}>{handleProps.value}</Tooltip>}
+                    >
                       {node}
                     </OverlayTrigger>
                   );
