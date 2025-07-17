@@ -186,12 +186,12 @@ Following actions of Code Editor component can be controlled using the component
 
 <div style={{paddingTop:'24px'}}>
 
-## General
-### Tooltip
+## Additional Actions
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
-
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:------------------|:------------|:------------------------------|
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip  | Provides additional information on hover. Set a display string.  | String |
 
 </div>
 
