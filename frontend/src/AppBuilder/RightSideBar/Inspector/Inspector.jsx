@@ -112,7 +112,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'VerticalDivider',
   'ModalV2',
   'Tabs',
-  'RangeSlider',
+  'RangeSliderV2',
   'Link',
   'Steps',
   'FilePicker',
@@ -636,8 +636,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
