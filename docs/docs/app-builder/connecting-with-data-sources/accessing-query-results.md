@@ -10,7 +10,9 @@ To better understand what your query is returning, use the Inspector panel. Clic
 -	**rawData**: The original API response. It's useful for debugging.
 -	**isLoading**: A boolean indicating whether the query is currently running. Great for showing loaders or disabling buttons during fetches.
 
-<img className="screenshot-full img-m" src="/img/app-builder/accessing-query-data/inspector.png" alt="App Builder: Query Panel"/>
+<img className="screenshot-full img-s" src="/img/app-builder/accessing-query-data/inspector.png" alt="App Builder: Query Panel"/>
+
+<br/>
 
 You can pass query results to a component by using the `{{ }}` syntax. For example, if you have a query named *getEmployees*, you can pass its data to a Table component by setting the table's data property to `{{queries.getEmployees.data}}`. Learn more about binding queries to components [here](/docs/app-builder/connecting-with-data-sources/binding-data-to-components).
 
