@@ -666,7 +666,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   break;
               }
 
-              errorData = (query.kind === 'runpy' || query.kind === 'runjs') && (data.data.type !== 'tj-401') ? data?.data : data;
+              errorData = (query.kind === 'runpy' || query.kind === 'runjs') && (data?.data?.type !== 'tj-401') ? data?.data : data;
               const result = handleFailure(errorData);
               resolve(result);
               return;
