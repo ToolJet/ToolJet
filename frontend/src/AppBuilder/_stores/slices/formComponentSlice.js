@@ -293,13 +293,14 @@ export const createFormComponentSlice = (set, get) => ({
    */
   performBatchComponentOperations: async (operations = {}, moduleId = 'canvas', options = {}) => {
     const {
-      currentPageId,
+      getCurrentPageId,
       addComponentToCurrentPage,
       setComponentPropertyByComponentIds,
       deleteComponents,
       saveComponentChanges,
       buildComponentDefinition,
     } = get();
+    const currentPageId = getCurrentPageId(moduleId);
 
     const { skipUndoRedo = false, saveAfterAction = true } = options;
     let upatedDiff = {};

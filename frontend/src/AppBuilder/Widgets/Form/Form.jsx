@@ -139,6 +139,7 @@ const FormComponent = (props) => {
     currentLayout,
     isContainer: true,
     componentCount,
+    value: isJSONSchema,
   });
 
   const parentRef = useRef(null);
@@ -166,7 +167,7 @@ const FormComponent = (props) => {
 
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetOnSubmit, validateOnSubmit]);
+  }, [resetOnSubmit, validateOnSubmit, isValid]);
 
   const extractData = (data) => {
     const result = {};

@@ -81,11 +81,11 @@ export const authorizeWorkspace = () => {
               current_organization_id,
             });
           }
-          fetchWhiteLabelDetails();
+          fetchWhiteLabelDetails(workspaceIdOrSlug);
         }
       )
       .catch((error) => {
-        fetchWhiteLabelDetails();
+        fetchWhiteLabelDetails(workspaceIdOrSlug);
         const isDesiredStatusCode =
           (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
         if (isDesiredStatusCode) {
@@ -162,7 +162,6 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
 
 export const updateCurrentSession = (newSession) => {
   const currentSession = authenticationService.currentSessionValue;
-  // console.log('currentSession', currentSession);
 
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };

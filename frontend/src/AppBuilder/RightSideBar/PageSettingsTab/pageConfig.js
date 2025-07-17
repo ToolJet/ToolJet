@@ -97,7 +97,7 @@ export const pageConfig = {
         isDefault: false,
       },
       pillSelectedBackgroundColor: {
-        value: '#F0F4FF',
+        value: 'var(--cc-surface3-surface)',
         isDefault: false,
       },
       pillRadius: {

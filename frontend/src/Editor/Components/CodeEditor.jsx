@@ -48,7 +48,6 @@ export const CodeEditor = ({
 
   const codeChanged = debounce((code) => {
     setExposedVariable('value', code);
-    setValue(code);
   }, 500);
 
   const editorStyles = {
@@ -79,6 +78,7 @@ export const CodeEditor = ({
     const _setValue = (value) => {
       if (typeof value === 'string') {
         codeChanged(value);
+        setValue(value);
       }
     };
     setExposedVariable('setValue', _setValue);
@@ -108,8 +108,9 @@ export const CodeEditor = ({
           width="100%"
           theme={theme}
           extensions={[langExtention]}
-          onChange={() => {
-            codeChanged();
+          onChange={(value) => {
+            setValue(value);
+            codeChanged(value);
             setForceDynamicHeightUpdate(!forceDynamicHeightUpdate);
           }}
           basicSetup={setupConfig}

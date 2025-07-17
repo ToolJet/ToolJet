@@ -1665,7 +1665,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: var(--cc-primary-brand);
+      background-color: var(--cc-primary-brand, --primary-brand);
     }
   }
 }
@@ -3500,7 +3500,7 @@ input:focus-visible {
   }
 
   .main .query-pane .data-pane .queries-container .queries-header {
-    border-width: 0px 0px 1px 0px !important;
+    border-width: 3px 0px 1px 0px !important;
 
     .text-muted {
       color: #ffffff !important;
@@ -11617,6 +11617,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    width: 70%;
   }
 }
 
@@ -18415,6 +18416,10 @@ section.ai-message-prompt-input-wrapper {
 
 .canvas-component,
 .workspace-theme-container {
+  .spinner-border {
+    color: var(--cc-primary-brand);
+  }
+
 
   .kanban-container {
     background-color: var(--cc-surface1-surface);
@@ -18524,9 +18529,6 @@ section.ai-message-prompt-input-wrapper {
   }
 
   .codehinter-multi-line-input {
-    .cm-content {
-      background-color: var(--cc-surface1-surface);
-    }
 
     .cm-gutters {
       background-color: var(--cc-surface3-surface) !important;
@@ -18746,6 +18748,9 @@ section.ai-message-prompt-input-wrapper {
   border-bottom: 2px solid var(--indigo9) !important;
 }
 
+.custom_fc_frame {
+  left: 40px !important;
+}
 .min-width-0 {
   min-width: 0 !important;
 }

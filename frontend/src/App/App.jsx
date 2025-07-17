@@ -44,6 +44,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import EmbedApp from '@/AppBuilder/EmbedApp';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -104,6 +105,10 @@ class AppComponent extends React.Component {
     });
   };
 
+  initTelemetryAndSupport(currentUser) {
+    posthogHelper.initPosthog(currentUser);
+  }
+
   async componentDidMount() {
     setFaviconAndTitle();
     authorizeWorkspace();
@@ -114,6 +119,19 @@ class AppComponent extends React.Component {
     const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
     this.setState({ showBanner: isBasicPlan });
     this.updateColorScheme();
+    let counter = 0;
+    let interval;
+
+    interval = setInterval(async () => {
+      ++counter;
+      const current_user = authenticationService.currentSessionValue?.current_user;
+      if (current_user?.id) {
+        this.initTelemetryAndSupport(current_user); //Call when currentuser is available
+        clearInterval(interval);
+      } else if (counter > 10) {
+        clearInterval(interval);
+      }
+    }, 1000);
   }
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {

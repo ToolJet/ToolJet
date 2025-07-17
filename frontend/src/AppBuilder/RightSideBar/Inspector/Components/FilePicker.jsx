@@ -22,11 +22,21 @@ const FILE_TYPE_OPTIONS = [
   { value: '.zip,.rar,.7z,.tar,.gz', label: 'Archive/Compressed files' },
 ];
 
-const FxSelect = ({ label, paramName, initialValue, darkMode, paramUpdated, options, onValueChange }) => {
-  const [isFxActive, setIsFxActive] = useState(false);
+const FxSelect = ({
+  label,
+  paramName,
+  initialValue,
+  darkMode,
+  paramUpdated,
+  options,
+  onValueChange,
+  paramType = 'properties',
+  isFxActive: _isFxActive,
+}) => {
+  const [isFxActive, setIsFxActive] = useState(_isFxActive || false);
 
   const handleFxButtonClick = () => {
-    paramUpdated({ name: paramName }, 'fxActive', !isFxActive, 'properties');
+    paramUpdated({ name: paramName }, 'fxActive', !isFxActive, paramType);
     setIsFxActive(!isFxActive);
   };
 
@@ -123,7 +133,9 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
   } = restProps;
 
   const resolvedValidations = useStore((state) => state.getResolvedComponent(component.id)?.validation);
-  const fileTypeValue = resolvedValidations?.fileType;
+  // const fileTypeValue = resolvedValidations?.fileType;
+  const fileTypeValue = componentMeta?.definition?.validation?.fileType?.value;
+  const isFileTypeFxActive = componentMeta?.definition?.validation?.fileType?.fxActive || false;
 
   const renderCustomElement = (param, paramType = 'properties') =>
     renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -169,6 +181,8 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
       darkMode={darkMode}
       paramUpdated={paramUpdated}
       options={FILE_TYPE_OPTIONS}
+      paramType="validation"
+      isFxActive={isFileTypeFxActive}
       onValueChange={(value) => paramUpdated({ name: 'fileType' }, 'value', value, 'validation')}
     />
   );

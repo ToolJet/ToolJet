@@ -112,7 +112,7 @@ export const HTMLColumn = ({
         {isEditing ? (
           cellValue
         ) : (
-          <span className="html-cell" dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }} />
+          <span className="html-cell h-100" dangerouslySetInnerHTML={{ __html: getCellValue(cellValue) }} />
         )}
       </div>
     );

@@ -27,11 +27,13 @@ export const Viewer = ({
   environmentId,
   versionId,
   moduleMode = false,
+  slug: appSlug,
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
-  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode);
+  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
+  const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
 
   const {
     isEditorLoading,
@@ -130,7 +132,7 @@ export const Viewer = ({
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents, moduleId);
-  }, [currentPageComponents, moduleId, updateCanvasHeight]);
+  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);

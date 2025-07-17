@@ -9,11 +9,16 @@ import {
   UpdateDataSourceDto,
 } from '../dto';
 import { GetQueryVariables, UpdateOptions } from '../types';
+import { UserPermissions } from '@modules/ability/types';
 
 export interface IDataSourcesService {
-  getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }>;
+  getForApp(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }>;
 
-  getAll(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }>;
+  getAll(query: GetQueryVariables, user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
 
   create(createDataSourceDto: CreateDataSourceDto, user: User): Promise<DataSource>;
 

@@ -1,8 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { GroupPermissions } from '@entities/group_permissions.entity';
-import { User } from '@entities/user.entity';
 import { RolesRepository } from '@modules/roles/repository';
 import { PageUsersRepository } from './repositories/page-users.repository';
 import { PagePermissionsRepository } from './repositories/page-permissions.repository';
@@ -10,13 +7,8 @@ import { QueryUsersRepository } from './repositories/query-users.repository';
 import { QueryPermissionsRepository } from './repositories/query-permissions.repository';
 import { ComponentUsersRepository } from './repositories/component-users.repository';
 import { ComponentPermissionsRepository } from './repositories/component-permissions.repository';
-import { PageUser } from '@entities/page_users.entity';
-import { PagePermission } from '@entities/page_permissions.entity';
 import { SubModule } from '@modules/app/sub-module';
-import { QueryUser } from '@entities/query_users.entity';
-import { QueryPermission } from '@entities/query_permissions.entity';
-import { ComponentUser } from '@entities/component_users.entity';
-import { ComponentPermission } from '@entities/component_permissions.entity';
+import { AppsRepository } from '@modules/apps/repository';
 
 export class AppPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -32,6 +24,7 @@ export class AppPermissionsModule extends SubModule {
       providers: [
         AppPermissionsService,
         AppPermissionsUtilService,
+        AppsRepository,
         RolesRepository,
         PageUsersRepository,
         PagePermissionsRepository,
