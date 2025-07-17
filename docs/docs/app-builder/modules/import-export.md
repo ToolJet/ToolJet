@@ -48,4 +48,4 @@ Once imported, the module will appear in your modules list and can be used acros
 **Export**:
 
 - When you export an application, all associated modules linked to the application are automatically included in the export. 
-- This ensures that any reusable components or features built as modules are preserved and can be seamlessly imported along with the app into any other instance or workspace.
+- This ensures that any reusable components or features built as modules are preserved and can be seamlessly imported along with the app into any other workspace.
