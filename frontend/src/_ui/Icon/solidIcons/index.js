@@ -266,6 +266,7 @@ import Push from './PushIcon.jsx';
 import Pull from './PullIcon.jsx';
 import PropertiesStyles from './PropertiesStyles.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
+import Support from './Support.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -803,6 +804,8 @@ const Icon = (props) => {
       return <Push {...props} />;
     case 'pull-changes':
       return <Pull {...props} />;
+    case 'support':
+      return <Support {...props} />;
     default:
       return <Apps {...props} />;
   }

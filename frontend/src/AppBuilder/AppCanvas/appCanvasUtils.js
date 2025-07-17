@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { findHighestLevelofSelection } from './Grid/gridUtils';
+import { findHighestLevelofSelection, getMouseDistanceFromParentDiv } from './Grid/gridUtils';
 import {
   CANVAS_WIDTHS,
   NO_OF_GRIDS,
@@ -29,32 +29,32 @@ export function snapToGrid(canvasWidth, x, y) {
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
 export const addNewWidgetToTheEditor = (
   componentType,
-  eventMonitorObject,
   currentLayout,
   realCanvasRef,
   parentId,
   moduleInfo = undefined
 ) => {
-  const canvasBoundingRect = realCanvasRef?.current?.getBoundingClientRect();
+  const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
   const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
-
+  const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const offsetFromTopOfWindow = canvasBoundingRect?.top;
-  const offsetFromLeftOfWindow = canvasBoundingRect?.left;
-  const currentOffset = eventMonitorObject?.getSourceClientOffset();
+  const { e } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
-  let left = Math.round(currentOffset?.x - offsetFromLeftOfWindow);
-  let top = Math.round(currentOffset?.y - offsetFromTopOfWindow);
-
-  [left, top] = snapToGrid(subContainerWidth, left, top);
+  const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
+    e,
+    parentId === 'canvas' ? 'real-canvas' : parentId,
+    parentCanvasType
+  );
+  let [left, top] = snapToGrid(subContainerWidth, _left, _top);
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
+
   // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
   let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
@@ -85,6 +85,7 @@ export const addNewWidgetToTheEditor = (
     left = Math.max(0, NO_OF_GRIDS - width);
     width = Math.min(width, NO_OF_GRIDS);
   }
+
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;
@@ -605,21 +606,6 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     // Adjust width if parent changed
     let width = component.layouts[currentLayout].width;
 
-    if (targetParentId !== component.component?.parent) {
-      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
-      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
-      width = Math.round((width * oldContainerWidth) / containerWidth);
-
-      // Ensure minimum width
-      width = Math.max(width, 1);
-
-      // Adjust position and width if exceeding grid bounds
-      if (width + component.layouts[currentLayout].left > NO_OF_GRIDS) {
-        component.layouts[currentLayout].left = Math.max(0, NO_OF_GRIDS - width);
-        width = Math.min(width, NO_OF_GRIDS);
-      }
-    }
-
     component.layouts[currentLayout] = {
       ...component.layouts[currentLayout],
       width,
@@ -782,9 +768,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   if (componentType === 'Container' || componentType === 'Form') {
     padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
   }
-  if (componentType === 'Tabs') {
-    padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
-  }
+  // if (componentType === 'Tabs') {
+  //   padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  // }
   if (componentType === 'ModalV2') {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {

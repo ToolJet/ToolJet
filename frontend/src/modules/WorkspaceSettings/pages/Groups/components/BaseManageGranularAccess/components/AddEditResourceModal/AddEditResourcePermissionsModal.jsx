@@ -138,24 +138,7 @@ function AddEditResourcePermissionsModal({
       default:
         return (
           <DsPermissionsActions
-            handleClickConfigure={() => {
-              updateParentState((prevState) => ({
-                initialPermissionStateDs: {
-                  ...prevState.initialPermissionStateDs,
-                  canConfigure: !prevState.initialPermissionStateDs.canConfigure,
-                  canUse: !!prevState.initialPermissionStateDs.canConfigure,
-                },
-              }));
-            }}
-            handleClickUse={() => {
-              updateParentState((prevState) => ({
-                initialPermissionStateDs: {
-                  ...prevState.initialPermissionStateDs,
-                  canUse: !prevState.initialPermissionStateDs.canUse,
-                  canConfigure: !!prevState.initialPermissionStateDs.canUse,
-                },
-              }));
-            }}
+            updateParentState={updateParentState}
             disableBuilderLevelUpdate={disableBuilderLevelUpdate}
             initialPermissionStateDs={initialPermissionStateDs}
           />

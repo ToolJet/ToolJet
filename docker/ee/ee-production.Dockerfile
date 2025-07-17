@@ -37,6 +37,9 @@ RUN git submodule foreach " \
 # Scripts for building
 COPY ./package.json ./package.json
 
+# Add GitHub to known_hosts to support SSH-based package installs
+RUN mkdir -p ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
+
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins ci --omit=dev
@@ -202,6 +205,9 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chown -R appuser:0 /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
+
+# Installing git for simple git commands
+RUN apt-get update && apt-get install -y git && apt-get clean
 
 ENV HOME=/home/appuser
 # Switch back to appuser

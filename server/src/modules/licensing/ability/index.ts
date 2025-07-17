@@ -15,7 +15,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
-    const { superAdmin, isAdmin } = UserAllPermissions;
+    const { superAdmin, isAdmin, isBuilder } = UserAllPermissions;
     can([FEATURE_KEY.GET_PLANS, FEATURE_KEY.GET_ACCESS, FEATURE_KEY.GET_APP_LIMITS], InstanceSettings);
     if (superAdmin) {
       // super admin can do all operations
@@ -35,6 +35,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_WORKFLOW_LIMITS,
           FEATURE_KEY.GENERATE_CLOUD_TRIAL_LICENSE,
         ],
+        InstanceSettings
+      );
+    }
+    if (isBuilder) {
+      can(
+        [FEATURE_KEY.GET_ORGANIZATION_LIMITS, FEATURE_KEY.GET_USER_LIMITS, FEATURE_KEY.GET_WORKFLOW_LIMITS],
         InstanceSettings
       );
     }

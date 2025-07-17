@@ -90,3 +90,18 @@ export const copyToClipboard = (data, includeQuotes = true) => {
   navigator.clipboard.writeText(finalText);
   return toast.success('Copied to the clipboard', { position: 'top-center' });
 };
+
+export const formatPathForCopy = (path) => {
+  const isArray = path.includes('.');
+  if (isArray) {
+    const pathArray = path.split('.');
+    const newPath = pathArray.map((item) => {
+      if (!isNaN(item) && item !== '') {
+        return `[${item}]`;
+      }
+      return item;
+    });
+    return newPath.join('.').replace(/\.\[/g, '[');
+  }
+  return path;
+};

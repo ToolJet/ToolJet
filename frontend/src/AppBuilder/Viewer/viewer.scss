@@ -131,6 +131,12 @@
 
 .bm-menu-wrap,
 .bm-overlay {
+  left: calc(50vw - 226px) !important;
+  width: calc(450px - 86px) !important;
+}
+
+.bm-menu-wrap--viewport-narrow,
+.bm-overlay--viewport-narrow {
   left: calc(50vw - 207px) !important;
   width: calc(450px - 86px) !important;
 }
@@ -166,7 +172,7 @@
 .viewer {
   &.mobile-layout {
     .canvas-container {
-      scrollbar-width: auto;
+      scrollbar-width: thin;
       width: 100%;
     }
 

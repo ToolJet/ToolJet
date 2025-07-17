@@ -44,6 +44,7 @@ export const QueryDataPane = ({ darkMode }) => {
   const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
+  const isFreezed = useStore((state) => state.getShouldFreeze());
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -172,16 +173,15 @@ export const QueryDataPane = ({ darkMode }) => {
           </div>
         ) : (
           <div
-            className={`query-list tj-scrollbar overflow-auto ${
-              filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
-            }`}
+            className={`query-list tj-scrollbar overflow-auto ${filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
+              }`}
           >
             <div>
               {/* TODO: replace/add filter query logic here */}
               {filteredQueries.map((query) => (
                 <QueryCard key={query.id} dataQuery={query} darkMode={darkMode} localDs={!!isDataSourceLocal(query)} />
               ))}
-              <QueryCardMenu darkMode={darkMode} />
+              {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
               {licenseValid && (
                 <AppPermissionsModal
                   modalType="query"

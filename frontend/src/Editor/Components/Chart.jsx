@@ -87,16 +87,15 @@ export const Chart = function Chart({
   const fontColor = getColor(updatedBgColor);
 
   const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
-
   useEffect(() => {
     if (isInitialRender.current) return;
     const { xaxis, yaxis } = chartLayout;
     let xAxisTitle, yAxisTitle;
     if (xaxis) {
-      xAxisTitle = xaxis?.title?.text;
+      xAxisTitle = xaxis?.title?.text || xaxis?.title;
     }
     if (yaxis) {
-      yAxisTitle = yaxis?.title?.text;
+      yAxisTitle = yaxis?.title?.text || yaxis?.title;
     }
     const exposedVariables = {
       chartTitle: chartTitle,
@@ -246,12 +245,13 @@ export const Chart = function Chart({
 
   useEffect(() => {
     const { xaxis, yaxis } = chartLayout;
+
     let xAxisTitle, yAxisTitle;
     if (xaxis) {
-      xAxisTitle = xaxis?.title?.text;
+      xAxisTitle = xaxis?.title?.text || xaxis?.title;
     }
     if (yaxis) {
-      yAxisTitle = yaxis?.title?.text;
+      yAxisTitle = yaxis?.title?.text || yaxis?.title;
     }
     const exposedVariables = {
       chartTitle: chartTitle,

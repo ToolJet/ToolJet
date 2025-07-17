@@ -163,7 +163,7 @@ export const chartConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 4,
+        defaultValue: 6,
       },
     },
     visibility: {
@@ -239,7 +239,7 @@ export const chartConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       borderColor: { value: 'var(--cc-default-border)' },

@@ -170,7 +170,7 @@ export class UserRepository extends Repository<User> {
   }
 
   async getUserWithAdminRole(organizationId: string, manager?: EntityManager): Promise<User | null> {
-    return dbTransactionWrap((manager: EntityManager) => {
+    return await dbTransactionWrap((manager: EntityManager) => {
       return manager
         .createQueryBuilder(User, 'user')
         .innerJoin('user.userGroups', 'groupUsers')
