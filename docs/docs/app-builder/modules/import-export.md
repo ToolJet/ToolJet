@@ -35,3 +35,17 @@ Once downloaded, you can use this file to import the module into any other ToolJ
 - Choose the module JSON file that you previously exported.
 
 Once imported, the module will appear in your modules list and can be used across your applications.
+
+
+## Module Behavior During Application Import and Export
+
+**Import**:
+
+- When you import an application, the platform automatically checks for any existing modules with matching names in your workspace or instance. If a module with the same name already exists, the imported application connects to the existing module, avoiding duplication. 
+- However, if no matching module is found, the platform creates a new module from the imported JSON file. 
+- This approach ensures that your application imports smoothly while maintaining consistency and preventing redundant modules.
+
+**Export**:
+
+- When you export an application, all associated modules linked to the application are automatically included in the export. 
+- This ensures that any reusable components or features built as modules are preserved and can be seamlessly imported along with the app into any other instance or workspace.
