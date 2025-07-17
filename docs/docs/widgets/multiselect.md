@@ -75,24 +75,28 @@ The following actions of the component can be controlled using the component-spe
 | selectOptions( ) | Selects an option.      | `components.multiselect1.selectOptions(['2','3'])` |
 | deselectOptions( ) | Deselects all options.      | `components.multiselect1.deselectOptions()` |
 
-**Note:** The data type passed to CSAs like `selectOptions()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.multiselect1.selectOptions(['2', '3'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
+**Note:** 
 
-For example, if the code is:
-```javascript
-{{
-    [
-        { label: 'option1', value: 1, disable: false, visible: true, default: true },
-        { label: 'option2', value: 2, disable: false, visible: true },
-        { label: 'option3', value: 3, disable: false, visible: true }
-    ]
-}}
-```
+1. The data type passed to CSAs like `selectOptions()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.multiselect1.selectOptions(['2', '3'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
 
-You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+    For example, if the code is:
+    ```javascript
+    {{
+        [
+            { label: 'option1', value: 1, disable: false, visible: true, default: true },
+            { label: 'option2', value: 2, disable: false, visible: true },
+            { label: 'option3', value: 3, disable: false, visible: true }
+        ]
+    }}
+    ```
 
-```javascript
-components.multiselect1.selectOptions([2, 3])
-```
+    You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+
+    ```javascript
+    components.multiselect1.selectOptions([2, 3])
+    ```
+
+2. When using the Control Component action to trigger selectOption in CSA, the values should be passed within `{{ }}`, e.g., `{{["1", "2"]}}`.
 
 ## Exposed Variables
 
@@ -159,8 +163,3 @@ components.multiselect1.selectOptions([2, 3])
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
-
-
-
-
-

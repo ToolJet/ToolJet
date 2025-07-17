@@ -15,6 +15,7 @@ The Multiselect component enables users to select multiple options from a predef
 
 
 ## Options
+
 Allows you to add options to the multiselect component field. You can click on `Add new option` and add options manually or enable `Dynamic options` and enter the options using code. 
 
 ### Example Code for Dynamic Columns
@@ -44,6 +45,7 @@ Allows you to add options to the multiselect component field. You can click on `
 ```
 
 ### Options loading state
+
 Allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 ## Component specific actions (CSA)
@@ -59,43 +61,51 @@ Following actions of the component can be controlled using the component specifi
 | selectOptions()        | Selects an option.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.selectOptions(['2','3'])`) or trigger it using an event. |
 | deselectOptions()        | Deselects all options.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.deselectOptions()`) or trigger it using an event. |
 
-**Note:** The data type passed to CSAs like `selectOptions()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.multiselect1.selectOptions(['2', '3'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
+**Note:** 
 
-For example, if the code is:
-```javascript
-{{
-    [
-        { label: 'option1', value: 1, disable: false, visible: true, default: true },
-        { label: 'option2', value: 2, disable: false, visible: true },
-        { label: 'option3', value: 3, disable: false, visible: true }
-    ]
-}}
-```
+1. The data type passed to CSAs like `selectOptions()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.multiselect1.selectOptions(['2', '3'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
 
-You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+    For example, if the code is:
+    ```javascript
+    {{
+        [
+            { label: 'option1', value: 1, disable: false, visible: true, default: true },
+            { label: 'option2', value: 2, disable: false, visible: true },
+            { label: 'option3', value: 3, disable: false, visible: true }
+        ]
+    }}
+    ```
 
-```javascript
-components.multiselect1.selectOptions([2, 3])
-```
+    You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+
+    ```javascript
+    components.multiselect1.selectOptions([2, 3])
+    ```
+
+2. When using the Control Component action to trigger selectOption in CSA, the values should be passed within `{{ }}`, e.g., `{{["1", "2"]}}`.
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 |:----------|:----------|:------------|
-| label               | Holds the label name of the multiselect component.                                                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.label}}`).                                          |
-| value               | Holds the value selected by the user in the component.                                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.value}}`).                                          |
-| options        | Holds all the option values of the multiselect component in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.options}}` or <br/>`{{components.multiselect1.options[0].label}}` for a specific option). |
-| isValid             | Indicates if the input meets validation criteria.                                                     | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isValid}}`).                                        |
-| isMandatory         | Indicates if the field is required.                                                                   | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isMandatory}}`).                                    |
-| isLoading           | Indicates if the component is loading.                                                                | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isLoading}}`).                                      |
-| isVisible           | Indicates if the component is visible.                                                                | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isVisible}}`).                                      |
-| isDisabled          | Indicates if the component is disabled.                                                               | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isDisabled}}`).                                     |
+| label | Holds the label name of the multiselect component. | Accessible dynamically with JS (for e.g., `{{components.multiselect1.label}}`). |
+| value | Holds the value selected by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.multiselect1.value}}`). |
+| options | Holds all the option values of the multiselect component in array form. | Accessible dynamically with JS (for e.g., `{{components.multiselect1.options}}` or <br/>`{{components.multiselect1.options[0].label}}` for a specific option). |
+| searchText | Holds the value searched by the user. | Accessible dynamically with JS (for e.g., `{{components.multiselect1.searchText}}`). |
+| isValid | Indicates if the input meets validation criteria.  | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isValid}}`). |
+| isMandatory  | Indicates if the field is required.  | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isMandatory}}`). |
+| isLoading | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isLoading}}`). |
+| isVisible | Indicates if the component is visible.  | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isVisible}}`).  |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isDisabled}}`).   |
 
 ## Events
 
 | <div style={{ width:"135px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------------- | :--------------------------------------------- |
-| On select | The **On select** event is triggered when a particular option is chosen. |
+| On select | Triggers whenever a option is selected. |
+| On search text changed | Triggers whenever the search text is changed. |
+| On focus | Triggers whenever the user clicks inside the component. |
+| On blur | Triggers whenever the user clicks outside the component. |
 
 :::info
 For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/category/actions-reference) documentation.
@@ -155,8 +165,3 @@ For comprehensive information on all available **Actions**, refer to the [Action
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
-
-
-
-
-
