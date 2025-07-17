@@ -25,12 +25,9 @@ export class PageService implements IPageService {
 
   async findPagesForVersion(
     appVersionId: string,
-    organizationId: string,
-    mode?: string,
     manager?: EntityManager
   ): Promise<Page[]> {
-    // const allPages = await this.pageRepository.find({ where: { appVersionId }, order: { index: 'ASC' } });
-    const allPages = await this.pageHelperService.fetchPages(appVersionId, organizationId, manager);
+    const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
         const components = await this.componentsService.getAllComponents(page.id, manager);
@@ -92,7 +89,7 @@ export class PageService implements IPageService {
 
       await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
 
-      const pages = await this.findPagesForVersion(appVersionId, organizationId, '', manager);
+      const pages = await this.findPagesForVersion(appVersionId, manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
@@ -185,7 +182,7 @@ export class PageService implements IPageService {
         await this.clonePageEventsAndComponents(child.id, newChildPage.id, manager);
       }
 
-      const pages = await this.findPagesForVersion(appVersionId,organizationId, '', manager);
+      const pages = await this.findPagesForVersion(appVersionId, manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
