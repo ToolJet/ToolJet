@@ -17,7 +17,8 @@ export function debounce(func) {
     const event = args[0] || {};
     const eventId = uuidv4();
 
-    if (event.debounce === undefined) {
+    const debounceTime = event?.event?.debounce || event?.debounce;
+    if (debounceTime === undefined) {
       return func.apply(this, args);
     }
 
@@ -26,7 +27,7 @@ export function debounce(func) {
     const timer = setTimeout(() => {
       func.apply(this, args);
       timers.delete(eventId);
-    }, Number(event.debounce));
+    }, Number(debounceTime));
 
     timers.set(eventId, timer);
   };
@@ -431,8 +432,8 @@ export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}
     const entityId = componentNameIdMapping[entityName]
       ? componentNameIdMapping[entityName]
       : queryNameIdMapping[entityName]
-      ? queryNameIdMapping[entityName]
-      : entityName;
+        ? queryNameIdMapping[entityName]
+        : entityName;
     diffObj = dfs(diffObj, entityName, entityId);
   });
   return diffObj;

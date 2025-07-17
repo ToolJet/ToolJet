@@ -122,7 +122,7 @@ COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
 
 # Installing git for simple git commands
-RUN apt-get update && apt-get install -y git && apt-get clean
+RUN apt-get update && apt-get install -y git openssh-client && apt-get clean
 
 # Define non-sudo user
 RUN useradd --create-home --home-dir /home/appuser appuser \

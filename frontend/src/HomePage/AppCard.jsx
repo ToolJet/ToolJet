@@ -12,6 +12,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName, decodeEntities } from '@/_helpers/utils';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -48,6 +50,14 @@ export default function AppCard({
   const appActionModalCallBack = useCallback(
     (action) => {
       appActionModal(app, currentFolder, action);
+      if (action === 'add-to-folder') {
+        posthogHelper.captureEvent('click_add_to_folder_option', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: app?.id,
+        });
+      }
     },
     [app, appActionModal, currentFolder]
   );
@@ -220,7 +230,7 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app)) && (
+                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
                   <AppMenu
                     onMenuOpen={onMenuToggle}
                     openAppActionModal={appActionModalCallBack}
@@ -254,13 +264,22 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {canUpdate && (
+            {(canUpdate || appType === 'module') && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
                     to={getPrivateRoute('editor', {
                       slug: isValidSlug(app.slug) ? app.slug : app.id,
                     })}
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_edit_button_on_card', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                        app_id: app?.id,
+                        folder_id: currentFolder?.id,
+                      });
+                    }}
                     reloadDocument
                   >
                     <button
