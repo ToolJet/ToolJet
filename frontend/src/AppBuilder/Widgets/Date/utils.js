@@ -1,5 +1,42 @@
 import moment from 'moment-timezone';
 
+// This function is used to get the unix time from a parsed date and timezone
+// It takes the date converts into a moment object which will now have local timezone
+// The date should be date = utc + selected timezone offset
+// But when we create moment object its date = incorrectMomentObject + local timezone offset
+// utc + selected timezone offset = incorrectMomentObject + local timezone offset
+// utc = incorrectMomentObject + local timezone offset - selected timezone offset
+
+export const getOffset = (timezone = moment.tz.guess()) => {
+  return -moment.tz.zone(timezone).utcOffset(1577836800000);
+};
+
+export const getUnixTimeFromParsedDate = (date, timezone, displayFormat) => {
+  const momentObj = moment(date, displayFormat);
+  const localOffset = getOffset();
+  const selectedOffset = getOffset(timezone);
+  const modifiedTime = momentObj.add(localOffset - selectedOffset, 'minutes');
+  const val = modifiedTime.valueOf();
+  return val === 'Invalid date' ? null : val;
+};
+
+export const getSelectedTimestampFromUnixTimestampV2 = (unixTimestamp, timezone) => {
+  const momentObj = moment(unixTimestamp);
+  const localOffset = getOffset();
+  const selectedOffset = getOffset(timezone);
+  const modifiedTime = momentObj.add(selectedOffset - localOffset, 'minutes');
+  const val = modifiedTime.valueOf();
+  return val === 'Invalid date' ? null : val;
+};
+
+export const getFormattedSelectTimestamp = (selectedTime, displayFormat) => {
+  const val = moment(selectedTime).format(displayFormat);
+  return val === 'Invalid date' ? null : val;
+};
+
+
+// The above functions are the new ones
+
 export const getUnixTime = (date, displayFormat) => {
   if (!date && date !== 0) return null;
   const numberDate = Number(date);
@@ -15,20 +52,16 @@ export const getSelectedTimestampFromUnixTimestamp = (
   isTimezoneEnabled = false
 ) => {
   if (!isTimezoneEnabled || !unixTimestamp) return unixTimestamp;
-  const localTimeOffset = moment(unixTimestamp).utcOffset();
-  const selectedTimeOffset = moment(unixTimestamp).tz(displayTimezone).utcOffset();
+  const localTimeOffset = getOffset();
+  const selectedTimeOffset = getOffset(displayTimezone);
   const modifiedTime = moment(unixTimestamp).subtract(localTimeOffset - selectedTimeOffset, 'minutes');
   return modifiedTime.valueOf() === 'Invalid date' ? null : modifiedTime.valueOf();
 };
 
-export const getUnixTimestampFromSelectedTimestamp = (
-  selectedTime,
-  displayTimezone = moment.tz.guess(),
-  isTimezoneEnabled = false
-) => {
-  if (!isTimezoneEnabled || !selectedTime) return selectedTime;
-  const localTimeOffset = moment(selectedTime).utcOffset();
-  const selectedTimeOffset = moment(selectedTime).tz(displayTimezone).utcOffset();
+export const getUnixTimestampFromSelectedTimestamp = (selectedTime, displayTimezone = moment.tz.guess()) => {
+  if (!selectedTime) return selectedTime;
+  const localTimeOffset = getOffset();
+  const selectedTimeOffset = getOffset(displayTimezone);
   const modifiedTime = moment(selectedTime).add(localTimeOffset - selectedTimeOffset, 'minutes');
   return modifiedTime.valueOf() === 'Invalid date' ? null : modifiedTime.valueOf();
 };
@@ -38,10 +71,6 @@ export const convertToIsoWithTimezoneOffset = (timestamp, timezone) => {
   return val === 'Invalid date' ? null : val;
 };
 
-export const getFormattedSelectTimestamp = (selectedTime, displayFormat) => {
-  const val = moment(selectedTime).format(displayFormat);
-  return val === 'Invalid date' ? null : val;
-};
 
 export const is24HourFormat = (displayFormat) => {
   const uses24HourTokens = /H{1,2}/.test(displayFormat);
