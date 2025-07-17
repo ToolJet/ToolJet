@@ -118,7 +118,13 @@ const NEW_REVAMPED_COMPONENTS = [
   'FilePicker',
 ];
 
-export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
+export const Inspector = ({
+  componentDefinitionChanged,
+  darkMode,
+  pages,
+  selectedComponentId,
+  handleRightSidebarToggle,
+}) => {
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
@@ -135,7 +141,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
-
+  console.log('selectedComponentId', selectedComponentId);
   const tempComponentMeta = deepClone(
     componentTypes.find((comp) => allComponents?.[selectedComponentId]?.component.component === comp.component)
   );
@@ -528,19 +534,19 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div className={`row inspector-component-title-input-holder ${shouldFreeze && 'disabled'}`}>
-          <div className="col-1" onClick={() => clearSelectedComponents()}>
+          <div className="p-0 width-unset flex-shrink-0" onClick={() => clearSelectedComponents()}>
             <span
               data-cy={`inspector-close-icon`}
               className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px', width: '28px' }}
+              style={{ height: '28px' }}
             >
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-9 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          <div className={`flex-shrink p-0 width-unset ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
             <>
-              <div className="col-2" data-cy={'component-inspector-options'}>
+              <div className="width-unset" data-cy={'component-inspector-options'}>
                 <OverlayTrigger
                   trigger={'click'}
                   placement={'bottom-end'}
@@ -613,9 +619,12 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
               />
             </>
           )}
+          <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleRightSidebarToggle}>
+            <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+          </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`}>{renderTabs()}</div>
+        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>{renderTabs()}</div>
       </div>
       <span className="widget-documentation-link">
         <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">

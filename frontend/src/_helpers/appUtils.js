@@ -1106,42 +1106,42 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatusCode === 400 ||
             queryStatusCode === 404 ||
             queryStatusCode === 422: {
-              let errorData = {};
-              switch (query.kind) {
-                case 'runpy':
-                  errorData = data.data;
-                  break;
-                case 'tooljetdb':
-                  if (data?.error) {
-                    errorData = {
-                      message: data?.error?.message || 'Something went wrong',
-                      description: data?.error?.message || 'Something went wrong',
-                      status: data?.statusText || 'Failed',
-                      data: data?.error || {},
-                    };
-                  } else {
-                    errorData = data;
-                    errorData.description = data.errorMessage || 'Something went wrong';
-                  }
-                  break;
-                default:
+            let errorData = {};
+            switch (query.kind) {
+              case 'runpy':
+                errorData = data.data;
+                break;
+              case 'tooljetdb':
+                if (data?.error) {
+                  errorData = {
+                    message: data?.error?.message || 'Something went wrong',
+                    description: data?.error?.message || 'Something went wrong',
+                    status: data?.statusText || 'Failed',
+                    data: data?.error || {},
+                  };
+                } else {
                   errorData = data;
-                  break;
-              }
-
-              onEvent(_ref, 'onDataQueryFailure', queryEvents);
-              useCurrentStateStore.getState().actions.setErrors({
-                [query.name]: {
-                  type: 'query',
-                  kind: query.kind,
-                  data: errorData,
-                  options: options,
-                },
-              });
-              if (!calledFromQuery) setPreviewData(errorData);
-
-              break;
+                  errorData.description = data.errorMessage || 'Something went wrong';
+                }
+                break;
+              default:
+                errorData = data;
+                break;
             }
+
+            onEvent(_ref, 'onDataQueryFailure', queryEvents);
+            useCurrentStateStore.getState().actions.setErrors({
+              [query.name]: {
+                type: 'query',
+                kind: query.kind,
+                data: errorData,
+                options: options,
+              },
+            });
+            if (!calledFromQuery) setPreviewData(errorData);
+
+            break;
+          }
           case queryStatus === 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             const kind = data.data?.kind;
@@ -1158,44 +1158,44 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatus === 'Created' ||
             queryStatus === 'Accepted' ||
             queryStatus === 'No Content': {
-              if (query.options.enableTransformation) {
-                finalData = await runTransformation(
-                  _ref,
-                  finalData,
-                  query.options.transformation,
-                  query.options.transformationLanguage,
-                  query,
-                  'edit'
-                );
-                if (finalData?.status === 'failed') {
-                  useCurrentStateStore.getState().actions.setErrors({
-                    [query.name]: {
-                      type: 'transformations',
-                      data: finalData,
-                      options: options,
-                    },
-                  });
-                  onEvent(_ref, 'onDataQueryFailure', queryEvents);
-                  setPreviewLoading(false);
-                  resolve({ status: data.status, data: finalData });
-                  // console.log('Test', finalData);
-                  if (!calledFromQuery) setPreviewData(finalData);
-                  return;
-                }
-              }
-
-              useCurrentStateStore.getState().actions.setCurrentState({
-                succededQuery: {
+            if (query.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData?.status === 'failed') {
+                useCurrentStateStore.getState().actions.setErrors({
                   [query.name]: {
-                    type: 'query',
-                    kind: query.kind,
+                    type: 'transformations',
+                    data: finalData,
+                    options: options,
                   },
-                },
-              });
-              if (!calledFromQuery) setPreviewData(finalData);
-              onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
-              break;
+                });
+                onEvent(_ref, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
+                resolve({ status: data.status, data: finalData });
+                // console.log('Test', finalData);
+                if (!calledFromQuery) setPreviewData(finalData);
+                return;
+              }
             }
+
+            useCurrentStateStore.getState().actions.setCurrentState({
+              succededQuery: {
+                [query.name]: {
+                  type: 'query',
+                  kind: query.kind,
+                },
+              },
+            });
+            if (!calledFromQuery) setPreviewData(finalData);
+            onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
+            break;
+          }
         }
         setPreviewLoading(false);
 
@@ -1411,10 +1411,10 @@ export function runQuery(
                   },
                   query.kind === 'restapi'
                     ? {
-                      request: data.data.requestObject,
-                      response: data.data.responseObject,
-                      responseHeaders: data.data.responseHeaders,
-                    }
+                        request: data.data.requestObject,
+                        response: data.data.responseObject,
+                        responseHeaders: data.data.responseHeaders,
+                      }
                     : {}
                 ),
               },
@@ -2405,11 +2405,11 @@ export const removeFunctionObjects = (obj) => {
 };
 
 export const checkIfLicenseNotValid = () => {
-  const licenseStatus = useEditorStore.getState().featureAccess?.licenseStatus;
+  const licenseStatus = useStore.getState().license.featureAccess?.licenseStatus;
   // When purchased, then isExpired key is also avialale else its not available
   if (licenseStatus) {
     if (_.has(licenseStatus, 'isExpired')) {
-      return licenseStatus?.isExpired && !licenseStatus?.isLicenseValid;
+      return licenseStatus?.isExpired;
     }
     return !licenseStatus?.isLicenseValid;
   }
@@ -2431,12 +2431,12 @@ export function isPDFSupported() {
 
 function getBrowserUserAgent(userAgent) {
   var regexps = {
-    Chrome: [/Chrome\/(\S+)/],
-    Firefox: [/Firefox\/(\S+)/],
-    MSIE: [/MSIE (\S+);/],
-    Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
-    Safari: [/Version\/(\S+).*?Safari\//],
-  },
+      Chrome: [/Chrome\/(\S+)/],
+      Firefox: [/Firefox\/(\S+)/],
+      MSIE: [/MSIE (\S+);/],
+      Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
+      Safari: [/Version\/(\S+).*?Safari\//],
+    },
     re,
     m,
     browser,
@@ -2558,4 +2558,38 @@ export const deepCamelCase = (obj) => {
 export const isMobileDevice = () => {
   const userAgent = window.navigator.userAgent;
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+};
+
+
+// Color picker utils
+
+export const getRGBAValueFromHex = (hex) => {
+  let c = hex.substring(1).split('');
+  switch (c.length) {
+    case 3:
+      c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], 'ff'];
+      break;
+    case 4:
+      c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], c[3] + c[3]];
+      break;
+    case 6:
+      c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], 'ff'];
+      break;
+    case 8:
+      c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], c[6] + c[7]];
+      break;
+  }
+  c = c.map((char) => parseInt(char, 16).toString());
+  c[3] = (Math.round((parseInt(c[3], 10) / 255) * 100) / 100).toString();
+  return c;
+};
+
+export const hexToRgba = (hex) => {
+  const rgbaArray = getRGBAValueFromHex(hex);
+  return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]}, ${rgbaArray[3]})`;
+};
+
+export const hexToRgb = (hex) => {
+  const rgbaArray = getRGBAValueFromHex(hex);
+  return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
 };

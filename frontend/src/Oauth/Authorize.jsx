@@ -7,6 +7,8 @@ import { getCookie } from '@/_helpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 export function Authorize({ navigate }) {
   const [error, setError] = useState('');
@@ -71,16 +73,16 @@ export function Authorize({ navigate }) {
 
   const signIn = (authParams, configs) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
-      // const { organization_id, current_organization_id, email } = restResponse;
+      const { organization_id, current_organization_id, email } = restResponse;
 
-      // const event = `${redirect_url ? 'signup' : 'signin'}_${
-      //   router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
-      // }`;
-      // initPosthog(restResponse);
-      // posthog.capture(event, {
-      //   email,
-      //   workspace_id: organization_id || current_organization_id,
-      // });
+      const event = `${redirect_url ? 'signup' : 'signin'}_${
+        router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
+      }`;
+      posthogHelper.initPosthog(restResponse);
+      posthogHelper.captureEvent(event, {
+        email,
+        workspace_id: organization_id || current_organization_id,
+      });
 
       /* Precaution code to not take any previous values since there are two entry point to the app now (site and tooljet-app) */
       authenticationService.deleteAllSSOCookies();
@@ -96,14 +98,15 @@ export function Authorize({ navigate }) {
         });
         onLoginSuccess(restResponse, navigate);
       }
-      // initPosthog({ redirect_url, ...restResponse });
-      // posthog.capture(event, {
-      //   email,
-      //   workspace_id: organization_id || current_organization_id,
-      // });
+      posthogHelper.initPosthog({ redirect_url, ...restResponse });
+      posthogHelper.captureEvent(event, {
+        email,
+        workspace_id: organization_id || current_organization_id,
+      });
     };
 
     const handleAuthError = (err) => {
+      console.log('SSO login error', err);
       const details = err?.data?.message;
       const inviteeEmail = details?.inviteeEmail;
       if (inviteeEmail) setInviteeEmail(inviteeEmail);
@@ -131,20 +134,31 @@ export function Authorize({ navigate }) {
     };
 
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const isAiOnboarding =
-      hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
-      router.query.state?.includes('tj_api_source=ai_onboarding');
-    const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
-    if (isNormalFlow) {
-      /* For workspace signup and signin */
+
+    // FIXME: later create different component/login for cloud and ce/ee
+    const edition = fetchEdition();
+    if (edition === 'cloud') {
+      const isAiOnboarding =
+        hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
+        router.query.state?.includes('tj_api_source=ai_onboarding');
+      const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
+      if (isNormalFlow) {
+        /* For workspace signup and signin */
+        authenticationService
+          .signInViaOAuth(router.query.configId, router.query.origin, authParams)
+          .then(handleAuthResponse)
+          .catch(handleAuthError);
+      } else {
+        /* For ai onboarding */
+        aiOnboardingService
+          .signInViaOAuth(router.query.origin, authParams)
+          .then(handleAuthResponse)
+          .catch(handleAuthError);
+      }
+      return;
+    } else {
       authenticationService
         .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-        .then(handleAuthResponse)
-        .catch(handleAuthError);
-    } else {
-      /* For ai onboarding */
-      aiOnboardingService
-        .signInViaOAuth(router.query.origin, authParams)
         .then(handleAuthResponse)
         .catch(handleAuthError);
     }
@@ -155,7 +169,6 @@ export function Authorize({ navigate }) {
   const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
     !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
   }`;
-
   return (
     <div>
       <TJLoader />

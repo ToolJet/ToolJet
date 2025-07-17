@@ -1543,6 +1543,11 @@ export function checkIfToolJetCloud(version) {
   return parsed[1] === 'cloud';
 }
 
+export function checkIfToolJetEE(version) {
+  const parsed = version.split('-');
+  return parsed[1] === 'ee';
+}
+
 export const calculateDueDate = (currentPeriodEnd) => {
   const currentPeriodEndDate = new Date(currentPeriodEnd * 1000);
   const currentDate = new Date();

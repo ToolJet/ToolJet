@@ -1,9 +1,7 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
 import { findAllEntityReferences } from '@/_stores/utils';
-import { debounce, extractAndReplaceReferencesFromString, resolveCode, replaceEntityReferencesWithIds } from '../utils';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { dfs } from '@/_stores/handleReferenceTransactions';
+import { debounce, replaceEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, isValidUUID, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
@@ -870,9 +868,13 @@ export const createEventsSlice = (set, get) => ({
               get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
                 eventId: event.eventId,
               });
-
               return Promise.reject(error);
             }
+          }
+          case 'toggle-app-mode': {
+            const { updateAppMode } = get();
+            updateAppMode(event.appMode);
+            return Promise.resolve();
           }
           case 'switch-page': {
             try {
@@ -928,7 +930,14 @@ export const createEventsSlice = (set, get) => ({
     }),
 
     generateAppActions: (queryId, mode, isPreview = false, moduleId = 'canvas') => {
-      const { getCurrentPageComponents, dataQuery, eventsSlice, queryPanel, modules } = get();
+      const {
+        getCurrentPageComponents,
+        dataQuery,
+        eventsSlice,
+        queryPanel,
+        modules,
+        globalSettings: { appMode },
+      } = get();
       const { previewQuery } = queryPanel;
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
@@ -1202,6 +1211,20 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {}, moduleId);
       };
 
+      const toggleAppMode = (value) => {
+        if (value && value !== 'light' && value !== 'dark' && value !== 'auto') {
+          return;
+        }
+        if (!value) {
+          value = appMode === 'dark' ? 'light' : 'dark';
+        }
+        const event = {
+          actionId: 'toggle-app-mode',
+          appMode: value,
+        };
+        return executeAction(event, mode, {});
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1224,6 +1247,7 @@ export const createEventsSlice = (set, get) => ({
         logInfo,
         log,
         logError,
+        toggleAppMode,
       };
     },
     // Selectors

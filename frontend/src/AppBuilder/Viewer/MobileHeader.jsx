@@ -18,11 +18,12 @@ const MobileHeader = ({
   appName,
   changeToDarkMode,
   darkMode,
-  pages,
   currentPageId,
   switchPage,
   setAppDefinitionFromVersion,
   showViewerNavigation,
+  pages,
+  viewerWrapperRef,
 }) => {
   const { isReleasedVersionId } = useStore(
     (state) => ({
@@ -34,8 +35,8 @@ const MobileHeader = ({
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { disableMenu, showOnMobile } = properties ?? {};
-  const resolvedDisableMenu = resolveReferences(disableMenu?.value);
+  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  const { showOnMobile } = properties ?? {};
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);
@@ -61,7 +62,6 @@ const MobileHeader = ({
 
   const _renderMobileNavigationMenu = () => (
     <MobileNavigationMenu
-      pages={pages}
       currentPageId={currentPageId}
       switchPage={switchPage}
       darkMode={darkMode}
@@ -69,6 +69,8 @@ const MobileHeader = ({
       showHeader={showHeader}
       showDarkModeToggle={showDarkModeToggle}
       appName={appName}
+      pages={pages}
+      viewerWrapperRef={viewerWrapperRef}
     />
   );
 
@@ -121,9 +123,11 @@ const MobileHeader = ({
 
   return (
     <div>
-      <Header className={'preview-settings-mobile'} styles={{ height: '44px' }}>
-        {!isReleasedVersionId && !isEmpty(editingVersion) && _renderPreviewSettings()}
-      </Header>
+      {!isEmpty(editingVersion) && !isReleasedVersionId && (
+        <Header className={'preview-settings-mobile'} styles={{ height: '44px' }}>
+          {_renderPreviewSettings()}
+        </Header>
+      )}
       <Header
         styles={{
           height: '46px',
@@ -131,10 +135,9 @@ const MobileHeader = ({
         className={'mobile-nav-container'}
       >
         <div className="d-flex w-100">
-          {!resolvedDisableMenu && showOnMobile && _renderMobileNavigationMenu()}
+          {isPagesSidebarVisible && showOnMobile && _renderMobileNavigationMenu()}
           <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
         </div>
-        {/* {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })} */}
       </Header>
     </div>
   );

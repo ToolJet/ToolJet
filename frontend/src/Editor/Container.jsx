@@ -38,6 +38,7 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import toast from 'react-hot-toast';
 import { getSubpath } from '@/_helpers/routes';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
@@ -308,14 +309,25 @@ export const Container = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
+  const triggerPosthogEvent = (draggingItem) => {
+    if (draggingState) {
+      posthogHelper.captureEvent('start_dragging_widget', { widget: draggingItem?.component?.component, appId });
+    } else if (!draggingState && draggingItem) {
+      posthogHelper.captureEvent('drop_widget', { widget: draggingItem?.component?.component, appId });
+    }
+  };
+
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
+        triggerPosthogEvent(monitor.getItem());
         return { draggingState: true };
       } else {
+        triggerPosthogEvent(monitor.getItem());
         return { draggingState: false };
       }
     } else {
+      triggerPosthogEvent(monitor.getItem());
       return { draggingState: false };
     }
   });
@@ -727,6 +739,7 @@ export const Container = ({
 
     // Update the list of threads on the current users page
     addNewThread(data);
+    posthogHelper.captureEvent('drop_comment', { appId }); //posthog event
   };
 
   const handleAddThreadOnComponent = async (_, __, e) => {
@@ -772,6 +785,7 @@ export const Container = ({
 
     // Update the list of threads on the current users page
     addNewThread(data);
+    posthogHelper.captureEvent('drop_comment', { appId }); //posthog event
   };
 
   if (showComments) {

@@ -33,7 +33,6 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
-
   const { dynamicHeight } = properties;
 
   useDynamicHeight({
@@ -51,10 +50,8 @@ export const Container = ({
     shallow
   );
 
-  const isEditing = useStore((state) => state.currentMode === 'edit');
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-
-  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow } = styles;
   const { headerHeight = 80 } = properties;
   const headerMaxHeight = parseInt(height, 10) - 100 - 10;
@@ -89,6 +86,8 @@ export const Container = ({
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
+    borderTopLeftRadius: `${borderRadius}px`,
+    borderTopRightRadius: `${borderRadius}px`,
     ...headerBgColor,
   };
   const containerContentStyles = {
@@ -96,6 +95,10 @@ export const Container = ({
     display: 'flex',
     height: '100%',
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    ...(isDisabled && {
+      opacity: 0.5,
+      pointerEvents: 'none',
+    }),
   };
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
@@ -118,7 +121,6 @@ export const Container = ({
             <HorizontalSlot
               slotName={'header'}
               slotStyle={containerHeaderStyles}
-              isEditing={isEditing}
               id={`${id}-header`}
               height={headerHeight}
               width={width}
@@ -129,11 +131,16 @@ export const Container = ({
               componentType="Container"
             />
           )}
-          <div style={containerContentStyles} className={`${properties.dynamicHeight && `dynamic-${id}`}`}>
+          <div
+            style={containerContentStyles}
+            className={`${properties.dynamicHeight && `dynamic-${id}`}`}
+            data-disabled={isDisabled}
+          >
             <ContainerComponent
               id={id}
               styles={{
                 ...contentBgColor,
+                borderRadius: `${borderRadius}px`,
                 // Prevent the scroll when dragging a widget inside the container or moving out of the container
                 overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
               }}

@@ -38,7 +38,7 @@ export function AppModal({
     selectedAppName = '';
   }
 
-  if (actionButton === 'Clone app') {
+  if (actionButton.includes('Clone')) {
     if (selectedAppName.length >= 45) {
       selectedAppName = selectedAppName.slice(0, 45) + '_Copy';
     } else {
@@ -127,9 +127,8 @@ export function AppModal({
   const createBtnDisableState =
     isLoading ||
     errorText ||
-    (actionButton === 'Rename app' && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
-    (actionButton !== 'Rename app' && (newAppName.length > 50 || newAppName.trim().length === 0));
-
+    (actionButton.includes('Rename') && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
+    (actionButton.includes('Rename') && (newAppName.length > 50 || newAppName.trim().length === 0));
   return (
     <Modal
       show={show}

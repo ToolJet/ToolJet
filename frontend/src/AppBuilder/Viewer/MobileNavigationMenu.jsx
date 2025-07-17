@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as MobileMenu } from 'react-burger-menu';
@@ -13,17 +13,19 @@ import { redirectToDashboard } from '@/_helpers/routes';
 import AppLogo from '@/_components/AppLogo';
 import { Link } from 'react-router-dom';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
-const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
+const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
   const { moduleId } = useModuleContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const groupActive = currentPage.pageGroupId === pageGroup?.id;
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const pages = useStore((state) => state.modules[moduleId].pages);
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
   // eslint-disable-next-line import/namespace
-  const IconElement = Icons?.[pageGroup?.icon] ?? Icons?.['IconFileDescription'];
+  const IconElement = Icons?.[pageGroup?.icon] ?? Icons?.['IconFile'];
   return (
     <>
       <div style={{ border: 'none' }} className={`accordion-item  ${darkMode ? 'dark-mode' : ''} `}>
@@ -60,7 +62,7 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
               const isHomePage = page.id === homePageId;
               const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
               // eslint-disable-next-line import/namespace
-              const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+              const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
               return page?.hidden || page?.disabled ? null : (
                 <div
                   key={page.handle}
@@ -107,7 +109,7 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
             const isHomePage = page.id === homePageId;
             const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
             // eslint-disable-next-line import/namespace
-            const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+            const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
             return page?.hidden || page?.disabled ? null : (
               <div
                 key={page.handle}
@@ -137,13 +139,24 @@ const MobileNavigationMenu = ({
   changeToDarkMode,
   showDarkModeToggle,
   appName,
+  viewerWrapperRef,
 }) => {
   const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const license = useStore((state) => state.license);
-
+  const [isViewportNarrow, setIsViewportNarrow] = useState(false);
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (viewerWrapperRef.current) {
+      viewerWrapperRef.current.offsetWidth > 450 ? setIsViewportNarrow(false) : setIsViewportNarrow(true);
+    }
+  }, []);
+
+  const dynamicMenuWrapClass = isViewportNarrow ? 'bm-menu-wrap--viewport-narrow' : '';
+  const dynamicOverlayClass = isViewportNarrow ? 'bm-overlay--viewport-narrow' : '';
+
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
     const queryParams = {
@@ -171,7 +184,7 @@ const MobileNavigationMenu = ({
     },
     bmMenu: {
       background: darkMode ? '#202B37' : '#fff',
-      padding: '16px 8px',
+      padding: '16px 16px',
     },
     bmMorphShape: {
       fill: '#373a47',
@@ -187,6 +200,7 @@ const MobileNavigationMenu = ({
       display: 'inline-block',
       padding: '0.5rem 0rem',
       width: '100%',
+      overflow: 'hidden',
     },
     bmOverlay: {
       background: 'rgba(0, 0, 0, 0.3)',
@@ -194,7 +208,7 @@ const MobileNavigationMenu = ({
     },
   };
 
-  const currentPage = pages.find((page) => page.id === currentPageId);
+  const currentPage = pages?.find((page) => page.id === currentPageId);
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
@@ -212,6 +226,8 @@ const MobileNavigationMenu = ({
         pageWrapId={'page-wrap'}
         outerContainerId={'outer-container'}
         onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
+        className={dynamicMenuWrapClass}
+        overlayClassName={dynamicOverlayClass}
         customBurgerIcon={
           <div className="icon-btn">
             <SolidIcon fill="var(--icon-strong)" name="menu" />
@@ -219,7 +235,7 @@ const MobileNavigationMenu = ({
         }
         right={false}
       >
-        <div className="pt-0">
+        <div style={{ height: '95%' }} className="pt-0">
           <Header styles={{ paddingBottom: '24px' }} className={'mobile-header'}>
             <div onClick={() => setHamburgerMenuOpen(false)} className="cursor-pointer">
               <div className="icon-btn">
@@ -242,7 +258,7 @@ const MobileNavigationMenu = ({
                   {!hideLogo && <AppLogo isLoadingFromHeader={false} viewer={true} />}
                   {!hideHeader && (
                     <div className="d-flex align-items-center app-title">
-                      <span>{name?.trim() ? name : appName}</span>
+                      <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
                     </div>
                   )}
                 </Link>
@@ -250,7 +266,7 @@ const MobileNavigationMenu = ({
             </div>
           </Header>
 
-          <div className="w-100">
+          <div style={{ paddingBottom: '56px' }} className="w-100 overflow-auto h-100">
             <div className={`pages-container ${darkMode && 'dark'}`}>
               {isLicensed ? (
                 <RenderPageGroups
@@ -261,11 +277,11 @@ const MobileNavigationMenu = ({
                   currentPage={currentPage}
                 />
               ) : (
-                pages.map((page) => {
+                pages?.map((page) => {
                   const isHomePage = page.id === homePageId;
                   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
                   // eslint-disable-next-line import/namespace
-                  const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+                  const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
                   return page?.hidden || page?.disabled ? null : (
                     <div
                       key={page.handle}

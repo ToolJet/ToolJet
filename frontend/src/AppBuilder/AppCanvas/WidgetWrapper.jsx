@@ -1,12 +1,9 @@
 import React, { memo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
-import { useGridStore } from '@/_stores/gridStore';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 
 const WidgetWrapper = memo(
@@ -21,8 +18,9 @@ const WidgetWrapper = memo(
     readOnly,
     mode,
     darkMode,
+    moduleId,
+    parentId,
   }) => {
-    const { moduleId } = useModuleContext();
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const stylesDefinition = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
@@ -35,7 +33,7 @@ const WidgetWrapper = memo(
     const temporaryLayouts = useStore((state) => state.temporaryLayouts?.[id], shallow);
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
-    const isResizing = useGridStore((state) => state.resizingComponentId === id);
+    const isResizing = useStore((state) => state.resizingComponentId === id);
     const componentType = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow
@@ -68,7 +66,7 @@ const WidgetWrapper = memo(
     const styles = {
       width: width + 'px',
       height: visibility === false ? '10px' : `${height}px`,
-      transform: `translate(${newLayoutData.left * gridWidth}px, ${newLayoutData.top}px)`,
+      transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
     };
@@ -79,7 +77,7 @@ const WidgetWrapper = memo(
     return (
       <>
         <div
-          className={cx(`moveable-box ele-${id}`, {
+          className={cx(`ele-${id}`, {
             [`target widget-target target1  moveable-box widget-${id}`]: !readOnly,
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': readOnly,
@@ -91,6 +89,7 @@ const WidgetWrapper = memo(
           id={id}
           widgetid={id}
           component-type={componentType}
+          parent-id={parentId}
           style={{
             // zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
             ...styles,
@@ -127,12 +126,14 @@ const WidgetWrapper = memo(
             onOptionChange={onOptionChange}
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}
+            moduleId={moduleId}
           />
         </div>
-        <ResizeGhostWidget isResizing={isResizing} />
       </>
     );
   }
 );
+
+WidgetWrapper.displayName = 'WidgetWrapper';
 
 export default WidgetWrapper;

@@ -52,6 +52,7 @@ import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
 import { v4 as uuidv4 } from 'uuid';
 
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 
 const MAX_APPS_PER_PAGE = 9;
@@ -189,6 +190,11 @@ class HomePageComponent extends React.Component {
       }
     }
     this.handleAiOnboarding();
+    if (this.props.appType === 'module' && authenticationService.currentSessionValue?.role?.name == 'end-user') {
+      //Restrict route
+      this.setState({ shouldRedirect: true });
+      return;
+    }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
@@ -320,6 +326,14 @@ class HomePageComponent extends React.Component {
         name: appName,
         type: this.props.appType,
         prompt,
+      });
+      /* Posthog Event */
+      posthogHelper.captureEvent('click_new_app', {
+        workspace_id:
+          authenticationService?.currentUserValue?.organization_id ||
+          authenticationService?.currentSessionValue?.current_organization_id,
+        app_id: data?.id,
+        button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
       });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
@@ -817,6 +831,13 @@ class HomePageComponent extends React.Component {
         toast.success('Added to folder.');
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
+        posthogHelper.captureEvent('click_add_to_folder_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: appOperations?.selectedApp?.id,
+          folder_id: appOperations?.selectedFolder,
+        });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -947,6 +968,12 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
+    posthogHelper.captureEvent('click_import_from_template', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_from_template',
+    });
     this.setState({ showTemplateLibraryModal: true });
   };
   hideTemplateLibraryModal = () => {
@@ -1004,6 +1031,13 @@ class HomePageComponent extends React.Component {
   };
 
   openImportAppModal = async () => {
+    /* Posthog Events */
+    posthogHelper.captureEvent('click_import_button', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_dropdown_button',
+    });
     this.setState({ showImportAppModal: true });
   };
 
@@ -1590,11 +1624,17 @@ class HomePageComponent extends React.Component {
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
-              {this.canCreateApp() && (
-                <div className="create-new-app-license-wrapper">
+              <div className="create-new-app-license-wrapper">
+                {this.canCreateApp() && (
                   <LicenseTooltip
                     limits={appsLimit}
-                    feature={this.props.appType === 'workflow' ? 'workflows' : 'apps'}
+                    feature={
+                      this.props.appType === 'workflow'
+                        ? 'workflows'
+                        : this.props.appType === 'module'
+                        ? 'modules'
+                        : 'apps'
+                    }
                     isAvailable={true}
                     noTooltipIfValid={true}
                   >
@@ -1646,8 +1686,8 @@ class HomePageComponent extends React.Component {
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
-                </div>
-              )}
+                )}
+              </div>
               {this.props.appType === 'module' ? (
                 <div>
                   <p></p>

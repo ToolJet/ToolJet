@@ -167,7 +167,7 @@ function SettingsPage(props) {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div style={{ height: `calc(100vh - 2.5rem - 64px)` }}>
+          <div style={{ height: `calc(100vh - 2.5rem - 48px)` }}>
             <div className="container-xl">
               <div className="card profile-page-card">
                 <div className="card-header">

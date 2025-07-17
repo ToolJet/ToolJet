@@ -662,11 +662,13 @@ button {
       padding: 4px 12px;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid var(--border-weak);
 
       .header {
         color: var(--text-default);
         font-weight: 500;
         font-size: 12px;
+        padding: 7px 6px;
       }
     }
 
@@ -823,8 +825,13 @@ button {
       background: transparent !important;
     }
 
-    .canvas-container {
-      scrollbar-width: none;
+    :hover {
+      .canvas-container {
+        scrollbar-width: thin;
+        &::-webkit-scrollbar-track {
+          background: transparent !important;
+        }
+      }
     }
 
     .canvas-container {
@@ -839,6 +846,16 @@ button {
       justify-content: center;
       -webkit-box-align: center;
       align-items: center;
+      scrollbar-color: var(--interactive-selected) transparent;
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+       &::-webkit-scrollbar-thumb {
+        background: var(--interactive-default) !important;
+        border-radius: 3px;
+      }
 
       .real-canvas {
         outline: 1px dotted transparent;
@@ -901,7 +918,7 @@ button {
     padding: 0px 10px;
 
     .canvas-container {
-      scrollbar-width: auto;
+      scrollbar-width: thin;
       width: 100%;
     }
 
@@ -4121,7 +4138,7 @@ input[type="text"] {
 .calendar-widget {
   padding: 10px;
   background-color: white;
-  background-color: var(--cc-primary-brand) !important;
+  background-color: var(--cc-surface1-surface) !important;
   border: transparent;
 
   .rbc-day-slot .rbc-event,
@@ -4163,7 +4180,7 @@ input[type="text"] {
   border-left: none !important;
 
   .rbc-timeslot-group {
-    border-left: 2.5px solid #dadcde !important;
+    border-left: 2.5px solid var(--cc-weak-border) !important;
   }
 }
 
@@ -4171,8 +4188,8 @@ input[type="text"] {
   border: none !important;
 
   .rbc-row {
-    border-left: 1.5px solid #dadcde;
-    border-right: 1.5px solid #dadcde;
+    border-left: 1.5px solid var(--cc-weak-border);
+    border-right: 1.5px solid var(--cc-weak-border);
   }
 }
 
@@ -4181,8 +4198,8 @@ input[type="text"] {
 }
 
 .resources-week-cls .rbc-time-view-resources .rbc-header {
-  border-left: 1.5px solid #dadcde !important;
-  border-right: 1.5px solid #dadcde !important;
+  border-left: 1.5px solid var(--cc-weak-border) !important;
+  border-right: 1.5px solid var(--cc-weak-border) !important;
 }
 
 .calendar-widget.hide-view-switcher {
@@ -4248,7 +4265,7 @@ input[type="text"] {
 
 .code-editor-widget {
   border-radius: 0;
-
+  border: 1px solid var(--cc-default-border);
   .CodeMirror {
     border-radius: 0 !important;
     margin-top: -1px !important;
@@ -5203,12 +5220,13 @@ input[type="text"] {
   }
 
   .inspector-component-title-input-holder {
-    padding: 2px 12px;
+    padding: 4px 12px;
     margin: 0;
     display: flex;
     align-items: center;
     height: 36px;
     flex-direction: column;
+    justify-content: center;
 
     .icon-btn {
       width: 32px;
@@ -6105,7 +6123,7 @@ div#driver-page-overlay {
 .widget-buttongroup-label {
   font-weight: 600;
   margin-right: 10px;
-  color: #3e525b;
+  color: var(--cc-primary-text);
 }
 
 .editor-actions {
@@ -6608,7 +6626,7 @@ input.hide-input-arrows {
 
 
 .custom-checkbox-tree {
-  overflow-y: scroll;
+  overflow-y: auto;
   color: #3e525b;
 
   .react-checkbox-tree label:hover {
@@ -11599,6 +11617,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    width: 70%;
   }
 }
 
@@ -15931,20 +15950,37 @@ fieldset:disabled {
 }
 
 
+#component-portal {
+  .datepicker-component {
+    .react-datepicker {
+      .react-datepicker__month-container {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+        border-bottom-left-radius: 5px !important;
+      }
+    }
+  }
+}
 
 .datetimepicker-component,
 #component-portal,
 .custom-inspector-validation-time-picker {
 
+  .react-datepicker__month-container:first-of-type {
+    border-top-left-radius: 10px !important;
+    border-bottom-left-radius: 5px !important;
+  }
 
-
-
+  .react-datepicker__month-container:last-of-type {
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+  }
 
   .react-datepicker__month-container {
     background-color: var(--cc-surface1-surface) !important;
-    border-top-left-radius: 10px !important;
-    border-bottom-left-radius: 10px !important;
   }
+
+
 
   .custom-time-input {
     background-color: var(--cc-surface1-surface) !important;
@@ -18381,12 +18417,6 @@ section.ai-message-prompt-input-wrapper {
 .canvas-component,
 .workspace-theme-container {
 
-  .tabs-component {
-    .real-canvas {
-      background-color: var(--cc-surface1-surface) !important;
-    }
-  }
-
   .kanban-container {
     background-color: var(--cc-surface1-surface);
 
@@ -18427,10 +18457,6 @@ section.ai-message-prompt-input-wrapper {
           color: var(--cc-primary-text);
         }
       }
-    }
-
-    .rbc-day-bg {
-      border: 1px solid var(--cc-weak-border) !important;
     }
 
     .rbc-button-link {
@@ -18499,9 +18525,6 @@ section.ai-message-prompt-input-wrapper {
   }
 
   .codehinter-multi-line-input {
-    .cm-content {
-      background-color: var(--cc-surface1-surface);
-    }
 
     .cm-gutters {
       background-color: var(--cc-surface3-surface) !important;
@@ -18719,4 +18742,40 @@ section.ai-message-prompt-input-wrapper {
 .git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-push.active,
 .git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-pull.active {
   border-bottom: 2px solid var(--indigo9) !important;
+}
+
+.custom_fc_frame {
+  left: 40px !important;
+}
+.min-width-0 {
+  min-width: 0 !important;
+}
+
+.width-unset {
+  width: unset !important;
+}
+
+.scrollbar-container {
+  scrollbar-width: 8px;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  
+  &::-webkit-scrollbar {
+    width: 16px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    width: 16px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    width: 8px;
+    margin: 0 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
 }

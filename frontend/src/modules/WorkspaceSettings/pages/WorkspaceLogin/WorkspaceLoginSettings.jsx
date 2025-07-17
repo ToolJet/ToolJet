@@ -434,9 +434,6 @@ class OrganizationLogin extends React.Component {
         }
       }
     );
-    if (field === 'automaticSsoLogin' && newValue === false) {
-      toast.success('Automatic SSO login has been disabled!', { position: 'top-center' });
-    }
   };
 
   render() {
