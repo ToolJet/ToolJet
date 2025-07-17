@@ -15,7 +15,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
 export const useCanvasDropHandler = ({ appType }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
 
   const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
@@ -35,8 +35,10 @@ export const useCanvasDropHandler = ({ appType }) => {
     hideGridLines();
 
     setShowModuleBorder(false); // Hide the module border when dropping
-
-    if (currentMode === 'view' || (appType === 'module' && draggedComponentType !== 'ModuleContainer')) {
+    if (
+      currentMode === 'view' ||
+      (!isModuleEditor && appType === 'module' && draggedComponentType !== 'ModuleContainer')
+    ) {
       return;
     }
 
@@ -50,12 +52,12 @@ export const useCanvasDropHandler = ({ appType }) => {
     // IMPORTANT: This logic needs to be changed when we implement the module versioning
     const moduleInfo = component?.moduleId
       ? {
-        moduleId: component.moduleId,
-        versionId: component.versionId,
-        environmentId: component.environmentId,
-        moduleName: component.displayName,
-        moduleContainer: component.moduleContainer,
-      }
+          moduleId: component.moduleId,
+          versionId: component.versionId,
+          environmentId: component.environmentId,
+          moduleName: component.displayName,
+          moduleContainer: component.moduleContainer,
+        }
       : undefined;
 
     let addedComponent;

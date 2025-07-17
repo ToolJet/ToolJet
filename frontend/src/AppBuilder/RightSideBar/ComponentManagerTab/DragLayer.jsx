@@ -11,8 +11,6 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/useCanvasDropHandler';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
-  const { appType } = useModuleContext();
-
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(
     (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
     shallow
@@ -20,7 +18,7 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
-  const { handleDrop } = useCanvasDropHandler({ appType }) || noop;
+  const { handleDrop } = useCanvasDropHandler() || noop;
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
