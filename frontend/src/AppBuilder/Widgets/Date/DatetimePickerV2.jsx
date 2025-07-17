@@ -86,12 +86,11 @@ export const DatetimePickerV2 = ({
     defaultValue ? getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone) : null
   );
 
-  console.log('This is the selectedTimestamp ', selectedTimestamp);
   const [showValidationError, setShowValidationError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
-    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : 'Select time'
+    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : 'Select date and time'
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
@@ -192,7 +191,7 @@ export const DatetimePickerV2 = ({
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
     setDisplayTimestamp(
-      selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : 'Select time'
+      selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : 'Select date and time'
     );
   }, [selectedTimestamp, displayFormat, textInputFocus]);
 
@@ -279,7 +278,6 @@ export const DatetimePickerV2 = ({
         }
         updatedUnixTimestamp.set('hour', momentObj.hour());
         updatedUnixTimestamp.set('minute', momentObj.minute());
-        console.log('updatedUnixTimestamp', updatedUnixTimestamp.valueOf());
         const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(
           updatedUnixTimestamp.valueOf(),
           displayTimezone
