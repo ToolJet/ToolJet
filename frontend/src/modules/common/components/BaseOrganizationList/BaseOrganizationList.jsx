@@ -64,7 +64,7 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
             </div>
           )}
 
-          <ToolTip message={org.name} placement="right">
+          <ToolTip message={org.name} placement="top">
             <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
               <span style={{ color: org.id === current_organization_id ? '#3E63DD' : 'var(--slate12)' }}>
                 {decodeEntities(org.name)}

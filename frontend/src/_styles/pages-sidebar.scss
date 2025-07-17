@@ -222,6 +222,10 @@
         padding-bottom: 0px;
         display: flex;
         flex-direction: column;
+        
+        &.no-preview-settings {
+            height: 100% !important;
+        }
 
         .custom-icon {
             line-height: 10px !important;

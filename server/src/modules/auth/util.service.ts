@@ -41,6 +41,7 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
@@ -48,18 +49,19 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly userRepository: UserRepository,
     protected readonly licenseUserService: LicenseUserService,
     protected readonly configService: ConfigService,
-    protected licenseTermsService: LicenseTermsService,
-    protected organizationUsersUtilService: OrganizationUsersUtilService,
-    protected organizationUsersRepository: OrganizationUsersRepository,
-    protected organizationRepository: OrganizationRepository,
-    protected sessionUtilService: SessionUtilService,
+    protected readonly licenseTermsService: LicenseTermsService,
+    protected readonly organizationUsersUtilService: OrganizationUsersUtilService,
+    protected readonly organizationUsersRepository: OrganizationUsersRepository,
+    protected readonly organizationRepository: OrganizationRepository,
+    protected readonly sessionUtilService: SessionUtilService,
     protected readonly roleUtilService: RolesUtilService,
     protected readonly groupPermissionsUtilService: GroupPermissionsUtilService,
     protected readonly onboardingUtilService: OnboardingUtilService,
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly rolesRepository: RolesRepository,
-    protected profileUtilService: ProfileUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
+    protected readonly profileUtilService: ProfileUtilService,
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+    protected readonly groupPermissionsRepository: GroupPermissionsRepository
   ) {}
 
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
@@ -349,9 +351,10 @@ export class AuthUtilService implements IAuthUtilService {
       // IF current role is empty -> user not exist
       // IF new role not equals current one
       if (!currentRole || newRole !== currentRole) {
+        const adminUser = await this.groupPermissionsRepository.getAdminUserForOrg(organizationId);
         await this.roleUtilService.editDefaultGroupUserRole(
           organizationId,
-          { newRole, userId, currentRole: currentRoleObj },
+          { newRole, userId, currentRole: currentRoleObj, updatingUserId: adminUser.id },
           manager
         );
       }

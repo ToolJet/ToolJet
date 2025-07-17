@@ -34,7 +34,7 @@ export const RadioButtonV2 = ({
 
   const isInitialRender = useRef(true);
 
-  const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : value);
+  const [checkedValue, setCheckedValue] = useState(findDefaultItem(schema));
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -81,12 +81,9 @@ export const RadioButtonV2 = ({
   }
 
   useEffect(() => {
-    if (isInitialRender.current) return;
-    if (advanced) {
-      onSelect(findDefaultItem(schema));
-    } else onSelect(value);
+    onSelect(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), value]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);

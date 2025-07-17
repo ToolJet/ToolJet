@@ -7,9 +7,8 @@ import cx from 'classnames';
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   { path: '/:worspace_id', breadcrumb: 'Applications' },
-  { path: '/:workspace_id/modules', breadcrumb: 'All modules' },
+  { path: '/:workspace_id/modules', breadcrumb: 'Modules' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
-  { path: '/:workspace_id/modules', breadcrumb: 'All modules' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/:worpsace_id/audit-logs', breadcrumb: ' ' },
   { path: '/data-sources', breadcrumb: 'Data sources' },
@@ -35,22 +34,24 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
   const location = useLocation();
   const search = location.search || '';
-
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.map(({ breadcrumb, beta }, i) => {
-        if (i == 1 || breadcrumbs?.length == 1) {
+        if (i === 1 || breadcrumbs?.length === 1) {
           return (
-            <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
-              <p className=" tj-text-xsm ">{breadcrumb}</p>
-              {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
-              <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
-                {' '}
-                {sidebarNav && decodeEntities(sidebarNav)}
-              </li>
-            </div>
+            breadcrumb &&
+            sidebarNav?.length > 0 && (
+              <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+                <p className="tj-text-xsm">{breadcrumb}</p>
+                <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />
+                <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+                  {sidebarNav && decodeEntities(sidebarNav)}
+                </li>
+              </div>
+            )
           );
         }
+        return null;
       })}
     </ol>
   );

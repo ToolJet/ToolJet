@@ -52,7 +52,13 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
   ) {}
-  async create(name: string, user: User, type: APP_TYPES, isInitialisedFromPrompt: boolean = false, manager: EntityManager): Promise<App> {
+  async create(
+    name: string,
+    user: User,
+    type: APP_TYPES,
+    isInitialisedFromPrompt: boolean = false,
+    manager: EntityManager
+  ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
         return manager.save(
@@ -480,6 +486,8 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
 
     switch (type) {
+      case APP_TYPES.MODULE:
+        return viewableAppsQb;
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -706,7 +714,9 @@ export class AppsUtilService implements IAppsUtilService {
     return this.appRepository.findByAppName(name, organizationId);
   }
 
-  async findByAppId(appId: string): Promise<App> {
-    return this.appRepository.findByAppId(appId);
+  async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return this.appRepository.findByAppId(appId, manager);
+    }, manager);
   }
 }

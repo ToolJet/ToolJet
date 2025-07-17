@@ -167,7 +167,7 @@ const FormComponent = (props) => {
 
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetOnSubmit, validateOnSubmit]);
+  }, [resetOnSubmit, validateOnSubmit, isValid]);
 
   const extractData = (data) => {
     const result = {};

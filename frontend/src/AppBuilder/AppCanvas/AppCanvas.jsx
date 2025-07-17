@@ -224,7 +224,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
               ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
-            className={`app-${appId} _tooljet-page-${getPageId()}`}
+            className={`app-${appId} _tooljet-page-${getPageId()} canvas-content`}
           >
             {currentMode === 'edit' && (
               <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />

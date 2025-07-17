@@ -117,11 +117,11 @@ const FilePicker = (props) => {
       display: isVisible ? 'flex' : 'none',
       backgroundColor: 'var(--cc-surface1-surface)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
-      height: `${numericWidgetHeight}px`,
+      height: `${numericWidgetHeight + (containerPadding === 'default' ? 0 : 4)}px`,
       overflowY: isSmallWidget ? 'auto' : 'visible',
       opacity: disabledState ? 0.5 : 1,
     }),
-    [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState]
+    [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState, containerPadding]
   );
 
   if (rootRef?.current) {
@@ -196,7 +196,7 @@ const FilePicker = (props) => {
         <>
           <div className={topSectionClasses}>
             <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
-              {labelText || 'Upload files'}
+              {labelText}
             </h3>
             <ValidationBar
               minSize={minSize}

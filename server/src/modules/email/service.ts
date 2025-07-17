@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
-import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { generateInviteURL, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
 import {
   SendWelcomeEmailPayload,
   SendOrganizationUserWelcomeEmailPayload,
@@ -20,6 +20,12 @@ handlebars.registerHelper('highlightMentionedUser', function (comment) {
   return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
 });
 handlebars.registerHelper('eq', (a, b) => a == b);
+handlebars.registerHelper('or', (a, b) => {
+  return a || b;
+});
+handlebars.registerHelper('and', (a, b) => {
+  return a && b;
+});
 
 @Injectable()
 export class EmailService implements IEmailService {
@@ -52,11 +58,11 @@ export class EmailService implements IEmailService {
   }
 
   async init(organizationId?: string | null) {
-    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(null);
+    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(organizationId);
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;
     this.defaultWhiteLabelState = whiteLabelSettings?.default;
-    await this.emailUtilService.init();
+    await this.emailUtilService.init(organizationId);
   }
 
   protected compileTemplate(templatePath: string, templateData: object) {
@@ -143,11 +149,13 @@ export class EmailService implements IEmailService {
     await this.init(organizationId);
     const subject = 'Reset your password';
     const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
+    const tooljetEdition = getTooljetEdition();
     const templateData = {
       name: firstName || '',
       resetLink: url,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition, // Pass edition to template
     };
     const templatePath = this.defaultWhiteLabelState ? 'default_reset_password.hbs' : 'reset_password.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
