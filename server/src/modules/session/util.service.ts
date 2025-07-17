@@ -124,7 +124,7 @@ export class SessionUtilService {
       const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
 
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
-      const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id);
+      const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id, manager);
 
       const responsePayload = {
         organizationId: organization?.id,
@@ -233,24 +233,27 @@ export class SessionUtilService {
     return allGroups;
   }
 
-  async checkUserWorkspaceStatus(userId: string): Promise<boolean> {
+  async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {
     // Return true if user has no active workspaces
-    return _.isEmpty(
-      await this.userRepository.getUser(
-        {
-          id: userId,
-          organizationUsers: {
-            status: WORKSPACE_USER_STATUS.ACTIVE,
-            organization: {
-              status: WORKSPACE_STATUS.ACTIVE,
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return _.isEmpty(
+        await this.userRepository.getUser(
+          {
+            id: userId,
+            organizationUsers: {
+              status: WORKSPACE_USER_STATUS.ACTIVE,
+              organization: {
+                status: WORKSPACE_STATUS.ACTIVE,
+              },
             },
           },
-        },
-        null,
-        ['organizationUsers', 'organizationUsers.organization'],
-        { id: true }
-      )
-    );
+          null,
+          ['organizationUsers', 'organizationUsers.organization'],
+          { id: true },
+          manager
+        )
+      );
+    }, manager);
   }
 
   async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
