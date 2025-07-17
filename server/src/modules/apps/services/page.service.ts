@@ -96,7 +96,7 @@ export class PageService implements IPageService {
     }, appVersionId);
 
     // Fetch pages and events separately after transaction completes
-    const pages = await this.findPagesForVersion(appVersionId, organizationId, '');
+    const pages = await this.findPagesForVersion(appVersionId);
     const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
 
     return { pages, events };
