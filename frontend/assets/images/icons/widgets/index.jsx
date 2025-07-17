@@ -163,6 +163,7 @@ const WidgetIcon = (props) => {
     case 'radiobuttonv2':
       return <RadioButton {...props} />;
     case 'rangeslider':
+    case 'rangesliderv2':
       return <Rangeslider {...props} />;
     case 'rating':
       return <Rating {...props} />;

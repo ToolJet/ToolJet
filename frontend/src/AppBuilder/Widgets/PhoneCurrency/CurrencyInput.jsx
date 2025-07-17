@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { default as ReactCurrencyInput } from 'react-currency-input-field';
+import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
 import { useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
@@ -129,6 +129,14 @@ export const CurrencyInput = (props) => {
     zIndex: 3,
   };
 
+  const formattedValue = (value) => {
+    return formatValue({
+      value: `${value}`,
+      groupSeparator: ',',
+      decimalSeparator: '.',
+    });
+  };
+
   useEffect(() => {
     if (!isInitialRender.current) {
       setCountry(defaultCountry);
@@ -139,7 +147,7 @@ export const CurrencyInput = (props) => {
     if (!isInitialRender.current) {
       setExposedVariables({
         country: country,
-        formattedValue: `${CurrencyMap[country]?.prefix} ${value}`,
+        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
       });
     }
   }, [country]);
@@ -147,7 +155,8 @@ export const CurrencyInput = (props) => {
   useEffect(() => {
     if (!isInitialRender.current) {
       setExposedVariables({
-        formattedValue: `${CurrencyMap[country]?.prefix} ${inputRef.current?.value}`,
+        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
+        value: Number(value),
       });
     }
   }, [value]);
@@ -156,8 +165,8 @@ export const CurrencyInput = (props) => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
-        formattedValue: `${CurrencyMap[country]?.prefix} ${value}`,
-        value: value,
+        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
+        value: Number(value),
         setCountryCode: (code) => {
           setCountry(code);
         },
