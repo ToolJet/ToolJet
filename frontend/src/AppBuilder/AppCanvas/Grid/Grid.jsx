@@ -823,7 +823,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             }
 
             const groupParentId =
-              boxList.find(({ id }) => id === groupResizeDataRef.current[0].target.id)?.parent ?? 'canvas';
+              boxList.find(({ id }) => id === groupResizeDataRef.current[0]?.target?.id)?.parent ?? 'canvas';
             setReorderContainerChildren(groupParentId);
 
             groupResizeDataRef.current = [];
@@ -922,8 +922,6 @@ export default function Grid({ gridWidth, currentLayout }) {
               componentParentType === 'Form' || componentParentType === 'Container'
                 ? document.getElementById(`canvas-${target.slotId}`)?.scrollTop || 0
                 : computeScrollDelta({ source });
-            console.log('target', target, source, dragged);
-            console.log('scrollDelta', scrollDelta);
             if (isParentChangeAllowed && !isModalToCanvas) {
               // Special case for Modal; If source widget is modal, prevent drops to canvas
               const parent = target.slotId === 'real-canvas' ? null : target.slotId;
