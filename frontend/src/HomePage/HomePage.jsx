@@ -50,7 +50,7 @@ import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPro
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 
 const MAX_APPS_PER_PAGE = 9;
@@ -278,6 +278,14 @@ class HomePageComponent extends React.Component {
         name: appName,
         type: this.props.appType,
         prompt,
+      });
+      /* Posthog Event */
+      posthogHelper.captureEvent('click_new_app', {
+        workspace_id:
+          authenticationService?.currentUserValue?.organization_id ||
+          authenticationService?.currentSessionValue?.current_organization_id,
+        app_id: data?.id,
+        button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
       });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
@@ -775,6 +783,13 @@ class HomePageComponent extends React.Component {
         toast.success('Added to folder.');
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
+        posthogHelper.captureEvent('click_add_to_folder_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: appOperations?.selectedApp?.id,
+          folder_id: appOperations?.selectedFolder,
+        });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -905,6 +920,12 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
+    posthogHelper.captureEvent('click_import_from_template', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_from_template',
+    });
     this.setState({ showTemplateLibraryModal: true });
   };
   hideTemplateLibraryModal = () => {
@@ -962,6 +983,13 @@ class HomePageComponent extends React.Component {
   };
 
   openImportAppModal = async () => {
+    /* Posthog Events */
+    posthogHelper.captureEvent('click_import_button', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_dropdown_button',
+    });
     this.setState({ showImportAppModal: true });
   };
 

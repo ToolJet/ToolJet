@@ -12,6 +12,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName, decodeEntities } from '@/_helpers/utils';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -48,6 +50,14 @@ export default function AppCard({
   const appActionModalCallBack = useCallback(
     (action) => {
       appActionModal(app, currentFolder, action);
+      if (action === 'add-to-folder') {
+        posthogHelper.captureEvent('click_add_to_folder_option', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: app?.id,
+        });
+      }
     },
     [app, appActionModal, currentFolder]
   );
@@ -261,6 +271,15 @@ export default function AppCard({
                     to={getPrivateRoute('editor', {
                       slug: isValidSlug(app.slug) ? app.slug : app.id,
                     })}
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_edit_button_on_card', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                        app_id: app?.id,
+                        folder_id: currentFolder?.id,
+                      });
+                    }}
                     reloadDocument
                   >
                     <button
