@@ -14,8 +14,8 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
-export const useCanvasDropHandler = ({ appType }) => {
-  const { moduleId, isModuleEditor } = useModuleContext();
+export const useCanvasDropHandler = () => {
+  const { moduleId, isModuleEditor, appType } = useModuleContext();
 
   const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
