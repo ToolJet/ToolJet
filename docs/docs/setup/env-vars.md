@@ -1,9 +1,7 @@
 ---
 id: env-vars
-title: Environment variables
+title: Environment Variables
 ---
-
-# Environment variables
 
 Both the ToolJet server and client requires some environment variables to start running.
 

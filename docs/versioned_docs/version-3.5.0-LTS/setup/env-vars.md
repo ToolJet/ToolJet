@@ -138,6 +138,12 @@ If ToolJet needs to connect to self-signed HTTPS endpoints, ensure the `NODE_EXT
 
 - `NODE_EXTRA_CA_CERTS=/path/to/cert.pem`: Absolute path to the PEM file (can contain multiple certificates).
 
+#### ToolJet API Import Application
+
+By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable: 
+
+- `MAX_JSON_SIZE = 150`
+
 ### Third-Party Integrations
 
 #### Slack
