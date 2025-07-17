@@ -39,7 +39,7 @@ These changes may cause **minor visual shifts** but require no action unless aff
 | Component         | Change Description    |
 |:------------------|:----------------------|
 | Container         | Padding updates applied. This may slightly affect alignment of tightly placed child components like headers or cards.                  |
-| Filepicker        | Enhanced UI with added file size range selection, list titles, and improved visual feedback.                           |
+| File Picker        | Enhanced UI with added file size range selection, list titles, and improved visual feedback.                           |
 | Tab               | Tab headers have undergone minor visual polish, including alignment and spacing improvements.                                               |
 | List View         | Padding on individual records has been slightly adjusted for consistency with other layout components.                                                        |
 | Form              | Internal padding revised to align with updated container spacing logic.                                                   |
