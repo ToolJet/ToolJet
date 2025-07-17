@@ -28,9 +28,9 @@ These are layout or usability improvements that may require tweaks depending on 
 
 | Area       |Change     |
 |:-----------|:----------|
-| Page Menu (Text and icon)         | For page menus using the **"Text and icon"** style, icons will now stay visible when the menu is collapsed. This was not the case before and may slightly affect your layout. |
-| Page Menu (Text only and Icon only) | Page menus using **"Text only"** or **"Icon only"** styles can no longer be collapsed. If your layout depended on collapsing these, adjustments may be needed. |
-
+| Page Menu (Text and icon)         | For page menus using the **Text and icon** style, icons will now stay visible when the menu is collapsed. This was not the case before and may slightly affect your layout. |
+| Page Menu (Text only and Icon only) | Page menus using **Text only** or **Icon only** styles can no longer be collapsed. If your layout depended on collapsing these, adjustments may be needed. |
+| Branding | The app logo and title now appear side-by-side in the top-left corner of the page menu. The separate top bar that previously held the title and logo has been removed. This change may affect layout balance and branding visibility. |
 
 ### Low Severity (Minor Component Changes)
 
