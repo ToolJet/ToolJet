@@ -13,6 +13,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { ArtifactRepository } from './repositories/artifact.repository';
 import { SubModule } from '@modules/app/sub-module';
 import { DataQueryRepository } from '@modules/data-queries/repository';
+import { DataSourcesModule } from '@modules/data-sources/module';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -33,6 +34,7 @@ export class AiModule extends SubModule {
         await LicenseModule.forRoot(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await DataSourcesModule.register(configs),
       ],
       controllers: [AiController],
       providers: [

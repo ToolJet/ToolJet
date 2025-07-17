@@ -84,7 +84,7 @@ export class AppsUtilService implements IAppsUtilService {
                   },
                   {
                     name: 'Select datasource',
-                    id: 'select_data_source',
+                    id: 'select_datasource',
                     loadingStates: ['Generating app', 'App generated successfully'],
                   },
                   {
