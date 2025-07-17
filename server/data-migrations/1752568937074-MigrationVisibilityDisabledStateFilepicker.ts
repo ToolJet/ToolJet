@@ -61,8 +61,21 @@ export class MigrationVisibilityDisabledStateFilepicker1752568937074 implements 
                 properties.enableMultiple = { ...properties.enableMultiple, fxActive: properties?.enableMultiple?.fxActive ?? true };
             }
             if (properties.fileType && !validation.fileType) {
-                validation.fileType = { ...properties.fileType, fxActive: properties.fileType.fxActive ?? true };
+                validation.fileType = { ...properties.fileType, fxActive: properties?.fileType?.fxActive ?? true };
                 delete properties.fileType;
+            }
+
+            if (properties.maxFileCount && !validation.maxFileCount) {
+                validation.maxFileCount = { ...properties.maxFileCount, fxActive: properties?.fileType?.fxActive ?? true };
+                delete properties.maxFileCount;
+            }
+            if (properties.maxSize && !validation.maxSize) {
+                validation.maxSize = { ...properties.maxSize, fxActive: properties?.maxSize?.fxActive ?? true };
+                delete properties.maxSize;
+            }
+            if (properties.minSize && !validation.minSize) {
+                validation.minSize = { ...properties.minSize, fxActive: properties?.minSize?.fxActive ?? true };
+                delete properties.minSize;
             }
 
             if (!validation.minFileCount) {
