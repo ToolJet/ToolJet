@@ -215,7 +215,16 @@ const sidebars = {
                 'widgets/dropdown',
                 'widgets/email-input',
                 'widgets/file-picker',
-                'widgets/form',
+                {
+                  'type': 'category',
+                  'label': 'Form',
+                  'items': [
+                    'widgets/form/form',
+                    'widgets/form/properties',
+                    'widgets/form/csa',
+                    'widgets/form/schema'
+                  ]
+                },
                 'widgets/html',
                 'widgets/icon',
                 'widgets/iframe',
