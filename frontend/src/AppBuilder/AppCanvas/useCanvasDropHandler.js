@@ -37,7 +37,8 @@ export const useCanvasDropHandler = () => {
     setShowModuleBorder(false); // Hide the module border when dropping
     if (
       currentMode === 'view' ||
-      (!isModuleEditor && appType === 'module' && draggedComponentType !== 'ModuleContainer')
+      (!isModuleEditor && appType === 'module' && draggedComponentType !== 'ModuleContainer') ||
+      (isModuleEditor && canvasId === 'canvas')
     ) {
       return;
     }
