@@ -187,9 +187,7 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setTimeout(() => {
-      setInputValue(defaultValue, displayFormat, properties.storeTimezone);
-    }, 0);
+    setInputValue(defaultValue, displayFormat, properties.storeTimezone);
   }, [defaultValue, displayFormat, properties.storeTimezone]);
 
   useEffect(() => {
