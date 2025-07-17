@@ -30,9 +30,9 @@ export const formConfig = {
       componentName: 'Button',
       slotName: 'footer',
       layout: {
-        top: 12,
+        top: 10,
         left: 29,
-        height: 36,
+        height: 40,
         width: 13,
       },
       properties: ['text'],
@@ -305,12 +305,11 @@ export const formConfig = {
       footerHeight: { value: 60 },
       validateOnSubmit: { value: '{{true}}' },
       resetOnSubmit: { value: '{{true}}' },
-      generateFormFrom: '',
-      fields: {
-        value: [],
+      generateFormFrom: {
+        value: '',
       },
       JSONData: {
-        value: undefined,
+        value: {},
       },
     },
     events: [],

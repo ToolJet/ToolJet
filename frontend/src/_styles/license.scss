@@ -1096,3 +1096,14 @@
         }
     }
 }
+
+.issued-license {
+    background: var(--indigo9);
+    color: var(--indigo1);
+    border-radius: 17px;
+    padding: 5px;
+    font-size: 10px;
+    padding: 1px 8px;
+    margin-left: auto;
+    text-transform: capitalize;
+  }

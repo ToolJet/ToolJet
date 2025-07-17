@@ -54,7 +54,7 @@ export class PageService implements IPageService {
 
   async clonePage(pageId: string, appVersionId: string, organizationId: string) {
     // TODO - Should use manager here - multiple db operations found
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
       });
@@ -94,6 +94,12 @@ export class PageService implements IPageService {
 
       return { pages, events };
     }, appVersionId);
+
+    // Fetch pages and events separately after transaction completes
+    const pages = await this.findPagesForVersion(appVersionId, organizationId, '');
+    const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
+
+    return { pages, events };
   }
 
   async cloneGroup(groupPageId: string, appVersionId: string, organizationId) {

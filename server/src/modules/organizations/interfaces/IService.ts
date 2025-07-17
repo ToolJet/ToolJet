@@ -26,3 +26,8 @@ export interface IOrganizationsService {
 
   setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void>;
 }
+
+export class OrganizationWithPlan extends Organization {
+  plan: string;
+  license_type: string;
+}

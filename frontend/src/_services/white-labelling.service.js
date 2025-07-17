@@ -15,14 +15,14 @@ function get(organizationId = null) {
     credentials: 'include',
   };
   const edition = fetchEdition();
-  const orgId = headers['tj-workspace-id'];
-  console.log('organization-id', organizationId, orgId);
-  if (edition === 'cloud') {
-    return fetch(`${config.apiUrl}/white-labelling/${organizationId || orgId}`, requestOptions).then(
+  const currentOrganizationId = headers['tj-workspace-id'] || organizationId;
+  // Cloud edition with organization ID uses organization-specific endpoint
+  if (edition === 'cloud' && currentOrganizationId) {
+    return fetch(`${config.apiUrl}/white-labelling/${currentOrganizationId}`, requestOptions).then(
       handleResponseWithoutValidation
     );
   }
-  // For CE AND EE, make API call without organization ID parameter
+  // For CE, EE, and Cloud without organization ID, use generic endpoint without organizationID
   return fetch(`${config.apiUrl}/white-labelling`, requestOptions).then(handleResponseWithoutValidation);
 }
 

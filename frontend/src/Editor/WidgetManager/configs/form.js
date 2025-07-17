@@ -29,9 +29,9 @@ export const formConfig = {
       componentName: 'Button',
       slotName: 'footer',
       layout: {
-        top: 12,
+        top: 10,
         left: 29,
-        height: 36,
+        height: 40,
         width: 13,
       },
       properties: ['text'],

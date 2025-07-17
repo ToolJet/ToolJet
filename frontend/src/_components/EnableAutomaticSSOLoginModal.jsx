@@ -4,6 +4,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { Alert } from '@/_ui/Alert';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 function EnableAutomaticSSOLoginModal({ show, enableAutomaticSSOLogin, setShowModal, reset }) {
   const handleEnable = () => {
@@ -20,7 +21,11 @@ function EnableAutomaticSSOLoginModal({ show, enableAutomaticSSOLogin, setShowMo
     let text = document.getElementById(input).innerHTML;
     copyToClipboard(text);
   };
-
+  const edition = fetchEdition();
+  const documentationLink =
+    edition == 'cloud'
+      ? 'https://docs.tooljet.ai/docs/user-management/authentication/cloud-login/#automatic-sso-login'
+      : 'https://docs.tooljet.ai/docs/user-management/authentication/self-hosted/instance-login/#automatic-sso-login';
   const modalContent = (
     <div>
       <p data-cy="modal-message">
@@ -29,7 +34,7 @@ function EnableAutomaticSSOLoginModal({ show, enableAutomaticSSOLogin, setShowMo
         <br />
         <br />
         <a
-          href="https://docs.tooljet.ai/docs/user-authentication/sso/auto-sso-login/"
+          href={documentationLink}
           target="_blank"
           rel="noopener noreferrer"
           style={{
