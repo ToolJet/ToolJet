@@ -57,7 +57,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     try {
       const authResult = await super.canActivate(context);
       return authResult;
-    } catch (error) {
+    } catch {
       let organizationSlug: string;
       if (app?.organizationId) {
         const organization = await this.appUtilService.getAppOrganizationDetails(app);
