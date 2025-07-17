@@ -885,7 +885,10 @@ export default function Grid({ gridWidth, currentLayout }) {
               container.contains(e.inputEvent.target)
             );
           }
-          if (['RangeSlider', 'BoundedBox'].includes(box?.component?.component) || isDragOnInnerElement) {
+          if (
+            ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
+            isDragOnInnerElement
+          ) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
             if (!isHandle) {
