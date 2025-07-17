@@ -15,34 +15,34 @@ This provides a modular way to scale and control the user experience in your app
 
 This guide discusses how pages work, how to create new pages or page groups, and how to manage them.
 
-## Why use pages
+## Why Use Pages
+
 - Improves app structure: Organizing content into logical pages improves maintainability and user flow.
 - Enables multi-role access: With page-level permissions, you can tailor content visibility for different user groups.
 - Responsive design: You can choose which devices (desktop or mobile) each page appears on.
 - Customizable navigation: Create nested navigation, external links, or app links with ease.
 
-## How to use it
+## How To Use It
 
 ### Creating Pages
 
 Let's say you are building an Employee Directory App and you want to add a new page. Follow these steps:
 
 1. Go to the **Pages and Navigation** panel by clicking on the page icon on right side bar.
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/page-properties.png" alt="Pages and navigation panel"/>
-
+    <img className="screenshot-full img-s" src="/img/app-builder/multi-page/page-properties.png" alt="Pages and navigation panel"/>
 2. Click on **+ New page**.
 3. Fill in the **Page name** and **Handle** (Slug).
-
 4. Optionally:
-- Add an icon.
-- Mark as home.
-- Hide on navigation.
-- Disable page.
-- Add page-level event handlers (such as on page load).
+    - Add an icon
+    - Mark as home
+    - Hide page on navigation
+    - Disable page
+    - Add page-level event handlers (such as on page load)
 
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/add-page-modal.png" alt="add page"/>
 
 ### Managing Pages
+
 Each page entry in the list provides quick actions:
 
 - Edit page details: Change name, handle, event-handler, icon, etc.
@@ -57,31 +57,34 @@ Each page entry in the list provides quick actions:
 
 You can organize your page navigation by creating navigation groups, internal app links, and external URLs. 
 
-To add items:
+To add a new navigation item, click on the kebab menu (three-dots) beside **+ New page** button. <br/>
+    <img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-menu.png" alt="nav menu"/>
 
-- Click the **three-dot menu** beside + New page.
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-menu.png" alt="nav menu"/>
+#### Add External Links
 
-#### Add external links
-- To add a link to an external website, choose **Add nav item with URL.**
+To add a link to an external website, choose **Add nav item with URL.**
+
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-url.png" alt="Add nav item with URL"/>
 
-#### Link to another ToolJet app
-- To link to a different ToolJet application, select **Add nav item ToolJet app**.
+#### Link to Another ToolJet Application
+
+To link to a different ToolJet application, select **Add nav item ToolJet app**.
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-tooljet-app.png" alt="New nav item with app"/>
 
 :::note
 Only published (released) apps can be linked in the navigation.
 :::
 
-#### Create nested navigation
-- To create a collapsible or grouped navigation structure, select **Add nav group**.
+#### Create Nested Navigation
+
+To create a collapsible or grouped navigation structure, select **Add nav group**.
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-group.png" alt="New nav group"/>
 
-- After creating a group, you can drag and drop individual nav items into the group to nest them. For example, for an employee directory app, you can create nested navigation as follows.
+After creating a group, you can drag and drop individual nav items into the group to nest them. For example, for an employee directory app, you can create nested navigation as follows.
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-group-example.png" alt="New nav group example"/>
 
 ### Controlling Page Access with Permissions
+
 You can configure page-level permissions in your ToolJet apps, giving you fine-grained control over who can access specific pages within your app. This ensures that each user or user group only sees what's relevant to them.
 
 This feature is especially useful when:
@@ -95,7 +98,7 @@ For example, In an employee directory app, you might want only Admins or HR team
 To set permissions:
 
 - Click on the **three-dot menu** beside the page name and select **Page permission**.
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/select-page-permission.png" alt="Navigation menu on the side"/>
+    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/multi-page/select-page-permission.png" alt="Navigation menu on the side"/>
 - A modal will appear with the option to restrict access.
 - You can choose to:
     - Allow access to all users with application access
