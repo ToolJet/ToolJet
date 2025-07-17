@@ -220,7 +220,7 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app)) && (
+                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
                   <AppMenu
                     onMenuOpen={onMenuToggle}
                     openAppActionModal={appActionModalCallBack}
@@ -254,7 +254,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {canUpdate && (
+            {(canUpdate || appType === 'module') && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
