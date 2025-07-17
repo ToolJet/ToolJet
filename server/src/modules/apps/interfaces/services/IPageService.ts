@@ -7,7 +7,7 @@ import { EntityManager } from 'typeorm';
 export interface IPageService {
   findPagesForVersion(
     appVersionId: string,
-    organizationId?: string,
+    organizationId: string,
     mode?: string,
     manager?: EntityManager
   ): Promise<Page[]>;
