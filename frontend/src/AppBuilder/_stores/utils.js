@@ -17,7 +17,7 @@ export function debounce(func) {
     const event = args[0] || {};
     const eventId = uuidv4();
 
-    const debounceTime = event.event.debounce || event.debounce;
+    const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
       return func.apply(this, args);
     }
