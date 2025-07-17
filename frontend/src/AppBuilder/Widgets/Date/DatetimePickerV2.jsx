@@ -128,8 +128,7 @@ export const DatetimePickerV2 = ({
     updatedSelectedTimestamp.set(type, time);
     const updatedUnixTimestamp = getUnixTimestampFromSelectedTimestamp(
       updatedSelectedTimestamp.valueOf(),
-      displayTimezone,
-      isTimezoneEnabled
+      displayTimezone
     );
     setUnixTimestamp(updatedUnixTimestamp);
     setSelectedTimestamp(updatedSelectedTimestamp.valueOf());
@@ -187,7 +186,7 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue, displayFormat, properties.storeTimezone);
+    setInputValue(defaultValue, displayFormat, isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess());
   }, [defaultValue, displayFormat, properties.storeTimezone]);
 
   useEffect(() => {
