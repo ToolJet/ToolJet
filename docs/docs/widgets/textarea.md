@@ -30,7 +30,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 Following actions of component can be controlled using the Component Specific Actions(CSA), which can be triggered by an event or by the given RunJS query:
 
-| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :----------- | :----------- |:---------|
 | setText | Sets the text for the component.|  `components.textarea1.setText('this is a textarea')` |
 | clear | Clears the value from the text area component.| `components.textarea1.clear()`. |
@@ -59,10 +59,10 @@ Following exposed variables can be dynamically accessed using the given JS query
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
 | Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{3}-\d{2}-\d{4}$`). |
-| Min length         | Sets the minimum number of characters allowed.                | Integer (e.g., `100` for a minimum of 6 characters). |
-| Max length         | Sets the maximum number of characters allowed.                | Integer (e.g., `250` for a maximum of 12 characters).|
-| Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression `{{ /^[A-Za-z\s]+$/.test(components.textarea1.value) ? '' : "Only letters and spaces are allowed" }}`.           |
+| Regex | Regular Expression to validate the input.  | Regular Expression Pattern (e.g., `^\d{3}-\d{2}-\d{4}$`). |
+| Min length  | Sets the minimum number of characters allowed. | Integer (e.g., `100` for a minimum of 100 characters). |
+| Max length  | Sets the maximum number of characters allowed. | Integer (e.g., `500` for a maximum of 500 characters).|
+| Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.textarea1.value<5&&"Value needs to be more than 5"}}`).           |
 
 To add regex inside `Custom Validation`, you can use the below format: 
 
@@ -74,14 +74,15 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility         | Controls component visibility.       | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable            | Enables or disables the component.    | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover.    | String (e.g., `Enter you address here.`).                      |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Set a string value for display. | String (e.g., `Enter your name here.` ). |
 
 ## Devices
 
-| Property  |  Description  | Expected Value  |
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
 |:---------- |:----------- |:----------|
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
