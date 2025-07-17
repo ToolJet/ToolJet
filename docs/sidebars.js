@@ -209,6 +209,7 @@ const sidebars = {
                 'widgets/custom-component',
                 'widgets/date-range-picker',
                 'widgets/date-picker-v2',
+                'widgets/datetime-picker-v2',
                 'widgets/datepicker',
                 'widgets/divider',
                 'widgets/dropdown',
