@@ -92,6 +92,7 @@ RUN apt-get update && \
         redis \
         libaio1 \
         git \
+        openssh-client \
         freetds-dev \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
@@ -205,9 +206,6 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chown -R appuser:0 /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
-
-# Installing git for simple git commands
-RUN apt-get update && apt-get install -y git && apt-get clean
 
 ENV HOME=/home/appuser
 # Switch back to appuser
