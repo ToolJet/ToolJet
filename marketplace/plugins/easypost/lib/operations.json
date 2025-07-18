@@ -1,8 +1,7 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-  "title": "Easypost datasource",
-  "description": "A schema defining Easypost datasource",
+  "title": "EasyPost Operations",
+  "description": "Operations for EasyPost shipping and tracking API",
   "type": "api",
   "defaults": {},
   "properties": {
@@ -14,23 +13,28 @@
       "list": [
         {
           "value": "create_address",
-          "name": "Create Address"
+          "name": "Create Address",
+          "description": "Create and validate a shipping address"
         },
         {
           "value": "create_shipment",
-          "name": "Create Shipment"
+          "name": "Create Shipment",
+          "description": "Create a new shipment with rates"
         },
         {
           "value": "buy_shipment",
-          "name": "Buy Shipment"
+          "name": "Buy Shipment",
+          "description": "Purchase a shipping label"
         },
         {
           "value": "create_tracker",
-          "name": "Create Tracker"
+          "name": "Create Tracker",
+          "description": "Track a package"
         },
         {
           "value": "get_tracker",
-          "name": "Get Tracker"
+          "name": "Get Tracker",
+          "description": "Get tracking information"
         }
       ]
     },
@@ -44,13 +48,18 @@
         "width": "320px",
         "height": "200px",
         "className": "codehinter-plugins",
-        "placeholder": "{\"name\": \"John Doe\", \"street1\": \"417 Montgomery Street\", ...}"
+        "placeholder": "{\"name\": \"John Doe\", \"street1\": \"417 Montgomery Street\", \"city\": \"San Francisco\", \"state\": \"CA\", \"zip\": \"94104\", \"country\": \"US\"}",
+        "validate": {
+          "required": true,
+          "json": true
+        }
       },
       "verify": {
         "label": "Verification",
         "key": "verify",
         "type": "dropdown",
         "description": "Address verification level",
+        "default": "none",
         "list": [
           {
             "value": "none",
@@ -58,11 +67,13 @@
           },
           {
             "value": "delivery",
-            "name": "Delivery verification"
+            "name": "Delivery verification",
+            "description": "Validates the address is deliverable"
           },
           {
             "value": "zip4",
-            "name": "ZIP+4 verification"
+            "name": "ZIP+4 verification",
+            "description": "Validates and appends ZIP+4 code"
           }
         ]
       }
@@ -77,7 +88,11 @@
         "width": "320px",
         "height": "200px",
         "className": "codehinter-plugins",
-        "placeholder": "{\"to_address\": {...}, \"from_address\": {...}, \"parcel\": {...}}"
+        "placeholder": "{\"to_address\": {\"name\": \"John Doe\", \"street1\": \"417 Montgomery Street\", \"city\": \"San Francisco\", \"state\": \"CA\", \"zip\": \"94104\", \"country\": \"US\"}, \"from_address\": {\"company\": \"EasyPost\", \"street1\": \"417 Montgomery Street\", \"city\": \"San Francisco\", \"state\": \"CA\", \"zip\": \"94104\", \"country\": \"US\"}, \"parcel\": {\"length\": 10, \"width\": 5, \"height\": 8, \"weight\": 15}}",
+        "validate": {
+          "required": true,
+          "json": true
+        }
       }
     },
     "buy_shipment": {
@@ -86,22 +101,32 @@
         "key": "shipment_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "ID of the shipment to buy",
+        "description": "ID of the shipment to buy (starts with shp_)",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "shp_123..."
+        "placeholder": "shp_123...",
+        "validate": {
+          "required": true,
+          "pattern": "^shp_[a-zA-Z0-9]+$",
+          "patternError": "Shipment ID must start with shp_"
+        }
       },
       "rate_id": {
         "label": "Rate ID",
         "key": "rate_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "ID of the rate to purchase",
+        "description": "ID of the rate to purchase (starts with rate_)",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "rate_123..."
+        "placeholder": "rate_123...",
+        "validate": {
+          "required": true,
+          "pattern": "^rate_[a-zA-Z0-9]+$",
+          "patternError": "Rate ID must start with rate_"
+        }
       }
     },
     "create_tracker": {
@@ -114,14 +139,17 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "940011189956..."
+        "placeholder": "940011189956...",
+        "validate": {
+          "required": true
+        }
       },
       "carrier": {
-        "label": "Carrier",
+        "label": "Carrier (optional)",
         "key": "carrier",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Carrier name (e.g., USPS, FedEx)",
+        "description": "Carrier name (e.g., USPS, FedEx, UPS)",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -134,11 +162,16 @@
         "key": "tracker_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "EasyPost tracker ID",
+        "description": "EasyPost tracker ID (starts with trk_)",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "trk_123..."
+        "placeholder": "trk_123...",
+        "validate": {
+          "required": true,
+          "pattern": "^trk_[a-zA-Z0-9]+$",
+          "patternError": "Tracker ID must start with trk_"
+        }
       }
     }
   }

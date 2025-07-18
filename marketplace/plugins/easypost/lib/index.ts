@@ -1,34 +1,78 @@
-import { QueryError, ConnectionTestResult } from  '@tooljet-marketplace/common';
-import EasyPostClient from '@easypost/api';
+import { QueryError, ConnectionTestResult } from '@tooljet-marketplace/common';
+import { SourceOptions, QueryOptions, ErrorResponse, StandardError,EasyPostClient } from './types';
+import EasyPost from '@easypost/api';
 import * as operations from './query_operations';
 
 export default class EasyPostPlugin {
-  async getConnection(sourceOptions: any): Promise<InstanceType<typeof EasyPostClient>> {
-    const { api_key } = sourceOptions;
-    return new EasyPostClient(api_key);
+  private standardizeError(error: unknown): StandardError {
+    if (typeof error === 'string') {
+      return { message: error };
+    }
+
+    if (error instanceof Error) {
+      return { 
+        message: error.message,
+        ...(error.stack && { details: { stack: error.stack } })
+      };
+    }
+
+    if (typeof error === 'object' && error !== null) {
+      const err = error as ErrorResponse;
+      if (err.error) {
+        return {
+          code: err.error.code,
+          message: err.error.message,
+          details: {
+            errors: err.error.errors,
+            status: err.status
+          }
+        };
+      }
+    }
+
+    return { message: 'An unknown error occurred' };
   }
 
-  async testConnection(sourceOptions: any): Promise<ConnectionTestResult> {
-    const { api_key } = sourceOptions;
-    const client = new EasyPostClient(api_key);
-    
+  async getConnection(sourceOptions: SourceOptions): Promise<EasyPostClient> {
     try {
-      await client.User.retrieve('me', undefined);
-      return { status: 'ok' };
-    } catch (error) {
-      let errorMessage = 'Failed to connect to EasyPost API';
-      if (error instanceof Error) {
-        errorMessage = error.message;
+      const { api_key } = sourceOptions;
+      if (!api_key) {
+        throw new Error('API key is required');
       }
-      throw new QueryError('Failed to connect to EasyPost API', errorMessage, {});
+      if (!api_key.startsWith('EZTEST_') && !api_key.startsWith('EZPROD_')) {
+        throw new Error('Invalid API key format. Must start with EZTEST_ or EZPROD_');
+      }
+      return new EasyPost(api_key);
+    } catch (error) {
+      const standardized = this.standardizeError(error);
+      throw new QueryError(
+        'Failed to create EasyPost connection',
+        standardized.message,
+        standardized.details
+      );
     }
   }
 
-  async run(sourceOptions: any, queryOptions: any): Promise<object> {
-    const { operation } = queryOptions;
-    const client = await this.getConnection(sourceOptions);
-
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
+      const client = await this.getConnection(sourceOptions);
+      await client.User.retrieve('me', '');
+      return { status: 'ok' };
+    } catch (error) {
+      const standardized = this.standardizeError(error);
+      throw new QueryError(
+        'EasyPost connection test failed',
+        standardized.message,
+        standardized.details
+      );
+    }
+  }
+
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<object> {
+    try {
+      const { operation } = queryOptions;
+      const client = await this.getConnection(sourceOptions);
+
       switch (operation) {
         case 'create_address':
           return await operations.createAddress(client, queryOptions);
@@ -41,21 +85,15 @@ export default class EasyPostPlugin {
         case 'get_tracker':
           return await operations.getTracker(client, queryOptions);
         default:
-          throw new Error('Unknown operation');
+          throw new Error(`Unsupported operation: ${operation}`);
       }
     } catch (error) {
-      let errorMessage = 'An unknown error occurred';
-      let errorDetails = {};
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        errorDetails = {
-          name: error.name,
-          // Add any EasyPost-specific error details
-        };
-      }
-      
-      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+      const standardized = this.standardizeError(error);
+      throw new QueryError(
+        'EasyPost operation failed',
+        standardized.message,
+        standardized.details
+      );
     }
   }
 }
