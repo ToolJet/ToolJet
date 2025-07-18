@@ -24,10 +24,7 @@ export class PageService implements IPageService {
     protected eventHandlerService: EventsService
   ) {}
 
-  async findPagesForVersion(
-    appVersionId: string,
-    manager?: EntityManager
-  ): Promise<Page[]> {
+  async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
@@ -100,99 +97,6 @@ export class PageService implements IPageService {
     const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
 
     return { pages, events };
-  }
-
-  async cloneGroup(groupPageId: string, appVersionId: string, organizationId) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
-      const groupToClone = await manager.findOne(Page, {
-        where: { id: groupPageId, appVersionId, isPageGroup: true },
-      });
-
-      if (!groupToClone) {
-        throw new Error('Group page not found');
-      }
-
-      let groupName = `${groupToClone.name} (copy)`;
-      let groupHandle = `${groupToClone.handle}-copy`;
-
-      const allPages = await manager.find(Page, { where: { appVersionId } });
-
-      const similarGroupPages = allPages.filter((page) => {
-        return page.name.includes(groupName) || page.handle.includes(groupHandle);
-      });
-
-      if (similarGroupPages.length > 0) {
-        groupName = `${groupToClone.name} (copy ${similarGroupPages.length})`;
-        groupHandle = `${groupToClone.handle}-copy-${similarGroupPages.length}`;
-      }
-
-      const newGroupPage = new Page();
-      newGroupPage.name = groupName;
-      newGroupPage.handle = groupHandle;
-      newGroupPage.index = 999;
-      newGroupPage.pageGroupIndex = groupToClone.pageGroupIndex;
-      newGroupPage.isPageGroup = true;
-      newGroupPage.icon = groupToClone.icon || 'IconFolder';
-      newGroupPage.appVersionId = appVersionId;
-      newGroupPage.autoComputeLayout = groupToClone.autoComputeLayout;
-      newGroupPage.type = groupToClone.type;
-      newGroupPage.openIn = groupToClone.openIn;
-      newGroupPage.appId = groupToClone.appId;
-      newGroupPage.url = groupToClone.url;
-      newGroupPage.disabled = groupToClone.disabled;
-      newGroupPage.hidden = groupToClone.hidden;
-
-      const clonedGroup = await manager.save(newGroupPage);
-
-      // Find child pages in this group
-      const childPages = await manager.find(Page, {
-        where: {
-          appVersionId,
-          pageGroupId: groupToClone.id,
-        },
-      });
-
-      for (const child of childPages) {
-        let childName = `${child.name} (copy)`;
-        let childHandle = `${child.handle}-copy`;
-
-        const existingSimilar = allPages.filter(
-          (page) => page.name.includes(childName) || page.handle.includes(childHandle)
-        );
-
-        if (existingSimilar.length > 0) {
-          childName = `${child.name} (copy ${existingSimilar.length})`;
-          childHandle = `${child.handle}-copy-${existingSimilar.length}`;
-        }
-
-        const clonedChild = new Page();
-        clonedChild.name = childName;
-        clonedChild.handle = childHandle;
-        clonedChild.index = child.index + 1;
-        clonedChild.pageGroupIndex = child.pageGroupIndex;
-        clonedChild.pageGroupId = clonedGroup.id;
-        clonedChild.isPageGroup = false;
-        clonedChild.icon = child.icon || 'IconFile';
-        clonedChild.appVersionId = appVersionId;
-        clonedChild.autoComputeLayout = true;
-        clonedChild.type = child.type;
-        clonedChild.openIn = child.openIn;
-        clonedChild.appId = child.appId;
-        clonedChild.url = child.url;
-        clonedChild.disabled = child.disabled;
-        clonedChild.hidden = child.hidden;
-
-        const newChildPage = await manager.save(clonedChild);
-
-        // Clone events and components for each child page
-        await this.clonePageEventsAndComponents(child.id, newChildPage.id, manager);
-      }
-
-      const pages = await this.findPagesForVersion(appVersionId, manager);
-      const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
-
-      return { pages, events };
-    }, appVersionId);
   }
 
   async clonePageEventsAndComponents(pageId: string, clonePageId: string, manager?: EntityManager) {

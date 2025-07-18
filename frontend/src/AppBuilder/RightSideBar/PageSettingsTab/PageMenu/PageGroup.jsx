@@ -104,6 +104,8 @@ const RenderPageGroup = ({
   const [hovered, setHovered] = useState(false);
   const contentRef = useRef(null);
   const groupItemRootRef = useRef(null);
+  const computedStyles = computeStyles('', hovered);
+  const pageGroupVisibility = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
   const IconElement = (props) => {
     const Icon = Icons?.[pageGroup.icon] ?? Icons?.['IconHome2'];
@@ -138,6 +140,10 @@ const RenderPageGroup = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isExpanded, onToggle, pageGroup.id]);
+
+  if (pageGroupVisibility) {
+    return null;
+  }
 
   if (labelStyle?.label?.hidden) {
     return (
@@ -179,15 +185,17 @@ const RenderPageGroup = ({
         className={`page-group-wrapper tj-list-item ${active && !isExpanded ? 'tj-list-item-selected' : ''}`}
         style={{
           position: 'relative',
+          ...{ ...computedStyles.pill },
         }}
         onClick={isSidebarPinned && handleToggle}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
         <FolderList
           key={pageGroup.id}
           CustomIcon={!labelStyle?.icon?.hidden && IconElement}
           customStyles={computeStyles}
           darkMode={darkMode}
-          hovered={hovered}
         >
           {!labelStyle?.label?.hidden && (
             <div
