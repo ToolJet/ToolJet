@@ -312,8 +312,21 @@ const sidebars = {
           ],
         },
         'app-builder/custom-theme',
+        {
+          'type': 'category',
+          'label': 'Modules',
+          'items': [
+            'app-builder/modules/overview',
+            'app-builder/modules/create-module',
+            'app-builder/modules/input-output',
+            'app-builder/modules/data-flow',
+            'app-builder/modules/using-modules',
+            'app-builder/modules/import-export-modules',
+          ]
+        },
         'app-builder/walkthrough/row-level-security',
         'app-builder/anti-patterns',
+        'app-builder/importing-exporting-applications',
         'tutorial/keyboard-shortcuts',
       ],
     },
