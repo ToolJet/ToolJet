@@ -215,7 +215,17 @@ const MultiLineCodeEditor = (props) => {
       [...localVariableSuggestions, ...JSLangHints, ...autoSuggestionList, ...suggestionList],
       null,
       nearestSubstring
-    ).map((hint) => {
+    )
+    // Apply depth-based sorting (like SingleLineCodeEditor's filterHintsByDepth)
+    .sort((a, b) => {
+      // Calculate depth based on the original hint property (not label)
+      const aDepth = (a.info?.split('.') || []).length;
+      const bDepth = (b.info?.split('.') || []).length;
+      
+      // Sort by depth first (shallow suggestions first)
+      return aDepth - bDepth;
+    })
+    .map((hint) => {
       if (hint.label.startsWith('client') || hint.label.startsWith('server')) return;
 
       delete hint['apply'];
@@ -409,6 +419,9 @@ const MultiLineCodeEditor = (props) => {
                   autocompletion({
                     override: [overRideFunction],
                     activateOnTyping: true,
+                    compareCompletions: (a, b) => {
+                      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
+                    },
                   }),
                   customTabKeymap,
                   keymap.of([...customKeyMaps]),
