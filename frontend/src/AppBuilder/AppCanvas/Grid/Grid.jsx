@@ -823,7 +823,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             }
 
             const groupParentId =
-              boxList.find(({ id }) => id === groupResizeDataRef.current[0].target.id)?.parent ?? 'canvas';
+              boxList.find(({ id }) => id === groupResizeDataRef.current[0]?.target?.id)?.parent ?? 'canvas';
             setReorderContainerChildren(groupParentId);
 
             groupResizeDataRef.current = [];
@@ -911,7 +911,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             // Build the drag context from the event
             const dragContext = dragContextBuilder({ event: e, widgets: boxList, isModuleEditor });
             const { target, source, dragged } = dragContext;
-
             const targetSlotId = target?.slotId;
             const targetGridWidth = useGridStore.getState().subContainerWidths[targetSlotId] || gridWidth;
             const isParentChangeAllowed = dragContext.isDroppable;
@@ -920,12 +919,15 @@ export default function Grid({ gridWidth, currentLayout }) {
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
 
             const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
-            let scrollDelta = computeScrollDelta({ source });
-
+            const componentParentType = target?.widget?.componentType;
+            // For now, only doing it for container and form, we need to check it for other components later
+            let scrollDelta =
+              componentParentType === 'Form' || componentParentType === 'Container'
+                ? document.getElementById(`canvas-${target.slotId}`)?.scrollTop || 0
+                : computeScrollDelta({ source });
             if (isParentChangeAllowed && !isModalToCanvas) {
               // Special case for Modal; If source widget is modal, prevent drops to canvas
               const parent = target.slotId === 'real-canvas' ? null : target.slotId;
-
               handleDragEnd([{ id: e.target.id, x: left, y: top + scrollDelta, parent }]);
             } else {
               const sourcegridWidth = useGridStore.getState().subContainerWidths[source.slotId] || gridWidth;
@@ -1049,7 +1051,6 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             // Determine potential new parent
             let newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
-
             if (newParentId === e.target.id) {
               newParentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
             } else if (parentComponent?.component?.component === 'Modal') {
@@ -1128,7 +1129,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         snappable={true}
         snapGap={false}
         isDisplaySnapDigit={false}
-        snapThreshold={GRID_HEIGHT}
+        // snapThreshold={GRID_HEIGHT}
         bounds={canvasBounds}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}

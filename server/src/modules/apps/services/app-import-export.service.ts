@@ -79,7 +79,8 @@ type NewRevampedComponent =
   | 'Form'
   | 'Image'
   | 'FilePicker'
-
+  | 'Icon'
+  | 'Steps';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -105,7 +106,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tabs',
   'Form',
   'Image',
-  'FilePicker'
+  'FilePicker',
+  'Icon',
+  'Steps',
 ];
 
 @Injectable()
@@ -117,7 +120,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -229,10 +232,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -244,10 +247,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -255,16 +258,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .leftJoinAndSelect('components.permissions', 'permission')
-            .leftJoinAndSelect('permission.users', 'componentUser')
-            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .leftJoinAndSelect('components.permissions', 'permission')
+              .leftJoinAndSelect('permission.users', 'componentUser')
+              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -287,10 +290,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -345,11 +348,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-          .createQueryBuilder(App, 'app')
-          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-          .distinct(true)
-          .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .distinct(true)
+            .getMany()
         : [];
 
     // Process each module from the import data
@@ -1394,10 +1397,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1640,33 +1643,7 @@ export class AppImportExportService {
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
     if (importedVersion.pageSettings) {
-      pageSettings = {
-        properties: {
-          ...importedVersion?.pageSettings?.properties,
-
-          showMenu: (() => {
-            const disableMenuValue = importedVersion?.pageSettings?.properties?.disableMenu?.value;
-
-            if (typeof disableMenuValue === 'boolean') {
-              return {
-                value: !disableMenuValue,
-                fxActive: false,
-              };
-            } else if (typeof disableMenuValue === 'string' && disableMenuValue.includes('{{')) {
-              return {
-                value: disableMenuValue,
-                fxActive: true,
-              };
-            } else {
-              return {
-                value: true,
-                fxActive: false,
-              };
-            }
-          })(),
-        },
-        ...importedVersion.pageSettings,
-      };
+      pageSettings = { ...importedVersion.pageSettings };
     } else {
       pageSettings = {
         properties: {
@@ -2139,10 +2116,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-              query.options,
-              externalResourceMappings['tooljet_database'],
-              user?.organizationId
-            )
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user?.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2508,6 +2485,7 @@ function migrateProperties(
       properties.label = '';
     }
 
+    // NumberInput
     if (componentType === 'NumberInput') {
       if (properties.minValue) {
         if (validation.minValue === undefined) {
@@ -2523,15 +2501,19 @@ function migrateProperties(
         delete properties.maxValue;
       }
     }
+
+    // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
     }
 
+    // Form
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
     }
 
+    // Tabs
     if (componentType === 'Tabs') {
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
@@ -2548,23 +2530,62 @@ function migrateProperties(
       }
     }
 
+    // Image
     if (componentType === 'Image') {
       if (styles.padding) {
         styles.customPadding = styles.padding;
         styles.padding = { value: 'custom' };
       }
+    }
 
-      const borderTypeMapping: Record<string, string> = {
-        'rounded-circle': 'circle',
-        rounded: 'rounded',
-        'img-thumbnail': 'thumbnail',
-        none: 'none',
-      };
+    // FilePicker
+    if (componentType === 'FilePicker') {
+      if (properties.enableDropzone) {
+        properties.enableDropzone = {
+          ...properties.enableDropzone,
+          fxActive: properties?.enableDropzone?.fxActive ?? true,
+        };
+      }
+      if (properties.enablePicker) {
+        properties.enablePicker = { ...properties.enablePicker, fxActive: properties?.enablePicker?.fxActive ?? true };
+      }
+      if (properties.enableMultiple) {
+        properties.enableMultiple = {
+          ...properties.enableMultiple,
+          fxActive: properties?.enableMultiple?.fxActive ?? true,
+        };
+      }
+      if (properties.fileType && !validation.fileType) {
+        validation.fileType = { ...properties.fileType, fxActive: properties?.fileType?.fxActive ?? true };
+        delete properties.fileType;
+      }
 
-      const mappedShape = borderTypeMapping[styles.borderType?.value];
-      if (mappedShape) {
-        styles.imageShape = { value: mappedShape };
-        delete styles.borderType;
+      if (properties.maxFileCount && !validation.maxFileCount) {
+        validation.maxFileCount = { ...properties.maxFileCount, fxActive: properties?.fileType?.fxActive ?? true };
+        delete properties.maxFileCount;
+      }
+      if (properties.maxSize && !validation.maxSize) {
+        validation.maxSize = { ...properties.maxSize, fxActive: properties?.maxSize?.fxActive ?? true };
+        delete properties.maxSize;
+      }
+      if (properties.minSize && !validation.minSize) {
+        validation.minSize = { ...properties.minSize, fxActive: properties?.minSize?.fxActive ?? true };
+        delete properties.minSize;
+      }
+
+      if (!validation.minFileCount) {
+        validation.minFileCount = { value: '{{0}}' };
+      }
+    }
+
+    // Steps
+    if (componentType === 'Steps') {
+      if (!properties.advanced) {
+        properties.advanced = { value: '{{true}}' };
+      }
+      if (properties.steps && !properties.schema) {
+        properties.schema = properties.steps;
+        delete properties.steps;
       }
     }
   }
