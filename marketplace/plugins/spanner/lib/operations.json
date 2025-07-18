@@ -9,7 +9,7 @@
   "properties": {
     "dialect": {
       "key": "dialect",
-      "label": "SQL Dialect",
+      "label": "SQL dialect",
       "type": "dropdown-component-flip",
       "description": "Select the SQL dialect to use",
       "list": [
@@ -32,7 +32,7 @@
     },
     "sql": {
       "key": "sql",
-      "label": "SQL Query",
+      "label": "SQL query",
       "type": "codehinter",
       "description": "Enter SQL query",
       "height": "150px",

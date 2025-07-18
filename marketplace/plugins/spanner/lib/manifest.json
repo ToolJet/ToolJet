@@ -24,14 +24,14 @@
   "defaults": {},
   "properties": {
     "private_key": {
-      "label": "Private Key",
+      "label": "Private key",
       "key": "private_key",
       "type": "password",
       "description": "Enter the Google Cloud service account private key in JSON format",
       "hint": "You can generate a service account key from your Google Cloud Console."
     },
     "instance_id": {
-      "label": "Instance ID",
+      "label": "Instance id",
       "key": "instance_id",
       "type": "text",
       "description": "Enter the Google Cloud Spanner instance ID"
