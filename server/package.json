@@ -49,6 +49,7 @@
     "@casl/ability": "^6.7.3",
     "@css-inline/css-inline": "^0.14.3",
     "@dagrejs/graphlib": "^2.2.4",
+    "@google-cloud/spanner": "^7.21.0",
     "@hubspot/api-client": "^13.0.0",
     "@nestjs/bull": "^11.0.2",
     "@nestjs/common": "^11.1.3",
