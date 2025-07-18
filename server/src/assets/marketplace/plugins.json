@@ -231,8 +231,8 @@
     "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
   },
   {
-    "name": "easypost",
-    "description": "api plugin from easypost",
+    "name": "EasyPost",
+    "description": "EasyPost plugin enables seamless access to multi-carrier shipping, tracking, and address validation services through the EasyPost platform.",
     "version": "1.0.0",
     "id": "easypost",
     "author": "Tooljet",
