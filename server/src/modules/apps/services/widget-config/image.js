@@ -159,7 +159,7 @@ export const imageConfig = {
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: '#ffffff00',
       },
       accordian: 'Container',
     },
@@ -179,7 +179,7 @@ export const imageConfig = {
         key: 'borderType',
         value: 'none',
       },
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 0 },
       accordian: 'Container',
     },
     boxShadow: {
@@ -264,9 +264,9 @@ export const imageConfig = {
     styles: {
       imageFit: { value: 'contain' },
       borderType: { value: 'none' },
-      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      backgroundColor: { value: '#ffffff00' },
       borderColor: { value: '#ffffff00' },
-      borderRadius: { value: '{{6}}' },
+      borderRadius: { value: '{{0}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
       customPadding: { value: '{{0}}' },
