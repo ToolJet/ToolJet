@@ -67,7 +67,7 @@ With this pipeline setup:
 
 The Jenkins pipeline should include several stages corresponding to various GitSync actions. Here’s a high-level overview of what each stage might look like:
 
-### GitSync Actions:
+**GitSync Actions:**
 | Action | Description |
 |--------|-------------|
 | **SETUP_GIT_CONFIG** | Configures the GitSync connection for the organization with GitHub App credentials. |
@@ -120,7 +120,7 @@ pipeline {
             name: 'ACTION',
             choices: [
                 'SETUP_GIT_CONFIG',
-                'PUSH_TO_GIT',.to
+                'PUSH_TO_GIT',
                 'CREATE_FROM_GIT',
                 'SYNC_FROM_GIT',
                 'DEPLOY'
