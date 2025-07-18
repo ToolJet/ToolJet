@@ -193,6 +193,9 @@ export const QueryPanel = ({ darkMode }) => {
           ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
+          ...(isDraggingQueryPane && {
+            zIndex: 11,
+          }),
         }}
       >
         {isQueryPaneExpanded && (

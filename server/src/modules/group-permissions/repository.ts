@@ -3,6 +3,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { catchDbException } from '@helpers/utils.helper';
 import { Injectable } from '@nestjs/common';
 import {
+  Brackets,
   DataSource,
   EntityManager,
   Equal,
@@ -54,22 +55,31 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     }, manager || this.manager);
   }
 
-  async getAllUserGroupsAndRoles(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(GroupPermissions, {
-        where: {
-          organizationId: organizationId,
-          groupUsers: {
-            userId: userId,
-          },
-        },
-        relations: {
-          groupUsers: {
-            group: true,
-          },
-        },
-      });
-    }, manager || this.manager);
+  async getAllUserGroupsAndRoles(userId: string, appId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(GroupPermissions, 'group')
+        .innerJoin('granular_permissions', 'gp', 'gp.group_id = group.id')
+        .innerJoin('apps_group_permissions', 'agp', 'agp.granular_permission_id = gp.id')
+        .leftJoin('group_apps', 'ga', 'ga.apps_group_permissions_id = agp.id')
+        .leftJoin('group_users', 'gu', 'gu.group_id = group.id')
+        .where('group.organization_id = :organizationId', { organizationId })
+        .andWhere('gu.user_id = :userId', { userId })
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('agp.can_view = true').orWhere('agp.can_edit = true');
+          })
+        )
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('gp.is_all = true').orWhere('gp.is_all = false AND ga.app_id = :appId', { appId });
+          })
+        )
+        .select(['group.id AS id'])
+        .groupBy('group.id')
+        .distinct(true)
+        .getRawMany()
+    }, manager);
   }
 
   async createGroup(

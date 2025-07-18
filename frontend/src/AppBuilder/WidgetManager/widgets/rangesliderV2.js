@@ -1,8 +1,8 @@
-export const rangeSliderConfig = {
+export const rangeSliderV2Config = {
   name: 'RangeSlider',
   displayName: 'Range Slider',
   description: 'Adjust value range',
-  component: 'RangeSlider',
+  component: 'RangeSliderV2',
   defaultSize: {
     width: 9,
     height: 60,
@@ -261,7 +261,7 @@ export const rangeSliderConfig = {
     {
       handle: 'setValue',
       displayName: 'Set value',
-      params: [{ handle: 'num1', displayName: 'Value', defaultValue: 'New value' }],
+      params: [{ handle: 'num1', displayName: 'Value', defaultValue: '0' }],
     },
     {
       handle: 'setRangeValue',
@@ -327,15 +327,15 @@ export const rangeSliderConfig = {
     },
     events: [],
     styles: {
-      lineColor: { value: '#E4E7EB' },
-      handleColor: { value: '#FFFFFF' },
-      handleBorderColor: { value: '#ACB2B9' },
-      trackColor: { value: 'var(--primary-brand)' },
-      markerLabel: { value: '#1B1F24' },
+      lineColor: { value: 'var(--cc-surface3-surface)' },
+      handleColor: { value: 'var(--cc-surface1-surface)' },
+      handleBorderColor: { value: 'var(--cc-default-border)' },
+      trackColor: { value: 'var(--cc-primary-brand)' },
+      markerLabel: { value: 'var(--cc-primary-text)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
-      color: { value: '#1B1F24' },
+      color: { value: 'var(--cc-primary-text)' },
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       visibility: { value: '{{true}}' },
