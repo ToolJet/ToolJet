@@ -62,7 +62,10 @@ const ApiEndpointInput = (props) => {
 
   // Check if specUrl is an object (multiple specs) or string (single spec)
   const isMultiSpec = typeof props.specUrl === 'object' && !Array.isArray(props.specUrl);
-  const [selectedSpecType, setSelectedSpecType] = useState(isMultiSpec ? Object.keys(props.specUrl)[0] || '' : null);
+  // Initialize selectedSpecType from props.options.specType if available
+  const [selectedSpecType, setSelectedSpecType] = useState(
+    isMultiSpec ? props.options?.specType || Object.keys(props.specUrl)[0] || '' : null
+  );
 
   const fetchOpenApiSpec = (specUrlOrType) => {
     setLoadingSpec(true);
@@ -101,6 +104,7 @@ const ApiEndpointInput = (props) => {
               path: newPath,
               selectedOperation: newSelectedOperation,
               params: queryParams,
+              specType: specUrlOrType, // Add specType to options
             };
 
             setOptions(newOptions);
@@ -129,6 +133,7 @@ const ApiEndpointInput = (props) => {
       operation,
       selectedOperation: specJson.paths[path][operation],
       params: queryParams,
+      ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
 
     setOptions(newOptions);
@@ -159,6 +164,7 @@ const ApiEndpointInput = (props) => {
             [paramName]: parsedValue,
           },
         },
+        ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
       };
       setOptions(newOptions);
       props.optionsChanged(newOptions);
@@ -168,6 +174,9 @@ const ApiEndpointInput = (props) => {
   const removeParam = (paramType, paramName) => {
     const newOptions = JSON.parse(JSON.stringify(options));
     delete newOptions['params'][paramType][paramName];
+    if (isMultiSpec) {
+      newOptions.specType = selectedSpecType; // Include specType if multiSpec
+    }
     setOptions(newOptions);
     props.optionsChanged(newOptions);
   };
@@ -262,7 +271,14 @@ const ApiEndpointInput = (props) => {
       request: props.options?.params?.request ?? {},
     };
     setLoadingSpec(true);
-    setOptions({ ...props.options, params: queryParams });
+
+    // Initialize options with specType if multiSpec
+    const initialOptions = {
+      ...props.options,
+      params: queryParams,
+      ...(isMultiSpec && { specType: selectedSpecType }),
+    };
+    setOptions(initialOptions);
 
     if (!isMultiSpec) {
       fetchOpenApiSpec();
@@ -275,10 +291,30 @@ const ApiEndpointInput = (props) => {
     }
   }, [selectedSpecType]);
 
+  const handleSpecTypeChange = (val) => {
+    setSelectedSpecType(val);
+    // When spec type changes, immediately update options with new specType
+    const newOptions = {
+      ...options,
+      specType: val,
+      // Clear operation-specific data when changing spec type
+      operation: null,
+      path: null,
+      selectedOperation: null,
+      params: {
+        path: {},
+        query: {},
+        request: {},
+      },
+    };
+    setOptions(newOptions);
+    props.optionsChanged(newOptions);
+  };
+
   const specTypeOptions = isMultiSpec
     ? Object.keys(props.specUrl).map((key) => ({
         value: key,
-        label: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1),
       }))
     : [];
 
@@ -293,8 +329,11 @@ const ApiEndpointInput = (props) => {
           <div className="col flex-grow-1">
             <Select
               options={specTypeOptions}
-              value={{ value: selectedSpecType, label: selectedSpecType }}
-              onChange={(val) => setSelectedSpecType(val)}
+              value={{
+                value: selectedSpecType,
+                label: selectedSpecType.charAt(0).toUpperCase() + selectedSpecType.slice(1),
+              }}
+              onChange={(val) => handleSpecTypeChange(val)}
               width={'100%'}
               styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
             />
