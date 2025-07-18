@@ -1,6 +1,6 @@
 ---
 id: pat
-title: Personal Access Token for Embedded Apps
+title: Personal Access Token
 ---
 
 You can seamlessly and securely embed your ToolJet applications inside customer portals, internal dashboards, and third-party systems, without requiring full user authentication flows.
@@ -97,12 +97,12 @@ Upon visiting this URL:
 
 ## Best Practices
 
-- To use PATs securely and effectively:
-- Set short expiration durations for public or high-risk apps
-- Use HTTPS and proper security headers (like Content-Security-Policy) when embedding apps
-- Regenerate tokens if user roles or app permissions change
-- Avoid storing PATs in localStorage or cookies — ToolJet uses in-memory storage for better isolation
-- Validate app access before generating a PAT to avoid 403 errors
-- Log and monitor PAT usage and expiry events in production environments
-- Apply per-PAT rate limiting to reduce abuse potential
-- Only expose the token once — tokens are returned in plaintext only during creation
+To use PATs securely and effectively:
+- Set short expiration durations for public or high-risk apps.
+- Use HTTPS and proper security headers (like Content-Security-Policy) when embedding apps.
+- Regenerate tokens if user roles or app permissions change.
+- Avoid storing PATs in localStorage or cookies, ToolJet uses in-memory storage for better isolation.
+- Validate app access before generating a PAT to avoid 403 errors.
+- Log and monitor PAT usage and expiry events in production environments.
+- Apply per-PAT rate limiting to reduce abuse potential.
+- Only expose the token once, tokens are returned in plaintext only during creation.

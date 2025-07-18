@@ -539,7 +539,8 @@ const sidebars = {
               'items': [
                 'user-management/authentication/self-hosted/overview',
                 'user-management/authentication/self-hosted/instance-login',
-                'user-management/authentication/self-hosted/workspace-login'
+                'user-management/authentication/self-hosted/workspace-login',
+                'user-management/authentication/self-hosted/pat'
               ]
             },
             'user-management/authentication/cloud-login',
@@ -603,7 +604,6 @@ const sidebars = {
             'user-management/group-sync/oidc',
           ]
         },
-        'user-management/pat',
         {
           'type': 'category',
           'label': 'Profile Management',
