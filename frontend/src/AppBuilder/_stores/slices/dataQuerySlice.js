@@ -81,7 +81,12 @@ export const createDataQuerySlice = (set, get) => ({
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
       const runOnCreate = options.runOnCreate;
-      const { permissions, ...cleanSelectedQuery } = selectedQuery; //Remove permissions before using the query data
+
+      let cleanSelectedQuery = { ...selectedQuery };
+      if(selectedQuery?.permissions) {
+        delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
+      }
+
       set((state) => {
         state.dataQuery.queries.modules[moduleId] = [
           {
