@@ -232,7 +232,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
       <div className="d-flex align-items-center">
         {isModuleEditor ? (
-          <p className="widgets-manager-header">Components</p>
+          <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
         ) : (
           <ComponentModuleTab onChangeTab={handleChangeTab} hasModuleAccess={hasModuleAccess} />
         )}
