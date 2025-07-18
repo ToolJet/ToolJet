@@ -142,7 +142,7 @@ If ToolJet needs to connect to self-signed HTTPS endpoints, ensure the `NODE_EXT
 
 By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable: 
 
-- `MAX_JSON_SIZE = 150`
+- `MAX_JSON_SIZE = 150mb`
 
 ### Third-Party Integrations
 
