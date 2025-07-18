@@ -32,8 +32,11 @@ export function retrieveWhiteLabelLogo() {
 export async function setFaviconAndTitle(location) {
   // TODO:Uncomment-if-needed
   // await fetchWhiteLabelDetails(organizationId);
+  if (!location || !location.pathname) {
+    document.title = 'Loading';
+    return;
+  }
   const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
-
   // Set favicon
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
