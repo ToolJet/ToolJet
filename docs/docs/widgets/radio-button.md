@@ -1,5 +1,5 @@
 ---
-id: radio-button
+id: radio-button-v2
 title: Radio Button
 ---
 

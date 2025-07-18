@@ -1,6 +1,6 @@
 ---
 id: date-picker-v2
-title: Date Picker V2
+title: Date Picker
 ---
 
 The **Date Picker** component can be used for selecting dates without time input. It offers customizable formats, validation, and styling.
