@@ -35,7 +35,7 @@ const MobileHeader = ({
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const { showOnMobile } = properties ?? {};
 
   // Fetch the version parameter from the query string
@@ -135,7 +135,7 @@ const MobileHeader = ({
         className={'mobile-nav-container'}
       >
         <div className="d-flex w-100">
-          {isPagesSidebarVisible && showOnMobile && _renderMobileNavigationMenu()}
+          {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
           <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
         </div>
       </Header>
