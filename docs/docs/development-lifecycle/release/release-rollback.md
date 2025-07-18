@@ -37,3 +37,9 @@ For example, after releasing a new version v1.2.0, users report failures of the 
 
 4. A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Release** button will release the current version of the app.
     <img className="screenshot-full img-s" src="/img/development-lifecycle/release/release/confirm.png" alt="release"/>
+
+## Release Application Permission
+
+Admin can configure the Release Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Release** button for users who do not have the required permission, allowing only authorized roles, such as managers, to release the application.
+<img className="screenshot-full img-s" src="/img/development-lifecycle/release/release/disable-release.png" alt="release"/>
+
