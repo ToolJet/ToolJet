@@ -25,7 +25,7 @@ export class StepsV2Migration1742369436314 implements MigrationInterface {
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 
   private async processUpdates(entityManager, components) {
     for (const component of components) {
@@ -53,16 +53,14 @@ export class StepsV2Migration1742369436314 implements MigrationInterface {
         styles['currentStepLabel'] = styles.textColor;
       }
       delete styles.textColor;
-      if (properties.steps) {
-        properties['schema'] = properties.steps;
-        delete properties.steps;
-        properties['advanced'] = { value: '{{true}}' };
-      }
 
-      // if (properties.stepsSelectable) {
-      //   properties.disabledState = styles.disabledState;
-      //   delete styles.disabledState;
-      // }
+      if (!properties.advanced) {
+        properties.advanced = { value: '{{true}}' };
+      }
+      if (properties.steps && !properties.schema) {
+        properties.schema = properties.steps;
+        delete properties.steps;
+      }
 
       // if (generalStyles?.boxShadow) {
       //   styles.boxShadow = generalStyles?.boxShadow;

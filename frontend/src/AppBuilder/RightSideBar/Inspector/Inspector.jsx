@@ -112,7 +112,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'VerticalDivider',
   'ModalV2',
   'Tabs',
-  'RangeSlider',
+  'RangeSliderV2',
   'Link',
   'Steps',
   'FilePicker',
@@ -141,7 +141,7 @@ export const Inspector = ({
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
-  console.log('selectedComponentId', selectedComponentId);
+
   const tempComponentMeta = deepClone(
     componentTypes.find((comp) => allComponents?.[selectedComponentId]?.component.component === comp.component)
   );
@@ -624,7 +624,9 @@ export const Inspector = ({
           </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>{renderTabs()}</div>
+        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>
+          {renderTabs()}
+        </div>
       </div>
       <span className="widget-documentation-link">
         <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
@@ -636,8 +638,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>

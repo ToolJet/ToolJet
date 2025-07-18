@@ -33,6 +33,7 @@ export const Viewer = ({
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
+  const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
 
   const {
     isEditorLoading,
@@ -75,11 +76,11 @@ export const Viewer = ({
 
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
-  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
 
-  const hideSidebar = moduleMode || !isPagesSidebarVisible || appType === 'module';
+  const hideSidebar = moduleMode || isPagesSidebarHidden || appType === 'module';
 
   const computeCanvasMaxWidth = useCallback(() => {
     if (globalSettings?.maxCanvasWidth) {
@@ -131,7 +132,7 @@ export const Viewer = ({
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents, moduleId);
-  }, [currentPageComponents, moduleId, updateCanvasHeight]);
+  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);
@@ -234,7 +235,7 @@ export const Viewer = ({
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
                               marginLeft:
-                                !isPagesSidebarVisible || currentLayout === 'mobile'
+                                isPagesSidebarHidden || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
                                   ? '0px'

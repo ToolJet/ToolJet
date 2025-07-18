@@ -129,7 +129,10 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     priorityCheck = false,
     manager?: EntityManager
   ): Promise<AppEnvironment> {
-    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const condition: FindOneOptions<AppEnvironment> = {

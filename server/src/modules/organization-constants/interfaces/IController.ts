@@ -2,7 +2,6 @@ import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@m
 import { OrganizationConstantType } from '../constants';
 
 export interface IOrganizationConstantController {
-  get(user: any, type?: OrganizationConstantType): Promise<object>;
   getConstantsFromApp(app: any, user: any): Promise<object>;
   getConstantsFromEnvironment(user: any, environmentId: string, type?: OrganizationConstantType): Promise<object>;
   create(user: any, createOrganizationConstantDto: CreateOrganizationConstantDto): Promise<object>;

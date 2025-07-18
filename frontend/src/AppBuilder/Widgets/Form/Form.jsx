@@ -139,6 +139,7 @@ const FormComponent = (props) => {
     currentLayout,
     isContainer: true,
     componentCount,
+    value: isJSONSchema,
   });
 
   const parentRef = useRef(null);
@@ -230,8 +231,8 @@ const FormComponent = (props) => {
       childValidation = checkJsonChildrenValidtion();
     } else {
       Object.keys(childComponents ?? {}).forEach((childId) => {
-        if (childrenData?.[childId]?.name) {
-          const componentName = childComponents?.[childId]?.component?.component?.name;
+        const componentName = childComponents?.[childId]?.component?.component?.name;
+        if (childrenData?.[childId]?.name || componentName) {
           const componentValue = (() => {
             const childData = childrenData[childId];
             if (!childData) return null; // Default to null if childData is undefined
@@ -267,7 +268,7 @@ const FormComponent = (props) => {
 
     setExposedVariables(exposedVariables);
     setValidation(childValidation);
-  }, [childrenData, advanced]);
+  }, [childrenData, advanced, childComponents]);
 
   useEffect(() => {
     document.addEventListener('submitForm', handleFormSubmission);

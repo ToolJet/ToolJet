@@ -118,6 +118,7 @@ export const createGridSlice = (set, get) => ({
       adjustComponentPositions,
       getResolvedComponent,
       getComponentTypeFromId,
+      getComponentDefinition
     } = get();
 
     try {
@@ -180,8 +181,11 @@ export const createGridSlice = (set, get) => ({
           }
         } else if (componentType === 'Form') {
           const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-          const { generateFormFrom, showHeader, showFooter, headerHeight, footerHeight } = properties;
-          if (generateFormFrom === 'jsonSchema') {
+          const { component } = getComponentDefinition(modifiedComponentId);
+          const generateFormFrom = component?.definition?.properties?.generateFormFrom?.value;
+          const resolvedGenerateFormFrom = getResolvedValue(generateFormFrom);
+          const { showHeader, showFooter, headerHeight, footerHeight } = properties;
+          if (resolvedGenerateFormFrom === 'jsonSchema') {
             //Inside element go inside fieldset and then find the last element and get the height
             const lastElement = element.querySelector('fieldset:last-child');
             if (lastElement) {
