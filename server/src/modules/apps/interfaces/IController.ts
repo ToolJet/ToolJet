@@ -3,9 +3,10 @@ import { AppCreateDto, AppUpdateDto } from '../dto';
 import { App as AppEntity } from '@entities/app.entity';
 import { VersionReleaseDto } from '../dto';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
+import { Response } from 'express';
 
 export interface IAppsController {
-  create(user: UserEntity, appCreateDto: AppCreateDto): Promise<any>;
+  create(user: UserEntity, appCreateDto: AppCreateDto, response: Response, cookies: Record<string, any>): Promise<any>;
 
   validatePrivateAppAccess(
     versionName: string,

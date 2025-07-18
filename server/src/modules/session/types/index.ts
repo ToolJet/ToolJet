@@ -14,6 +14,7 @@ export type JWTPayload = {
   isPATLogin?: boolean;
   token?: string;
   appId?: string;
+  tj_api_source?: string;
 };
 
 interface Features {
