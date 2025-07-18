@@ -9,6 +9,7 @@ import { ComponentUsersRepository } from './repositories/component-users.reposit
 import { ComponentPermissionsRepository } from './repositories/component-permissions.repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 
 export class AppPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -33,6 +34,7 @@ export class AppPermissionsModule extends SubModule {
         ComponentUsersRepository,
         ComponentPermissionsRepository,
         FeatureAbilityFactory,
+        GroupPermissionsRepository
       ],
       exports: [AppPermissionsUtilService, AppPermissionsService],
     };

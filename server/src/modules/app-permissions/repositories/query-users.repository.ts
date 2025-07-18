@@ -3,10 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { QueryPermission } from '@entities/query_permissions.entity';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 
 @Injectable()
 export class QueryUsersRepository extends Repository<QueryUser> {
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    private groupPermissionsRepository: GroupPermissionsRepository
+  ) {
     super(QueryUser, dataSource.createEntityManager());
   }
 
@@ -47,9 +51,19 @@ export class QueryUsersRepository extends Repository<QueryUser> {
   async checkQueryUserWithGroup(
     queryPermission: QueryPermission,
     userId: string,
+    organizationId: string,
+    appId: string,
     manager?: EntityManager
   ): Promise<boolean> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      const allowedGroups = await this.groupPermissionsRepository.getAllUserGroupsAndRoles(
+        userId,
+        appId,
+        organizationId,
+        manager
+      );
+      const allowedGroupIds = allowedGroups.map(group => group.id);
+
       const result = await manager
         .createQueryBuilder(QueryUser, 'query_users')
         .innerJoin('query_users.permissionGroup', 'group')
@@ -58,6 +72,7 @@ export class QueryUsersRepository extends Repository<QueryUser> {
           permissionId: queryPermission.id,
         })
         .andWhere('groupUser.userId = :userId', { userId })
+        .andWhere('group.id IN (:...allowedGroupIds)', { allowedGroupIds })
         .getOne();
 
       return !!result;

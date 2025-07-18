@@ -14,7 +14,7 @@ export class PageHelperService implements IPageHelperService {
     protected licenseTermsService: LicenseTermsService
   ) {}
 
-  public async fetchPages(appVersionId: string, organizationId: string, manager?: EntityManager): Promise<Page[]> {
+  public async fetchPages(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     let allPages = [];
     return await dbTransactionWrap(async (manager: EntityManager) => {
       allPages = await manager.find(Page, {

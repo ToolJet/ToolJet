@@ -15,6 +15,8 @@ import { isEmpty } from 'lodash';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IDataQueriesService } from './interfaces/IService';
+import { App } from '@entities/app.entity';
+
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
   constructor(
@@ -23,7 +25,7 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataSourceRepository: DataSourcesRepository
   ) {}
 
-  async getAll(user: User, versionId: string, mode?: string) {
+  async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
     const serializedQueries = [];
 
@@ -146,7 +148,7 @@ export class DataQueriesService implements IDataQueriesService {
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true, apps: true });
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response);
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view');
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response) {

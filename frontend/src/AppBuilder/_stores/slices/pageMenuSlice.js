@@ -102,10 +102,6 @@ export const createPageMenuSlice = (set, get) => {
     isPageGroup: false,
     pageSettings: {},
     showPagePermissionModal: false,
-    permissionPage: null,
-    selectedUserGroups: [],
-    selectedUsers: [],
-    pagePermission: null,
     newPagePopupConfig: {
       show: false,
       type: null,

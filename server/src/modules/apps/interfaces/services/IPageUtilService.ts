@@ -2,7 +2,7 @@ import { Page } from 'src/entities/page.entity';
 import { EntityManager } from 'typeorm';
 import { CreatePageDto } from '@modules/apps/dto/page';
 export interface IPageHelperService {
-  fetchPages(appVersionId: string, organizationId: string, manager?: EntityManager): Promise<Page[]>;
+  fetchPages(appVersionId: string, manager?: EntityManager): Promise<Page[]>;
   reorderPages(udpateObject: any, appVersionId: string, organizationId: string): Promise<void>;
   deletePageGroup(
     page: Page,
