@@ -219,7 +219,7 @@ const sidebars = {
                   'type': 'category',
                   'label': 'Form',
                   'items': [
-                    'widgets/form/form',
+                    'widgets/form/generate-form',
                     'widgets/form/properties',
                     'widgets/form/csa',
                     'widgets/form/schema'

@@ -1,7 +1,6 @@
 ---
-id: form
+id: generate-form
 title: Generate Form
-slug: /widgets/form/form
 ---
 
 The **Form** component in ToolJet allows you to group multiple input fields together and manage them as a single unit. It simplifies data collection, validation, and submission workflows by bundling all form-related components and logic in one place. 
