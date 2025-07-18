@@ -22,7 +22,7 @@
   "defaults": {},
   "properties": {
     "as-api-key": {
-      "label": "Aftership API Key",
+      "label": "API Key",
       "key": "as-api-key",
       "type": "password",
       "description": "Enter your Aftership API key",

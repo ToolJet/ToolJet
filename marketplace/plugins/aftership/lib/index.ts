@@ -69,19 +69,6 @@ export default class Aftership implements QueryService {
 
       const result = await response.json();
 
-      if (!response.ok) {
-        throw new QueryError(
-          'AfterShip API returned an error',
-          result?.meta?.message || 'Unknown API error',
-          {
-            status: response.status,
-            statusText: response.statusText,
-            errorCode: result?.meta?.code,
-            errorType: result?.meta?.type,
-            raw: result,
-          }
-        );
-      }
 
       return {
         status: 'ok',
@@ -90,8 +77,10 @@ export default class Aftership implements QueryService {
     } catch (err: any) {
       const errorMessage = err?.message || 'Unknown error';
       const errorDetails: any = {
+        message: errorMessage,
         name: err?.name,
         code: err?.code,
+        raw: err,
       };
 
       if (err?.response) {
@@ -123,11 +112,12 @@ export default class Aftership implements QueryService {
 
       const result = await response.json();
 
-      if (!response.ok || result?.meta?.code !== 200) {
+      if (result?.meta?.code !== 200) {
         throw new QueryError(
           'Failed to verify connection',
           result?.meta?.message || 'Unexpected response during connection test',
           {
+            message : result?.meta?.message || 'Unknown error',
             status: response.status,
             statusText: response.statusText,
             errorCode: result?.meta?.code,
@@ -144,6 +134,7 @@ export default class Aftership implements QueryService {
     } catch (error: any) {
       const errorMessage = error?.message || 'Unknown error';
       const errorDetails: any = {
+        message: error?.message,
         name: error?.name,
         code: error?.code,
       };
@@ -152,7 +143,6 @@ export default class Aftership implements QueryService {
         errorDetails.status = error.response.status;
         errorDetails.response = error.response.data;
       }
-
       throw new QueryError('Connection failed', errorMessage, errorDetails);
     }
   }
