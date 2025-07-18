@@ -9626,6 +9626,10 @@ tbody {
           max-width: 108px !important;
         }
 
+        &[data-name="type-header"] {
+          max-width: 108px !important;
+        }
+
         span,
         a {
           white-space: nowrap;
@@ -9658,6 +9662,9 @@ tbody {
 
       &[data-name="meta-header"] {
         width: 80px !important;
+      }
+      &[data-name="type-header"] {
+        max-width: 108px !important;
       }
 
       &[data-name="role-header"] {
@@ -12936,7 +12943,7 @@ tbody {
       }
 
       tr>th {
-        min-width: 203px;
+        min-width: 108px;
       }
     }
 
