@@ -346,7 +346,7 @@ class AppComponent extends React.Component {
                   }
                 />
 
-                {getAuditLogsRoutes(this.props)}
+                {getAuditLogsRoutes(mergedProps)}
                 <Route
                   exact
                   path="/:workspaceId/profile-settings"
