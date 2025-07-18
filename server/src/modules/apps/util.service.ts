@@ -86,11 +86,15 @@ export class AppsUtilService implements IAppsUtilService {
                     name: 'Select datasource',
                     id: 'select_datasource',
                     loadingStates: ['Generating app', 'App generated successfully'],
+                    hidden: true,
+                    parent_step_id: 'setup_database',
                   },
                   {
                     name: 'Connect datasource',
                     id: 'connect_datasource',
                     loadingStates: ['Generating app', 'App generated successfully'],
+                    hidden: true,
+                    parent_step_id: 'setup_database',
                   },
                   {
                     name: 'Generate app',

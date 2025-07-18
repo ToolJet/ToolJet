@@ -30,6 +30,9 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   );
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
 
+  const activeStepDetails = aiGenerationMetadata.steps?.find((step) => step.id === aiGenerationMetadata.active_step);
+  const activeStep = activeStepDetails?.hidden ? activeStepDetails.parent_step_id : aiGenerationMetadata.active_step;
+
   const getSaveIndicator = () => {
     if (isSaving) {
       return 'Saving...';
@@ -86,8 +89,15 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
 
                   {isUserInZeroToOneFlow && (
                     <Steps
-                      steps={aiGenerationMetadata?.steps?.map((step) => ({ label: step.name, value: step.id })) ?? []}
-                      activeStep={aiGenerationMetadata?.active_step}
+                      steps={
+                        aiGenerationMetadata.steps
+                          ?.filter((step) => !step.hidden)
+                          ?.map((step) => ({
+                            label: step.name,
+                            value: step.id,
+                          })) ?? []
+                      }
+                      activeStep={activeStep}
                     />
                   )}
 

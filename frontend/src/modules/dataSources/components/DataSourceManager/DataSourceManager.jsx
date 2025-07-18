@@ -38,6 +38,7 @@ import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
 import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
+import SampleDataSourceBody from './SampleDataSourceBody';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -168,7 +169,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   onExit = () => {
-    !this.state.selectedDataSource?.id && this.props.environmentChanged(returnDevelopmentEnv(this.props.environments));
+    !this.state.selectedDataSource?.id &&
+      this.props.environmentChanged?.(returnDevelopmentEnv(this.props.environments));
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,
@@ -665,44 +667,16 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   renderSampleDBModal = () => {
-    const { dataSourceMeta, selectedDataSourceIcon, creatingApp } = this.state;
+    const { creatingApp } = this.state;
+
     return (
-      <div className="sample-db-modal-body">
-        <div className="row sample-db-title" data-cy="sample-db-postgres-title">
-          <div className="col-md-1">
-            {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
-          </div>
-          <div className="col-md-1">PostgreSQL</div>
-        </div>
-        <div className={'sample-db-description'} data-cy="sample-db-description">
-          <p className={`p ${this.props.darkMode ? 'dark' : ''}`}>
-            This PostgreSQL data source is a shared resource and may show varying data
-            <br /> due to real-time updates. It&apos;s reset daily for some consistency, but please note <br />
-            it&apos;s designed for user exploration, not production use.
-          </p>
-        </div>
-        <div className="create-btn-cont">
-          <ButtonSolid
-            className={`create-app-btn`}
-            data-cy="create-sample-app-button"
-            isLoading={creatingApp}
-            // disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-            variant="primary"
-            onClick={this.createSampleApp}
-            fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
-          >
-            Create sample application
-          </ButtonSolid>
-        </div>
-        <div className="image-container">
-          <img
-            src="assets/images/Sample data source.png"
-            className="img-sample-db"
-            alt="Sample data source"
-            data-cy="sample-db-image"
-          />
-        </div>
-      </div>
+      <SampleDataSourceBody
+        darkMode={this.props.darkMode}
+        isCreatingSampleApp={creatingApp}
+        isVersionReleased={this.props.isVersionReleased}
+        onCreateSampleApp={this.createSampleApp}
+        showCreateSampleAppBtn={this.props.showCreateSampleAppBtn}
+      />
     );
   };
 
@@ -946,7 +920,9 @@ class DataSourceManagerComponent extends React.Component {
       this.selectDataSource(dataSource);
     };
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
-    const sampleDBmodalBodyStyle = isSampleDb ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' } : {};
+    const sampleDBmodalBodyStyle = isSampleDb
+      ? { padding: '56px 32px 64px 32px', borderBottom: '1px solid #E6E8EB' }
+      : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
       ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
@@ -1015,14 +991,17 @@ class DataSourceManagerComponent extends React.Component {
                         </div>
                       </div>
                     ) : (
-                      <div className="row">
-                        <div className="col-md-2">
-                          <SolidIcon name="tooljet" />
-                        </div>
-                        <div className="col-md-10" data-cy="sample-data-source-title">
-                          {' '}
-                          Sample data source
-                        </div>
+                      <div
+                        className={cn(
+                          'tw-flex tw-items-center tw-gap-2 tw-pt-3 tw-pb-6',
+                          classes?.sampleDbTitleWrapper
+                        )}
+                      >
+                        {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 24, 24, selectedDataSourceIcon)}
+
+                        <h3 className="tw-font-medium tw-mb-0" data-cy="sample-data-source-title">
+                          {selectedDataSource?.name ?? 'Sample data source'}
+                        </h3>
                       </div>
                     )}
                     {!selectedDataSource && (
@@ -1079,8 +1058,7 @@ class DataSourceManagerComponent extends React.Component {
                       {this.renderSourceComponent(selectedDataSource.kind, isPlugin)}
                     </div>
                   ) : (
-                    selectedDataSource &&
-                    isSampleDb && <div className="dataSourceWrapper">{this.renderSampleDBModal()}</div>
+                    selectedDataSource && isSampleDb && this.renderSampleDBModal()
                   )}
                   {!selectedDataSource &&
                     this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
@@ -1175,10 +1153,7 @@ class DataSourceManagerComponent extends React.Component {
                         {this.props.t('globals.readDocumentation', 'Read documentation')}
                       </a>
                     </div>
-                    <div
-                      className={!isSampleDb ? `col-auto` : 'col-auto test-connection-sample-db'}
-                      data-cy="button-test-connection"
-                    >
+                    <div className="col-auto" data-cy="button-test-connection">
                       <TestConnection
                         kind={selectedDataSource?.kind}
                         pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
