@@ -101,7 +101,7 @@ To use PATs securely and effectively:
 - Set short expiration durations for public or high-risk apps.
 - Use HTTPS and proper security headers (like Content-Security-Policy) when embedding apps.
 - Regenerate tokens if user roles or app permissions change.
-- Avoid storing PATs in localStorage or cookies, ToolJet uses in-memory storage for better isolation.
+- Avoid storing PATs in local storage or cookies, ToolJet uses in-memory storage for better isolation.
 - Validate app access before generating a PAT to avoid 403 errors.
 - Log and monitor PAT usage and expiry events in production environments.
 - Apply per-PAT rate limiting to reduce abuse potential.
