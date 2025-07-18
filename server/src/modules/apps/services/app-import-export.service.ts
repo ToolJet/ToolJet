@@ -1643,33 +1643,7 @@ export class AppImportExportService {
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
     if (importedVersion.pageSettings) {
-      pageSettings = {
-        properties: {
-          ...importedVersion?.pageSettings?.properties,
-
-          showMenu: (() => {
-            const disableMenuValue = importedVersion?.pageSettings?.properties?.disableMenu?.value;
-
-            if (typeof disableMenuValue === 'boolean') {
-              return {
-                value: !disableMenuValue,
-                fxActive: false,
-              };
-            } else if (typeof disableMenuValue === 'string' && disableMenuValue.includes('{{')) {
-              return {
-                value: disableMenuValue,
-                fxActive: true,
-              };
-            } else {
-              return {
-                value: true,
-                fxActive: false,
-              };
-            }
-          })(),
-        },
-        ...importedVersion.pageSettings,
-      };
+      pageSettings = { ...importedVersion.pageSettings };
     } else {
       pageSettings = {
         properties: {
