@@ -8,11 +8,29 @@ import { SourceOptions, QueryOptions, Dialect } from "./types";
 import { Spanner as GoogleSpanner, Instance } from "@google-cloud/spanner";
 
 export default class Spanner implements QueryService {
-  private validateSourceOptions(sourceOptions: SourceOptions) {
-    const { project_id, client_email, private_key, instance_id } =
-      sourceOptions;
+  private getPrivateKey(configs?: string): {
+    project_id?: string;
+    client_email?: string;
+    private_key?: string;
+  } {
+    return this.parseJSON(configs);
+  }
 
-    if (!project_id || !client_email || !private_key || !instance_id) {
+  private parseJSON(json?: string): object {
+    if (!json) return {};
+    return JSON.parse(json);
+  }
+
+  private validateSourceOptions(sourceOptions: SourceOptions) {
+    const privateKey = this.getPrivateKey(sourceOptions?.private_key);
+    const { instance_id } = sourceOptions;
+
+    if (
+      !privateKey?.project_id ||
+      !privateKey?.client_email ||
+      !privateKey?.private_key ||
+      !instance_id
+    ) {
       const error = new Error("Required Spanner credentials are missing");
       error.name = "InvalidSourceOptionsError";
       throw error;
@@ -96,8 +114,11 @@ export default class Spanner implements QueryService {
       this.validateSourceOptions(sourceOptions);
       this.validateQueryOptions(queryOptions);
 
-      const { client_email, project_id, private_key, instance_id } =
-        sourceOptions;
+      const { instance_id } = sourceOptions;
+      const { project_id, client_email, private_key } = this.getPrivateKey(
+        sourceOptions?.private_key
+      );
+
       const { sql, query_params, database_id, param_types, dialect, options } =
         queryOptions;
 
@@ -215,8 +236,10 @@ export default class Spanner implements QueryService {
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
     this.validateSourceOptions(sourceOptions);
-    const { client_email, project_id, private_key, instance_id } =
-      sourceOptions;
+    const { instance_id } = sourceOptions;
+    const { project_id, client_email, private_key } = this.getPrivateKey(
+      sourceOptions?.private_key
+    );
 
     const { instance } = this.getSpannerClient({
       projectId: project_id,

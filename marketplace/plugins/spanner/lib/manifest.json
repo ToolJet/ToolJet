@@ -12,12 +12,6 @@
       "rawData": {}
     },
     "options": {
-      "client_email": {
-        "type": "string"
-      },
-      "project_id": {
-        "type": "string"
-      },
       "private_key": {
         "type": "string",
         "encrypted": true
@@ -29,25 +23,11 @@
   },
   "defaults": {},
   "properties": {
-    "client_email": {
-      "label": "Client Email",
-      "key": "client_email",
-      "type": "text",
-      "description": "Enter the Google Cloud service account client email",
-      "hint": "You can get this from your Google Cloud Console under Service Accounts."
-    },
-    "project_id": {
-      "label": "Project ID",
-      "key": "project_id",
-      "type": "text",
-      "description": "Enter Project ID",
-      "hint": "This is the ID of your Google Cloud project where the Spanner instance is hosted."
-    },
     "private_key": {
       "label": "Private Key",
       "key": "private_key",
       "type": "password",
-      "description": "Enter the Google Cloud service account private key",
+      "description": "Enter the Google Cloud service account private key in JSON format",
       "hint": "You can generate a service account key from your Google Cloud Console."
     },
     "instance_id": {
@@ -58,8 +38,6 @@
     }
   },
   "required": [
-    "client_email",
-    "project_id",
     "private_key",
     "instance_id"
   ]

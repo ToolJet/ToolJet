@@ -1,7 +1,5 @@
 export type SourceOptions = {
   private_key?: string;
-  client_email?: string;
-  project_id?: string;
   instance_id?: string;
 };
 
