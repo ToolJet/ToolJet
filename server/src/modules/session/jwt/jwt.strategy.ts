@@ -48,6 +48,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const user: User = await this.userRepository.findByEmail(payload.sub);
       user.organizationIds = payload.organizationIds;
       user.sessionId = payload.sessionId;
+      user.tjApiSource = payload.tj_api_source;
+
       return user;
     }
 
@@ -103,6 +105,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       user.isPasswordLogin = payload.isPasswordLogin;
       user.isSSOLogin = payload.isSSOLogin;
       user.sessionId = payload.sessionId;
+      user.tjApiSource = payload.tj_api_source;
       if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
     }
 
