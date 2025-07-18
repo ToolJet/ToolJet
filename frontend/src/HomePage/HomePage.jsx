@@ -156,6 +156,7 @@ class HomePageComponent extends React.Component {
       const templateId = aiCookies?.tj_template_id;
 
       console.log('aiCookies', aiCookies);
+      localStorage.setItem('aiCookies', JSON.stringify(aiCookies || {}));
 
       /* First check the user permission */
       if (latestPrompt || templateId) {
@@ -194,6 +195,7 @@ class HomePageComponent extends React.Component {
 
   componentDidMount() {
     console.log('inside-here', authenticationService.currentSessionValue);
+    localStorage.setItem('obj', JSON.stringify(authenticationService?.currentSessionValue || {}));
     this.handleAiOnboarding();
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {
