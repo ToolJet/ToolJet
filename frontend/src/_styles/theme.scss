@@ -9663,6 +9663,7 @@ tbody {
       &[data-name="meta-header"] {
         width: 80px !important;
       }
+
       &[data-name="type-header"] {
         max-width: 108px !important;
       }
@@ -11587,7 +11588,7 @@ tbody {
     align-items: center;
     padding: 7px 8px;
     gap: 10px;
-    width: 24px;
+    width: 34px;
     height: 24px;
     background: var(--slate4) !important;
     color: var(--slate9);
@@ -11602,7 +11603,7 @@ tbody {
     align-items: center;
     padding: 7px 8px;
     gap: 10px;
-    width: 24px;
+    width: 34px;
     height: 24px;
     border-radius: 6px;
   }
@@ -11626,7 +11627,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 70%;
+    width: 80%;
   }
 }
 
