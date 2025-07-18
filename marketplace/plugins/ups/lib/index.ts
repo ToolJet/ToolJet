@@ -153,7 +153,7 @@ export default class Ups implements QueryService {
 
       const errorMessage = errors?.[0]?.message || "Unknown error occurred";
 
-      throw new QueryError("OAuth token generation failed", errorMessage, {
+      throw new QueryError("Query could not be completed", errorMessage, {
         status: response.status,
         statusText: response.statusText,
         errors: errors,
@@ -164,7 +164,7 @@ export default class Ups implements QueryService {
 
     if (!data.access_token || !data.expires_in) {
       throw new QueryError(
-        "Invalid OAuth response",
+        "Query could not be completed",
         "Access token or expiration time is missing",
         {
           status: response.status,
@@ -186,7 +186,7 @@ export default class Ups implements QueryService {
 
     if (!client_id || !client_secret || !shipper_number || !environment) {
       throw new QueryError(
-        "Required source options are missing",
+        "Query could not be completed",
         "Missing required source options",
         {
           client_id: !!client_id,
@@ -199,7 +199,7 @@ export default class Ups implements QueryService {
 
     if (!Object.values(Environment).includes(environment)) {
       throw new QueryError(
-        "Invalid environment value",
+        "Query could not be completed",
         "Invalid environment, expected 'production' or 'cie'",
         {
           environment,
