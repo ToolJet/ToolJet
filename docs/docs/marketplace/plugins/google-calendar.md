@@ -15,6 +15,8 @@ These credentials are used to authenticate via OAuth2 and access calendar data s
 
 You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Calendar account securely.
 
+Note: After completing the OAuth flow, the query must be triggered again to load the data.
+
 <img className="screenshot-full img-l" src="/img/marketplace/plugins/googlecal/connection.png" alt="Hugging Face Configuration" />
 
 ### Generating Client ID and Client Secret
