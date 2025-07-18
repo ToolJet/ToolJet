@@ -131,12 +131,13 @@ export const createAppSlice = (set, get) => ({
   setGlobalSettings: (globalSettings) => set(() => ({ globalSettings }), false, 'setGlobalSettings'),
   toggleAppMaintenance: (moduleId = 'canvas') => {
     const { isMaintenanceOn, appId } = get().appStore.modules[moduleId].app;
+    const newState = !isMaintenanceOn;
 
-    appsService.setMaintenance(appId, !isMaintenanceOn).then(() => {
+    appsService.setMaintenance(appId, newState).then(() => {
       set((state) => {
-        state.appStore.modules[moduleId].app.isMaintenanceOn = !isMaintenanceOn;
+        state.appStore.modules[moduleId].app.isMaintenanceOn = newState;
       });
-      if (isMaintenanceOn) {
+      if (newState) {
         toast.success('Application is on maintenance.');
       } else {
         toast.success('Application maintenance is completed');
@@ -224,7 +225,7 @@ export const createAppSlice = (set, get) => ({
     const appId = get().appStore.modules[moduleId].app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
-      if (key === 'env' && isLicenseValid) return false;
+      if (key === 'env' && !isLicenseValid) return false;
       return true;
     });
 

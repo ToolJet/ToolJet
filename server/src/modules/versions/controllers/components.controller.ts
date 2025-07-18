@@ -24,7 +24,7 @@ import { IComponentsController } from '../interfaces/controllers/IComponentsCont
   version: '2',
 })
 export class ComponentsController implements IComponentsController {
-  constructor(protected readonly componentsService: ComponentsService) { }
+  constructor(protected readonly componentsService: ComponentsService) {}
 
   @InitFeature(FEATURE_KEY.CREATE_COMPONENTS)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)

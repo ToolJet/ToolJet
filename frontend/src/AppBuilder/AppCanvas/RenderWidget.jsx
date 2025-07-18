@@ -35,6 +35,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Link',
   'Form',
   'FilePicker',
+  'Tabs',
+  'RangeSliderV2'
 ];
 
 const RenderWidget = ({
@@ -90,6 +92,22 @@ const RenderWidget = ({
   );
   const { t } = useTranslation();
   const transformedStyles = getDefaultStyles(resolvedStyles, componentType);
+
+  const isDisabled = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedDisabled = state.getExposedValueOfComponent(id, moduleId)?.isDisabled;
+    if (typeof componentExposedDisabled === 'boolean') return componentExposedDisabled;
+    if (component?.properties?.disabledState === true || component?.styles?.disabledState === true) return true;
+    return false;
+  });
+
+  const isLoading = useStore((state) => {
+    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const componentExposedLoading = state.getExposedValueOfComponent(id, moduleId)?.isLoading;
+    if (typeof componentExposedLoading === 'boolean') return componentExposedLoading;
+    if (component?.properties?.loadingState === true || component?.styles?.loadingState === true) return true;
+    return false;
+  });
 
   const obj = {
     properties: { ...resolvedGeneralProperties, ...resolvedProperties },
@@ -153,9 +171,6 @@ const RenderWidget = ({
   }, []);
   if (!component) return null;
 
-  const disabledState = resolvedProperties?.disabledState;
-  const loadingState = resolvedProperties?.loadingState;
-
   return (
     <ErrorBoundary>
       <OverlayTrigger
@@ -167,18 +182,17 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
+              ? null
+              : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${
-                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                    ? resolvedProperties?.tooltip
-                    : resolvedGeneralProperties?.tooltip
-                }`
+              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                ? resolvedProperties?.tooltip
+                : resolvedGeneralProperties?.tooltip
+              }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -189,9 +203,8 @@ const RenderWidget = ({
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
           role={'Box'}
-          className={`canvas-component ${
-            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          } ${disabledState || loadingState ? 'disabled' : ''}`} //required for custom CSS
+          className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+            } ${!['Modal', 'ModalV2'].includes(component.component) && (isDisabled || isLoading) ? 'disabled' : ''}`} //required for custom CSS
         >
           <ComponentToRender
             id={id}

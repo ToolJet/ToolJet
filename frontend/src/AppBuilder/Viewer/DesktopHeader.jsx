@@ -72,22 +72,18 @@ const DesktopHeader = ({
     );
   }
   return (
-    <Header>
-      {/* {_renderAppNameAndLogo()} */}
-      {!isReleasedVersionId && (
-        <PreviewSettings
-          isMobileLayout={false}
-          showHeader={showHeader}
-          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-          darkMode={darkMode}
-        />
-      )}
-      {/* {showDarkModeToggle && (
-        <div className="d-flex align-items-center">
-          <DarkModeToggle switchDarkMode={changeToDarkMode} darkMode={darkMode} />
-        </div>
-      )} */}
-    </Header>
+    !isReleasedVersionId && (
+      <Header>
+        {
+          <PreviewSettings
+            isMobileLayout={false}
+            showHeader={showHeader}
+            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+            darkMode={darkMode}
+          />
+        }
+      </Header>
+    )
   );
 };
 

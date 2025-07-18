@@ -10,7 +10,8 @@ const initialState = {
       canvas: {
         others: {
           canvasBackgroundColor: null,
-          isPagesSidebarHidden: false,
+          isPagesSidebarVisible: true,
+          pages: {},
         },
         components: {},
         secrets: {},
@@ -486,7 +487,11 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   getPagesSidebarVisibility: (moduleId = 'canvas') => {
-    return get().resolvedStore.modules[moduleId].others.isPagesSidebarHidden;
+    return get().resolvedStore.modules[moduleId].others.isPagesSidebarVisible;
+  },
+
+  getPagesVisibility: (moduleId = 'canvas', id) => {
+    return get().resolvedStore.modules[moduleId].others.pages[id]?.hidden ?? false;
   },
 
   setResolvedValueForOthers: (values, moduleId = 'canvas') => {

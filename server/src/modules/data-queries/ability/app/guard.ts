@@ -19,8 +19,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
   private getAppResourceType(): MODULES {
     const appResource: App = this.getResourceObject();
     switch (appResource.type) {
-      case APP_TYPES.FRONT_END:
-        return MODULES.APP;
+      case APP_TYPES.MODULE:
+        return MODULES.MODULES;
       case APP_TYPES.WORKFLOW:
         return MODULES.WORKFLOWS;
       default:

@@ -76,9 +76,7 @@ export const verticalDividerConfig = {
       accordian: 'container',
     },
   },
-  exposedVariables: {
-    value: {},
-  },
+  exposedVariables: {},
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

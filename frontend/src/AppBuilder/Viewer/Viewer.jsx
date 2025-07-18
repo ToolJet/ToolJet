@@ -17,7 +17,7 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
 import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
-import TooljetBanner from '../../Editor/Viewer/TooljetBanner';
+import TooljetBanner from './TooljetBanner';
 
 export const Viewer = ({
   id: appId,
@@ -27,11 +27,13 @@ export const Viewer = ({
   environmentId,
   versionId,
   moduleMode = false,
+  slug: appSlug,
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
-  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode);
+  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
+  const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
 
   const {
     isEditorLoading,
@@ -74,11 +76,11 @@ export const Viewer = ({
 
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
-  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
 
-  const hideSidebar = moduleMode || isPagesSidebarHidden || appType === 'module';
+  const hideSidebar = moduleMode || !isPagesSidebarVisible || appType === 'module';
 
   const computeCanvasMaxWidth = useCallback(() => {
     if (globalSettings?.maxCanvasWidth) {
@@ -103,6 +105,7 @@ export const Viewer = ({
   const { position } = properties ?? {};
 
   const canvasRef = useRef(null);
+  const viewerWrapperRef = useRef(null);
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
   const switchPage = useStore((state) => state.switchPage);
@@ -129,7 +132,7 @@ export const Viewer = ({
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents, moduleId);
-  }, [currentPageComponents, moduleId, updateCanvasHeight]);
+  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);
@@ -176,6 +179,7 @@ export const Viewer = ({
             changeToDarkMode={changeToDarkMode}
             switchPage={switchPage}
             pages={pages}
+            viewerWrapperRef={viewerWrapperRef}
           />
         )}
       </>
@@ -204,9 +208,9 @@ export const Viewer = ({
         <ErrorBoundary>
           <Suspense fallback={<div>Loading...</div>}>
             <div
+              ref={viewerWrapperRef}
               className={cx('viewer wrapper', {
                 'mobile-layout': currentLayout,
-                'theme-dark dark-theme': darkMode,
                 'offset-top-bar-navigation': !isReleasedVersionId,
                 'mobile-view': currentLayout === 'mobile',
               })}
@@ -231,7 +235,7 @@ export const Viewer = ({
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
                               marginLeft:
-                                isPagesSidebarHidden || currentLayout === 'mobile'
+                                !isPagesSidebarVisible || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
                                   ? '0px'
@@ -260,6 +264,7 @@ export const Viewer = ({
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                   pages={pages}
+                                  viewerWrapperRef={viewerWrapperRef}
                                 />
                               )}
                               <AppCanvas

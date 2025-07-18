@@ -13,6 +13,7 @@ import { shallow } from 'zustand/shallow';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useColumnBuilder, useGroupedColumns, useCheckboxStates } from './hooks/useColumnMapping';
+import { DropdownProvider } from '@/components/ui/Dropdown/DropdownProvider';
 
 // Constants for section display names
 const SECTION_DISPLAY_NAMES = {
@@ -27,7 +28,7 @@ const SECTION_DISPLAY_NAMES = {
  */
 const EditableIcon = ({ darkMode }) => (
   <div className="tw-mr-2 editable-icon">
-    <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} viewBox="0 0 12 12" />
+    <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} />
   </div>
 );
 
@@ -399,7 +400,7 @@ const ColumnMappingComponent = ({
       // Use setTimeout to ensure DOM is fully rendered
       setTimeout(() => {
         if (bodyContainerRef.current) {
-          const height = bodyContainerRef.current.scrollHeight;
+          const height = Math.min(bodyContainerRef.current.scrollHeight, 500);
           if (height > 0) {
             lastBodyHeightRef.current = height;
           }
@@ -409,8 +410,6 @@ const ColumnMappingComponent = ({
   }, [showLoader, groupedColumns]);
 
   const currentStatus = currentStatusRef.current;
-
-  console.log('here--- existingResolvedJsonData--- ', existingResolvedJsonData);
 
   const columnsToUse = useColumnBuilder(
     component,
@@ -521,8 +520,10 @@ const ColumnMappingComponent = ({
 
   return (
     <Modal show={isOpen} onHide={onClose} size="lg">
-      <ModalHeader currentStatus={currentStatus} onClose={onClose} />
-      <div className="column-mapping-modal-body">{modalBody}</div>
+      <DropdownProvider>
+        <ModalHeader currentStatus={currentStatus} onClose={onClose} />
+        <div className="column-mapping-modal-body">{modalBody}</div>
+      </DropdownProvider>
     </Modal>
   );
 };

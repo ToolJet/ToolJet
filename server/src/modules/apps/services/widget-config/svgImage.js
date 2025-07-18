@@ -41,9 +41,7 @@ export const svgImageConfig = {
       },
     },
   },
-  exposedVariables: {
-    value: {},
-  },
+  exposedVariables: {},
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

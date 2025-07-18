@@ -1,7 +1,15 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { determineJustifyContentValue } from '@/_helpers/utils';
 
-export const BooleanColumn = ({ value = false, isEditable, onChange, toggleOnBg, toggleOffBg }) => {
+export const BooleanColumn = ({
+  value = false,
+  isEditable,
+  onChange,
+  toggleOnBg,
+  toggleOffBg,
+  horizontalAlignment,
+}) => {
   const getCustomBgStyles = (value, toggleOnBg, toggleOffBg) => {
     if (value && toggleOnBg) {
       return { backgroundColor: toggleOnBg };
@@ -27,7 +35,12 @@ export const BooleanColumn = ({ value = false, isEditable, onChange, toggleOnBg,
   );
 
   return (
-    <div className="h-100 d-flex align-items-center w-100" style={{ lineHeight: 1 }}>
+    <div
+      className={`h-100 d-flex align-items-center w-100 justify-content-${determineJustifyContentValue(
+        horizontalAlignment
+      )}`}
+      style={{ lineHeight: 1 }}
+    >
       {isEditable ? editableContent(isEditable, value, onChange) : nonEditableContent(value)}
     </div>
   );

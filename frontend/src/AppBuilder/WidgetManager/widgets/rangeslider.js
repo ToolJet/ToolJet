@@ -1,6 +1,6 @@
 export const rangeSliderConfig = {
-  name: 'RangeSlider',
-  displayName: 'Range Slider',
+  name: 'RangeSliderLegacy',
+  displayName: 'Range Slider (Legacy)',
   description: 'Adjust value range',
   component: 'RangeSlider',
   defaultSize: {
@@ -12,25 +12,9 @@ export const rangeSliderConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    enableTwoHandle: {
-      type: 'switch',
-      displayName: 'Slider type',
-      options: [
-        { displayName: 'Slider', value: 'slider' },
-        { displayName: 'Range slider', value: 'rangeSlider' },
-      ],
-      isFxNotRequired: true,
-      defaultValue: { value: 'slider' },
-      fullWidth: true,
-    },
-    label: {
-      type: 'code',
-      displayName: 'Label',
-      validation: { schema: { type: 'string' }, defaultValue: 'Label' },
-    },
     min: {
       type: 'number',
-      displayName: 'Min value',
+      displayName: 'Min',
       validation: {
         schema: { type: 'number' },
         defaultValue: 0,
@@ -38,279 +22,78 @@ export const rangeSliderConfig = {
     },
     max: {
       type: 'number',
-      displayName: 'Max value',
+      displayName: 'Max',
       validation: {
         schema: { type: 'number' },
         defaultValue: 100,
       },
     },
     value: {
-      type: 'number',
-      displayName: 'Default value',
-      conditionallyRender: {
-        key: 'enableTwoHandle',
-        value: 'slider',
-      },
-
-      validation: {
-        schema: {
-          schema: { type: 'number' },
-          defaultValue: 50,
-        },
-      },
-    },
-    startValue: {
-      type: 'number',
-      displayName: 'Default start value',
-      conditionallyRender: {
-        key: 'enableTwoHandle',
-        value: 'rangeSlider',
-      },
-
-      validation: {
-        schema: {
-          schema: { type: 'number' },
-          defaultValue: 50,
-        },
-      },
-    },
-    endValue: {
-      type: 'number',
-      displayName: 'Default end value',
-      conditionallyRender: {
-        key: 'enableTwoHandle',
-        value: 'rangeSlider',
-      },
-
-      validation: {
-        schema: {
-          schema: { type: 'number' },
-          defaultValue: 80,
-        },
-      },
-    },
-    stepSize: {
-      type: 'number',
-      displayName: 'Step size',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 1,
-      },
-    },
-    schema: {
       type: 'code',
-      displayName: 'Set marks',
+      displayName: 'Value',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'array', element: { type: 'number' } }, { type: 'number' }],
+        },
+        defaultValue: 50,
+      },
     },
-    loadingState: {
+    enableTwoHandle: {
       type: 'toggle',
-      displayName: 'Show loading state',
+      displayName: 'Two handles',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      section: 'additionalActions',
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-      section: 'additionalActions',
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-      section: 'additionalActions',
-    },
-    tooltip: {
-      type: 'code',
-      displayName: 'Tooltip',
-      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
-      section: 'additionalActions',
-      placeholder: 'Enter tooltip text',
     },
   },
   events: {
     onChange: { displayName: 'On change' },
   },
   styles: {
-    color: {
-      type: 'colorSwatches',
-      displayName: 'Color',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
-      accordian: 'label',
-    },
-    alignment: {
-      type: 'switch',
-      displayName: 'Alignment',
-      validation: { schema: { type: 'string' }, defaultValue: 'side' },
-      options: [
-        { displayName: 'Side', value: 'side' },
-        { displayName: 'Top', value: 'top' },
-      ],
-      accordian: 'label',
-    },
-    direction: {
-      type: 'switch',
-      displayName: '',
-      validation: { schema: { type: 'string' }, defaultValue: 'left' },
-      showLabel: false,
-      isIcon: true,
-      options: [
-        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
-        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
-      ],
-      accordian: 'label',
-      isFxNotRequired: true,
-    },
-    width: {
-      type: 'slider',
-      displayName: 'Width',
-      accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
-      isFxNotRequired: true,
-    },
-    auto: {
-      type: 'checkbox',
-      displayName: 'auto',
-      showLabel: false,
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-      accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
-      isFxNotRequired: true,
-    },
     lineColor: {
       type: 'colorSwatches',
-      displayName: 'Track',
+      displayName: 'Line color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#E4E7EB',
+        defaultValue: '#375FCF',
       },
-      accordian: 'slider',
-    },
-    trackColor: {
-      type: 'colorSwatches',
-      displayName: 'Accent',
-      validation: {
-        schema: { type: 'string' },
-      },
-      accordian: 'slider',
     },
     handleColor: {
       type: 'colorSwatches',
-      displayName: 'Handle',
+      displayName: 'Handle color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#FFFFFF',
+        defaultValue: '#375FCF',
       },
-      accordian: 'slider',
     },
-    handleBorderColor: {
+    trackColor: {
       type: 'colorSwatches',
-      displayName: 'Handle border',
+      displayName: 'Track color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ACB2B9',
+        defaultValue: '#375FCF',
       },
-      accordian: 'slider',
     },
-    markerLabel: {
-      type: 'colorSwatches',
-      displayName: 'Marker label',
+    visibility: {
+      type: 'code',
+      displayName: 'Visibility',
       validation: {
-        schema: { type: 'string' },
-        defaultValue: '#1B1F24',
+        schema: { type: 'boolean' },
+        defaultValue: true,
       },
-      accordian: 'slider',
-    },
-    padding: {
-      type: 'switch',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 'default',
-      },
-      isFxNotRequired: true,
-      options: [
-        { displayName: 'Default', value: 'default' },
-        { displayName: 'None', value: 'none' },
-      ],
-      accordian: 'container',
-    },
-    padding: {
-      type: 'switch',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 'default',
-      },
-      isFxNotRequired: true,
-      options: [
-        { displayName: 'Default', value: 'default' },
-        { displayName: 'None', value: 'none' },
-      ],
     },
   },
   exposedVariables: {
     value: null,
-    label: 'Label',
-    isVisible: true,
-    isDisabled: false,
-    isLoading: false,
   },
-  actions: [
-    {
-      handle: 'setValue',
-      displayName: 'Set value',
-      params: [{ handle: 'num1', displayName: 'Value', defaultValue: 'New value' }],
-    },
-    {
-      handle: 'setRangeValue',
-      displayName: 'Set range value',
-      params: [
-        { handle: 'num1', displayName: 'Min value' },
-        { handle: 'num2', displayName: 'Max value' },
-      ],
-    },
-    {
-      handle: 'reset',
-      displayName: 'Reset',
-    },
-    {
-      handle: 'setDisable',
-      displayName: 'Set disable',
-      params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'setLoading',
-      displayName: 'Set loading',
-      params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'setVisibility',
-      displayName: 'Set visibility',
-      params: [{ displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-  ],
   definition: {
     others: {
       showOnDesktop: { value: true },
       showOnMobile: { value: false },
     },
     properties: {
-      label: { value: 'Label' },
       min: {
         value: '{{0}}',
       },
@@ -320,39 +103,14 @@ export const rangeSliderConfig = {
       value: {
         value: '{{50}}',
       },
-      startValue: {
-        value: '{{50}}',
-      },
-      endValue: {
-        value: '{{80}}',
-      },
-      enableTwoHandle: { value: 'slider' },
-      stepSize: {
-        value: '{{1}}',
-      },
-      schema: {
-        value: "{{[\t{label: '25%',value: 25},{label: '50%',value: 50},{label: '75%',value: 75}\t]}}",
-      },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
-      loadingState: { value: '{{false}}' },
-      tooltip: { value: '' },
+      enableTwoHandle: { value: false },
     },
     events: [],
     styles: {
-      lineColor: { value: 'var(--cc-surface3-surface)' },
-      handleColor: { value: 'var(--cc-surface1-surface)' },
-      handleBorderColor: { value: 'var(--cc-default-border)' },
-      trackColor: { value: 'var(--cc-primary-brand)' },
-      markerLabel: { value: 'var(--cc-primary-text)' },
-      direction: { value: 'left' },
-      width: { value: '{{33}}' },
-      alignment: { value: 'side' },
-      color: { value: 'var(--cc-primary-text)' },
-      auto: { value: '{{true}}' },
-      padding: { value: 'default' },
+      lineColor: { value: '' },
+      handleColor: { value: '' },
+      trackColor: { value: '' },
       visibility: { value: '{{true}}' },
-      padding: { value: 'default' },
     },
   },
 };

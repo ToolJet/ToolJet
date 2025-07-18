@@ -167,7 +167,7 @@ export const Tabs = function Tabs({
     const currentTabData = parsedTabs.filter((tab) => tab.id == currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab, darkMode]);
+  }, [currentTab, darkMode, parsedTabs]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -224,6 +224,7 @@ export const Tabs = function Tabs({
   const [canScroll, setCanScroll] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hoveredTabId, setHoveredTabId] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const checkScroll = () => {
     if (tabsRef.current) {
@@ -321,7 +322,7 @@ export const Tabs = function Tabs({
   return (
     <div
       data-disabled={isDisabled}
-      className="card tabs-component"
+      className="card tabs-component scrollbar-container"
       style={{
         height: dynamicHeight ? '100%' : padding === 'default' ? height : height + 4,
         display: isVisible ? 'flex' : 'none',
@@ -340,11 +341,11 @@ export const Tabs = function Tabs({
         <div
           style={{
             borderBottom: someTabsVisible?.length > 0 && `0.5px solid ${divider}`,
-            display: 'flex',
             alignItems: 'center',
             width: '100%',
             backgroundColor: headerBackground,
             height: '50px',
+            display: parsedHideTabs ? 'none' : 'flex',
           }}
         >
           {canScroll && (
@@ -398,6 +399,11 @@ export const Tabs = function Tabs({
                   onClick={() => {
                     if (currentTab == tab.id) return;
                     if (tab?.disable) return;
+
+                    if (transition !== 'none') {
+                      setIsTransitioning(true);
+                      setTimeout(() => setIsTransitioning(false), 300); // Match transition duration
+                    }
 
                     !tab?.disabled && setCurrentTab(tab.id);
                     !tab?.disabled && setExposedVariable('currentTab', tab.id);
@@ -489,7 +495,7 @@ export const Tabs = function Tabs({
               display: 'flex',
               width: `${tabItems.length * 100}%`,
               transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
-              transition: 'transform 0.3s ease-in-out',
+              transition: transition === 'none' ? 'none' : 'transform 0.3s ease-in-out',
               height: '100%',
             }}
           >
@@ -512,6 +518,7 @@ export const Tabs = function Tabs({
                   darkMode={darkMode}
                   dynamicHeight={dynamicHeight}
                   currentTab={currentTab}
+                  isTransitioning={isTransitioning}
                 />
               </div>
             ))}
@@ -528,10 +535,6 @@ const areEqual = (prevProps, nextProps) => {
 
   for (let key of allKeys) {
     if (prevProps[key] !== nextProps[key]) {
-      console.log(`[TabContent] Prop changed: ${key}`, {
-        from: prevProps[key],
-        to: nextProps[key],
-      });
       hasChanges = true;
     }
   }
@@ -549,6 +552,7 @@ const TabContent = memo(function TabContent({
   darkMode,
   dynamicHeight,
   currentTab,
+  isTransitioning,
 }) {
   const loading = tab?.loading;
   const disable = tab?.disable;
@@ -587,7 +591,10 @@ const TabContent = memo(function TabContent({
           canvasHeight={dynamicHeight ? '100%' : '200'}
           canvasWidth={width}
           allowContainerSelect={true}
-          styles={{ overflow: 'hidden auto', backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor }}
+          styles={{
+            overflow: isTransitioning ? 'hidden' : 'hidden auto',
+            backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor,
+          }}
           darkMode={darkMode}
         />
       )}

@@ -14,6 +14,7 @@ import { Confirm } from '@/Editor/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { QueryRenameInput } from './QueryRenameInput';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
@@ -119,21 +120,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         </div>
         <div className="col query-row-query-name">
           {isRenaming ? (
-            <input
-              data-cy={`query-edit-input-field`}
-              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${darkMode && 'text-white'
-                }`}
-              type="text"
-              defaultValue={decodeEntities(dataQuery.name)}
-              autoFocus={true}
-              onKeyDown={({ target, key }) => {
-                if (key === 'Enter') {
-                  updateQueryName(dataQuery, target.value);
-                }
-              }}
-              onBlur={({ target }) => {
-                updateQueryName(dataQuery, target.value);
-              }}
+            <QueryRenameInput
+              dataQuery={dataQuery}
+              darkMode={darkMode}
+              onUpdate={updateQueryName}
             />
           ) : (
             <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
@@ -171,7 +161,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             </div>
           )}
         </div>
-        <div className={`col-auto query-rename-delete-btn ${!shouldFreeze && isQuerySelected ? 'd-flex' : 'd-none'}`}>
+        {!shouldFreeze && <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
           <ButtonComponent
             iconOnly
             leadingIcon="morevertical01"
@@ -182,7 +172,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             id={`query-handler-menu-${dataQuery?.id}`}
             data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
           />
-        </div>
+        </div>}
       </div>
       <Confirm
         show={isDeleting}
