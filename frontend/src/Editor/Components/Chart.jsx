@@ -107,7 +107,7 @@ export const Chart = function Chart({
 
   const layout = {
     width: width - 6,
-    height: height - 4,
+    height: height - 2,
     plot_bgcolor: updatedBgColor,
     paper_bgcolor: updatedBgColor,
     title: {

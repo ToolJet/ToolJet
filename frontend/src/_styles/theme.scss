@@ -1666,7 +1666,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: var(--cc-primary-brand);
+      background-color: var(--cc-primary-brand, --primary-brand);
     }
   }
 }
@@ -3501,7 +3501,7 @@ input:focus-visible {
   }
 
   .main .query-pane .data-pane .queries-container .queries-header {
-    border-width: 0px 0px 1px 0px !important;
+    border-width: 3px 0px 1px 0px !important;
 
     .text-muted {
       color: #ffffff !important;
@@ -18412,6 +18412,10 @@ section.ai-message-prompt-input-wrapper {
 
 .canvas-component,
 .workspace-theme-container {
+  .spinner-border {
+    color: var(--cc-primary-brand);
+  }
+
 
   .kanban-container {
     background-color: var(--cc-surface1-surface);

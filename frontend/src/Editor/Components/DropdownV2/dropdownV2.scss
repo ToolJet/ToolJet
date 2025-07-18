@@ -5,3 +5,11 @@
     background-color: var(--cc-surface1-surface) !important;
     border-radius: 0 0 8px 8px;
 }
+
+ 
+.dropdown-multiselect-widget-search-box-wrapper {
+    //Apply css to input placeholder
+    input::placeholder {
+        color: var(--cc-placeholder-text);
+    }
+}
