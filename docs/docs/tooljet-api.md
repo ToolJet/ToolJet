@@ -34,6 +34,11 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Export Application](#export-application)
 - [Import Application](#import-application)
+- [Add HTTPS Git Config for an Organization](#add-https-git-config-for-an-organization)
+- [Push an App Version to GitHub](#push-an-app-version-to-github)
+- [Create a New App from GitHub](#create-a-new-app-from-github)
+- [Sync and Pull Changes to Existing App from Git](#sync-and-pull-changes-to-existing-app-from-git)
+- [Auto Promote App](#auto-promote-app)
 
 ## Enabling ToolJet API
 
