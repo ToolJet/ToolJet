@@ -26,11 +26,8 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
       item: { componentType: component.component, component },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item, monitor) => {
-        const clientOffset = monitor.getClientOffset();
         const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
-        if (clientOffset) {
-          handleDrop(item, currentDragCanvasId);
-        }
+        handleDrop(item, currentDragCanvasId);
       },
     }),
     [component.component]
