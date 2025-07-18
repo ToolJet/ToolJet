@@ -150,52 +150,43 @@ class HomePageComponent extends React.Component {
 
   /* For cloud ai onboarding */
   handleAiOnboarding = () => {
-    try {
-      const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
-      const latestPrompt = aiCookies?.tj_ai_prompt;
-      const templateId = aiCookies?.tj_template_id;
+    const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
+    const latestPrompt = aiCookies?.tj_ai_prompt;
+    const templateId = aiCookies?.tj_template_id;
 
-      console.log('aiCookies', aiCookies);
-      localStorage.setItem('aiCookies', JSON.stringify(aiCookies || {}));
-
-      /* First check the user permission */
-      if (latestPrompt || templateId) {
-        if (!this.checkIfUserHasBuilderAccess()) {
-          this.setState({ showInsufficentPermissionModal: true });
-          return;
-        }
+    /* First check the user permission */
+    if (latestPrompt || templateId) {
+      if (!this.checkIfUserHasBuilderAccess()) {
+        this.setState({ showInsufficentPermissionModal: true });
+        return;
       }
+    }
 
-      switch (true) {
-        case !!latestPrompt:
-          // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
-          //   duration: 10000,
-          // });
-          // Optional: Clear the cookie after showing toast
-          this.setState({ showAIOnboardingLoadingScreen: true });
-          this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
-          break;
-        case !!templateId: {
-          this.setState({ showAIOnboardingLoadingScreen: true });
-          if (templateId) {
-            /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
-            this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, {
-              id: templateId,
-            });
-          }
-          break;
+    switch (true) {
+      case !!latestPrompt:
+        // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
+        //   duration: 10000,
+        // });
+        // Optional: Clear the cookie after showing toast
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        break;
+      case !!templateId: {
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        if (templateId) {
+          /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
+          this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, {
+            id: templateId,
+          });
         }
-        default:
-          break;
+        break;
       }
-    } catch (error) {
-      console.log('inside-failed', error);
+      default:
+        break;
     }
   };
 
   componentDidMount() {
-    console.log('inside-here', authenticationService.currentSessionValue);
-    localStorage.setItem('obj', JSON.stringify(authenticationService?.currentSessionValue || {}));
     this.handleAiOnboarding();
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {
