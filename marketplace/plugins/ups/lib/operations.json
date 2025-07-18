@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "UPS datasource",
+  "description": "A schema defining UPS datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "ups_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": {
+        "Shipping": "https://raw.githubusercontent.com/UPS-API/api-documentation/refs/heads/main/Shipping.yaml",
+        "Rating": "https://raw.githubusercontent.com/UPS-API/api-documentation/refs/heads/main/Rating.yaml",
+        "Tracking": "https://raw.githubusercontent.com/UPS-API/api-documentation/refs/heads/main/Tracking.yaml",
+        "Address_Validation": "https://raw.githubusercontent.com/UPS-API/api-documentation/refs/heads/main/AddressValidation.yaml",
+        "Time_In_Transit": "https://raw.githubusercontent.com/UPS-API/api-documentation/refs/heads/main/TimeInTransit.yaml",
+        "Pickup": "https://raw.githubusercontent.com/UPS-API/api-documentation/refs/heads/main/Pickup.yaml",
+        "Paperless_Invoice": "https://raw.githubusercontent.com/UPS-API/api-documentation/refs/heads/main/Paperless.yaml"
+      }
+    }
+  }
+}
