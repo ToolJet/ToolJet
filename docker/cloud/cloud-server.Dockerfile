@@ -40,9 +40,6 @@ RUN git submodule foreach " \
 # Scripts for building
 COPY ./package.json ./package.json
 
-# Add GitHub to known_hosts to support SSH-based package installs
-RUN mkdir -p ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
 # Building ToolJet plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
