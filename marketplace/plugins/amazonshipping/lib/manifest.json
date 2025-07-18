@@ -1,0 +1,94 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Amazon Shipping",
+  "description": "Integrate with Amazon Shipping to create and manage online shipments.",
+  "type": "api",
+  "source": {
+    "name": "Amazon Shipping",
+    "kind": "amazonshipping",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_id": { "type": "string" },
+      "client_secret": { "type": "string" },
+      "authorization_code": { "type": "string" },
+      "redirect_uri": { "type": "string" },
+      "aws_access_key": { "type": "string" },
+      "aws_secret_key": { "type": "string" },
+      "region": { "type": "string" },
+      "shipping_business_id": { "type": "string" },
+      "access_token": { "type": "string" }
+    }
+  },
+  "defaults": {
+    "region": "us-east-1",
+    "shipping_business_id": "AmazonShipping_IN"
+  },
+  "properties": {
+    "client_id": {
+      "label": "Client ID",
+      "key": "client_id",
+      "type": "text",
+      "description": "Client ID from your Login with Amazon developer app"
+    },
+    "client_secret": {
+      "label": "Client Secret",
+      "key": "client_secret",
+      "type": "password",
+      "description": "Client Secret from your Login with Amazon developer app"
+    },
+    "authorization_code": {
+      "label": "Authorization Code",
+      "key": "authorization_code",
+      "type": "text",
+      "description": "Authorization code received from Amazon after user consent"
+    },
+    "redirect_uri": {
+      "label": "Redirect URI",
+      "key": "redirect_uri",
+      "type": "text",
+      "description": "Redirect URI configured in Amazon Developer Console"
+    },
+    "aws_access_key": {
+      "label": "AWS Access Key",
+      "key": "aws_access_key",
+      "type": "text",
+      "description": "AWS IAM access key for signing requests (SigV4)"
+    },
+    "aws_secret_key": {
+      "label": "AWS Secret Key",
+      "key": "aws_secret_key",
+      "type": "password",
+      "description": "AWS IAM secret key for signing requests (SigV4)"
+    },
+    "region": {
+      "label": "AWS Region",
+      "key": "region",
+      "type": "text",
+      "description": "AWS Region (e.g., us-east-1)"
+    },
+    "shipping_business_id": {
+      "label": "Shipping Business ID",
+      "key": "shipping_business_id",
+      "type": "text",
+      "description": "Amazon Shipping Business ID (usually 'AmazonShipping_IN')"
+    },
+    "access_token": {
+      "label": "Access Token",
+      "key": "access_token",
+      "type": "text",
+      "description": "Access token obtained after exchanging authorization code"
+    }
+  },
+  "required": [
+    "client_id",
+    "client_secret",
+    "authorization_code",
+    "redirect_uri",
+    "aws_access_key",
+    "aws_secret_key"
+  ]
+}
