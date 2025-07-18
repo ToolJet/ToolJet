@@ -5,13 +5,13 @@ title: Permissions
 
 Permissions in **ToolJet Workflows** provide a structured approach to access control, ensuring precise management of who can view, edit, or execute workflows. The below table gives a detailed summary of permissions in context of ToolJet Workflows. 
 
-| Permission                                      | Admins | Builders | End Users | Groups (Configurable Permissions) |
+| Permission                                      | Admins | Builders | End Users | Custom Groups |
 |:------------------------------------------------|:------:|:----------------------------------:|:---------:|:-------------------------------------------:|
-| Workflows Dashboard Access                      | ✅     | ❌                                      | ❌        | ❌                         |
-| Create/Edit Workflows                           | ✅     | ✅                                      | ❌        | ✅                          |
-| Execute Workflows                               | ✅     | ✅                                      | ✅        | ✅                          |
-| Using Workflows in ToolJet App Builder          | ✅     | ✅                                      | ❌        | ✅                          |
-| Enable/Disable Workflows                        | ✅     | ❌                                      | ❌        | ❌                         |
+| Workflows Dashboard Access                      | ✅     | ❌                                      | ❌        | Configurable                         |
+| Create/Edit Workflows                           | ✅     | ✅                                      | ❌        | Configurable                          |
+| Execute Workflows                               | ✅     | ✅                                      | ✅        | Configurable                          |
+| Using Workflows in ToolJet App Builder          | ✅     | ✅                                      | ❌        | Configurable                          |
+| Enable/Disable Workflows                        | ✅     | ❌                                      | ❌        | Configurable                         |
 
 
 :::note
