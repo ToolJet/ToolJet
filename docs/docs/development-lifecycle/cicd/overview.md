@@ -4,7 +4,7 @@ title: Overview
 ---
 
 
-ToolJet’s GitSync CICD feature enables organizations to integrate ToolJet applications into their existing CI/CD pipelines using industry-standard tools such as Jenkins, GitHub Actions, CircleCI, and GitLab CI. This feature brings the power of GitSync to your automation workflows through a set of easy-to-use RESTful APIs, allowing your development teams to automate Git operations without relying on manual UI interactions.
+ToolJet’s GitSync CICD feature enables organizations to integrate ToolJet applications into their existing CI/CD pipelines using industry-standard tools such as Jenkins, GitHub Actions, CircleCI, and GitLab CI. This feature brings the power of GitSync to your automation workflows through a set of RESTful APIs, allowing your development teams to automate Git operations without relying on manual UI interactions.
 
 For example, teams managing internal reporting tools or approval workflows can automate deployment to staging and production environments, ensuring consistency without manual UI intervention.
 
@@ -24,5 +24,5 @@ With GitSync CICD, you can:
 - Easy Integration: Easily integrate with any DevOps tool using standard REST APIs.
 
 ## Next Steps
-- Refer to [Using GitSync CICD APIs](/docs/development-lifecycle/cicd/api-reference) for detailed API usage.
-- Check out [GitSync CICD with Jenkins Example](/git-sync-cicd-with-jenkins-example) for a practical implementation guide.
+- Refer to [Using GitSync CICD APIs](/docs/development-lifecycle/cicd/gitsync-api) for detailed API usage.
+- Check out [GitSync CICD with Jenkins Example](/docs/development-lifecycle/cicd/example) for a practical implementation guide.
