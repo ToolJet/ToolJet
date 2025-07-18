@@ -154,6 +154,8 @@ class HomePageComponent extends React.Component {
     const latestPrompt = aiCookies?.tj_ai_prompt;
     const templateId = aiCookies?.tj_template_id;
 
+    console.log('aiCookies', aiCookies);
+
     /* First check the user permission */
     if (latestPrompt || templateId) {
       if (!this.checkIfUserHasBuilderAccess()) {
