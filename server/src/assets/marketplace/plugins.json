@@ -231,8 +231,8 @@
     "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
   },
   {
-    "name": "aws-bedrock",
-    "description": "api plugin from aws-bedrock",
+    "name": "AWS Bedrock",
+    "description": "Consume invoke model api via foundation models available on AWS",
     "version": "1.0.0",
     "id": "aws-bedrock",
     "author": "Tooljet",
