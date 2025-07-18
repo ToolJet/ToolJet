@@ -13,6 +13,7 @@ export class WebsiteAuthService implements IWebsiteAuthService {
     existingUser?: User,
     response?: Response,
     ssoType?: SSOType.GOOGLE | SSOType.GIT,
+    aiCookies?: Record<string, any>,
     manager?: EntityManager
   ) {
     throw new NotImplementedException('Method not implemented');

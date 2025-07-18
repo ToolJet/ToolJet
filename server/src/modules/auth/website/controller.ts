@@ -33,7 +33,8 @@ export class WebsiteAuthController implements IWebsiteAuthController {
     @Param('ssoType') ssoType: SSOType.GOOGLE | SSOType.GIT,
     @Body() body,
     @User() user,
-    @Res({ passthrough: true }) response: Response
+    @Res({ passthrough: true }) response: Response,
+    @AiCookies() aiCookies: Record<string, any>
   ) {
     throw new NotImplementedException();
   }

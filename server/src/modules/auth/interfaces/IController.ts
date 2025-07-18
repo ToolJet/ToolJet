@@ -35,7 +35,13 @@ export interface IWebsiteAuthController {
    * @param response - Express response object
    * @returns Promise with sign-in result
    */
-  commonSignIn(ssoType: SSOType.GOOGLE | SSOType.GIT, body: any, user: any, response: Response): Promise<any>;
+  commonSignIn(
+    ssoType: SSOType.GOOGLE | SSOType.GIT,
+    body: any,
+    user: any,
+    response: Response,
+    aiCookies: Record<string, any>
+  ): Promise<any>;
 
   /**
    * Sets AI-related cookies in response (Safari browser support)

@@ -27,6 +27,7 @@ export interface IWebsiteAuthService {
     existingUser?: User,
     response?: Response,
     ssoType?: SSOType.GOOGLE | SSOType.GIT,
+    aiCookies?: Record<string, any>,
     manager?: EntityManager
   ): Promise<any>;
 
