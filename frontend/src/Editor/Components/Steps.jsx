@@ -142,7 +142,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
       if (!disabledState) setActiveStepId(stepId);
     });
     setExposedVariable('setVisibility', (visibility) => setIsVisible(!!visibility));
-    setExposedVariable('setDisable', (disabled) => setIsDisabled(!!disabled));
+    setExposedVariable('setDisabled', (disabled) => setIsDisabled(!!disabled));
   }, [isVisible, isDisabled, activeStepId, stepsArr, disabledState]);
 
   // Update state from props
@@ -181,9 +181,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
               <ToolTip show={!step.disabled && !isDisabled && step.tooltip} message={step.tooltip || ''}>
                 <div
                   onClick={() => stepsSelectable && handleStepClick(step.id)}
-                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${
-                    isDisabled || isStepDisabled ? 'disabled' : ''
-                  } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
+                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${isDisabled || isStepDisabled ? 'disabled' : ''
+                    } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                 >
                   {theme === 'numbers' ? (
                     index + 1
@@ -192,9 +191,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                       <div
                         className={`dot ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                         style={{
-                          border: `2px solid ${
-                            isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
-                          }`,
+                          border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
+                            }`,
                           backgroundColor: isActive ? 'transparent' : isCompleted ? completedAccent : incompletedAccent,
                         }}
                       />

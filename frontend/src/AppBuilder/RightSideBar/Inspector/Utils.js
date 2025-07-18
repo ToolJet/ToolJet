@@ -148,7 +148,7 @@ export function renderElement(
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||
-    componentConfig.component == 'RangeSlider'
+    componentConfig.component == 'RangeSliderV2'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
