@@ -939,7 +939,7 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to import application.
 By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:
 `MAX_JSON_SIZE`
 
-**Example**: `MAX_JSON_SIZE = 250mb`
+**Example**: `MAX_JSON_SIZE = "250mb"`
 :::
 
 <details id="tj-dropdown">
