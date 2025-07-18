@@ -311,6 +311,7 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/custom-theme',
         'app-builder/walkthrough/row-level-security',
         'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
