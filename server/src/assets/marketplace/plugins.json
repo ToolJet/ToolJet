@@ -245,5 +245,13 @@
     "id": "googlecalendar",
     "author": "Tooljet",
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "UPS",
+    "description": "Integrate with UPS API to create and track shipments of small package, LTL, and air freight.",
+    "version": "1.0.0",
+    "id": "ups",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 18:44:28 GMT"
   }
 ]
