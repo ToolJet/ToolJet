@@ -1,29 +1,48 @@
 import * as winston from 'winston';
 import { auditLog } from '@modules/audit-logs/constants';
 import 'winston-daily-rotate-file';
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
-const readline = require('readline');
+import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs';
+import * as readline from 'readline';
+import { createLogger } from '@helpers/bootstrap.helper';
 
 const logForm = winston.format.printf((info) => `${info.timestamp} ${info.level} [${info.label}]: ${info.message}`);
 
 export const logFileTransportConfig = (filePath, processId) => {
-  const absoluteLogDir = path.join(os.homedir(), filePath, 'tooljet_log');
-  const transport = new winston.transports.DailyRotateFile({
-    filename: `audit.log`,
-    level: 'info',
-    zippedArchive: false,
-    dirname: `${absoluteLogDir}/${processId}-%DATE%`,
-    datePattern: 'YYYY-MM-DD',
-    format: winston.format.combine(winston.format.prettyPrint()),
-    json: true,
-  });
-  transport.on('rotate', function (oldFilename, newFilename) {
-    console.log(`Rotating old log file - ${oldFilename} and creating new log file ${newFilename}`);
-    readObjectFromLines(oldFilename);
-  });
-  return transport;
+  const logger = createLogger('Log-to-file-transport');
+
+  try {
+    const absoluteLogDir = path.join(os.homedir(), filePath, 'tooljet_log');
+    if (!fs.existsSync(absoluteLogDir)) {
+      // Ensure the directory exists
+      logger.log(`Creating log directory at ${absoluteLogDir}`);
+      fs.mkdirSync(absoluteLogDir, { recursive: true });
+      logger.log(`✅ Log directory created at ${absoluteLogDir}`);
+    } else {
+      logger.log(`✅ Log directory already exists at ${absoluteLogDir}`);
+    }
+    const transport = new winston.transports.DailyRotateFile({
+      filename: `audit.log`,
+      level: 'info',
+      zippedArchive: false,
+      dirname: `${absoluteLogDir}/${processId}-%DATE%`,
+      datePattern: 'YYYY-MM-DD',
+      format: winston.format.combine(winston.format.prettyPrint()),
+      json: true,
+    });
+    transport.on('rotate', function (oldFilename, newFilename) {
+      console.log(`Rotating old log file - ${oldFilename} and creating new log file ${newFilename}`);
+      readObjectFromLines(oldFilename);
+    });
+    transport.on('error', (err) => {
+      console.error('Log file generation error:', err);
+    });
+    return transport;
+  } catch (error) {
+    logger.error('❌ Error while creating log file transport:', error);
+    throw error;
+  }
 };
 
 export const logFormat = winston.format.combine(
