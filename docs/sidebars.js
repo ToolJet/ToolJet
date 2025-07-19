@@ -213,7 +213,16 @@ const sidebars = {
                 'widgets/divider',
                 'widgets/dropdown',
                 'widgets/file-picker',
-                'widgets/form',
+                {
+                  'type': 'category',
+                  'label': 'Form',
+                  'items': [
+                    'widgets/form/form',
+                    'widgets/form/properties',
+                    'widgets/form/csa',
+                    'widgets/form/schema'
+                  ]
+                },
                 'widgets/html',
                 'widgets/icon',
                 'widgets/iframe',
@@ -273,15 +282,6 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'Actions Reference',
-              'link': {
-                'type': 'generated-index',
-                'title': 'Actions Reference',
-                'description': 'All the actions that can be performed through event handlers',
-                'keywords': [
-                  'actions',
-                  'events',
-                ],
-              },
               'items': [
                 'actions/show-alert',
                 'actions/logout',
