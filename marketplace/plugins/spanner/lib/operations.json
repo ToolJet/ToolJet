@@ -45,7 +45,7 @@
       "label": "SQL Parameters",
       "type": "react-component-headers",
       "description": "Parameters for the SQL query",
-      "buttonText": "Add a parameter",
+      "buttonText": "Add an SQL parameter",
       "tooltip": "Use these parameters in the query using < @parameterName > notation for GoogleSQL and < $1, $2, $3 > notation for PostgreSQL"
     },
     "param_types": {
