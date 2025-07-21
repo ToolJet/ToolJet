@@ -235,16 +235,18 @@ export const createAppSlice = (set, get) => ({
     const subpath = getSubpath();
     let toNavigate = '';
 
-    toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
-      slug ?? appId
-    }/${handle}?${queryParamsString}`;
-    navigate(toNavigate, {
-      state: {
-        isSwitchingPage: true,
-        id: pageId,
-        handle: handle,
-      },
-    });
+    if (!isBackOrForward) {
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
+        slug ?? appId
+      }/${handle}?${queryParamsString}`;
+      navigate(toNavigate, {
+        state: {
+          isSwitchingPage: true,
+          id: pageId,
+          handle: handle,
+        },
+      });
+    }
 
     const newPage = pages.find((p) => p.id === pageId);
     setResolvedPageConstants(
