@@ -28,6 +28,7 @@ export const PagesSidebarNavigation = ({
   isSidebarPinned,
   toggleSidebarPinned,
   height,
+  canvasMaxWidth,
   switchDarkMode,
 }) => {
   const { moduleId } = useModuleContext();
@@ -77,7 +78,7 @@ export const PagesSidebarNavigation = ({
       !page?.disabled &&
       (!page?.isPageGroup ||
         (page.children?.length > 0 &&
-          page.children.some((child) => child?.disabled === false) &&
+          !page.children.some((child) => child?.disabled) &&
           page.children.some((child) => {
             const pageVisibility = getPagesVisibility('canvas', child?.id);
             return pageVisibility === false;
@@ -237,7 +238,7 @@ export const PagesSidebarNavigation = ({
 
     setVisibleLinks(finalVisible);
     setOverflowLinks(finalOverflow);
-  }, [pages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, measuredMoreButtonWidth]);
+  }, [pages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, measuredMoreButtonWidth, canvasMaxWidth]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -409,7 +410,21 @@ export const PagesSidebarNavigation = ({
   }
 
   return (
-    <div>
+    <div
+      style={{
+        ...(position === 'top' && {
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
+        }),
+      }}
+      className={cx({
+        'right-sidebar-open':
+          isRightSidebarOpen && currentMode !== 'view' && (position === 'top' || !isPagesSidebarVisible),
+        'left-sidebar-open': isSidebarOpen && currentMode !== 'view' && (position === 'top' || !isPagesSidebarVisible),
+      })}
+    >
       <button
         ref={measurementContainerRef}
         style={{
@@ -460,8 +475,8 @@ export const PagesSidebarNavigation = ({
             (style === 'texticon' && !isSidebarPinned && position === 'side' && isPagesSidebarVisible),
           'position-top': position === 'top' || !isPagesSidebarVisible,
           'text-only': style === 'text',
-          'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-          'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
           'no-preview-settings': isReleasedVersionId,
         })}
         style={{
@@ -478,6 +493,11 @@ export const PagesSidebarNavigation = ({
             !styles?.borderColor?.isDefault && position === 'top' ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
           boxShadow: 'var(--elevation-100-box-shadow)',
+          maxWidth: (() => {
+            if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
+              return canvasMaxWidth;
+            }
+          })(),
         }}
       >
         <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
