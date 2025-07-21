@@ -24,7 +24,6 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
     }),
     shallow
   );
-  console.log(authenticationService.currentSessionValue);
   const edition = fetchEdition();
   const showLicenseInfoToolTip = edition === 'cloud' && admin === true && super_admin === false;
   const darkMode = localStorage.getItem('darkMode') === 'true';
