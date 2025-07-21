@@ -5445,7 +5445,7 @@ div#driver-page-overlay {
 .org-name {
   color: var(--slate12) !important;
   font-size: 12px;
-  max-width: 120px;
+  max-width: var(--org-name-max-width, 160px);
   margin-right: 2px;
 }
 
@@ -5470,7 +5470,7 @@ div#driver-page-overlay {
     margin-right: 2px;
     font-weight: bold;
     width: 70%;
-    max-width: 120px;
+    max-width: var(--org-name-max-width, 160px);
   }
 
   .org-actions div {
@@ -11582,7 +11582,9 @@ tbody {
     }
   }
 }
-
+.org-name.license-info-tooltip {
+  --org-name-max-width: 113px;
+}
 .tj-org-dropdown {
   .dashboard-org-avatar {
     margin-right: 11px;
@@ -11632,7 +11634,7 @@ tbody {
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 2px;
-    max-width: 120px;
+    max-width: var(--org-name-max-width, 160px);
   }
 }
 
