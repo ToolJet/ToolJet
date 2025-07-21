@@ -15,13 +15,7 @@ title: Audit Logs
 
 The audit log is the report of all the activities done in your ToolJet account. It will capture and display events automatically by recording who performed an activity, what when, and where the activity was performed, along with other information such as IP address.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/audit_logs/logsnew-v2.png" alt="Audit logs" />
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/enterprise/audit_logs/logsnew-v2.png" alt="Audit logs" />
 
 ### Date Range
 
@@ -31,15 +25,17 @@ Retrieve the log of events that occurred within the specified date and time rang
 Pagination at the bottom allows navigation through the pages, with each page displaying a maximum of 7 logs.
 :::
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/enterprise/audit_logs/filtersnew-v2.png" alt="Audit logs" />
 
-<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/audit_logs/filtersnew-v2.png" alt="Audit logs" />
+## Audit Log Retention Period
 
-</div>
+By default, audit logs are retained for 90 days. However, admins can customize this retention period by setting the following environment variable:
 
-</div>
+```js
+AUDIT_LOGS_RETENTION_PERIOD
+```
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+To retain audit logs indefinitely, set the variable to 0.
 
 ## Filter Audit Logs
 
@@ -65,36 +61,82 @@ The dropdown will display all the apps associated with your account. Select an a
 
 ### Select Actions
 
+#### User
+
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
 | USER_LOGIN | This event is recorded everytime a user logins. |
 | USER_SIGNUP | This event is recorded everytime a new signup is made. |
 | USER_INVITE | You can invite users to your account from `Manage Users` section and an event is audited everytime an invite is sent. |
 | USER_INVITE_REDEEM | This event is recorded whenever an invite is redeemed. |
+| USER_LOGOUT | This event is recorded whenever a user logs out. |
+| USER_ARCHIVE | This event is recorded whenever a user is archived. |
+| USER_UNARCHIVE | This event is recorded whenever a user is unarchived. |
+| USER_PROFILE_UPDATE | This event is recorded whenever a user's name or avatar is updated. |
+| USER_PASSWORD_FORGOT | This event is recorded whenever a user requests forgot password link from the login screen. |
+| USER_PASSWORD_RESET | This event is recorded whenever a super admin resets a user password at the instance level. |
+| USER_PASSWORD_UPDATE | This event is recorded whenever a user update the password from profile settings. |
+| USER_DETAILS_UPDATE | This event is recorded whenever a super admin updates the user details. |
+
+#### User Groups and Permissions
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
+| ----------- | ----------- |
+| SET_AS_SUPERADMIN | This event is recorded whenever a user is promoted to super admin. |
+| GROUP_PERMISSION_CREATE | This event is recorded whenever a group is created. |
+| GROUP_PERMISSION_UPDATE | This event is recorded whenever an app or user is added to or removed from a group, or the permissions for a group are updated. |
+| GROUP_PERMISSION_DELETE | This event is recorded whenever a user group is deleted from an account. |
+| GROUP_PERMISSION_DUPLICATE | This event is recorded whenever a group and permission is duplicated. |
+| USER_ADD_TO_GROUP | This event is recorded whenever a user is added to a group. |
+| USER_REMOVE_FROM_GROUP | This event is recorded whenever a user is removed from a group. |
+| GRANULAR_PERMISSION_APP_CREATE | This event is recorded whenever an app level granular permission is created. |
+| GRANULAR_PERMISSION_APP_UPDATE | This event is recorded whenever an app level granular permission is updated. |
+| GRANULAR_PERMISSION_APP_DELETE | This event is recorded whenever an app level granular permission is deleted. |
+| GRANULAR_PERMISSION_DATA_SOURCE_CREATE | This event is recorded whenever a data source level permission is created. |
+| GRANULAR_PERMISSION_DATA_SOURCE_UPDATE | This event is recorded whenever a data source level permission is updated. |
+| GRANULAR_PERMISSION_DATA_SOURCE_DELETE | This event is recorded whenever a data source level permission is deleted. |
+
+#### Workspace
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
+| ----------- | ----------- |
+| WORKSPACE_CREATE | This event is recorded whenever a new workspace is created. |
+| WORKSPACE_UPDATE | This event is recorded whenever a workspace name or slug is updated. |
+| WORKSPACE_ARCHIVE | This event is recorded whenever a workspace is archived. |
+| WORKSPACE_UNARCHIVE | This event is recorded whenever a workspace is unarchived. |
+| WORKSPACE_LOGIN_SETTINGS_UPDATE | This event is recorded whenever workspace login settings is updated. |
+
+
+#### App
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
+| ----------- | ----------- |
 | APP_CREATE | This event is recorded when a user creates a new app. |
 | APP_UPDATE | This event is recorded whenever actions like renaming the app, making the app public, editing shareable link, or deploying the app are made. |
-| APP_VIEW | This event is logged when someone views the launched app. (public apps aren't accounted for) |
+| APP_PROMOTE | This event is recorded whenever an application's environment is promoted. |
+| APP_RELEASE | This event is recorded whenever an application is released. |
+| APP_SHARE | This event is recorded whenever an application is shared. |
+| APP_PUBLIC_UPDATE | This event is recorded whenever an application is made public. |
 | APP_DELETE | This event is recorded whenever a user deletes an app from the dashboard. |
 | APP_IMPORT | This event is recorded whenever a user imports an app. |
 | APP_EXPORT | This event is recorded whenever an app is exported. |
 | APP_CLONE | This event is recorded whenever a clone of the existing app is created. |
-| DATA_QUERY_RUN | This event is logged whenever a data source is added, a query is created, or whenever a query is run either from the query editor or from the launched app. |
-| GROUP_PERMISSION_CREATE | This event is recorded whenever a group is created. |
-| GROUP_PERMISSION_UPDATE | This event is recorded whenever an app or user is added to or removed from a group, or the permissions for a group are updated. |
-| GROUP_PERMISSION_DELETE | This event is recorded whenever a user group is deleted from an account. |
-| APP_GROUP_PERMISSION_UPDATE | For every app added in to user group, you can set privileges like `View` or `Edit` and whenever these privileges are updated this event is recorded. By default, the permission of an app for a user group is set to `View`. |
+| APP_VERSION_CREATE | This event is recorded whenever a new version of an application is created. |
+| APP_VERSION_UPDATE | This event is recorded whenever a version of an application is updated. |
+| APP_VERSION_DELETE | This event is recorded whenever a version of an application is deleted. |
 
-</div>
+#### Data Source
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
+| ----------- | ----------- |
+| DATA_SOURCE_CREATE | This event is recorded whenever a new data source is created. |
+| DATA_SOURCE_UPDATE | This event is recorded whenever a data source is updated. |
+| DATA_SOURCE_DELETE | This event is recorded whenever a data source is deleted. |
+| DATA_QUERY_RUN | This event is logged whenever a query run either from the query editor or from the launched app. |
 
 ## Understanding Log Information
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/enterprise/audit_logs/readinglogv2.png" alt="Audit logs" />
-
-</div>
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
@@ -108,10 +150,6 @@ The dropdown will display all the apps associated with your account. Select an a
 | resource_name | Shows the name of the [resources](#select-resources) that were involved in the logged event. For example, if an app was created or deleted, it will display the name of that app. |
 | resource_type | Indicates the type of the [resources](#select-resources) involved in the logged event. |
 | user_id | Each user account in ToolJet has a unique ID associated with it, which is recorded when an event occurs. |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Log File
 
@@ -185,6 +223,3 @@ Here, `{process_id}` is a placeholder for the unique process identifier, and `{d
 ```
 
 </details>
-
-</div>
-
