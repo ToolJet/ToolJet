@@ -82,6 +82,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
   const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
   const editingPage = useStore((state) => state.editingPage);
+  const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
   const computeStyles = useCallback(() => {
     const baseStyles = {
       pill: {
@@ -153,7 +154,6 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
             </>
           ) : (
             <>
-              {' '}
               <div ref={optionsBtnRef} className="left">
                 <div className="page-name">
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
@@ -161,7 +161,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                   </OverflowTooltip>
                 </div>
                 <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
-                  {page?.hidden && (
+                  {pageVisibility && (
                     <ToolTip message="Hidden group" placement="bottom">
                       <div className=" d-flex align-items-center justify-content-center">
                         <EyeDisable fill="var(--icons-default)" className="" width={16} height={16} />
@@ -170,16 +170,6 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                   )}
                 </span>
               </div>
-              {/* <PageGroupActions
-                onRename={() => {
-                  setRenamingPageGroup(true);
-                  openPageEditPopover(page);
-                }}
-                onDelete={() => {
-                  openPageEditPopover(page);
-                  toggleDeleteConfirmationModal(true);
-                }}
-              /> */}
               <div>
                 <div className={cx('action-btn-wrapper', { 'options-opened': showPageOptions })}>
                   <div

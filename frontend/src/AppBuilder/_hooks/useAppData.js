@@ -350,7 +350,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
-            isReleasedApp: isReleasedApp
+            isReleasedApp: isReleasedApp,
           },
           moduleId
         );
@@ -386,7 +386,7 @@ const useAppData = (
         let startingPage = appData.pages.find((page) => page.id === homePageId);
 
         //no access to homepage, set to the next available page
-        if (startingPage?.restricted) {
+        if (startingPage?.restricted && mode === 'view') {
           startingPage = appData.pages.find((page) => !page?.restricted);
         }
 

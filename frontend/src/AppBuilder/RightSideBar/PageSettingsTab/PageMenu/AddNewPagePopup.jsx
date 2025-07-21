@@ -599,19 +599,21 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
             style={{ marginBottom: forceCodeBox ? '0.5rem' : '0px' }}
             className={`d-flex align-items-center justify-content-end`}
           >
-            <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
-              <FxButton
-                active={forceCodeBox}
-                onPress={() => {
-                  if (forceCodeBox) {
-                    setForceCodeBox(false);
-                  } else {
-                    setForceCodeBox(true);
-                  }
-                }}
-              />
-            </div>
-
+            {!isHomePage && (
+              <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
+                <FxButton
+                  disabled={isHomePage}
+                  active={forceCodeBox}
+                  onPress={() => {
+                    if (forceCodeBox) {
+                      setForceCodeBox(false);
+                    } else {
+                      setForceCodeBox(true);
+                    }
+                  }}
+                />
+              </div>
+            )}
             {!forceCodeBox && (
               <div className="form-check form-switch m-0">
                 <input

@@ -26,6 +26,7 @@ export const RenderPage = ({
   callback,
   position,
   onPageClick,
+  currentMode,
 }) => {
   const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
   const isHomePage = page.id === homePageId;
@@ -43,7 +44,7 @@ export const RenderPage = ({
 
     return <Icon {...props} />;
   };
-  return pageVisibility || page.disabled || page?.restricted ? null : (
+  return pageVisibility || page.disabled || (page?.restricted && currentMode !== 'edit') ? null : (
     <div
       key={page.name}
       data-id={page.id}
@@ -98,9 +99,8 @@ const RenderPageGroup = ({
   isExpanded,
   onToggle,
   onPageClick,
+  currentMode,
 }) => {
-  const currentMode = useStore((state) => state.currentMode);
-
   const [hovered, setHovered] = useState(false);
   const contentRef = useRef(null);
   const groupItemRootRef = useRef(null);
@@ -161,6 +161,7 @@ const RenderPageGroup = ({
             position={position}
             callback={handleToggle}
             onPageClick={onPageClick}
+            currentMode={currentMode}
           />
         ))}
       </>
@@ -232,6 +233,7 @@ const RenderPageGroup = ({
               callback={handleToggle}
               position={position}
               onPageClick={onPageClick}
+              currentMode={currentMode}
             />
           ))}
         </div>
@@ -253,6 +255,7 @@ export const RenderPageAndPageGroup = ({
   position,
   style,
   isSidebarPinned,
+  currentMode,
 }) => {
   const { moduleId } = useModuleContext();
   const [expandedPageGroupId, setExpandedPageGroupId] = useState(null);
@@ -281,13 +284,15 @@ export const RenderPageAndPageGroup = ({
           page.isPageGroup &&
           page.children?.length === 0 &&
           labelStyle?.label?.hidden &&
-          !page.children.some((child) => child?.restricted === true)
+          (currentMode === 'view' ? !page.children.some((child) => child?.restricted === true) : true)
         ) {
           return null;
         }
-        if (page.children && page.isPageGroup && !page.children.some((child) => child?.restricted === true)) {
-          // if we are only displaying icons, we don't display the groups instead display separator to separate a page groups
-          const renderSeparatorTop = index !== 0 && labelStyle?.label?.hidden;
+        if (
+          page.children &&
+          page.isPageGroup &&
+          (currentMode === 'view' ? !page.children.some((child) => child?.restricted === true) : true)
+        ) {
           return (
             <>
               <RenderPageGroup
@@ -307,6 +312,7 @@ export const RenderPageAndPageGroup = ({
                 isExpanded={expandedPageGroupId === page.id}
                 onToggle={handleAccordionToggle}
                 onPageClick={closeAllAccordions}
+                currentMode={currentMode}
               />
             </>
           );
@@ -325,6 +331,7 @@ export const RenderPageAndPageGroup = ({
               isSidebarPinned={isSidebarPinned}
               position={position}
               onPageClick={closeAllAccordions}
+              currentMode={currentMode}
             />
           );
         }
@@ -356,14 +363,15 @@ export const RenderPageAndPageGroup = ({
                     page.isPageGroup &&
                     page.children.length === 0 &&
                     labelStyle?.label?.hidden &&
-                    !page.children.some((child) => child?.restricted === true)
+                    (currentMode === 'view' ? !page.children.some((child) => child?.restricted === true) : true)
                   ) {
                     return null;
                   }
-                  if (page.children && page.isPageGroup && !page.children.some((child) => child?.restricted === true)) {
-                    // if we are only displaying icons, we don't display the groups instead display separator to separate a page groups
-                    const renderSeparatorTop = index !== 0 && labelStyle?.label?.hidden;
-                    const renderSeparatorBottom = !overflowLinks[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
+                  if (
+                    page.children &&
+                    page.isPageGroup &&
+                    (currentMode === 'view' ? !page.children.some((child) => child?.restricted === true) : true)
+                  ) {
                     return (
                       <>
                         <RenderPageGroup
@@ -399,6 +407,7 @@ export const RenderPageAndPageGroup = ({
                         linkRefs={linkRefs}
                         isSidebarPinned={isSidebarPinned}
                         onPageClick={closeAllAccordions}
+                        currentMode={currentMode}
                       />
                     );
                   }

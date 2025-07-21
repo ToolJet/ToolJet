@@ -43,6 +43,7 @@ export const PagesSidebarNavigation = ({
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
   const { isReleasedVersionId } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
@@ -68,9 +69,21 @@ export const PagesSidebarNavigation = ({
 
   const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
   const pagesTree = buildTree(pages, !!labelStyle?.label?.hidden);
-  const mainNavBarPages = pagesTree.filter(
-    (page) => !page?.restricted && (!page?.isPageGroup || page.children?.length > 0)
-  );
+  const mainNavBarPages = pagesTree.filter((page) => {
+    const pageVisibility = getPagesVisibility('canvas', page?.id);
+    return (
+      (!page?.restricted || currentMode !== 'view') &&
+      !pageVisibility &&
+      !page?.disabled &&
+      (!page?.isPageGroup ||
+        (page.children?.length > 0 &&
+          page.children.some((child) => child?.disabled === false) &&
+          page.children.some((child) => {
+            const pageVisibility = getPagesVisibility('canvas', child?.id);
+            return pageVisibility === false;
+          })))
+    );
+  });
 
   const measureStaticElements = useCallback(() => {
     if (headerRef.current) {
@@ -517,6 +530,7 @@ export const PagesSidebarNavigation = ({
               navRef={navRef}
               position={position}
               isSidebarPinned={isSidebarPinned}
+              currentMode={currentMode}
             />
           ) : (
             isPagesSidebarVisible && (
@@ -533,6 +547,7 @@ export const PagesSidebarNavigation = ({
                 visibleLinks={visibleLinks}
                 overflowLinks={overflowLinks}
                 position={position}
+                currentMode={currentMode}
               />
             )
           )}
@@ -565,18 +580,13 @@ const RenderPagesWithoutGroup = ({
   handleToggle,
   position,
   moreBtnRef,
+  currentMode,
 }) => {
   const [showPopover, setShowPopover] = useState(false);
-  const filteredPagesVisible = (position == 'top' ? visibleLinks : pages).filter(
-    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
-  );
-  const filteredPagesOverflow = overflowLinks.filter(
-    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
-  );
 
   return (
     <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
-      {filteredPagesVisible.map((page) => {
+      {visibleLinks.map((page) => {
         return (
           <RenderPage
             key={page.handle}
@@ -593,12 +603,12 @@ const RenderPagesWithoutGroup = ({
           />
         );
       })}
-      {filteredPagesOverflow.length > 0 && position === 'top' && (
+      {overflowLinks.length > 0 && position === 'top' && (
         <>
           <button
             ref={moreBtnRef}
             onClick={() => setShowPopover(!showPopover)}
-            className="tj-list-item page-name"
+            className="tj-list-item page-name more-btn-pages width-unset"
             style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
           >
             <SolidIcon fill={'var(--icon-weak)'} viewBox="0 3 21 18" width="16px" name="morevertical" />
@@ -614,7 +624,7 @@ const RenderPagesWithoutGroup = ({
           >
             <Popover id="more-nav-btns">
               <Popover.Body>
-                {filteredPagesOverflow.map((page, index) => {
+                {overflowLinks.map((page, index) => {
                   return (
                     <RenderPage
                       key={page.handle}

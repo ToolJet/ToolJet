@@ -81,6 +81,12 @@ export class PageService implements IPageService {
       newPage.appVersionId = appVersionId;
       newPage.autoComputeLayout = true;
       newPage.type = pageToClone.type;
+      newPage.icon = pageToClone.icon || 'IconFile';
+      newPage.openIn = pageToClone.openIn;
+      newPage.appId = pageToClone.appId;
+      newPage.url = pageToClone.url;
+      newPage.disabled = pageToClone.disabled;
+      newPage.hidden = pageToClone.hidden;
 
       const clonedpage = await manager.save(newPage);
 
