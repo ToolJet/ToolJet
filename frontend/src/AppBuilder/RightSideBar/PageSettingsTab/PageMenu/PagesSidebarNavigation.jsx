@@ -78,7 +78,7 @@ export const PagesSidebarNavigation = ({
       !page?.disabled &&
       (!page?.isPageGroup ||
         (page.children?.length > 0 &&
-          !page.children.some((child) => child?.disabled) &&
+          page.children.some((child) => !child?.disabled) &&
           page.children.some((child) => {
             const pageVisibility = getPagesVisibility('canvas', child?.id);
             return pageVisibility === false;
