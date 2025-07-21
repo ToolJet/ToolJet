@@ -1,137 +1,92 @@
 ---
 id: pages
-title: Multi-Page Applications
+title: Pages and Navigation
 ---
 
-ToolJet allows the creation of multi-page applications, helping your teams to organize, navigate, and control access across different sections of an application. Instead of building everything on a single screen, you can create separate pages to organize different functionalities or enable navigation within your application.
+ToolJet allows the creation of multi-page applications, helping you break your application into different sections. Instead of building everything on a single screen, you can create separate pages to organize different functionalities or enable navigation within your application.
 
-You can structure your apps using pages, and each page can contain different views, components, and logic. The Pages and Navigation panel lets you:
-- Create and manage multiple pages within an app.
-- Organize pages into navigation menus and groups.
-- Configure visibility and access settings for each page.
-- Customize how users interact with navigation headers and sidebars.
+You can add the following items to the navigation menu in ToolJet:
 
-This provides a modular way to scale and control the user experience in your application.
+1. **New Page**: Create new pages to support multi-page applications and organize functionalities more effectively.
+2. **Web Pages**: Add external URLs to the navigation menu to redirect users to specific webpages.
+3. **ToolJet Application**: Link to other ToolJet applications directly from the nav menu. Note: The application must be a released app within the same workspace.
+4. **Nav Group**: Group related navigation items together to simplify navigation in complex applications. For example, all admin-related items can go under one group, and user-related items under another.
 
-This guide discusses how pages work, how to create new pages or page groups, and how to manage them.
+This guide discusses how pages and navigation menu work, how to create new navigation items manage them.
 
-## Why Use Pages
+## Page Properties
 
-- Improves app structure: Organizing content into logical pages improves maintainability and user flow.
-- Enables multi-role access: With page-level permissions, you can tailor content visibility for different user groups.
-- Responsive design: You can choose which devices (desktop or mobile) each page appears on.
-- Customizable navigation: Create nested navigation, external links, or app links with ease.
+Each page in ToolJet comes with properties that define its identity and behavior. These properties help in organizing, referencing, and securing pages within your application.
 
-## How To Use It
+<img className="screenshot-full img-m" src="/img/app-builder/multi-page/dropdown.png" alt="App Builder: Canvas"/>
 
-### Creating Pages
+### Name
 
-Let's say you are building an Employee Directory App and you want to add a new page. Follow these steps:
+A display name for the page, shown in the application's navigation menu. It is also used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to identify in the menu. The page name and icon can be updated using the kebab menu (three dots) next to the page name and then going to edit page details.
 
-1. Go to the **Pages and Navigation** panel by clicking on the page icon on right side bar.
-    <img className="screenshot-full img-s" src="/img/app-builder/multi-page/page-properties.png" alt="Pages and navigation panel"/>
-2. Click on **+ New page**.
-3. Fill in the **Page name** and **Handle** (Slug).
-4. Optionally:
-    - Add an icon
-    - Mark as home
-    - Hide page on navigation
-    - Disable page
-    - Add page-level event handlers (such as on page load)
+<img className="screenshot-full img-m" src="/img/app-builder/multi-page/page-name.png" alt="App Builder: Canvas"/>
 
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/add-page-modal.png" alt="add page"/>
+### Handle
 
-### Managing Pages
+The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL. By default, it's auto-generated from the page name. You can change it manually from edit page details option.
 
-Each page entry in the list provides quick actions:
+### Home Page
 
-- Edit page details: Change name, handle, event-handler, icon, etc.
-- Mark as home: Set the default landing page.
-- Duplicate: Clone existing pages.
-- Delete: Remove pages.
-- Set page permissions: Control access based on users and user groups. Click [here](/docs/app-builder/building-ui/pages#controlling-page-access-with-permissions) to learn more.
+The home page is the default landing page when the app launches. Only one page can be designated as the home page in your application. It cannot be deleted, disabled, or hidden from the page menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name or by going to edit page details option.
 
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/manage-pages.png" alt="add page"/>
+### Permissions
 
-### Organizing Navigation
+Page permissions control who can access a particular page. You can choose to:
 
-You can organize your page navigation by creating navigation groups, internal app links, and external URLs. 
+- Allow access to all users with application access
+- Restrict access to selected users
+- Restrict access to selected [user groups](/docs/user-management/role-based-access/user-roles)
 
-To add a new navigation item, click on the kebab menu (three-dots) beside **+ New page** button. <br/>
-    <img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-menu.png" alt="nav menu"/>
+To configure page permissions, click the kebab menu (three dots) next to the page name, select Page permission, and select a permission option from the popup.
 
-#### Add External Links
+### Disable Page
 
-To add a link to an external website, choose **Add nav item with URL.**
+**Disable Page** allows you to disable a page, making it inaccessible in the released application. A page marked as Home cannot be disabled.
 
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-url.png" alt="Add nav item with URL"/>
+### Hide Page on Navigation Menu
 
-#### Link to Another ToolJet Application
+You can hide a page from the navigation menu in the released application. However, hidden pages can still be accessed using the Switch Page action or by navigating directly to the page URL. Pages set as Home cannot be hidden.
 
-To link to a different ToolJet application, select **Add nav item ToolJet app**.
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-tooljet-app.png" alt="New nav item with app"/>
+## Header and Navigation Menu
 
-:::note
-Only published (released) apps can be linked in the navigation.
-:::
+### App Header
 
-#### Create Nested Navigation
+The app header section allows you to control what is displayed in the application’s header.
 
-To create a collapsible or grouped navigation structure, select **Add nav group**.
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-group.png" alt="New nav group"/>
+<img className="screenshot-full img-m" src="/img/app-builder/multi-page/app-header.png" alt="App Builder: Canvas"/>
 
-After creating a group, you can drag and drop individual nav items into the group to nest them. For example, for an employee directory app, you can create nested navigation as follows.
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/nav-group-example.png" alt="New nav group example"/>
+- **Show app header**: Toggle this on to display the app header.
+- **Show logo**: Toggle this on to display the application logo. You can update the logo from the [white labeling](/docs/tj-setup/org-branding/white-labeling/) settings.
+- **Title**: Set a title for the application. This will be displayed in the app header.
 
-### Controlling Page Access with Permissions
+### Navigation Menu
 
-You can configure page-level permissions in your ToolJet apps, giving you fine-grained control over who can access specific pages within your app. This ensures that each user or user group only sees what's relevant to them.
+The **Navigation Menu** lets users navigate between pages, external web pages and other ToolJet applications in your application. You can customize how it looks and works, or even hide certain pages from it.
 
-This feature is especially useful when:
+#### Show Navigation Menu
+Toggle this on to display the navigation menu. When disabled, no navigation menu will be displayed, but users will be still able to navigate using events and page urls.
 
-- You want to restrict access to internal or admin-only pages.
-- You're building role-based apps (e.g., different views for Managers and Employees).
-- You're maintaining a single app for multiple teams with varying access levels.
+#### Position
+Choose whether to display the navigation menu at the top or on the side of the application.
 
-For example, In an employee directory app, you might want only Admins or HR teams to access the “Manage Employees” page. Regular employees shouldn’t see or access this page. Using page permissions, you can easily assign access to specific user groups and keep it hidden from others.
+**Top Navigation Menu** <br/>
+<img className="screenshot-full img-full" style={{ marginBottom:'15px' }} src="/img/app-builder/multi-page/top-nav.png" alt="App Builder: Canvas"/>
 
-To set permissions:
+**Side Navigation Menu** <br/>
+<img className="screenshot-full img-full" src="/img/app-builder/multi-page/side-nav.png" alt="App Builder: Canvas"/>
 
-- Click on the **three-dot menu** beside the page name and select **Page permission**.
-    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/multi-page/select-page-permission.png" alt="Navigation menu on the side"/>
-- A modal will appear with the option to restrict access.
-- You can choose to:
-    - Allow access to all users with application access
-    - Restrict access to selected users
-    - Restrict access to selected [user groups](/docs/user-management/role-based-access/user-roles)
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/page-permission.png" alt="Navigation menu on the side"/>
+#### Style
 
-:::note
-If a user doesn’t have permission, the page will not be visible in their navigation or accessible via direct link.
-:::
+**Top Navigation Menu** <br/>
+Choose the display style for the top navigation menu: Text only or Text + Icon. The top navigation menu cannot be collapsed.
 
-### Customizing Header and Navigation
-
-You can personalize the layout and behavior of your header and navigation menu to match your app’s design and user experience needs. This customization is useful when designing apps for different devices or screen sizes—such as keeping the top bar for mobile-friendly apps and sidebar for dashboard-style interfaces.
-
-Under Header, you can:
-- Toggle app header and logo visibility.
-- Set a custom title (e.g., “Employee Directory”).
-
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/custom-header.png" alt="New nav group example"/>
-
-Under Navigation, you can:
-- Set the menu position: Choose whether the navigation menu appears at the top or on the side of the app.
-- Show or hide the entire navigation menu.
-- Choose the nav item display style: Show icons only, text only, or both icon and text.
-- If the menu is positioned on the side, you can enable or disable collapsibility.
-
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/custom-nav.png" alt="New nav group example"/>
-
-#### Navigation at the top:
-<img className="screenshot-full img-full" src="/img/app-builder/multi-page/nav-top.png" alt="Navigation menu at top"/>
-#### Navigation on the side:
-<img className="screenshot-full img-full" src="/img/app-builder/multi-page/nav-side.png" alt="Navigation menu on the side"/>
+**Side Navigation Menu** <br/>
+Choose display styles from: Text only, Icon only, or Text + Icon. The side navigation menu also supports a collapsible layout.
 
 ## Event Handlers
 
@@ -139,7 +94,7 @@ The Page Event Handler lets you trigger actions automatically when a page loads.
 
 For example, it can run a query to fetch the latest data from the database and populate it in a table component. This ensures the page is ready with up-to-date information whenever it is loaded.
 
-<img className="screenshot-full img-l" src="/img/app-builder/multi-page/page-event.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-full" src="/img/app-builder/multi-page/page-event.png" alt="App Builder: Canvas"/>
 
 ## Exposed Variables
 
@@ -147,8 +102,35 @@ Exposed variables are values from a page that can be accessed throughout the app
 
 | Variable  | Description | How To Access |
 | ----------- | ----------- | ------------- |
-| handle | Represents the slug of the page within the app. It is automatically set when a page is created, but can be renamed from the page options. | `{{page.handle}}`|
+| handle | Represents the slug of the page within the app. It is automatically set when a page is created, but can be [renamed](#handle) from the page options. | `{{page.handle}}`|
 | name | Indicates the name of the page. | `{{page.name}}` |
 | id | Each page in the ToolJet application receives a unique identifier upon creation. | `{{page.id}}` |
 | variables | Variables object contains all the variables created for a specific page using the [Set Page Variable](/docs/actions/set-page-variable) action.  | `{{page.variables.<pageVariableName>}}`, where `<pageVariableName>` refers to the variable name. |
 
+## Manage Navigation Item
+
+### New Page
+
+You can add a new page to organize the application navigation or to separate different parts of your app. To add a new page, click on the **+ New page** button at the bottom of the Pages and menu panel. Enter the page name and press enter to create the page.
+
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-page.png" alt="App Builder: Canvas"/>
+
+### Web Page
+
+To link an external web page to the navigation menu, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav item with URL**.
+Enter a name and provide the URL. You can also choose whether to open the web page in a new tab or in the same tab, and optionally select an icon for the navigation item.
+
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/webpage.png" alt="App Builder: Canvas"/>
+
+### ToolJet App
+
+To add a ToolJet application to the navigation menu, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav item ToolJet app**.
+Enter a name and select the application from the dropdown. Only the release application from the same workspace will appear in the dropdown. You can also choose whether to open the application in a new tab or in the same tab, and optionally select an icon for the navigation item.
+
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/tooljet-app.png" alt="App Builder: Canvas"/>
+
+### Nav Group
+
+Related navigation item can be grouped together using the nav group. To add a new nav group, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav group**. Enter the group name and press enter to create the group. You can then drag items into the group folder. You can also add an icon to the group for better visual identification.
+
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-group.png" alt="App Builder: Canvas"/>
