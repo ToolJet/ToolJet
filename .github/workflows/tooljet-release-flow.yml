@@ -1,0 +1,72 @@
+name: Release on PR Merge
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - lts-3.16
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract version from title
+        id: extract
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          VERSION=$(echo "$TITLE" | grep -oE 'Version ([0-9]+\.[0-9]+(-LTS)?)' | awk '{ print $2 }')
+
+          if [[ -z "$VERSION" ]]; then
+            echo "❌ No version found in PR title"
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          if [[ "$VERSION" == *-LTS ]]; then
+            echo "IS_LTS=true" >> $GITHUB_ENV
+            echo "VERSION_BASE=${VERSION%-LTS}" >> $GITHUB_ENV
+            echo "is_lts=true" >> $GITHUB_OUTPUT
+          else
+            echo "IS_LTS=false" >> $GITHUB_ENV
+            echo "VERSION_BASE=$VERSION" >> $GITHUB_ENV
+            echo "is_lts=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout LTS branch
+        if: steps.extract.outputs.is_lts == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: lts-3.16
+
+      - name: Checkout main branch
+        if: steps.extract.outputs.is_lts == 'false'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Git
+        run: |
+          git config user.name "ToolJet Bot"
+          git config user.email "adish.madhu@gmail.com"
+
+      - name: Create Git tag
+        run: |
+          TAG=v${{ env.VERSION }}
+          git tag $TAG
+          git push origin $TAG
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          generate_release_notes: true
+          prerelease: ${{ env.IS_LTS != 'true' }}
+          make_latest: ${{ env.IS_LTS == 'true' && 'true' || 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
