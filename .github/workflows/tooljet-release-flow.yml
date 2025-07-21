@@ -9,64 +9,107 @@ on:
       - lts-3.16
 
 jobs:
-  release:
-    if: github.event.pull_request.merged == true
+  merge-submodules:
+    if: |
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.title, ' | Version ')
     runs-on: ubuntu-latest
-
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+      is_lts: ${{ steps.extract.outputs.is_lts }}
     steps:
+      - name: Extract Branch Name and Base Branch
+        run: |
+          echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          echo "BASE_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+
+      - name: Merge PR in ee-server (if exists)
+        run: |
+          PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          if [ -n "$PR" ]; then
+            echo "Found ee-server PR: #$PR"
+            gh pr merge -R ToolJet/ee-server "$PR" --merge --admin
+          else
+            echo "No open ee-server PR for branch $BRANCH_NAME into $BASE_BRANCH"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          BRANCH_NAME: ${{ env.BRANCH_NAME }}
+          BASE_BRANCH: ${{ env.BASE_BRANCH }}
+
+      - name: Merge PR in ee-frontend (if exists)
+        run: |
+          PR=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          if [ -n "$PR" ]; then
+            echo "Found ee-frontend PR: #$PR"
+            gh pr merge -R ToolJet/ee-frontend "$PR" --merge --admin
+          else
+            echo "No open ee-frontend PR for branch $BRANCH_NAME into $BASE_BRANCH"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          BRANCH_NAME: ${{ env.BRANCH_NAME }}
+          BASE_BRANCH: ${{ env.BASE_BRANCH }}
+
+
       - name: Extract version from title
         id: extract
         run: |
           TITLE="${{ github.event.pull_request.title }}"
-          VERSION=$(echo "$TITLE" | grep -oE 'Version ([0-9]+\.[0-9]+(-LTS)?)' | awk '{ print $2 }')
-
-          if [[ -z "$VERSION" ]]; then
-            echo "❌ No version found in PR title"
-            exit 1
+          VERSION=$(echo "$TITLE" | grep -oE '([0-9]+\.[0-9]+(\.[0-9]+)?)')
+          IS_LTS=false
+          if [[ "$TITLE" =~ [Ll][Tt][Ss] ]]; then
+            IS_LTS=true
           fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "is_lts=$IS_LTS" >> $GITHUB_OUTPUT
 
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-          if [[ "$VERSION" == *-LTS ]]; then
-            echo "IS_LTS=true" >> $GITHUB_ENV
-            echo "VERSION_BASE=${VERSION%-LTS}" >> $GITHUB_ENV
-            echo "is_lts=true" >> $GITHUB_OUTPUT
-          else
-            echo "IS_LTS=false" >> $GITHUB_ENV
-            echo "VERSION_BASE=$VERSION" >> $GITHUB_ENV
-            echo "is_lts=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout LTS branch
-        if: steps.extract.outputs.is_lts == 'true'
+  release:
+    if: contains(github.event.pull_request.title, ' | Version ')
+    needs: [merge-submodules]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout correct branch
         uses: actions/checkout@v4
         with:
-          ref: lts-3.16
+          ref: ${{ github.event.pull_request.base.ref }}
 
-      - name: Checkout main branch
-        if: steps.extract.outputs.is_lts == 'false'
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Set up Git
+      - name: Create Git tag
+        id: tag
         run: |
           git config user.name "ToolJet Bot"
           git config user.email "adish.madhu@gmail.com"
+          git config --global url."https://${{ secrets.TOKEN_PR }}@github.com/".insteadOf "https://github.com/"
+          
+          TAG_NAME="${{ needs.merge-submodules.outputs.version }}"
+          if [[ "${{ needs.merge-submodules.outputs.is_lts }}" == "true" ]]; then
+            TAG_NAME="${TAG_NAME}-LTS"
+          fi
 
-      - name: Create Git tag
-        run: |
-          TAG=v${{ env.VERSION }}
-          git tag $TAG
-          git push origin $TAG
+          VERSION_TAG="v$TAG_NAME"
+          echo "name=$VERSION_TAG" >> $GITHUB_OUTPUT
+          git tag "$VERSION_TAG"
+          git push origin "$VERSION_TAG"
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_PR }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name }}
           generate_release_notes: true
-          prerelease: ${{ env.IS_LTS != 'true' }}
-          make_latest: ${{ env.IS_LTS == 'true' && 'true' || 'false' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{ needs.merge-submodules.outputs.is_lts != 'true' }}
+          make_latest: ${{ needs.merge-submodules.outputs.is_lts == 'true' && 'true' || 'false' }}
+          token: ${{ secrets.TOKEN_PR }}
+
+      - name: Output release tag
+        id: tag_output
+        run: |
+          TAG_NAME="${{ needs.merge-submodules.outputs.version }}"
+          if [[ "${{ needs.merge-submodules.outputs.is_lts }}" == "true" ]]; then
+            TAG_NAME="${TAG_NAME}-LTS"
+          fi
+          echo "name=v$TAG_NAME" >> $GITHUB_OUTPUT
