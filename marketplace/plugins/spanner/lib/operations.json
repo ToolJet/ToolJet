@@ -10,7 +10,7 @@
     "dialect": {
       "key": "dialect",
       "label": "SQL dialect",
-      "type": "dropdown-component-flip",
+      "type": "dropdown",
       "description": "Select the SQL dialect to use",
       "list": [
         {
