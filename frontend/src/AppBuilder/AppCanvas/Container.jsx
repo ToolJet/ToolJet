@@ -99,9 +99,13 @@ const Container = React.memo(
           activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
-      drop: (item, monitor) => {
-        handleDrop(item, id);
-      },
+      // TODO: Remove this- Drop is handled in the DragLayer since drop was not always triggered after
+      // integration with react-moveable for the guidelines.
+      // drop: (item, monitor) => {
+      //   console.log('DROP');
+      //   item.dropHandled = true;
+      //   handleDrop(item, id);
+      // },
     });
 
     const showEmptyContainer =
@@ -173,8 +177,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas

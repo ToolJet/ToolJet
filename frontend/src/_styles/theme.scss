@@ -18102,12 +18102,16 @@ section.ai-message-prompt-input-wrapper {
   height: 48px;
   padding: 8px;
   border-bottom: 1px solid var(--border-weak, #E4E7EB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
 
   .codebuilder-color-swatches {
     display: flex;
     padding: 2px;
     flex-wrap: wrap;
+    width: 215px;
 
     .ToggleGroup {
       width: 100%;
@@ -18779,4 +18783,8 @@ section.ai-message-prompt-input-wrapper {
   &::-webkit-scrollbar-thumb:hover {
     background-color: rgba(0, 0, 0, 0.3);
   }
+}
+
+.accordion-body-custom {
+  padding: 0rem 1rem 1rem 1rem !important;
 }

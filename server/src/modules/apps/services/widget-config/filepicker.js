@@ -306,9 +306,9 @@ export const filepickerConfig = {
     properties: {
       label: { value: 'Upload files' },
       instructionText: { value: 'Drag and drop files here or click to select files' },
-      enableDropzone: { value: '{{true}}' },
-      enablePicker: { value: '{{true}}' },
-      enableMultiple: { value: '{{false}}' },
+      enableDropzone: { value: '{{true}}', fxActive: false },
+      enablePicker: { value: '{{true}}', fxActive: false },
+      enableMultiple: { value: '{{false}}', fxActive: false },
       parseContent: { value: '{{false}}' },
       parseFileType: { value: 'auto-detect' },
       loadingState: { value: '{{false}}' },

@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { WidgetBox } from '../WidgetBox';
 import { ModuleWidgetBox } from '@/modules/Modules/components';
-import { useDrag, useDragLayer } from 'react-dnd';
+import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { snapToGrid } from '@/AppBuilder/AppCanvas/appCanvasUtils';
-import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -20,7 +18,7 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
-  const { handleDrop } = useCanvasDropHandler({ appType: isModuleTab ? 'module' : 'app' }) || noop;
+  const { handleDrop } = useCanvasDropHandler() || noop;
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -28,11 +26,8 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
       item: { componentType: component.component, component },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item, monitor) => {
-        const clientOffset = monitor.getClientOffset();
         const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
-        if (clientOffset) {
-          handleDrop(item, currentDragCanvasId);
-        }
+        handleDrop(item, currentDragCanvasId);
       },
     }),
     [component.component]

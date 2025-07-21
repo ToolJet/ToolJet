@@ -133,7 +133,7 @@ export const Container = ({
           )}
           <div
             style={containerContentStyles}
-            className={`${properties.dynamicHeight && `dynamic-${id}`}`}
+            className={`${properties.dynamicHeight && `dynamic-${id}`} widget-type-container`}
             data-disabled={isDisabled}
           >
             <ContainerComponent

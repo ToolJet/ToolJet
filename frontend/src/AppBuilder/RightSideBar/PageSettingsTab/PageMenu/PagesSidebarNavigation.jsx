@@ -42,7 +42,7 @@ export const PagesSidebarNavigation = ({
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
-  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const { isReleasedVersionId } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
@@ -391,7 +391,7 @@ export const PagesSidebarNavigation = ({
   const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
 
-  if (hideHeader && hideLogo && !isPagesSidebarVisible) {
+  if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
   }
 
@@ -444,11 +444,11 @@ export const PagesSidebarNavigation = ({
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
             style === 'icon' ||
-            (style === 'texticon' && !isSidebarPinned && position === 'side' && isPagesSidebarVisible),
-          'position-top': position === 'top' || !isPagesSidebarVisible,
+            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
+          'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
-          'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-          'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          'right-sidebar-open': isRightSidebarOpen && (position === 'top' || isPagesSidebarHidden),
+          'left-sidebar-open': isSidebarOpen && (position === 'top' || isPagesSidebarHidden),
           'no-preview-settings': isReleasedVersionId,
         })}
         style={{
@@ -481,7 +481,7 @@ export const PagesSidebarNavigation = ({
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
               )}
-              {!headerHidden && (!labelHidden || !isPagesSidebarVisible) && (
+              {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
                 <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
                   {name?.trim() ? name : appName}
                 </div>
@@ -490,7 +490,7 @@ export const PagesSidebarNavigation = ({
                 !isTopPositioned &&
                 style == 'texticon' &&
                 position === 'side' &&
-                isPagesSidebarVisible && (
+                !isPagesSidebarHidden && (
                   <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
                     <SolidIcon
                       className="cursor-pointer"
@@ -502,7 +502,7 @@ export const PagesSidebarNavigation = ({
                 )}
             </div>
           )}
-          {isLicensed && isPagesSidebarVisible ? (
+          {isLicensed && !isPagesSidebarHidden ? (
             <RenderPageAndPageGroup
               switchPageWrapper={switchPageWrapper}
               pages={pages}
@@ -519,7 +519,7 @@ export const PagesSidebarNavigation = ({
               isSidebarPinned={isSidebarPinned}
             />
           ) : (
-            isPagesSidebarVisible && (
+            !isPagesSidebarHidden && (
               <RenderPagesWithoutGroup
                 darkMode={darkMode}
                 homePageId={homePageId}
