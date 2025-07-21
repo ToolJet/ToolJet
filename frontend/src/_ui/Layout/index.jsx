@@ -125,7 +125,7 @@ function Layout({
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {logo ? <img src={logo} /> : <Logo />}
+                {logo ? <img width="26px" height="26px" src={logo} /> : <Logo />}
               </Link>
             </div>
             <LeftNavSideBar
