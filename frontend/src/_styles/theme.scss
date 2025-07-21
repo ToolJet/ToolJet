@@ -3685,7 +3685,7 @@ input:focus-visible {
 
   .page-item {
     a.page-link {
-      color: white;
+      background-color: var(--cc-primary-brand, --primary-brand);
     }
   }
 
@@ -5445,6 +5445,8 @@ div#driver-page-overlay {
 .org-name {
   color: var(--slate12) !important;
   font-size: 12px;
+  max-width: var(--org-name-max-width, 160px);
+  margin-right: 2px;
 }
 
 
@@ -5465,8 +5467,10 @@ div#driver-page-overlay {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    width: 100%;
+    margin-right: 2px;
     font-weight: bold;
+    width: 70%;
+    max-width: var(--org-name-max-width, 160px);
   }
 
   .org-actions div {
@@ -11578,7 +11582,9 @@ tbody {
     }
   }
 }
-
+.org-name.license-info-tooltip {
+  --org-name-max-width: 113px;
+}
 .tj-org-dropdown {
   .dashboard-org-avatar {
     margin-right: 11px;
@@ -11609,9 +11615,9 @@ tbody {
   }
 
   .current-org-indicator {
-    padding: 0px 8px 0px 8px;
+    padding: 0px 3px 0px 3px;
     margin-left: auto;
-    margin-right: 5px;
+    margin-right: 2px;
   }
 
   .current-org-indicator {
@@ -11627,7 +11633,8 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 80%;
+    margin-right: 2px;
+    max-width: var(--org-name-max-width, 160px);
   }
 }
 

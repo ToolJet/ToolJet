@@ -85,8 +85,13 @@ export async function setFaviconAndTitle(location) {
   document.title = pageTitle ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${decodeEntities(whiteLabelText)}`;
 }
 
-export async function fetchAndSetWindowTitle(pageDetails) {
-  const whiteLabelText = retrieveWhiteLabelText();
+export async function fetchAndSetWindowTitle(pageDetails, organizationId = null) {
+  const state = useWhiteLabellingStore.getState();
+  if (!state.isWhiteLabelDetailsFetched && state.loadingWhiteLabelDetails) {
+    await fetchWhiteLabelDetails(organizationId);
+  }
+  const whiteLabelText = state.whiteLabelText;
+
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
   let mode = pageDetails?.mode || '';
