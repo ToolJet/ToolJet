@@ -24,6 +24,7 @@ export const listviewConfig = {
         top: 50,
         left: 11,
         height: 30,
+        width: 14
       },
       properties: ['text'],
       accessorKey: 'text',
@@ -49,14 +50,25 @@ export const listviewConfig = {
     data: {
       type: 'code',
       displayName: 'List data',
-      schema: {
-        type: 'union',
-        schemas: [
-          { type: 'array', element: { type: 'object' } },
-          { type: 'array', element: { type: 'string' } },
-        ],
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            { type: 'array', element: { type: 'object' } },
+            { type: 'array', element: { type: 'string' } },
+          ],
+        },
         defaultValue: "[{text: 'Sample text 1'}]",
       },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
     },
     mode: {
       type: 'select',
@@ -129,15 +141,15 @@ export const listviewConfig = {
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     borderColor: {
       type: 'colorSwatches',
-      displayName: 'Border color',
+      displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#dadcde',
+        defaultValue: 'var(--cc-default-border)',
       },
     },
     visibility: {
@@ -161,7 +173,7 @@ export const listviewConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 4,
+        defaultValue: 6,
       },
     },
   },
@@ -186,6 +198,7 @@ export const listviewConfig = {
       rowHeight: {
         value: '100',
       },
+      dynamicHeight: { value: '{{false}}' },
       visible: { value: '{{true}}' },
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
@@ -193,11 +206,11 @@ export const listviewConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
-      borderColor: { value: '#dadcde' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderColor: { value: 'var(--cc-default-border)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
     },
   },
 };

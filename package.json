@@ -53,6 +53,7 @@
     "db:reset": "npm --prefix server run db:reset",
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
+    "worker:prod": "npm --prefix server run worker:prod",
     "plugins:install": "npm --prefix server run plugins:install",
     "plugins:install:prod": "npm --prefix server run plugins:install:prod",
     "plugins:uninstall": "npm --prefix server run plugins:uninstall",

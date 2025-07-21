@@ -60,7 +60,7 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
       return licenseInstance.customThemes;
 
     case LICENSE_FIELD.SERVER_SIDE_GLOBAL:
-      return licenseInstance.serverSideGlobal;
+      return licenseInstance.serverSideGlobalResolve;
     case LICENSE_FIELD.EXTERNAL_API:
       return licenseInstance.externalApis;
 
@@ -84,10 +84,10 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.USER:
       return {
-        total: licenseInstance.users,
-        editors: licenseInstance.editorUsers,
-        viewers: licenseInstance.viewerUsers,
-        superadmins: licenseInstance.superadminUsers,
+        total: licenseInstance?.users,
+        editors: licenseInstance?.editorUsers,
+        viewers: licenseInstance?.viewerUsers,
+        superadmins: licenseInstance?.superadminUsers,
       };
 
     case LICENSE_FIELD.FEATURES:
@@ -115,6 +115,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.AI:
       return licenseInstance.ai;
+
+    case LICENSE_FIELD.PLAN:
+      return licenseInstance.plan;
 
     default:
       return licenseInstance.terms;

@@ -12,7 +12,7 @@ import { UserSessions } from 'src/entities/user_sessions.entity';
 import { Response } from 'express';
 import { User } from 'src/entities/user.entity';
 import { Organization } from '@entities/organization.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from './util.service';
 import { AppsRepository } from '@modules/apps/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
@@ -50,7 +50,7 @@ export class SessionService {
     });
   }
 
-  async getSessionDetails(user: User, workspaceSlug: string, appId: string): Promise<any> {
+  async getSessionDetails(user: User, workspaceSlug: string, appId: string, aiCookies: any): Promise<any> {
     let appData: { organizationId: string; isPublic: boolean; isReleased: boolean };
     let currentOrganization: Organization;
     if (appId) {
@@ -85,7 +85,7 @@ export class SessionService {
         await this.userRepository.updateOne(user.id, { defaultOrganizationId: appData.organizationId });
       }
     }
-    return await this.sessionUtilService.generateSessionPayload(user, currentOrganization, appData);
+    return await this.sessionUtilService.generateSessionPayload(user, currentOrganization, appData, aiCookies);
   }
 
   async validateInvitedUserSession(user: User, invitedUser: any, tokens: any) {

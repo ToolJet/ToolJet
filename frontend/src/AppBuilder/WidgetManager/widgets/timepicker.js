@@ -43,12 +43,6 @@ export const timePickerConfig = {
       },
       accordian: 'Data',
     },
-    isTimezoneEnabled: {
-      type: 'toggle',
-      displayName: 'Manage time zones',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'Date',
-    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -114,11 +108,6 @@ export const timePickerConfig = {
       ],
     },
     {
-      handle: 'setValueInTimestamp',
-      displayName: 'Set value in timestamp',
-      params: [{ handle: 'value', displayName: 'Value' }],
-    },
-    {
       handle: 'setMinTime',
       displayName: 'Set min time',
       params: [{ handle: 'value', displayName: 'Value' }],
@@ -126,16 +115,6 @@ export const timePickerConfig = {
     {
       handle: 'setMaxTime',
       displayName: 'Set max time',
-      params: [{ handle: 'value', displayName: 'Value' }],
-    },
-    {
-      handle: 'setDisplayTimezone',
-      displayName: 'Set display timezone',
-      params: [{ handle: 'value', displayName: 'Value' }],
-    },
-    {
-      handle: 'setStoreTimezone',
-      displayName: 'Set store timezone',
       params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
@@ -166,7 +145,7 @@ export const timePickerConfig = {
     labelColor: {
       type: 'colorSwatches',
       displayName: 'Color',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
     alignment: {
@@ -217,31 +196,31 @@ export const timePickerConfig = {
     fieldBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
     fieldBorderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
       accordian: 'field',
     },
     accentColor: {
       type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
     selectedTextColor: {
       type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#E54D2E' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     icon: {
@@ -257,7 +236,7 @@ export const timePickerConfig = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#6A727C',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'field',
     },
@@ -284,7 +263,7 @@ export const timePickerConfig = {
       displayName: 'Box shadow',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #121212',
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'field',
     },
@@ -321,9 +300,6 @@ export const timePickerConfig = {
       label: { value: 'Label' },
       defaultValue: { value: '00:00' },
       timeFormat: { value: 'HH:mm' },
-      isTimezoneEnabled: { value: '{{false}}' },
-      displayTimezone: { value: 'UTC' },
-      storeTimezone: { value: 'UTC' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -331,23 +307,23 @@ export const timePickerConfig = {
     },
     events: [],
     styles: {
-      labelColor: { value: '#1B1F24' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
       labelWidth: { value: '20' },
       auto: { value: '{{true}}' },
-      fieldBackgroundColor: { value: '#fff' },
-      fieldBorderColor: { value: '#CCD1D5' },
-      accentColor: { value: '#4368E3' },
-      selectedTextColor: { value: '#1B1F24' },
-      errTextColor: { value: '#E54D2E' },
+      fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      fieldBorderColor: { value: 'var(--cc-default-border)' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
+      selectedTextColor: { value: 'var(--cc-primary-text)' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
       icon: { value: 'IconClock' },
       iconVisibility: { value: true },
       iconDirection: { value: 'left' },
       fieldBorderRadius: { value: '{{6}}' },
-      boxShadow: { value: '0px 0px 0px 0px #121212' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
-      iconColor: { value: '#6A727C' },
+      iconColor: { value: 'var(--cc-default-icon)' },
     },
   },
 };

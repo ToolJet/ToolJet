@@ -5,7 +5,7 @@ import { UserPermissions } from '@modules/ability/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataSourceScopes, DataSourceTypes } from './constants';
-import { GetQueryVariables } from './types';
+import { DefaultDataSourceKind, GetQueryVariables } from './types';
 import { decode } from 'js-base64';
 
 @Injectable()
@@ -162,10 +162,22 @@ export class DataSourcesRepository extends Repository<DataSource> {
     });
   }
 
+  async getStaticDataSourceByKind(
+    organizationId: string,
+    kind: DefaultDataSourceKind,
+    manager?: EntityManager
+  ): Promise<DataSource> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.findOneOrFail(DataSource, {
+        where: { organizationId, type: DataSourceTypes.STATIC, kind },
+      });
+    }, manager || this.manager);
+  }
+
   findByQuery(dataQueryId: string, organizationId: string, dataSourceId?: string, manager?: EntityManager) {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.findOne(DataSource, {
-        where: { ...(dataSourceId ? { id: dataSourceId } : {}), dataQueries: { id: dataQueryId } },
+        where: { ...(dataSourceId ? { id: dataSourceId } : {}), dataQueries: { id: dataQueryId }, organizationId },
         relations: ['dataQueries', 'plugin'],
       });
     }, manager || this.manager);

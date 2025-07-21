@@ -74,7 +74,6 @@ export const stepsConfig = {
         defaultValue: 1,
       },
     },
-
   },
   defaultSize: {
     width: 22,
@@ -102,7 +101,7 @@ export const stepsConfig = {
     },
     {
       handle: 'setDisabled',
-      displayName: 'Set disabled',
+      displayName: 'Set disable',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {
@@ -170,7 +169,7 @@ export const stepsConfig = {
       displayName: 'Completed accent',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--primary-brand)',
+        defaultValue: 'var(--cc-primary-brand)',
       },
       accordian: 'steps',
     },
@@ -240,11 +239,11 @@ export const stepsConfig = {
       // color: { value: '' },
       // textColor: { value: '' },
       padding: { value: 'default' },
-      incompletedAccent: { value: '#E4E7EB' },
-      incompletedLabel: { value: '#1B1F24' },
-      completedAccent: { value: 'var(--primary-brand)' },
-      completedLabel: { value: '#1B1F24' },
-      currentStepLabel: { value: '#1B1F24' },
+      incompletedAccent: { value: 'var(--cc-surface3-surface)' },
+      incompletedLabel: { value: 'var(--cc-primary-text)' },
+      completedAccent: { value: 'var(--cc-primary-brand)' },
+      completedLabel: { value: 'var(--cc-primary-text)' },
+      currentStepLabel: { value: 'var(--cc-primary-text)' },
     },
   },
 };

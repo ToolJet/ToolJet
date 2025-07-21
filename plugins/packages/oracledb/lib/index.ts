@@ -1,7 +1,8 @@
 import { Knex, knex } from 'knex';
 import oracledb from 'oracledb';
 import {
-  cacheConnection,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
   getCachedConnection,
   ConnectionTestResult,
   QueryService,
@@ -118,13 +119,15 @@ export default class OracledbQueryService implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<any> {
     if (checkCache) {
-      let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
+      const optionsHash = generateSourceOptionsHash(sourceOptions);
+      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      let connection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
 
       if (connection) {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-        dataSourceId && cacheConnection(dataSourceId, connection);
+        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
         return connection;
       }
     } else {

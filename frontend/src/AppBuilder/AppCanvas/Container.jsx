@@ -4,31 +4,17 @@ import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useDrop } from 'react-dnd';
-import {
-  addChildrenWidgetsToParent,
-  addNewWidgetToTheEditor,
-  computeViewerBackgroundColor,
-  getSubContainerWidthAfterPadding,
-} from './appCanvasUtils';
-import {
-  CANVAS_WIDTHS,
-  NO_OF_GRIDS,
-  WIDGETS_WITH_DEFAULT_CHILDREN,
-  GRID_HEIGHT,
-  CONTAINER_FORM_CANVAS_PADDING,
-  SUBCONTAINER_CANVAS_BORDER_WIDTH,
-  BOX_PADDING,
-} from './appCanvasConstants';
+import { useDrop, useDragLayer } from 'react-dnd';
+import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
+import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
-import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
-import { isPDFSupported } from '@/_helpers/appUtils';
-import toast from 'react-hot-toast';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
-import { noop } from 'lodash';
+import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
+import { useCanvasDropHandler } from './useCanvasDropHandler';
+import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -36,7 +22,7 @@ import { noop } from 'lodash';
   index - used to identify the subcontainer index
   onOptionChange - used to pass the onOptionChange function to the child components and pass the exposedValues to the parent component
 */
-export const Container = React.memo(
+const Container = React.memo(
   ({
     id,
     canvasWidth,
@@ -50,128 +36,99 @@ export const Container = React.memo(
     columns,
     darkMode,
     canvasMaxWidth,
-    isViewerSidebarPinned,
-    pageSidebarStyle,
     componentType,
     appType,
   }) => {
     const { moduleId } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
-
-    const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
-    const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
     );
-    const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
-    const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
+
+    // Initialize ghost moveable hook
+    const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
+
+    // // Monitor drag layer to update ghost position continuously
+    const { isDragging } = useDragLayer((monitor) => ({
+      isDragging: monitor.isDragging(),
+    }));
+
+    // // // Cleanup ghost when drag ends
+    useEffect(() => {
+      if (!isDragging) {
+        deactivateMoveableGhost();
+      }
+    }, [id, isDragging, deactivateMoveableGhost]);
 
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
+    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
+
+    const { handleDrop } = useCanvasDropHandler({
+      appType,
+    });
+
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
-      hover: (item) => {
-        item.canvasRef = realCanvasRef?.current;
-        item.canvasId = id;
-        item.canvasWidth = getContainerCanvasWidth();
-      },
-      drop: async ({ componentType, component }, monitor) => {
-        setShowModuleBorder(false); // Hide the module border when dropping
-        if (currentMode === 'view' || (appType === 'module' && componentType !== 'ModuleContainer')) return;
-        const didDrop = monitor.didDrop();
-        if (didDrop) return;
-        if (componentType === 'PDF' && !isPDFSupported()) {
-          toast.error(
-            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
-          );
-          return;
+      hover: (item, monitor) => {
+        const clientOffset = monitor.getClientOffset();
+
+        const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
+
+        if (clientOffset) {
+          const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
+          if (canvasId === id) {
+            setCurrentDragCanvasId(id);
+          }
         }
-
-        // IMPORTANT: This logic needs to be changed when we implement the module versioning
-        const moduleInfo = component?.moduleId
-          ? {
-              moduleId: component.moduleId,
-              versionId: component.versionId,
-              environmentId: component.environmentId,
-              moduleName: component.displayName,
-              moduleContainer: component.moduleContainer,
-            }
-          : undefined;
-
-        if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
-          const parentComponent = addNewWidgetToTheEditor(
-            componentType,
-            monitor,
-            currentLayout,
-            realCanvasRef,
-            id,
-            moduleInfo
-          );
-          const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
-          const newComponents = [parentComponent, ...childComponents];
-          await addComponentToCurrentPage(newComponents);
-          // setSelectedComponents([parentComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-        } else {
-          const newComponent = addNewWidgetToTheEditor(
-            componentType,
-            monitor,
-            currentLayout,
-            realCanvasRef,
-            id,
-            moduleInfo
-          );
-          await addComponentToCurrentPage([newComponent]);
-          // setSelectedComponents([newComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+        // Calculate width based on the app canvas's grid
+        let width = (appCanvasWidth * item.component?.defaultSize?.width) / NO_OF_GRIDS;
+        const componentSize = {
+          width,
+          height: item.component?.defaultSize?.height,
+        };
+        if (clientOffset && id === 'canvas') {
+          activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
-      collect: (monitor) => ({
-        isOverCurrent: monitor.isOver({ shallow: true }),
-      }),
+      // TODO: Remove this- Drop is handled in the DragLayer since drop was not always triggered after
+      // integration with react-moveable for the guidelines.
+      // drop: (item, monitor) => {
+      //   console.log('DROP');
+      //   item.dropHandled = true;
+      //   handleDrop(item, id);
+      // },
     });
 
     const showEmptyContainer =
       currentMode === 'edit' &&
       (id === 'canvas' || componentType === 'ModuleContainer') &&
       components.length === 0 &&
-      !isOverCurrent;
+      !isDragging;
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
         if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id);
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }
       return realCanvasRef?.current?.offsetWidth;
     }
+
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
-
-    const getCanvasWidth = useCallback(() => {
-      if (
-        id === 'canvas' &&
-        !isPagesSidebarHidden &&
-        isViewerSidebarPinned &&
-        currentLayout !== 'mobile' &&
-        currentMode !== 'edit' &&
-        appType !== 'module'
-      ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
-      }
-      return '100%';
-    }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {
@@ -205,8 +162,7 @@ export const Container = React.memo(
         </div>
       );
     };
-    const sortedComponents = useSortedComponents(components, currentLayout, id);
-
+    const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -223,7 +179,7 @@ export const Container = React.memo(
               : id === 'canvas'
               ? canvasBgColor
               : '#f0f0f0',
-          width: getCanvasWidth(),
+          width: '100%',
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {
@@ -239,8 +195,9 @@ export const Container = React.memo(
           ...styles,
         }}
         className={cx('real-canvas', {
-          'sub-canvas': id !== 'canvas',
-          'show-grid': isOverCurrent && (index === 0 || index === null) && currentMode === 'edit',
+          'sub-canvas': id !== 'canvas' && appType !== 'module',
+          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          'module-container': appType === 'module',
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"
@@ -258,10 +215,10 @@ export const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {sortedComponents.map((id) => (
+          {sortedComponents.map((componentId) => (
             <WidgetWrapper
-              id={id}
-              key={id}
+              id={componentId}
+              key={componentId}
               gridWidth={gridWidth}
               subContainerIndex={index}
               onOptionChange={onOptionChange}
@@ -271,6 +228,8 @@ export const Container = React.memo(
               mode={currentMode}
               currentLayout={currentLayout}
               darkMode={darkMode}
+              moduleId={moduleId}
+              parentId={id}
             />
           ))}
         </div>
@@ -279,3 +238,7 @@ export const Container = React.memo(
     );
   }
 );
+
+Container.displayName = 'Container';
+
+export { Container };

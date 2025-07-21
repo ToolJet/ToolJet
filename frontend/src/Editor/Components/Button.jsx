@@ -4,6 +4,9 @@ const tinycolor = require('tinycolor2');
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
+import { getModifiedColor } from './utils';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const {
@@ -19,6 +22,7 @@ export const Button = function Button(props) {
     padding,
     iconVisibility,
   } = styles;
+  const moduleId = useModuleId();
 
   const { loadingState, disabledState } = properties;
   const [label, setLabel] = useState(typeof properties.text === 'string' ? properties.text : '');
@@ -60,14 +64,14 @@ export const Button = function Button(props) {
     borderColor === '#4368E3' ? (type === 'primary' ? '#4368E3' : 'var(--borders-strong)') : borderColor;
 
   const computedTextColor =
-    '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--text-primary)') : textColor;
+    '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--cc-primary-text)') : textColor;
   const computedLoaderColor =
-    '#FFFFFF' === loaderColor ? (type === 'primary' ? loaderColor : 'var(--primary-brand)') : loaderColor;
+    '#FFFFFF' === loaderColor ? (type === 'primary' ? loaderColor : 'var(--cc-primary-brand)') : loaderColor;
 
   const computedBgColor =
     '#4368E3' === backgroundColor
       ? type === 'primary'
-        ? 'var(--primary-brand)'
+        ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
       ? backgroundColor
@@ -79,8 +83,8 @@ export const Button = function Button(props) {
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
-    '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
-    '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
+    '--tblr-btn-color-darker': getModifiedColor(computedBgColor, 'hover'),
+    '--tblr-btn-color-clicked': getModifiedColor(computedBgColor, 'active'),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
     boxShadow: type == 'primary' && boxShadow,
@@ -104,13 +108,13 @@ export const Button = function Button(props) {
         setExposedVariable('buttonText', text);
       },
       disable: async function (value) {
-        setDisable(value);
+        setDisable(!!value);
       },
       visibility: async function (value) {
-        setVisibility(value);
+        setVisibility(!!value);
       },
       loading: async function (value) {
-        setLoading(value);
+        setLoading(!!value);
       },
     };
 
@@ -121,24 +125,24 @@ export const Button = function Button(props) {
 
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
+      setLoading(!!loading);
+      setExposedVariable('isLoading', !!loading);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
   useEffect(() => {
     setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
+      setVisibility(!!state);
+      setExposedVariable('isVisible', !!state);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
     setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
+      setDisable(!!disable);
+      setExposedVariable('isDisabled', !!disable);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
@@ -164,14 +168,9 @@ export const Button = function Button(props) {
     }
   }, [hovered]);
 
-  const hasCustomBackground = computedBgColor?.charAt() === '#';
-  if (hasCustomBackground) {
-    computedStyles['--tblr-btn-color-darker'] = tinycolor(computedBgColor).darken(8).toString();
-    computedStyles['--tblr-btn-color-clicked'] = tinycolor(computedBgColor).darken(15).toString();
-  }
   const handleClick = () => {
     if (!disable && !loading) {
-      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
+      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } });
       document.dispatchEvent(event1);
       fireEvent('onClick');
     }
@@ -186,11 +185,7 @@ export const Button = function Button(props) {
       disabled={disable || loading}
     >
       <button
-        className={cx('overflow-hidden', {
-          'btn-custom': hasCustomBackground,
-          'jet-button ': type == 'primary',
-          'jet-outline-button ': type == 'outline',
-        })}
+        className={cx('overflow-hidden jet-btn')}
         style={computedStyles}
         onClick={handleClick}
         data-cy={dataCy}

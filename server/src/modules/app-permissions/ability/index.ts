@@ -26,7 +26,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const userAppPermissions = userPermission?.[MODULES.APP];
     const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
-    const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
 
     if (isAdmin || superAdmin) {
       // Admin or super admin and do all operations
@@ -38,6 +37,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
           FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
           FEATURE_KEY.DELETE_PAGE_PERMISSIONS,
+          FEATURE_KEY.FETCH_QUERY_PERMISSIONS,
+          FEATURE_KEY.CREATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.UPDATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.DELETE_QUERY_PERMISSIONS,
+          FEATURE_KEY.FETCH_COMPONENT_PERMISSIONS,
+          FEATURE_KEY.CREATE_COMPONENT_PERMISSIONS,
+          FEATURE_KEY.UPDATE_COMPONENT_PERMISSIONS,
+          FEATURE_KEY.DELETE_COMPONENT_PERMISSIONS,
         ],
         App
       );
@@ -56,17 +63,18 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
           FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
           FEATURE_KEY.DELETE_PAGE_PERMISSIONS,
+          FEATURE_KEY.FETCH_QUERY_PERMISSIONS,
+          FEATURE_KEY.CREATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.UPDATE_QUERY_PERMISSIONS,
+          FEATURE_KEY.DELETE_QUERY_PERMISSIONS,
+          FEATURE_KEY.FETCH_COMPONENT_PERMISSIONS,
+          FEATURE_KEY.CREATE_COMPONENT_PERMISSIONS,
+          FEATURE_KEY.UPDATE_COMPONENT_PERMISSIONS,
+          FEATURE_KEY.DELETE_COMPONENT_PERMISSIONS,
         ],
         App
       );
       return;
-    }
-
-    if (
-      isAllAppsViewable ||
-      (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
-    ) {
-      can([FEATURE_KEY.FETCH_USERS, FEATURE_KEY.FETCH_USER_GROUPS, FEATURE_KEY.FETCH_PAGE_PERMISSIONS], App);
     }
   }
 }

@@ -5,8 +5,8 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
-import _ from 'lodash';
+import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import _, { isEmpty } from 'lodash';
 
 const initialState = {
   isSaving: false,
@@ -16,6 +16,12 @@ const initialState = {
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
+  themeChanged: false,
+  isComponentLayoutReady: false,
+  appPermission: {
+    selectedUsers: [],
+    selectedUserGroups: [],
+  },
   appStore: {
     modules: {
       canvas: {
@@ -39,6 +45,7 @@ export const createAppSlice = (set, get) => ({
       'initializeAppSlice'
     );
   },
+  detectThemeChange: () => set((state) => ({ themeChanged: !state.themeChanged })),
   setIsViewer: (isViewer, moduleId = 'canvas') =>
     set(
       (state) => {
@@ -87,10 +94,12 @@ export const createAppSlice = (set, get) => ({
       false,
       'setCanvasHeight'
     ),
+
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight } = get();
+    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts } = get();
     const currentMode = getCurrentMode(moduleId);
-    const maxHeight = Object.values(components).reduce((max, component) => {
+
+    const maxPermanentHeight = Object.values(components).reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
       if (!layout) {
         return max;
@@ -98,6 +107,14 @@ export const createAppSlice = (set, get) => ({
       const sum = layout.top + layout.height;
       return Math.max(max, sum);
     }, 0);
+
+    const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts).reduce((max, layout) => {
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
+
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
@@ -114,12 +131,13 @@ export const createAppSlice = (set, get) => ({
   setGlobalSettings: (globalSettings) => set(() => ({ globalSettings }), false, 'setGlobalSettings'),
   toggleAppMaintenance: (moduleId = 'canvas') => {
     const { isMaintenanceOn, appId } = get().appStore.modules[moduleId].app;
+    const newState = !isMaintenanceOn;
 
-    appsService.setMaintenance(appId, !isMaintenanceOn).then(() => {
+    appsService.setMaintenance(appId, newState).then(() => {
       set((state) => {
-        state.appStore.modules[moduleId].app.isMaintenanceOn = !isMaintenanceOn;
+        state.appStore.modules[moduleId].app.isMaintenanceOn = newState;
       });
-      if (isMaintenanceOn) {
+      if (newState) {
         toast.success('Application is on maintenance.');
       } else {
         toast.success('Application maintenance is completed');
@@ -153,6 +171,20 @@ export const createAppSlice = (set, get) => ({
     } catch (error) {
       toast.error('App could not be saved.');
       console.error('Error updating page:', error);
+    }
+  },
+  updateAppMode: async (appMode, moduleId = 'canvas') => {
+    const { appStore, currentVersionId } = get();
+    try {
+      const res = await appVersionService.updateAppMode(
+        appStore.modules[moduleId].app.appId,
+        currentVersionId,
+        appMode
+      );
+      set((state) => ({ globalSettings: { ...state.globalSettings, appMode } }));
+    } catch (error) {
+      toast.error('App mode could not be updated.');
+      console.error('Error updating app mode:', error);
     }
   },
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
@@ -193,7 +225,7 @@ export const createAppSlice = (set, get) => ({
     const appId = get().appStore.modules[moduleId].app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
-      if (key === 'env' && isLicenseValid) return false;
+      if (key === 'env' && !isLicenseValid) return false;
       return true;
     });
 
@@ -276,4 +308,44 @@ export const createAppSlice = (set, get) => ({
     return get().appStore.modules[moduleId].app.homePageId;
   },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
+  setSelectedUserGroups: (groups) =>
+    set((state) => {
+      state.appPermission.selectedUserGroups = groups;
+    }),
+  setSelectedUsers: (users) =>
+    set((state) => {
+      state.appPermission.selectedUsers = users;
+    }),
+
+  updateAppGenerationMetadata: (dataToUpdate, moduleId = 'canvas') => {
+    set((state) => {
+      if (isEmpty(dataToUpdate) || !state.appStore.modules[moduleId].app?.aiGenerationMetadata) return;
+
+      // Any value at the top level of aiGenerationMetadata can be updated using this, for nested keys either send complete data or need to add separate logic to handle it
+      Object.keys(dataToUpdate).forEach((key) => {
+        if (dataToUpdate[key] !== undefined) {
+          state.appStore.modules[moduleId].app.aiGenerationMetadata[key] = dataToUpdate[key];
+        }
+      });
+    });
+  },
+
+  updateAppData: (dataToUpdate, moduleId = 'canvas') => {
+    set((state) => {
+      state.appStore.modules[moduleId].app = { ...state.appStore.modules[moduleId].app, ...dataToUpdate };
+    });
+  },
+
+  updateAppInfoInDB: async (payload, moduleId = 'canvas') => {
+    const { appId } = get().appStore.modules[moduleId].app;
+
+    if (!appId || isEmpty(payload)) return;
+
+    try {
+      await appsService.saveApp(appId, payload);
+      get().updateAppData(convertKeysToCamelCase(payload), moduleId);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 });

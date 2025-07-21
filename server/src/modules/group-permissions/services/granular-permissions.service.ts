@@ -41,7 +41,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         createResourcePermissionObject,
         manager
       );
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
 
       //GRANULAR_PERMISSION_APP_CREATE audit
       const auditLogsData = {
@@ -80,7 +80,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isLicenseValid = await this.licenseUtilService.isValidLicense();
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
       const groupPermission = await this.groupPermissionRepository.getGroup({
         id: groupId,
         organizationId,
@@ -111,13 +111,17 @@ export class GranularPermissionsService implements IGranularPermissionsService {
       const group = granularPermissions.group;
 
       this.granularPermissionUtilService.validateGranularPermissionUpdateOperation(group, organizationId);
-      await this.granularPermissionUtilService.update(id, {
-        group: group,
-        organizationId: group.organizationId,
-        updateGranularPermissionDto,
-      });
+      await this.granularPermissionUtilService.update(
+        id,
+        {
+          group: group,
+          organizationId: group.organizationId,
+          updateGranularPermissionDto,
+        },
+        manager
+      );
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
 
       //GRANULAR_PERMISSION_APP_UPDATE audit
       const auditLogsData = {

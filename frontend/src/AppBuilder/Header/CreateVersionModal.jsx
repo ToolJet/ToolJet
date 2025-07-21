@@ -21,9 +21,9 @@ const CreateVersionModal = ({
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
-  const gitSyncEnabled =
-    orgGit?.org_git?.git_https?.is_enabled ||
+  const isGitSyncEnabled =
     orgGit?.org_git?.git_ssh?.is_enabled ||
+    orgGit?.org_git?.git_https?.is_enabled ||
     orgGit?.org_git?.git_lab?.is_enabled;
 
   const {
@@ -33,6 +33,7 @@ const CreateVersionModal = ({
     appId,
     setCurrentVersionId,
     selectedVersion,
+    currentMode,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -45,6 +46,7 @@ const CreateVersionModal = ({
       currentVersionId: state.currentVersionId,
       setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
+      currentMode: state.currentMode,
     }),
     shallow
   );
@@ -94,7 +96,7 @@ const CreateVersionModal = ({
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         appVersionService
-          .getAppVersionData(appId, newVersion.id)
+          .getAppVersionData(appId, newVersion.id, currentMode)
           .then((data) => {
             setCurrentVersionId(newVersion.id);
             handleCommitOnVersionCreation(data);
@@ -174,7 +176,7 @@ const CreateVersionModal = ({
             </div>
           </div>
 
-          {gitSyncEnabled && (
+          {isGitSyncEnabled && (
             <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
               <div>
                 <input

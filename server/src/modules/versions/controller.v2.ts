@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, Param, Query, UseGuards } from '@nestjs/common';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -21,13 +21,13 @@ import { IVersionControllerV2 } from './interfaces/IControllerV2';
   version: '2',
 })
 export class VersionControllerV2 implements IVersionControllerV2 {
-  constructor(protected readonly versionService: VersionService) {}
+  constructor(protected readonly versionService: VersionService) { }
 
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions/:versionId')
-  getVersion(@User() user: UserEntity, @App() app: AppEntity) {
-    return this.versionService.getVersion(app, user);
+  getVersion(@User() user: UserEntity, @App() app: AppEntity, @Query('mode') mode?: string) {
+    return this.versionService.getVersion(app, user, mode);
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_UPDATE)
@@ -35,6 +35,13 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   @Put(':id/versions/:versionId')
   updateVersion(@User() user, @App() app: AppEntity, @Body() appVersionUpdateDto: AppVersionUpdateDto) {
     return this.versionService.update(app, user, appVersionUpdateDto);
+  }
+
+  // If we want to update app mode in public app, we use this endpoint
+  @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
+  @Put(':id/versions/:versionId/global_settings/app_mode')
+  updateAppMode(@Body() @Param('appMode') appMode: 'light' | 'dark' | 'auto', @Param('id') appId: string, @Param('versionId') versionId: string) {
+    return this.versionService.updateAppMode(appId, versionId, appMode);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
@@ -47,6 +54,8 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   ) {
     return this.versionService.updateSettings(app, user, appVersionUpdateDto);
   }
+
+
 
   @InitFeature(FEATURE_KEY.PROMOTE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)

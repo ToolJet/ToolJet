@@ -8,6 +8,8 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
@@ -20,6 +22,8 @@ import { OrganizationValidateGuard } from '@modules/app/guards/organization-vali
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
 import { IDataSourcesController } from './interfaces/IController';
 import { ValidateDataSourceGuard } from './guards/validate-query-source.guard';
+import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
+import { UserPermissions } from '@modules/ability/types';
 
 // TODO: Create guard to get data source from id for FeatureAbilityGuard
 @Controller('data-sources')
@@ -32,8 +36,8 @@ export class DataSourcesController implements IDataSourcesController {
   @InitFeature(FEATURE_KEY.GET)
   @Get(':organizationId')
   @UseGuards(OrganizationValidateGuard, FeatureAbilityGuard)
-  async fetchGlobalDataSources(@User() user: UserEntity) {
-    return this.dataSourcesService.getAll({}, user);
+  async fetchGlobalDataSources(@User() user: UserEntity, @UserPermissionsDecorator() userPermissions: UserPermissions) {
+    return this.dataSourcesService.getAll({}, user, userPermissions);
   }
 
   // TODO: Add guard to validate environmentId & version id
@@ -43,9 +47,15 @@ export class DataSourcesController implements IDataSourcesController {
   async fetchGlobalDataSourcesForVersion(
     @User() user: UserEntity,
     @Param('versionId') appVersionId,
-    @Param('environmentId') environmentId
+    @Param('environmentId') environmentId,
+    @UserPermissionsDecorator() userPermissions: UserPermissions
   ) {
-    return this.dataSourcesService.getForApp({ appVersionId, environmentId, shouldIncludeWorkflows: false }, user);
+    const shouldIncludeWorkflows = getTooljetEdition() === TOOLJET_EDITIONS.EE;
+    return this.dataSourcesService.getForApp(
+      { appVersionId, environmentId, shouldIncludeWorkflows },
+      user,
+      userPermissions
+    );
   }
 
   @InitFeature(FEATURE_KEY.CREATE)

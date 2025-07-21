@@ -2,9 +2,9 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
+import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
 function Header({
   featureAccess,
@@ -49,6 +49,8 @@ function Header({
         return 'Workflows';
       case 'workspace-constants':
         return 'Workspace constants';
+      case 'modules':
+        return 'Modules';
       default:
         return 'Applications';
     }
@@ -65,15 +67,14 @@ function Header({
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
-
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
         {!collapseSidebar && (
           <div className="tj-dashboard-section-header" data-name={pathname}>
-            <div className="row">
+            <div className="row tw-w-full">
               <div className="col-9 d-flex">
-                <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
+                <p className="tj-text-md font-weight-500 text-black-000" data-cy="dashboard-section-header">
                   {pathname}
                 </p>
                 {routesWithTags(pathname) && (
@@ -109,7 +110,7 @@ function Header({
                       iconWidth="14"
                       size="md"
                       onClick={toggleCollapsibleSidebar}
-                    ></ButtonSolid>
+                    />
                   </div>
                 </ToolTip>
               )}
@@ -117,7 +118,7 @@ function Header({
           </div>
         )}
         <div className="col tj-dashboard-header-wrap">
-          <div className="d-flex justify-content-sm-between">
+          <div className="d-flex justify-content-sm-between tw-w-full">
             {enableCollapsibleSidebar && collapseSidebar && (
               <ToolTip message="Open sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
                 <div className="pe-3">
@@ -140,20 +141,21 @@ function Header({
                     iconWidth="14"
                     size="md"
                     onClick={toggleCollapsibleSidebar}
-                  ></ButtonSolid>
+                  />
                 </div>
               </ToolTip>
             )}
-            <div className="app-header-label" data-cy="app-header-label">
+            <div className="app-header-label tw-flex tw-items-center " data-cy="app-header-label">
               <Breadcrumbs darkMode={darkMode} />
             </div>
             <div
-              className={cx('ms-auto tj-version tj-text-xsm', {
+              className={cx('tw-ml-auto tj-version tj-text-xsm tw-flex tw-items-center tw-gap-3', {
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
               data-cy="version-label"
             >
+              <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               Version {currentVersion}
             </div>
           </div>

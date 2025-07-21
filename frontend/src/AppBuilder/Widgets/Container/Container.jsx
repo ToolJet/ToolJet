@@ -3,12 +3,15 @@ import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Containe
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { shallow } from 'zustand/shallow';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
   CONTAINER_FORM_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
 import './container.scss';
+import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 
 export const Container = ({
   id,
@@ -19,6 +22,9 @@ export const Container = ({
   width,
   setExposedVariables,
   setExposedVariable,
+  adjustComponentPositions,
+  currentLayout,
+  componentCount = 0,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -27,14 +33,28 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
+  const { dynamicHeight } = properties;
+
+  useDynamicHeight({
+    dynamicHeight: properties.dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+  });
 
   const isWidgetInContainerDragging = useStore(
     (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
     shallow
   );
 
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow } = styles;
   const { headerHeight = 80 } = properties;
+  const headerMaxHeight = parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
@@ -55,7 +75,7 @@ export const Container = ({
     backgroundColor: contentBgColor.backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height,
+    height: dynamicHeight ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     flexDirection: 'column',
     position: 'relative',
@@ -65,14 +85,25 @@ export const Container = ({
   const containerHeaderStyles = {
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${headerMaxHeight}px`,
+    borderTopLeftRadius: `${borderRadius}px`,
+    borderTopRightRadius: `${borderRadius}px`,
     ...headerBgColor,
   };
-
   const containerContentStyles = {
     overflow: 'hidden auto',
     display: 'flex',
     height: '100%',
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    ...(isDisabled && {
+      opacity: 0.5,
+      pointerEvents: 'none',
+    }),
+  };
+
+  const updateHeaderSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
   };
 
   return (
@@ -87,27 +118,33 @@ export const Container = ({
       ) : (
         <>
           {properties.showHeader && (
-            <div style={containerHeaderStyles} className="wj-container-header">
-              <ContainerComponent
-                id={`${id}-header`}
-                styles={{ ...headerBgColor, height: `${headerHeight}px` }}
-                canvasHeight={headerHeight / 10}
-                canvasWidth={width}
-                allowContainerSelect={true}
-                darkMode={darkMode}
-                componentType="Container"
-              />
-            </div>
+            <HorizontalSlot
+              slotName={'header'}
+              slotStyle={containerHeaderStyles}
+              id={`${id}-header`}
+              height={headerHeight}
+              width={width}
+              darkMode={darkMode}
+              isDisabled={isDisabled}
+              isActive={activeSlot === `${id}-header`}
+              onResize={updateHeaderSizeInStore}
+              componentType="Container"
+            />
           )}
-          <div style={containerContentStyles}>
+          <div
+            style={containerContentStyles}
+            className={`${properties.dynamicHeight && `dynamic-${id}`} widget-type-container`}
+            data-disabled={isDisabled}
+          >
             <ContainerComponent
               id={id}
               styles={{
                 ...contentBgColor,
+                borderRadius: `${borderRadius}px`,
                 // Prevent the scroll when dragging a widget inside the container or moving out of the container
                 overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
               }}
-              canvasHeight={height}
+              canvasHeight={dynamicHeight ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
               componentType="Container"

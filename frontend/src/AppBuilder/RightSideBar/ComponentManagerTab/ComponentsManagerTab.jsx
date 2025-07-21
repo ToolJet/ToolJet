@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { isEmpty, debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { LEGACY_ITEMS, IGNORED_ITEMS } from './constants';
@@ -7,8 +7,37 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
+import Accordion from '@/_ui/Accordion';
+import sectionConfig from './sectionConfig';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ModuleManager } from '@/modules/Modules/components';
 import { ComponentModuleTab } from '@/modules/Appbuilder/components';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
+
+// Simple error boundary component for module errors
+class ModuleErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Module error:', error, errorInfo);
+    this.props.onError();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null; // Let parent handle the fallback
+    }
+    return this.props.children;
+  }
+}
 
 // TODO: Hardcode all the component-section mapping in a constant file and just loop over it
 // TODO: styling
@@ -25,15 +54,34 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(1);
+  const [moduleError, setModuleError] = useState(false);
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
 
-  const handleSearchQueryChange = useCallback(
-    debounce((e) => {
-      const { value } = e.target;
-      setSearchQuery(value);
+  const { hasModuleAccess } = useLicenseStore(
+    (state) => ({
+      hasModuleAccess: state.hasModuleAccess,
+    }),
+    shallow
+  );
 
+  // Force re-render when hasModuleAccess changes
+  useEffect(() => {
+    // If modules access is denied and we're on the modules tab, switch to components
+    if (!hasModuleAccess && activeTab === 2) {
+      setActiveTab(1);
+    }
+  }, [hasModuleAccess, activeTab]);
+
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+
+  const handleSearchQueryChange = useCallback(
+    debounce((value) => {
+      setSearchQuery(value);
       if (activeTab === 1) {
         filterComponents(value);
       }
@@ -41,6 +89,11 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     }, 125),
     [activeTab]
   );
+
+  const handleToggle = () => {
+    setActiveRightSideBarTab(null);
+    setRightSidebarOpen(false);
+  };
 
   const filterComponents = useCallback((value) => {
     if (value !== '') {
@@ -78,11 +131,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     );
   }
 
-  function renderList(header, items) {
+  function renderList(items) {
     if (isEmpty(items)) return null;
     return (
       <div className="component-card-group-container">
-        <span className="widget-header">{header}</span>
         <div className="component-card-group-wrapper">
           {items.map((component, i) => renderComponentCard(component, i))}
         </div>
@@ -105,6 +157,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             className=" btn-sm tj-tertiary-btn mt-3"
             onClick={() => {
               setFilteredComponents([]);
+              handleSearchQueryChange('');
             }}
           >
             {t('widgetManager.clearQuery', 'clear query')}
@@ -113,89 +166,85 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       );
     }
 
-    if (filteredComponents.length != componentList.length) {
-      return <>{renderList(undefined, filteredComponents)}</>;
-    } else {
-      const commonSection = { title: t('widgetManager.commonlyUsed', 'commonly used'), items: [] };
-      const layoutsSection = { title: t('widgetManager.layouts', 'layouts'), items: [] };
-      const formSection = { title: t('widgetManager.forms', 'forms'), items: [] };
-      const integrationSection = { title: t('widgetManager.integrations', 'integrations'), items: [] };
-      const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
-      const legacySection = { title: 'Legacy', items: [] };
-
-      const commonItems = ['Table', 'Button', 'Text', 'TextInput', 'DatetimePickerV2', 'Form'];
-      const formItems = [
-        'Form',
-        'TextInput',
-        'NumberInput',
-        'PasswordInput',
-        'TextArea',
-        'EmailInput',
-        'PhoneInput',
-        'CurrencyInput',
-        'ToggleSwitchV2',
-        'DropdownV2',
-        'MultiselectV2',
-        'RichTextEditor',
-        'Checkbox',
-        'RadioButtonV2',
-        'DatetimePickerV2',
-        'DatePickerV2',
-        'TimePicker',
-        'DaterangePicker',
-        'FilePicker',
-        'StarRating',
-      ];
-      const integrationItems = ['Map'];
-      const layoutItems = ['Container', 'Listview', 'Tabs', 'ModalV2'];
-
-      filteredComponents.forEach((f) => {
-        if (commonItems.includes(f)) commonSection.items.push(f);
-        if (formItems.includes(f)) formSection.items.push(f);
-        else if (integrationItems.includes(f)) integrationSection.items.push(f);
-        else if (LEGACY_ITEMS.includes(f)) legacySection.items.push(f);
-        else if (layoutItems.includes(f)) layoutsSection.items.push(f);
-        else otherSection.items.push(f);
-      });
-
-      return (
-        <>
-          {renderList(commonSection.title, commonSection.items)}
-          {renderList(layoutsSection.title, layoutsSection.items)}
-          {renderList(formSection.title, formSection.items)}
-          {renderList(otherSection.title, otherSection.items)}
-          {renderList(integrationSection.title, integrationSection.items)}
-          {renderList(legacySection.title, legacySection.items)}
-        </>
-      );
+    if (filteredComponents.length !== componentList.length) {
+      return <>{renderList(filteredComponents)}</>;
     }
+
+    const sections = Object.entries(sectionConfig).map(([key, config]) => ({
+      title: config.title,
+      items: filteredComponents.filter((component) => config.valueSet.has(component)),
+    }));
+
+    const items = [];
+    sections.forEach((section) => {
+      if (section.items.length > 0) {
+        items.push({
+          title: section.title,
+          isOpen: true,
+          children: renderList(section.items),
+        });
+      }
+    });
+
+    return (
+      <div className="mt-3">
+        <Accordion items={items} isTitleCase={false} />
+      </div>
+    );
   }
 
   const handleChangeTab = (tab) => {
+    if (tab === 2 && !hasModuleAccess) {
+      setActiveTab(1);
+      return;
+    }
     setActiveTab(tab);
+    if (tab === 1) setModuleError(false);
     // When changing tabs, we don't need to reset the search
     // The search query will be applied to the new tab
   };
+
+  // Handle module errors by redirecting to components tab
+  useEffect(() => {
+    if (moduleError && activeTab === 2) {
+      setActiveTab(1);
+    }
+  }, [moduleError, activeTab]);
 
   const renderSection = () => {
     if (activeTab === 1) {
       return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
     }
-    return <ModuleManager searchQuery={searchQuery} />;
+
+    // If there was an error accessing modules, redirect to components tab
+    if (moduleError) {
+      return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
+    }
+
+    return (
+      <ModuleErrorBoundary onError={() => setModuleError(true)}>
+        <ModuleManager searchQuery={searchQuery} />
+      </ModuleErrorBoundary>
+    );
   };
 
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
-      {isModuleEditor ? (
-        <p className="widgets-manager-header">Components</p>
-      ) : (
-        <ComponentModuleTab onChangeTab={handleChangeTab} />
-      )}
+      <div className="d-flex align-items-center">
+        {isModuleEditor ? (
+          <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
+        ) : (
+          <ComponentModuleTab onChangeTab={handleChangeTab} hasModuleAccess={hasModuleAccess} />
+        )}
+        <div className="icon-btn cursor-pointer flex-shrink-0 me-3 p-2 h-4 w-4" onClick={handleToggle}>
+          <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+        </div>
+      </div>
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}
           initialValue={''}
-          callBack={(e) => handleSearchQueryChange(e)}
+          callBack={(e) => handleSearchQueryChange(e.target.value)}
           onClearCallback={() => {
             setSearchQuery('');
             if (activeTab === 1) {

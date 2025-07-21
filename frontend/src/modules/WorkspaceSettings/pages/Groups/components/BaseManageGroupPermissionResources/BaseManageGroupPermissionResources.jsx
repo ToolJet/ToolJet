@@ -22,6 +22,8 @@ import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -206,6 +208,12 @@ class BaseManageGroupPermissionResources extends React.Component {
         });
         toast.success('Users added to the group');
         this.fetchUsersInGroup(groupPermissionId);
+        posthogHelper.captureEvent('click_add_user_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          group_id: groupPermissionId,
+        });
       })
       .catch(({ error, statusCode }) => {
         if (error?.type) {
@@ -955,6 +963,14 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           Delete any app in this workspace
                                         </span>
                                       </label>
+
+                                      {/* Promote and release app permissions */}
+                                      <AppPromoteReleasePermissionsUI
+                                        groupPermission={groupPermission}
+                                        disablePermissionUpdate={disablePermissionUpdate}
+                                        updateGroupPermission={this.updateGroupPermission}
+                                        updateState={this.updateParamState}
+                                      />
                                     </div>
                                   </div>
                                   {/* //App till here */}

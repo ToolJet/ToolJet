@@ -7,6 +7,7 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { FeatureConfig, ResourceDetails } from '../types';
 import { App } from '@entities/app.entity';
 import { MODULES } from '../constants/modules';
+import { isSuperAdmin } from '@helpers/utils.helper';
 
 // User should be present or app should be public
 @Injectable()
@@ -60,7 +61,14 @@ export abstract class AbilityGuard implements CanActivate {
       }
 
       const licenseRequired: LICENSE_FIELD = featureInfo?.license;
-      if (licenseRequired && !(await this.licenseTermsService.getLicenseTerms(licenseRequired))) {
+      if (licenseRequired && !(app?.organizationId || user?.organizationId)) {
+        // If no license is required, continue to the next feature
+        return true;
+      }
+      if (
+        licenseRequired &&
+        !(await this.licenseTermsService.getLicenseTerms(licenseRequired, app?.organizationId || user?.organizationId))
+      ) {
         throw new HttpException(
           `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
           451
@@ -69,7 +77,16 @@ export abstract class AbilityGuard implements CanActivate {
 
       // If any of the feature is public
       if (featureInfo.isPublic) {
+        // No other validations if user is API is public
         return true;
+      }
+
+      if (featureInfo.isSuperAdminFeature && !isSuperAdmin(user)) {
+        // If the user is not super admin and the feature is a super admin feature
+        throw new ForbiddenException({
+          message: 'You do not have permission to access this resource',
+          organizationId: app?.organizationId,
+        });
       }
 
       if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp) {

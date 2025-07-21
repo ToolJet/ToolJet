@@ -9,15 +9,42 @@ import { isArray } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
+import '../styles.scss';
 
 const { MenuList } = components;
+
+const COLORS = [
+  '#40474D33',
+  '#CE276133',
+  '#6745E233',
+  '#2576CE33',
+  '#1A9C6D33',
+  '#69AF2033',
+  '#F3571733',
+  '#EB2E3933',
+  '#A438C033',
+  '#405DE633',
+  '#1E8FA333',
+  '#34A94733',
+  '#F1911933',
+];
 
 const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
-    <div className="table-select-custom-menu-list" onClick={(e) => e.stopPropagation()}>
-      <div className="table-select-column-type-search-box-wrapper">
+    <div
+      className="table-select-custom-menu-list"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        backgroundColor: 'var(--cc-surface1-surface)',
+        border: '1px solid var(--cc-default-border)',
+      }}
+    >
+      <div
+        className="table-select-column-type-search-box-wrapper"
+        style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+      >
         {!inputValue && (
           <span>
             <SolidIcon name="search" width="14" />
@@ -40,33 +67,56 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
           spellCheck="false"
         />
       </div>
-      <MenuList {...props} selectProps={selectProps}>
-        {optionsLoadingState ? (
-          <div className="text-center py-4">
-            <div className="spinner-border text-primary" role="status">
-              <span className="sr-only" />
+      <div style={{ borderTop: '1px solid var(--cc-default-border)' }}>
+        <MenuList {...props} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
+          {optionsLoadingState ? (
+            <div className="text-center py-4">
+              <div className="spinner-border text-primary" role="status">
+                <span className="sr-only" />
+              </div>
             </div>
-          </div>
-        ) : (
-          children
-        )}
-      </MenuList>
+          ) : (
+            children
+          )}
+        </MenuList>
+      </div>
     </div>
   );
 };
 
-const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) => (
-  <div ref={innerRef} {...innerProps} className="option-wrapper d-flex">
-    {props.selectProps.isMulti ? (
-      <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
-    ) : (
-      <div style={{ visibility: isSelected ? 'visible' : 'hidden' }}>
+const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) => {
+  const { label, value, data } = props;
+  const { optionColors } = props.selectProps;
+
+  return (
+    <div
+      ref={innerRef}
+      {...innerProps}
+      className="option-wrapper d-flex"
+      style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+    >
+      {props.selectProps.isMulti ? (
         <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
+      ) : (
+        <div style={{ visibility: isSelected ? 'visible' : 'hidden' }}>
+          <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
+        </div>
+      )}
+      <div
+        className="table-select-menu-pill"
+        style={{
+          background: optionColors?.[value] || 'var(--surfaces-surface-03)',
+          color: data?.labelColor || 'var(--text-primary)',
+          padding: '2px 6px',
+          borderRadius: '6px',
+          fontSize: '12px',
+        }}
+      >
+        {label}
       </div>
-    )}
-    {children}
-  </div>
-);
+    </div>
+  );
+};
 
 const MultiValueRemove = ({ innerProps }) => <div {...innerProps} />;
 
@@ -83,7 +133,7 @@ const CustomMultiValueContainer = ({ children }) => (
 );
 
 const DropdownIndicator = ({ selectProps }) => (
-  <div className="cell-icon-display">
+  <div className="cell-icon-display" style={{ alignSelf: 'center' }}>
     <SolidIcon
       name={selectProps.menuIsOpen ? 'arrowUpTriangle' : 'arrowDownTriangle'}
       width="16"
@@ -137,10 +187,18 @@ export const CustomSelectColumn = ({
   isEditable,
   column,
   isNewRow,
+  autoAssignColors = false,
   id,
 }) => {
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
+  const optionColors = useMemo(() => {
+    return options.reduce((acc, option, index) => {
+      acc[option.value] =
+        option.optionColor || (autoAssignColors ? COLORS[index % COLORS.length] : 'var(--surfaces-surface-03)');
+      return acc;
+    }, {});
+  }, [options, autoAssignColors]);
 
+  const validateWidget = useStore((state) => state.validateWidget, shallow);
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
@@ -182,14 +240,17 @@ export const CustomSelectColumn = ({
           display: 'inline-block',
           marginRight: '4px',
         }),
-        multiValueLabel: (provided) => ({
-          ...provided,
-          padding: '2px 6px',
-          background: 'var(--surfaces-surface-03)',
-          borderRadius: '6px',
-          color: cellTextColor || 'var(--text-primary)',
-          fontSize: '12px',
-        }),
+        multiValueLabel: (provided, state) => {
+          const option = state.data;
+          return {
+            ...provided,
+            padding: '2px 6px',
+            background: optionColors?.[option.value] || 'var(--surfaces-surface-03)',
+            borderRadius: '6px',
+            color: option?.labelColor || cellTextColor || 'var(--text-primary)',
+            fontSize: '12px',
+          };
+        },
       }),
       valueContainer: (provided) => ({
         ...provided,
@@ -204,21 +265,30 @@ export const CustomSelectColumn = ({
       }),
       menuList: (base) => ({
         ...base,
-        backgroundColor: 'var(--surfaces-surface-01)',
+        backgroundColor: 'var(--cc-surface1-surface)',
         color: 'var(--text-primary)',
         cursor: 'pointer',
         overflow: 'auto',
+        border: '1px solid var(--cc-default-border)',
+        boxShadow: 'var(--elevation-400-box-shadow)',
       }),
-      singleValue: (provided) => ({
-        ...provided,
-        padding: '2px 6px',
-        background: 'var(--surfaces-surface-03)',
-        borderRadius: '6px',
-        color: cellTextColor || 'var(--text-primary)',
-        fontSize: '12px',
+      singleValue: (provided, state) => {
+        const option = state.data;
+        return {
+          ...provided,
+          padding: '2px 6px',
+          background: optionColors?.[option.value] || 'var(--surfaces-surface-03)',
+          borderRadius: '6px',
+          color: option?.labelColor || cellTextColor || 'var(--text-primary)',
+          fontSize: '12px',
+        };
+      },
+      menu: (base) => ({
+        ...base,
+        borderRadius: '8px',
       }),
     }),
-    [darkMode, isMulti, horizontalAlignment, cellTextColor]
+    [darkMode, isMulti, horizontalAlignment, cellTextColor, autoAssignColors]
   );
 
   const defaultValue = useMemo(
@@ -309,18 +379,21 @@ export const CustomSelectColumn = ({
             darkMode={darkMode}
             menuIsOpen={isFocused || undefined}
             isFocused={isFocused || undefined}
+            optionColors={optionColors}
           />
         </div>
-        <div
-          onClick={() => {
-            if (!isValid) {
-              setIsFocused(true); // Open the dropdown
-            }
-          }}
-          className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}
-        >
-          {validationError}
-        </div>
+        {isEditable && !isValid && (
+          <div
+            onClick={() => {
+              if (!isValid) {
+                setIsFocused(true); // Open the dropdown
+              }
+            }}
+            className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}
+          >
+            {validationError}
+          </div>
+        )}
       </>
     </OverlayTrigger>
   );
