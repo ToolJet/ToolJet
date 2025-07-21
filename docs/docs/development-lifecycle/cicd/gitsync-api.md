@@ -3,17 +3,26 @@ id: gitsync-api
 title: GitSync API
 ---
 
-ToolJet’s GitSync CICD APIs enable organizations to programmatically manage the complete lifecycle of their ToolJet applications within their existing CI/CD workflows. With these RESTful APIs, you can configure GitSync, push and pull changes from Git repositories, and automate application deployments without manual intervention.
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
+
+ToolJet’s git sync CI/CD APIs enable organizations to programmatically manage the complete lifecycle of their ToolJet applications within their existing CI/CD piplines. With these RESTful APIs, you can configure git sync, push and pull changes from Git repositories, and automate application deployments without manual intervention.
 
 By integrating these APIs into your CI/CD pipelines (e.g., Jenkins, GitHub Actions, GitLab CI), you can:
-- **Automate GitSync operations** to eliminate manual syncing via the ToolJet UI.
-- **Maintain consistent version control** for ToolJet applications alongside your traditional codebase.
+- **Automate git sync operations** to eliminate manual syncing via the ToolJet UI.
 - **Implement enterprise-grade deployment strategies** with standardized governance.
-- **Streamline developer workflows**, ensuring your internal apps follow the same release processes as your core applications.
+- **Streamline development cycles**, ensuring your internal apps follow the same release processes as your core applications.
 
-The following APIs are available to manage GitSync within your CI/CD pipeline.
+The following APIs are available to manage git sync within your CI/CD pipeline.
 
-### Add HTTPS Git Config for an Organization
+### Add GitHub HTTPS Git Configuration
 
     - **Description:** Configure GitHub HTTPS settings for an organization by associating a GitHub App and repo.
     - **URL:** `/api/ext/organization/git`
@@ -116,7 +125,7 @@ The following APIs are available to manage GitSync within your CI/CD pipeline.
 
 ### Auto Promote App
 
-    - **Description:** Deploys an app by pulling the latest changes from Git and promoting the latest version to the highest environment (e.g., Production).
+    - **Description:** Deploys an app by pulling the latest changes from Git and promoting the latest version to the production environment.
     - **URL:** `/api/ext/apps/:appId/promote`
     - **Method:** POST
     - **Authorization:** `Basic <access_token>`
