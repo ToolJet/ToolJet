@@ -54,7 +54,6 @@ const AppWrapper = (props) => {
     }),
     shallow
   );
-
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
@@ -157,6 +156,11 @@ class AppComponent extends React.Component {
     // Update color scheme if darkMode changed
     if (prevState.darkMode !== this.state.darkMode) {
       this.updateColorScheme();
+    }
+
+    // This is added because we have added a new event handler action for darkmode change
+    if (prevProps.isAppDarkMode !== this.props.isAppDarkMode) {
+      this.switchDarkMode(this.props.isAppDarkMode);
     }
   }
 

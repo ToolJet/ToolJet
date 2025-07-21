@@ -460,8 +460,8 @@ export const EventManager = ({
     const newParams =
       params.length > 0
         ? params.map((paramOfParamList) => {
-          return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
-        })
+            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+          })
         : [newParam];
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
@@ -1042,8 +1042,9 @@ export const EventManager = ({
                           </div>
                         ) : (
                           <div
-                            className={`${param?.type ? '' : 'fx-container-eventmanager-code'
-                              } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            className={`${
+                              param?.type ? '' : 'fx-container-eventmanager-code'
+                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                             data-cy="action-options-text-input-field"
                           >
                             <CodeHinter
@@ -1073,7 +1074,10 @@ export const EventManager = ({
                   <div className="col-9" data-cy="query-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={APP_MODES}
+                      options={[
+                        { label: 'Light', value: 'light' },
+                        { label: 'Dark', value: 'dark' },
+                      ]}
                       value={event?.appMode}
                       search={true}
                       onChange={(value) => {

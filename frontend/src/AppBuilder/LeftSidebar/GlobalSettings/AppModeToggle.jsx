@@ -28,7 +28,7 @@ const AppModeToggle = ({ darkMode }) => {
             if (value === 'auto') {
               exposedTheme = darkMode ? 'dark' : 'light';
             }
-            onAppModeChange(value);
+            onAppModeChange({ appMode: value });
             setResolvedGlobals('theme', { name: exposedTheme });
           }}
           defaultValue={appMode}
