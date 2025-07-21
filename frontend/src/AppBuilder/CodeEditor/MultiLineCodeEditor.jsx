@@ -149,7 +149,8 @@ const MultiLineCodeEditor = (props) => {
   function autoCompleteExtensionConfig(context) {
     const currentCursor = context.pos;
 
-    const currentString = context.state.doc.text;
+    const currentString = context.state.doc.text ||
+      (context.state.doc.children && context.state.doc.children.flatMap(child => child.text || []));
 
     const inputStr = currentString.join(' ');
     const currentCurosorPos = currentCursor;
@@ -216,65 +217,65 @@ const MultiLineCodeEditor = (props) => {
       null,
       nearestSubstring
     )
-    // Apply depth-based sorting (like SingleLineCodeEditor's filterHintsByDepth)
-    .sort((a, b) => {
-      // Calculate depth based on the original hint property (not label)
-      const aDepth = (a.info?.split('.') || []).length;
-      const bDepth = (b.info?.split('.') || []).length;
-      
-      // Sort by depth first (shallow suggestions first)
-      return aDepth - bDepth;
-    })
-    .map((hint) => {
-      if (hint.label.startsWith('client') || hint.label.startsWith('server')) return;
+      // Apply depth-based sorting (like SingleLineCodeEditor's filterHintsByDepth)
+      .sort((a, b) => {
+        // Calculate depth based on the original hint property (not label)
+        const aDepth = (a.info?.split('.') || []).length;
+        const bDepth = (b.info?.split('.') || []).length;
 
-      delete hint['apply'];
+        // Sort by depth first (shallow suggestions first)
+        return aDepth - bDepth;
+      })
+      .map((hint) => {
+        if (hint.label.startsWith('client') || hint.label.startsWith('server')) return;
 
-      hint.apply = (view, completion, from, to) => {
-        /**
-         * This function applies an auto-completion logic to a text editing view based on user interaction.
-         * It uses a pre-defined completion object and modifies the document's content accordingly.
-         *
-         * Parameters:
-         * - view: The editor view where the changes will be applied.
-         * - completion: An object containing details about the completion to be applied. Includes properties like 'label' (the text to insert) and 'type' (e.g., 'js_methods').
-         * - from: The initial position (index) in the document where the completion starts.
-         * - to: The position (index) in the document where the completion ends.
-         *
-         * Logic:
-         * - The function calculates the start index for the change by subtracting the length of the word to be replaced (finalQuery) from the 'from' index.
-         * - It configures the completion details such as where to insert the text and the exact text to insert.
-         * - If the completion type is 'js_methods', it adjusts the insertion point to the 'to' index and sets the cursor position after the inserted text.
-         * - Finally, it dispatches these configurations to the editor view to apply the changes.
-         *
-         * The dispatch configuration (dispacthConfig) includes changes and, optionally, the cursor selection position if the type is 'js_methods'.
-         */
+        delete hint['apply'];
 
-        const wordToReplace = nearestSubstring;
-        const fromIndex = from - wordToReplace.length;
+        hint.apply = (view, completion, from, to) => {
+          /**
+           * This function applies an auto-completion logic to a text editing view based on user interaction.
+           * It uses a pre-defined completion object and modifies the document's content accordingly.
+           *
+           * Parameters:
+           * - view: The editor view where the changes will be applied.
+           * - completion: An object containing details about the completion to be applied. Includes properties like 'label' (the text to insert) and 'type' (e.g., 'js_methods').
+           * - from: The initial position (index) in the document where the completion starts.
+           * - to: The position (index) in the document where the completion ends.
+           *
+           * Logic:
+           * - The function calculates the start index for the change by subtracting the length of the word to be replaced (finalQuery) from the 'from' index.
+           * - It configures the completion details such as where to insert the text and the exact text to insert.
+           * - If the completion type is 'js_methods', it adjusts the insertion point to the 'to' index and sets the cursor position after the inserted text.
+           * - Finally, it dispatches these configurations to the editor view to apply the changes.
+           *
+           * The dispatch configuration (dispacthConfig) includes changes and, optionally, the cursor selection position if the type is 'js_methods'.
+           */
 
-        const pickedCompletionConfig = {
-          from: fromIndex === 1 ? 0 : fromIndex,
-          to: to,
-          insert: completion.label,
-        };
+          const wordToReplace = nearestSubstring;
+          const fromIndex = from - wordToReplace.length;
 
-        const dispacthConfig = {
-          changes: pickedCompletionConfig,
-        };
-
-        if (completion.type === 'js_methods') {
-          pickedCompletionConfig.from = to;
-
-          dispacthConfig.selection = {
-            anchor: pickedCompletionConfig.to + completion.label.length - 1,
+          const pickedCompletionConfig = {
+            from: fromIndex === 1 ? 0 : fromIndex,
+            to: to,
+            insert: completion.label,
           };
-        }
 
-        view.dispatch(dispacthConfig);
-      };
-      return hint;
-    });
+          const dispacthConfig = {
+            changes: pickedCompletionConfig,
+          };
+
+          if (completion.type === 'js_methods') {
+            pickedCompletionConfig.from = to;
+
+            dispacthConfig.selection = {
+              anchor: pickedCompletionConfig.to + completion.label.length - 1,
+            };
+          }
+
+          view.dispatch(dispacthConfig);
+        };
+        return hint;
+      });
 
     return {
       from: context.pos,
