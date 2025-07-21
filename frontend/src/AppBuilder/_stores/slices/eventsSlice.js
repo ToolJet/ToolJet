@@ -872,10 +872,14 @@ export const createEventsSlice = (set, get) => ({
             }
           }
           case 'toggle-app-mode': {
-            const { updateIsTJDarkMode } = get();
-            const value = event.appMode === 'dark' ? 'true' : 'false';
-            localStorage.setItem('darkMode', value);
-            updateIsTJDarkMode(event.appMode);
+            const {
+              updateIsTJDarkMode,
+              globalSettings: { appMode },
+            } = get();
+            if (appMode !== 'auto') return;
+            const value = event.appMode === 'dark' ? true : false;
+            localStorage.setItem('darkMode', `${value}`);
+            updateIsTJDarkMode(value);
             return Promise.resolve();
           }
           case 'switch-page': {
