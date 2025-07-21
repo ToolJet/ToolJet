@@ -30,6 +30,8 @@ const LicenseTooltip = ({
 
   const generateMessage = () => {
     switch (true) {
+      case feature === 'modules':
+        return '';
       case !currentUser.admin && !canAddUnlimited && percentage >= 100:
         return `${customMessage ?? `You have reached your limit for number of ${feature}`}`;
       case isLicenseValid &&

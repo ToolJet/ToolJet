@@ -13,7 +13,7 @@ import { WorkspaceDropDown } from '@/modules/dashboard/components';
   each workspace related component has organizations list component which can be moved to a single wrapper. 
   otherwise this component will intiate everytime we switch between pages
 */
-const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = () => null, ...props }) {
+const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => null, ...props }) => {
   const { current_organization_id, admin } = authenticationService.currentSessionValue;
   const { fetchOrganizations, organizationList, isGettingOrganizations } = useCurrentSessionStore(
     (state) => ({
@@ -64,7 +64,7 @@ const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = 
             </div>
           )}
 
-          <ToolTip message={org.name} placement="right">
+          <ToolTip message={org.name} placement="top">
             <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
               <span style={{ color: org.id === current_organization_id ? '#3E63DD' : 'var(--slate12)' }}>
                 {decodeEntities(org.name)}

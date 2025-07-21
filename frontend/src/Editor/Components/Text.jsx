@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -14,7 +15,9 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
 let count = 0;
 
 export const Text = function Text({
+  id,
   height,
+  width,
   properties,
   fireEvent,
   styles,
@@ -22,6 +25,8 @@ export const Text = function Text({
   setExposedVariable,
   setExposedVariables,
   dataCy,
+  adjustComponentPositions,
+  currentLayout,
 }) {
   let {
     textSize,
@@ -44,13 +49,14 @@ export const Text = function Text({
     isScrollRequired,
   } = styles;
   const isInitialRender = useRef(true);
-  const { loadingState, textFormat, disabledState } = properties;
+  const { loadingState, textFormat, disabledState, dynamicHeight } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
   count = count + 1;
+  // const prevDynamicHeight = useRef(dynamicHeight);
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isLoading !== loadingState) setLoading(loadingState);
@@ -58,6 +64,8 @@ export const Text = function Text({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
+
+  useDynamicHeight({ dynamicHeight, id, height, value: text, adjustComponentPositions, currentLayout, width });
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -96,20 +104,20 @@ export const Text = function Text({
       isLoading: loadingState,
       isDisabled: disabledState,
       visibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        setVisibility(value);
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
       },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        setVisibility(value);
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
       },
       setLoading: async function (value) {
-        setExposedVariable('isLoading', value);
-        setLoading(value);
+        setExposedVariable('isLoading', !!value);
+        setLoading(!!value);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        setIsDisabled(value);
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
       },
     };
     setExposedVariables(exposedVariables);
@@ -127,7 +135,7 @@ export const Text = function Text({
   };
 
   const computedStyles = {
-    height: `${height}px`,
+    height: dynamicHeight ? 'auto' : `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
     color,
     display: visibility ? 'flex' : 'none',
@@ -150,12 +158,14 @@ export const Text = function Text({
   const commonStyles = {
     width: '100%',
     height: '100%',
-    overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
     textAlign,
-    overflowX: isScrollRequired === 'disabled' && 'hidden',
+    ...(!dynamicHeight && {
+      overflowX: isScrollRequired === 'disabled' && 'hidden',
+      overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
+    }),
   };
 
   const commonScrollStyle = {

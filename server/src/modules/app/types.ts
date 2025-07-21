@@ -19,6 +19,7 @@ export interface FeatureConfig {
   auditLogsKey?: string;
   skipAuditLogs?: boolean;
   isPublic?: boolean;
+  isSuperAdminFeature?: boolean;
   shouldNotSkipPublicApp?: boolean;
 }
 

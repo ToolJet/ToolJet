@@ -74,6 +74,9 @@ export const createPageMenuSlice = (set, get) => {
   });
 
   const updatePageIcon = createPageUpdateCommand(['icon']);
+  const updatePageURL = createPageUpdateCommand(['url']);
+  const updatePageTarget = createPageUpdateCommand(['openIn']);
+  const updatePageAppId = createPageUpdateCommand(['appId']);
 
   const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
 
@@ -97,23 +100,26 @@ export const createPageMenuSlice = (set, get) => {
     showSearch: false,
     pageSearchResults: null,
     isPageGroup: false,
-    pageSettingSelected: false,
     pageSettings: {},
     showPagePermissionModal: false,
     permissionPage: null,
     selectedUserGroups: [],
     selectedUsers: [],
     pagePermission: null,
+    newPagePopupConfig: {
+      show: false,
+      type: null,
+    },
+    navRef: null,
+    moreNavBtnRef: null,
+    linkRefs: null,
 
     toggleSearch: (show) =>
       set((state) => {
         state.showSearch = show;
         if (!show) state.pageSearchResults = null;
       }),
-    togglePageSettingMenu: (val) =>
-      set((state) => {
-        state.pageSettingSelected = typeof val === 'boolean' ? val : !state.pageSettingSelected;
-      }),
+
     openPageEditPopover: (page, ref) =>
       set((state) => {
         state.editingPage = page;
@@ -130,6 +136,14 @@ export const createPageMenuSlice = (set, get) => {
         state.showRenamePageHandleModal = false;
         state.showEditPageNameInput = false;
         state.showDeleteConfirmationModal = false;
+      }),
+
+    setNewPagePopupConfig: (config) =>
+      set((state) => {
+        state.newPagePopupConfig = {
+          ...state.newPagePopupConfig,
+          ...config,
+        };
       }),
 
     toggleEditPageHandleModal: (show) =>
@@ -167,6 +181,7 @@ export const createPageMenuSlice = (set, get) => {
     // page actions
     updatePageVisibility: (pageId, value) => updatePageVisibility(pageId, [value])(set, get),
     disableOrEnablePage: (pageId, value) => disableOrEnablePage(pageId, [value])(set, get),
+    updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
       const pages = get().modules.canvas.pages;
@@ -186,6 +201,8 @@ export const createPageMenuSlice = (set, get) => {
       }
       updatePageName(pageId, [value])(set, get);
     },
+    updatePageURL: (pageId, value) => updatePageURL(pageId, [value])(set, get),
+    updatePageTarget: (pageId, value) => updatePageTarget(pageId, [value])(set, get),
     updatePageIcon: (pageId, value) => updatePageIcon(pageId, [value])(set, get),
     updatePageHandle: (pageId, value) => {
       const pageWithSameHandle = get().modules.canvas.pages.some((page) => page.handle === value);
@@ -207,7 +224,7 @@ export const createPageMenuSlice = (set, get) => {
       const newPages = data?.pages;
       const newEvents = data?.events;
       const pageAdded = newPages.find((p) => !pages.some((p2) => p2.id === p.id));
-      if (pageAdded) {
+      if (Object.keys(pageAdded).length) {
         const currentComponents = buildComponentMetaDefinition(JSON.parse(JSON.stringify(pageAdded?.components)));
 
         pageAdded.components = currentComponents;
@@ -216,6 +233,29 @@ export const createPageMenuSlice = (set, get) => {
           state.eventsSlice.module.canvas.events = newEvents;
         });
         get().switchPage(pageAdded.id, pageAdded.handle);
+      }
+    },
+    cloneGroup: async (pageId) => {
+      const { getAppId, currentVersionId } = get();
+      const appId = getAppId('canvas');
+      const pages = get().modules.canvas.pages;
+      const data = await appVersionService.cloneGroup(appId, currentVersionId, pageId);
+      const newPages = data?.pages;
+      const newEvents = data?.events;
+      const pageIdsBefore = new Set(pages.map((p) => p.id));
+      const addedPages = newPages.filter((p) => !pageIdsBefore.has(p.id));
+
+      if (addedPages.length) {
+        const processedPages = addedPages.map((page) => {
+          const cloned = JSON.parse(JSON.stringify(page));
+          const currentComponents = cloned?.components ? buildComponentMetaDefinition(cloned.components) : undefined;
+          return { ...cloned, components: currentComponents };
+        });
+
+        set((state) => {
+          state.modules.canvas.pages.push(...processedPages);
+          state.eventsSlice.module.canvas.events = newEvents;
+        });
       }
     },
     deletePage: async (pageId) => {
@@ -320,7 +360,6 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.appStore.modules[moduleId].app.homePageId = pageId;
         state.showEditingPopover = false;
-        state.editingPage = null;
       });
       await savePageChanges(appId, currentVersionId, editingPage.id, diff, 'update', null);
     },
@@ -343,7 +382,7 @@ export const createPageMenuSlice = (set, get) => {
       await savePageChanges(appId, currentVersionId, currentPageId, diff, 'update', 'pages/reorder');
     },
 
-    addNewPage: async (name, handle, isPageGroup = false) => {
+    addNewPage: async (name, handle, isPageGroup = false, pageObj) => {
       const pages = get().modules.canvas.pages;
       const pageWithSameName = pages.some((page) => page.name === name && !page.isPageGroup);
       const pageGroupWithSameName = pages.some((page) => page.name === name && page.isPageGroup);
@@ -372,6 +411,7 @@ export const createPageMenuSlice = (set, get) => {
         handle: newHandle,
         components: {},
         index: pages.length + 1,
+        ...pageObj,
         isPageGroup,
         ...(isPageGroup
           ? {
@@ -381,11 +421,13 @@ export const createPageMenuSlice = (set, get) => {
       };
       set((state) => {
         state.modules.canvas.pages.push(pageObject);
+        state.editingPage = pageObject;
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
       await savePageChanges(appId, currentVersionId, '', pageObject, 'create', 'pages');
-      if (!isPageGroup) get().switchPage(newPageId, newHandle);
+      if (!isPageGroup && pageObj?.type === 'default') get().switchPage(newPageId, newHandle);
+      return pageObject;
     },
 
     handleSearch: (value) => {
@@ -432,29 +474,38 @@ export const createPageMenuSlice = (set, get) => {
       }
     },
 
-    setPagePermission: (pagePermission) =>
-      set((state) => {
-        state.pagePermission = pagePermission;
-      }),
-
     togglePagePermissionModal: (show) => {
       set((state) => {
         state.showPagePermissionModal = show;
       });
     },
 
-    setSelectedUserGroups: (groups) =>
-      set((state) => {
-        state.selectedUserGroups = groups;
-      }),
-
-    setSelectedUsers: (users) =>
-      set((state) => {
-        state.selectedUsers = users;
-      }),
     setEditingPage: (page) =>
       set((state) => {
         state.editingPage = page;
       }),
+    // openPageEditPopover: (type, page, ref) => {
+    //   // Assuming ref is passed for targeting
+    //   set((state) => ({
+    //     editingPage: page,
+    //     showEditingPopover: true, // Make sure this is explicitly set to true
+    //     newPagePopupConfig: {
+    //       // Set default values or infer from page
+    //       show: true, // This might be redundant if showEditingPopover is the primary flag
+    //       mode: type,
+    //       type: page?.type || 'default',
+    //     },
+    //   }));
+    //   // You might store the target ref in the state if overlays need to dynamically pick it up
+    //   // For react-bootstrap Overlay, the target is passed as a prop, not globally
+    // },
+    // And when closing:
+    // closePageEditPopover: () => {
+    //   set((state) => ({
+    //     editingPage: null,
+    //     showEditingPopover: false,
+    //     newPagePopupConfig: { show: false, mode: null, type: null },
+    //   }));
+    // },
   };
 };

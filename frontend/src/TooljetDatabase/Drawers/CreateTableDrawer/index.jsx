@@ -6,7 +6,8 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
 export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tablesLimit, setTablesLimit }) {
   const { organizationId, setSelectedTable, setTables, tables } = useContext(TooljetDatabaseContext);
@@ -34,7 +35,15 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tab
           type="button"
           variant="primary"
           disabled={tablesLimit?.current >= tablesLimit?.total}
-          onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
+          onClick={() => {
+            posthogHelper.captureEvent('click_add_tooljet_table_button', {
+              workspace_id:
+                authenticationService?.currentUserValue?.organization_id ||
+                authenticationService?.currentSessionValue?.current_organization_id,
+              datasource: 'tooljet_db',
+            });
+            setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen);
+          }}
           className="create-new-table-btn"
           data-cy="add-table-button"
         >

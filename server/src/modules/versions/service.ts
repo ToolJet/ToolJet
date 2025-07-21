@@ -97,7 +97,7 @@ export class VersionService implements IVersionService {
     return await this.versionsUtilService.deleteVersion(app, user, manager);
   }
 
-  async getVersion(app: App, user: User): Promise<any> {
+  async getVersion(app: App, user: User, mode?: string): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
         updatedVersionId = versionId;
@@ -109,14 +109,14 @@ export class VersionService implements IVersionService {
         updatedVersionId = appVersion.id;
       }
 
-      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
+      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId, user.organizationId);
       const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
 
       const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
       if (
         appCurrentEditingVersion &&
-        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))
+        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT,app.organizationId))
       ) {
         const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
@@ -124,7 +124,7 @@ export class VersionService implements IVersionService {
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
-        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId);
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -203,7 +203,7 @@ export class VersionService implements IVersionService {
 
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
-
+  
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -215,6 +215,20 @@ export class VersionService implements IVersionService {
     });
     return;
   }
+ 
+  async updateAppMode(appId: string, versionId: string, appMode: 'light' | 'dark' | 'auto') {
+    const appVersion = await this.versionRepository.findById(versionId, appId);
+    const updateDto: Partial<AppVersionUpdateDto> = {
+      globalSettings: {
+        theme: {
+          appMode,
+        },
+      },
+    };
+
+    return await this.versionsUtilService.updateVersion(appVersion, updateDto as AppVersionUpdateDto);
+  }
+
 
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -231,7 +245,7 @@ export class VersionService implements IVersionService {
           });
         }
 
-        if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))) {
           throw new BadRequestException('You do not have permissions to perform this action');
         }
 

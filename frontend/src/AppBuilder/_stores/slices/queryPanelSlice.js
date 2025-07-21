@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+import { AsyncQueryHandler } from '@/AppBuilder/_utils/async-query-handler';
 import _, { isEmpty } from 'lodash';
 import { resolveReferences, loadPyodide, hasCircularDependency } from '@/_helpers/utils';
 import { fetchOAuthToken, fetchOauthTokenForSlackAndGSheet } from '@/AppBuilder/_utils/auth';
@@ -7,11 +9,11 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import toast from 'react-hot-toast';
+
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
 const initialState = {
-  isQueryPaneExpanded: false,
+  isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
@@ -26,6 +28,13 @@ const initialState = {
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
+  showQueryPermissionModal: false,
+  targetBtnForMenu: null,
+  showQueryHandlerMenu: false,
+  showDeleteConfirmation: false,
+  renamingQueryId: null,
+  deletingQueryId: null,
+  asyncQueryRuns: [],
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -162,6 +171,19 @@ export const createQueryPanelSlice = (set, get) => ({
         'setLoadingDataQueries'
       ),
 
+    setAsyncQueryRuns: (updater) =>
+      set(
+        (state) => {
+          if (typeof updater === 'function') {
+            state.queryPanel.asyncQueryRuns = updater(state.queryPanel.asyncQueryRuns);
+          } else {
+            state.queryPanel.asyncQueryRuns = updater;
+          }
+        },
+        false,
+        'setAsyncQueryRuns'
+      ),
+
     onQueryConfirmOrCancel: (queryConfirmationData, isConfirm = false, mode = 'edit', moduleId = 'canvas') => {
       const { queryPanel, dataQuery, setResolvedQuery } = get();
       const { runQuery } = queryPanel;
@@ -202,6 +224,69 @@ export const createQueryPanelSlice = (set, get) => ({
         );
     },
 
+    createWorkflowAsyncHandler: ({
+      executionId,
+      queryId,
+      processQueryResults,
+      handleFailure,
+      shouldSetPreviewData,
+      setPreviewData,
+      setResolvedQuery,
+    }) => {
+      const asyncHandler = new AsyncQueryHandler({
+        streamSSE: (jobId) => {
+          return workflowExecutionsService.streamSSE(jobId);
+        },
+        extractJobId: () => executionId,
+        classifyEventStatus: (eventData) => {
+          // hardcoded for workflows
+          if (eventData.type === 'workflow_connection_close') {
+            return { status: 'CLOSE', data: eventData };
+          } else if (eventData.type === 'workflow_execution_completed') {
+            return { status: 'COMPLETE', result: eventData.result, data: eventData };
+          } else if (eventData.type === 'workflow_execution_error') {
+            return { status: 'ERROR', data: eventData };
+          } else {
+            return { status: 'PROGRESS', data: eventData };
+          }
+        },
+        callbacks: {
+          onProgress: (progressData) => {
+            // Update UI with progress information
+            if (shouldSetPreviewData) {
+              setPreviewData({ ...progressData });
+            }
+            setResolvedQuery(queryId, {
+              isLoading: true,
+              progress: progressData.progress,
+              currentData: progressData.partialData || [],
+            });
+          },
+          onComplete: async (result) => {
+            await processQueryResults(result);
+            // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
+            get().queryPanel.setAsyncQueryRuns((currentRuns) =>
+              currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
+            );
+          },
+          onError: (e) => {
+            handleFailure({
+              status: 'failed',
+              message: e?.error?.message || 'Error running workflow',
+              description: e?.error?.description || null,
+              data: typeof e?.error === 'object' ? { ...e.error } : e?.error,
+            });
+            // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
+            get().queryPanel.setAsyncQueryRuns((currentRuns) =>
+              currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
+            );
+          },
+        },
+      });
+
+      return asyncHandler;
+    },
+
     runQuery: (
       queryId,
       queryName,
@@ -223,6 +308,7 @@ export const createQueryPanelSlice = (set, get) => ({
         selectedEnvironment,
         isPublicAccess,
         currentVersionId,
+        modeStore,
       } = get();
       const {
         queryPreviewData,
@@ -231,7 +317,7 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
-        executeWorkflow,
+        triggerWorkflow,
         executeMultilineJS,
       } = queryPanel;
       const queryUpdatePromise = dataQuerySlice.queryUpdates[queryId];
@@ -332,6 +418,121 @@ export const createQueryPanelSlice = (set, get) => ({
         }
       }
 
+      // Handler for transformation and completion of query results
+      const processQueryResults = async (data, rawData = null) => {
+        let finalData = data;
+        rawData = rawData || data;
+
+        if (dataQuery.options.enableTransformation) {
+          const language = query.options.transformationLanguage;
+          finalData = await runTransformation(
+            finalData,
+            query.options.transformations?.[language] ?? query.options.transformation,
+            query.options.transformationLanguage,
+            query,
+            mode,
+            moduleId
+          );
+
+          if (finalData.status === 'failed') {
+            handleFailure(finalData);
+            return finalData;
+          }
+        }
+
+        if (shouldSetPreviewData) {
+          setPreviewLoading(false);
+          setPreviewData(finalData);
+        }
+
+        if (dataQuery.options.showSuccessNotification) {
+          const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+          toast.success(dataQuery.options.successMessage, {
+            duration: notificationDuration,
+          });
+        }
+
+        get().debugger.log({
+          logLevel: 'success',
+          type: 'query',
+          kind: query.kind,
+          key: query.name,
+          message: 'Query executed successfully',
+          isQuerySuccessLog: true,
+          errorTarget: 'Queries',
+        });
+
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: false,
+            data: finalData,
+            rawData,
+            metadata: data?.metadata,
+            request: data?.metadata?.request,
+            response: data?.metadata?.response,
+          },
+          moduleId
+        );
+
+        onEvent('onDataQuerySuccess', queryEvents, mode);
+        return { status: 'ok', data: finalData };
+      };
+
+      // Handler for query failures
+      const handleFailure = (errorData) => {
+        if (shouldSetPreviewData) {
+          setPreviewLoading(false);
+          setPreviewData(errorData);
+        }
+
+        get().debugger.log({
+          logLevel: 'error',
+          type: 'query',
+          kind: query.kind,
+          key: query.name,
+          message: errorData?.description,
+          errorTarget: 'Queries',
+          error:
+            query.kind === 'restapi'
+              ? {
+                  substitutedVariables: options,
+                  request: errorData?.requestObject,
+                  response: errorData?.responseObject,
+                }
+              : errorData,
+          isQuerySuccessLog: false,
+        });
+
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: false,
+            ...(query.kind === 'restapi' || errorData?.type === 'tj-401'
+              ? {
+                  metadata: errorData?.metadata,
+                  request: errorData?.requestObject,
+                  response: errorData?.responseObject,
+                  responseHeaders: errorData?.responseHeaders,
+                }
+              : {}),
+          },
+          moduleId
+        );
+
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: false,
+            error: errorData,
+          },
+          moduleId
+        );
+
+        onEvent('onDataQueryFailure', queryEvents);
+        return errorData;
+      };
+
       // eslint-disable-next-line no-unused-vars
       return new Promise(function (resolve, reject) {
         if (shouldSetPreviewData) {
@@ -352,18 +553,19 @@ export const createQueryPanelSlice = (set, get) => ({
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
-          queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters, moduleId);
+          queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
         } else if (query.kind === 'runpy') {
-          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState, moduleId);
+          queryExecutionPromise = executeRunPycode(query.options?.code, query, false, mode, queryState, moduleId);
         } else if (query.kind === 'workflows') {
-          queryExecutionPromise = executeWorkflow(
+          queryExecutionPromise = triggerWorkflow(
             moduleId,
-            query.options.workflowId,
-            query.options.blocking,
+            query.options?.workflowId,
+            query.options?.blocking,
             query.options?.params,
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
         } else {
+          const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
           let versionId = currentVersionId;
           // IMPORTANT: This logic needs to be changed when we implement the module versioning
           if (moduleId !== 'canvas') {
@@ -374,7 +576,14 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             query?.options,
             versionId,
-            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
+            (() => {
+              // send undefined if Public/Private released app
+              if (isPublicAccess || (isReleasedApp && !isPublicAccess)) {
+                return undefined;
+              }
+              return (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id; //TODO: currentAppEnvironmentId may no longer required. Need to check
+            })(),
+            modeStore.modules.canvas.currentMode
           );
         }
 
@@ -385,6 +594,38 @@ export const createQueryPanelSlice = (set, get) => ({
               const url = data.data.auth_url; // Backend generates and return sthe auth url
               fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
             }
+
+            // Asynchronous query execution
+            // Currently async query resolution is applicable only to workflows
+            // Change this conditional to async query type check for other
+            // async queries in the future
+            if (query.kind === 'workflows') {
+              const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
+                data,
+                queryId,
+                processQueryResults,
+                handleFailure,
+                shouldSetPreviewData,
+                setPreviewData,
+                setResolvedQuery,
+              });
+
+              if (error) {
+                resolve({ status: 'failed', message: error });
+                return;
+              }
+
+              if (!error && completionPromise) {
+                // This early resolution pattern is temporary - once the UI fully supports
+                // tracking individual async queries through their lifecycle, we can refactor
+                // this to rely on the completion promise concurrently
+                const result = await completionPromise;
+                resolve(result);
+              }
+              return;
+            }
+
+            // Handle synchronous queries (original code)
 
             let queryStatusCode = data?.status ?? null;
             const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
@@ -420,120 +661,22 @@ export const createQueryPanelSlice = (set, get) => ({
                   errorData = data;
                   break;
               }
-              if (shouldSetPreviewData) {
-                setPreviewLoading(false);
-                setPreviewData(errorData);
-              }
+
               errorData = query.kind === 'runpy' || query.kind === 'runjs' ? data?.data : data;
-              get().debugger.log({
-                logLevel: 'error',
-                type: 'query',
-                kind: query.kind,
-                key: query.name,
-                message: errorData?.description,
-                errorTarget: 'Queries',
-                error:
-                  query.kind === 'restapi'
-                    ? {
-                        substitutedVariables: options,
-                        request: data?.data?.requestObject,
-                        response: data?.data?.responseObject,
-                      }
-                    : errorData,
-                isQuerySuccessLog: false,
-              });
-
-              setResolvedQuery(
-                queryId,
-                {
-                  isLoading: false,
-                  ...(query.kind === 'restapi'
-                    ? {
-                        metadata: data.metadata,
-                        request: data.data.requestObject,
-                        response: data.data.responseObject,
-                        responseHeaders: data.data.responseHeaders,
-                      }
-                    : {}),
-                },
-                moduleId
-              );
-
-              resolve(data);
-              onEvent('onDataQueryFailure', queryEvents);
+              const result = handleFailure(errorData);
+              resolve(result);
               return;
             } else {
-              let rawData = data.data;
-              let finalData = data.data;
-              if (dataQuery.options.enableTransformation) {
-                finalData = await runTransformation(
-                  finalData,
-                  query.options.transformation,
-                  query.options.transformationLanguage,
-                  query,
-                  'edit',
-                  moduleId
-                );
-                if (finalData.status === 'failed') {
-                  setResolvedQuery(
-                    queryId,
-                    {
-                      isLoading: false,
-                    },
-                    moduleId
-                  );
-
-                  resolve(finalData);
-                  onEvent('onDataQueryFailure', queryEvents);
-                  setPreviewLoading(false);
-                  if (shouldSetPreviewData) setPreviewData(finalData);
-                  return;
-                }
-              }
-
-              if (shouldSetPreviewData) {
-                setPreviewLoading(false);
-                setPreviewData(finalData);
-              }
-
-              if (dataQuery.options.showSuccessNotification) {
-                const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-                toast.success(dataQuery.options.successMessage, {
-                  duration: notificationDuration,
-                });
-              }
-
-              get().debugger.log({
-                logLevel: 'success',
-                type: 'query',
-                kind: query.kind,
-                key: query.name,
-                message: 'Query executed successfully',
-                isQuerySuccessLog: true,
-                errorTarget: 'Queries',
-              });
-
-              setResolvedQuery(
-                queryId,
-                {
-                  isLoading: false,
-                  data: finalData,
-                  rawData,
-                  metadata: data?.metadata,
-                  request: data?.metadata?.request,
-                  response: data?.metadata?.response,
-                },
-                moduleId
-              );
-
-              resolve({ status: 'ok', data: finalData });
-              onEvent('onDataQuerySuccess', queryEvents, mode);
+              const rawData = data.data;
+              const result = await processQueryResults(data.data, rawData);
+              resolve(result);
             }
           })
           .catch((e) => {
             const { error } = e;
-            if (mode !== 'view') toast.error(error ?? 'Unknown error');
-            resolve({ status: 'failed', message: error });
+            const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
+            if (mode !== 'view') toast.error(errorMessage);
+            resolve({ status: 'failed', message: errorMessage });
           });
       });
     },
@@ -547,7 +690,7 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
-        executeWorkflow,
+        triggerWorkflow,
         executeMultilineJS,
         setIsPreviewQueryLoading,
       } = queryPanel;
@@ -607,7 +750,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
         } else if (query.kind === 'workflows') {
-          queryExecutionPromise = executeWorkflow(
+          queryExecutionPromise = triggerWorkflow(
             moduleId,
             query.options.workflowId,
             query.options.blocking,
@@ -620,11 +763,73 @@ export const createQueryPanelSlice = (set, get) => ({
 
         queryExecutionPromise
           .then(async (data) => {
+            // Asynchronous query execution
+            // Currently async query resolution is applicable only to workflows
+            // Change this conditional to async query type check for other
+            // async queries in the future
+            if (query.kind === 'workflows') {
+              const processQueryResultsPreview = async (result) => {
+                let finalData = result;
+                if (query.options.enableTransformation) {
+                  finalData = await runTransformation(
+                    finalData,
+                    query.options.transformation,
+                    query.options.transformationLanguage,
+                    query,
+                    'edit',
+                    moduleId
+                  );
+                  if (finalData.status === 'failed') {
+                    setPreviewLoading(false);
+                    setIsPreviewQueryLoading(false);
+                    if (!calledFromQuery) setPreviewData(finalData);
+                    return { status: 'failed', data: finalData };
+                  }
+                }
+                setPreviewLoading(false);
+                setIsPreviewQueryLoading(false);
+                if (!calledFromQuery) setPreviewData(finalData);
+                return { status: 'ok', data: finalData };
+              };
+              const handleFailurePreview = (errorData) => {
+                setPreviewLoading(false);
+                setIsPreviewQueryLoading(false);
+                if (!calledFromQuery) setPreviewData(errorData);
+                return { status: 'failed', data: errorData };
+              };
+
+              const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
+                data,
+                queryId: query.id,
+                processQueryResults: processQueryResultsPreview,
+                handleFailure: handleFailurePreview,
+                shouldSetPreviewData: true,
+                setPreviewData,
+                setResolvedQuery: () => {}, // No resolvedQuery for preview
+                resolve,
+              });
+
+              if (!error && completionPromise) {
+                try {
+                  // This early resolution pattern is temporary - once the UI fully supports
+                  // tracking individual async queries through their lifecycle, we can refactor
+                  // this to rely on the completion promise concurrently
+                  const result = await completionPromise;
+                  resolve(result);
+                } catch (error) {
+                  toast.error('Async operation failed:', error);
+                  setPreviewLoading(false);
+                  setIsPreviewQueryLoading(false);
+                  resolve({ status: 'failed', message: error?.message || 'Unknown error' });
+                }
+              }
+              return;
+            }
+
             let finalData = data.data;
             let queryStatusCode = data?.status ?? null;
             const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
             switch (true) {
-              // Note: Need to move away from statusText -> statusCode
               case queryStatus === 'Bad Request' ||
                 queryStatus === 'Not Found' ||
                 queryStatus === 'Unprocessable Entity' ||
@@ -656,9 +861,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 }
 
                 onEvent('onDataQueryFailure', queryEvents);
-
                 if (!calledFromQuery) setPreviewData(errorData);
-
                 break;
               }
               case queryStatus === 'needs_oauth': {
@@ -681,9 +884,10 @@ export const createQueryPanelSlice = (set, get) => ({
                   icon: '🚀',
                 });
                 if (query.options.enableTransformation) {
+                  const language = query.options.transformationLanguage;
                   finalData = await runTransformation(
                     finalData,
-                    query.options.transformation,
+                    query.options.transformations?.[language] ?? query.options.transformation,
                     query.options.transformationLanguage,
                     query,
                     'edit',
@@ -721,10 +925,32 @@ export const createQueryPanelSlice = (set, get) => ({
       });
     },
 
-    executeRunPycode: async (code, query, isPreview, mode, currentState) => {
+    executeRunPycode: async (code, query, isPreview, mode, currentState, _moduleId = 'canvas') => {
       const {
         queryPanel: { evaluatePythonCode },
       } = get();
+
+      if (query.restricted) {
+        return {
+          status: 'failed',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
+
       return { data: await evaluatePythonCode({ code, query, isPreview, mode, currentState }) };
     },
 
@@ -919,7 +1145,13 @@ export const createQueryPanelSlice = (set, get) => ({
       const {
         queryPanel: { evaluatePythonCode },
       } = get();
-      return await evaluatePythonCode({ queryResult, code, query, mode, currentState });
+      return await evaluatePythonCode({
+        queryResult,
+        code,
+        query,
+        mode,
+        currentState,
+      });
     },
 
     updateQuerySuggestions: (oldName, newName) => {
@@ -940,7 +1172,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       delete updatedQueries[oldName];
 
-      const oldSuggestions = Object.keys(queries[oldName]).map((key) => `queries.${oldName}.${key}`);
+      const _oldSuggestions = Object.keys(queries[oldName]).map((key) => `queries.${oldName}.${key}`);
       // useResolveStore.getState().actions.removeAppSuggestions(oldSuggestions);
 
       // useCurrentStateStore.getState().actions.setCurrentState({
@@ -948,11 +1180,32 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
-    executeWorkflow: async (moduleId = 'canvas', workflowId, _blocking = false, params = {}, appEnvId) => {
+    executeWorkflow: async (moduleId = 'canvas', query, workflowId, _blocking = false, params = {}, appEnvId) => {
       const { getAppId, getAllExposedValues } = get();
       const appId = getAppId('canvas');
       const currentState = getAllExposedValues(moduleId);
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      if (query.restricted) {
+        return {
+          status: 'failed',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
 
       try {
         const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
@@ -961,10 +1214,20 @@ export const createQueryPanelSlice = (set, get) => ({
         return { data: undefined, status: 'failed' };
       }
     },
+    triggerWorkflow: async (moduleId, workflowAppId, _blocking = false, params = {}, appEnvId) => {
+      const { getAllExposedValues } = get();
+      const currentState = getAllExposedValues();
+      const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      try {
+        const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
+        return { data: executionResponse.result, status: 'ok' };
+      } catch (e) {
+        return { data: e?.message, status: 'failed' };
+      }
+    },
 
     createProxy: (obj, path = '') => {
-      const { queryPanel } = get();
-      const { createProxy } = queryPanel;
 
       return new Proxy(obj, {
         get(target, prop) {
@@ -975,7 +1238,7 @@ export const createQueryPanelSlice = (set, get) => ({
           }
 
           const value = target[prop];
-          return typeof value === 'object' && value !== null ? createProxy(value, fullPath) : value;
+          return value;
         },
       });
     },
@@ -1003,6 +1266,27 @@ export const createQueryPanelSlice = (set, get) => ({
       const actions = generateAppActions(queryId, mode, isPreview, moduleId);
 
       const queryDetails = dataQuery.queries.modules?.[moduleId].find((q) => q.id === queryId);
+
+      if (queryDetails.restricted) {
+        return {
+          status: 'failed',
+          message: 'Query could not be completed',
+          description: 'Response code 401 (Unauthorized)',
+          data: {
+            type: 'tj-401',
+            responseObject: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+          metadata: {
+            response: {
+              statusCode: 401,
+              responseBody: 'Unauthorized Access',
+            },
+          },
+        };
+      }
 
       const defaultParams =
         queryDetails?.options?.parameters?.reduce(
@@ -1066,10 +1350,7 @@ export const createQueryPanelSlice = (set, get) => ({
         const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
         const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
         const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
-        const proxiedFormattedParams = createProxy(
-          !_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : [],
-          'params'
-        );
+        const proxiedFormattedParams = createProxy(!_.isEmpty(formattedParams) ? [formattedParams] : [], 'parameters');
 
         const fnParams = [
           'moment',
@@ -1098,7 +1379,7 @@ export const createQueryPanelSlice = (set, get) => ({
           proxiedVariables,
           actions,
           proxiedConstants,
-          ...proxiedFormattedParams,
+          ...(!_.isEmpty(formattedParams) ? proxiedFormattedParams : []),
         ];
 
         result = {
@@ -1136,6 +1417,48 @@ export const createQueryPanelSlice = (set, get) => ({
     isQuerySelected: (queryId) => {
       return get().queryPanel.selectedQuery?.id === queryId;
     },
+
+    setupAsyncWorkflowHandler: ({
+      data,
+      queryId,
+      processQueryResults,
+      handleFailure,
+      shouldSetPreviewData,
+      setPreviewData,
+      setResolvedQuery,
+    }) => {
+      try {
+        const asyncHandler = get().queryPanel.createWorkflowAsyncHandler({
+          executionId: data.data.executionId,
+          queryId,
+          processQueryResults,
+          handleFailure,
+          shouldSetPreviewData,
+          setPreviewData,
+          setResolvedQuery,
+        });
+
+        // Process initial response and start SSE monitoring
+        const { __asyncCompletionPromise } = asyncHandler.processInitialResponse(data.data);
+
+        // Add the AsyncQueryHandler instance to asyncQueryRuns
+        get().queryPanel.setAsyncQueryRuns((currentRuns) => [...currentRuns, asyncHandler]);
+
+        if (setResolvedQuery) {
+          setResolvedQuery(queryId, {
+            isLoading: true,
+            jobId: asyncHandler.jobId,
+          });
+        }
+
+        return {
+          handler: asyncHandler,
+          completionPromise: __asyncCompletionPromise,
+        };
+      } catch (error) {
+        return { error };
+      }
+    },
     runQueryOnShortcut: () => {
       const { queryPanel } = get();
       const { runQuery, selectedQuery } = queryPanel;
@@ -1153,6 +1476,50 @@ export const createQueryPanelSlice = (set, get) => ({
         id: selectedQuery?.id,
       };
       previewQuery(query, false, undefined, moduleId);
+    },
+    toggleQueryPermissionModal: (show) => {
+      set((state) => {
+        state.queryPanel.showQueryPermissionModal = show;
+      });
+    },
+    toggleQueryHandlerMenu: (show, id) => {
+      set((state) => {
+        if (show) state.queryPanel.targetBtnForMenu = id;
+        state.queryPanel.showQueryHandlerMenu = show;
+      });
+    },
+    setRenamingQuery: (queryId) =>
+      set((state) => {
+        state.queryPanel.renamingQueryId = queryId;
+      }),
+    deleteDataQuery: (queryId) =>
+      set((state) => {
+        state.queryPanel.deletingQueryId = queryId;
+      }),
+    expandQueryPaneIfNeeded: () => {
+      const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
+        isExpanded: true,
+        queryPanelHeight: 100,
+      };
+
+      // If query pane is not expanded, expand it
+      if (!queryManagerPreferences.isExpanded) {
+        const newPreferences = {
+          ...queryManagerPreferences,
+          isExpanded: true,
+          queryPanelHeight: 70, // Default expanded height
+        };
+        localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
+
+        // Update the store state
+        set((state) => {
+          state.queryPanel.isQueryPaneExpanded = true;
+        });
+
+        return true; // Indicates that expansion was needed and performed
+      }
+
+      return false; // Indicates that expansion was not needed
     },
   },
 });

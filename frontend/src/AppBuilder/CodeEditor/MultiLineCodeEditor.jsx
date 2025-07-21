@@ -54,11 +54,17 @@ const MultiLineCodeEditor = (props) => {
     readOnly = false,
     editable = true,
     renderCopilot,
+    setCodeEditorView,
   } = props;
+  const editorRef = useRef(null);
+
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
-  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+  const getServerSideGlobalResolveSuggestions = useStore(
+    (state) => state.getServerSideGlobalResolveSuggestions,
+    shallow
+  );
 
   const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
   const isInsideQueryManager = useMemo(
@@ -72,12 +78,47 @@ const MultiLineCodeEditor = (props) => {
 
   const currentValueRef = useRef(initialValue);
 
-  const handleChange = (val) => (currentValueRef.current = val);
-
   const [editorView, setEditorView] = React.useState(null);
 
   const [isSearchPanelOpen, setIsSearchPanelOpen] = React.useState(false);
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onChange, currentValueRef, 'multiline');
+
+  // Add state for tracking autocomplete visibility
+  const [showSuggestions, setShowSuggestions] = React.useState(true);
+  const currentLineObserverRef = useRef(null);
+  const isObserverTriggeredRef = useRef(false);
+
+  // Intersection observer to detect when current line goes out of view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio < 1) {
+          setShowSuggestions(false);
+          isObserverTriggeredRef.current = true;
+          // Close autocomplete dropdown by dispatching a selection change
+          if (editorView) {
+            editorView.dispatch({
+              selection: editorView.state.selection,
+            });
+          }
+        } else {
+          setShowSuggestions(true);
+          isObserverTriggeredRef.current = false;
+        }
+      },
+      { root: null, threshold: [1] }
+    );
+
+    currentLineObserverRef.current = observer;
+
+    return () => {
+      if (currentLineObserverRef.current) {
+        currentLineObserverRef.current.disconnect();
+      }
+    };
+  }, [editorView]);
+
+  const handleChange = (val) => (currentValueRef.current = val);
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);
@@ -116,7 +157,7 @@ const MultiLineCodeEditor = (props) => {
 
     const hints = getSuggestions();
 
-    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
+    const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {
       ...hints,
@@ -276,6 +317,26 @@ const MultiLineCodeEditor = (props) => {
     return initialValue;
   }, [initialValue, replaceIdsWithName]);
 
+  function updateCurrentLineObserver(editorView) {
+    if (!editorView || !editorView?.view?.dom) return;
+    const cursorPos = editorView.state.selection.main.head;
+    const line = editorView.state.doc.lineAt(cursorPos);
+    const lineNumber = line.number;
+    const cmLines = editorView.view.dom.querySelectorAll('.cm-line');
+    const currentLineDiv = cmLines[lineNumber - 1] || null;
+
+    // Update intersection observer to watch the current line
+    if (currentLineObserverRef.current && currentLineDiv && !isObserverTriggeredRef.current) {
+      currentLineObserverRef.current.disconnect();
+      currentLineObserverRef.current.observe(currentLineDiv);
+    }
+  }
+
+  const onAiSuggestionAccept = (newValue) => {
+    currentValueRef.current = newValue;
+    onChange(newValue);
+  };
+
   return (
     <div
       className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
@@ -283,7 +344,19 @@ const MultiLineCodeEditor = (props) => {
       ref={wrapperRef}
     >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
-        <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} renderCopilot={renderCopilot} />
+        <CodeHinterBtns
+          view={editorView}
+          isPanelOpen={isSearchPanelOpen}
+          renderCopilot={() =>
+            renderCopilot?.({
+              darkMode,
+              language: lang,
+              editorRef,
+              onAiSuggestionAccept,
+            })
+          }
+        />
+
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
@@ -308,6 +381,7 @@ const MultiLineCodeEditor = (props) => {
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
+                ref={editorRef}
                 value={initialValueWithReplacedIds}
                 placeholder={placeholder}
                 height={'100%'}
@@ -349,8 +423,16 @@ const MultiLineCodeEditor = (props) => {
                 indentWithTab={false}
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager
-                onCreateEditor={(view) => setEditorView(view)}
-                onUpdate={(view) => setIsSearchPanelOpen(searchPanelOpen(view.state))}
+                onCreateEditor={(view) => {
+                  setEditorView(view);
+                  if (setCodeEditorView) {
+                    setCodeEditorView(view);
+                  }
+                }}
+                onUpdate={(view) => {
+                  setIsSearchPanelOpen(searchPanelOpen(view.state));
+                  updateCurrentLineObserver(view);
+                }}
               />
             </div>
             {showPreview && (

@@ -1,5 +1,4 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
@@ -7,38 +6,37 @@ import { VersionModule } from '@modules/versions/module';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { SubModule } from '@modules/app/sub-module';
+import { FeatureAbilityFactory } from './ability';
 
-export class GitSyncModule {
+export class GitSyncModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const { GitSyncController } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/controller`);
-    const { GitSyncService } = await import(`${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/service`);
-    const { SourceControlProviderService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/source-control-provider`
-    );
-    const { SSHGitSyncService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/providers/github-ssh/service`
-    );
-    const { HTTPSGitSyncService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/providers/github-https/service`
-    );
-    const { GitLabGitSyncService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/providers/gitlab/service`
-    );
-    const { HTTPSGitSyncUtilityService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/providers/github-https/util.service`
-    );
-    const { SSHGitSyncUtilityService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/providers/github-ssh/util.service`
-    );
-    const { GitLabGitSyncUtilityService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/providers/gitlab/util.service`
-    );
-    const { BaseGitUtilService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git-util.service`
-    );
-    const { BaseGitSyncService } = await import(
-      `${await getImportPath(configs?.IS_GET_CONTEXT)}/git-sync/base-git.service`
-    );
+    const {
+      GitSyncController,
+      GitSyncService,
+      SourceControlProviderService,
+      SSHGitSyncService,
+      HTTPSGitSyncService,
+      GitLabGitSyncService,
+      HTTPSGitSyncUtilityService,
+      SSHGitSyncUtilityService,
+      GitLabGitSyncUtilityService,
+      BaseGitUtilService,
+      BaseGitSyncService,
+    } = await this.getProviders(configs, 'git-sync', [
+      'controller',
+      'service',
+      'source-control-provider',
+      'providers/github-ssh/service',
+      'providers/github-https/service',
+      'providers/gitlab/service',
+      'providers/github-https/util.service',
+      'providers/github-ssh/util.service',
+      'providers/gitlab/util.service',
+      'base-git-util.service',
+      'base-git.service',
+    ]);
+
     return {
       module: GitSyncModule,
       imports: [
@@ -62,8 +60,15 @@ export class GitSyncModule {
         SSHGitSyncUtilityService,
         GitLabGitSyncUtilityService,
         SourceControlProviderService,
+        FeatureAbilityFactory,
       ],
-      exports: [HTTPSGitSyncUtilityService, SSHGitSyncUtilityService, GitLabGitSyncUtilityService],
+      exports: [
+        HTTPSGitSyncUtilityService,
+        SSHGitSyncUtilityService,
+        GitLabGitSyncUtilityService,
+        BaseGitSyncService,
+        BaseGitUtilService,
+      ],
     };
   }
 }

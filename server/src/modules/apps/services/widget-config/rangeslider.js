@@ -1,6 +1,6 @@
 export const rangeSliderConfig = {
-  name: 'RangeSlider',
-  displayName: 'Range Slider',
+  name: 'RangeSliderLegacy',
+  displayName: 'Range Slider (Legacy)',
   description: 'Adjust value range',
   component: 'RangeSlider',
   defaultSize: {
@@ -84,19 +84,6 @@ export const rangeSliderConfig = {
         defaultValue: true,
       },
     },
-    padding: {
-      type: 'switch',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 'default',
-      },
-      isFxNotRequired: true,
-      options: [
-        { displayName: 'Default', value: 'default' },
-        { displayName: 'None', value: 'none' },
-      ],
-    },
   },
   exposedVariables: {
     value: null,
@@ -122,9 +109,8 @@ export const rangeSliderConfig = {
     styles: {
       lineColor: { value: '' },
       handleColor: { value: '' },
-      trackColor: { value: 'var(--primary-brand)' },
+      trackColor: { value: '' },
       visibility: { value: '{{true}}' },
-      padding: { value: 'default' },
     },
   },
 };

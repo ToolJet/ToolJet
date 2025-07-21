@@ -20,9 +20,9 @@ import {
   TextColumn,
   JsonColumn,
   MarkdownColumn,
+  HTMLColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
-
 import SelectSearch from 'react-select-search';
 
 export default function generateColumnsData({
@@ -38,6 +38,7 @@ export default function generateColumnsData({
   validateDates,
   searchText,
   columnForAddNewRow = false,
+  t,
 }) {
   const getResolvedValue = useStore.getState().getResolvedValue;
   const getEditedRowFromIndex = useTableStore.getState().getEditedRowFromIndex;
@@ -76,12 +77,18 @@ export default function generateColumnsData({
             options?.map((option) => ({
               label: option.label,
               value: option.value,
+              optionColor: option.optionColor,
+              labelColor: option.labelColor,
             })) ?? [];
         }
       }
 
+      // Handle disabled dates
+      const disabledDates = getResolvedValue(column.disabledDates);
+      const parseInUnixTimestamp = getResolvedValue(column.parseInUnixTimestamp);
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
+      const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
 
       if (!isVisible) return null;
 
@@ -171,6 +178,7 @@ export default function generateColumnsData({
                   row={row}
                   id={id}
                   searchText={searchText}
+                  darkMode={darkMode}
                 />
               );
 
@@ -184,6 +192,7 @@ export default function generateColumnsData({
                   }
                   toggleOnBg={column?.toggleOnBg}
                   toggleOffBg={column?.toggleOffBg}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -193,16 +202,21 @@ export default function generateColumnsData({
             case 'dropdown':
             case 'multiselect':
               return (
-                <SelectSearch
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-                  readOnly={!isEditable}
-                  darkMode={darkMode}
-                  containerWidth={columnSize}
-                  isEditable={isEditable}
-                  multiple={columnType === 'multiselect'}
-                />
+                <div className="h-100 d-flex align-items-center custom-select">
+                  <SelectSearch
+                    printOptions="on-focus"
+                    multiple={columnType === 'multiselect'}
+                    search={true}
+                    placeholder={t('globals.select', 'Select') + '...'}
+                    options={columnOptions.selectOptions}
+                    value={cellValue}
+                    onChange={(value) =>
+                      handleCellValueChange(row.index, column.key || column.name, value, row.original)
+                    }
+                    disabled={!isEditable}
+                    className={'select-search'}
+                  />
+                </div>
               );
 
             case 'select':
@@ -221,6 +235,7 @@ export default function generateColumnsData({
                       ? true
                       : false
                   }
+                  autoAssignColors={autoAssignColors}
                   isEditable={isEditable}
                   isMulti={columnType === 'newMultiSelect'}
                   className="select-search table-select-search"
@@ -255,6 +270,7 @@ export default function generateColumnsData({
                   readOnly={!isEditable}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
                   containerWidth={columnSize}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -272,6 +288,7 @@ export default function generateColumnsData({
                       tableColumnEvents,
                     });
                   }}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -295,7 +312,13 @@ export default function generateColumnsData({
                   }
                   darkMode={darkMode}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  column={column}
+                  isEditable={isEditable}
+                  disabledDates={disabledDates}
+                  parseInUnixTimestamp={parseInUnixTimestamp}
+                  unixTimestamp={column.unixTimestamp}
                   id={id}
+                  containerWidth={columnSize}
                 />
               );
 
@@ -321,6 +344,7 @@ export default function generateColumnsData({
                   height={column?.height ? `${column?.height}px` : '100%'}
                   borderRadius={column?.borderRadius}
                   objectFit={column?.objectFit}
+                  horizontalAlignment={column?.horizontalAlignment}
                 />
               );
 
@@ -343,6 +367,22 @@ export default function generateColumnsData({
             case 'markdown': {
               return (
                 <MarkdownColumn
+                  isEditable={isEditable}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  cellValue={cellValue}
+                  column={column}
+                  containerWidth={columnSize}
+                  cell={cell}
+                  id={id}
+                />
+              );
+            }
+            case 'html': {
+              return (
+                <HTMLColumn
                   isEditable={isEditable}
                   darkMode={darkMode}
                   handleCellValueChange={handleCellValueChange}

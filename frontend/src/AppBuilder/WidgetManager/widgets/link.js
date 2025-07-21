@@ -78,7 +78,7 @@ export const linkConfig = {
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: 'var(--cc-primary-brand)',
       },
       accordian: 'Link text',
     },
@@ -159,14 +159,6 @@ export const linkConfig = {
       ],
       accordian: 'container',
     },
-    alignment: {
-      type: 'alignButtons',
-      displayName: 'Alignment',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'left',
-      },
-    },
   },
   exposedVariables: {},
   actions: [
@@ -216,7 +208,7 @@ export const linkConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#4368E3' },
+      textColor: { value: 'var(--cc-primary-brand)' },
       textSize: { value: '{{14}}' },
       underline: { value: 'on-hover' },
       verticalAlignment: { value: 'center' },

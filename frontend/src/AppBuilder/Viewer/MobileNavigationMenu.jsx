@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as MobileMenu } from 'react-burger-menu';
@@ -6,20 +6,26 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 import useStore from '@/AppBuilder/_stores/store';
-import { buildTree } from '../LeftSidebar/PageMenu/Tree/utilities';
+import { buildTree } from '../RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
 import * as Icons from '@tabler/icons-react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { redirectToDashboard } from '@/_helpers/routes';
+import AppLogo from '@/_components/AppLogo';
+import { Link } from 'react-router-dom';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
-const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
+const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
   const { moduleId } = useModuleContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const groupActive = currentPage.pageGroupId === pageGroup?.id;
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const pages = useStore((state) => state.modules[moduleId].pages);
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
   // eslint-disable-next-line import/namespace
-  const IconElement = Icons?.[pageGroup?.icon] ?? Icons?.['IconFileDescription'];
+  const IconElement = Icons?.[pageGroup?.icon] ?? Icons?.['IconFile'];
   return (
     <>
       <div style={{ border: 'none' }} className={`accordion-item  ${darkMode ? 'dark-mode' : ''} `}>
@@ -33,7 +39,7 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
           <div className={`card mb-1`}>
             <div className="card-body">
               <IconElement />
-              <span style={{ color: 'var(--slate12)' }}>{_.truncate(pageGroup?.name, { length: 22 })}</span>
+              <span>{_.truncate(pageGroup?.name, { length: 22 })}</span>
               <svg
                 className={`page-group-collapse ${isExpanded ? 'expanded' : 'collapsed'}`}
                 width={17}
@@ -56,7 +62,7 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
               const isHomePage = page.id === homePageId;
               const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
               // eslint-disable-next-line import/namespace
-              const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+              const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
               return page?.hidden || page?.disabled ? null : (
                 <div
                   key={page.handle}
@@ -66,7 +72,7 @@ const RenderGroup = ({ pages, pageGroup, currentPage, darkMode, handlepageSwitch
                   <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
                     <div className="card-body">
                       <IconElement />
-                      <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                      <span>{_.truncate(page?.name, { length: 22 })}</span>
                     </div>
                   </div>
                 </div>
@@ -103,17 +109,17 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
             const isHomePage = page.id === homePageId;
             const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
             // eslint-disable-next-line import/namespace
-            const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+            const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
             return page?.hidden || page?.disabled ? null : (
               <div
                 key={page.handle}
                 onClick={() => handlepageSwitch(page?.id)}
-                className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
               >
-                <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
+                <div className={`card ${page?.id === currentPageId ? 'active' : ''}`}>
                   <div className="card-body">
                     <IconElement />
-                    <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                    <span>{_.truncate(page?.name, { length: 22 })}</span>
                   </div>
                 </div>
               </div>
@@ -125,13 +131,32 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
   );
 };
 
-const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeToDarkMode, showDarkModeToggle }) => {
+const MobileNavigationMenu = ({
+  pages,
+  switchPage,
+  currentPageId,
+  darkMode,
+  changeToDarkMode,
+  showDarkModeToggle,
+  appName,
+  viewerWrapperRef,
+}) => {
   const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const license = useStore((state) => state.license);
-
+  const [isViewportNarrow, setIsViewportNarrow] = useState(false);
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (viewerWrapperRef.current) {
+      viewerWrapperRef.current.offsetWidth > 450 ? setIsViewportNarrow(false) : setIsViewportNarrow(true);
+    }
+  }, []);
+
+  const dynamicMenuWrapClass = isViewportNarrow ? 'bm-menu-wrap--viewport-narrow' : '';
+  const dynamicOverlayClass = isViewportNarrow ? 'bm-overlay--viewport-narrow' : '';
+
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
     const queryParams = {
@@ -141,13 +166,6 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
     switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), moduleId);
   };
   var styles = {
-    bmBurgerButton: {
-      position: 'absolute',
-      width: '16px',
-      height: '16px',
-      top: '13px',
-      right: '1rem',
-    },
     bmBurgerBars: {
       background: 'var(--slate12)',
     },
@@ -162,11 +180,11 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       height: '100%',
       width: 'calc(100% - 20%)',
       top: 0,
-      right: 0,
+      left: 0,
     },
     bmMenu: {
       background: darkMode ? '#202B37' : '#fff',
-      padding: '0',
+      padding: '16px 16px',
     },
     bmMorphShape: {
       fill: '#373a47',
@@ -182,18 +200,23 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       display: 'inline-block',
       padding: '0.5rem 0rem',
       width: '100%',
+      overflow: 'hidden',
     },
     bmOverlay: {
       background: 'rgba(0, 0, 0, 0.3)',
+      top: '0px',
     },
   };
 
-  const currentPage = pages.find((page) => page.id === currentPageId);
+  const currentPage = pages?.find((page) => page.id === currentPageId);
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
     _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+
+  const { definition: { properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
+  const { name, hideLogo, hideHeader } = properties ?? {};
 
   return (
     <>
@@ -203,21 +226,47 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
         pageWrapId={'page-wrap'}
         outerContainerId={'outer-container'}
         onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
-        right
+        className={dynamicMenuWrapClass}
+        overlayClassName={dynamicOverlayClass}
+        customBurgerIcon={
+          <div className="icon-btn">
+            <SolidIcon fill="var(--icon-strong)" name="menu" />
+          </div>
+        }
+        right={false}
       >
-        <div className="pt-0">
-          <Header className={'mobile-header'}>
-            <div className="py-2 row w-100">
-              <div className="col">
-                <span style={{ color: 'var(--slate12)' }}>Menu</span>
+        <div style={{ height: '95%' }} className="pt-0">
+          <Header styles={{ paddingBottom: '24px' }} className={'mobile-header'}>
+            <div onClick={() => setHamburgerMenuOpen(false)} className="cursor-pointer">
+              <div className="icon-btn">
+                <SolidIcon name="remove03" />
               </div>
-              <div onClick={() => setHamburgerMenuOpen(false)} className="col-1 cursor-pointer">
-                <Cross fill={'var(--slate12)'} />
-              </div>
+            </div>
+            <div className="d-flex flex-grow-1 justify-content-center">
+              <h1 className="navbar-brand d-none-navbar-horizontal p-0">
+                <Link
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                  data-cy="viewer-page-logo"
+                  onClick={() => {
+                    redirectToDashboard();
+                  }}
+                >
+                  {!hideLogo && <AppLogo isLoadingFromHeader={false} viewer={true} />}
+                  {!hideHeader && (
+                    <div className="d-flex align-items-center app-title">
+                      <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
+                    </div>
+                  )}
+                </Link>
+              </h1>
             </div>
           </Header>
 
-          <div className="w-100">
+          <div style={{ paddingBottom: '56px' }} className="w-100 overflow-auto h-100">
             <div className={`pages-container ${darkMode && 'dark'}`}>
               {isLicensed ? (
                 <RenderPageGroups
@@ -228,21 +277,21 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
                   currentPage={currentPage}
                 />
               ) : (
-                pages.map((page) => {
+                pages?.map((page) => {
                   const isHomePage = page.id === homePageId;
                   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
                   // eslint-disable-next-line import/namespace
-                  const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+                  const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
                   return page?.hidden || page?.disabled ? null : (
                     <div
                       key={page.handle}
                       onClick={() => handlepageSwitch(page?.id)}
-                      className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                      className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
                     >
-                      <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
+                      <div className={`card  ${page?.id === currentPageId ? 'active' : ''}`}>
                         <div className="card-body">
-                          <IconElement />
-                          <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                          <IconElement style={{ width: '16px', height: '16px' }} />
+                          <span>{_.truncate(page?.name, { length: 22 })}</span>
                         </div>
                       </div>
                     </div>
@@ -254,16 +303,12 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
         </div>
         {showDarkModeToggle && (
           <div>
-            <hr className="m-0 mb-3" />
             <div className="d-flex justify-content-center">
-              <div
-                className={`d-flex align-items-center justify-content-center`}
-                style={{ border: '1px solid var(--slate7)', width: 'calc(100% - 20px)' }}
-              >
+              <div className={`d-flex align-items-center justify-content-center`}>
                 <DarkModeToggle
                   switchDarkMode={changeToDarkMode}
                   darkMode={darkMode}
-                  showText={true}
+                  showText={false}
                   tooltipPlacement={'top'}
                 />
               </div>

@@ -9,10 +9,24 @@ import useTableStore from './_stores/tableStore';
 import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
+import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/Editor/Components/utils';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Table = memo(
-  ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {
+  ({
+    id,
+    componentName,
+    width,
+    height,
+    properties,
+    styles,
+    darkMode,
+    fireEvent,
+    setExposedVariables,
+    adjustComponentPositions,
+    currentLayout,
+  }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
@@ -23,7 +37,7 @@ export const Table = memo(
     const setTableStyles = useTableStore((state) => state.setTableStyles, shallow);
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
-
+    const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
@@ -32,9 +46,19 @@ export const Table = memo(
     // get table styles
     const boxShadow = useTableStore((state) => state.getTableStyles(id)?.boxShadow, shallow);
     const borderColor = useTableStore((state) => state.getTableStyles(id)?.borderColor, shallow);
-
+    const containerBackgroundColor = useTableStore(
+      (state) => state.getTableStyles(id)?.containerBackgroundColor,
+      shallow
+    );
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
+    const themeChanged = useStore((state) => state.themeChanged);
+
+    const colorMode = getColorModeFromLuminance(containerBackgroundColor);
+    const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
+    const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
+    const hoverColor = getModifiedColor(containerBackgroundColor, 'hover');
+    const activeColor = getModifiedColor(containerBackgroundColor, 'active');
 
     const {
       columns,
@@ -43,6 +67,7 @@ export const Table = memo(
       columnDeletionHistory,
       autogenerateColumns,
       actions,
+      shouldRender,
       ...restOfProperties
     } = properties;
 
@@ -114,7 +139,19 @@ export const Table = memo(
     // Transform table data if transformations are present
     const tableData = useMemo(() => {
       return transformTableData(restOfProperties.data, transformations, getResolvedValue);
-    }, [getResolvedValue, restOfProperties.data, transformations]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getResolvedValue, restOfProperties.data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
+    // Added to handle the dynamic value (fx) on the table column properties
+
+    useDynamicHeight({
+      dynamicHeight: properties.dynamicHeight,
+      id: id,
+      height,
+      value: JSON.stringify(tableData),
+      adjustComponentPositions,
+      currentLayout,
+      width,
+    });
 
     return (
       <div
@@ -122,11 +159,18 @@ export const Table = memo(
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: `${height}px`,
+          height: properties.dynamicHeight ? 'auto' : `${height}px`,
           display: visibility === 'none' ? 'none' : '',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,
           borderColor,
+          backgroundColor: containerBackgroundColor,
+          '--cc-table-record-text-color': textColor,
+          '--cc-table-action-icon-color': iconColor,
+          '--cc-table-footer-action-hover': hoverColor,
+          '--cc-table-row-hover': hoverColor,
+          '--cc-table-row-active': activeColor,
+          '--cc-table-scroll-bar-color': activeColor,
         }}
       >
         <TableContainer

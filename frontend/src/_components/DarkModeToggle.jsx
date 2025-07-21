@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSpring, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -6,20 +6,35 @@ import { useTranslation } from 'react-i18next';
 import classnames from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
   switchDarkMode,
   tooltipPlacement = 'bottom',
   showText = false,
+  toggleForCanvas = false,
 }) {
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
-  const appMode = useStore((state) => state.globalSettings.appMode, shallow);
+  const setGlobalSettings = useStore((state) => state.setGlobalSettings, shallow);
+  const globalSettings = useStore((state) => state.globalSettings, shallow);
+  const [appLevelDarkMode, setAppLevelDarkMode] = useState(false);
+
+  const { onAppModeChange, appMode } = useAppDarkMode();
 
   const toggleDarkMode = () => {
-    switchDarkMode(!darkMode);
-    if (appMode === 'auto') {
-      setResolvedGlobals('theme', { name: !darkMode ? 'dark' : 'light' });
+    if (toggleForCanvas) {
+      const exposedTheme = !appLevelDarkMode ? 'dark' : 'light';
+      setResolvedGlobals('theme', { name: exposedTheme });
+      setGlobalSettings({ ...globalSettings, appMode: exposedTheme });
+      setAppLevelDarkMode(!appLevelDarkMode);
+    } else {
+      posthogHelper.captureEvent('darkMode', { mode: !darkMode ? 'dark' : 'white' });
+      switchDarkMode(!darkMode);
+      if (appMode === 'auto') {
+        setResolvedGlobals('theme', { name: !darkMode ? 'dark' : 'light' });
+      }
     }
   };
 
@@ -42,7 +57,8 @@ export const DarkModeToggle = function DarkModeToggle({
     springConfig: { mass: 4, tension: 250, friction: 35 },
   };
 
-  const { r, transform, cx, cy, opacity } = properties[darkMode ? 'moon' : 'sun'];
+  const { r, transform, cx, cy, opacity } =
+    properties[darkMode || (appMode === 'dark' && toggleForCanvas) ? 'moon' : 'sun'];
 
   const svgContainerProps = useSpring({
     transform,

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Table } from './Components/Table/Table.jsx';
+import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
-import { Form } from './Components/Form';
+import Form from './Components/Form/index.js';
 import { renderElement, renderCustomStyles } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
@@ -43,6 +44,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
+import { ToolTip } from '@/_components/ToolTip';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
+import { appPermissionService } from '@/_services';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -60,6 +64,19 @@ const INSPECTOR_HEADER_OPTIONS = [
     label: 'Duplicate',
     value: 'duplicate',
     icon: <Copy width={16} />,
+  },
+  {
+    label: 'Component permission',
+    value: 'permission',
+    icon: (
+      <img
+        alt="permission-icon"
+        src="assets/images/icons/editor/left-sidebar/authorization.svg"
+        width="16"
+        height="16"
+      />
+    ),
+    trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
   },
   {
     label: 'Delete',
@@ -81,6 +98,9 @@ const NEW_REVAMPED_COMPONENTS = [
   'ToggleSwitchV2',
   'Checkbox',
   'DatetimePickerV2',
+  'DatePickerV2',
+  'TimePicker',
+  'DaterangePicker',
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
@@ -91,11 +111,20 @@ const NEW_REVAMPED_COMPONENTS = [
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'Tabs',
+  'RangeSliderV2',
   'Link',
   'Steps',
+  'FilePicker',
 ];
 
-export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
+export const Inspector = ({
+  componentDefinitionChanged,
+  darkMode,
+  pages,
+  selectedComponentId,
+  handleRightSidebarToggle,
+}) => {
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
@@ -104,6 +133,11 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
+  const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
+  const setComponentPermission = useStore((state) => state.setComponentPermission);
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -378,9 +412,14 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     if (value === 'delete') {
       setWidgetDeleteConfirmation(true);
     }
+    if (value === 'permission') {
+      if (!licenseValid) return;
+      toggleComponentPermissionModal(true);
+    }
     if (value === 'duplicate') {
       copyComponents({ isCloning: true });
     }
+    setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
     if (!componentMeta?.definition?.generalStyles) {
@@ -446,7 +485,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
 
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showHeaderActionsMenu && event.target.closest('.list-menu') === null) {
+      if (showHeaderActionsMenu && event.target.closest('#list-menu') === null) {
         setShowHeaderActionsMenu(false);
       }
     };
@@ -458,6 +497,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
@@ -493,59 +534,99 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div className={`row inspector-component-title-input-holder ${shouldFreeze && 'disabled'}`}>
-          <div className="col-1" onClick={() => clearSelectedComponents()}>
+          <div className="p-0 width-unset flex-shrink-0" onClick={() => clearSelectedComponents()}>
             <span
               data-cy={`inspector-close-icon`}
               className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px', width: '28px' }}
+              style={{ height: '28px' }}
             >
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-9 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          <div className={`flex-shrink p-0 width-unset ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
-            <div className="col-2" data-cy={'component-inspector-options'}>
-              <OverlayTrigger
-                trigger={'click'}
-                placement={'bottom-end'}
-                rootClose={false}
-                show={showHeaderActionsMenu}
-                overlay={
-                  <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                    <Popover.Body bsPrefix="list-item-popover-body">
-                      {INSPECTOR_HEADER_OPTIONS.map((option) => (
-                        <div
-                          data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                          className="list-item-popover-option"
-                          key={option?.value}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleInspectorHeaderActions(option.value);
-                          }}
-                        >
-                          <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                          <div
-                            className={classNames('list-item-option-menu-label', {
-                              'color-tomato9': option.value === 'delete',
-                            })}
-                          >
-                            {option?.label}
-                          </div>
-                        </div>
-                      ))}
-                    </Popover.Body>
-                  </Popover>
-                }
-              >
-                <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                  <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-                </span>
-              </OverlayTrigger>
-            </div>
+            <>
+              <div className="width-unset" data-cy={'component-inspector-options'}>
+                <OverlayTrigger
+                  trigger={'click'}
+                  placement={'bottom-end'}
+                  rootClose={false}
+                  show={showHeaderActionsMenu}
+                  overlay={
+                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                      <Popover.Body bsPrefix="list-item-popover-body">
+                        {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                          const optionBody = (
+                            <div
+                              data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                              className="list-item-popover-option"
+                              key={option?.value}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleInspectorHeaderActions(option.value);
+                              }}
+                            >
+                              <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                              <div
+                                className={classNames('list-item-option-menu-label', {
+                                  'color-tomato9': option.value === 'delete',
+                                  'color-disabled': option.value === 'permission' && !licenseValid,
+                                })}
+                              >
+                                {option?.label}
+                              </div>
+                              {option.value === 'permission' &&
+                                !licenseValid &&
+                                option.trailingIcon &&
+                                option.trailingIcon}
+                            </div>
+                          );
+
+                          return option.value === 'permission' ? (
+                            <ToolTip
+                              key={option.value}
+                              message={'Component permissions are available only in paid plans'}
+                              placement="left"
+                              show={!licenseValid}
+                            >
+                              {optionBody}
+                            </ToolTip>
+                          ) : (
+                            optionBody
+                          );
+                        })}
+                      </Popover.Body>
+                    </Popover>
+                  }
+                >
+                  <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+                    <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
+                  </span>
+                </OverlayTrigger>
+              </div>
+              <AppPermissionsModal
+                modalType="component"
+                resourceId={selectedComponentId}
+                resourceName={allComponents[selectedComponentId]?.component?.name}
+                showModal={showComponentPermissionModal}
+                toggleModal={toggleComponentPermissionModal}
+                darkMode={darkMode}
+                fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
+                createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
+                updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+                deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
+                onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
+              />
+            </>
           )}
+          <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleRightSidebarToggle}>
+            <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+          </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`}>{renderTabs()}</div>
+        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>
+          {renderTabs()}
+        </div>
       </div>
       <span className="widget-documentation-link">
         <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
@@ -727,6 +808,9 @@ const GetAccordion = React.memo(
       case 'Table':
         return <Table {...restProps} />;
 
+      case 'Tabs':
+        return <TabsLayout {...restProps} />;
+
       case 'Chart':
         return <Chart {...restProps} />;
 
@@ -746,7 +830,7 @@ const GetAccordion = React.memo(
         return <Icon {...restProps} />;
 
       case 'Form':
-        return <Form {...restProps} />;
+        return <Form {...restProps} key={restProps.component?.id} />;
 
       case 'DropdownV2':
       case 'MultiselectV2':

@@ -10,10 +10,17 @@ interface Features {
   [FEATURE_KEY.REPLACE_USER_WORKSPACES]: FeatureConfig;
   [FEATURE_KEY.UPDATE_USER_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_WORKSPACES]: FeatureConfig;
+  [FEATURE_KEY.PULL_NEW_APP]: FeatureConfig;
+  [FEATURE_KEY.PULL_EXISTING_APP]: FeatureConfig;
+  [FEATURE_KEY.PUSH_APP_VERSION]: FeatureConfig;
   [FEATURE_KEY.UPDATE_USER_ROLE]: FeatureConfig;
+  [FEATURE_KEY.CREATE_ORG_GIT]: FeatureConfig;
+  [FEATURE_KEY.AUTO_RELEASE_APP]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_WORKSPACE_APPS]: FeatureConfig;
   [FEATURE_KEY.IMPORT_APP]: FeatureConfig;
   [FEATURE_KEY.EXPORT_APP]: FeatureConfig;
+  [FEATURE_KEY.GENERATE_PAT]: FeatureConfig;
+  [FEATURE_KEY.VALIDATE_PAT_SESSION]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

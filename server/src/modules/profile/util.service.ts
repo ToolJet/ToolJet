@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { FilesRepository } from '@modules/files/repository';
 import { File } from '@entities/file.entity';
 import { IProfileUtilService } from '@modules/profile/interfaces/IService';

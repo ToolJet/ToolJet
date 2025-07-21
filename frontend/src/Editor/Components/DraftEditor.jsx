@@ -88,7 +88,7 @@ const BlockStyleControls = (props) => {
         <button className="dropdownbtn px-2" type="button">
           Heading
         </button>
-        <div className="dropdown-content bg-white">
+        <div className="dropdown-content" style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
           {HEADINGS.map((type) => (
             <a className="dropitem m-0 p-0" key={type.label}>
               <StyleButton
@@ -210,16 +210,16 @@ class DraftEditor extends React.Component {
         this.setState({ editorState: newEditorState });
       },
       setDisable: async (value) => {
-        this.props.setExposedVariable('isDisabled', value);
-        this.props.setIsDisabled(value);
+        this.props.setExposedVariable('isDisabled', !!value);
+        this.props.setIsDisabled(!!value);
       },
       setVisibility: async (value) => {
-        this.props.setExposedVariable('isVisible', value);
-        this.props.setIsVisible(value);
+        this.props.setExposedVariable('isVisible', !!value);
+        this.props.setIsVisible(!!value);
       },
       setLoading: async (value) => {
-        this.props.setExposedVariable('isLoading', value);
-        this.props.setIsLoading(value);
+        this.props.setExposedVariable('isLoading', !!value);
+        this.props.setIsLoading(!!value);
       },
     };
     this.props.setExposedVariables(exposedVariables);
@@ -285,7 +285,12 @@ class DraftEditor extends React.Component {
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
         </div>
-        <div className={className} ref={this.editorContainerRef} onClick={this.focus}>
+        <div
+          className={className}
+          ref={this.editorContainerRef}
+          style={{ height: this.props.dynamicHeight ? 'auto' : `${this.props.height - 60}px` }}
+          onClick={this.focus}
+        >
           <Editor
             blockStyleFn={getBlockStyle}
             customStyleMap={styleMap}

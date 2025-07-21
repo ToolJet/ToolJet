@@ -14,9 +14,9 @@ const LegalReasonsErrorModal = ({
   body,
   showFooter = true,
   toggleModal,
+  actionButtonAdmin,
 }) => {
   const [isOpen, setShowModal] = useState(propShowModal);
-  const currentUser = authenticationService.currentSessionValue;
   const handleClose = () => {
     setShowModal(false);
     toggleModal && toggleModal();
@@ -63,7 +63,7 @@ const LegalReasonsErrorModal = ({
             <Button className="cancel-btn" onClick={handleClose} data-cy="cancel-button">
               Cancel
             </Button>
-            {currentUser?.super_admin && (
+            {actionButtonAdmin && (
               <Button className="upgrade-btn" autoFocus onClick={() => {}}>
                 <a
                   style={{ color: 'white', textDecoration: 'none' }}
