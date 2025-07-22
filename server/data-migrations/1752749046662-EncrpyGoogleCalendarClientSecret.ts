@@ -1,0 +1,94 @@
+import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from 'src/app.module';
+import { CredentialsService } from '@services/credentials.service';
+
+export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationInterface {
+  private nestApp;
+
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    this.nestApp = await NestFactory.createApplicationContext(AppModule);
+    const entityManager = queryRunner.manager;
+
+    const totalRecords = await entityManager.query(
+      `
+        SELECT COUNT(*) 
+        FROM data_source_options dso
+        JOIN data_sources ds ON dso.data_source_id = ds.id
+        WHERE ds.kind = $1
+      `,
+      ['googlecalendar']
+    );
+
+    const totalCount = parseInt(totalRecords[0].count);
+    if (totalCount === 0) {
+      console.log('No records found to update for Google Calendar data sources.');
+      await this.nestApp.close();
+      return;
+    }
+
+    await this.updateGoogleCalendarClientSecrets(entityManager, totalCount);
+    await this.nestApp.close();
+  }
+
+  private async updateGoogleCalendarClientSecrets(entityManager: EntityManager, totalCount: number): Promise<void> {
+    return dbTransactionWrap(async (entityManager: EntityManager) => {
+      const credentialsService = this.nestApp.get(CredentialsService);
+      const migrationProgress = new MigrationProgress('EncrpyGoogleCalendarClientSecret1752749046662', totalCount);
+      const batchSize = 100;
+
+      const fetchDataSourceOptionsInBatches = async (entityManager: EntityManager, skip: number, take: number) => {
+        return await entityManager.query(
+          `
+          SELECT dso.id, dso.options, ds.name, dso.environment_id
+          FROM data_source_options dso
+          JOIN data_sources ds ON dso.data_source_id = ds.id
+          WHERE ds.kind = $1
+          ORDER BY dso.id
+          LIMIT $2 OFFSET $3
+          `,
+          ['googlecalendar', take, skip]
+        );
+      };
+
+      const processDataSourceOptionsBatch = async (entityManager: EntityManager, dataSourceOptions: any[]) => {
+        for (const dataSourceOption of dataSourceOptions) {
+          const options = dataSourceOption.options;
+
+          if (options && options.client_secret) {
+            if (!options.client_secret.encrypted && options.client_secret.value) {
+              const credential = await credentialsService.create(options.client_secret.value, entityManager);
+
+              options.client_secret = {
+                credential_id: credential.id,
+                encrypted: true,
+              };
+
+              await entityManager.query(
+                `
+                UPDATE data_source_options
+                SET options = $1
+                WHERE id = $2
+                `,
+                [options, dataSourceOption.id]
+              );
+            }
+          }
+
+          migrationProgress.show();
+        }
+      };
+
+      await processDataInBatches(
+        entityManager,
+        fetchDataSourceOptionsInBatches,
+        processDataSourceOptionsBatch,
+        batchSize
+      );
+    }, entityManager);
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {}
+}

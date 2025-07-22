@@ -48,10 +48,10 @@ const OAuth = ({
     if (isGrpc) {
       options.push({ name: 'API Key', value: 'api_key' });
     }
+
     if (allowed_auth_types && allowed_auth_types.length > 0) {
       return options.filter((option) => allowed_auth_types.includes(option.value));
     }
-
     return options;
   };
 
