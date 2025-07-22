@@ -91,24 +91,27 @@ export async function fetchAndSetWindowTitle(pageDetails, organizationId = null)
     await fetchWhiteLabelDetails(organizationId);
   }
   const whiteLabelText = state.whiteLabelText;
-
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
   let mode = pageDetails?.mode || '';
   let isPreview = !pageDetails?.isReleased || false;
   const license = pageDetails?.licenseStatus;
+  let appName = pageDetails?.appName;
+  if (appName === undefined) {
+    appName = 'Loading...';
+  }
   switch (pageTitleKey) {
     case pageTitles.VIEWER: {
       const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      pageTitle = `${titlePrefix}${appName || 'My App'}`;
       break;
     }
     case pageTitles.EDITOR:
     case pageTitles.WORKFLOW_EDITOR: {
       if (mode == 'edit') {
-        pageTitle = `${pageDetails?.appName}`;
+        pageTitle = `${appName}`;
       } else {
-        pageTitle = `Preview - ${pageDetails?.appName}` || 'My App';
+        pageTitle = `Preview - ${appName}` || 'My App';
       }
       break;
     }
@@ -118,7 +121,7 @@ export async function fetchAndSetWindowTitle(pageDetails, organizationId = null)
     }
   }
   if (!isPreview && mode === 'view') {
-    document.title = `${pageDetails?.appName} ${license ? '' : '| ToolJet'}`;
+    document.title = `${appName} ${license ? '' : '| ToolJet'}`;
     return;
   }
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
