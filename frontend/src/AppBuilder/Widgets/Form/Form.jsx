@@ -380,7 +380,7 @@ const FormComponent = (props) => {
     const roundedHeight = Math.round(maxHeight / 10) * 10;
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
-  console.log('activeSlot', activeSlot);
+
   return (
     <form
       className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
