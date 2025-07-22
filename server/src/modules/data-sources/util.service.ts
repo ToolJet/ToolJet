@@ -262,8 +262,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     for (const option of options) {
       if (option['encrypted'] && !option['value'] && dataSource?.options?.[option['key']]?.credential_id) {
         try {
-          const value = await this.credentialsService.getValue(dataSource.options[option['key']].credential_id);
+          const value = await this.credentialService.getValue(dataSource.options[option['key']].credential_id);
           resolvedOptions.push({ ...option, value });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
           resolvedOptions.push(option);
         }
@@ -539,7 +540,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
       // Datasources using third party library for token generation
       if (['salesforce'].includes(dataSource.kind)) {
-        const queryService = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
+        const queryService = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
         const accessDetails = await queryService.accessDetailsFrom(code, sourceOptions);
         for (const [key, value] of accessDetails) {
           newToken[key] = value;

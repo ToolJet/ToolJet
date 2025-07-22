@@ -2,8 +2,8 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from 'src/app.module';
-import { CredentialsService } from '@services/credentials.service';
+import { AppModule } from '@modules/app/module';
+import { CredentialsService } from '@modules/encryption/services/credentials.service';
 
 export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationInterface {
   private nestApp;
