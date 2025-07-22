@@ -245,5 +245,13 @@
     "id": "googlecalendar",
     "author": "Tooljet",
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "Hubspot",
+    "description": "Plugin for Hubspot",
+    "version": "1.0.0",
+    "id": "hubspot",
+    "author": "Tooljet",
+    "timestamp": "Tue, 22 Jul 2025 08:56:16 GMT"
   }
 ]
