@@ -350,7 +350,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
-            isReleasedApp: isReleasedApp
+            isReleasedApp: isReleasedApp,
           },
           moduleId
         );
