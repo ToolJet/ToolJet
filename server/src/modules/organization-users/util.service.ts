@@ -1,6 +1,6 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { fullName, generateNextNameAndSlug, getTooljetEdition } from '@helpers/utils.helper';
+import { fullName, generateNextNameAndSlug } from '@helpers/utils.helper';
 import { EntityManager, In } from 'typeorm';
 import {
   getUserStatusAndSource,
@@ -39,7 +39,7 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
@@ -509,16 +509,13 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
-      const tooljetEdition = getTooljetEdition();
-      if (tooljetEdition === TOOLJET_EDITIONS.Cloud) {
-        this.eventEmitter.emit('CRM.Push', {
-          email: updatedUser.email,
-          firstName: updatedUser.firstName,
-          lastName: updatedUser.lastName,
-          role: updatedUser.role,
-          isInvited: true,
-        });
-      }
+      this.eventEmitter.emit('CRM.Push', {
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+        isInvited: true,
+      });
 
       const groupsArray = [];
       if (inviteNewUserDto.groups && inviteNewUserDto.groups.length > 0) {

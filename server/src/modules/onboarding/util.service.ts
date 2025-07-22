@@ -41,8 +41,6 @@ import { OnboardingStatus } from './constants';
 import { IOnboardingUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import * as uuid from 'uuid';
-import { getTooljetEdition } from 'src/helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 @Injectable()
 export class OnboardingUtilService implements IOnboardingUtilService {
@@ -442,15 +440,12 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         manager,
         !isPersonalWorkspaceEnabled
       );
-      const tooljetEdition = getTooljetEdition();
-      if (tooljetEdition === TOOLJET_EDITIONS.Cloud) {
-        this.eventEmitter.emit('CRM.Push', {
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-        });
-      }
+      this.eventEmitter.emit('CRM.Push', {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      });
 
       if (personalWorkspace) {
         await this.organizationUserRepository.createOne(user, personalWorkspace, true, manager);
