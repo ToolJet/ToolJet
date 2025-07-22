@@ -173,20 +173,6 @@ export const createAppSlice = (set, get) => ({
       console.error('Error updating page:', error);
     }
   },
-  updateAppMode: async (appMode, moduleId = 'canvas') => {
-    const { appStore, currentVersionId } = get();
-    try {
-      const res = await appVersionService.updateAppMode(
-        appStore.modules[moduleId].app.appId,
-        currentVersionId,
-        appMode
-      );
-      set((state) => ({ globalSettings: { ...state.globalSettings, appMode } }));
-    } catch (error) {
-      toast.error('App mode could not be updated.');
-      console.error('Error updating app mode:', error);
-    }
-  },
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
     // reset stores
