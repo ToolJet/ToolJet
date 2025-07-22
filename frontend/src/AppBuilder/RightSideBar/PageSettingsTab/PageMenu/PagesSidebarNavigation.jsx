@@ -49,6 +49,7 @@ export const PagesSidebarNavigation = ({
     }),
     shallow
   );
+  const { appMode } = useStore((state) => state.globalSettings, shallow);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -537,14 +538,16 @@ export const PagesSidebarNavigation = ({
             )
           )}
         </div>
-        <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
-          <DarkModeToggle
-            toggleForCanvas={true}
-            switchDarkMode={switchDarkMode}
-            darkMode={darkMode}
-            tooltipPlacement="right"
-          />
-        </div>
+        {appMode === 'auto' && (
+          <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+            <DarkModeToggle
+              toggleForCanvas={true}
+              switchDarkMode={switchDarkMode}
+              darkMode={darkMode}
+              tooltipPlacement="right"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

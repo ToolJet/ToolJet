@@ -15,7 +15,6 @@ export const appVersionService = {
   deleteAppVersionEventHandler,
   clonePage,
   findAllEventsWithSourceId,
-  updateAppMode,
   cloneGroup,
 };
 
@@ -144,18 +143,6 @@ function autoSaveApp(
     body: JSON.stringify(body),
   };
   const url = `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type ?? ''}`;
-
-  return fetch(url, requestOptions).then(handleResponse);
-}
-
-function updateAppMode(appId, versionId, appMode) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ appId, versionId, appMode }),
-  };
-  const url = `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/global_settings/app_mode`;
 
   return fetch(url, requestOptions).then(handleResponse);
 }
