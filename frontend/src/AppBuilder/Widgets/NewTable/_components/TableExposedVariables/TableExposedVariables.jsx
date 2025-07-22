@@ -33,7 +33,6 @@ export const TableExposedVariables = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const mounted = useMounted();
-  const previousLastClickedRow = usePrevious(lastClickedRow?.row);
 
   const {
     selectedRows,
@@ -242,11 +241,9 @@ export const TableExposedVariables = ({
 
   useEffect(() => {
     if (allowSelection) {
-      if (previousLastClickedRow?.id !== lastClickedRow?.row?.id) {
-        fireEvent('onRowClicked');
-      }
+      fireEvent('onRowClicked');
     }
-  }, [previousLastClickedRow, lastClickedRow, fireEvent, allowSelection]);
+  }, [lastClickedRow, fireEvent, allowSelection]);
 
   useEffect(() => {
     function selectRow(key, value) {
