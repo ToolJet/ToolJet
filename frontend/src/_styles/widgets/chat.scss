@@ -5,6 +5,14 @@
 @import "../typography.scss";
 @import "../designtheme.scss";
 .chat-widget {
+
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow:  var(--elevation-400-box-shadow)  var(--elevation-700-box-shadow);
+    border-radius: 8px;
+
   .tj-text-color-not-important {
     font-family: 'IBM Plex Sans';
     font-style: normal;
@@ -12,12 +20,7 @@
     padding: 0;
     color: var(--slate12);
   }
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow:  var(--elevation-400-box-shadow)  var(--elevation-700-box-shadow);
-  border-radius: 8px;
+
   .button-group {
     display: flex;
     border: 1px solid var(--borders-default);
@@ -88,6 +91,9 @@
 
     &.scrollable {
       overflow-y: auto;
+      // Firefox scrollbar styles
+      scrollbar-width: thin;
+      scrollbar-color: var(--slate7) transparent;
 
       // Always show scrollbar when scrollable
       &::-webkit-scrollbar {
@@ -105,9 +111,7 @@
         background: transparent;
       }
 
-      // Firefox scrollbar styles
-      scrollbar-width: thin;
-      scrollbar-color: var(--slate7) transparent;
+
 
       // Remove hover/focus states since scrollbar is always visible
       &:hover,
@@ -197,6 +201,8 @@
       margin: 8px 0;
       max-height: 500px;
       overflow: auto;
+      // Firefox scrollbar styles
+      scrollbar-width: none;
 
       // Hide scrollbar by default
       &::-webkit-scrollbar {
@@ -205,13 +211,16 @@
         transition: all 0.2s ease;
       }
 
-      // Firefox scrollbar styles
-      scrollbar-width: none;
+      
 
       // Show scrollbar on hover/focus
       &:hover,
       &:focus,
       &:focus-within {
+      // Firefox scrollbar styles
+      scrollbar-width: thin;
+
+      scrollbar-color: var(--slate7) transparent;
         &::-webkit-scrollbar {
           height: 4px;
         }
@@ -225,9 +234,7 @@
           background: transparent;
         }
 
-        // Firefox scrollbar styles
-        scrollbar-width: thin;
-        scrollbar-color: var(--slate7) transparent;
+
       }
 
       th, td {
@@ -255,6 +262,10 @@
       background: var(--surfaces-surface-02);
       width: 100%;
       overflow-x: auto;
+      // Firefox scrollbar styles
+      scrollbar-width: none;
+
+        
       // Hide scrollbar by default
       &::-webkit-scrollbar {
         height: 0;
@@ -262,13 +273,17 @@
         transition: all 0.2s ease;
       }
 
-      // Firefox scrollbar styles
-      scrollbar-width: none;
-
+    
       // Show scrollbar on hover/focus
       &:hover,
       &:focus,
       &:focus-within {
+
+        // Firefox scrollbar styles
+        scrollbar-width: thin;
+        scrollbar-color: var(--slate7) transparent;
+
+
         &::-webkit-scrollbar {
           height: 4px;
         }
@@ -282,9 +297,7 @@
           background: transparent;
         }
 
-        // Firefox scrollbar styles
-        scrollbar-width: thin;
-        scrollbar-color: var(--slate7) transparent;
+
       }
 
       p {
@@ -344,6 +357,9 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    // Firefox scrollbar styles
+    scrollbar-width: none;
+
 
     // Hide scrollbar by default
     &::-webkit-scrollbar {
@@ -352,8 +368,6 @@
       transition: all 0.2s ease;
     }
 
-    // Firefox scrollbar styles
-    scrollbar-width: none;
 
   }
   .chat-header{
