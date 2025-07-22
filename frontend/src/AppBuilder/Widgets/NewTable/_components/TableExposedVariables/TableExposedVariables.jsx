@@ -34,7 +34,6 @@ export const TableExposedVariables = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const mounted = useMounted();
-  const previousLastClickedRow = usePrevious(lastClickedRow?.row);
 
   const {
     selectedRows,
@@ -132,14 +131,6 @@ export const TableExposedVariables = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow, showBulkSelector]); // Didn't add mounted as it's not a dependency
-
-  useEffect(() => {
-    if (allowSelection) {
-      if (previousLastClickedRow?.id !== lastClickedRow?.row?.id) {
-        fireEvent('onRowClicked');
-      }
-    }
-  }, [previousLastClickedRow, lastClickedRow, fireEvent, allowSelection]);
 
   // Expose page index
   useEffect(() => {
@@ -249,6 +240,12 @@ export const TableExposedVariables = ({
       });
     }
   }, [lastClickedRow, setExposedVariables]);
+
+  useEffect(() => {
+    if (allowSelection) {
+      fireEvent('onRowClicked');
+    }
+  }, [lastClickedRow, fireEvent, allowSelection]);
 
   useEffect(() => {
     function selectRow(key, value) {
