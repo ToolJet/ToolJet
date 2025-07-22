@@ -4,7 +4,7 @@
   background: var(--page-default) !important;
   display: flex;
   gap: 16px;
-
+  z-index: 1 !important;
   .sidebar-svg-icon {
     height: 32px;
     width: 32px;

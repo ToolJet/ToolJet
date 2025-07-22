@@ -12,6 +12,7 @@ import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons
 import BuildSuggestions from './BuildSuggestions';
 import GitSyncManager from './GitSyncManager';
 import UpdatePresenceMultiPlayer from './UpdatePresenceMultiPlayer';
+import '../../_styles/header.scss';
 
 export const EditorHeader = ({ darkMode }) => {
   const { isSaving, saveError, isVersionReleased } = useStore(
