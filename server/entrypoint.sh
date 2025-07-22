@@ -35,11 +35,12 @@ fi
 
 # Check Redis connection
 if [ -z "$REDIS_URL" ]; then
-  if [ -z "$REDIS_HOST" ] || [ -z "$REDIS_PORT" ]; then
+  if [ -n "$REDIS_HOST" ] && [ -n "$REDIS_PORT" ]; then
     echo "Waiting for Redis connection..."
+    ./server/scripts/wait-for-it.sh $REDIS_HOST:${REDIS_PORT:-6379} --strict --timeout=300 -- echo "Redis is up"
+  else
+    echo "Redis connection parameters not set, skipping Redis connection check"
   fi
-
-  ./server/scripts/wait-for-it.sh $REDIS_HOST:${REDIS_PORT:-6379} --strict --timeout=300 -- echo "Redis is up"
 else
   echo "REDIS_URL connection is set"
 fi
