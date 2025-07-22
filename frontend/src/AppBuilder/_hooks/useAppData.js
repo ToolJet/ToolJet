@@ -289,7 +289,7 @@ const useAppData = (
                     slug,
                     viewerEnvironment?.environment?.id
                   )
-                : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
+                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
           }
@@ -350,7 +350,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
-            isReleasedApp: isReleasedApp
+            isReleasedApp: isReleasedApp,
           },
           moduleId
         );
