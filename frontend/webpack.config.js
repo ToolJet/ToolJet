@@ -1,6 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const crypto = require('crypto');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
@@ -39,10 +40,6 @@ const plugins = [
     favicon: './assets/images/logo.svg',
     hash: environment === 'production',
   }),
-  new CompressionPlugin({
-    test: /\.js(\?.*)?$/i,
-    algorithm: 'gzip',
-  }),
   new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
   new webpack.DefinePlugin({
     'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
@@ -78,12 +75,33 @@ if (process.env.APM_VENDOR === 'sentry') {
   );
 }
 
+// Add compression only in production
+if (environment === 'production') {
+  plugins.push(
+    new CompressionPlugin({
+      test: /\.js(\?.*)?$/i,
+      algorithm: 'gzip',
+    })
+  );
+}
+
 if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
 }
 
 module.exports = {
   mode: environment,
+  cache: {
+    type: 'filesystem',
+    buildDependencies: {
+      config: [__filename],
+    },
+  },
+  performance: {
+    hints: environment === 'production' ? 'warning' : false,
+    maxAssetSize: 500000,
+    maxEntrypointSize: 500000,
+  },
   optimization: {
     minimize: environment === 'production',
     usedExports: true,
@@ -98,15 +116,56 @@ module.exports = {
             drop_console: true,
           },
         },
-        parallel: environment === 'production',
+        parallel: environment === 'production' ? 2 : false, // Limit parallel processing
       }),
     ],
     splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 10,
+      minSize: 0,
       cacheGroups: {
-        vendors: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
+        default: {
+          minChunks: 1,
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+        defaultVendors: false,
+        framework: {
           chunks: 'all',
+          name: 'framework',
+          test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+          priority: 40,
+          enforce: true,
+        },
+        lib: {
+          test(module) {
+            return module.size() > 160000 && /node_modules[/\\]/.test(module.identifier());
+          },
+          name(module) {
+            const hash = crypto.createHash('sha1');
+            hash.update(module.libIdent ? module.libIdent({ context: __dirname }) : module.identifier());
+            return hash.digest('hex').substring(0, 8);
+          },
+          priority: 30,
+          minChunks: 1,
+          reuseExistingChunk: true,
+        },
+        commons: {
+          name: 'commons',
+          minChunks: 2,
+          priority: 20,
+        },
+        shared: {
+          name(module, chunks) {
+            return crypto
+              .createHash('sha1')
+              .update(chunks.reduce((acc, chunk) => acc + chunk.name, ''))
+              .digest('hex')
+              .substring(0, 8);
+          },
+          priority: 10,
+          minChunks: 2,
+          reuseExistingChunk: true,
         },
       },
     },
@@ -128,7 +187,7 @@ module.exports = {
       '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: environment === 'development' ? 'eval-source-map' : 'hidden-source-map',
+  devtool: environment === 'development' ? 'eval-cheap-module-source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
@@ -202,6 +261,8 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
+            cacheDirectory: true,
+            cacheCompression: false,
             plugins: [
               isDevEnv && require.resolve('react-refresh/babel'),
               ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
@@ -221,6 +282,12 @@ module.exports = {
     static: {
       directory: path.resolve(__dirname, 'assets'),
       publicPath: '/assets/',
+    },
+    hot: true,
+    liveReload: false,
+    compress: false, // Disable compression in dev for speed
+    client: {
+      overlay: false, // Disable error overlay for performance
     },
   },
   output: {
